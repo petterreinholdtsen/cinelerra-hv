@@ -1,11 +1,13 @@
-#include "assets.h"
+#include "asset.h"
 #include "batch.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
 #include "file.h"
 #include "filethread.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
@@ -21,6 +23,7 @@
 #include "videodevice.h"
 
 #include <unistd.h>
+
 
 RecordVideo::RecordVideo(MWindow *mwindow,
 	Record *record, 
@@ -110,8 +113,8 @@ int RecordVideo::cleanup_recording()
 	}
 	else
 	{
-		delete frame_ptr[0];
-		delete frame_ptr;
+		delete [] frame_ptr[0];
+		delete [] frame_ptr;
 		delete capture_frame;
 	}
 	return 0;
@@ -141,6 +144,8 @@ void RecordVideo::run()
 {
 	write_result = 0;
 	grab_result = 0;
+
+//printf("RecordVideo::run 1 %d\n", getpid());
 
 // Thread out the I/O
 	if(!record_thread->monitor)
@@ -214,20 +219,14 @@ void RecordVideo::run()
 // Grab frame for recording
 			if(!record_thread->monitor)
 			{
-//printf("RecordVideo::run 4\n");
 				capture_frame = frame_ptr[0][buffer_position];
-//printf("RecordVideo::run 5 %d\n", capture_frame->get_color_model());
 				record->vdevice->set_field_order(record->reverse_interlace);
-//printf("RecordVideo::run 6\n");
 				read_buffer();
-//printf("RecordVideo::run 7\n");
 				record->get_current_batch()->current_frame++;
 				record->get_current_batch()->total_frames = 
 					MAX(record->get_current_batch()->current_frame, record->get_current_batch()->total_frames);
 				record->get_current_batch()->session_frames++;
-//printf("RecordVideo::run 4\n");
 				if(!grab_result) buffer_position++;
-//printf("RecordVideo::run 5 %ld\n", record_thread->session_frames);
 
 // Update the position indicator
 				gui->update_position(record->current_display_position(),
@@ -240,9 +239,7 @@ void RecordVideo::run()
 				record->vdevice->set_field_order(record->reverse_interlace);
 				record->get_current_batch()->session_frames++;
 
-//printf("RecordVideo::run 4\n");
 				read_buffer();
-//printf("RecordVideo::run 5\n");
 			}
 			else
 // Brief pause to keep CPU from burning up
@@ -252,17 +249,12 @@ void RecordVideo::run()
 			}
 		}
 
-//printf("RecordVideo::run 10\n");
 // Monitor the frame if monitoring
 		if(capture_frame->get_data() && 
 			record->monitor_video && 
 			!batch_done && 
 			!grab_result)
 			record->record_monitor->update(capture_frame);
-// printf("RecordVideo::run 11 %d %d %d %d\n", record_thread->monitor,
-// 			record->fill_frames, 
-// 			batch_done,  
-// 			dropped_frames);
 
 // Duplicate a frame if behind
 		if(!record_thread->monitor && 
@@ -288,8 +280,6 @@ void RecordVideo::run()
 		{
 			write_buffer(0);
 		}
-//printf("RecordVideo::run 12\n");
-//printf("RecordVideo::run 12 %d %f %f\n", record->get_current_batch()->record_mode, record->current_display_position(), *record->current_duration());
 
 		if(!record_thread->monitor && 
 			!batch_done &&
@@ -316,15 +306,14 @@ void RecordVideo::run()
 					break;
 			}
 		}
-//printf("RecordVideo::run 13 %d\n", write_result);
 
 		if(write_result)
 		{
 			batch_done = 1;
 		}
 	}
-//printf("RecordVideo::run 14 %d\n", write_result);
 
+TRACE("RecordVideo::run 1");
 // Update dependant threads
 	if(record->default_asset->audio_data)
 	{
@@ -332,7 +321,7 @@ void RecordVideo::run()
 // Interrupt driver for IEEE1394
 		record_thread->record_audio->stop_recording();
 	}
-//printf("RecordVideo::run 15 %d\n", write_result);
+TRACE("RecordVideo::run 2");
 
 	if(write_result)
 	{
@@ -341,23 +330,20 @@ void RecordVideo::run()
 			ErrorBox error_box(PROGRAM_NAME ": Error",
 				mwindow->gui->get_abs_cursor_x(),
 				mwindow->gui->get_abs_cursor_y());
-			error_box.create_objects("No space left on disk.");
+			error_box.create_objects(_("No space left on disk."));
 			error_box.run_window();
 			batch_done = 1;
 		}
 	}
 
 	cleanup_recording();
-//printf("RecordVideo::run 16 %p %d\n", this, write_result);
 }
 
 void RecordVideo::read_buffer()
 {
-//printf("RecordVideo::read_buffer 1\n");
 
 	grab_result = record->vdevice->read_buffer(capture_frame);
 
-//printf("RecordVideo::read_buffer 10\n");
 
 	if(!strncmp(record->default_asset->vcodec, QUICKTIME_MJPA, 4) &&
 		record->vdevice->is_compressed())
@@ -366,22 +352,13 @@ void RecordVideo::read_buffer()
 		int64_t size = capture_frame->get_compressed_size();
 		int64_t allocation = capture_frame->get_compressed_allocated();
 
-//printf("RecordVideo::read_buffer 20 %d\n", size);
 		if(data)
 		{
 			int64_t field2_offset = mjpeg_get_field2(data, size);
-// Markers are added in the file in direct copy more.
-// 			mjpeg_insert_quicktime_markers(&data, 
-// 				&size, 
-// 				&allocation,
-// 				2,
-// 				&field2_offset);
 			capture_frame->set_compressed_size(size);
 			capture_frame->set_field2_offset(field2_offset);
 		}
-//printf("RecordVideo::read_buffer 30\n");
 	}
-//printf("RecordVideo::read_buffer 100\n");
 }
 
 void RecordVideo::write_buffer(int skip_new)

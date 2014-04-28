@@ -1,7 +1,18 @@
 include ../global_config
 
-CFLAGS += -I../quicktime
+# Need the freetype include that matches the X server for Xft rendering
+#FREETYPE_DIR := ..//usr/X11R6/include/freetype2
+FREETYPE_DIR := $(shell expr ../freetype*/include )
 
+CFLAGS += -I../quicktime -I$(FREETYPE_DIR)
+
+# must only define here so applications using libpng don't see any of the XFT
+# includes at all.  They use a conflicting setjmp.
+ifeq ($(HAVE_XFT), y)
+CFLAGS += -DHAVE_XFT
+endif
+
+#CFLAGS += -g
 
 $(shell sh -c 'if ! test -d $(OBJDIR)\; then mkdir $(OBJDIR)\; fi' )
 
@@ -11,13 +22,17 @@ OBJS = \
 	$(OBJDIR)/bccapture.o \
 	$(OBJDIR)/bccounter.o \
 	$(OBJDIR)/bcclipboard.o \
+	$(OBJDIR)/bcdialog.o \
 	$(OBJDIR)/bcdisplayinfo.o \
 	$(OBJDIR)/bcdragwindow.o \
 	$(OBJDIR)/bcfilebox.o \
 	$(OBJDIR)/bcipc.o \
 	$(OBJDIR)/bclistbox.o \
 	$(OBJDIR)/bclistboxitem.o \
+	$(OBJDIR)/bcmenu.o \
 	$(OBJDIR)/bcmenubar.o \
+	$(OBJDIR)/bcmenuitem.o \
+	$(OBJDIR)/bcmenupopup.o \
 	$(OBJDIR)/bcmeter.o \
 	$(OBJDIR)/bcpan.o \
 	$(OBJDIR)/bcpixmap.o \
@@ -58,6 +73,23 @@ OBJS = \
 OUTPUT = $(OBJDIR)/libguicast.so
 STATICOUTPUT = $(OBJDIR)/libguicast.a
 
+TESTLIBS := \
+		$(STATICOUTPUT) \
+		../quicktime/$(OBJDIR)/libquicktime.a \
+		$(LFLAGS) \
+		$(GLLIBS) \
+		-lX11 \
+		-lXext \
+		-lXv \
+		-lpthread \
+		-lm \
+		$(XXF86VM) \
+		-lpng
+
+ifeq ($(HAVE_XFT), y)
+TESTLIBS += -lXft
+endif	
+
 UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
@@ -65,9 +97,11 @@ $(shell echo $(OBJS) $(CXXREPOSITORY) > $(OBJDIR)/objs)
 
 
 # PTHREAD DOESN'T WORK WHEN LINKED HERE
-all: $(OBJS) $(UTILS)
+all: $(STATICOUTPUT) $(UTILS)
+
+
+$(STATICOUTPUT): $(OBJS)
 	ar rcs $(STATICOUTPUT) `cat $(OBJDIR)/objs`
-#	$(LDLINKER) $(LFLAGS) -o $(OUTPUT) $(OBJS) $(CXXREPOSITORY)
 
 $(OBJDIR)/bootstrap:
 	gcc -O2 bootstrap.c -o $(OBJDIR)/bootstrap
@@ -86,30 +120,17 @@ replace:  replace.o $(STATICOUTPUT)
 test:	$(OBJDIR)/test.o $(STATICOUTPUT)
 	$(CC) -o $(OBJDIR)/test \
 		$(OBJDIR)/test.o \
-		$(STATICOUTPUT) \
-		../quicktime/$(OBJDIR)/libquicktime.a \
-		$(LFLAGS) \
-		$(GLLIBS) \
-		-lX11 \
-		-lXext \
-		-lXv \
-		-lpthread \
-		-lm \
-		$(XXF86VM) \
-		-lpng
+		$(TESTLIBS)
 
 test2:	$(OBJDIR)/test2.o $(STATICOUTPUT)
 	$(CC) -o $(OBJDIR)/test2 \
 		$(OBJDIR)/test2.o \
-		$(STATICOUTPUT) \
-		../quicktime/$(OBJDIR)/libquicktime.a \
-		$(LFLAGS) \
-		-lX11 \
-		-lXext \
-		-lXv \
-		-lpthread \
-		-lm \
-		-lpng
+		$(TESTLIBS)
+
+test3:	$(OBJDIR)/test3.o $(STATICOUTPUT)
+	$(CC) -o $(OBJDIR)/test3 \
+		$(OBJDIR)/test3.o \
+		$(TESTLIBS)
 
 clean:
 	rm -rf $(OBJDIR)
@@ -125,7 +146,7 @@ backup: clean
 	cd .. && \
 	tar Icvf ~/guicast.tar.bz2 guicast
 
-$(OBJS) $(OBJDIR)/test.o $(OBJDIR)/test2.o $(OBJDIR)/replace.o:
+$(OBJS) $(OBJDIR)/test.o $(OBJDIR)/test2.o $(OBJDIR)/test3.o $(OBJDIR)/replace.o:
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(OBJDIR)/bootstrap: bootstrap.c
@@ -136,13 +157,17 @@ $(OBJDIR)/bcbutton.o: 	   				      bcbutton.C
 $(OBJDIR)/bccapture.o:     				      bccapture.C
 $(OBJDIR)/bccounter.o:                                        bccounter.C
 $(OBJDIR)/bcclipboard.o:   				      bcclipboard.C
+$(OBJDIR)/bcdialog.o:                                         bcdialog.C
 $(OBJDIR)/bcdisplayinfo.o: 				      bcdisplayinfo.C
 $(OBJDIR)/bcdragwindow.o:  				      bcdragwindow.C
 $(OBJDIR)/bcfilebox.o:     				      bcfilebox.C
 $(OBJDIR)/bcipc.o: 	   				      bcipc.C
 $(OBJDIR)/bclistbox.o:     				      bclistbox.C
 $(OBJDIR)/bclistboxitem.o:     				      bclistboxitem.C
-$(OBJDIR)/bcmenubar.o:     				      bcmenubar.C
+$(OBJDIR)/bcmenu.o:                                           bcmenu.C
+$(OBJDIR)/bcmenubar.o:                                        bcmenubar.C
+$(OBJDIR)/bcmenuitem.o:                                       bcmenuitem.C
+$(OBJDIR)/bcmenupopup.o:                                      bcmenupopup.C
 $(OBJDIR)/bcmeter.o: 	   				      bcmeter.C
 $(OBJDIR)/bcpan.o: 	   				      bcpan.C
 $(OBJDIR)/bcpixmap.o: 	   				      bcpixmap.C
@@ -165,6 +190,7 @@ $(OBJDIR)/bctumble.o: 	   				      bctumble.C
 $(OBJDIR)/bcwindow.o: 	   				      bcwindow.C
 $(OBJDIR)/bcwindowbase.o:  				      bcwindowbase.C
 $(OBJDIR)/bcwindowdraw.o:  				      bcwindowdraw.C
+$(OBJDIR)/condition.o:  				      condition.C
 $(OBJDIR)/errorbox.o: 	   				      errorbox.C
 $(OBJDIR)/defaults.o: 	   				      defaults.C
 $(OBJDIR)/filesystem.o:    				      filesystem.C
@@ -174,9 +200,12 @@ $(OBJDIR)/sema.o: 	   				      sema.C
 $(OBJDIR)/stringfile.o:    				      stringfile.C
 $(OBJDIR)/test.o: 	   				      test.C
 $(OBJDIR)/test2.o: 	   				      test2.C
+$(OBJDIR)/test3.o: 	   				      test3.C
 $(OBJDIR)/testobject.o:                                       testobject.C
 $(OBJDIR)/thread.o: 	   				      thread.C
 $(OBJDIR)/timer.o: 	   				      timer.C
 $(OBJDIR)/units.o: 	   				      units.C
 $(OBJDIR)/vframe.o: 	   				      vframe.C
 $(OBJDIR)/workarounds.o:   				      workarounds.C
+
+

@@ -3,6 +3,7 @@
 #include "clipedit.h"
 #include "edl.h"
 #include "fonts.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
@@ -152,11 +153,11 @@ void ClipEditWindow::create_objects()
 	BC_TextBox *textbox;
 	BC_Title *title;
 
-	add_subwindow(title = new BC_Title(x1, y, "Title:"));
+	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
 	y += textbox->get_h() + 10;
-	add_subwindow(title = new BC_Title(x1, y, "Comments:"));
+	add_subwindow(title = new BC_Title(x1, y, _("Comments:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new ClipEditComments(this, 
 		x1, 

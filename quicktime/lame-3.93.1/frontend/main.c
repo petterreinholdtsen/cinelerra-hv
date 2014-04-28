@@ -20,7 +20,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/* $Id: main.c,v 1.1 2003/07/29 04:17:51 heroine Exp $ */
+/* $Id: main.c,v 1.1.1.1 2003/10/14 07:54:37 heroine Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

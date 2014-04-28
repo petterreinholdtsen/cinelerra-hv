@@ -10,7 +10,7 @@
  * even for Intel processors.
  */
 
-/* $Id: decode_i386.c,v 1.1 2003/07/29 04:17:52 heroine Exp $ */
+/* $Id: decode_i386.c,v 1.1.1.1 2003/10/14 07:54:38 heroine Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

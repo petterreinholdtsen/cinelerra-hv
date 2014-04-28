@@ -1,5 +1,6 @@
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "localsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -11,7 +12,6 @@
 #include "tracks.h"
 #include "units.h"
 #include "zoombar.h"
-
 
 
 
@@ -57,13 +57,23 @@ int ZoomBar::create_objects()
 	add_subwindow(to_value = new ToTextBox(mwindow, this, x, y));
 	x += to_value->get_w() + 5;
 
-	add_subwindow(playback_value = new BC_Title(x, 100, "--", MEDIUMFONT, RED));
+	update_formatting(from_value);
+	update_formatting(length_value);
+	update_formatting(to_value);
 
-	add_subwindow(zoom_value = new BC_Title(x, 100, "--", MEDIUMFONT, BLACK));
+	add_subwindow(playback_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, RED));
+
+	add_subwindow(zoom_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, BLACK));
 	update();
 	return 0;
 }
 
+
+void ZoomBar::update_formatting(BC_TextBox *dst)
+{
+	dst->set_separators(
+		Units::format_to_separators(mwindow->edl->session->time_format));
+}
 
 void ZoomBar::resize_event()
 {
@@ -87,6 +97,9 @@ void ZoomBar::redraw_time_dependancies()
 // Recalculate sample zoom menu
 	sample_zoom->update_menu();
 	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
+	update_formatting(from_value);
+	update_formatting(length_value);
+	update_formatting(to_value);
 	update_clocks();
 }
 

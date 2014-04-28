@@ -11,8 +11,8 @@ IntAuto::~IntAuto()
 
 int IntAuto::value_to_str(char *string, float value)
 {
-		if(value > 0) sprintf(string, "ON");
-		else sprintf(string, "OFF");
+		if(value > 0) sprintf(string, _("ON"));
+		else sprintf(string, _("OFF"));
 }
 
 void IntAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)

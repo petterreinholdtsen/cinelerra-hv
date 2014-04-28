@@ -15,12 +15,17 @@
 #include "theme.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 #include <string.h>
 
 Load::Load(MWindow *mwindow, MainMenu *mainmenu)
- : BC_MenuItem("Load files...", "o", 'o')
+ : BC_MenuItem(_("Load files..."), "o", 'o')
 { 
 	this->mwindow = mwindow;
 	this->mainmenu = mainmenu;
@@ -105,8 +110,10 @@ void LoadFileThread::run()
 			}
 		}
 
-		mwindow->defaults->update("DEFAULT_LOADPATH", window.get_path());
-		mwindow->defaults->update("LOAD_MODE", load_mode);
+		mwindow->defaults->update("DEFAULT_LOADPATH", 
+			window.get_submitted_path());
+		mwindow->defaults->update("LOAD_MODE", 
+			load_mode);
 	}
 
 // No file selected
@@ -115,7 +122,7 @@ void LoadFileThread::run()
 		return;
 	}
 
-	mwindow->undo->update_undo_before("load", LOAD_ALL);
+	mwindow->undo->update_undo_before(_("load"), LOAD_ALL);
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window();
 	result = mwindow->load_filenames(&path_list, load_mode);
@@ -144,7 +151,7 @@ LoadFileWindow::LoadFileWindow(MWindow *mwindow,
  		mwindow->gui->get_abs_cursor_y() - BC_WindowBase::get_resources()->filebox_h / 2,
 		init_directory, 
 		PROGRAM_NAME ": Load",
-		"Select files to load:", 
+		_("Select files to load:"), 
 		0,
 		0,
 		1,
@@ -183,11 +190,16 @@ int LoadFileWindow::resize_event(int w, int h)
 }
 
 
+
+
+
+
+
 NewTimeline::NewTimeline(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
  	y, 
 	window->thread->load_mode == LOAD_REPLACE,
-	"Replace current project.")
+	_("Replace current project."))
 {
 	this->window = window;
 }
@@ -204,7 +216,7 @@ NewConcatenate::NewConcatenate(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
  	y, 
 	window->thread->load_mode == LOAD_REPLACE_CONCATENATE,
-	"Replace current project and concatenate tracks.")
+	_("Replace current project and concatenate tracks."))
 {
 	this->window = window;
 }
@@ -221,7 +233,7 @@ AppendNewTracks::AppendNewTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
  	y, 
 	window->thread->load_mode == LOAD_NEW_TRACKS,
-	"Append in new tracks.")
+	_("Append in new tracks."))
 {
 	this->window = window;
 }
@@ -238,7 +250,7 @@ EndofTracks::EndofTracks(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
  	y, 
 	window->thread->load_mode == LOAD_CONCATENATE,
-	"Concatenate to existing tracks.")
+	_("Concatenate to existing tracks."))
 {
 	this->window = window;
 }
@@ -255,7 +267,7 @@ ResourcesOnly::ResourcesOnly(int x, int y, LoadFileWindow *window)
  : BC_Radial(x, 
  	y, 
 	window->thread->load_mode == LOAD_RESOURCESONLY,
-	"Create new resources only.")
+	_("Create new resources only."))
 {
 	this->window = window;
 }
@@ -309,17 +321,13 @@ int LoadPrevious::handle_event()
 	char *out_path;
 	int load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
 
-	mwindow->undo->update_undo_before("load previous", LOAD_ALL);
+	mwindow->undo->update_undo_before(_("load previous"), LOAD_ALL);
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
-//printf("LoadPrevious::LoadPrevious 1\n");
 	mwindow->load_filenames(&path_list, LOAD_REPLACE);
-//printf("LoadPrevious::LoadPrevious 2\n");
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
-//printf("LoadPrevious::LoadPrevious 3\n");
 	path_list.remove_all_objects();
-//printf("LoadPrevious::LoadPrevious 4\n");
 
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);
@@ -352,7 +360,7 @@ int LoadPrevious::set_path(char *path)
 
 
 LoadBackup::LoadBackup(MWindow *mwindow)
- : BC_MenuItem("Load backup")
+ : BC_MenuItem(_("Load backup"))
 {
 	this->mwindow = mwindow;
 }
@@ -370,7 +378,7 @@ int LoadBackup::handle_event()
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 	
-	mwindow->undo->update_undo_before("load backup", LOAD_ALL);
+	mwindow->undo->update_undo_before(_("load backup"), LOAD_ALL);
 	mwindow->load_filenames(&path_list, LOAD_REPLACE);
 	mwindow->edl->local_session->clip_title[0] = 0;
 	mwindow->set_filename("");

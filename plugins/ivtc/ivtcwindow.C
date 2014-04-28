@@ -2,6 +2,11 @@
 #include "ivtcwindow.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PLUGIN_THREAD_OBJECT(IVTCMain, IVTCThread, IVTCWindow)
 
@@ -15,9 +20,9 @@ IVTCWindow::IVTCWindow(IVTCMain *client, int x, int y)
 	x,
 	y,
 	210, 
-	200, 
+	230, 
 	210, 
-	200, 
+	230, 
 	0, 
 	0,
 	1)
@@ -32,35 +37,35 @@ IVTCWindow::~IVTCWindow()
 int IVTCWindow::create_objects()
 {
 	int x = 10, y = 10;
-	static char *patterns[] = 
-	{
-		"A  B  BC  CD  D",
-		"AB  BC  CD  DE  EF"
-	};
 	
-	add_tool(new BC_Title(x, y, "Pattern offset:"));
+	add_tool(new BC_Title(x, y, _("Pattern offset:")));
 	y += 20;
 	add_tool(frame_offset = new IVTCOffset(client, x, y));
 	y += 30;
 	add_tool(first_field = new IVTCFieldOrder(client, x, y));
-	y += 30;
-	add_tool(automatic = new IVTCAuto(client, x, y));
+//	y += 30;
+//	add_tool(automatic = new IVTCAuto(client, x, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Pattern:"));
+	add_subwindow(new BC_Title(x, y, _("Pattern:")));
 	y += 20;
 	for(int i = 0; i < TOTAL_PATTERNS; i++)
 	{
 		add_subwindow(pattern[i] = new IVTCPattern(client, 
 			this, 
 			i, 
-			patterns[i], 
+			pattern_text[i], 
 			x, 
 			y));
 		y += 20;
 	}
 	
+	if(client->config.pattern == IVTCConfig::AUTOMATIC)
+	{
+		frame_offset->disable();
+		first_field->disable();
+	}
 //	y += 30;
-//	add_tool(new BC_Title(x, y, "Field threshold:"));
+//	add_tool(new BC_Title(x, y, _("Field threshold:")));
 //	y += 20;
 //	add_tool(threshold = new IVTCAutoThreshold(client, x, y));
 	show_window();
@@ -93,7 +98,7 @@ int IVTCOffset::handle_event()
 
 
 IVTCFieldOrder::IVTCFieldOrder(IVTCMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.first_field, "Odd field first")
+ : BC_CheckBox(x, y, client->config.first_field, _("Odd field first"))
 {
 	this->client = client;
 }
@@ -109,7 +114,7 @@ int IVTCFieldOrder::handle_event()
 
 
 IVTCAuto::IVTCAuto(IVTCMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.automatic, "Automatic IVTC")
+ : BC_CheckBox(x, y, client->config.automatic, _("Automatic IVTC"))
 {
 	this->client = client;
 }
@@ -140,11 +145,22 @@ IVTCPattern::~IVTCPattern()
 }
 int IVTCPattern::handle_event()
 {
+	client->config.pattern = number;
+	if(number == IVTCConfig::AUTOMATIC)
+	{
+		window->frame_offset->disable();
+		window->first_field->disable();
+	}
+	else
+	{
+		window->frame_offset->enable();
+		window->first_field->enable();
+	}
+
 	for(int i = 0; i < TOTAL_PATTERNS; i++)
 	{
 		if(i != number) window->pattern[i]->update(0);
 	}
-	client->config.pattern = number;
 	update(1);
 	client->send_configure_change();
 	return 1;

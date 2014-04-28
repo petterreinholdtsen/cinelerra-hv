@@ -1,5 +1,3 @@
-CFLAGS += -I../burn 
-
 include ../../global_config
 
 OBJS = $(OBJDIR)/holo.o  \
@@ -7,6 +5,8 @@ OBJS = $(OBJDIR)/holo.o  \
 	../burn/$(OBJDIR)/effecttv.o
 
 OUTPUT = ../$(OBJDIR)/holo.plugin
+
+CFLAGS += -I../burn 
 
 include ../../plugin_config
 

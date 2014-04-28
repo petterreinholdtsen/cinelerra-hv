@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "bitspopup.h"
 #include "clip.h"
@@ -5,12 +6,19 @@
 #include "filesndfile.h"
 #include "mwindow.inc"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 FileSndFile::FileSndFile(Asset *asset, File *file)
  : FileBase(asset, file)
 {
 	temp_double = 0;
 	temp_allocated = 0;
 	fd_config.format = 0;
+	fileptr = 0;
+	fd = 0;
 }
 
 FileSndFile::~FileSndFile()
@@ -20,22 +28,21 @@ FileSndFile::~FileSndFile()
 
 int FileSndFile::check_sig(Asset *asset)
 {
-//printf("FileSndFile::check_sig 1\n");
 	int result = 0;
 	SF_INFO fd_config;
 	fd_config.format = 0;
-//printf("FileSndFile::check_sig 1\n");
-	SNDFILE *fd = sf_open_read(asset->path, &fd_config);
-//printf("FileSndFile::check_sig 1 %p\n", fd);
-
-	if(fd)
+	FILE *fileptr = fopen(asset->path, "r");
+	if(fileptr)
 	{
-		sf_close(fd);
-		result = 1;
+		SNDFILE *fd = sf_open_fd(fileptr, asset->path, SFM_READ, &fd_config, 0);
+		if(fd)
+		{
+			sf_close(fd);
+			result = 1;
+		}
+		fclose(fileptr);
 	}
-	else
-		result = 0;
-//printf("FileSndFile::check_sig 2\n");
+
 	return result;
 }
 
@@ -54,32 +61,48 @@ void FileSndFile::asset_to_format()
 	switch(asset->bits)
 	{
 		case BITSLINEAR8:
-		case BITSLINEAR16:
-		case BITSLINEAR24:
-			if(asset->format != FILE_PCM)
-			{
-				fd_config.format |= SF_FORMAT_PCM;
-			}
+			if(asset->signed_)
+				fd_config.format |= SF_FORMAT_PCM_S8;
 			else
-			{
-				if(asset->byte_order)
-					fd_config.format |= SF_FORMAT_PCM_LE;
-				else
-					fd_config.format |= SF_FORMAT_PCM_BE;
-			}
-			fd_config.pcmbitwidth = asset->bits;
-//printf("FileSndFile::asset_to_format 1 %x %d\n", fd_config.format, fd_config.pcmbitwidth);
+				fd_config.format |= SF_FORMAT_PCM_U8;
+			break;
+
+		case BITSLINEAR16:
+			fd_config.format |= SF_FORMAT_PCM_16;
+
+			if(asset->byte_order)
+				fd_config.format |= SF_ENDIAN_LITTLE;
+			else
+				fd_config.format |= SF_ENDIAN_BIG;
+			break;
+
+		case BITSLINEAR24:
+			fd_config.format |= SF_FORMAT_PCM_24;
+
+			if(asset->byte_order)
+				fd_config.format |= SF_ENDIAN_LITTLE;
+			else
+				fd_config.format |= SF_ENDIAN_BIG;
+			break;
+
+		case BITSLINEAR32:
+			fd_config.format |= SF_FORMAT_PCM_32;
+
+			if(asset->byte_order)
+				fd_config.format |= SF_ENDIAN_LITTLE;
+			else
+				fd_config.format |= SF_ENDIAN_BIG;
 			break;
 
 		case BITSULAW: 
 			fd_config.format |= SF_FORMAT_ULAW; 
-			fd_config.pcmbitwidth = 16;
+			fd_config.format |= SF_FORMAT_PCM_16;
 			break;
 
 		case BITSFLOAT: 
 //printf("FileSndFile::asset_to_format 1\n");
 			fd_config.format |= SF_FORMAT_FLOAT; 
-			fd_config.pcmbitwidth = 16;
+			fd_config.format |= SF_FORMAT_PCM_16;
 			break;
 
 		case BITS_ADPCM: 
@@ -87,7 +110,7 @@ void FileSndFile::asset_to_format()
 				fd_config.format |= SF_FORMAT_MS_ADPCM;
 			else
 				fd_config.format |= SF_FORMAT_IMA_ADPCM; 
-			fd_config.pcmbitwidth = 16;
+			fd_config.format |= SF_FORMAT_PCM_16;
 			break;
 	}
 
@@ -113,7 +136,6 @@ void FileSndFile::format_to_asset()
 				break;
 			case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
 			case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
-			case SF_FORMAT_AULE: asset->format = FILE_AU;   break;
 			case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
 			case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
 			case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
@@ -132,16 +154,17 @@ void FileSndFile::format_to_asset()
 		case SF_FORMAT_MS_ADPCM:
 			asset->bits = BITS_ADPCM;
 			break;
-		case SF_FORMAT_PCM:
-			asset->bits = fd_config.pcmbitwidth;
+		case SF_FORMAT_PCM_16:
+			asset->signed_ = 1;
+			asset->bits = 16;
 			break;
-		case SF_FORMAT_PCM_BE:
-			asset->byte_order = 0;
-			asset->bits = fd_config.pcmbitwidth;
+		case SF_FORMAT_PCM_24:
+			asset->signed_ = 1;
+			asset->bits = 24;
 			break;
-		case SF_FORMAT_PCM_LE:
-			asset->byte_order = 1;
-			asset->bits = fd_config.pcmbitwidth;
+		case SF_FORMAT_PCM_32:
+			asset->signed_ = 1;
+			asset->bits = 32;
 			break;
 		case SF_FORMAT_PCM_S8:
 			asset->signed_ = 1;
@@ -153,8 +176,18 @@ void FileSndFile::format_to_asset()
 			break;
 	}
 
+	switch(fd_config.format & SF_FORMAT_ENDMASK)
+	{
+		case SF_ENDIAN_LITTLE:
+			asset->byte_order = 1;
+			break;
+		case SF_ENDIAN_BIG:
+			asset->byte_order = 0;
+			break;
+	}
+
 	asset->audio_data = 1;
-	asset->audio_length = fd_config.samples;
+	asset->audio_length = fd_config.frames;
 	if(!asset->sample_rate)
 		asset->sample_rate = fd_config.samplerate;
 	asset->channels = fd_config.channels;
@@ -173,24 +206,33 @@ int FileSndFile::open_file(int rd, int wr)
 		if(asset->format == FILE_PCM)
 		{
 			asset_to_format();
-			fd = sf_open_read(asset->path, &fd_config);
-			format_to_asset();
+			fileptr = fopen(asset->path, "r");
+			if(fileptr)
+			{
+				fd = sf_open_fd(fileptr, asset->path, SFM_READ, &fd_config, 0);
+				if(fd) format_to_asset();
+			}
 		}
 		else
 		{
-			fd = sf_open_read(asset->path, &fd_config);
+			fileptr = fopen(asset->path, "r");
+			if(fileptr)
+			{
+				fd = sf_open_fd(fileptr, asset->path, SFM_READ, &fd_config, 0);
 // Doesn't calculate the length
-			format_to_asset();
+				if(fd) format_to_asset();
+			}
 		}
 	}
 	else
 	if(wr)
 	{
-//printf("FileSndFile::open_file 1\n");
 		asset_to_format();
-//printf("FileSndFile::open_file 1\n");
-		fd = sf_open_write(asset->path, &fd_config);
-//printf("FileSndFile::open_file 2 %p\n", fd);
+		fileptr = fopen(asset->path, "w");
+		if(fileptr)
+		{
+			fd = sf_open_fd(fileptr, asset->path, SFM_WRITE, &fd_config, 0);
+		}
 	}
 
 	if(!fd) 
@@ -205,8 +247,10 @@ int FileSndFile::open_file(int rd, int wr)
 
 int FileSndFile::close_file()
 {
-//printf("FileSndFile::close_file 1\n");
-	sf_close(fd);
+	if(fd) sf_close(fd);
+	fd = 0;
+	if(fileptr) fclose(fileptr);
+	fileptr = 0;
 	FileBase::close_file();
 	fd_config.format = 0;
 	return 0;
@@ -214,7 +258,6 @@ int FileSndFile::close_file()
 
 int FileSndFile::set_audio_position(int64_t sample)
 {
-//printf("FileSndFile::set_audio_position %ld\n", sample);
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
 	{
@@ -236,10 +279,8 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 	if(!buffer)
 		printf("FileSndFile::read_samples buffer=%p\n", buffer);
 
-//printf("FileSndFile::read_samples 1 current_sample=%d len=%d\n", file->current_sample, len);
 	if(temp_allocated && temp_allocated < len)
 	{
-//printf("FileSndFile::read_samples 1\n");
 		delete [] temp_double;
 		temp_double = 0;
 		temp_allocated = 0;
@@ -248,19 +289,15 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 	if(!temp_allocated)
 	{
 		temp_allocated = len;
-//printf("FileSndFile::read_samples 2\n");
 		temp_double = new double[len * asset->channels];
 	}
 
-//printf("FileSndFile::read_samples 3\n");
-	result = !sf_read_double(fd, temp_double, len * asset->channels, 1);
-//printf("FileSndFile::read_samples 4\n");
+	result = !sf_read_double(fd, temp_double, len * asset->channels);
 
 	if(result)
 		printf("FileSndFile::read_samples fd=%p temp_double=%p len=%d asset=%p asset->channels=%d\n",
 			fd, temp_double, len, asset, asset->channels);
 
-//printf("FileSndFile::read_samples 4\n");
 // Extract single channel
 	for(int i = 0, j = file->current_channel; 
 		i < len;
@@ -268,8 +305,8 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 	{
 		buffer[i] = temp_double[j];
 	}
-//printf("FileSndFile::read_samples 6\n");
 
+//printf("FileSndFile::read_samples %f %f %f %f\n", buffer[0],buffer[1],buffer[2],buffer[3]);
 	return result;
 }
 
@@ -306,7 +343,7 @@ int FileSndFile::write_samples(double **buffer, int64_t len)
 		}
 	}
 	
-	result = !sf_writef_double(fd, temp_double, len, 1);
+	result = !sf_writef_double(fd, temp_double, len);
 
 	return result;
 }
@@ -352,7 +389,7 @@ int SndFileConfig::create_objects()
 		case FILE_WAV:
 		case FILE_PCM:
 		case FILE_AIFF:
-			add_tool(new BC_Title(x, y, "Compression:"));
+			add_tool(new BC_Title(x, y, _("Compression:")));
 			y += 25;
 			if(asset->format == FILE_WAV)
 				bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 1, 1, 0);
@@ -365,13 +402,13 @@ int SndFileConfig::create_objects()
 
 	x = 10;
 	if(asset->format != FILE_AU)
-		add_subwindow(new BC_CheckBox(x, y, &asset->dither, "Dither"));
+		add_subwindow(new BC_CheckBox(x, y, &asset->dither, _("Dither")));
 	y += 30;
 	if(asset->format == FILE_PCM)
 	{
-		add_subwindow(new BC_CheckBox(x, y, &asset->signed_, "Signed"));
+		add_subwindow(new BC_CheckBox(x, y, &asset->signed_, _("Signed")));
 		y += 35;
-		add_subwindow(new BC_Title(x, y, "Byte order:"));
+		add_subwindow(new BC_Title(x, y, _("Byte order:")));
 		add_subwindow(hilo = new SndFileHILO(this, x + 100, y));
 		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
 	}
@@ -388,7 +425,7 @@ int SndFileConfig::close_event()
 
 
 SndFileHILO::SndFileHILO(SndFileConfig *gui, int x, int y)
- : BC_Radial(x, y, gui->asset->byte_order == 0, "Hi Lo")
+ : BC_Radial(x, y, gui->asset->byte_order == 0, _("Hi Lo"))
 {
 	this->gui = gui;
 }
@@ -403,7 +440,7 @@ int SndFileHILO::handle_event()
 
 
 SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
- : BC_Radial(x, y, gui->asset->byte_order == 1, "Lo Hi")
+ : BC_Radial(x, y, gui->asset->byte_order == 1, _("Lo Hi"))
 {
 	this->gui = gui;
 }

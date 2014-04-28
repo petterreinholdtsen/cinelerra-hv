@@ -2,17 +2,12 @@ include global_config
 
 # system tests
 
-HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
-
-ifeq ($(HAVE_NASM), n)
-$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
-endif
+SNDFILE_DIR := $(shell expr libsndfile* )
 
 
 
 DIRS := \
 	libmpeg3 \
-	libsndfile \
 	quicktime \
 	guicast \
 	xmovie \
@@ -21,6 +16,7 @@ DIRS := \
 
 
 all:
+	$(MAKE) -f build/Makefile.sndfile
 	@ for i in $(DIRS) ; \
 	do \
 		 $(MAKE) -C $$i ; \

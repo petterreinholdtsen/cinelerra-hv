@@ -1,16 +1,19 @@
-#include "assets.h"
+#include "asset.h"
+#include "bcsignals.h"
 #include "brender.h"
 #include "clip.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mainsession.h"
+#include "mtimebar.h"
 #include "mutex.h"
-#include "mwindow.h"
 #include "mwindowgui.h"
+#include "mwindow.h"
+#include "packagedispatcher.h"
 #include "preferences.h"
 #include "renderfarm.h"
-#include "packagedispatcher.h"
-#include "mtimebar.h"
 #include "tracks.h"
 #include "units.h"
 
@@ -20,6 +23,8 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+
 
 extern "C"
 {
@@ -35,10 +40,9 @@ BRender::BRender(MWindow *mwindow)
  : Thread()
 {
 	this->mwindow = mwindow;
-	map_lock = new Mutex;
-	completion_lock = new Mutex;
+	map_lock = new Mutex("BRender::map_lock");
+	completion_lock = new Condition(0, "BRender::completion_lock");
 	timer = new Timer;
-	completion_lock->lock();
 	socket_path[0] = 0;
 	thread = 0;
 	master_pid = -1;
@@ -107,7 +111,7 @@ void BRender::run()
 	char string[BCTEXTLEN];
 	int size;
 	FILE *fd;
-
+printf("BRender::run 1 %d\n", getpid());
 
 
 // Construct executable command with the designated filesystem port
@@ -118,7 +122,7 @@ void BRender::run()
 		fclose(fd);
 	}
 	else
-		perror("BRender::fork_background: can't open /proc/self/cmdline.\n");
+		perror(_("BRender::fork_background: can't open /proc/self/cmdline.\n"));
 
 	arguments[0] = new char[strlen(string) + 1];
 	strcpy(arguments[0], string);
@@ -178,7 +182,7 @@ void BRender::stop()
 //printf("BRender::stop 1\n");
 	thread->send_command(new_command);
 //printf("BRender::stop 1\n");
-	completion_lock->lock();
+	completion_lock->lock("BRender::stop");
 //printf("BRender::stop 2\n");
 }
 
@@ -187,7 +191,7 @@ void BRender::stop()
 int BRender::get_last_contiguous(int64_t brender_start)
 {
 	int result;
-	map_lock->lock();
+	map_lock->lock("BRender::get_last_contiguous");
 	if(map_valid)
 		result = last_contiguous;
 	else
@@ -198,7 +202,7 @@ int BRender::get_last_contiguous(int64_t brender_start)
 
 void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 {
-	map_lock->lock();
+	map_lock->lock("BRender::allocate_map");
 	unsigned char *old_map = map;
 	map = new unsigned char[end];
 	if(old_map)
@@ -223,13 +227,12 @@ void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 void BRender::set_video_map(int64_t position, int value)
 {
 	int update_gui = 0;
-	map_lock->lock();
+	map_lock->lock("BRender::set_video_map");
 
-//printf("BRender::set_video_map 1 %d %d\n", position, value);
 
 	if(value == BRender::NOT_SCANNED)
 	{
-		printf("BRender::set_video_map called to set NOT_SCANNED\n");
+		printf(_("BRender::set_video_map called to set NOT_SCANNED\n"));
 	}
 
 // Preroll
@@ -246,13 +249,12 @@ void BRender::set_video_map(int64_t position, int value)
 	else
 // Obsolete EDL
 	{
-		printf("BRender::set_video_map %d: attempt to set beyond end of map %d.\n",
+		printf(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
 			position,
 			map_size);
 	}
 
 // Maintain last contiguous here to reduce search time
-//printf("BRender::set_video_map 1 %d %d\n", position, last_contiguous + 1);
 	if(position == last_contiguous)
 	{
 		int i;
@@ -266,7 +268,6 @@ void BRender::set_video_map(int64_t position, int value)
 
 		if(timer->get_difference() > 1000 || last_contiguous >= map_size)
 		{
-//printf("BRender::set_video_map 2\n");
 			update_gui = 1;
 			timer->update();
 		}
@@ -276,7 +277,7 @@ void BRender::set_video_map(int64_t position, int value)
 
 	if(update_gui)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("BRender::set_video_map");
 		mwindow->gui->timebar->update(1, 0);
 		mwindow->gui->timebar->flush();
 		mwindow->gui->unlock_window();
@@ -342,10 +343,9 @@ BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
 {
 	this->mwindow = mwindow;
 	this->brender = brender;
-	input_lock = new Mutex;
-	thread_lock = new Mutex;
-	total_frames_lock = new Mutex;
-	input_lock->lock();
+	input_lock = new Condition(0, "BRenderThread::input_lock");
+	thread_lock = new Mutex("BRenderThread::thread_lock");
+	total_frames_lock = new Mutex("BRenderThread::total_frames_lock");
 	command_queue = 0;
 	command = 0;
 	done = 0;
@@ -356,7 +356,7 @@ BRenderThread::BRenderThread(MWindow *mwindow, BRender *brender)
 
 BRenderThread::~BRenderThread()
 {
-	thread_lock->lock();
+	thread_lock->lock("BRenderThread::~BRenderThread");
 	done = 1;
 	input_lock->unlock();
 	thread_lock->unlock();
@@ -377,7 +377,9 @@ void BRenderThread::initialize()
 
 void BRenderThread::send_command(BRenderCommand *command)
 {
-	thread_lock->lock();
+TRACE("BRenderThread::send_command 1");
+	thread_lock->lock("BRenderThread::send_command");
+TRACE("BRenderThread::send_command 10");
 
 	if(this->command_queue)
 	{
@@ -385,6 +387,7 @@ void BRenderThread::send_command(BRenderCommand *command)
 		this->command_queue = 0;
 	}
 	this->command_queue = command;
+TRACE("BRenderThread::send_command 20");
 
 
 	input_lock->unlock();
@@ -393,7 +396,7 @@ void BRenderThread::send_command(BRenderCommand *command)
 
 int BRenderThread::is_done(int do_lock)
 {
-	if(do_lock) thread_lock->lock();
+	if(do_lock) thread_lock->lock("BRenderThread::is_done");
 	int result = done;
 	if(do_lock) thread_lock->unlock();
 	return result;
@@ -404,7 +407,7 @@ void BRenderThread::run()
 	while(!is_done(1))
 	{
 		BRenderCommand *new_command = 0;
-		thread_lock->lock();
+		thread_lock->lock("BRenderThread::run 1");
 
 // Got new command
 		if(command_queue)
@@ -415,8 +418,8 @@ void BRenderThread::run()
 // Wait for new command
 		{
 			thread_lock->unlock();
-			input_lock->lock();
-			thread_lock->lock();
+			input_lock->lock("BRenderThread::run 2");
+			thread_lock->lock("BRenderThread::run 3");
 		}
 
 // Pull the command off
@@ -459,7 +462,7 @@ void BRenderThread::run()
 
 			stop();
 //printf("BRenderThread::run 4\n");
-			brender->completion_lock->lock();
+			brender->completion_lock->lock("BRenderThread::run 4");
 //printf("BRenderThread::run 5\n");
 
 			if(new_command->edl->tracks->total_playable_vtracks())
@@ -560,7 +563,8 @@ end_frame);
 			BRENDER_FARM, 
 			preferences->brender_asset, 
 			(double)start_frame / command->edl->session->frame_rate, 
-			(double)end_frame / command->edl->session->frame_rate);
+			(double)end_frame / command->edl->session->frame_rate,
+			0);
 
 //sleep(1);
 //printf("BRenderThread::start 3 %d\n", result);

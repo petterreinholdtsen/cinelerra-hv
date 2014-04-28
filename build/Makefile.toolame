@@ -27,6 +27,7 @@ OBJS := \
 
 OUTPUT = $(DIR)/$(OBJDIR)/toolame.a
 
+
 CFLAGS += -I$(DIR) -DNEWENCODE -DNEWATAN -DNDEBUG -DINLINE=inline  
 
 

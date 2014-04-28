@@ -1506,7 +1506,6 @@ void ScaleUnit::process_package(LoadPackage *package)
 			&& engine->w_scale > 1 && 
 			engine->h_scale > 1))
 	{
-	
 		switch(engine->scale_input->get_color_model())
 		{
 			case BC_RGB888:
@@ -2581,7 +2580,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 { \
 	temp_type opacity = (temp_type)(alpha * max + 0.5); \
 	temp_type transparency = max - opacity; \
-	temp_type maxsq = ((temp_type)max) * max; \
+	temp_type max_squared = ((temp_type)max) * max; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2597,23 +2596,20 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 		{ \
 			temp_type pixel_opacity, pixel_transparency; \
 			pixel_opacity = opacity * in_row[3]; \
-			pixel_transparency = (temp_type)maxsq - pixel_opacity; \
+			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
 		 \
 		 \
 		 	temp_type r,g,b; \
-			r = ((temp_type)in_row[0] * pixel_opacity + \
+			output[0] = ((temp_type)in_row[0] * pixel_opacity + \
 				(temp_type)output[0] * pixel_transparency) / max / max; \
-			output[0] = (type)CLIP(r, 0, max); \
-			g = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
+			output[1] = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
 				((temp_type)output[1] - chroma_offset) * pixel_transparency) \
 				/ max / max + \
 				chroma_offset; \
-			output[1] = (type)CLIP(g, 0, max); \
-			b = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
+			output[2] = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
 				((temp_type)output[2] - chroma_offset) * pixel_transparency) \
 				/ max / max + \
 				chroma_offset; \
-			output[2] = (type)CLIP(b, 0, max); \
 			output[3] = (type)(in_row[3] > output[3] ? in_row[3] : output[3]); \
  \
 			in_row += 4; \
@@ -2625,8 +2621,9 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 // components is always 3
 #define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset) \
 { \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
-	temp_type transparency = max - opacity; \
+	const int bits = sizeof(type) * 8; \
+	temp_type opacity = (temp_type)(alpha * ((temp_type)1 << bits) + 0.5); \
+	temp_type transparency = ((temp_type)1 << bits) - opacity; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2640,7 +2637,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
 		for(int j = 0; j < w; j++) /* w = 3x width! */ \
 		{ \
-			*output = (type)CLIP(((temp_type)*in_row * opacity + *output * transparency) / max, 0, max); \
+			*output = ((temp_type)*in_row * opacity + *output * transparency) >> bits; \
 			in_row ++; \
 			output ++; \
 		} \

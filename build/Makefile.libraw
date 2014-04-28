@@ -12,6 +12,7 @@ OBJS := \
 
 OUTPUT := $(DIR)/$(OBJDIR)/libraw1394.a
 
+
 CFLAGS += -I$(DIR)/src -I$(DIR)
 
 

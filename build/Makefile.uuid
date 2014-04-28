@@ -19,6 +19,7 @@ OBJS := \
 
 
 OUTPUT = $(DIR)/$(OBJDIR)/libuuid.a
+
 CFLAGS += -I$(DIR) -I.
 
 $(shell sh -c 'mkdir -p $(DIR)/$(OBJDIR)' )

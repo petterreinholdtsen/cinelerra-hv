@@ -2,10 +2,12 @@
 #include "bcresources.h"
 #include "bcwindowbase.h"
 #include "colormodels.h"
+#include "language.h"
 #include "vframe.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/Xutil.h>
+
 
 
 
@@ -39,9 +41,9 @@ int BC_Capture::init_window(char *display_path)
 	if(display_path && display_path[0] == 0) display_path = NULL;
 	if((display = XOpenDisplay(display_path)) == NULL)
 	{
-  		printf("cannot connect to X server.\n");
+  		printf(_("cannot connect to X server.\n"));
   		if(getenv("DISPLAY") == NULL)
-    		printf("'DISPLAY' environment variable not set.\n");
+    		printf(_("'DISPLAY' environment variable not set.\n"));
   		exit(-1);
 		return 1;
  	}

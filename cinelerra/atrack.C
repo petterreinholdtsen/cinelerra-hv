@@ -2,7 +2,6 @@
 #include "aedits.h"
 #include "amodule.h"
 #include "apluginset.h"
-#include "assets.h"
 #include "atrack.h"
 #include "autoconf.h"
 #include "aautomation.h"
@@ -15,6 +14,7 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "panautos.h"
@@ -23,6 +23,8 @@
 #include "tracks.h"
 
 #include <string.h>
+
+
 
 ATrack::ATrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
@@ -114,7 +116,7 @@ void ATrack::set_default_title()
 	{
 		if(current->data_type == TRACK_AUDIO) i++;
 	}
-	sprintf(title, "Audio %d", i);
+	sprintf(title, _("Audio %d"), i);
 }
 
 int64_t ATrack::to_units(double position, int round)

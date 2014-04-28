@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: illustrate seeking, and test it too
- last mod: $Id: seeking_example.c,v 1.1 2002/07/22 12:33:53 myrina Exp $
+ last mod: $Id: seeking_example.c,v 1.1.1.1 2003/10/14 07:54:35 heroine Exp $
 
  ********************************************************************/
 

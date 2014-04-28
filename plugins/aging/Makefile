@@ -1,4 +1,3 @@
-CFLAGS += -I../burn
 
 include ../../global_config
 
@@ -7,6 +6,7 @@ OBJS = $(OBJDIR)/aging.o  \
 	../burn/$(OBJDIR)/effecttv.o
 
 OUTPUT = ../$(OBJDIR)/aging.plugin
+CFLAGS += -I../burn
 
 include ../../plugin_config
 

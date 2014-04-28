@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "clipedit.h"
 #include "defaults.h"
@@ -5,6 +6,7 @@
 #include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "mwindow.h"
@@ -197,14 +199,14 @@ void VWindow::change_source(EDL *edl)
 			mwindow->edl->clips.number_of(edl);
 	}
 	else
-		gui->change_source(edl, "Viewer");
+		gui->change_source(edl, _("Viewer"));
 }
 
 
 void VWindow::remove_source()
 {
 	delete_edl();
-	gui->change_source(0, "Viewer");
+	gui->change_source(0, _("Viewer"));
 }
 
 void VWindow::change_source(char *folder, int item)

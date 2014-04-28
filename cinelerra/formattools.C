@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "guicast.h"
 #include "file.h"
 #include "formattools.h"
@@ -7,6 +7,11 @@
 #include "preferences.h"
 #include "theme.h"
 #include <string.h>
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 FormatTools::FormatTools(MWindow *mwindow,
 				BC_WindowBase *window, 
@@ -22,6 +27,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	aparams_thread = 0;
 	vparams_thread = 0;
 	channels_tumbler = 0;
+	w = 0;
 }
 
 FormatTools::~FormatTools()
@@ -88,7 +94,7 @@ int FormatTools::create_objects(int &init_x,
 	}
 
 //printf("FormatTools::create_objects 1\n");
-	window->add_subwindow(path_textbox = new FormatPathText(x, y, this, asset));
+	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
 	x += 305;
 	window->add_subwindow(path_button = new BrowseButton(
 		mwindow,
@@ -97,16 +103,17 @@ int FormatTools::create_objects(int &init_x,
 		x, 
 		y, 
 		asset->path,
-		"Output to file",
-		"Select a file to write to:",
+		_("Output to file"),
+		_("Select a file to write to:"),
 		0));
 
+	w = x + path_button->get_w() + 5;
 //printf("FormatTools::create_objects 2\n");
 	x -= 305;
 	y += 35;
 
 //printf("FormatTools::create_objects 3\n");
-	window->add_subwindow(format_title = new BC_Title(x, y, "File Format:"));
+	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
 	window->add_subwindow(format_text = new BC_TextBox(x, 
 		y, 
@@ -116,8 +123,7 @@ int FormatTools::create_objects(int &init_x,
 	x += format_text->get_w();
 	window->add_subwindow(format_button = new FormatFormat(x, 
 		y, 
-		this, 
-		asset));
+		this));
 	format_button->create_objects();
 
 //printf("FormatTools::create_objects 4\n");
@@ -125,7 +131,7 @@ int FormatTools::create_objects(int &init_x,
 	y += format_button->get_h() + 10;
 	if(do_audio)
 	{
-		window->add_subwindow(audio_title = new BC_Title(x, y, "Audio:", LARGEFONT, RED));
+		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT, RED));
 		x += 80;
 		window->add_subwindow(aparams_button = new FormatAParams(mwindow, this, x, y));
 		x += aparams_button->get_w() + 10;
@@ -140,9 +146,9 @@ int FormatTools::create_objects(int &init_x,
 // Audio channels only used for recording.
 		if(prompt_audio_channels)
 		{
-			window->add_subwindow(channels_title = new BC_Title(x, y, "Number of audio channels to record:"));
+			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
 			x += 260;
-			window->add_subwindow(channels_button = new FormatChannels(x, y, asset));
+			window->add_subwindow(channels_button = new FormatChannels(x, y, this));
 			x += channels_button->get_w() + 5;
 			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
 			y += channels_button->get_h() + 20;
@@ -158,7 +164,7 @@ int FormatTools::create_objects(int &init_x,
 	{
 
 //printf("FormatTools::create_objects 8\n");
-		window->add_subwindow(video_title = new BC_Title(x, y, "Video:", LARGEFONT, RED));
+		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
 		x += 80;
 		if(prompt_video_compression)
 		{
@@ -195,6 +201,43 @@ int FormatTools::create_objects(int &init_x,
 
 	init_y = y;
 	return 0;
+}
+
+int FormatTools::handle_event()
+{
+	return 0;
+}
+
+Asset* FormatTools::get_asset()
+{
+	return asset;
+}
+
+void FormatTools::update(Asset *asset, int *strategy)
+{
+	this->asset = asset;
+	this->strategy = strategy;
+
+	path_textbox->update(asset->path);
+	format_text->update(File::formattostr(plugindb, asset->format));
+	if(do_audio && audio_switch) audio_switch->update(asset->audio_data);
+	if(do_video && video_switch) video_switch->update(asset->video_data);
+	if(strategy)
+	{
+		multiple_files->update(strategy);
+	}
+	close_format_windows();
+}
+
+void FormatTools::close_format_windows()
+{
+	if(aparams_thread) aparams_thread->file->close_window();
+	if(vparams_thread) vparams_thread->file->close_window();
+}
+
+int FormatTools::get_w()
+{
+	return w;
 }
 
 void FormatTools::reposition_window(int &init_x, int &init_y)
@@ -309,7 +352,7 @@ FormatAParams::FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y
  : BC_Button(x, y, mwindow->theme->wrench_data)
 {
 	this->format = format;
-	set_tooltip("Configure audio compression");
+	set_tooltip(_("Configure audio compression"));
 }
 FormatAParams::~FormatAParams() 
 {
@@ -323,7 +366,7 @@ FormatVParams::FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y
  : BC_Button(x, y, mwindow->theme->wrench_data)
 { 
 	this->format = format; 
-	set_tooltip("Configure video compression");
+	set_tooltip(_("Configure video compression"));
 }
 FormatVParams::~FormatVParams() 
 {
@@ -340,10 +383,12 @@ FormatAThread::FormatAThread(FormatTools *format)
 	this->format = format; 
 	file = new File;
 }
+
 FormatAThread::~FormatAThread() 
 {
 	delete file;
 }
+
 void FormatAThread::run()
 {
 	file->get_options(format->window, 
@@ -365,10 +410,12 @@ FormatVThread::FormatVThread(FormatTools *format,
 	this->format = format;
 	file = new File;
 }
+
 FormatVThread::~FormatVThread() 
 {
 	delete file;
 }
+
 void FormatVThread::run()
 {
 	file->get_options(format->window, 
@@ -379,17 +426,18 @@ void FormatVThread::run()
 		lock_compressor);
 }
 
-FormatPathText::FormatPathText(int x, int y, FormatTools *format, Asset *asset)
- : BC_TextBox(x, y, 300, 1, asset->path) 
+FormatPathText::FormatPathText(int x, int y, FormatTools *format)
+ : BC_TextBox(x, y, 300, 1, format->asset->path) 
 {
 	this->format = format; 
-	this->asset = asset; 
 }
 FormatPathText::~FormatPathText() 
-{}
+{
+}
 int FormatPathText::handle_event() 
 {
-	strcpy(asset->path, get_text());
+	strcpy(format->asset->path, get_text());
+	format->handle_event();
 }
 
 
@@ -399,7 +447,7 @@ FormatAudio::FormatAudio(int x, int y, FormatTools *format, int default_)
  : BC_CheckBox(x, 
  	y, 
 	default_, 
-	(char*)(format->recording ? "Record audio tracks" : "Render audio tracks"))
+	(char*)(format->recording ? _("Record audio tracks") : _("Render audio tracks")))
 { 
 	this->format = format; 
 }
@@ -414,7 +462,7 @@ FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
  : BC_CheckBox(x, 
  	y, 
 	default_, 
-	(char*)(format->recording ? "Record video tracks" : "Render video tracks"))
+	(char*)(format->recording ? _("Record video tracks") : _("Render video tracks")))
 {
 this->format = format; 
 }
@@ -429,15 +477,13 @@ int FormatVideo::handle_event()
 
 FormatFormat::FormatFormat(int x, 
 	int y, 
-	FormatTools *format, 
-	Asset *asset)
+	FormatTools *format)
  : FormatPopup(format->plugindb, 
  	x, 
 	y,
 	format->use_brender)
 { 
 	this->format = format; 
-	this->asset = asset; 
 }
 FormatFormat::~FormatFormat() 
 {
@@ -446,29 +492,35 @@ int FormatFormat::handle_event()
 {
 	if(get_selection(0, 0) >= 0)
 	{
-		asset->format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
-		format->format_text->update(get_selection(0, 0)->get_text());
-//printf("FormatFormat::handle_event %d %s\n", asset->format, get_selection(0, 0)->get_text());
+		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
+		if(new_format != format->asset->format)
+		{
+			format->asset->format = new_format;
+			format->format_text->update(get_selection(0, 0)->get_text());
+			format->close_format_windows();
+		}
 	}
 	return 1;
 }
 
 
 
-FormatChannels::FormatChannels(int x, int y, Asset *asset)
- : BC_TextBox(x, y, 100, 1, asset->channels) 
+FormatChannels::FormatChannels(int x, int y, FormatTools *format)
+ : BC_TextBox(x, y, 100, 1, format->asset->channels) 
 { 
- 	this->asset = asset; 
+ 	this->format = format; 
 }
-FormatChannels::~FormatChannels() {}
+FormatChannels::~FormatChannels() 
+{
+}
 int FormatChannels::handle_event() 
 {
-	asset->channels = atol(get_text());
+	format->asset->channels = atol(get_text());
 	return 1;
 }
 
 FormatToTracks::FormatToTracks(int x, int y, int *output)
- : BC_CheckBox(x, y, *output, "Overwrite project with output")
+ : BC_CheckBox(x, y, *output, _("Overwrite project with output"))
 { 
 	this->output = output; 
 }
@@ -486,7 +538,7 @@ FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
  : BC_CheckBox(x, 
  	y, 
 	(*output == FILE_PER_LABEL) || (*output == FILE_PER_LABEL_FARM), 
-	"Create new file at each label")
+	_("Create new file at each label"))
 { 
 	this->output = output;
 	this->mwindow = mwindow;
@@ -511,6 +563,16 @@ int FormatMultiple::handle_event()
 			*output = SINGLE_PASS;
 	}
 	return 1;
+}
+
+void FormatMultiple::update(int *output)
+{
+	this->output = output;
+	if(*output == FILE_PER_LABEL_FARM ||
+		*output ==FILE_PER_LABEL)
+		set_value(1);
+	else
+		set_value(0);
 }
 
 

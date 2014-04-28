@@ -1,5 +1,7 @@
 #include "apanel.h"
 #include "cwindowgui.h"
+#include "language.h"
+
 
 APanel::APanel(MWindow *mwindow, CWindowGUI *subwindow, int x, int y, int w, int h)
 {
@@ -21,11 +23,11 @@ int APanel::create_objects()
 	char string[BCTEXTLEN];
 	int x1 = x;
 
-	subwindow->add_subwindow(new BC_Title(x, y, "Automation"));
+	subwindow->add_subwindow(new BC_Title(x, y, _("Automation")));
 	y += 20;
 	for(int i = 0; i < PLUGINS; i++)
 	{
-		sprintf(string, "Plugin %d", i + 1);
+		sprintf(string, _("Plugin %d"), i + 1);
 		subwindow->add_subwindow(new BC_Title(x, y, string, SMALLFONT));
 		subwindow->add_subwindow(plugin_autos[i] = new APanelPluginAuto(mwindow, this, x, y + 20));
 		if(x == x1)
@@ -64,7 +66,7 @@ int APanelPluginAuto::handle_event()
 }
 
 APanelMute::APanelMute(MWindow *mwindow, APanel *gui, int x, int y)
- : BC_CheckBox(x, y, 0, "Mute")
+ : BC_CheckBox(x, y, 0, _("Mute"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -76,7 +78,7 @@ int APanelMute::handle_event()
 
 
 APanelPlay::APanelPlay(MWindow *mwindow, APanel *gui, int x, int y)
- : BC_CheckBox(x, y, 1, "Play")
+ : BC_CheckBox(x, y, 1, _("Play"))
 {
 	this->mwindow = mwindow;
 	this->gui = gui;

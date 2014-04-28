@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "bitspopup.h"
 #include "byteorder.h"
 #include "edit.h"
@@ -8,6 +8,39 @@
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
+#if 0
+N_("MPEG-4")
+N_("Heroine 60")
+N_("Microsoft MPEG-4")
+N_("DV")
+N_("PNG")
+N_("PNG with Alpha")
+N_("Uncompressed RGB")
+N_("Uncompressed RGBA")
+N_("YUV 4:2:0 Planar")
+N_("Component Video")
+N_("YUV 4:1:1 Packed")
+N_("Component Y'CbCr 8-bit 4:4:4")
+N_("Component Y'CbCrA 8-bit 4:4:4:4")
+N_("Component Y'CbCr 10-bit 4:4:4")
+N_("JPEG Photo")
+N_("Motion JPEG A")
+
+
+N_("Twos complement")
+N_("Unsigned")
+N_("IMA-4")
+N_("U-Law")
+N_("Vorbis")
+N_("MP3")
+#endif
 
 #define DIVX_NAME "MPEG-4"
 #define HV60_NAME "Heroine 60"
@@ -134,7 +167,7 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
-		printf("FileMOV::open_file %s: No such file or directory\n", asset->path);
+		printf(_("FileMOV::open_file %s: No such file or directory\n"), asset->path);
 		return 1;
 	}
 
@@ -203,7 +236,7 @@ void FileMOV::asset_to_format()
 	fix_codecs(asset);
 
 // Fix up the Quicktime file.
-	quicktime_set_copyright(fd, "Made with Cinelerra for Linux");
+	quicktime_set_copyright(fd, _("Made with Cinelerra for Linux"));
 	quicktime_set_info(fd, "Quicktime for Linux");
 
 	if(asset->audio_data)
@@ -355,6 +388,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
 			break;
+		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_COMPRESSED;
 			return BC_YUV422P;
@@ -441,7 +475,7 @@ int FileMOV::set_audio_position(int64_t x)
 int FileMOV::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
-//printf("FileMOV::set_video_position 1 %d %d\n", x, asset->video_length);
+//printf("FileMOV::set_video_position 1 %lld %lld %d\n", x, asset->video_length, file->current_layer);
 	if(x >= 0 && x < asset->video_length)
 		return quicktime_set_video_position(fd, x, file->current_layer);
 	else
@@ -721,9 +755,10 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 // Write the frames as they're finished
 			for(j = 0; j < len; j++)
 			{
+//printf("filemov 1\n");
 				threadframes.values[j]->completion_lock.lock();
 				threadframes.values[j]->completion_lock.unlock();
-//printf("filemov 1\n");
+//printf("filemov 10 %p %d\n", threadframes.values[j]->output, threadframes.values[j]->output_size);
 				if(!result)
 				{
 					result = quicktime_write_frame(fd, 
@@ -731,6 +766,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 						threadframes.values[j]->output_size,
 						i);
 				}
+//printf("filemov 20\n");
 			}
 		}
 
@@ -864,6 +900,8 @@ int FileMOV::read_raw(VFrame *frame,
 {
 	int64_t i, color_channels, result = 0;
 	if(!fd) return 0;
+
+//printf("FileMOV::read_raw 1\n");
 	quicktime_set_video_position(fd, file->current_frame, file->current_layer);
 // Develop importing strategy
 	switch(frame->get_color_model())
@@ -934,29 +972,29 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 
 char* FileMOV::strtocompression(char *string)
 {
-	if(!strcasecmp(string, DIVX_NAME)) return QUICKTIME_DIVX;
-	if(!strcasecmp(string, HV60_NAME)) return QUICKTIME_HV60;
-	if(!strcasecmp(string, DIV3_NAME)) return QUICKTIME_DIV3;
-	if(!strcasecmp(string, DV_NAME)) return QUICKTIME_DV;
-	if(!strcasecmp(string, PNG_NAME)) return QUICKTIME_PNG;
-	if(!strcasecmp(string, PNGA_NAME)) return MOV_PNGA;
-	if(!strcasecmp(string, RGB_NAME)) return QUICKTIME_RAW;
-	if(!strcasecmp(string, RGBA_NAME)) return MOV_RGBA;
-	if(!strcasecmp(string, QTJPEG_NAME)) return QUICKTIME_JPEG;
-	if(!strcasecmp(string, MJPA_NAME)) return QUICKTIME_MJPA;
-	if(!strcasecmp(string, YUV420_NAME)) return QUICKTIME_YUV420;
-	if(!strcasecmp(string, YUV411_NAME)) return QUICKTIME_YUV411;
-	if(!strcasecmp(string, YUV422_NAME)) return QUICKTIME_YUV422;
-	if(!strcasecmp(string, YUV444_NAME)) return QUICKTIME_YUV444;
-	if(!strcasecmp(string, YUVA4444_NAME)) return QUICKTIME_YUVA4444;
-	if(!strcasecmp(string, YUV444_10BIT_NAME)) return QUICKTIME_YUV444_10bit;
+	if(!strcasecmp(string, _(DIVX_NAME))) return QUICKTIME_DIVX;
+	if(!strcasecmp(string, _(HV60_NAME))) return QUICKTIME_HV60;
+	if(!strcasecmp(string, _(DIV3_NAME))) return QUICKTIME_DIV3;
+	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
+	if(!strcasecmp(string, _(PNG_NAME))) return QUICKTIME_PNG;
+	if(!strcasecmp(string, _(PNGA_NAME))) return MOV_PNGA;
+	if(!strcasecmp(string, _(RGB_NAME))) return QUICKTIME_RAW;
+	if(!strcasecmp(string, _(RGBA_NAME))) return MOV_RGBA;
+	if(!strcasecmp(string, _(QTJPEG_NAME))) return QUICKTIME_JPEG;
+	if(!strcasecmp(string, _(MJPA_NAME))) return QUICKTIME_MJPA;
+	if(!strcasecmp(string, _(YUV420_NAME))) return QUICKTIME_YUV420;
+	if(!strcasecmp(string, _(YUV411_NAME))) return QUICKTIME_YUV411;
+	if(!strcasecmp(string, _(YUV422_NAME))) return QUICKTIME_YUV422;
+	if(!strcasecmp(string, _(YUV444_NAME))) return QUICKTIME_YUV444;
+	if(!strcasecmp(string, _(YUVA4444_NAME))) return QUICKTIME_YUVA4444;
+	if(!strcasecmp(string, _(YUV444_10BIT_NAME))) return QUICKTIME_YUV444_10bit;
 
-	if(!strcasecmp(string, TWOS_NAME)) return QUICKTIME_TWOS;
-	if(!strcasecmp(string, RAW_NAME)) return QUICKTIME_RAW;
-	if(!strcasecmp(string, IMA4_NAME)) return QUICKTIME_IMA4;
-	if(!strcasecmp(string, ULAW_NAME)) return QUICKTIME_ULAW;
-	if(!strcasecmp(string, MP3_NAME)) return QUICKTIME_MP3;
-	if(!strcasecmp(string, VORBIS_NAME)) return QUICKTIME_VORBIS;
+	if(!strcasecmp(string, _(TWOS_NAME))) return QUICKTIME_TWOS;
+	if(!strcasecmp(string, _(RAW_NAME))) return QUICKTIME_RAW;
+	if(!strcasecmp(string, _(IMA4_NAME))) return QUICKTIME_IMA4;
+	if(!strcasecmp(string, _(ULAW_NAME))) return QUICKTIME_ULAW;
+	if(!strcasecmp(string, _(MP3_NAME))) return QUICKTIME_MP3;
+	if(!strcasecmp(string, _(VORBIS_NAME))) return QUICKTIME_VORBIS;
 
 
 
@@ -965,36 +1003,36 @@ char* FileMOV::strtocompression(char *string)
 
 char* FileMOV::compressiontostr(char *string)
 {
-	if(match4(string, QUICKTIME_DIVX)) return DIVX_NAME;
-	if(match4(string, QUICKTIME_HV60)) return HV60_NAME;
-	if(match4(string, QUICKTIME_DIV3)) return DIV3_NAME;
-	if(match4(string, QUICKTIME_DV)) return DV_NAME;
-	if(match4(string, MOV_PNGA)) return PNGA_NAME;
-	if(match4(string, QUICKTIME_RAW)) return RGB_NAME;
-	if(match4(string, MOV_RGBA)) return RGBA_NAME;
-	if(match4(string, QUICKTIME_JPEG)) return QTJPEG_NAME;
-	if(match4(string, QUICKTIME_MJPA)) return MJPA_NAME;
-	if(match4(string, QUICKTIME_YUV420)) return YUV420_NAME;
-	if(match4(string, QUICKTIME_YUV411)) return YUV411_NAME;
-	if(match4(string, QUICKTIME_YUV422)) return YUV422_NAME;
-	if(match4(string, QUICKTIME_YUV444)) return YUV444_NAME;
-	if(match4(string, QUICKTIME_YUVA4444)) return YUVA4444_NAME;
-	if(match4(string, QUICKTIME_YUV444_10bit)) return YUV444_10BIT_NAME;
+	if(match4(string, QUICKTIME_DIVX)) return _(DIVX_NAME);
+	if(match4(string, QUICKTIME_HV60)) return _(HV60_NAME);
+	if(match4(string, QUICKTIME_DIV3)) return _(DIV3_NAME);
+	if(match4(string, QUICKTIME_DV)) return _(DV_NAME);
+	if(match4(string, MOV_PNGA)) return _(PNGA_NAME);
+	if(match4(string, QUICKTIME_RAW)) return _(RGB_NAME);
+	if(match4(string, MOV_RGBA)) return _(RGBA_NAME);
+	if(match4(string, QUICKTIME_JPEG)) return _(QTJPEG_NAME);
+	if(match4(string, QUICKTIME_MJPA)) return _(MJPA_NAME);
+	if(match4(string, QUICKTIME_YUV420)) return _(YUV420_NAME);
+	if(match4(string, QUICKTIME_YUV411)) return _(YUV411_NAME);
+	if(match4(string, QUICKTIME_YUV422)) return _(YUV422_NAME);
+	if(match4(string, QUICKTIME_YUV444)) return _(YUV444_NAME);
+	if(match4(string, QUICKTIME_YUVA4444)) return _(YUVA4444_NAME);
+	if(match4(string, QUICKTIME_YUV444_10bit)) return _(YUV444_10BIT_NAME);
 
 
 
 
 
-	if(match4(string, QUICKTIME_TWOS)) return TWOS_NAME;
-	if(match4(string, QUICKTIME_RAW)) return RAW_NAME;
-	if(match4(string, QUICKTIME_IMA4)) return IMA4_NAME;
-	if(match4(string, QUICKTIME_ULAW)) return ULAW_NAME;
-	if(match4(string, QUICKTIME_MP3)) return MP3_NAME;
-	if(match4(string, QUICKTIME_VORBIS)) return VORBIS_NAME;
+	if(match4(string, QUICKTIME_TWOS)) return _(TWOS_NAME);
+	if(match4(string, QUICKTIME_RAW)) return _(RAW_NAME);
+	if(match4(string, QUICKTIME_IMA4)) return _(IMA4_NAME);
+	if(match4(string, QUICKTIME_ULAW)) return _(ULAW_NAME);
+	if(match4(string, QUICKTIME_MP3)) return _(MP3_NAME);
+	if(match4(string, QUICKTIME_VORBIS)) return _(VORBIS_NAME);
 
 
 
-	return "Unknown";
+	return _("Unknown");
 }
 
 
@@ -1098,18 +1136,12 @@ void FileMOVThread::run()
 					frame->get_color_model(),
 					1);
 
-//printf("FileMOVThread 1 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
-//printf("FileMOVThread 1\n");
 				if(fields > 1)
 				{
+					unsigned char *data = mjpeg_output_buffer(mjpeg);
+					long data_size = mjpeg_output_size(mjpeg);
+					long data_allocated = mjpeg_output_allocated(mjpeg);
 					long field2_offset;
-// Create extra space for markers
-					if(frame->get_compressed_allocated() - frame->get_compressed_size() < 0x100)
-						frame->allocate_compressed_data(frame->get_compressed_size() + 0x100);
-
-					unsigned char *data = frame->get_data();
-					long data_size = frame->get_compressed_size();
-					long data_allocated = frame->get_compressed_allocated();
 
 					if(filemov->asset->format == FILE_MOV)
 					{
@@ -1127,12 +1159,9 @@ void FileMOVThread::run()
 							2,
 							&field2_offset);
 					}
-					frame->set_compressed_size(data_size);
+					mjpeg_set_output_size(mjpeg, data_size);
 				}
 				threadframe->load_output(mjpeg);
-//printf("FileMOVThread 2 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
-
-//printf("FileMOVThread 2 %p\n", this);
 				threadframe->completion_lock.unlock();
 			}
 			else
@@ -1181,21 +1210,21 @@ int MOVConfigAudio::create_objects()
 
 	if(asset->format == FILE_MOV)
 	{
-		compression_items.append(new BC_ListBoxItem(TWOS_NAME));
-		compression_items.append(new BC_ListBoxItem(RAW_NAME));
-		compression_items.append(new BC_ListBoxItem(IMA4_NAME));
-		compression_items.append(new BC_ListBoxItem(MP3_NAME));
-		compression_items.append(new BC_ListBoxItem(ULAW_NAME));
-		compression_items.append(new BC_ListBoxItem(VORBIS_NAME));
+		compression_items.append(new BC_ListBoxItem(_(TWOS_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(RAW_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(IMA4_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(ULAW_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
 	}
 	else
 	{
-		compression_items.append(new BC_ListBoxItem(TWOS_NAME));
-		compression_items.append(new BC_ListBoxItem(MP3_NAME));
-		compression_items.append(new BC_ListBoxItem(VORBIS_NAME));
+		compression_items.append(new BC_ListBoxItem(_(TWOS_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
 	}
 
-	add_tool(new BC_Title(x, y, "Compression:"));
+	add_tool(new BC_Title(x, y, _("Compression:")));
 	y += 25;
 	compression_popup = new MOVConfigAudioPopup(this, x, y);
 	compression_popup->create_objects();
@@ -1235,7 +1264,7 @@ void MOVConfigAudio::update_parameters()
 	if(!strcasecmp(asset->acodec, QUICKTIME_TWOS) ||
 		!strcasecmp(asset->acodec, QUICKTIME_RAW))
 	{
-		add_subwindow(bits_title = new BC_Title(x, y, "Bits per channel:"));
+		add_subwindow(bits_title = new BC_Title(x, y, _("Bits per channel:")));
 		bits_popup = new BitsPopup(this, 
 			x + 150, 
 			y, 
@@ -1247,7 +1276,7 @@ void MOVConfigAudio::update_parameters()
 			0);
 		bits_popup->create_objects();
 		y += 40;
-		add_subwindow(dither = new BC_CheckBox(x, y, &asset->dither, "Dither"));
+		add_subwindow(dither = new BC_CheckBox(x, y, &asset->dither, _("Dither")));
 	}
 	else
 	if(!strcasecmp(asset->acodec, QUICKTIME_IMA4))
@@ -1257,7 +1286,7 @@ void MOVConfigAudio::update_parameters()
 	if(!strcasecmp(asset->acodec, QUICKTIME_MP3))
 	{
 		mp3_bitrate = new MOVConfigAudioNum(this, 
-			"Bitrate:", 
+			_("Bitrate:"), 
 			x, 
 			y, 
 			&asset->mp3_bitrate);
@@ -1272,25 +1301,25 @@ void MOVConfigAudio::update_parameters()
 	if(!strcasecmp(asset->acodec, QUICKTIME_VORBIS))
 	{
 		add_subwindow(vorbis_vbr = new MOVConfigAudioToggle(this,
-			"Variable bitrate",
+			_("Variable bitrate"),
 			x,
 			y,
 			&asset->vorbis_vbr));
 		y += 35;
 		vorbis_min_bitrate = new MOVConfigAudioNum(this, 
-			"Min bitrate:", 
+			_("Min bitrate:"), 
 			x, 
 			y, 
 			&asset->vorbis_min_bitrate);
 		y += 30;
 		vorbis_bitrate = new MOVConfigAudioNum(this, 
-			"Avg bitrate:", 
+			_("Avg bitrate:"), 
 			x, 
 			y, 
 			&asset->vorbis_bitrate);
 		y += 30;
 		vorbis_max_bitrate = new MOVConfigAudioNum(this, 
-			"Max bitrate:", 
+			_("Max bitrate:"), 
 			x, 
 			y, 
 			&asset->vorbis_max_bitrate);
@@ -1437,34 +1466,34 @@ int MOVConfigVideo::create_objects()
 
 	if(asset->format == FILE_MOV)
 	{
-		compression_items.append(new BC_ListBoxItem(DIVX_NAME));
-		compression_items.append(new BC_ListBoxItem(HV60_NAME));
-		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
-		compression_items.append(new BC_ListBoxItem(DV_NAME));
-		compression_items.append(new BC_ListBoxItem(QTJPEG_NAME));
-		compression_items.append(new BC_ListBoxItem(MJPA_NAME));
-		compression_items.append(new BC_ListBoxItem(PNG_NAME));
-		compression_items.append(new BC_ListBoxItem(PNGA_NAME));
-		compression_items.append(new BC_ListBoxItem(RGB_NAME));
-		compression_items.append(new BC_ListBoxItem(RGBA_NAME));
-		compression_items.append(new BC_ListBoxItem(YUV420_NAME));
-		compression_items.append(new BC_ListBoxItem(YUV422_NAME));
-		compression_items.append(new BC_ListBoxItem(YUV444_NAME));
-		compression_items.append(new BC_ListBoxItem(YUVA4444_NAME));
-		compression_items.append(new BC_ListBoxItem(YUV444_10BIT_NAME));
+		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(HV60_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(DIV3_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(DV_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(QTJPEG_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MJPA_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(PNG_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(PNGA_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(RGB_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(RGBA_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(YUV420_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(YUV422_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(YUV444_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(YUVA4444_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(YUV444_10BIT_NAME)));
 	}
 	else
 	{
-		compression_items.append(new BC_ListBoxItem(DIVX_NAME));
-		compression_items.append(new BC_ListBoxItem(HV60_NAME));
-		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
-		compression_items.append(new BC_ListBoxItem(DV_NAME));
-		compression_items.append(new BC_ListBoxItem(QTJPEG_NAME));
-		compression_items.append(new BC_ListBoxItem(MJPA_NAME));
-		compression_items.append(new BC_ListBoxItem(PNG_NAME));
+		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(HV60_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(DIV3_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(DV_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(QTJPEG_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MJPA_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(PNG_NAME)));
 	}
 
-	add_subwindow(new BC_Title(x, y, "Compression:"));
+	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	y += 25;
 
 	if(!lock_compressor)
@@ -1559,7 +1588,7 @@ void MOVConfigVideo::update_parameters()
 	{
 		int x = param_x, y = param_y;
 		ms_bitrate = new MOVConfigVideoNum(this, 
-			"Bitrate:", 
+			_("Bitrate:"), 
 			x, 
 			y, 
 			&asset->ms_bitrate);
@@ -1572,14 +1601,14 @@ void MOVConfigVideo::update_parameters()
 		y += 30;
 
 		ms_bitrate_tolerance = new MOVConfigVideoNum(this, 
-			"Bitrate tolerance:", 
+			_("Bitrate tolerance:"), 
 			x, 
 			y, 
 			&asset->ms_bitrate_tolerance);
 		ms_bitrate_tolerance->create_objects();
 		y += 30;
 		ms_quantization = new MOVConfigVideoNum(this, 
-			"Quantization:", 
+			_("Quantization:"), 
 			x, 
 			y, 
 			&asset->ms_quantization);
@@ -1593,13 +1622,13 @@ void MOVConfigVideo::update_parameters()
 
 
 		y += 30;
-		add_subwindow(ms_interlaced = new MOVConfigVideoCheckBox("Interlaced", 
+		add_subwindow(ms_interlaced = new MOVConfigVideoCheckBox(_("Interlaced"), 
 			x, 
 			y, 
 			&asset->ms_interlaced));
 		y += 30;
 		ms_gop_size = new MOVConfigVideoNum(this, 
-			"Keyframe interval:", 
+			_("Keyframe interval:"), 
 			x, 
 			y, 
 			&asset->ms_gop_size);
@@ -1612,7 +1641,7 @@ void MOVConfigVideo::update_parameters()
 	{
 		int x = param_x, y = param_y;
 		divx_bitrate = new MOVConfigVideoNum(this, 
-			"Bitrate:", 
+			_("Bitrate:"), 
 			x, 
 			y, 
 			&asset->divx_bitrate);
@@ -1625,7 +1654,7 @@ void MOVConfigVideo::update_parameters()
 				1));
 		y += 30;
 		divx_quantizer = new MOVConfigVideoNum(this, 
-			"Quantizer:", 
+			_("Quantizer:"), 
 			x, 
 			y, 
 			&asset->divx_quantizer);
@@ -1639,49 +1668,49 @@ void MOVConfigVideo::update_parameters()
 		divx_fix_bitrate->opposite = divx_fix_quant;
 		y += 30;
 		divx_rc_period = new MOVConfigVideoNum(this, 
-			"RC Period:", 
+			_("RC Period:"), 
 			x, 
 			y, 
 			&asset->divx_rc_period);
 		divx_rc_period->create_objects();
 		y += 30;
 		divx_rc_reaction_ratio = new MOVConfigVideoNum(this, 
-			"Reaction Ratio:", 
+			_("Reaction Ratio:"), 
 			x, 
 			y, 
 			&asset->divx_rc_reaction_ratio);
 		divx_rc_reaction_ratio->create_objects();
 		y += 30;
 		divx_rc_reaction_period = new MOVConfigVideoNum(this, 
-			"Reaction Period:", 
+			_("Reaction Period:"), 
 			x, 
 			y, 
 			&asset->divx_rc_reaction_period);
 		divx_rc_reaction_period->create_objects();
 		y += 30;
 		divx_max_key_interval = new MOVConfigVideoNum(this, 
-			"Max Key Interval:", 
+			_("Max Key Interval:"), 
 			x, 
 			y, 
 			&asset->divx_max_key_interval);
 		divx_max_key_interval->create_objects();
 		y += 30;
 		divx_max_quantizer = new MOVConfigVideoNum(this, 
-			"Max Quantizer:", 
+			_("Max Quantizer:"), 
 			x, 
 			y, 
 			&asset->divx_max_quantizer);
 		divx_max_quantizer->create_objects();
 		y += 30;
 		divx_min_quantizer = new MOVConfigVideoNum(this, 
-			"Min Quantizer:", 
+			_("Min Quantizer:"), 
 			x, 
 			y, 
 			&asset->divx_min_quantizer);
 		divx_min_quantizer->create_objects();
 		y += 30;
 		divx_quality = new MOVConfigVideoNum(this, 
-			"Quality:", 
+			_("Quality:"), 
 			x, 
 			y, 
 			&asset->divx_quality);
@@ -1691,7 +1720,7 @@ void MOVConfigVideo::update_parameters()
 	if(!strcmp(asset->vcodec, QUICKTIME_JPEG) ||
 		!strcmp(asset->vcodec, QUICKTIME_MJPA))
 	{
-		add_subwindow(jpeg_quality_title = new BC_Title(param_x, param_y, "Quality:"));
+		add_subwindow(jpeg_quality_title = new BC_Title(param_x, param_y, _("Quality:")));
 		add_subwindow(jpeg_quality = new BC_ISlider(param_x + 80, 
 			param_y,
 			0,
@@ -1773,7 +1802,7 @@ MOVConfigVideoFixBitrate::MOVConfigVideoFixBitrate(int x,
  : BC_Radial(x, 
  	y, 
 	*output == value, 
-	"Fix bitrate")
+	_("Fix bitrate"))
 {
 	this->output = output;
 	this->value = value;
@@ -1798,7 +1827,7 @@ MOVConfigVideoFixQuant::MOVConfigVideoFixQuant(int x,
  : BC_Radial(x, 
  	y, 
 	*output == value, 
-	"Fix quantization")
+	_("Fix quantization"))
 {
 	this->output = output;
 	this->value = value;

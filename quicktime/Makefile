@@ -2,11 +2,7 @@ OBJDIR := $(shell uname --machine)
 USE_MMX = 0
 CC = gcc
 
-HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
-                                                                                
-ifeq ($(HAVE_NASM), n)
-$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
-endif
+
 
 
 ifeq ($(origin CFLAGS), environment)
@@ -18,9 +14,9 @@ endif
 #ENCORE_DIR := encore2/src
 #DECORE_DIR := decore2/src
 ENCORE_DIR := encore50
-DECORE_DIR := decore50
+#DECORE_DIR := decore50
 ENCORE_INCLUDE := $(ENCORE_DIR)/encore.h
-DECORE_INCLUDE := $(DECORE_DIR)/decore.h
+#DECORE_INCLUDE := $(DECORE_DIR)/decore.h
 MPEG3_DIR := $(shell expr ../libmpeg3* )
 OBJS := 
 
@@ -72,8 +68,7 @@ CFLAGS += -DHAVE_FIREWIRE
 CFLAGS += -I. \
 	-I$(JPEG_DIR) \
 	-I$(MPEG3_DIR) \
-	-I$(LAME_DIR)/include \
-	$(shell glib-config --cflags)
+	-I$(LAME_DIR)/include
 
 
 #	$(OBJDIR)/div3.o \
@@ -159,8 +154,8 @@ UTILS := \
 	$(OBJDIR)/qtinfo \
 	$(OBJDIR)/dechunk \
 	$(OBJDIR)/yuv4toyuv \
+	$(OBJDIR)/recover \
 	$(OBJDIR)/rechunk
-#	$(OBJDIR)/recover \
 
 
 
@@ -170,13 +165,13 @@ OUTPUT = $(OBJDIR)/libquicktime.a
 SHAREDOUTPUT = $(OBJDIR)/libquicktime.so
 
 CFLAGS += \
-	-I$(DECORE_DIR) \
 	-I$(ENCORE_DIR) \
-	-DDECORE_INCLUDE=\"$(DECORE_INCLUDE)\" \
 	-DENCORE_INCLUDE=\"$(ENCORE_INCLUDE)\" \
-	-DLINUX \
-	-D_DECORE
+	-DLINUX
 
+#	-DDECORE_INCLUDE=\"$(DECORE_INCLUDE)\" \
+#	-I$(DECORE_DIR) \
+#	-D_DECORE
 
 
 CFLAGS += \
@@ -210,8 +205,8 @@ CFLAGS += \
 
 
 
-DIRS += \
-	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/postprocess
+#DIRS += \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/postprocess
 
 DIRS += \
 	$(OBJDIR)/$(ENCORE_DIR) \
@@ -227,18 +222,20 @@ DIRS += \
 	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx
 
 
-LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -lglib -ldl -lm
+LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -ldl -lm
 
 
 $(shell if ! test -d $(OBJDIR) \; then mkdir -p $(DIRS) \; fi )
 $(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_flags)
 $(shell echo  $(LAME_CFLAGS) > $(OBJDIR)/lame_flags)
-$(shell echo  $(OBJS) $(DV_OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
+$(shell echo  $(OBJS) $(DV_OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
+#$(shell echo  $(OBJS) $(DV_OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
 
 all: $(OBJDIR) $(OUTPUT)
 
-$(OUTPUT): $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
+#$(OUTPUT): $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
+$(OUTPUT): $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
 
@@ -309,8 +306,8 @@ $(JPEG_NASM):
 $(ENCOREMMX_OBJS):
 	nasm -f elf $(subst $(OBJDIR)/,, $*.asm) -o $*.o
 
-$(DECOREMMX_OBJS):
-	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
+#$(DECOREMMX_OBJS):
+#	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
 
 
 $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS):

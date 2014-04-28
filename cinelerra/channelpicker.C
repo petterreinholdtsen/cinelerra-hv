@@ -4,6 +4,7 @@
 #include "chantables.h"
 #include "clip.h"
 #include "keys.h"
+#include "language.h"
 #include "mwindow.h"
 #include "playbackconfig.h"
 #include "preferencesthread.h"
@@ -12,6 +13,7 @@
 #include "theme.h"
 #include "vdevicebuz.h"
 #include "vdeviceprefs.h"
+
 
 
 PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow, 
@@ -331,7 +333,7 @@ char* ChannelPicker::current_channel_name()
 		return get_current_channel_struct()->title;
 	}
 	else
-		return "Channel";
+		return _("Channel");
 }
 
 int ChannelPicker::channel_down()
@@ -363,7 +365,7 @@ ChannelButton::ChannelButton(MWindow *mwindow, ChannelPicker *channel_picker, in
 		channel_picker, 
 		channel_picker->channeldb,
 		channel_picker->record);
-	set_tooltip("Edit channels");
+	set_tooltip(_("Edit channels"));
 }
 
 ChannelButton::~ChannelButton()

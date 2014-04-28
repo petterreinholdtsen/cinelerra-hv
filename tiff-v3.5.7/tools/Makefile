@@ -1,4 +1,4 @@
-#	$Header: /usr/cvs/hvirtual/tiff-v3.5.7/tools/Makefile,v 1.1 2003/07/25 03:27:40 heroine Exp $
+#	$Header: /usr/cvs/hvirtual/tiff-v3.5.7/tools/Makefile,v 1.1.1.1 2003/10/14 07:54:39 heroine Exp $
 #
 # Warning, this file was automatically created by the TIFF configure script
 #

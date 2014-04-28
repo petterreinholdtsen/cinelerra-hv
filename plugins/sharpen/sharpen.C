@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(SharpenMain)
 
 
@@ -67,23 +72,12 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	engine = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SharpenMain::~SharpenMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(engine)
 	{
@@ -105,7 +99,7 @@ NEW_PICON_MACRO(SharpenMain)
 
 LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
 
-char* SharpenMain::plugin_title() { return "Sharpen"; }
+char* SharpenMain::plugin_title() { return _("Sharpen"); }
 int SharpenMain::is_realtime() { return 1; }
 
 
@@ -120,7 +114,7 @@ int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(!engine)
 	{
 
-		total_engines = smp > 1 ? 2 : 1;
+		total_engines = PluginClient::smp > 1 ? 2 : 1;
 		engine = new SharpenEngine*[total_engines];
 		for(int i = 0; i < total_engines; i++)
 		{
@@ -134,7 +128,7 @@ int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(config.sharpness != 0)
 	{
 // Arm first row
-		row_step = (config.interlace || config.horizontal) ? 2 : 1;
+		row_step = (config.interlace /* || config.horizontal */) ? 2 : 1;
 
 		for(j = 0; j < row_step; j += total_engines)
 		{

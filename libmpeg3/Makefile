@@ -4,17 +4,12 @@ USE_MMX = 0
 USE_CSS = 1
 A52DIR := $(shell expr a52dec* )
 
-HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
-                                                                                
-ifeq ($(HAVE_NASM), n)
-$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
-endif
 
 
 ifeq ($(origin CFLAGS), environment)
-HAVE_CFLAGS := yes
+HAVE_CFLAGS := y
 else
-HAVE_CFLAGS := no
+HAVE_CFLAGS := n
 endif
 
 
@@ -25,21 +20,21 @@ OBJDIR := $(shell uname --machine)
 
 ifeq ($(OBJDIR), alpha)
   USE_MMX = 0
-  ifneq ($(HAVE_CFLAGS), yes)
+  ifneq ($(HAVE_CFLAGS), y)
     CFLAGS := -O4 -arch ev67 -ieee -accept c99_keywords -gcc_messages
   endif
 endif
 
 ifeq ($(OBJDIR), i686)
   USE_MMX = 1
-  ifneq ($(HAVE_CFLAGS), yes)
+  ifneq ($(HAVE_CFLAGS), y)
     CFLAGS := -O2 -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2 -I/usr/local/include
   endif
   CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
 endif
 
 ifeq ($(OBJDIR), x86_64)
-  ifneq ($(HAVE_CFLAGS), yes)
+  ifneq ($(HAVE_CFLAGS), y)
     CFLAGS := -O2 -fomit-frame-pointer -I/usr/local/include
   endif
   CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE

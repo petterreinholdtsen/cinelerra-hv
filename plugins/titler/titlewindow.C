@@ -2,35 +2,21 @@
 #include "titlewindow.h"
 
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
-TitleThread::TitleThread(TitleMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-TitleThread::~TitleThread()
-{
-// Window always deleted here
-	delete window;
-}
 
-void TitleThread::run()
-{
-	BC_DisplayInfo info;
-	window = new TitleWindow(client, 
-		info.get_abs_cursor_x() - client->window_w / 2, 
-		info.get_abs_cursor_y() - client->window_h / 2);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
+
+
+
+
+
+
+PLUGIN_THREAD_OBJECT(TitleMain, TitleThread, TitleWindow)
+
 
 
 
@@ -168,27 +154,27 @@ int TitleWindow::create_objects()
 
 
 
-	add_tool(font_title = new BC_Title(x, y, "Font:"));
+	add_tool(font_title = new BC_Title(x, y, _("Font:")));
 	font = new TitleFont(client, this, x, y + 20);
 	font->create_objects();
 	x += 230;
 	add_subwindow(font_tumbler = new TitleFontTumble(client, this, x, y + 20));
 	x += 30;
 	char string[BCTEXTLEN];
-	add_tool(size_title = new BC_Title(x, y, "Size:"));
+	add_tool(size_title = new BC_Title(x, y, _("Size:")));
 	sprintf(string, "%d", client->config.size);
 	size = new TitleSize(client, this, x, y + 20, string);
 	size->create_objects();
 	x += 140;
 
-	add_tool(style_title = new BC_Title(x, y, "Style:"));
+	add_tool(style_title = new BC_Title(x, y, _("Style:")));
 	add_tool(italic = new TitleItalic(client, this, x, y + 20));
 	add_tool(bold = new TitleBold(client, this, x, y + 50));
 #ifdef USE_OUTLINE
 	add_tool(stroke = new TitleStroke(client, this, x, y + 80));
 #endif
 	x += 90;
-	add_tool(justify_title = new BC_Title(x, y, "Justify:"));
+	add_tool(justify_title = new BC_Title(x, y, _("Justify:")));
 	add_tool(left = new TitleLeft(client, this, x, y + 20));
 	add_tool(center = new TitleCenter(client, this, x, y + 50));
 	add_tool(right = new TitleRight(client, this, x, y + 80));
@@ -203,17 +189,17 @@ int TitleWindow::create_objects()
 	y += 50;
 	x = 10;
 
-	add_tool(x_title = new BC_Title(x, y, "X:"));
+	add_tool(x_title = new BC_Title(x, y, _("X:")));
 	title_x = new TitleX(client, this, x, y + 20);
 	title_x->create_objects();
 	x += 90;
 
-	add_tool(y_title = new BC_Title(x, y, "Y:"));
+	add_tool(y_title = new BC_Title(x, y, _("Y:")));
 	title_y = new TitleY(client, this, x, y + 20);
 	title_y->create_objects();
 	x += 90;
 
-	add_tool(motion_title = new BC_Title(x, y, "Motion type:"));
+	add_tool(motion_title = new BC_Title(x, y, _("Motion type:")));
 
 	motion = new TitleMotion(client, this, x, y + 20);
 	motion->create_objects();
@@ -225,20 +211,20 @@ int TitleWindow::create_objects()
 	x = 10;
 	y += 50;
 
-	add_tool(dropshadow_title = new BC_Title(x, y, "Drop shadow:"));
+	add_tool(dropshadow_title = new BC_Title(x, y, _("Drop shadow:")));
 	dropshadow = new TitleDropShadow(client, this, x, y + 20);
 	dropshadow->create_objects();
 	x += 100;
 
-	add_tool(fadein_title = new BC_Title(x, y, "Fade in (sec):"));
+	add_tool(fadein_title = new BC_Title(x, y, _("Fade in (sec):")));
 	add_tool(fade_in = new TitleFade(client, this, &client->config.fade_in, x, y + 20));
 	x += 100;
 
-	add_tool(fadeout_title = new BC_Title(x, y, "Fade out (sec):"));
+	add_tool(fadeout_title = new BC_Title(x, y, _("Fade out (sec):")));
 	add_tool(fade_out = new TitleFade(client, this, &client->config.fade_out, x, y + 20));
 	x += 110;
 
-	add_tool(speed_title = new BC_Title(x, y, "Speed:"));
+	add_tool(speed_title = new BC_Title(x, y, _("Speed:")));
 	speed = new TitleSpeed(client, this, x, y + 20);
 	speed->create_objects();
 	x += 110;
@@ -251,13 +237,13 @@ int TitleWindow::create_objects()
 
 	x = 10;
 	y += 50;
-	add_tool(encoding_title = new BC_Title(x, y + 3, "Encoding:"));
+	add_tool(encoding_title = new BC_Title(x, y + 3, _("Encoding:")));
 	encoding = new TitleEncoding(client, this, x, y + 20);
 	encoding->create_objects();
 
 #ifdef USE_OUTLINE
 	x += 160;
-	add_tool(strokewidth_title = new BC_Title(x, y, "Outline width:"));
+	add_tool(strokewidth_title = new BC_Title(x, y, _("Outline width:")));
 	stroke_width = new TitleStrokeW(client, 
 		this, 
 		x, 
@@ -278,7 +264,7 @@ int TitleWindow::create_objects()
 	x = 10;
 	y += 50;
 
-	add_tool(text_title = new BC_Title(x, y + 3, "Text:"));
+	add_tool(text_title = new BC_Title(x, y + 3, _("Text:")));
 
 	x += 100;
 	add_tool(timecode = new TitleTimecode(client, x, y));
@@ -481,7 +467,7 @@ int TitleFontTumble::handle_down_event()
 }
 
 TitleBold::TitleBold(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_CheckBox(x, y, client->config.style & FONT_BOLD, "Bold")
+ : BC_CheckBox(x, y, client->config.style & FONT_BOLD, _("Bold"))
 {
 	this->client = client;
 	this->window = window;
@@ -495,7 +481,7 @@ int TitleBold::handle_event()
 }
 
 TitleItalic::TitleItalic(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_CheckBox(x, y, client->config.style & FONT_ITALIC, "Italic")
+ : BC_CheckBox(x, y, client->config.style & FONT_ITALIC, _("Italic"))
 {
 	this->client = client;
 	this->window = window;
@@ -508,7 +494,7 @@ int TitleItalic::handle_event()
 }
 
 TitleStroke::TitleStroke(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_CheckBox(x, y, client->config.style & FONT_OUTLINE, "Outline")
+ : BC_CheckBox(x, y, client->config.style & FONT_OUTLINE, _("Outline"))
 {
 	this->client = client;
 	this->window = window;
@@ -577,7 +563,7 @@ int TitleEncoding::handle_event()
 }
 
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Color...")
+ : BC_GenericButton(x, y, _("Color..."))
 {
 	this->client = client;
 	this->window = window;
@@ -589,7 +575,7 @@ int TitleColorButton::handle_event()
 }
 
 TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Outline color...")
+ : BC_GenericButton(x, y, _("Outline color..."))
 {
 	this->client = client;
 	this->window = window;
@@ -622,7 +608,7 @@ int TitleMotion::handle_event()
 }
 
 TitleLoop::TitleLoop(TitleMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.loop, "Loop")
+ : BC_CheckBox(x, y, client->config.loop, _("Loop"))
 {
 	this->client = client;
 }
@@ -634,7 +620,7 @@ int TitleLoop::handle_event()
 }
 
 TitleTimecode::TitleTimecode(TitleMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.timecode, "Stamp timecode")
+ : BC_CheckBox(x, y, client->config.timecode, _("Stamp timecode"))
 {
 	this->client = client;
 }
@@ -817,7 +803,7 @@ int TitleSpeed::handle_event()
 
 
 TitleLeft::TitleLeft(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_Radial(x, y, client->config.hjustification == JUSTIFY_LEFT, "Left")
+ : BC_Radial(x, y, client->config.hjustification == JUSTIFY_LEFT, _("Left"))
 {
 	this->client = client;
 	this->window = window;
@@ -831,7 +817,7 @@ int TitleLeft::handle_event()
 }
 
 TitleCenter::TitleCenter(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_Radial(x, y, client->config.hjustification == JUSTIFY_CENTER, "Center")
+ : BC_Radial(x, y, client->config.hjustification == JUSTIFY_CENTER, _("Center"))
 {
 	this->client = client;
 	this->window = window;
@@ -845,7 +831,7 @@ int TitleCenter::handle_event()
 }
 
 TitleRight::TitleRight(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_Radial(x, y, client->config.hjustification == JUSTIFY_RIGHT, "Right")
+ : BC_Radial(x, y, client->config.hjustification == JUSTIFY_RIGHT, _("Right"))
 {
 	this->client = client;
 	this->window = window;
@@ -861,7 +847,7 @@ int TitleRight::handle_event()
 
 
 TitleTop::TitleTop(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_Radial(x, y, client->config.vjustification == JUSTIFY_TOP, "Top")
+ : BC_Radial(x, y, client->config.vjustification == JUSTIFY_TOP, _("Top"))
 {
 	this->client = client;
 	this->window = window;
@@ -875,7 +861,7 @@ int TitleTop::handle_event()
 }
 
 TitleMid::TitleMid(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_Radial(x, y, client->config.vjustification == JUSTIFY_MID, "Mid")
+ : BC_Radial(x, y, client->config.vjustification == JUSTIFY_MID, _("Mid"))
 {
 	this->client = client;
 	this->window = window;
@@ -889,7 +875,7 @@ int TitleMid::handle_event()
 }
 
 TitleBottom::TitleBottom(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_Radial(x, y, client->config.vjustification == JUSTIFY_BOTTOM, "Bottom")
+ : BC_Radial(x, y, client->config.vjustification == JUSTIFY_BOTTOM, _("Bottom"))
 {
 	this->client = client;
 	this->window = window;

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "channelpicker.h"
 #include "cursors.h"
 #include "libdv.h"
@@ -19,6 +19,12 @@
 #include "videodevice.inc"
 #include "vframe.h"
 #include "videodevice.h"
+
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 RecordMonitor::RecordMonitor(MWindow *mwindow, Record *record)
  : Thread(1)
@@ -203,17 +209,20 @@ RecordMonitorGUI::~RecordMonitorGUI()
 int RecordMonitorGUI::create_objects()
 {
 //printf("RecordMonitorGUI::create_objects 1\n");
-	mwindow->theme->get_recordmonitor_sizes(record->default_asset->audio_data, 
-		record->default_asset->video_data);
+	mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
+		record->default_asset->video_data,
+		(mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
+			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ),
+		(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ));
 	mwindow->theme->draw_rmonitor_bg(this);
 //printf("RecordMonitorGUI::create_objects 1\n");
 
-	record_transport = new RecordTransport(mwindow, 
-		record, 
-		this, 
-		mwindow->theme->rmonitor_tx_x,
-		mwindow->theme->rmonitor_tx_y);
-	record_transport->create_objects();
+// 	record_transport = new RecordTransport(mwindow, 
+// 		record, 
+// 		this, 
+// 		mwindow->theme->rmonitor_tx_x,
+// 		mwindow->theme->rmonitor_tx_y);
+// 	record_transport->create_objects();
 //printf("RecordMonitorGUI::create_objects 1\n");
 
 	if(record->default_asset->video_data)
@@ -362,7 +371,7 @@ int RecordMonitorGUI::keypress_event()
 			close_event();
 			break;
 		default:
-			result = record_transport->keypress_event();
+//			result = record_transport->keypress_event();
 			break;
 	}
 	return result;
@@ -385,14 +394,17 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	mwindow->session->rmonitor_w = w;
 	mwindow->session->rmonitor_h = h;
 
-	mwindow->theme->get_recordmonitor_sizes(record->default_asset->audio_data, 
-		record->default_asset->video_data);
+	mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
+		record->default_asset->video_data,
+		(mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
+			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ),
+		(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ));
 	mwindow->theme->draw_rmonitor_bg(this);
 	flash();
 
 
-	record_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
-		mwindow->theme->rmonitor_tx_y);
+// 	record_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
+// 		mwindow->theme->rmonitor_tx_y);
 	if(channel_picker) channel_picker->reposition();
 	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
 		reverse_interlace->get_y());
@@ -462,7 +474,7 @@ int RecordMonitorGUI::create_bitmap()
 }
 
 ReverseInterlace::ReverseInterlace(Record *record, int x, int y)
- : BC_CheckBox(x, y, record->reverse_interlace, "Swap fields")
+ : BC_CheckBox(x, y, record->reverse_interlace, _("Swap fields"))
 {
 	this->record = record;
 }
@@ -603,7 +615,7 @@ int RecordMonitorCanvas::keypress_event()
 
 RecordMonitorFullsize::RecordMonitorFullsize(MWindow *mwindow, 
 	RecordMonitorGUI *window)
- : BC_MenuItem("Zoom 100%")
+ : BC_MenuItem(_("Zoom 100%"))
 {
 	this->mwindow = mwindow;
 	this->window = window;
@@ -626,7 +638,7 @@ int RecordMonitorFullsize::handle_event()
 RecordMonitorThread::RecordMonitorThread(MWindow *mwindow, 
 	Record *record, 
 	RecordMonitor *record_monitor)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->record_monitor = record_monitor;
@@ -683,7 +695,6 @@ void RecordMonitorThread::init_output_format()
 
 int RecordMonitorThread::start_playback()
 {
-	set_synchronous(1);
 	ready = 1;
 	done = 0;
 	output_lock.lock();
@@ -824,6 +835,7 @@ void RecordMonitorThread::new_output_frame()
 
 void RecordMonitorThread::run()
 {
+//printf("RecordMonitorThread::run 1 %d\n", getpid());
 	while(!done)
 	{
 // Wait for next frame
@@ -893,7 +905,7 @@ int RecVideoMJPGThread::render_frame(VFrame *frame, long size)
 		thread->output_frame[0]->get_u(), 
 		thread->output_frame[0]->get_v(),
 		thread->output_frame[0]->get_color_model(),
-		record->mwindow->edl->session->smp + 1);
+		record->mwindow->preferences->processors);
 	return 0;
 }
 

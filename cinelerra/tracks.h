@@ -185,7 +185,8 @@ public:
 		double &newposition, 
 		int currentend, 
 		int handle_mode,
-		int edit_labels);
+		int edit_labels,
+		Edits *trim_edits);
 	int select_handles();
 	int select_region();
 	int select_edit(int64_t cursor_position, int cursor_x, int cursor_y, int64_t &new_start, int64_t &new_end);

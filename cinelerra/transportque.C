@@ -13,9 +13,9 @@ TransportCommand::TransportCommand()
 // in the middle of a job.
 	edl = new EDL;
 	edl->create_objects();
-	reset();
 	command = 0;
 	change_type = 0;
+	reset();
 }
 
 TransportCommand::~TransportCommand()

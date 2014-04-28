@@ -10,6 +10,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "fonts.h"
+#include "labels.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
@@ -215,6 +216,8 @@ int VWindowGUI::create_objects()
 	update_sources(_("None"));
 
 //printf("VWindowGUI::create_objects 2\n");
+	deactivate();
+	slider->activate();
 	return 0;
 }
 
@@ -289,8 +292,13 @@ int VWindowGUI::keypress_event()
 			close_event();
 			result = 1;
 			break;
+		case 'z':
+			mwindow->undo_entry(this);
+			break;
+		case 'Z':
+			mwindow->redo_entry(this);
+			break;
 	}
-	
 	if(!result) result = transport->keypress_event();
 	
 	return result;
@@ -568,7 +576,7 @@ void VWindowEditing::to_clip()
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
-		sprintf(new_edl->local_session->clip_title, _("Clip %d\n"), mwindow->session->clip_number++);
+		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
 
 printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
 
@@ -599,6 +607,7 @@ VWindowSlider::VWindowSlider(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
 	this->gui = gui;
+	set_precision(0.00001);
 }
 
 VWindowSlider::~VWindowSlider()

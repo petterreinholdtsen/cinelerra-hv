@@ -82,6 +82,7 @@ char* FileTIFF::cmodel_to_str(int value)
 {
 	switch(value)
 	{
+		case FileTIFF::GREYSCALE: return "Greyscale"; break;
 		case FileTIFF::RGB_888: return "RGB-8 Bit"; break;
 		case FileTIFF::RGBA_8888: return "RGBA-8 Bit"; break;
 		case FileTIFF::RGB_FLOAT: return "RGB-FLOAT"; break;
@@ -111,7 +112,7 @@ int FileTIFF::read_frame_header(char *path)
 
 	if(!(stream = TIFFOpen(path, "rb")))
 	{
-		perror("FileTIFF::read_header");
+		fprintf(stderr, "FileTIFF::read_frame_header failed from %s\n", asset->path);
 		return 1;
 	}
 
@@ -135,8 +136,11 @@ int FileTIFF::read_frame_header(char *path)
 	else
 	if(bitspersample == 32 && components == 4)
 		asset->tiff_cmodel = FileTIFF::RGBA_FLOAT;
+	else
+	if(bitspersample == 8 && components == 0)
+		asset->tiff_cmodel = FileTIFF::GREYSCALE;
 
-//printf("%d %d %d\n", bitspersample, components, asset->tiff_cmodel);
+//printf("FileTIFF::read_frame_header %d %d %d\n", bitspersample, components, asset->tiff_cmodel);
 	TIFFClose(stream);
 
 
@@ -148,6 +152,7 @@ int FileTIFF::colormodel_supported(int colormodel)
 	switch(asset->tiff_cmodel)
 	{
 		case FileTIFF::RGB_888: return BC_RGB888; break;
+		case FileTIFF::GREYSCALE: return BC_RGB888; break;
 		case FileTIFF::RGBA_8888: return BC_RGBA8888; break;
 		case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT; break;
 		case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT; break;
@@ -159,6 +164,7 @@ int FileTIFF::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->tiff_cmodel)
 	{
+		case FileTIFF::GREYSCALE: return BC_RGB888; break;
 		case FileTIFF::RGB_888: return BC_RGB888; break;
 		case FileTIFF::RGBA_8888: return BC_RGBA8888; break;
 		case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT; break;
@@ -258,6 +264,17 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 	for(int i = 0; i < asset->height; i++)
 	{
 		TIFFReadScanline(stream, output->get_rows()[i], i, 0);
+// For the greyscale model, the output is RGB888 but the input must be expanded
+		if(asset->tiff_cmodel == FileTIFF::GREYSCALE)
+		{
+			unsigned char *row = output->get_rows()[i];
+			for(int i = output->get_w() - 1; i >= 0; i--)
+			{
+				row[i * 3] = row[i];
+				row[i * 3 + 1] = row[i];
+				row[i * 3 + 2] = row[i];
+			}
+		}
 	}
 
 	TIFFClose(stream);
@@ -268,6 +285,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 
 int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
+//printf("FileTIFF::write_frame 1\n");
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)unit;
 	int result = 0;
 	TIFF *stream;
@@ -416,6 +434,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 
 	TIFFClose(stream);
 
+//printf("FileTIFF::write_frame 10\n");
 	return result;
 }
 

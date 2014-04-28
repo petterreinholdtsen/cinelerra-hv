@@ -141,11 +141,13 @@ int VirtualAConsole::process_buffer(int64_t len,
 				{
 // Level history comes before clipping to get over status
 					double *sample = &current_buffer[j];
-// Clip it
+
+
 					if(fabs(*sample) > peak) peak = fabs(*sample);
-					if(*sample > 1) *sample = 1;
-					else
-					if(*sample < -1) *sample = -1;
+// Make the output device clip it
+// 					if(*sample > 1) *sample = 1;
+// 					else
+// 					if(*sample < -1) *sample = -1;
 				}
 
 
@@ -153,7 +155,7 @@ int VirtualAConsole::process_buffer(int64_t len,
  				{
 					arender->level_history[i][arender->current_level[i]] = peak;
 					arender->level_samples[arender->current_level[i]] = 
-						renderengine->reverse ? 
+						renderengine->command->get_direction() == PLAY_REVERSE ? 
 						start_position - j : 
 						start_position + j;
  					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);

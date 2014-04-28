@@ -153,14 +153,6 @@ public:
 // buffersize is in samples
 	int reset_parameters();
 
-	int arm_playback_common(int64_t start_sample, 
-			int64_t end_sample,
-			int64_t current_sample,
-			int reverse, 
-			float speed, 
-			int follow_loop,
-			int infinite);
-
 	int arm_playback_audio(int64_t input_length, 
 			int64_t amodule_render_fragment, 
 			int64_t playback_buffer, 
@@ -182,7 +174,6 @@ public:
 
 
 // information for playback
-	int reverse;
 	int follow_loop;       // loop if mwindow is looped
 	int infinite;          // don't stop rendering at the end of the range or loops
 

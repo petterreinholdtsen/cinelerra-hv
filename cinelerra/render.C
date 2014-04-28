@@ -131,6 +131,11 @@ MainPackageRenderer::~MainPackageRenderer()
 }
 
 
+int MainPackageRenderer::get_master()
+{
+	return 1;
+}
+
 int MainPackageRenderer::get_result()
 {
 	return render->result;
@@ -684,7 +689,7 @@ int Render::render(int test_overwrite,
 	{
 		start_progress();
 	
-	
+
 
 
 		MainPackageRenderer package_renderer(this);

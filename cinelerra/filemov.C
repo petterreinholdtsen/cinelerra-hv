@@ -380,6 +380,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
@@ -1398,7 +1399,7 @@ MOVConfigAudioNum::MOVConfigAudioNum(MOVConfigAudio *popup, char *title_text, in
 
 MOVConfigAudioNum::~MOVConfigAudioNum()
 {
-	delete title;
+	if(!popup->get_deleting()) delete title;
 }
 
 void MOVConfigAudioNum::create_objects()
@@ -1484,8 +1485,8 @@ int MOVConfigVideo::create_objects()
 
 	if(asset->format == FILE_MOV)
 	{
-//		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
-		compression_items.append(new BC_ListBoxItem(_(MP4V_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+//		compression_items.append(new BC_ListBoxItem(_(MP4V_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(HV60_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DIV3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DV_NAME)));
@@ -1777,7 +1778,7 @@ MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, char *title_text, in
 
 MOVConfigVideoNum::~MOVConfigVideoNum()
 {
-	delete title;
+	if(!popup->get_deleting()) delete title;
 }
 
 void MOVConfigVideoNum::create_objects()

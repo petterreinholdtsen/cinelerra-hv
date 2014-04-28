@@ -39,7 +39,7 @@ void MainUndo::update_undo_before(char *description, uint32_t load_flags)
 		current_entry->set_description(description);
 
 // the after update is always without a description
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("MainUndo::update_undo_before");
 		mwindow->gui->mainmenu->undo->update_caption(description);
 		mwindow->gui->mainmenu->redo->update_caption("");
 		mwindow->gui->unlock_window();

@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "defaults.h"
@@ -171,7 +172,7 @@ int NewThread::update_aspect()
 {
 	if(auto_aspect)
 	{
-		char string[1024];
+		char string[BCTEXTLEN];
 		mwindow->create_aspect_ratio(new_project->new_edl->session->aspect_w, 
 			new_project->new_edl->session->aspect_h, 
 			new_project->new_edl->session->output_w, 
@@ -696,7 +697,7 @@ NewOutputW::NewOutputW(NewWindow *nwindow, int x, int y)
 }
 int NewOutputW::handle_event()
 {
-	nwindow->new_edl->session->output_w = atol(get_text());
+	nwindow->new_edl->session->output_w = MAX(1,atol(get_text()));
 	nwindow->new_thread->update_aspect();
 	return 1;
 }
@@ -708,7 +709,7 @@ NewOutputH::NewOutputH(NewWindow *nwindow, int x, int y)
 }
 int NewOutputH::handle_event()
 {
-	nwindow->new_edl->session->output_h = atol(get_text());
+	nwindow->new_edl->session->output_h = MAX(1, atol(get_text()));
 	nwindow->new_thread->update_aspect();
 	return 1;
 }

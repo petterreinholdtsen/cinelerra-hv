@@ -670,7 +670,7 @@ EditToClip::EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("To clip"));
+	set_tooltip(_("To clip ( i )"));
 }
 EditToClip::~EditToClip()
 {
@@ -679,6 +679,16 @@ int EditToClip::handle_event()
 {
 	panel->to_clip();
 	return 1;
+}
+
+int EditToClip::keypress_event()
+{
+	if(get_keypress() == 'i')
+	{
+		handle_event();
+		return 1;
+	}
+	return 0;
 }
 
 EditSplice::EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y)
@@ -866,7 +876,7 @@ int EditUndo::keypress_event()
 }
 int EditUndo::handle_event()
 {
-	mwindow->undo_entry(panel->is_mwindow);
+	mwindow->undo_entry(panel->subwindow);
 	return 1;
 }
 
@@ -888,7 +898,7 @@ int EditRedo::keypress_event()
 }
 int EditRedo::handle_event()
 {
-	mwindow->redo_entry(panel->is_mwindow);
+	mwindow->redo_entry(panel->subwindow);
 	return 1;
 }
 

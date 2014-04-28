@@ -397,7 +397,7 @@ int PluginSet::optimize()
 			current_keyframe; )
 		{
 			KeyFrame *previous_keyframe = (KeyFrame*)current_keyframe->previous;
-			if(current_keyframe->position >= 
+			if(current_keyframe->position > 
 				current_edit->startproject + current_edit->length ||
 				current_keyframe->position < current_edit->startproject)
 			{

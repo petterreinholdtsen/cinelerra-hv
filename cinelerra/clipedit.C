@@ -151,12 +151,13 @@ void ClipEditWindow::create_objects()
 	int x = 10, y = 10;
 	int x1 = x;
 	BC_TextBox *textbox;
+	BC_TextBox *titlebox;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
 	y += title->get_h() + 5;
-	add_subwindow(textbox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
-	y += textbox->get_h() + 10;
+	add_subwindow(titlebox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
+	y += titlebox->get_h() + 10;
 	add_subwindow(title = new BC_Title(x1, y, _("Comments:")));
 	y += title->get_h() + 5;
 	add_subwindow(textbox = new ClipEditComments(this, 
@@ -170,6 +171,7 @@ void ClipEditWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
+	titlebox->activate();
 }
 
 

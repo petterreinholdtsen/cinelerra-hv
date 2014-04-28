@@ -115,6 +115,34 @@ static inline void transfer_ARGB8888_to_ARGB8888(unsigned char *(*output), unsig
 	(*output) += 4;
 }
 
+static inline void transfer_ARGB8888_to_RGBA8888(unsigned char *(*output), unsigned char *input)
+{
+	(*output)[0] = input[1];
+	(*output)[1] = input[2];
+	(*output)[2] = input[3];
+	(*output)[3] = input[0];
+	(*output) += 4;
+}
+
+
+static inline void transfer_ARGB8888_to_RGB888(unsigned char *(*output), unsigned char *input)
+{
+	int a = input[0];
+	(*output)[0] = input[1] * a / 0xff;
+	(*output)[1] = input[2] * a / 0xff;
+	(*output)[2] = input[3] * a / 0xff;
+	(*output) += 3;
+}
+
+static inline void transfer_ARGB8888_to_BGR8888(unsigned char *(*output), unsigned char *input)
+{
+	int a = input[0];
+	(*output)[0] = input[3] * a / 0xff;
+	(*output)[1] = input[2] * a / 0xff;
+	(*output)[2] = input[1] * a / 0xff;
+	(*output) += 3;
+}
+
 
 
 
@@ -214,6 +242,14 @@ static inline void transfer_RGB888_to_RGBA8888(unsigned char *(*output), unsigne
 	*(*output)++ = 0xff;
 }
 
+static inline void transfer_RGB888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
+{
+	*(*output)++ = 0xff;
+	*(*output)++ = *input++;
+	*(*output)++ = *input++;
+	*(*output)++ = *input;
+}
+
 static inline void transfer_RGB888_to_RGB161616(uint16_t *(*output), unsigned char *input)
 {
 	(*output)[0] = (input[0] << 8) | input[0];
@@ -244,14 +280,6 @@ static inline void transfer_RGB888_to_RGBA_FLOAT(float *(*output), unsigned char
 	*(*output)++ = (float)*input++ / 0xff;
 	*(*output)++ = (float)*input / 0xff;
 	*(*output)++ = 1.0;
-}
-
-static inline void transfer_RGB888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
-{
-	*(*output)++ = 0xff;
-	*(*output)++ = input[0];
-	*(*output)++ = input[1];
-	*(*output)++ = input[2];
 }
 
 static inline void transfer_RGB888_to_ABGR8888(unsigned char *(*output), unsigned char *input)
@@ -607,6 +635,15 @@ static inline void transfer_RGBA8888_to_RGBA8888(unsigned char *(*output), unsig
 	(*output)[1] = input[1];
 	(*output)[2] = input[2];
 	(*output)[3] = input[3];
+	(*output) += 4;
+}
+
+static inline void transfer_RGBA8888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
+{
+	(*output)[0] = input[3];
+	(*output)[1] = input[0];
+	(*output)[2] = input[1];
+	(*output)[3] = input[2];
 	(*output) += 4;
 }
 
@@ -1334,6 +1371,21 @@ static inline void transfer_YUV888_to_RGBA8888(unsigned char *(*output), unsigne
 	*(*output)++ = 0xff;
 }
 
+static inline void transfer_YUV888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
+{
+	int y, u, v;
+	int r, g, b;
+
+	y = (input[0] << 16) | (input[0] << 8) | input[0];
+	u = input[1];
+	v = input[2];
+	YUV_TO_RGB(y, u, v, r, g, b);
+	*(*output)++ = 0xff;
+	*(*output)++ = r;
+	*(*output)++ = g;
+	*(*output)++ = b;
+}
+
 static inline void transfer_YUV888_to_RGB_FLOAT(float *(*output), unsigned char *input)
 {
 	float y = (float)input[0] / 0xff;
@@ -1602,6 +1654,23 @@ static inline void transfer_YUVA8888_to_RGBA8888(unsigned char *(*output), unsig
 	*(*output)++ = a;
 }
 
+static inline void transfer_YUVA8888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
+{
+	int y, u, v, a;
+	int r, g, b;
+
+	a = input[3];
+	y = (input[0] << 16) | (input[0] << 8) | input[0];
+	u = input[1];
+	v = input[2];
+
+	YUV_TO_RGB(y, u, v, r, g, b);
+	*(*output)++ = a;
+	*(*output)++ = r;
+	*(*output)++ = g;
+	*(*output)++ = b;
+}
+
 static inline void transfer_YUVA8888_to_RGB_FLOAT(float *(*output), unsigned char *input)
 {
 	float y, a;
@@ -1834,6 +1903,22 @@ static inline void transfer_YUV161616_to_RGBA8888(unsigned char *(*output), uint
 	*(*output)++ = g >> 8;
 	*(*output)++ = b >> 8;
 	*(*output)++ = 0xff;
+}
+
+static inline void transfer_YUV161616_to_ARGB8888(unsigned char *(*output), uint16_t *input)
+{
+	int y, u, v;
+	int r, g, b;
+	
+	y = (((int)input[0]) << 8) | (input[0] >> 8);
+	u = input[1];
+	v = input[2];
+	YUV_TO_RGB16(y, u, v, r, g, b);
+
+	*(*output)++ = 0xff;
+	*(*output)++ = r >> 8;
+	*(*output)++ = g >> 8;
+	*(*output)++ = b >> 8;
 }
 
 static inline void transfer_YUV161616_to_RGB_FLOAT(float *(*output), uint16_t *input)
@@ -2109,6 +2194,23 @@ static inline void transfer_YUVA16161616_to_RGBA8888(unsigned char *(*output), u
 	*(*output)++ = (g >> 8);
 	*(*output)++ = (b >> 8);
 	*(*output)++ = input[3] >> 8;
+}
+
+static inline void transfer_YUVA16161616_to_ARGB8888(unsigned char *(*output), uint16_t *input)
+{
+	unsigned int y, u, v;
+	unsigned int r, g, b;
+	
+	y = (((int)input[0]) << 8) | (input[0] >> 8);
+	u = input[1];
+	v = input[2];
+
+	YUV_TO_RGB16(y, u, v, r, g, b);
+
+	*(*output)++ = input[3] >> 8;
+	*(*output)++ = (r >> 8);
+	*(*output)++ = (g >> 8);
+	*(*output)++ = (b >> 8);
 }
 
 static inline void transfer_YUVA16161616_to_RGB_FLOAT(float *(*output), 

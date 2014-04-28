@@ -2758,7 +2758,7 @@ int BC_ListBox::button_press_event()
 		}
 
 // Wheel mouse pressed
-		if(get_buttonpress() == 4)
+		if(get_buttonpress() == 4 && current_operation == NO_OPERATION)
 		{
 			current_operation = WHEEL;
 			if(yscrollbar)
@@ -2776,7 +2776,7 @@ int BC_ListBox::button_press_event()
 			}
 		}
 		else
-		if(get_buttonpress() == 5)
+		if(get_buttonpress() == 5 && current_operation == NO_OPERATION)
 		{
 			current_operation = WHEEL;
 			if(yscrollbar)
@@ -4030,6 +4030,7 @@ int BC_ListBox::draw_items(int flash)
 					get_icon_mask(item, icon_x, icon_y, icon_w, icon_h);
 					get_text_mask(item, text_x, text_y, text_w, text_h);
 
+
 					if(item_color != WHITE)
 					{
 						gui->set_color(BLACK);
@@ -4046,6 +4047,14 @@ int BC_ListBox::draw_items(int flash)
 						else
 						if(icon_position == ICON_TOP)
 							gui->draw_line(text_x + 1, text_y, text_x + icon_w - 2, text_y);
+						if(text_x + text_w < icon_x + icon_w)
+						{
+							gui->set_color(BLACK);
+							gui->draw_line(text_x + text_w, 
+								icon_y + icon_h,
+								icon_x + icon_w,
+								icon_y + icon_h);
+						}
 					}
 
 // Draw icons

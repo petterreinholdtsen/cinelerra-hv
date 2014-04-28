@@ -12,8 +12,8 @@
 
 VideoWindowGUI::VideoWindowGUI(VideoWindow *thread, int w, int h)
  : BC_Window(PROGRAM_NAME ": Video out", 
- 	(int)INFINITY,
-	(int)INFINITY,
+ 	(int)BC_INFINITY,
+	(int)BC_INFINITY,
 	w, 
 	h, 
 	10, 

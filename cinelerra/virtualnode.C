@@ -51,6 +51,7 @@ VirtualNode::VirtualNode(RenderEngine *renderengine,
 	plugin_buffer_number = 0;
 	plugin_autos = 0;
 	plugin_auto_before = plugin_auto_after = 0;
+	attachment = 0;
 }
 
 VirtualNode::~VirtualNode()
@@ -79,10 +80,9 @@ void VirtualNode::dump()
 
 int VirtualNode::expand(int persistant_plugins, long current_position)
 {
-//printf("VirtualNode::expand 1\n");
 	expand_buffers();
 
-//printf("VirtualNode::expand 2\n");
+//printf("VirtualNode::expand 1 %p\n", this);
 // module needs to know where the input data for the next process is
 	data_in_input = 1;
 	if(real_module)
@@ -98,8 +98,8 @@ int VirtualNode::expand(int persistant_plugins, long current_position)
 // plugin always takes data from input to output
 //printf("VirtualNode::expand 5\n");
 		expand_as_plugin(persistant_plugins);
-//printf("VirtualNode::expand 6\n");
 	}
+//printf("VirtualNode::expand 6\n");
 
 	return 0;
 }
@@ -141,7 +141,7 @@ int VirtualNode::expand_as_module(int duplicate, long current_position)
 //printf("VirtualNode::expand_as_module 2 %d %p\n", i, plugin);
 		if(plugin)
 		{
-//printf("VirtualNode::expand_as_module 3 %s %d\n", plugin->title, plugin->on);
+//printf("VirtualNode::expand_as_module 3 %p %d\n", plugin, plugin->on);
 			if(plugin->on)
 			{
 				int plugin_type = plugin->plugin_type;
@@ -296,13 +296,14 @@ int VirtualNode::sort(ArrayList<VirtualNode*>*render_list)
 {
 	int result = 0, total_result = 0;
 
+//sleep(1);
 //printf("VirtualNode::sort %p %p\n", real_module, real_plugin);
 	if(real_module)
 	{
 		sort_as_module(render_list, result, total_result);
 	}
 	else
-	if(real_plugin || real_transition)
+	if(real_plugin)
 	{
 		sort_as_plugin(render_list, result, total_result);
 	}
@@ -356,12 +357,15 @@ int VirtualNode::sort_as_module(ArrayList<VirtualNode*>*render_list, int &result
 	return 0;
 }
 
-int VirtualNode::sort_as_plugin(ArrayList<VirtualNode*>*render_list, int &result, int &total_result)
+int VirtualNode::sort_as_plugin(ArrayList<VirtualNode*>*render_list,
+	int &result, 
+	int &total_result)
 {
 // Plugin server does not exist at this point.
 // need to know if plugin requires all inputs to be armed before rendering
 //printf("VirtualNode::sort_as_plugin 1\n");
 	int multichannel = 0, singlechannel = 0;
+//sleep(1);
 
 
 // Referenced plugin is off
@@ -472,90 +476,14 @@ int VirtualNode::render_as_plugin(long source_len,
 	int ring_buffer_in, ring_buffer_out;
 	long fragment_position_in, fragment_position_out;
 	int multichannel = 0;
-printf("VirtualNode::render_as_plugin 1 %p\n", attachment);
-
-// Redirect the attachmentpoint to the shared plugin or standalone plugin.
-// 	if(real_transition)
-// 	{
-// 		if(plugin_type == 2)
-// 			attachmentpoint = real_plugin;
-// 		else
-// 			attachmentpoint = real_transition;
-// 
-// // Override the source positions if a transition.
-// 		source_len = real_transition->plugin->length;
-// 
-// 		if(direction == PLAY_REVERSE)
-// 			source_position = real_transition->plugin->startproject + real_transition->plugin->length - source_position;
-// 		else
-// 			source_position -= real_transition->plugin->startproject;
-// 	}
-// 	else
-// 	{
-// 		attachmentpoint = real_plugin;
-// 	}
+//printf("VirtualNode::render_as_plugin 1 %p\n", attachment);
 
 // Abort if no plugin
 	if(!attachment ||
 		!real_plugin ||
 		!real_plugin->on) return 0;
 
-// 	attachment->render(source_position, 
-// 		fragment_len, 
-// 		fragment_position);
-
-// 	if(plugin_type == 1 || plugin_type == 2) 
-// 	{
-// 		if(!attachmentpoint->plugin_server)
-// 			return 0;
-// 		else
-// 			multichannel = attachmentpoint->multichannel_shared(0);
-// 	}
-// 
-// 	if(plugin_type == 1 && !multichannel)
-// 	{
-// // standalone plugin
-// // plugins copy from their input to their output
-// 		plugin_server->arm_buffer(plugin_buffer_number,
-// 							fragment_position_in,
-// 							fragment_position_out,
-// 							ring_buffer_in,
-// 							ring_buffer_out);
-// 		plugin_server->set_automation(plugin_autos, &plugin_auto_before, &plugin_auto_after, direction);
-// 		plugin_server->process_realtime(source_len, source_position, fragment_len);
-// 	}
-// 	else
-// 	if(plugin_type == 2 || multichannel)
-// 	{
-// // render a shared plugin
-// // shared single channel plugin can be processed now
-// 		if(!plugin_server->multichannel)
-// 		{
-// 			plugin_server->arm_buffer(plugin_buffer_number,
-// 							fragment_position_in,
-// 							fragment_position_out,
-// 							ring_buffer_in,
-// 							ring_buffer_out);
-// 			plugin_server->set_automation(plugin_autos, &plugin_auto_before, &plugin_auto_after, direction);
-// 			plugin_server->process_realtime(source_len, 
-// 											source_position, 
-// 											fragment_len);
-// 		}
-// 		else
-// 		{
-// // try multi channel plugin now
-// // flag real plugin by setting render count here
-// 			render_count = 0;
-// 			attachmentpoint->render(ring_buffer_in, ring_buffer_out, 
-// 									fragment_position_in, fragment_position_out,
-// 									fragment_len, plugin_buffer_number, 
-// 									source_position, source_len,
-// 									plugin_autos, 
-// 									&plugin_auto_before, 
-// 									&plugin_auto_after);
-// 		}
-// 	}
-printf("VirtualNode::render_as_plugin 2\n");
+//printf("VirtualNode::render_as_plugin 2\n");
 }
 
 

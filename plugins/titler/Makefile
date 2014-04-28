@@ -13,6 +13,7 @@ OUTPUT = ../$(OBJDIR)/titler.plugin
 
 include ../../plugin_config
 
+
 $(OBJDIR)/title.o: title.C
 $(OBJDIR)/titlewindow.o: titlewindow.C
 

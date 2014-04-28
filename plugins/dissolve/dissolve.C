@@ -16,10 +16,13 @@ PluginClient* new_plugin(PluginServer *server)
 DissolveMain::DissolveMain(PluginServer *server)
  : PluginVClient(server)
 {
+	overlayer = 0;
 }
 
 DissolveMain::~DissolveMain()
 {
+	if(overlayer)
+		delete overlayer;
 }
 
 char* DissolveMain::plugin_title() { return "Dissolve"; }
@@ -27,29 +30,15 @@ int DissolveMain::is_video() { return 1; }
 int DissolveMain::is_transition() { return 1; }
 int DissolveMain::uses_gui() { return 0; }
 
-VFrame* DissolveMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(DissolveMain)
 
-
-int DissolveMain::start_realtime()
-{
-	overlayer = new OverlayFrame(get_project_smp() + 1);
-	return 0;
-}
-
-int DissolveMain::stop_realtime()
-{
-	delete overlayer;
-	return 0;
-}
 
 int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	float fade = (float)PluginClient::get_source_position() / 
 			PluginClient::get_total_len();
 
+	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
 //printf("DissolveMain::process_realtime %f\n", fade);
 	overlayer->overlay(outgoing, 
 		incoming, 

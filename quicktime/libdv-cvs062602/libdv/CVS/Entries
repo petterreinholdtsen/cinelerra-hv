@@ -31,7 +31,6 @@
 /idct_248.c/1.1/Fri Jun 28 05:39:23 2002//
 /idct_248.h/1.1/Fri Jun 28 05:39:23 2002//
 /idct_block_mmx.S/1.1/Fri Jun 28 05:39:23 2002//
-/mmx.h/1.1/Fri Jun 28 05:39:23 2002//
 /parse.c/1.1/Fri Jun 28 05:39:23 2002//
 /parse.h/1.1/Fri Jun 28 05:39:23 2002//
 /place.c/1.1/Fri Jun 28 05:39:23 2002//
@@ -55,4 +54,5 @@
 /vlc_x86.S/1.1/Fri Jun 28 05:39:23 2002//
 /weighting.c/1.1/Fri Jun 28 05:39:23 2002//
 /weighting.h/1.1/Fri Jun 28 05:39:23 2002//
+/mmx.h/1.2/Fri Aug  2 16:03:17 2002//
 D

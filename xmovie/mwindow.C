@@ -118,8 +118,8 @@ void MWindow::load_defaults()
 	sprintf(default_path, "");
 	defaults->get("PATH", default_path);
 	every_frame = defaults->get("EVERYFRAME", 0);
-	mwindow_x = defaults->get("MWINDOW_X", INFINITY);
-	mwindow_y = defaults->get("MWINDOW_Y", INFINITY);
+	mwindow_x = defaults->get("MWINDOW_X", BC_INFINITY);
+	mwindow_y = defaults->get("MWINDOW_Y", BC_INFINITY);
 	mwindow_w = defaults->get("MWINDOW_W", 640);
 	mwindow_h = defaults->get("MWINDOW_H", 480);
 	fullscreen = defaults->get("FULLSCREEN", 0);

@@ -1295,3 +1295,19 @@ int quicktime_close(quicktime_t *file)
 	free(file);
 	return result;
 }
+
+int quicktime_major()
+{
+	return QUICKTIME_MAJOR;
+}
+
+int quicktime_minor()
+{
+	return QUICKTIME_MINOR;
+}
+
+int quicktime_release()
+{
+	return QUICKTIME_RELEASE;
+}
+

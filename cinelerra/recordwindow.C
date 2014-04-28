@@ -16,8 +16,8 @@ RecordWindow::RecordWindow(MWindow *mwindow, Record *record)
 	mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
  	WIDTH, 
 	HEIGHT,
-	(int)INFINITY,
-	(int)INFINITY,
+	(int)BC_INFINITY,
+	(int)BC_INFINITY,
 	0,
 	0,
 	1)

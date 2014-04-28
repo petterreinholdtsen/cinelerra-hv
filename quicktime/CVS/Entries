@@ -3,24 +3,18 @@
 /COPYING/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /Makefile.2/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.50/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/Makefile.encore2/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/Makefile.encore50/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.ffmpeg/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.jpeg/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.lame/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.mad/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/Makefile.vorbis/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /README/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /atom.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /avi_hdrl.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /avi_idx1.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /avi_movi.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /avi_strh.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/cmodel_default.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
-/cmodel_permutation.h/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /cmodel_yuv420p.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /cmodel_yuv422.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
-/codecs.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /codecs.h/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /colormodels.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /colormodels.h/1.1.1.1/Fri Jun 21 12:35:22 2002//
@@ -66,10 +60,6 @@
 /jpeg.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /jpeg_old.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /jpeg_old.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/libdv.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/libdv.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/libmjpeg.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/libmjpeg.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /make_package/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /make_streamable.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /matrix.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -86,10 +76,7 @@
 /qtmp3.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /qtpng.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /qtpng.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/qtprivate.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /qtvorbis.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/quicktime.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/quicktime.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /raw.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /raw.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /rawaudio.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -124,7 +111,6 @@
 /v410.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /v410.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /vmhd.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/vorbis.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /wmx1.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /wmx1.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /wmx2.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -160,8 +146,24 @@ D/libvorbis-1.0rc2////
 /stsdtable.c/1.2/Fri Jun 28 05:40:33 2002//
 /udta.c/1.2/Fri Jun 28 05:40:33 2002//
 D/libdv-cvs062602////
-/Makefile/1.3/Tue Jul  2 14:21:07 2002//
 /global_config/1.1/Tue Jul  2 14:20:27 2002//
 D/libraw1394-0.9.0////
 /depend.libraw/1.1/Tue Jul  2 14:21:39 2002//
 /Makefile.libraw/1.1/Tue Jul  2 14:21:50 2002//
+/libmjpeg.c/1.2/Mon Jul 15 18:57:03 2002//
+/libmjpeg.h/1.2/Mon Jul 15 18:57:03 2002//
+/libdv.c/1.3/Fri Jul 19 16:27:32 2002//
+/libdv.h/1.2/Fri Jul 19 16:27:32 2002//
+/Makefile/1.4/Mon Jul 22 23:04:44 2002//
+/Makefile.encore2/1.2/Mon Jul 22 23:04:44 2002//
+/Makefile.encore50/1.2/Mon Jul 22 23:04:44 2002//
+/Makefile.vorbis/1.2/Mon Jul 22 23:04:44 2002//
+D/libogg-1.0////
+D/libvorbis-1.0////
+/vorbis.c/1.4/Thu Jul 25 15:58:50 2002//
+/qtprivate.h/1.2/Mon Jul 29 12:31:05 2002//
+/quicktime.c/1.2/Mon Jul 29 12:31:05 2002//
+/quicktime.h/1.2/Mon Jul 29 12:31:05 2002//
+/cmodel_default.c/1.2/Thu Aug  1 16:13:31 2002//
+/cmodel_permutation.h/1.4/Mon Aug  5 13:40:48 2002//
+/codecs.c/1.2/Mon Aug  5 13:40:48 2002//

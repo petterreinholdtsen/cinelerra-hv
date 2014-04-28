@@ -7,22 +7,12 @@ class GainThread;
 class GainWindow;
 
 #include "filexml.h"
+#include "gain.h"
 #include "guicast.h"
 #include "mutex.h"
-#include "gain.h"
+#include "pluginclient.h"
 
-class GainThread : public Thread
-{
-public:
-	GainThread(Gain *gain);
-	~GainThread();
-	
-	void run();
-	
-	Mutex completion, gui_started; // prevent loading data until the GUI is started
-	Gain *gain;
-	GainWindow *window;
-};
+PLUGIN_THREAD_HEADER(Gain, GainThread, GainWindow)
 
 class GainLevel;
 

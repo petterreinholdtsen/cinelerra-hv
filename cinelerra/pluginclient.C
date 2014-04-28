@@ -69,7 +69,8 @@ int PluginClient::plugin_get_range()
 
 // For realtime plugins initialize buffers
 int PluginClient::plugin_init_realtime(int realtime_priority, 
-	int total_in_buffers)
+	int total_in_buffers,
+	int buffer_size)
 {
 //printf("PluginClient::plugin_init_realtime 1\n");
 // Get parameters for all
@@ -82,11 +83,8 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	smp = server->edl->session->smp;
 	this->realtime_priority = realtime_priority;
 	this->total_in_buffers = total_in_buffers;
+	this->out_buffer_size = this->in_buffer_size = buffer_size;
 //printf("PluginClient::plugin_init_realtime 1\n");
-
-// derived initialization
-	start_realtime();
-//printf("PluginClient::plugin_init_realtime 2\n");
 	return 0;
 }
 
@@ -95,6 +93,7 @@ int PluginClient::plugin_start_loop(long start, long end, long buffer_size, int 
 	this->start = start;
 	this->end = end;
 	this->in_buffer_size = this->out_buffer_size = buffer_size;
+//printf("PluginClient::plugin_start_loop 1 %d\n", in_buffer_size);
 	this->total_in_buffers = this->total_out_buffers = total_buffers;
 	sample_rate = get_project_samplerate();
 	frame_rate = get_project_framerate();
@@ -119,13 +118,6 @@ MainProgressBar* PluginClient::start_progress(char *string, long length)
 
 
 
-int PluginClient::plugin_stop_realtime()
-{
-// give to user
-	stop_realtime();
-	return 0;
-}
-
 int PluginClient::plugin_get_parameters()
 {
 	sample_rate = get_project_samplerate();
@@ -136,8 +128,6 @@ int PluginClient::plugin_get_parameters()
 
 // ========================= main loop
 
-int PluginClient::start_realtime() { return 0; }
-int PluginClient::stop_realtime() { return 0; }
 int PluginClient::is_multichannel() { return 0; }
 int PluginClient::is_synthesis() { return 0; }
 int PluginClient::is_realtime() { return 0; }
@@ -304,6 +294,11 @@ long PluginClient::get_source_len()
 long PluginClient::get_source_position()
 {
 	return source_position;
+}
+
+long PluginClient::get_source_start()
+{
+	return server->get_source_start();
 }
 
 long PluginClient::get_total_len()

@@ -1,3 +1,5 @@
+#include "cplayback.h"
+#include "cwindow.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -10,7 +12,10 @@
 #include "new.h"
 #include "mainsession.h"
 #include "theme.h"
+#include "transportque.h"
 #include "videowindow.h"
+#include "vplayback.h"
+#include "vwindow.h"
 
 #include <string.h>
 
@@ -52,6 +57,17 @@ void New::create_new_edl()
 int New::create_new_project()
 {
 //printf("New::create_new_project 1\n");
+	mwindow->cwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	mwindow->vwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	mwindow->cwindow->playback_engine->interrupt_playback(0);
+	mwindow->vwindow->playback_engine->interrupt_playback(0);
+
 	mwindow->gui->lock_window();
 //printf("New::create_new_project 1\n");
 	mwindow->undo->update_undo_before("New", LOAD_ALL);

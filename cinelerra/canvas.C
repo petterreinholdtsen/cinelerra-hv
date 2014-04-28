@@ -102,7 +102,7 @@ float Canvas::get_x_offset(EDL *edl,
 		}
 		
 		if(out_w < canvas_w)
-			return -(canvas_w - out_w) / 2;
+			return -(canvas_w - out_w) / 2 / zoom_x;
 	}
 
 	return 0;
@@ -140,8 +140,9 @@ float Canvas::get_y_offset(EDL *edl,
 			out_h = (int)((float)out_w / (conformed_w / conformed_h) + 0.5);
 		}
 
+//printf("Canvas::get_y_offset 1 %d %d %f\n", out_h, canvas_h, -((float)canvas_h - out_h) / 2);
 		if(out_h < canvas_h)
-			return -((float)canvas_h - out_h) / 2;
+			return -((float)canvas_h - out_h) / 2 / zoom_y;
 	}
 
 	return 0;

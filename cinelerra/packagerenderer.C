@@ -12,6 +12,7 @@
 #include "errorbox.h"
 #include "file.h"
 #include "filesystem.h"
+#include "indexfile.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "packagerenderer.h"
@@ -149,14 +150,23 @@ void PackageRenderer::create_output()
 	{
 // open failed
 		char string[BCTEXTLEN];
+//printf("PackageRenderer::create_output 6\n");
 		sprintf(string, "Couldn't open %s", asset->path);
+//printf("PackageRenderer::create_output 7\n");
 		ErrorBox error(PROGRAM_NAME ": Error",
 			mwindow->gui->get_abs_cursor_x(),
 			mwindow->gui->get_abs_cursor_y());
 		error.create_objects(string);
 		error.run_window();
 	}
-//printf("PackageRenderer::create_output 6\n");
+	else
+	if(mwindow)
+	{
+//printf("PackageRenderer::create_output 8\n");
+		IndexFile::delete_index(preferences, asset);
+//printf("PackageRenderer::create_output 9\n");
+	}
+//printf("PackageRenderer::create_output 10\n");
 }
 
 void PackageRenderer::create_engine()
@@ -438,6 +448,7 @@ void PackageRenderer::stop_output()
 		file->stop_video_thread();
 		if(mwindow)
 		{
+			video_device->stop_playback();
 			video_device->close_all();
 			delete video_device;
 		}
@@ -462,8 +473,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 	result = 0;
 	this->package = package;
 
-printf("PackageRenderer::render_package: "
-	"audio=%d + %d video=%d + %d\n",
+printf("PackageRenderer::render_package: \n"
+	"audio start=%d\n"
+	"audio length=%d\n"
+	"video start=%d\n"
+	"video length=%d\n",
 	package->audio_start, 
 	package->audio_end - package->audio_start, 
 	package->video_start, 
@@ -563,7 +577,7 @@ printf("PackageRenderer::render_package: "
 
 
 
-//printf("PackageRenderer::render_package 11 %d\n", result);
+//printf("PackageRenderer::render_package 13 %d\n", result);
 	}
 
 
@@ -573,7 +587,7 @@ printf("PackageRenderer::render_package: "
 
 	set_result(result);
 
-//printf("PackageRenderer::render_package 12 %d\n", result);
+printf("PackageRenderer::render_package: done\n");
 
 
 	return result;

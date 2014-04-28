@@ -11,19 +11,11 @@ class SharpenInterlace;
 #include "mutex.h"
 #include "sharpen.h"
 
-class SharpenThread : public Thread
-{
-public:
-	SharpenThread(SharpenMain *client);
-	~SharpenThread();
 
-	void run();
 
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	SharpenMain *client;
-	SharpenWindow *window;
-};
+
+
+PLUGIN_THREAD_HEADER(SharpenMain, SharpenThread, SharpenWindow)
 
 class SharpenSlider;
 class SharpenHorizontal;

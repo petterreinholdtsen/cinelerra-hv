@@ -205,9 +205,6 @@
 /hscroll_fwd_dn.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hscroll_fwd_hi.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hscroll_fwd_up.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/hslider_bg_dn.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/hslider_bg_hi.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/hslider_bg_up.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hslider_fg_dn.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hslider_fg_hi.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hslider_fg_up.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -260,7 +257,6 @@
 /magnify_up.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /mask.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /maskkeyframe.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/mbutton_left.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /mbutton_right.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /mclock.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /meterreset_dn.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -395,7 +391,6 @@
 /setformat_bg.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /show_meters.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /singleframe.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/slider_bg.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /splice.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /startover_dn.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /startover_hi.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -465,3 +460,13 @@
 /zoombar_left.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /zoombar_right.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 D/.xvpics////
+/mbutton_left.png/1.2/Thu Jul 25 13:37:22 2002//
+/recordgui_batch.png/1.2/Mon Jul 29 12:44:42 2002/-kb/
+/recordgui_controls.png/1.2/Mon Jul 29 12:45:08 2002/-kb/
+/recordgui_list.png/1.2/Mon Jul 29 12:50:06 2002/-kb/
+/recordmonitor_panel.png/1.4/Mon Jul 29 13:29:47 2002/-kb/
+/recordmonitor_meters.png/1.4/Mon Jul 29 13:58:48 2002/-kb/
+/hslider_bg_dn.png/1.1.1.1/Fri Aug  2 16:24:32 2002//
+/hslider_bg_hi.png/1.1.1.1/Fri Aug  2 16:24:32 2002//
+/hslider_bg_up.png/1.1.1.1/Fri Aug  2 16:24:32 2002//
+/slider_bg.png/1.1.1.1/Fri Aug  2 16:24:32 2002//

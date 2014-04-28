@@ -62,7 +62,15 @@ int FileFormat::create_objects_(char *string2)
 	
 	y += 30;
 	add_subwindow(new BC_Title(x, y, "Bits:"));
-	bitspopup = new BitsPopup(this, x2, y, &asset->bits, 0, 1, 1, 0, 0);
+	bitspopup = new BitsPopup(this, 
+		x2, 
+		y, 
+		&asset->bits, 
+		0, 
+		1, 
+		1, 
+		0, 
+		1);
 	bitspopup->create_objects();
 	
 	y += 30;

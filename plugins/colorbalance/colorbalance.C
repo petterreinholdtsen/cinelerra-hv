@@ -8,10 +8,7 @@
 
 #define SQR(a) ((a) * (a))
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new ColorBalanceMain(server);
-}
+REGISTER_PLUGIN(ColorBalanceMain)
 
 
 
@@ -295,26 +292,14 @@ void ColorBalanceEngine::run()
 ColorBalanceMain::ColorBalanceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
 	need_reconfigure = 1;
 	engine = 0;
-//printf("ColorBalanceMain::ColorBalanceMain 1\n");
-	load_defaults();
-//printf("ColorBalanceMain::ColorBalanceMain 2\n");
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ColorBalanceMain::~ColorBalanceMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 
 	if(engine)
@@ -329,11 +314,7 @@ ColorBalanceMain::~ColorBalanceMain()
 
 char* ColorBalanceMain::plugin_title() { return "Color Balance"; }
 int ColorBalanceMain::is_realtime() { return 1; }
-	
-VFrame* ColorBalanceMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+
 
 int ColorBalanceMain::reconfigure()
 {
@@ -411,11 +392,11 @@ int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diffe
 
 
 
-
+NEW_PICON_MACRO(ColorBalanceMain)
 LOAD_CONFIGURATION_MACRO(ColorBalanceMain, ColorBalanceConfig)
-
-
-
+SHOW_GUI_MACRO(ColorBalanceMain, ColorBalanceThread)
+RAISE_WINDOW_MACRO(ColorBalanceMain)
+SET_STRING_MACRO(ColorBalanceMain)
 
 
 
@@ -423,9 +404,9 @@ LOAD_CONFIGURATION_MACRO(ColorBalanceMain, ColorBalanceConfig)
 
 int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-//printf("ColorBalanceMain::process_realtime 1\n");
 	need_reconfigure |= load_configuration();
 
+//printf("ColorBalanceMain::process_realtime 1 %d\n", need_reconfigure);
 	if(need_reconfigure)
 	{
 		int i;
@@ -501,32 +482,6 @@ int ColorBalanceMain::test_clip(int &r, int &g, int &b)
 }
 
 
-int ColorBalanceMain::show_gui()
-{
-//printf("ColorBalanceMain::show_gui 1\n");
-	load_configuration();
-//printf("ColorBalanceMain::show_gui 1\n");
-	thread = new ColorBalanceThread(this);
-//printf("ColorBalanceMain::show_gui 1\n");
-	thread->start();
-//printf("ColorBalanceMain::show_gui 2\n");
-	return 0;
-}
-
-void ColorBalanceMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
-int ColorBalanceMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
 
 int ColorBalanceMain::load_defaults()
 {
@@ -576,7 +531,6 @@ void ColorBalanceMain::save_data(KeyFrame *keyframe)
 void ColorBalanceMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	ColorBalanceConfig new_config;
 
 //printf("ColorBalanceMain::read_data 1\n");
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
@@ -593,11 +547,11 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 		{
 			if(input.tag.title_is("COLORBALANCE"))
 			{
-				new_config.cyan = input.tag.get_property("CYAN", config.cyan);
-				new_config.magenta = input.tag.get_property("MAGENTA", config.magenta);
-				new_config.yellow = input.tag.get_property("YELLOW", config.yellow);
-				new_config.preserve = input.tag.get_property("PRESERVELUMINOSITY", config.preserve);
-				new_config.lock_params = input.tag.get_property("LOCKPARAMS", config.lock_params);
+				config.cyan = input.tag.get_property("CYAN", config.cyan);
+				config.magenta = input.tag.get_property("MAGENTA", config.magenta);
+				config.yellow = input.tag.get_property("YELLOW", config.yellow);
+				config.preserve = input.tag.get_property("PRESERVELUMINOSITY", config.preserve);
+				config.lock_params = input.tag.get_property("LOCKPARAMS", config.lock_params);
 			}
 		}
 	}

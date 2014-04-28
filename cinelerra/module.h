@@ -33,6 +33,7 @@ public:
 	void create_new_attachments();
 	void swap_attachments();
 	virtual AttachmentPoint* new_attachment(Plugin *plugin) { return 0; };
+	virtual int get_buffer_size() { return 0; };
 	int test_plugins();
 	AttachmentPoint* attachment_of(Plugin *plugin);
 	void dump();

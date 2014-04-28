@@ -8,24 +8,36 @@ Store VWindow state in XML when not already a clip.
 Deletes the keyframe the cursor is on when dragging in/out point.
 Video playback not turned off after rendering.
 Undo from CWindow locked up once.
+DV movie crashed once on loading.
 Crash if rendering node refused connection.
 Changes_made not set after tweek.
 Moving icons in AWindow should reorder the contents in memory.
-Make all plugins use pluginclient.h macros.
+Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
+Deactivating in/out points and undoing a cut didn't disable them.
+Sound driver not getting closed when playback is stopped.
+Not exiting
+Fourier with window size less than fragment size crashed.
+Mask overlays not translated with projector.
+Plugin GUI pointer to virtual console instance.
+Renderfarm for background rendering.
+Speed ramps.
+Undo doesn't restore project title from previous load.
+Failure to detect play keyframes.  Not reproducible.
 
-
-
-
-
-
-
-
-
+Different compiler optimization sets:
+-mfpmath=sse
+-mmmx, -m3dnow, -msse, and -msse2
+-march=i386
+-march=i686
+-march=pentium4
+-march=athlon-mp
+-march=athlon
 
 
 
 B
 -----------
+Popup in CWindow and VWindow to set maximum preview size.
 Shared effect resolution when pasting to different tracks than source EDL.
 Doesn't support window managers with user placement of windows.
 Libmpeg3 encoding for DV and higher quality input than MPEG-4 can handle.
@@ -38,7 +50,6 @@ Lockup during channel change using RecordMonitor and BUZ driver.
 Ignore frames which return errors when monitoring recording.
 Color adjustments in Channel picker are thrown away when using Buz.
 Preferences crash after changing Playback device to Buz.
-Crash when cancelling DV audio recording.
 Either audio or video plays back in Microsoft Media Player but not both.
 
 

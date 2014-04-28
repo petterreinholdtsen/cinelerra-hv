@@ -140,6 +140,7 @@ AssetPopupBuildIndex::~AssetPopupBuildIndex()
 
 int AssetPopupBuildIndex::handle_event()
 {
+//printf("AssetPopupBuildIndex::handle_event 1\n");
 	mwindow->rebuild_indices();
 	return 1;
 }

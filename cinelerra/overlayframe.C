@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "clip.h"
 #include "edl.inc"
@@ -58,38 +59,61 @@ OverlayFrame::~OverlayFrame()
 
 // Branch prediction 4 U
 
-#define BLEND_3(max, type) \
+#define BLEND_3(max, type, do_yuv) \
 { \
 	int64_t r, g, b; \
+	const int64_t chroma_offset = (do_yuv ? (max + 1) / 2 : 0); \
  \
 /* if(mode != TRANSFER_NORMAL) printf("BLEND mode = %d\n", mode); */ \
 	switch(mode) \
 	{ \
 		case TRANSFER_DIVIDE: \
 			r = output[0] ? (((int64_t)input1 * max) / output[0]) : max; \
-			g = output[1] ? (((int64_t)input2 * max) / output[1]) : max; \
-			b = output[2] ? (((int64_t)input3 * max) / output[2]) : max; \
-			r = (r * opacity + output[0] * transparency) / max; \
-			g = (g * opacity + output[1] * transparency) / max; \
-			b = (b * opacity + output[2] * transparency) / max; \
+			if(do_yuv) \
+			{ \
+				g = labs((int)input2 - chroma_offset) > labs((int64_t)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = labs((int)input3 - chroma_offset) > labs((int64_t)output[2] - chroma_offset) ? input3 : output[2]; \
+			} \
+			else \
+			{ \
+				g = output[1] ? (int64_t)input2 * max / (int64_t)output[1] : max; \
+				b = output[2] ? (int64_t)input3 * max / (int64_t)output[2] : max; \
+			} \
+			r = (r * opacity + (int64_t)output[0] * transparency) / max; \
+			g = (g * opacity + (int64_t)output[1] * transparency) / max; \
+			b = (b * opacity + (int64_t)output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_MULTIPLY: \
 			r = ((int64_t)input1 * output[0]) / max; \
-			g = ((int64_t)input2 * output[1]) / max; \
-			b = ((int64_t)input3 * output[2]) / max; \
+			if(do_yuv) \
+			{ \
+				g = labs((int64_t)input2 - chroma_offset) > labs((int64_t)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = labs((int64_t)input3 - chroma_offset) > labs((int64_t)output[2] - chroma_offset) ? input3 : output[2]; \
+			} \
+			else \
+			{ \
+				g = (int64_t)input2 * (int64_t)output[1] / max; \
+				b = (int64_t)input3 * (int64_t)output[2] / max; \
+			} \
+			r = (r * opacity + (int64_t)output[0] * transparency) / max; \
+			g = (g * opacity + (int64_t)output[1] * transparency) / max; \
+			b = (b * opacity + (int64_t)output[2] * transparency) / max; \
+			break; \
+		case TRANSFER_SUBTRACT: \
+			r = (int64_t)input1 - output[0]; \
+			g = (int64_t)input2 - ((int64_t)output[1] - chroma_offset); \
+			b = (int64_t)input3 - ((int64_t)output[2] - chroma_offset); \
 			r = (r * opacity + output[0] * transparency) / max; \
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
 			break; \
-		case TRANSFER_SUBTRACT: \
-			r = (((int64_t)input1 - output[0]) * opacity + output[0] * transparency) / max; \
-			g = (((int64_t)input2 - output[1]) * opacity + output[1] * transparency) / max; \
-			b = (((int64_t)input3 - output[2]) * opacity + output[2] * transparency) / max; \
-			break; \
 		case TRANSFER_ADDITION: \
-			r = (((int64_t)input1 + output[0]) * opacity + output[0] * transparency) / max; \
-			g = (((int64_t)input2 + output[1]) * opacity + output[1] * transparency) / max; \
-			b = (((int64_t)input3 + output[2]) * opacity + output[2] * transparency) / max; \
+			r = (int64_t)input1 + output[0]; \
+			g = (int64_t)input2 - chroma_offset + output[1]; \
+			b = (int64_t)input3 - chroma_offset + output[2]; \
+			r = (r * opacity + output[0] * transparency) / max; \
+			g = (g * opacity + output[1] * transparency) / max; \
+			b = (b * opacity + output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_REPLACE: \
 			r = input1; \
@@ -113,10 +137,11 @@ OverlayFrame::~OverlayFrame()
 
 
 // Blending equations are drastically different for 3 and 4 components
-#define BLEND_4(max, type) \
+#define BLEND_4(max, type, do_yuv) \
 { \
 	int64_t r, g, b, a; \
 	int64_t pixel_opacity, pixel_transparency; \
+	const int64_t chroma_offset = (do_yuv ? (max + 1) / 2 : 0); \
  \
 	pixel_opacity = opacity * input4 / max; \
 	pixel_transparency = (max - pixel_opacity) /* * output[3] / max */; \
@@ -125,32 +150,54 @@ OverlayFrame::~OverlayFrame()
 	{ \
 		case TRANSFER_DIVIDE: \
 			r = output[0] ? (((int64_t)input1 * max) / output[0]) : max; \
-			g = output[1] ? (((int64_t)input2 * max) / output[1]) : max; \
-			b = output[2] ? (((int64_t)input3 * max) / output[2]) : max; \
-			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
-			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
-			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
+			if(do_yuv) \
+			{ \
+				g = labs((int)input2 - chroma_offset) > labs((int)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = labs((int)input3 - chroma_offset) > labs((int)output[2] - chroma_offset) ? input3 : output[2]; \
+			} \
+			else \
+			{ \
+				g = output[1] ? (int64_t)input2 * max / (int64_t)output[1] : max; \
+				b = output[2] ? (int64_t)input3 * max / (int64_t)output[2] : max; \
+			} \
+			r = (r * pixel_opacity + (int64_t)output[0] * pixel_transparency) / max; \
+			g = (g * pixel_opacity + (int64_t)output[1] * pixel_transparency) / max; \
+			b = (b * pixel_opacity + (int64_t)output[2] * pixel_transparency) / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 		case TRANSFER_MULTIPLY: \
 			r = ((int64_t)input1 * output[0]) / max; \
-			g = ((int64_t)input2 * output[1]) / max; \
-			b = ((int64_t)input3 * output[2]) / max; \
+			if(do_yuv) \
+			{ \
+				g = labs((int64_t)input2 - chroma_offset) > labs((int64_t)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = labs((int64_t)input3 - chroma_offset) > labs((int64_t)output[2] - chroma_offset) ? input3 : output[2]; \
+			} \
+			else \
+			{ \
+				g = (int64_t)input2 * (int64_t)output[1] / max; \
+				b = (int64_t)input3 * (int64_t)output[2] / max; \
+			} \
+			r = (r * pixel_opacity + (int64_t)output[0] * pixel_transparency) / max; \
+			g = (g * pixel_opacity + (int64_t)output[1] * pixel_transparency) / max; \
+			b = (b * pixel_opacity + (int64_t)output[2] * pixel_transparency) / max; \
+			a = input4 > output[3] ? input4 : output[3]; \
+			break; \
+		case TRANSFER_SUBTRACT: \
+			r = (int64_t)input1 - output[0]; \
+			g = (int64_t)input2 - ((int64_t)output[1] - chroma_offset); \
+			b = (int64_t)input3 - ((int64_t)output[2] - chroma_offset); \
 			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
 			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
 			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
-		case TRANSFER_SUBTRACT: \
-			r = (((int64_t)input1 - output[0]) * pixel_opacity + output[0] * pixel_transparency) / max; \
-			g = (((int64_t)input2 - output[1]) * pixel_opacity + output[1] * pixel_transparency) / max; \
-			b = (((int64_t)input3 - output[2]) * pixel_opacity + output[2] * pixel_transparency) / max; \
-			a = input4 > output[3] ? input4 : output[3]; \
-			break; \
 		case TRANSFER_ADDITION: \
-			r = (((int64_t)input1 + output[0]) * pixel_opacity + output[0] * pixel_transparency) / max; \
-			g = (((int64_t)input2 + output[1]) * pixel_opacity + output[1] * pixel_transparency) / max; \
-			b = (((int64_t)input3 + output[2]) * pixel_opacity + output[2] * pixel_transparency) / max; \
+			r = (int64_t)input1 + output[0]; \
+			g = (int64_t)input2 - chroma_offset + output[1]; \
+			b = (int64_t)input3 - chroma_offset + output[2]; \
+			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
+			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
+			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 		case TRANSFER_REPLACE: \
@@ -626,6 +673,7 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 {
 	table = new bilinear_table_t[out_total];
 	bzero(table, sizeof(bilinear_table_t) * out_total);
+//printf("ScaleUnit::tabulate_reduction 1 %f %d %d %d\n", scale, in_pixel1, out_total, in_total);
 	for(int i = 0; i < out_total; i++)
 	{
 		float out_start = i;
@@ -633,23 +681,35 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 		float out_end = i + 1;
 		float in_end = out_end * scale;
 		bilinear_table_t *entry = table + i;
+//printf("ScaleUnit::tabulate_reduction 1 %f %f %f %f\n", out_start, out_end, in_start, in_end);
 
 // Store input fraction
 		entry->input_fraction1 = (floor(in_start + 1) - in_start) / scale;
 		entry->input_fraction2 = 1.0 / scale;
 		entry->input_fraction3 = (in_end - floor(in_end)) / scale;
 
-		if(in_end >= in_total)
+		if(in_end >= in_total - in_pixel1)
 		{
-			in_end = in_total - 1;
+			in_end = in_total - in_pixel1 - 1;
+			
+			int difference = (int)in_end - (int)in_start - 1;
+			if(difference < 0) difference = 0;
 			entry->input_fraction3 = 1.0 - 
 				entry->input_fraction1 - 
-				entry->input_fraction2 * ((int)in_end - (int)in_start - 1);
+				entry->input_fraction2 * difference;
 		}
 
 // Store input pixels
 		entry->input_pixel1 = (int)in_start;
 		entry->input_pixel2 = (int)in_end;
+
+// printf("ScaleUnit::tabulate_reduction 1 %d %d %f %f  %f\n", 
+// entry->input_pixel1, 
+// entry->input_pixel2,
+// entry->input_fraction1,
+// entry->input_fraction2,
+// entry->input_fraction3);
+
 
 // Sanity check
 		if(entry->input_pixel1 > entry->input_pixel2)
@@ -705,10 +765,10 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 			entry->input_pixel1 = 0;
 		}
 
-		if(entry->input_pixel2 >= in_total)
+		if(entry->input_pixel2 >= in_total - in_pixel1)
 		{
-			entry->input_pixel2 = 0;
-			entry->input_fraction3 = 0;
+			entry->input_pixel2 = entry->input_pixel1;
+			entry->input_fraction3 = 1.0 - entry->input_fraction1;
 		}
 
 		entry->total_fraction = 
@@ -716,6 +776,13 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 			entry->input_fraction3;
 		entry->input_pixel1 += in_pixel1;
 		entry->input_pixel2 += in_pixel1;
+// 
+// printf("ScaleUnit::tabulate_enlarge %d %d %f %f %f\n",
+// entry->input_pixel1,
+// entry->input_pixel2,
+// entry->input_fraction1,
+// entry->input_fraction2,
+// entry->input_fraction3);
 	}
 }
 
@@ -747,7 +814,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	if(components == 4) temp_f4 += input_scale1 * input_row[3]; \
  \
 /* Do last pixel */ \
-	if(input_row < input_end) \
+/*	if(input_row < input_end) */\
 	{ \
 		temp_f1 += input_scale3 * input_end[0]; \
 		temp_f2 += input_scale3 * input_end[1]; \
@@ -799,12 +866,13 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 			in_y1_int, \
 			out_h_int, \
 			input->get_h()); \
-/* dump_bilinear(y_table, out_h_int); */ \
+/* dump_bilinear(y_table, out_h_int); */\
  \
  	for(int i = 0; i < out_h; i++) \
 	{ \
 		type *out_row = out_rows[i + pkg->out_row1]; \
 		bilinear_table_t *y_entry = &y_table[i + pkg->out_row1]; \
+/*printf("BILINEAR_REDUCE 2 %d %d %d\n", i, y_entry->input_pixel1, y_entry->input_pixel2); */\
  \
 		for(int j = 0; j < out_w_int; j++) \
 		{ \
@@ -853,6 +921,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 			out_row[j * components + 2] = (type)temp_f3; \
 			if(components == 4) out_row[j * components + 3] = (type)temp_f4; \
 		} \
+/*printf("BILINEAR_REDUCE 3 %d\n", i);*/ \
 	} \
  \
 	delete [] x_table; \
@@ -864,6 +933,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 // Only 2 input pixels
 #define BILINEAR_ENLARGE(max, type, components) \
 { \
+/*printf("BILINEAR_ENLARGE 1\n");*/ \
 	float k_y = 1.0 / scale_h; \
 	float k_x = 1.0 / scale_w; \
 	type **in_rows = (type**)input->get_rows(); \
@@ -1074,6 +1144,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 		delete [] table_antifrac_y_i; \
 	} \
  \
+/*printf("BILINEAR_ENLARGE 2\n");*/ \
 }
 
 
@@ -1419,7 +1490,7 @@ void ScaleUnit::process_package(LoadPackage *package)
 		input->get_color_model() == BC_YUV161616 ||
 		input->get_color_model() == BC_YUVA16161616);
 
-//printf("ScaleUnit::process_package 2\n");
+//printf("ScaleUnit::process_package 2 %f %f\n", engine->w_scale, engine->h_scale);
 	if(engine->interpolation_type == CUBIC_CUBIC || 
 		(engine->interpolation_type == CUBIC_LINEAR 
 			&& engine->w_scale > 1 && 
@@ -1450,7 +1521,35 @@ void ScaleUnit::process_package(LoadPackage *package)
 		}
 	}
 	else
+	if(engine->w_scale > 1 && 
+		engine->h_scale > 1)
+//if(0)
 // Perform bilinear scaling input -> scale_output
+	{
+		switch(engine->scale_input->get_color_model())
+		{
+			case BC_RGB888:
+			case BC_YUV888:
+				BILINEAR_ENLARGE(0xff, unsigned char, 3);
+				break;
+
+			case BC_RGBA8888:
+			case BC_YUVA8888:
+				BILINEAR_ENLARGE(0xff, unsigned char, 4);
+				break;
+
+			case BC_RGB161616:
+			case BC_YUV161616:
+				BILINEAR_ENLARGE(0xffff, uint16_t, 3);
+				break;
+
+			case BC_RGBA16161616:
+			case BC_YUVA16161616:
+				BILINEAR_ENLARGE(0xffff, uint16_t, 4);
+				break;
+		}
+	}
+	else
 	{
 		switch(engine->scale_input->get_color_model())
 		{
@@ -1947,11 +2046,11 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
  \
 			if(components == 3) \
 			{ \
-				BLEND_3(max, type); \
+				BLEND_3(max, type, do_yuv); \
 			} \
 			else \
 			{ \
-				BLEND_4(max, type); \
+				BLEND_4(max, type, do_yuv); \
 			} \
 		} \
 	} \
@@ -2140,7 +2239,7 @@ LoadPackage* TranslateEngine::new_package()
 
 
 
-#define SCALE_TRANSLATE(max, type, components) \
+#define SCALE_TRANSLATE(max, type, components, do_yuv) \
 { \
 	int64_t opacity = (int)(alpha * max + 0.5); \
 	int64_t transparency = max - opacity; \
@@ -2169,11 +2268,11 @@ LoadPackage* TranslateEngine::new_package()
 	 \
 				if(components == 3) \
 				{ \
-					BLEND_3(max, type); \
+					BLEND_3(max, type, do_yuv); \
 				} \
 				else \
 				{ \
-					BLEND_4(max, type); \
+					BLEND_4(max, type, do_yuv); \
 				} \
 			} \
 		} \
@@ -2193,11 +2292,11 @@ LoadPackage* TranslateEngine::new_package()
 	 \
 				if(components == 3) \
 				{ \
-					BLEND_3(max, type); \
+					BLEND_3(max, type, do_yuv); \
 				} \
 				else \
 				{ \
-					BLEND_4(max, type); \
+					BLEND_4(max, type, do_yuv); \
 				} \
 			} \
 		} \
@@ -2285,24 +2384,36 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
+			SCALE_TRANSLATE(0xff, uint8_t, 3, 0);
+			break;
+
 		case BC_YUV888:
-			SCALE_TRANSLATE(0xff, uint8_t, 3);
+			SCALE_TRANSLATE(0xff, uint8_t, 3, 1);
 			break;
 
 		case BC_RGBA8888:
+			SCALE_TRANSLATE(0xff, uint8_t, 4, 0);
+			break;
+
 		case BC_YUVA8888:
-			SCALE_TRANSLATE(0xff, uint8_t, 4);
+			SCALE_TRANSLATE(0xff, uint8_t, 4, 1);
 			break;
 
 
 		case BC_RGB161616:
+			SCALE_TRANSLATE(0xffff, uint16_t, 3, 0);
+			break;
+
 		case BC_YUV161616:
-			SCALE_TRANSLATE(0xffff, uint16_t, 3);
+			SCALE_TRANSLATE(0xffff, uint16_t, 3, 1);
 			break;
 
 		case BC_RGBA16161616:
+			SCALE_TRANSLATE(0xffff, uint16_t, 4, 0);
+			break;
+
 		case BC_YUVA16161616:
-			SCALE_TRANSLATE(0xffff, uint16_t, 4);
+			SCALE_TRANSLATE(0xffff, uint16_t, 4, 1);
 			break;
 	}
 	
@@ -2389,7 +2500,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 
 
 
-#define BLEND_ONLY(type, max, components) \
+#define BLEND_ONLY(type, max, components, do_yuv) \
 { \
 	int64_t opacity = (int)(alpha * max + 0.5); \
 	int64_t transparency = max - opacity; \
@@ -2415,11 +2526,11 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
  			if(components == 3) \
 			{ \
-				BLEND_3(max, type); \
+				BLEND_3(max, type, do_yuv); \
 			} \
 			else \
 			{ \
-				BLEND_4(max, type); \
+				BLEND_4(max, type, do_yuv); \
 			} \
  \
 			input += components; \
@@ -2455,20 +2566,28 @@ void BlendUnit::process_package(LoadPackage *package)
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
+			BLEND_ONLY(unsigned char, 0xff, 3, 0);
+			break;
 		case BC_YUV888:
-			BLEND_ONLY(unsigned char, 0xff, 3);
+			BLEND_ONLY(unsigned char, 0xff, 3, 1);
 			break;
 		case BC_RGBA8888:
+			BLEND_ONLY(unsigned char, 0xff, 4, 0);
+			break;
 		case BC_YUVA8888:
-			BLEND_ONLY(unsigned char, 0xff, 4);
+			BLEND_ONLY(unsigned char, 0xff, 4, 1);
 			break;
 		case BC_RGB161616:
+			BLEND_ONLY(uint16_t, 0xffff, 3, 0);
+			break;
 		case BC_YUV161616:
-			BLEND_ONLY(uint16_t, 0xffff, 3);
+			BLEND_ONLY(uint16_t, 0xffff, 3, 1);
 			break;
 		case BC_RGBA16161616:
+			BLEND_ONLY(uint16_t, 0xffff, 4, 0);
+			break;
 		case BC_YUVA16161616:
-			BLEND_ONLY(uint16_t, 0xffff, 4);
+			BLEND_ONLY(uint16_t, 0xffff, 4, 1);
 			break;
 	}
 }

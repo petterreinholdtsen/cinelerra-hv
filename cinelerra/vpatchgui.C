@@ -7,6 +7,7 @@
 #include "intauto.h"
 #include "intautos.h"
 #include "localsession.h"
+#include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -247,7 +248,7 @@ int VModePatch::handle_event()
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 	}
-
+	mwindow->session->changes_made = 1;
 	return 1;
 }
 

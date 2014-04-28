@@ -1,6 +1,7 @@
 #include "assets.h"
 #include "channelpicker.h"
 #include "cursors.h"
+#include "libdv.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "keys.h"
@@ -204,6 +205,7 @@ int RecordMonitorGUI::create_objects()
 //printf("RecordMonitorGUI::create_objects 1\n");
 	mwindow->theme->get_recordmonitor_sizes(record->default_asset->audio_data, 
 		record->default_asset->video_data);
+	mwindow->theme->draw_rmonitor_bg(this);
 //printf("RecordMonitorGUI::create_objects 1\n");
 
 	record_transport = new RecordTransport(mwindow, 
@@ -385,9 +387,14 @@ int RecordMonitorGUI::resize_event(int w, int h)
 
 	mwindow->theme->get_recordmonitor_sizes(record->default_asset->audio_data, 
 		record->default_asset->video_data);
-
 	mwindow->theme->draw_rmonitor_bg(this);
 
+
+	record_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
+		mwindow->theme->rmonitor_tx_y);
+	if(channel_picker) channel_picker->reposition();
+	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
+		reverse_interlace->get_y());
 	if(record->default_asset->video_data)
 	{
 		canvas->reposition_window(0,
@@ -406,6 +413,8 @@ int RecordMonitorGUI::resize_event(int w, int h)
 
 	set_title();
 	BC_WindowBase::resize_event(w, h);
+	flash();
+	flush();
 	return 1;
 }
 
@@ -904,13 +913,13 @@ RecVideoDVThread::~RecVideoDVThread()
 
 int RecVideoDVThread::start_rendering()
 {
-	dv = dv_new();
+	((dv_t*)dv) = dv_new();
 	return 0;
 }
 
 int RecVideoDVThread::stop_rendering()
 {
-	if(dv) dv_delete(dv);
+	if(dv) dv_delete(((dv_t*)dv));
 	return 0;
 }
 
@@ -920,7 +929,7 @@ int RecVideoDVThread::render_frame(VFrame *frame, long size)
 	yuv_planes[0] = thread->output_frame[0]->get_y();
 	yuv_planes[1] = thread->output_frame[0]->get_u();
 	yuv_planes[2] = thread->output_frame[0]->get_v();
-	dv_read_video(dv, 
+	dv_read_video(((dv_t*)dv), 
 		yuv_planes, 
 		frame->get_data(), 
 		frame->get_compressed_size(),

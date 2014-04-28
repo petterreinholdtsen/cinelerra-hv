@@ -1,0 +1,292 @@
+Making all in doc
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/doc'
+Making all in pictures
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/doc/pictures'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/doc/pictures'
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/doc'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: Nothing to be done for `all-am'.
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/doc'
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/doc'
+Making all in include
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/include'
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/include'
+Making all in src
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src'
+Making all in control
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/control'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c cards.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c hcontrol.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c control.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c control_hw.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC control.c -o control.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC control_hw.c -o control_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC cards.c -o cards.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC hcontrol.c -o hcontrol.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c control_shm.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c setup.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c control_symbols.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC control_shm.c -o control_shm.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC setup.c -o setup.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC control_symbols.c -o control_symbols.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libcontrol.la   cards.lo hcontrol.lo control.lo control_hw.lo control_shm.lo setup.lo control_symbols.lo  
+mkdir .libs
+ar cru .libs/libcontrol.al cards.lo hcontrol.lo control.lo control_hw.lo control_shm.lo setup.lo control_symbols.lo
+ranlib .libs/libcontrol.al
+creating libcontrol.la
+(cd .libs && rm -f libcontrol.la && ln -s ../libcontrol.la libcontrol.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/control'
+Making all in mixer
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/mixer'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c bag.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c mixer.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c simple.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC bag.c -o bag.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC simple.c -o simple.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC mixer.c -o mixer.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libmixer.la   bag.lo mixer.lo simple.lo  
+mkdir .libs
+ar cru .libs/libmixer.al bag.lo mixer.lo simple.lo
+ranlib .libs/libmixer.al
+creating libmixer.la
+(cd .libs && rm -f libmixer.la && ln -s ../libmixer.la libmixer.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/mixer'
+Making all in pcm
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/pcm'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c atomic.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c mask.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c interval.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC atomic.c -o atomic.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm.c -o pcm.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC interval.c -o interval.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_params.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC mask.c -o mask.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_hw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_plugin.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_params.c -o pcm_params.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_hw.c -o pcm_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_plugin.c -o pcm_plugin.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_copy.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_linear.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_route.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_copy.c -o pcm_copy.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_linear.c -o pcm_linear.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_route.c -o pcm_route.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_mulaw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_alaw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_adpcm.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_alaw.c -o pcm_alaw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_mulaw.c -o pcm_mulaw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_adpcm.c -o pcm_adpcm.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_rate.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_plug.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_misc.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_rate.c -o pcm_rate.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_plug.c -o pcm_plug.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_misc.c -o pcm_misc.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_mmap.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_multi.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_shm.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_mmap.c -o pcm_mmap.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_file.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_multi.c -o pcm_multi.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_shm.c -o pcm_shm.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_file.c -o pcm_file.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_null.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_share.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_meter.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_hooks.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_null.c -o pcm_null.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_share.c -o pcm_share.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_meter.c -o pcm_meter.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_hooks.c -o pcm_hooks.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_lfloat.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_ladspa.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_lfloat.c -o pcm_lfloat.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c pcm_symbols.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_ladspa.c -o pcm_ladspa.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC pcm_symbols.c -o pcm_symbols.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libpcm.la   atomic.lo mask.lo interval.lo pcm.lo pcm_params.lo pcm_hw.lo pcm_plugin.lo pcm_copy.lo pcm_linear.lo pcm_route.lo pcm_mulaw.lo pcm_alaw.lo pcm_adpcm.lo pcm_rate.lo pcm_plug.lo pcm_misc.lo pcm_mmap.lo pcm_multi.lo pcm_shm.lo pcm_file.lo pcm_null.lo pcm_share.lo pcm_meter.lo pcm_hooks.lo pcm_lfloat.lo pcm_ladspa.lo pcm_symbols.lo  
+mkdir .libs
+ar cru .libs/libpcm.al atomic.lo mask.lo interval.lo pcm.lo pcm_params.lo pcm_hw.lo pcm_plugin.lo pcm_copy.lo pcm_linear.lo pcm_route.lo pcm_mulaw.lo pcm_alaw.lo pcm_adpcm.lo pcm_rate.lo pcm_plug.lo pcm_misc.lo pcm_mmap.lo pcm_multi.lo pcm_shm.lo pcm_file.lo pcm_null.lo pcm_share.lo pcm_meter.lo pcm_hooks.lo pcm_lfloat.lo pcm_ladspa.lo pcm_symbols.lo
+ranlib .libs/libpcm.al
+creating libpcm.la
+(cd .libs && rm -f libpcm.la && ln -s ../libpcm.la libpcm.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/pcm'
+Making all in rawmidi
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/rawmidi'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c rawmidi.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c rawmidi_hw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c rawmidi_symbols.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC rawmidi_hw.c -o rawmidi_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC rawmidi_symbols.c -o rawmidi_symbols.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC rawmidi.c -o rawmidi.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o librawmidi.la   rawmidi.lo rawmidi_hw.lo rawmidi_symbols.lo  
+mkdir .libs
+ar cru .libs/librawmidi.al rawmidi.lo rawmidi_hw.lo rawmidi_symbols.lo
+ranlib .libs/librawmidi.al
+creating librawmidi.la
+(cd .libs && rm -f librawmidi.la && ln -s ../librawmidi.la librawmidi.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/rawmidi'
+Making all in timer
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/timer'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c timer.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c timer_hw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c timer_query.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c timer_query_hw.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC timer_hw.c -o timer_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC timer_query.c -o timer_query.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC timer_query_hw.c -o timer_query_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC timer.c -o timer.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c timer_symbols.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC timer_symbols.c -o timer_symbols.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libtimer.la   timer.lo timer_hw.lo timer_query.lo timer_query_hw.lo timer_symbols.lo  
+mkdir .libs
+ar cru .libs/libtimer.al timer.lo timer_hw.lo timer_query.lo timer_query_hw.lo timer_symbols.lo
+ranlib .libs/libtimer.al
+creating libtimer.la
+(cd .libs && rm -f libtimer.la && ln -s ../libtimer.la libtimer.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/timer'
+Making all in hwdep
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/hwdep'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c hwdep.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c hwdep_hw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c hwdep_symbols.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC hwdep.c -o hwdep.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC hwdep_hw.c -o hwdep_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC hwdep_symbols.c -o hwdep_symbols.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libhwdep.la   hwdep.lo hwdep_hw.lo hwdep_symbols.lo  
+mkdir .libs
+ar cru .libs/libhwdep.al hwdep.lo hwdep_hw.lo hwdep_symbols.lo
+ranlib .libs/libhwdep.al
+creating libhwdep.la
+(cd .libs && rm -f libhwdep.la && ln -s ../libhwdep.la libhwdep.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/hwdep'
+Making all in seq
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/seq'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c seq_hw.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c seq.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c seq_event.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c seqmid.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC seq_event.c -o seq_event.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC seq.c -o seq.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC seq_hw.c -o seq_hw.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC seqmid.c -o seqmid.lo
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c seq_midi_event.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c seq_symbols.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC seq_midi_event.c -o seq_midi_event.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC seq_symbols.c -o seq_symbols.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libseq.la   seq_hw.lo seq.lo seq_event.lo seqmid.lo seq_midi_event.lo seq_symbols.lo  
+mkdir .libs
+ar cru .libs/libseq.al seq_hw.lo seq.lo seq_event.lo seqmid.lo seq_midi_event.lo seq_symbols.lo
+ranlib .libs/libseq.al
+creating libseq.la
+(cd .libs && rm -f libseq.la && ln -s ../libseq.la libseq.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/seq'
+Making all in instr
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/instr'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c fm.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c simple.c
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c iwffff.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC simple.c -o simple.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC fm.c -o fm.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC iwffff.c -o iwffff.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libinstr.la   fm.lo simple.lo iwffff.lo  
+mkdir .libs
+ar cru .libs/libinstr.al fm.lo simple.lo iwffff.lo
+ranlib .libs/libinstr.al
+creating libinstr.la
+(cd .libs && rm -f libinstr.la && ln -s ../libinstr.la libinstr.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/instr'
+Making all in compat
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/compat'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../../include     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c empty.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC empty.c -o empty.lo
+/bin/sh ../../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libcompat.la   empty.lo  
+mkdir .libs
+ar cru .libs/libcompat.al empty.lo
+ranlib .libs/libcompat.al
+creating libcompat.la
+(cd .libs && rm -f libcompat.la && ln -s ../libcompat.la libcompat.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/compat'
+Making all in conf
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+Making all in cards
+make[3]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf/cards'
+make[3]: warning: -jN forced in submake: disabling jobserver mode.
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf/cards'
+Making all in pcm
+make[3]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf/pcm'
+make[3]: warning: -jN forced in submake: disabling jobserver mode.
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf/pcm'
+make[3]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf'
+make[3]: warning: -jN forced in submake: disabling jobserver mode.
+make[3]: Nothing to be done for `all-am'.
+make[3]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf'
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src/conf'
+make[2]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c conf.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c confmisc.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c input.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c output.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC confmisc.c -o confmisc.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC conf.c -o conf.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC output.c -o output.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC input.c -o input.lo
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c async.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c error.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c dlmisc.c
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC async.c -o async.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC error.c -o error.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c  -fPIC -DPIC dlmisc.c -o dlmisc.lo
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o libasound.la -rpath /usr/lib -version-info 2:0:0 conf.lo confmisc.lo input.lo output.lo async.lo error.lo dlmisc.lo control/libcontrol.la mixer/libmixer.la pcm/libpcm.la                       rawmidi/librawmidi.la timer/libtimer.la 		      hwdep/libhwdep.la seq/libseq.la instr/libinstr.la 		      compat/libcompat.la -lm -ldl -lpthread 
+mkdir .libs
+ln -s conf.lo conf.o
+ln -s confmisc.lo confmisc.o
+ln -s input.lo input.o
+ln -s output.lo output.o
+ln -s async.lo async.o
+ln -s error.lo error.o
+ln -s dlmisc.lo dlmisc.o
+gcc -shared  conf.lo confmisc.lo input.lo output.lo async.lo error.lo dlmisc.lo -Wl,--whole-archive control/.libs/libcontrol.al mixer/.libs/libmixer.al pcm/.libs/libpcm.al rawmidi/.libs/librawmidi.al timer/.libs/libtimer.al hwdep/.libs/libhwdep.al seq/.libs/libseq.al instr/.libs/libinstr.al compat/.libs/libcompat.al -Wl,--no-whole-archive  -lm -ldl -lpthread -lc  -Wl,-soname -Wl,libasound.so.2 -o .libs/libasound.so.2.0.0
+(cd .libs && rm -f libasound.so.2 && ln -s libasound.so.2.0.0 libasound.so.2)
+(cd .libs && rm -f libasound.so && ln -s libasound.so.2.0.0 libasound.so)
+creating libasound.la
+(cd .libs && rm -f libasound.la && ln -s ../libasound.la libasound.la)
+make[2]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src'
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/src'
+Making all in aserver
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/aserver'
+gcc -DHAVE_CONFIG_H -I. -I. -I../include -I../include -I../src/pcm    -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -c aserver.c
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include  -o aserver  aserver.o ../src/libasound.la 
+mkdir .libs
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/include -o .libs/aserver aserver.o ../src/.libs/libasound.so -lm -ldl -lpthread
+creating aserver
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/aserver'
+Making all in test
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/test'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/test'
+Making all in utils
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/utils'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2/utils'
+make[1]: Entering directory `/home/root/hvirtual/alsa-lib-0.9.0rc2'
+make[1]: Nothing to be done for `all-am'.
+make[1]: Leaving directory `/home/root/hvirtual/alsa-lib-0.9.0rc2'

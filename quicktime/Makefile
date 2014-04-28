@@ -252,9 +252,6 @@ CFLAGS += \
 CFLAGS += \
 	-ffast-math \
 	-mno-ieee-fp \
-	-I$(OGG_DIR)/include \
-	-I$(VORBIS_DIR)/include \
-	-I$(VORBIS_DIR)/lib \
 	-DHAVE_ALLOCA_H=1 \
 	-DHAVE_ALLOCA=1 \
 	-DHAVE_SQRTF=1 \
@@ -299,9 +296,6 @@ DIRS += \
 	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant \
 	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx
 
-DIRS += \
-	$(OBJDIR)/$(OGG_DIR)/src \
-	$(OBJDIR)/$(VORBIS_DIR)/lib
 
 LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -lglib -ldl -lm
 

@@ -123,6 +123,10 @@ typedef struct
 	long input_field2;
 	int deinterlace;
 	int rowspan;
+
+// Workarounds for thread unsafe libraries
+	pthread_mutex_t decompress_init;
+	int decompress_initialized;
 } mjpeg_t;
 
 

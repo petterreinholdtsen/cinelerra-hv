@@ -117,7 +117,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
 				plugin->open_plugin(0, mwindow->edl, 0);
-				plugin->init_realtime(0, 1);
+				plugin->init_realtime(0, 1, get_bufsize());
 // Plugin loads configuration on its own
 //			plugin->get_configuration_change(plugin_data);				
 			}
@@ -130,7 +130,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(keyframe);
 			plugin->open_plugin(0, mwindow->edl, 0);
-			plugin->init_realtime(0, total_tracks());
+			plugin->init_realtime(0, total_tracks(), get_bufsize());
 // Plugin loads configuration on its own
 //		plugin->get_configuration_change(plugin_data);				
 		}
@@ -139,7 +139,10 @@ int PluginArray::start_plugins(MWindow *mwindow,
 	return 0;
 }
 
-// ========================= run non-realtime plugins only
+
+
+
+
 int PluginArray::run_plugins()
 {
 	int i, j, result;
@@ -169,7 +172,7 @@ int PluginArray::run_plugins()
 
 //printf("PluginArray::run_plugins 4\n");
 // Arm buffers
-			for(i = 0; i < total; i++)
+			for(i = 0; i < total_tracks(); i++)
 			{
 				load_module(i, current_position, len);
 			}
@@ -230,7 +233,6 @@ int PluginArray::stop_plugins()
 	{
 		for(int i = 0; i < total; i++)
 		{
-			values[i]->realtime_stop();
 			values[i]->close_plugin();
 		}
 	}

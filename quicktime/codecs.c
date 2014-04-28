@@ -203,16 +203,24 @@ int quicktime_delete_acodec(quicktime_audio_map_t *atrack)
 
 int quicktime_supported_video(quicktime_t *file, int track)
 {
-	char *compressor = quicktime_video_compressor(file, track);
-	if((get_vcodec_index(compressor)) < 0) return 0;
-	return 1;
+	if(track < file->total_vtracks)
+	{
+		char *compressor = quicktime_video_compressor(file, track);
+		if((get_vcodec_index(compressor)) < 0) return 0;
+		return 1;
+	}
+	return 0;
 }
 
 int quicktime_supported_audio(quicktime_t *file, int track)
 {
-	char *compressor = quicktime_audio_compressor(file, track);
-	if((get_acodec_index(compressor)) < 0) return 0;
-	return 1;
+	if(track < file->total_atracks)
+	{
+		char *compressor = quicktime_audio_compressor(file, track);
+		if((get_acodec_index(compressor)) < 0) return 0;
+		return 1;
+	}
+	return 0;
 }
 
 int quicktime_decode_video(quicktime_t *file, unsigned char **row_pointers, int track)

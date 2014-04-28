@@ -30,7 +30,7 @@
 #define RAW_NAME "Unsigned"
 #define IMA4_NAME "IMA-4"
 #define ULAW_NAME "U-Law"
-#define VORBIS_NAME "Vorbis"
+//#define VORBIS_NAME "Vorbis"
 #define MP3_NAME "MP3"
 
 
@@ -218,6 +218,7 @@ void FileMOV::asset_to_format()
 				asset->bits, 
 				asset->acodec);
 //printf("FileMOV::asset_to_format 1\n");
+		quicktime_set_parameter(fd, "vorbis_vbr", &asset->vorbis_vbr);
 		quicktime_set_parameter(fd, "vorbis_min_bitrate", &asset->vorbis_min_bitrate);
 //printf("FileMOV::asset_to_format 1\n");
 		quicktime_set_parameter(fd, "vorbis_bitrate", &asset->vorbis_bitrate);
@@ -856,8 +857,11 @@ int FileMOV::read_samples(double *buffer, long len)
 
 	if(!fd) return 0;
 
-//printf("FileMOV::read_samples 1 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
-	if(quicktime_supported_audio(fd, 0))
+// printf("FileMOV::read_samples 1 %d %d\n", 
+// file->current_channel, 
+// asset->channels);
+	if(quicktime_track_channels(fd, 0) > file->current_channel &&
+		quicktime_supported_audio(fd, 0))
 	{
 
 //printf("FileMOV::read_samples 2 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
@@ -874,6 +878,13 @@ int FileMOV::read_samples(double *buffer, long len)
 			for(int i = 0; i < len; i++) buffer[i] = temp_float[0][i];
 		}
 
+// if(file->current_channel == 0)
+// for(int i = 0; i < len; i++)
+// {
+// 	int16_t value;
+// 	value = (int16_t)(temp_float[0][i] * 32767);
+// 	fwrite(&value, 2, 1, stdout);
+// }
 //printf("FileMOV::read_samples 4 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
 	}
 
@@ -1077,7 +1088,7 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  	parent_window->get_abs_cursor_x(),
  	parent_window->get_abs_cursor_y(),
 	350,
-	200)
+	250)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -1087,6 +1098,7 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	vorbis_min_bitrate = 0;
 	vorbis_bitrate = 0;
 	vorbis_max_bitrate = 0;
+	vorbis_vbr = 0;
 	compression_popup = 0;
 	mp3_bitrate = 0;
 }
@@ -1137,6 +1149,7 @@ void MOVConfigAudio::update_parameters()
 	if(vorbis_min_bitrate) delete vorbis_min_bitrate;
 	if(vorbis_bitrate) delete vorbis_bitrate;
 	if(vorbis_max_bitrate) delete vorbis_max_bitrate;
+	if(vorbis_vbr) delete vorbis_vbr;
 	if(mp3_bitrate) delete mp3_bitrate;
 
 	bits_popup = 0;
@@ -1145,6 +1158,8 @@ void MOVConfigAudio::update_parameters()
 	vorbis_min_bitrate = 0;
 	vorbis_bitrate = 0;
 	vorbis_max_bitrate = 0;
+	vorbis_vbr = 0;
+
 
 
 	mp3_bitrate = 0;
@@ -1189,6 +1204,12 @@ void MOVConfigAudio::update_parameters()
 	else
 	if(!strcasecmp(asset->acodec, QUICKTIME_VORBIS))
 	{
+		add_subwindow(vorbis_vbr = new MOVConfigAudioToggle(this,
+			"Variable bitrate",
+			x,
+			y,
+			&asset->vorbis_vbr));
+		y += 35;
 		vorbis_min_bitrate = new MOVConfigAudioNum(this, 
 			"Min bitrate:", 
 			x, 
@@ -1220,6 +1241,29 @@ int MOVConfigAudio::close_event()
 	set_done(0);
 	return 1;
 }
+
+
+
+
+
+MOVConfigAudioToggle::MOVConfigAudioToggle(MOVConfigAudio *popup,
+	char *title_text,
+	int x,
+	int y,
+	int *output)
+ : BC_CheckBox(x, y, *output, title_text)
+{
+	this->popup = popup;
+	this->output = output;
+}
+int MOVConfigAudioToggle::handle_event()
+{
+	*output = get_value();
+	return 1;
+}
+
+
+
 
 
 MOVConfigAudioNum::MOVConfigAudioNum(MOVConfigAudio *popup, char *title_text, int x, int y, int *output)

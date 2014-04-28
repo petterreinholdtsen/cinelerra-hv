@@ -10,18 +10,7 @@ class PolarWindow;
 #include "mutex.h"
 #include "polar.h"
 
-class PolarThread : public Thread
-{
-public:
-	PolarThread(PolarMain *client);
-	~PolarThread();
-
-	void run();
-
-	Mutex gui_started; // prevent loading data until the GUI is started
-	PolarMain *client;
-	PolarWindow *window;
-};
+PLUGIN_THREAD_HEADER(PolarMain, PolarThread, PolarWindow)
 
 class DepthSlider;
 class AngleSlider;

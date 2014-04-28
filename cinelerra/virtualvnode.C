@@ -152,7 +152,7 @@ int VirtualVNode::render(VFrame **video_out, long input_position)
 		render_as_module(video_out, input_position);
 	}
 	else
-	if(real_plugin || real_transition)
+	if(real_plugin)
 	{
 		render_as_plugin(input_position);
 	}

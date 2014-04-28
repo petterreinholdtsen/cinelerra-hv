@@ -36,6 +36,7 @@ public:
 
 	void create_objects();
 	AttachmentPoint* new_attachment(Plugin *plugin);
+	int get_buffer_size();
 
 	CICache* get_cache();
 	int import_frame(VFrame *output,

@@ -83,17 +83,25 @@ thread_class::~thread_class() \
 	 \
 void thread_class::run() \
 { \
+/* printf("thread_class::run 1\n"); */ \
 	BC_DisplayInfo info; \
+/* printf("thread_class::run 1\n"); */ \
 	window = new window_class(plugin,  \
 		info.get_abs_cursor_x() - 75,  \
 		info.get_abs_cursor_y() - 65); \
+/* printf("thread_class::run 1\n"); */ \
 	window->create_objects(); \
+/* printf("thread_class::run 1\n"); */ \
  \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
  	plugin->thread = this; \
+/* printf("thread_class::run 1\n"); */ \
 	int result = window->run_window(); \
+/* printf("thread_class::run 1\n"); */ \
 	completion.unlock(); \
+/* printf("thread_class::run 1\n"); */ \
 	if(result) plugin->client_side_close(); \
+/* printf("thread_class::run 2\n"); */ \
 }
 
 
@@ -109,18 +117,22 @@ void thread_class::run() \
 
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	thread = 0; \
+	defaults = 0; \
 	load_defaults(); \
 
 #define PLUGIN_DESTRUCTOR_MACRO \
 	if(thread) \
 	{ \
+/* prntf("PLUGIN_DESTRUCTOR_MACRO 1\n"); */ \
 		thread->window->set_done(0); \
 		thread->completion.lock(); \
 		delete thread; \
 	} \
  \
-	save_defaults(); \
-	delete defaults;
+/* printf("PLUGIN_DESTRUCTOR_MACRO 2\n"); */ \
+	if(defaults) save_defaults(); \
+	if(defaults) delete defaults; \
+/* printf("PLUGIN_DESTRUCTOR_MACRO 3\n"); */ \
 
 
 
@@ -128,9 +140,13 @@ void thread_class::run() \
 #define SHOW_GUI_MACRO(plugin_class, thread_class) \
 int plugin_class::show_gui() \
 { \
+/* printf("plugin_class::show_gui 1\n"); */ \
 	load_configuration(); \
+/* printf("plugin_class::show_gui 1\n"); */ \
 	thread_class *new_thread = new thread_class(this); \
+/* printf("plugin_class::show_gui 1\n"); */ \
 	new_thread->start(); \
+/* printf("plugin_class::show_gui 2\n"); */ \
 	return 0; \
 }
 
@@ -168,16 +184,25 @@ VFrame* plugin_class::new_picon() \
 int plugin_class::load_configuration() \
 { \
 	KeyFrame *prev_keyframe, *next_keyframe; \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	prev_keyframe = get_prev_keyframe(get_source_position()); \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	next_keyframe = get_next_keyframe(get_source_position()); \
+/* printf("plugin_class::load_configuration 1 %p %p\n", prev_keyframe, next_keyframe); */ \
  \
  \
 	config_class old_config, prev_config, next_config; \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	old_config.copy_from(config); \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	read_data(prev_keyframe); \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	prev_config.copy_from(config); \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	read_data(next_keyframe); \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	next_config.copy_from(config); \
+/* printf("plugin_class::load_configuration 1\n"); */ \
 	config.interpolate(prev_config,  \
 		next_config,  \
 		(next_keyframe->position == prev_keyframe->position) ? \
@@ -188,6 +213,7 @@ int plugin_class::load_configuration() \
 			next_keyframe->position, \
 		get_source_position()); \
  \
+/* printf("plugin_class::load_configuration 2\n"); */ \
 	if(!config.equivalent(old_config)) \
 		return 1; \
 	else \
@@ -251,8 +277,6 @@ public:
 // Raise the GUI
 	virtual void raise_window() {};
 	virtual void update_gui() {};
-	virtual int start_realtime();         // start the plugin waiting to process realtime data
-	virtual int stop_realtime();          // start the plugin waiting to process realtime data
 	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
 	int send_hide_gui();                                    // should be sent when the GUI recieves a close event from the user
@@ -286,6 +310,9 @@ public:
 // *AttachmentPoint.    This may not be used at all.
 	long get_source_len();
 
+// For realtime plugins gets the start of the plugin
+	long get_source_start();
+
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.
 	long get_total_len();
@@ -293,8 +320,7 @@ public:
 // For transitions the source_position is the playback position relative
 // to the start of the transition.
 
-// Source_position is relative to the start of the
-// plugin since keyframes are relative.
+// For plugins the source_position is relative to the start of the plugin.
 	long get_source_position();
 
 // Get interpolation used by EDL
@@ -353,8 +379,9 @@ public:
 	virtual int plugin_command_derived(int plugin_command) {}; // Extension of plugin_run for derived plugins
 	int plugin_get_range();
 	int plugin_start_plugin();    // Run a non realtime plugin
-	int plugin_init_realtime(int realtime_priority, int total_in_buffers);
-	int plugin_stop_realtime();
+	int plugin_init_realtime(int realtime_priority, 
+		int total_in_buffers,
+		int buffer_size);
 
 
 
@@ -407,10 +434,11 @@ public:
 	int total_in_buffers;           // total recieve buffers allocated by the server
 	int wr, rd;                     // File permissions for fileio plugins.
 
-// these give the largest fragment the plugin is expected to handle
-// currently these give the master size
-	long out_buffer_size;  // size of a send buffer to the server
-	long in_buffer_size;   // size of a recieve buffer from the server
+// These give the largest fragment the plugin is expected to handle.
+// size of a send buffer to the server
+	long out_buffer_size;  
+// size of a recieve buffer from the server
+	long in_buffer_size;   
 // Local parameters of plugin
 	int sample_rate;
 	double frame_rate;

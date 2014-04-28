@@ -60,7 +60,9 @@ public:
 		unsigned long load_flags);
 	int save_xml(ArrayList<PluginServer*> *plugindb,
 		FileXML *xml, 
-		char *output_path);
+		char *output_path,
+		int is_clip,
+		int is_vwindow);
     int load_audio_config(FileXML *file, int append_mode, unsigned long load_flags);
     int load_video_config(FileXML *file, int append_mode, unsigned long load_flags);
 
@@ -124,6 +126,8 @@ public:
 	int copy(double start, 
 		double end, 
 		int all,   // Ignore recordable status of tracks for saving
+		int is_clip,
+		int is_vwindow,
 		FileXML *file, 
 		ArrayList<PluginServer*> *plugindb,
 		char *output_path,
@@ -168,6 +172,8 @@ public:
 	ArrayList<char*> folders;
 // Clips
 	ArrayList<EDL*> clips;
+// VWindow
+	EDL *vwindow_edl;
 
 // Media files
 // Shared between all EDLs

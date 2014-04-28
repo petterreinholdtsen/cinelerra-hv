@@ -62,57 +62,30 @@ YUV BrightnessMain::yuv;
 BrightnessMain::BrightnessMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-    redo_buffers = 0;
-	load_defaults();
+    redo_buffers = 1;
+	engine = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 BrightnessMain::~BrightnessMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
+	if(engine) delete engine;
 }
 
 char* BrightnessMain::plugin_title() { return "Brightness/Contrast"; }
 int BrightnessMain::is_realtime() { return 1; }
-	
-VFrame* BrightnessMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
 
-int BrightnessMain::start_realtime()
-{
-    redo_buffers = 1;
-
-	engine = new BrightnessEngine(this, PluginClient::smp + 1);
-	return 0;
-}
-
-int BrightnessMain::stop_realtime()
-{
-	delete engine;
-	return 0;
-}
-
-int BrightnessMain::reconfigure()
-{
-    redo_buffers = 0;
-	return 0;
-}
+NEW_PICON_MACRO(BrightnessMain)	
+SHOW_GUI_MACRO(BrightnessMain, BrightnessThread)
+RAISE_WINDOW_MACRO(BrightnessMain)
+SET_STRING_MACRO(BrightnessMain)
+LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 
 int BrightnessMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-//printf("BrightnessMain::process_realtime 1\n");
 	load_configuration();
+	if(!engine) engine = new BrightnessEngine(this, PluginClient::smp + 1);
 
 	this->input = input_ptr;
 	this->output = output_ptr;
@@ -131,16 +104,7 @@ int BrightnessMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	return 0;
 }
 
-SHOW_GUI_MACRO(BrightnessMain, BrightnessThread)
 
-void BrightnessMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
 
 void BrightnessMain::update_gui()
 {
@@ -153,12 +117,6 @@ void BrightnessMain::update_gui()
 		thread->window->luma->update(config.luma);
 		thread->window->unlock_window();
 	}
-}
-
-int BrightnessMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
 }
 
 int BrightnessMain::load_defaults()
@@ -186,8 +144,6 @@ int BrightnessMain::save_defaults()
 	return 0;
 }
 
-
-LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 
 void BrightnessMain::save_data(KeyFrame *keyframe)
 {

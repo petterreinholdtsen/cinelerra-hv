@@ -13,10 +13,10 @@
 #include <stdint.h>
 #include <string.h>
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new TimeAvgMain(server);
-}
+
+
+
+REGISTER_PLUGIN(TimeAvgMain)
 
 
 
@@ -32,24 +32,16 @@ TimeAvgConfig::TimeAvgConfig()
 TimeAvgMain::TimeAvgMain(PluginServer *server)
  : PluginVClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 	accumulation = 0;
 	history = 0;
-	thread = 0;
 	history_size = 0;
-	load_defaults();
 }
 
 TimeAvgMain::~TimeAvgMain()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+//printf("TimeAvgMain::~TimeAvgMain 1\n");
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(accumulation) delete [] accumulation;
 	if(history)
@@ -64,10 +56,13 @@ char* TimeAvgMain::plugin_title() { return "Time Average"; }
 int TimeAvgMain::is_realtime() { return 1; }
 
 
-VFrame* TimeAvgMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(TimeAvgMain)
+
+SHOW_GUI_MACRO(TimeAvgMain, TimeAvgThread)
+
+SET_STRING_MACRO(TimeAvgMain)
+
+RAISE_WINDOW_MACRO(TimeAvgMain);
 
 
 
@@ -184,12 +179,6 @@ bzero(accumulation, sizeof(int) * w * h * cmodel_components(color_model));
 	return 0;
 }
 
-SHOW_GUI_MACRO(TimeAvgMain, TimeAvgThread)
-
-SET_STRING_MACRO(TimeAvgMain)
-
-RAISE_WINDOW_MACRO(TimeAvgMain);
-
 
 
 int TimeAvgMain::load_defaults()
@@ -257,6 +246,8 @@ void TimeAvgMain::update_gui()
 	if(thread) 
 	{
 		load_configuration();
+		thread->window->lock_window();
 		thread->window->total_frames->update(config.frames);
+		thread->window->unlock_window();
 	}
 }

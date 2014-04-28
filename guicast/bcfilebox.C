@@ -430,11 +430,11 @@ int BC_FileBox::create_objects()
 	column_width[0] = get_listbox_w() - 120;
 	column_width[1] = 120;
 	filter_list.append(new BC_ListBoxItem("*"));
-	filter_list.append(new BC_ListBoxItem("*.htal"));
-	filter_list.append(new BC_ListBoxItem("[*.mp2][*.mp3]"));
-	filter_list.append(new BC_ListBoxItem("[*.mpg][*.m2v][*.m1v][*.mov]"));
 	filter_list.append(new BC_ListBoxItem("[*.ifo][*.vob]"));
+	filter_list.append(new BC_ListBoxItem("[*.mp2][*.mp3][*.wav]"));
+	filter_list.append(new BC_ListBoxItem("[*.avi][*.mpg][*.m2v][*.m1v][*.mov]"));
 	filter_list.append(new BC_ListBoxItem("heroine*"));
+	filter_list.append(new BC_ListBoxItem("*.xml"));
 	fs->set_filter(get_resources()->filebox_filter);
 	fs->update(directory);
 

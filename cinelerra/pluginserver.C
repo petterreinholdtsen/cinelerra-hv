@@ -323,7 +323,7 @@ int PluginServer::open_plugin(int master, EDL *edl, Plugin *plugin)
 	{
 		picon = client->new_picon();
 	}
-//printf("PluginServer::open_plugin 3\n");
+//printf("PluginServer::open_plugin 5\n");
 
 	plugin_open = 1;
 	return 0;
@@ -364,12 +364,14 @@ void PluginServer::client_side_close()
 }
 
 int PluginServer::init_realtime(int realtime_sched,
-		int total_in_buffers)
+		int total_in_buffers, 
+		int buffer_size)
 {
 	if(!plugin_open) return 0;
 // set for realtime priority
 // initialize plugin
-	client->plugin_init_realtime(realtime_sched, total_in_buffers);
+// Call start_realtime
+	client->plugin_init_realtime(realtime_sched, total_in_buffers, buffer_size);
 }
 
 
@@ -679,11 +681,6 @@ int PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, Floa
 }
 
 
-int PluginServer::realtime_stop()
-{
-	if(!plugin_open) return 0;
-	client->plugin_stop_realtime();
-};
 
 void PluginServer::save_data(KeyFrame *keyframe)
 {
@@ -699,17 +696,25 @@ KeyFrame* PluginServer::get_prev_keyframe(long position)
 		return keyframe;
 }
 
-int PluginServer::get_interpolation_type()
-{
-	return plugin->edl->session->interpolation_type;
-}
-
 KeyFrame* PluginServer::get_next_keyframe(long position)
 {
 	if(plugin)
 		return plugin->get_next_keyframe(position);
 	else
+		return keyframe;
+}
+
+long PluginServer::get_source_start()
+{
+	if(plugin)
+		return plugin->startproject;
+	else
 		return 0;
+}
+
+int PluginServer::get_interpolation_type()
+{
+	return plugin->edl->session->interpolation_type;
 }
 
 KeyFrame* PluginServer::get_keyframe()

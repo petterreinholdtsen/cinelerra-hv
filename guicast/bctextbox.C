@@ -103,6 +103,9 @@ int BC_TextBox::initialize()
 int BC_TextBox::update(char *text)
 {
 	int text_len = strlen(text);
+// Don't update if contents are the same
+	if(!strcmp(text, this->text)) return 0;
+
 	strcpy(this->text, text);
 	if(highlight_letter1 > text_len) highlight_letter1 = text_len;
 	if(highlight_letter2 > text_len) highlight_letter2 = text_len;

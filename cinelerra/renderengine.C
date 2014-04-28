@@ -275,6 +275,7 @@ double RenderEngine::get_tracking_position()
 
 int RenderEngine::open_output()
 {
+//printf("RenderEngine::open_output 1\n");
 	if(command->realtime)
 	{
 // Retool playback configuration for 
@@ -470,10 +471,14 @@ int RenderEngine::close_output()
 //printf("RenderEngine::close_output 1\n");
 	if(audio)
 	{
+//printf("RenderEngine::close_output 2\n");
 		audio->close_all();
 		delete audio;
 		audio = 0;
 	}
+
+
+
 	if(video)
 	{
 //printf("RenderEngine::close_output 1\n");
@@ -531,14 +536,19 @@ void RenderEngine::run()
 //printf("RenderEngine::run 3\n");
 
 	interrupt_lock.lock();
+//printf("RenderEngine::run 4\n");
+
+//sleep(5);
+//printf("RenderEngine::run 5\n");
 
 	if(interrupted)
 	{
 		playback_engine->tracking_position = playback_engine->get_tracking_position();
 	}
+//printf("RenderEngine::run 6\n");
 
 	close_output();
-//printf("RenderEngine::run 4\n");
+//printf("RenderEngine::run 7\n");
 
 // Fix the tracking position
 	if(playback_engine)
@@ -568,15 +578,15 @@ void RenderEngine::run()
 			}
 
 			if(!interrupted) playback_engine->command->command = STOP;
-//printf("RenderEngine::run 4.3 %f\n", playback_engine->tracking_position);
+//printf("RenderEngine::run 8\n");
 			playback_engine->stop_tracking();
 
-//printf("RenderEngine::run 4.4\n");
+//printf("RenderEngine::run 9\n");
 		}
 		playback_engine->is_playing_back = 0;
 	}
 
-//printf("RenderEngine::run 5\n");
+//printf("RenderEngine::run 10\n");
 	input_lock.unlock();
 //printf("RenderEngine::run 6\n");
 	interrupt_lock.unlock();

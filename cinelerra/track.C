@@ -351,11 +351,24 @@ Plugin* Track::insert_effect(char *title,
 				shared_location->plugin, 
 				PLAY_FORWARD, 
 				1);
+
+// From an attach operation
 			if(source_plugin)
 			{
 				plugin = plugin_set->insert_plugin(title, 
 					source_plugin->startproject, 
 					source_plugin->length,
+					plugin_type, 
+					shared_location,
+					default_keyframe,
+					1);
+			}
+			else
+// From a drag operation
+			{
+				plugin = plugin_set->insert_plugin(title, 
+					to_units(start, 0), 
+					to_units(length, 0),
 					plugin_type, 
 					shared_location,
 					default_keyframe,
@@ -467,7 +480,8 @@ void Track::shift_keyframes(double position, double length, int convert_units)
 		length = to_units(length, 0);
 	}
 
-	automation->paste_silence(Units::to_long(position), Units::to_long(position + length));
+	automation->paste_silence(Units::to_long(position), 
+		Units::to_long(position + length));
 // Effect keyframes are shifted in shift_effects
 }
 

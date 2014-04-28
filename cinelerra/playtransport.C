@@ -334,7 +334,7 @@ int RewindButton::handle_event()
 FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->fastrev_data) 
 {
-	set_tooltip("Fast reverse");
+	set_tooltip("Fast reverse ( + )");
 }
 int FastReverseButton::handle_event() 
 {
@@ -349,7 +349,7 @@ int FastReverseButton::handle_event()
 ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->reverse_data) 
 {
-	set_tooltip("Normal reverse");
+	set_tooltip("Normal reverse ( 6 )");
 }
 int ReverseButton::handle_event()
 {
@@ -364,7 +364,7 @@ int ReverseButton::handle_event()
 FrameReverseButton::FrameReverseButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->framerev_data)
 {
-	set_tooltip("Frame reverse");
+	set_tooltip("Frame reverse ( 4 )");
 }
 int FrameReverseButton::handle_event()
 {
@@ -379,7 +379,7 @@ int FrameReverseButton::handle_event()
 PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->forward_data) 
 {
-	set_tooltip("Normal playback");
+	set_tooltip("Normal forward ( 3 )");
 }
 int PlayButton::handle_event()
 {
@@ -398,7 +398,7 @@ int PlayButton::handle_event()
 FramePlayButton::FramePlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->framefwd_data) 
 {
-	set_tooltip("Frame playback");
+	set_tooltip("Frame forward ( 1 )");
 }
 int FramePlayButton::handle_event()
 {
@@ -413,7 +413,7 @@ int FramePlayButton::handle_event()
 FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->fastfwd_data) 
 {
-	set_tooltip("Fast playback");
+	set_tooltip("Fast forward ( Enter )");
 }
 int FastPlayButton::handle_event() 
 {
@@ -439,7 +439,7 @@ int EndButton::handle_event()
 StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->stop_data) 
 {
-	set_tooltip("Stop");
+	set_tooltip("Stop ( 0 )");
 }
 int StopButton::handle_event()
 {

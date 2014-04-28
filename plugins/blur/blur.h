@@ -50,26 +50,20 @@ public:
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	int load_configuration();
-	int set_string();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
 	void update_gui();
+
+	PLUGIN_CLASS_MEMBERS(BlurConfig, BlurThread)
 
 	int need_reconfigure;
 
 // a thread for the GUI
-	BlurThread *thread;
 	VFrame *temp, *input, *output;
-	BlurConfig config;
 
 private:
-	Defaults *defaults;
 	BlurEngine **engine;
 };
 

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "clip.h"
 #include "fourier.h"
 
 #define WINDOW_BORDER (window_size / 2)
@@ -197,6 +198,7 @@ int CrossfadeFFT::fix_window_size()
 // window size must be a power of 2
 	int new_size = 16;
 	while(new_size < window_size) new_size *= 2;
+	window_size = MIN(131072, window_size);
 	window_size = new_size;
 	return 0;
 }

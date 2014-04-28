@@ -813,7 +813,7 @@ void AWindowGUI::update_assets()
 		1,
 		folder_list->get_xposition(),
 		folder_list->get_yposition(),
-		current_folder_number());
+		-1);
 //printf("AWindowGUI::update_assets 5\n");
 
 	if(mwindow->edl->session->assetlist_format != asset_list->get_format())
@@ -1120,10 +1120,10 @@ int AWindowAssets::selection_changed()
 
 void AWindowAssets::draw_background()
 {
+//printf("AWindowAssets::draw_background %s\n", mwindow->edl->session->current_folder);
 	BC_ListBox::draw_background();
 	set_color(RED);
 	set_font(LARGEFONT);
-//printf("AWindowAssets::draw_background %s\n", mwindow->edl->session->current_folder);
 	draw_text(get_w() - 
 			get_text_width(LARGEFONT, mwindow->edl->session->current_folder) - 4, 
 		30, 

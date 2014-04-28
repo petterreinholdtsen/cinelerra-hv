@@ -269,7 +269,7 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 
 
 
-printf("FilePNG::read_frame 1 %d %d\n", native_cmodel, output->get_color_model());
+//printf("FilePNG::read_frame 1 %d %d\n", native_cmodel, output->get_color_model());
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);

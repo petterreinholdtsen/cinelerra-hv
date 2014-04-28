@@ -226,8 +226,10 @@ mm_support(void)
 inline extern int
 mmx_ok(void)
 {
+// Won't compile with gcc 3.2.
+return 1;
 	/* Returns 1 if MMX instructions are supported, 0 otherwise */
-	return ( mm_support() & 0x1 );
+//	return ( mm_support() & 0x1 );
 }
 
 

@@ -94,6 +94,17 @@ int IndexFile::open_index(MWindow *mwindow, Asset *asset)
 	return open_index(asset);
 }
 
+void IndexFile::delete_index(Preferences *preferences, Asset *asset)
+{
+	char index_filename[BCTEXTLEN];
+	char source_filename[BCTEXTLEN];
+	get_index_filename(source_filename, 
+		preferences->index_directory,
+		index_filename, 
+		asset->path);
+//printf("IndexFile::delete_index %s %s\n", source_filename, index_filename);
+	remove(index_filename);
+}
 
 int IndexFile::open_file()
 {
@@ -108,12 +119,15 @@ int IndexFile::open_file()
 	{
 // Index file already exists.
 // Get its last size without changing the status.
-//printf("IndexFile::open_file 1.5\n", index_filename);
 		Asset test_asset;
 		test_asset = *asset;
 		read_info(&test_asset);
 
 		FileSystem fs;
+//printf("IndexFile::open_file 1.5 %s %u %u\n", 
+//index_filename, 
+//fs.get_date(index_filename), 
+//fs.get_date(test_asset.path));
 		if(fs.get_date(index_filename) < fs.get_date(test_asset.path))
 		{
 // index older than source
@@ -234,29 +248,31 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 {
 	int result = 0;
 	IndexThread *index_thread;
-
 	this->mwindow = mwindow;
 	this->asset = asset;
 	interrupt_flag = 0;
 
 // open the source file
 	File source;
-//printf("IndexFile::create_index %p %s\n", asset, asset->path);
 	if(open_source(&source)) return 1;
-//printf("IndexFile::create_index 2\n");
 
 	asset->index_zoom = get_required_scale(&source);
+//printf("IndexFile::create_index 1 %d %s\n", asset->index_zoom, asset->path);
 
-// too small to build an index for
-	if(asset->index_zoom == 0)
-	{
-		source.close_file();
-		asset->index_status = INDEX_TOOSMALL;
-// Update the EDL and timeline
-		redraw_edits(1);
-		return 1;
-	}
-//printf("IndexFile::create_index 3\n");
+// Indexes are now built for everything since it takes too long to draw
+// from CDROM source.
+
+// too small to build an index for.
+// 	if(asset->index_zoom == 0)
+// 	{
+// 		source.close_file();
+// 		asset->index_status = INDEX_TOOSMALL;
+// // Update the EDL and timeline
+// 		redraw_edits(1);
+// //printf("IndexFile::create_index 2\n");
+// 		return 1;
+// 	}
+//printf("IndexFile::create_index 2\n");
 
 // total length of input file
 	long length_source = source.get_audio_length(0);  
@@ -286,6 +302,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	long position = 0;            // current sample in source file
 	long fragment_size = buffersize;
 	int current_buffer = 0;
+//printf("IndexFile::create_index 3\n");
 
 // pass through file once
 	while(position < length_source && !result)
@@ -334,6 +351,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		}
 //printf("IndexFile::create_index 8 %d\n", position);
 	}
+//printf("IndexFile::create_index 10\n");
 
 // end thread cleanly
 	index_thread->input_lock[current_buffer].lock();
@@ -349,6 +367,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	open_index(asset);
 	close_index();
 	mwindow->edl->set_index_file(asset);
+//printf("IndexFile::create_index 11\n");
 	return 0;
 }
 
@@ -365,6 +384,8 @@ int IndexFile::create_index(MWindow *mwindow,
 int IndexFile::redraw_edits(int force)
 {
 	long difference = redraw_timer->get_scaled_difference(1000);
+
+//printf("IndexFile::redraw_edits 1 %d %d\n", difference, force);
 	if(difference > 500 || force)
 	{
 		redraw_timer->update();
@@ -389,32 +410,31 @@ int IndexFile::redraw_edits(int force)
 int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 {
 // check against index_end when being built
-//printf("IndexFile::draw_index 0\n");
+//printf("IndexFile::draw_index 1 %d\n", asset->index_zoom);
 	if(asset->index_zoom == 0)
 	{
 		printf("IndexFile::draw_index: index has 0 zoom\n");
 		return 0;
 	}
 
-// samples in segment to draw
-	long startsource = (pixmap->pixmap_x - pixmap->edit_x + x) * 
-		mwindow->edl->local_session->zoom_sample + edit->startsource;
-	long length = w * mwindow->edl->local_session->zoom_sample;
-
-// Normalize to asset sampling rate
-	startsource = (long)((double)startsource / 
-			mwindow->edl->session->sample_rate * 
-			asset->sample_rate);
-	length = (long)((double)length / 
-			mwindow->edl->session->sample_rate * 
-			asset->sample_rate);
+// samples in segment to draw relative to asset
+	double asset_over_session = (double)edit->asset->sample_rate / 
+		mwindow->edl->session->sample_rate;
+	long startsource = (long)(((pixmap->pixmap_x - pixmap->edit_x + x) * 
+		mwindow->edl->local_session->zoom_sample + 
+		edit->startsource) * 
+		asset_over_session);
+	long length = (long)(w * 
+		mwindow->edl->local_session->zoom_sample * 
+		asset_over_session);
 
 	if(asset->index_status == INDEX_BUILDING)
 	{
-		if(startsource + length > asset->index_end) length = asset->index_end - startsource;
+		if(startsource + length > asset->index_end)
+			length = asset->index_end - startsource;
 	}
-	
-// length of index to read in samples
+
+// length of index to read in samples * 2
 	long lengthindex = length / asset->index_zoom * 2; 
 // start of data in samples
 	long startindex = startsource / asset->index_zoom * 2;  
@@ -427,10 +447,13 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->title_bg_data->get_h();
 	int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
 	int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
-	int x1, y1, y2;
-	long zoom_sample = mwindow->edl->local_session->zoom_sample / asset->index_zoom;      // get zoom_sample relative to index zoomx
+	int x1 = 0, y1, y2;
+// get zoom_sample relative to index zoomx
+	double index_frames_per_pixel = mwindow->edl->local_session->zoom_sample / 
+		asset->index_zoom * 
+		asset_over_session;
 
-//printf("IndexFile::draw_index 1 %d\n", mwindow->edl->local_session->zoom_y);
+//printf("IndexFile::draw_index 1 %d %f\n", asset->index_zoom, index_frames_per_pixel);
 // test channel number
 	if(edit->channel > asset->channels) return 1;
 
@@ -475,42 +498,49 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	}
 
 
-	long highpoint = 0;
-	long lowpoint = 1;
-	long frame_position = 1;
 
 	pixmap->canvas->set_color(mwindow->theme->audio_color);
 
 //printf("IndexFile::draw_index 1 %p\n", buffer);
 
-	for(long x1 = 0, current_frame = 0; x1 < w; x1++)
+	double current_frame = 0;
+	float highsample = buffer[0];
+	float lowsample = buffer[1];
+//printf("IndexFile::draw_index 1 %d\n", lengthindex);
+
+	for(int bufferposition = 0; 
+		bufferposition < lengthindex; 
+		bufferposition += 2)
 	{
 		long next_frame;
-		float highsample;
-		float lowsample;
-// Get data for a column
-		next_frame = (long)((double)(x1 + 1) * 
-			mwindow->edl->local_session->zoom_sample / 
-			mwindow->edl->session->sample_rate * 
-			asset->sample_rate /
-			asset->index_zoom + 0.5);
 
-// first sample
-		highsample = buffer[current_frame * 2];
-		lowsample = buffer[current_frame * 2 + 1];
-		current_frame++;
-		while(current_frame < next_frame)
+		if(current_frame >= index_frames_per_pixel)
 		{
-			highsample = MAX(highsample, buffer[current_frame * 2]);
-			lowsample = MIN(lowsample, buffer[current_frame * 2 + 1]);
-			current_frame++;
-		}
-//printf("IndexFile::draw_index 2 %f %f\n", highsample, lowsample);
+			y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
+			y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
+			pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 
+			current_frame -= index_frames_per_pixel;
+			x1++;
+			highsample = buffer[bufferposition];
+			lowsample = buffer[bufferposition + 1];
+		}
+
+		current_frame++;
+		highsample = MAX(highsample, buffer[bufferposition]);
+		lowsample = MIN(lowsample, buffer[bufferposition + 1]);
+	}
+
+// Get last column
+	if(current_frame)
+	{
 		y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
 		y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
 		pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 	}
+
+
+
 
 //printf("IndexFile::draw_index 3\n");
 	if(!buffer_shared) delete [] buffer;

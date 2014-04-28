@@ -5,34 +5,7 @@
 
 #include <string.h>
 
-GainThread::GainThread(Gain *gain)
- : Thread()
-{
-	this->gain = gain;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
-
-GainThread::~GainThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void GainThread::run()
-{
-	BC_DisplayInfo info;
-	window = new GainWindow(gain, 
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) gain->client_side_close();
-}
+PLUGIN_THREAD_OBJECT(Gain, GainThread, GainWindow)
 
 
 

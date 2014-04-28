@@ -12,19 +12,10 @@ class ColorBalanceLock;
 #include "guicast.h"
 #include "mutex.h"
 #include "colorbalance.h"
+#include "pluginclient.h"
 
-class ColorBalanceThread : public Thread
-{
-public:
-	ColorBalanceThread(ColorBalanceMain *client);
-	~ColorBalanceThread();
 
-	void run();
-
-	Mutex gui_started, completion; // prevent loading data until the GUI is started
-	ColorBalanceMain *client;
-	ColorBalanceWindow *window;
-};
+PLUGIN_THREAD_HEADER(ColorBalanceMain, ColorBalanceThread, ColorBalanceWindow)
 
 class ColorBalanceWindow : public BC_Window
 {

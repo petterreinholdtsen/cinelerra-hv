@@ -94,12 +94,14 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 //printf("ResourcePixmap::draw_data 1\n");
 // printf("ResourcePixmap::draw_data 1 edit_x=%d edit_w=%d pixmap_x=%d pixmap_w=%d	pixmap_h=%d\n",
-// 	edit_x, edit_w, pixmap_x, pixmap_w, pixmap_h);
+// edit_x, edit_w, pixmap_x, pixmap_w, pixmap_h);
 	int y = 0;
 	if(mwindow->edl->session->show_titles) y += mwindow->theme->title_bg_data->get_h();
 	Track *track = edit->edits->track;
 
 //printf("ResourcePixmap::draw_data 1\n");
+
+
 // Redraw everything
 	if(edit->startsource != this->startsource ||
 		(data_type == TRACK_AUDIO && 
@@ -255,7 +257,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		}
 		else
 // Start translated right and increased in size on the right
-		if(pixmap_w > this->pixmap_w && edit_x < this->edit_x)
+		if(pixmap_w > this->pixmap_w && edit_x <= this->edit_x)
 		{
 			refresh_w = pixmap_w - this->pixmap_w;
 			refresh_x = pixmap_w - refresh_w;
@@ -353,7 +355,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 //printf("ResourcePixmap::draw_data 3 refresh_x=%d refresh_w=%d\n", 
 //refresh_x, 
 //refresh_w);
-//printf("refresh_x1 %d refresh_w1 %d refresh_x2 %d refresh_w2 %d\n", refresh_x1, refresh_w1, refresh_x2, refresh_w2);
+//printf("ResourcePixmap::draw_data 10\n");
 }
 
 void ResourcePixmap::draw_title(Edit *edit,
@@ -381,7 +383,7 @@ void ResourcePixmap::draw_title(Edit *edit,
 		mwindow->theme->title_bg_data,
 		this);
 
-	if(total_x > -INFINITY)
+	if(total_x > -BC_INFINITY)
 	{
 		char title[BCTEXTLEN], channel[BCTEXTLEN];
 		FileSystem fs;
@@ -405,6 +407,9 @@ void ResourcePixmap::draw_title(Edit *edit,
 void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
 	if(w <= 0) return;
+	double asset_over_session = (double)edit->asset->sample_rate / 
+		mwindow->edl->session->sample_rate;
+
 // Develop strategy for drawing
 //printf("ResourcePixmap::draw_audio_resource 1 %s %d\n", edit->asset->path, edit->asset->index_status);
 	switch(edit->asset->index_status)
@@ -426,7 +431,9 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 			IndexFile indexfile(mwindow);
 			if(!indexfile.open_index(edit->asset))
 			{
-				if(edit->asset->index_zoom > mwindow->edl->local_session->zoom_sample)
+				if(edit->asset->index_zoom > 
+					mwindow->edl->local_session->zoom_sample * 
+					asset_over_session)
 					draw_audio_source(edit, x, w);
 				else
 					indexfile.draw_index(this, edit, x, w);
@@ -438,6 +445,23 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 	}
 //printf("ResourcePixmap::draw_audio_resource 3\n");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
@@ -451,11 +475,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		return;
 	}
 
-	long source_sample = (pixmap_x - edit_x + x) * mwindow->edl->local_session->zoom_sample + edit->startsource;
+	w++;
+	long source_start = (pixmap_x - edit_x + x) * mwindow->edl->local_session->zoom_sample + edit->startsource;
 	long source_len = w * mwindow->edl->local_session->zoom_sample;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
 	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->title_bg_data->get_h();
-	double normalize_factor = (double)edit->asset->sample_rate / 
+	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;
 
 // Single sample zoom
@@ -464,27 +489,31 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 //printf("ResourcePixmap::draw_audio_source 1\n");
 
 		double oldsample, newsample;
-		long normalized_len = (long)((double)(source_len + 1) * 
-			normalize_factor);
-		double *buffer = new double[normalized_len];
+		long total_source_samples = (long)((double)(source_len + 1) * 
+			asset_over_session);
+		double *buffer = new double[total_source_samples];
 
 //printf("ResourcePixmap::draw_audio_source 2 %p\n", buffer);
-		source->set_audio_position((int)((double)source_sample *
-				normalize_factor), 
+		source->set_audio_position((int)((double)source_start *
+				asset_over_session), 
 			edit->asset->sample_rate);
 		source->set_channel(edit->channel);
 		canvas->set_color(mwindow->theme->audio_color);
 
 		if(!source->read_samples(buffer, 
-			normalized_len, 
+			total_source_samples, 
 			edit->asset->sample_rate))
 		{
-//printf("ResourcePixmap::draw_audio_source 3\n");
 			oldsample = newsample = *buffer;
-			for(int x1 = x, x2 = x + w, i = 0; x1 < x2; x1++, i++)
+// printf("ResourcePixmap::draw_audio_source 3 %d %d\n", 
+// w,
+// (int)(center_pixel - newsample * mwindow->edl->local_session->zoom_y / 2));
+			for(int x1 = x, x2 = x + w, i = 0; 
+				x1 < x2; 
+				x1++, i++)
 			{
 				oldsample = newsample;
-				newsample = buffer[(long)(i * normalize_factor)];
+				newsample = buffer[(long)(i * asset_over_session)];
 				canvas->draw_line(x1 - 1, 
 					(int)(center_pixel - oldsample * mwindow->edl->local_session->zoom_y / 2),
 					x1,
@@ -505,21 +534,28 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		long buffersize = fragmentsize = 65536;
 		double *buffer = new double[buffersize + 1];
 		double highsample, lowsample;
-		long zoom_sampleframe = 0;
-		long normalized_len = (long)(source_len * normalize_factor);
+		float sample_of_pixel = 0;
+		long total_source_samples = (long)(source_len * asset_over_session);
+		double asset_samples_per_pixel = 
+			mwindow->edl->local_session->zoom_sample *
+			asset_over_session;
 //printf("ResourcePixmap::draw_audio_source 6 %p\n", buffer);
 
-		source->set_audio_position((long)(source_sample * normalize_factor), 
+		source->set_audio_position((long)(source_start * asset_over_session), 
 			edit->asset->sample_rate);
 		source->set_channel(edit->channel);
 		canvas->set_color(mwindow->theme->audio_color);
-		for(long sample = 0; sample < normalized_len; sample += buffersize)
+
+//printf("ResourcePixmap::draw_audio_source 5 %f\n", asset_samples_per_pixel);
+		for(long source_sample = 0; 
+			source_sample < total_source_samples; 
+			source_sample += buffersize)
 		{
 			fragmentsize = buffersize;
-			if(normalized_len - sample < buffersize)
-				fragmentsize = normalized_len - sample;
+			if(total_source_samples - source_sample < buffersize)
+				fragmentsize = total_source_samples - source_sample;
 
-			if(sample == 0)
+			if(source_sample == 0)
 			{
 				highsample = buffer[0];
 				lowsample = buffer[0];
@@ -531,13 +567,38 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				edit->asset->sample_rate))
 			{
 //printf("ResourcePixmap::draw_audio_source 6 %p\n", buffer);
+
+
+// Draw samples for this buffer
+
+//				lowsample = highsample = buffer[0];
 				for(long bufferposition = 0; 
 					bufferposition < fragmentsize; 
 					bufferposition++)
 				{
-					if(zoom_sampleframe >= 
-						mwindow->edl->local_session->zoom_sample * 
-							normalize_factor)
+// Replicate
+					if(asset_samples_per_pixel < 1)
+					{
+						int x1 = x;
+						int x2 = (int)(x + 1 / asset_samples_per_pixel);
+
+						highsample = lowsample = buffer[bufferposition];
+						canvas->draw_line(
+							x1, 
+							(int)(center_pixel - 
+								highsample * 
+								mwindow->edl->local_session->zoom_y / 
+								2),
+							x2,
+							(int)(center_pixel - 
+								lowsample * 
+								mwindow->edl->local_session->zoom_y / 
+								2),
+							this);
+					}
+					else
+					if(asset_samples_per_pixel >= 1 &&
+						sample_of_pixel >= asset_samples_per_pixel)
 					{
 // draw column and reset
 						canvas->draw_line(x, 
@@ -545,11 +606,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 							x,
 							(int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2),
 							this);
-						zoom_sampleframe = 0;
+						sample_of_pixel -= asset_samples_per_pixel;
 						x++;
+						lowsample = highsample = buffer[bufferposition];
 					}
 
-					if(zoom_sampleframe > 0)
+					if(sample_of_pixel >= 1)
 					{
 // update lowsample and highsample
 						if(buffer[bufferposition] < lowsample) 
@@ -558,15 +620,15 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 						if(buffer[bufferposition] > highsample) 
 							highsample = buffer[bufferposition];
 					}
-					else
-					{
-// initialize lowsample and highsample
-						lowsample = highsample = buffer[bufferposition];
-					}
 
 
-					zoom_sampleframe++;
+					sample_of_pixel++;
 				}
+
+
+
+
+
 			}
 		}
 		delete [] buffer;
@@ -576,6 +638,23 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	mwindow->audio_cache->age_audio();
 //printf("ResourcePixmap::draw_audio_source 3 %s\n", edit->asset->path);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -592,19 +671,19 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	long picon_w = Units::round(edit->picon_w());
 	long picon_h = edit->picon_h();
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
+// printf("ResourcePixmap::draw_video_resource 1\n");
 // Don't draw video if picon is bigger than edit
 	if(picon_w > edit_w) return;
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
+// printf("ResourcePixmap::draw_video_resource 1\n");
 // pixels spanned by a frame
 	double frame_w = edit->frame_w();
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
+// printf("ResourcePixmap::draw_video_resource 1\n");
 // Frames spanned by a picon
 	double frames_per_picon = edit->frames_per_picon();
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
+// printf("ResourcePixmap::draw_video_resource 1\n");
 // Current pixel relative to pixmap
 	int x = 0;
 	int y = 0;
@@ -613,7 +692,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Frame in project touched by current pixel
 	long project_frame;
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
+// printf("ResourcePixmap::draw_video_resource 1\n");
 // Get first frame touched by x and fix x to start of frame
 	if(frames_per_picon > 1)
 	{
@@ -628,21 +707,23 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
 	}
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
+// printf("ResourcePixmap::draw_video_resource 1 %s\n", edit->asset->path);
 	File *source = mwindow->video_cache->check_out(edit->asset);
-//printf("ResourcePixmap::draw_video_resource 2\n");
+// printf("ResourcePixmap::draw_video_resource 2\n");
 	if(!source) return;
 
 
-//printf("ResourcePixmap::draw_video_resource 2 project_frame=%d frame_w=%f refresh_x=%d refresh_w=%d x=%d\n",
-//	project_frame, frame_w, refresh_x, refresh_w, x);
+// printf("ResourcePixmap::draw_video_resource 2 project_frame=%d frame_w=%f refresh_x=%d refresh_w=%d x=%d\n",
+// project_frame, frame_w, refresh_x, refresh_w, x);
 	while(x < refresh_x + refresh_w)
 	{
 		long source_frame = project_frame + edit->startsource;
 		source->set_layer(edit->channel);
-		source->set_video_position(source_frame, mwindow->edl->session->frame_rate);
-//printf("ResourcePixmap::draw_video_resource 1 %d %d\n", x1 + edit_x - pixmap_x + picon_w, edit_x + edit_w);
+		source->set_video_position(source_frame, 
+			mwindow->edl->session->frame_rate);
+//printf("ResourcePixmap::draw_video_resource 3 %p\n", source);
 		VFrame *src = source->read_frame(BC_RGB888);
+//printf("ResourcePixmap::draw_video_resource 4 %p\n", src);
 		if(src)
 			draw_vframe(src, 
 				x, 
@@ -672,7 +753,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		mwindow->video_cache->check_in(edit->asset);
 		mwindow->video_cache->age_video();
 	}
-//printf("ResourcePixmap::draw_video_resource 3\n");
+//printf("ResourcePixmap::draw_video_resource 5\n");
 }
 
 

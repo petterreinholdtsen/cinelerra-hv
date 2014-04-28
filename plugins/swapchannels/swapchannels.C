@@ -12,10 +12,15 @@
 #include <string.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new SwapMain(server);
-}
+
+
+
+
+REGISTER_PLUGIN(SwapMain)
+
+
+
+
 
 
 
@@ -159,38 +164,7 @@ int SwapItem::handle_event()
 
 
 
-SwapThread::SwapThread(SwapMain *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-
-SwapThread::~SwapThread()
-{
-// Window only deleted here
-	delete window;
-}
-
-	
-void SwapThread::run()
-{
-	BC_DisplayInfo info;
-	window = new SwapWindow(plugin, 
-		info.get_abs_cursor_x() - 105, 
-		info.get_abs_cursor_y() - 60);
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) plugin->client_side_close();
-}
-
-
-
-
+PLUGIN_THREAD_OBJECT(SwapMain, SwapThread, SwapWindow)
 
 
 
@@ -204,21 +178,13 @@ void SwapThread::run()
 SwapMain::SwapMain(PluginServer *server)
  : PluginVClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 	reset();
-	load_defaults();
 }
 
 SwapMain::~SwapMain()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 	
 	if(temp) delete temp;
 }

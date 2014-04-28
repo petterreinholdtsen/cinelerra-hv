@@ -1,36 +1,7 @@
 #include "bcdisplayinfo.h"
 #include "brightnesswindow.h"
 
-
-BrightnessThread::BrightnessThread(BrightnessMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
-
-BrightnessThread::~BrightnessThread()
-{
-// Window always deleted here
-	delete window;
-}
-
-void BrightnessThread::run()
-{
-	BC_DisplayInfo info;
-	window = new BrightnessWindow(client, 
-		info.get_abs_cursor_x() - 165, 
-		info.get_abs_cursor_y() - 80);
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
-
+PLUGIN_THREAD_OBJECT(BrightnessMain, BrightnessThread, BrightnessWindow)
 
 
 

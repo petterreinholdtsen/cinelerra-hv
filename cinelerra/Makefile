@@ -1,4 +1,7 @@
 DV_DIR := $(shell expr ../quicktime/libdv-0.9.5 )
+ALSA_DIR := $(shell expr ../alsa-lib* )
+OGG_DIR := $(shell expr ../quicktime/libogg-1.0 )
+VORBIS_DIR := $(shell expr ../quicktime/libvorbis-1.0 )
 include ../global_config
 
 OBJS = \
@@ -87,6 +90,7 @@ OBJS = \
 	$(OBJDIR)/filetga.o \
 	$(OBJDIR)/filethread.o \
 	$(OBJDIR)/filetiff.o \
+	$(OBJDIR)/filevorbis.o \
 	$(OBJDIR)/filexml.o \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
@@ -254,6 +258,11 @@ OUTPUT = $(OBJDIR)/cinelerra
 AVIFILE_DIR := $(shell expr ../avifile* )
 #endif
 
+ifeq ($(HAVE_ALSA), yes)
+ALSA_CFLAGS := -DHAVE_ALSA -I$(ALSA_DIR)/include
+ALSA_LIBS := $(ALSA_DIR)/$(OBJDIR)/libasound.a
+endif
+
 STATICLIBS = \
 	../libavc/$(OBJDIR)/libavc.a \
 	../quicktime/$(OBJDIR)/libquicktime.a \
@@ -267,22 +276,29 @@ LIBS = \
 	-L./ \
 	-L../guicast \
 	-L/usr/X11R6/lib \
+	$(ALSA_LIBS) \
 	-lGL \
 	-lX11 \
 	-lXext \
 	-lXv \
 	-lpthread \
 	-lm \
-	$(ALSA_LIBS) \
 	$(XXF86VM) \
 	-lpng \
 	-lz \
 	-ldl
 
+# Static libraries for distribution
+ifeq ($(USE_STATIC),y)
+LIBS += -static
+endif
+
 CFLAGS += \
 	-I../guicast \
 	-I../quicktime \
 	-I$(DV_DIR) \
+	-I$(OGG_DIR)/include \
+	-I$(VORBIS_DIR)/include \
 	-I../quicktime/libdv \
 	-I../quicktime/libraw1394/src \
 	-I../audiofile \
@@ -292,6 +308,7 @@ CFLAGS += \
 	-I../libavc/libavc1394 \
 	-I../libavc/librom1394 \
 	$(ESOUNDCFLAGS) \
+	$(ALSA_CFLAGS) \
 	-I../tiff \
 	`glib-config --cflags`
 
@@ -489,6 +506,7 @@ $(OBJDIR)/filesndfile.o: 			  filesndfile.C
 $(OBJDIR)/filetga.o: 			  	  filetga.C
 $(OBJDIR)/filethread.o: 			  filethread.C
 $(OBJDIR)/filetiff.o: 				  filetiff.C
+$(OBJDIR)/filevorbis.o: 			  filevorbis.C
 $(OBJDIR)/filexml.o: 				  filexml.C
 $(OBJDIR)/floatauto.o:  			  floatauto.C
 $(OBJDIR)/floatautos.o: 			  floatautos.C

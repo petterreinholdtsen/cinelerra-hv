@@ -42,6 +42,11 @@ LIBS += -L/usr/X11R6/lib \
 	../libsndfile/$(OBJDIR)/libsndfile.a \
  	-lGL -lX11 -lXext -lXv -lpthread -lglib -lm -lpng -lz -ldl $(XXF86VM)
 
+# Static libraries for distribution
+ifeq ($(USE_STATIC),y)
+LIBS += -static
+endif
+
 $(shell echo $(OBJS) $(AVIOBJS) $(CXXREPOSITORY) $(LFLAGS) $(LIBS) > $(OBJDIR)/libs )
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags )
 
@@ -64,6 +69,7 @@ wc:
 
 install:
 	strip $(OUTPUT)
+	rm -f $(PREFIX)/bin/xmovie
 	cp $(OUTPUT) $(PREFIX)/bin
 
 dist:

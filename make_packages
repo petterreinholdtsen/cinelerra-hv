@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=beta2
+VERSION=1.0.0
 
 # Be sure to put exit statements in the beginning of
 # /usr/lib/rpm/brp-strip 
@@ -19,6 +19,8 @@ mkdir $DEST/$NAME
 
 # COPY SOURCE FILES
 cp -a * $DEST/$NAME
+#echo 'USE_STATIC=y' > $DEST/$NAME/global_config
+#cat global_config >> $DEST/$NAME/global_config
 
 # MAKE TARBALL
 
@@ -41,7 +43,7 @@ Version: $VERSION
 Release: 1
 Copyright: GPL
 Group: Applications/Video
-Source: http://prdownloads.sourceforge.net/heroines/hvirtual-beta2-src.tar.bz2
+Source: http://prdownloads.sourceforge.net/heroines/hvirtual-$VERSION-src.tar.bz2
 BuildRoot: /var/tmp/%{name}-buildroot
 Provides: Everything
 Prefix: /usr

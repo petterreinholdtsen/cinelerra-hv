@@ -193,6 +193,7 @@ void TimeBar::update_labels()
 	int output = 0;
 	EDL *edl = get_edl();
 
+//printf("TimeBar::update_labels 1\n");
 	if(edl)
 	{
 		for(Label *current = edl->labels->first;
@@ -201,9 +202,9 @@ void TimeBar::update_labels()
 		{
 //printf("TimeBar::update_labels 1 %p\n", current);
 			long pixel = position_to_pixel(current->position);
-//printf("TimeBar::update_labels 2\n");
+//printf("TimeBar::update_labels 2 %d\n", pixel);
 
-			if(pixel >= 0 && pixel < mwindow->theme->mtimebar_w)
+			if(pixel >= 0 && pixel < get_w())
 			{
 //printf("TimeBar::update_labels 3\n");
 // Create new label
@@ -227,6 +228,7 @@ void TimeBar::update_labels()
 					{
 						gui->pixel = pixel;
 						gui->reposition();
+//printf("TimeBar::update_labels 4 %d\n", pixel);
 					}
 					else
 					{
@@ -242,8 +244,8 @@ void TimeBar::update_labels()
 				else
 				if(labels.values[output]->get_value())
 					labels.values[output]->update(0);
+
 				output++;
-//printf("TimeBar::update_labels 4\n");
 			}
 		}
 	}
@@ -251,8 +253,10 @@ void TimeBar::update_labels()
 // Delete excess labels
 	while(labels.total > output)
 	{
+//printf("TimeBar::update_labels 9\n");
 		labels.remove_object();
 	}
+//printf("TimeBar::update_labels 10\n");
 }
 
 void TimeBar::update_highlights()
@@ -390,8 +394,10 @@ void TimeBar::update(int do_range, int do_others)
 
 	if(do_others)
 		update_labels();
+
 	if(do_others)
 		update_points();
+
 	if(do_others)
 		update_presentations();
 

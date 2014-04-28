@@ -285,6 +285,7 @@ int Asset::init_values()
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
 
+	vorbis_vbr = 0;
 	vorbis_min_bitrate = -1;
 	vorbis_bitrate = 128000;
 	vorbis_max_bitrate = -1;
@@ -381,6 +382,7 @@ void Asset::copy_format(Asset *asset)
 	ampeg_derivative = asset->ampeg_derivative;
 
 
+	vorbis_vbr = asset->vorbis_vbr;
 	vorbis_min_bitrate = asset->vorbis_min_bitrate;
 	vorbis_bitrate = asset->vorbis_bitrate;
 	vorbis_max_bitrate = asset->vorbis_max_bitrate;
@@ -597,6 +599,7 @@ int Asset::read_audio(FileXML *file)
 	ampeg_bitrate = file->tag.get_property("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = file->tag.get_property("AMPEG_DERIVATIVE", ampeg_derivative);
 
+	vorbis_vbr = file->tag.get_property("VORBIS_VBR", vorbis_vbr);
 	vorbis_min_bitrate = file->tag.get_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
 	vorbis_bitrate = file->tag.get_property("VORBIS_BITRATE", vorbis_bitrate);
 	vorbis_max_bitrate = file->tag.get_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
@@ -784,6 +787,7 @@ int Asset::write_audio(FileXML *file)
 	file->tag.set_property("AMPEG_BITRATE", ampeg_bitrate);
 	file->tag.set_property("AMPEG_DERIVATIVE", ampeg_derivative);
 
+	file->tag.set_property("VORBIS_VBR", vorbis_vbr);
 	file->tag.set_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
 	file->tag.set_property("VORBIS_BITRATE", vorbis_bitrate);
 	file->tag.set_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
@@ -893,6 +897,7 @@ void Asset::load_defaults(Defaults *defaults)
 	ampeg_bitrate = defaults->get("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = defaults->get("AMPEG_DERIVATIVE", ampeg_derivative);
 
+	vorbis_vbr = defaults->get("VORBIS_VBR", vorbis_vbr);
 	vorbis_min_bitrate = defaults->get("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
 	vorbis_bitrate = defaults->get("VORBIS_BITRATE", vorbis_bitrate);
 	vorbis_max_bitrate = defaults->get("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
@@ -951,6 +956,7 @@ void Asset::save_defaults(Defaults *defaults)
 	defaults->update("AMPEG_BITRATE", ampeg_bitrate);
 	defaults->update("AMPEG_DERIVATIVE", ampeg_derivative);
 
+	defaults->update("VORBIS_VBR", vorbis_vbr);
 	defaults->update("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
 	defaults->update("VORBIS_BITRATE", vorbis_bitrate);
 	defaults->update("VORBIS_MAX_BITRATE", vorbis_max_bitrate);

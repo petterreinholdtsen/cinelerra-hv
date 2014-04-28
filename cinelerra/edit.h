@@ -92,7 +92,9 @@ public:
 // This stores the length of the transition
 	Transition *transition;
 	EDL *edl;
+
 	Edits *edits;
+
 	Track *track;
 // Asset is 0 if silence
 	Asset *asset;

@@ -26,8 +26,6 @@ public:
 	int plugin_is_realtime();
 	int plugin_is_multi_channel();
 	char* plugin_title();
-	int start_realtime();
-	int stop_realtime();
 	int start_gui();
 	int stop_gui();
 	int show_gui();

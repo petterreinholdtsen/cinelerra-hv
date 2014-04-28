@@ -9,6 +9,11 @@
 
 /* Constants */
 
+#define MPEG3_MAJOR   1
+#define MPEG3_MINOR   5
+#define MPEG3_RELEASE 0
+
+
 
 #define MPEG3_FLOAT32 float
 

@@ -18,8 +18,8 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 {
 	init_x = icon_x;
 	init_y = icon_y;
-	end_x = INFINITY;
-	end_y = INFINITY;
+	end_x = BC_INFINITY;
+	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x();
 	icon_offset_y = init_y - parent_window->get_abs_cursor_y();
 //printf("BC_DragWindow::BC_DragWindow 1 %d %d\n", icon_offset_x, icon_offset_y);
@@ -84,7 +84,7 @@ int BC_DragWindow::drag_failure_event()
 {
 	if(!do_animation) return 0;
 
-	if(end_x == INFINITY)
+	if(end_x == BC_INFINITY)
 	{
 		end_x = get_x();
 		end_y = get_y();

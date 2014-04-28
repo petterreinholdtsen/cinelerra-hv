@@ -3,36 +3,8 @@
 #include "blurwindow.h"
 
 
-BlurThread::BlurThread(BlurMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-BlurThread::~BlurThread()
-{
-	delete window;
-}
-	
-void BlurThread::run()
-{
-	BC_DisplayInfo info;
-	window = new BlurWindow(client, 
-		info.get_abs_cursor_x() - 75, 
-		info.get_abs_cursor_y() - 65);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-//printf("BlurThread::run 1\n");
-	if(result) client->client_side_close();
-//printf("BlurThread::run 2\n");
-}
-
+PLUGIN_THREAD_OBJECT(BlurMain, BlurThread, BlurWindow)
 
 
 
@@ -54,6 +26,7 @@ BlurWindow::BlurWindow(BlurMain *client, int x, int y)
 
 BlurWindow::~BlurWindow()
 {
+//printf("BlurWindow::~BlurWindow 1\n");
 }
 
 int BlurWindow::create_objects()

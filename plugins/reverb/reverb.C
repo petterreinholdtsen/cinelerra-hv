@@ -12,7 +12,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-
+#include <unistd.h>
 
 
 
@@ -29,125 +29,104 @@ Reverb::Reverb(PluginServer *server)
 	srand(time(0));
 	redo_buffers = 1;       // set to redo buffers before the first render
 	dsp_in_length = 0;
-	thread = 0;
 	ref_channels = 0;
 	ref_offsets = 0;
 	ref_levels = 0;
 	ref_lowpass = 0;
 	dsp_in = 0;
-	load_defaults();
+	lowpass_in1 = 0;
+	lowpass_in2 = 0;
+	initialized = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 Reverb::~Reverb()
 {
-//printf("Reverb::~Reverb 1\n");
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-//printf("Reverb::~Reverb 1\n");
+	PLUGIN_DESTRUCTOR_MACRO
 
-	save_defaults();
-//printf("Reverb::~Reverb 1\n");
-	delete defaults;
-//printf("Reverb::~Reverb 1\n");
-	if(ref_channels) delete ref_channels;
-//printf("Reverb::~Reverb 1\n");
-	if(ref_offsets) delete ref_offsets;
-//printf("Reverb::~Reverb 1\n");
-	if(ref_levels) delete ref_levels;
-//printf("Reverb::~Reverb 1\n");
-	if(ref_lowpass) delete ref_lowpass;
-//printf("Reverb::~Reverb 1\n");
-	if(dsp_in) delete dsp_in;
-//printf("Reverb::~Reverb 2\n");
+	if(initialized)
+	{
+		for(int i = 0; i < total_in_buffers; i++)
+		{
+			delete [] dsp_in[i];
+			delete [] ref_channels[i];
+			delete [] ref_offsets[i];
+			delete [] ref_levels[i];
+			delete [] ref_lowpass[i];
+			delete [] lowpass_in1[i];
+			delete [] lowpass_in2[i];
+		}
+
+		delete [] dsp_in;
+		delete [] ref_channels;
+		delete [] ref_offsets;
+		delete [] ref_levels;
+		delete [] ref_lowpass;
+		delete [] lowpass_in1;
+		delete [] lowpass_in2;
+
+		for(int i = 0; i < (smp + 1); i++)
+		{
+			delete engine[i];
+		}
+		delete [] engine;
+		initialized = 0;
+	}
 }
 
 char* Reverb::plugin_title() { return "Heroine College Concert Hall"; }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 
-int Reverb::start_realtime()
-{
-	int i;
-
-//printf("Reverb::start_realtime %d\n", total_in_buffers);
-	dsp_in = new double*[total_in_buffers];
-	ref_channels = new long*[total_in_buffers];
-	ref_offsets = new long*[total_in_buffers];
-	ref_levels = new double*[total_in_buffers];
-	ref_lowpass = new long*[total_in_buffers];
-	lowpass_in1 = new double*[total_in_buffers];
-	lowpass_in2 = new double*[total_in_buffers];
-
-	for(i = 0; i < total_in_buffers; i++)
-	{
-		dsp_in[i] = new double[1];
-		ref_channels[i] = new long[1];
-		ref_offsets[i] = new long[1];
-		ref_levels[i] = new double[1];
-		ref_lowpass[i] = new long[1];
-		lowpass_in1[i] = new double[1];
-		lowpass_in2[i] = new double[1];
-	}
-
-	engine = new ReverbEngine*[(smp + 1)];
-	for(i = 0; i < (smp + 1); i++)
-	{
-		engine[i] = new ReverbEngine(this);
-//printf("Reverb::start_realtime %d\n", Thread::calculate_realtime());
-// Realtime priority moved to sound driver
-//		engine[i]->set_realtime(realtime_priority);
-		engine[i]->start();
-	}
-	redo_buffers = 1;
-	return 0;
-}
-
-int Reverb::stop_realtime()
-{
-	for(int i = 0; i < total_in_buffers; i++)
-	{
-		delete dsp_in[i];
-		delete ref_channels[i];
-		delete ref_offsets[i];
-		delete ref_levels[i];
-		delete ref_lowpass[i];
-		delete lowpass_in1[i];
-		delete lowpass_in2[i];
-	}
-	delete dsp_in;
-	delete ref_channels;
-	delete ref_offsets;
-	delete ref_levels;
-	delete ref_lowpass;
-	delete lowpass_in1;
-	delete lowpass_in2;
-	
-	for(int i = 0; i < (smp + 1); i++)
-	{
-		delete engine[i];
-	}
-	delete engine;
-	return 0;
-}
-
 int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 {
 	long new_dsp_length, i, j;
 	main_in = input_ptr;
 	main_out = output_ptr;
+//printf("Reverb::process_realtime 1\n");
+	redo_buffers |= load_configuration();
 
-	redo_buffers = load_configuration();
-
-//printf("Reverb::process_realtime 1 %d %d\n", redo_buffers, config.ref_total);
+//printf("Reverb::process_realtime 1\n");
 	if(!config.ref_total) return 0;
 
-	new_dsp_length = PluginClient::in_buffer_size + 
-		(config.delay_init + config.ref_length) * project_sample_rate / 1000;
+
+	if(!initialized)
+	{
+		dsp_in = new double*[total_in_buffers];
+		ref_channels = new long*[total_in_buffers];
+		ref_offsets = new long*[total_in_buffers];
+		ref_levels = new double*[total_in_buffers];
+		ref_lowpass = new long*[total_in_buffers];
+		lowpass_in1 = new double*[total_in_buffers];
+		lowpass_in2 = new double*[total_in_buffers];
+
+		for(i = 0; i < total_in_buffers; i++)
+		{
+			dsp_in[i] = new double[1];
+			ref_channels[i] = new long[1];
+			ref_offsets[i] = new long[1];
+			ref_levels[i] = new double[1];
+			ref_lowpass[i] = new long[1];
+			lowpass_in1[i] = new double[1];
+			lowpass_in2[i] = new double[1];
+		}
+
+		engine = new ReverbEngine*[(smp + 1)];
+		for(i = 0; i < (smp + 1); i++)
+		{
+			engine[i] = new ReverbEngine(this);
+//printf("Reverb::start_realtime %d\n", Thread::calculate_realtime());
+// Realtime priority moved to sound driver
+//		engine[i]->set_realtime(realtime_priority);
+			engine[i]->start();
+		}
+		initialized = 1;
+		redo_buffers = 1;
+	}
+
+	new_dsp_length = size + 
+		(config.delay_init + config.ref_length) * project_sample_rate / 1000 + 1;
+//printf("Reverb::process_realtime 1 %d %d\n", in_buffer_size, size);
 
 	if(redo_buffers || new_dsp_length != dsp_in_length)
 	{
@@ -165,6 +144,7 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 		dsp_in_length = new_dsp_length;
 		redo_buffers = 1;
 	}
+//printf("Reverb::process_realtime 1\n");
 
 	if(redo_buffers)
 	{
@@ -224,6 +204,7 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 		
 		redo_buffers = 0;
 	}
+//printf("Reverb::process_realtime 1\n");
 
 	for(i = 0; i < total_in_buffers; )
 	{
@@ -237,7 +218,7 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 			engine[j]->wait_process_overlays();
 		}
 	}
-//printf("Reverb::process_realtime 1 %d %d\n", total_in_buffers, size);
+//printf("Reverb::process_realtime 2 %d %d\n", total_in_buffers, size);
 
 	for(i = 0; i < total_in_buffers; i++)
 	{
@@ -487,15 +468,15 @@ int ReverbEngine::process_overlay(double *in, double *out, double &out1, double 
 	if(lowpass == -1 || lowpass >= 20000)
 	{
 // no lowpass filter
-		for(register int i = 0; i < size; i++) out[i] += in[i] * level;
+		for(int i = 0; i < size; i++) out[i] += in[i] * level;
 	}
 	else
 	{
-		register double coef = 0.25 * 2.0 * M_PI * (double)lowpass / (double)plugin->project_sample_rate;
-		register double a = coef * 0.25;
-		register double b = coef * 0.50;
+		double coef = 0.25 * 2.0 * M_PI * (double)lowpass / (double)plugin->project_sample_rate;
+		double a = coef * 0.25;
+		double b = coef * 0.50;
 
-		for(register int i = 0; i < size; i++)
+		for(int i = 0; i < size; i++)
 		{
 			out2 += a * (3 * out1 + in[i] - out2);
 			out2 += b * (out1 + in[i] - out2);
@@ -585,3 +566,18 @@ void ReverbConfig::interpolate(ReverbConfig &prev,
 	lowpass1 = prev.lowpass1;
 	lowpass2 = prev.lowpass2;
 }
+
+void ReverbConfig::dump()
+{
+	printf("ReverbConfig::dump %f %d %f %f %d %d %d %d\n", 
+	level_init,
+	delay_init, 
+	ref_level1, 
+	ref_level2, 
+	ref_total, 
+	ref_length, 
+	lowpass1, 
+	lowpass2);
+}
+
+

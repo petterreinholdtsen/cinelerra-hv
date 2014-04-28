@@ -787,8 +787,8 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 #define CONTROL_H 10
 #define FIRST_CONTROL_W 20
 #define FIRST_CONTROL_H 20
-#undef INFINITY
-#define INFINITY 65536
+#undef BC_INFINITY
+#define BC_INFINITY 65536
 #ifndef SQR
 #define SQR(x) ((x) * (x))
 #endif
@@ -850,12 +850,12 @@ int CWindowCanvas::do_mask(int &redraw,
 // Closest point
 	int shortest_point = -1;
 // Distance to closest line
-	float shortest_line_distance = INFINITY;
+	float shortest_line_distance = BC_INFINITY;
 // Distance to closest point
-	float shortest_point_distance = INFINITY;
+	float shortest_point_distance = BC_INFINITY;
 	int selected_point = -1;
 	int selected_control_point = -1;
-	float selected_control_point_distance = INFINITY;
+	float selected_control_point_distance = BC_INFINITY;
 	ArrayList<int> x_points;
 	ArrayList<int> y_points;
 
@@ -1496,7 +1496,8 @@ void CWindowCanvas::draw_safe_regions()
 
 void CWindowCanvas::reset_keyframe(int do_camera)
 {
-	BezierAuto *keyframe = 0;
+	BezierAuto *translate_keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *affected_track = 0;
 
 	affected_track = gui->cwindow->calculate_affected_track();
@@ -1504,19 +1505,31 @@ void CWindowCanvas::reset_keyframe(int do_camera)
 	if(affected_track)
 	{
 		if(do_camera)
-			keyframe = (BezierAuto*)gui->cwindow->calculate_affected_auto(affected_track->automation->camera_autos);
+		{
+			translate_keyframe = (BezierAuto*)gui->cwindow->calculate_affected_auto(
+				affected_track->automation->camera_autos);
+			zoom_keyframe = (FloatAuto*)gui->cwindow->calculate_affected_auto(
+				affected_track->automation->czoom_autos);
+		}
 		else
-			keyframe = (BezierAuto*)gui->cwindow->calculate_affected_auto(affected_track->automation->projector_autos);
+		{
+			translate_keyframe = (BezierAuto*)gui->cwindow->calculate_affected_auto(
+				affected_track->automation->projector_autos);
+			zoom_keyframe = (FloatAuto*)gui->cwindow->calculate_affected_auto(
+				affected_track->automation->pzoom_autos);
+		}
 
-		keyframe->center_x = 0;
-		keyframe->center_y = 0;
-		keyframe->center_z = 1;
+		translate_keyframe->center_x = 0;
+		translate_keyframe->center_y = 0;
+		translate_keyframe->center_z = 1;
+		zoom_keyframe->value = 1;
 
 		mwindow->sync_parameters(CHANGE_PARAMS);
-		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-			CHANGE_NONE,
-			mwindow->edl,
-			1);
+		gui->update_tool();
+// 		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
+// 			CHANGE_NONE,
+// 			mwindow->edl,
+// 			1);
 	}
 }
 

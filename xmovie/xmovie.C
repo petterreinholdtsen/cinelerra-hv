@@ -6,7 +6,7 @@
 
 int usage()
 {
-	printf("XMovie (c) 2002 Heroine Virtual\n");
+	printf("XMovie (c) 2002 Heroine Virtual Ltd.\n");
 	return 0;
 }
 

@@ -117,6 +117,7 @@ void PluginDialogThread::run()
 								plugin_type);
 			}
 
+			mwindow->update_plugin_states();
 			mwindow->gui->update(1,
 				1,
 				0,
@@ -300,7 +301,7 @@ int PluginDialog::create_objects()
 
 //printf("PluginDialog::create_objects 1\n");
 	x = 170;
-	add_subwindow(new BC_Title(x, y, "Shared plugins:"));
+	add_subwindow(new BC_Title(x, y, "Shared effects:"));
 	add_subwindow(shared_list = new PluginDialogShared(this, 
 		&shared_data, 
 		x, 
@@ -319,7 +320,7 @@ int PluginDialog::create_objects()
 
 //printf("PluginDialog::create_objects 1\n");
 	x = 340;
-	add_subwindow(new BC_Title(x, y, "Shared modules:"));
+	add_subwindow(new BC_Title(x, y, "Shared tracks:"));
 	add_subwindow(module_list = new PluginDialogModules(this, 
 		&module_data, 
 		x, 

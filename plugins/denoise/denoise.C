@@ -18,10 +18,7 @@
 #define SGN(x) (x<0 ? -1: 1)
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new DenoiseEffect(server);
-}
+REGISTER_PLUGIN(DenoiseEffect)
 
 
 
@@ -31,22 +28,24 @@ DenoiseEffect::DenoiseEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DenoiseEffect::~DenoiseEffect()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-	
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 	delete_dsp();
 }
+
+NEW_PICON_MACRO(DenoiseEffect)
+
+LOAD_CONFIGURATION_MACRO(DenoiseEffect, DenoiseConfig)
+
+SHOW_GUI_MACRO(DenoiseEffect, DenoiseThread)
+
+RAISE_WINDOW_MACRO(DenoiseEffect)
+
+SET_STRING_MACRO(DenoiseEffect)
 
 void DenoiseEffect::delete_dsp()
 {
@@ -80,6 +79,7 @@ void DenoiseEffect::delete_dsp()
 
 void DenoiseEffect::reset()
 {
+	first_window = 1;
 	thread = 0;
 	ex_coeff_d = 0;
 	ex_coeff_r = 0;
@@ -99,7 +99,7 @@ void DenoiseEffect::reset()
 	out_scale = 0;
 	dsp_in = 0;
 	dsp_out = 0;
-
+	initialized = 0;
 
 
 	alpha = 1.359803732;
@@ -108,11 +108,6 @@ void DenoiseEffect::reset()
 	output_level = 1.0;
 	levels = 1;
 	iterations = 1;
-}
-
-VFrame* DenoiseEffect::new_picon()
-{
-	return new VFrame(picon_png);
 }
 
 char* DenoiseEffect::plugin_title()
@@ -146,9 +141,6 @@ void DenoiseEffect::read_data(KeyFrame *keyframe)
 			}
 		}
 	}
-
-
-	update_gui();
 }
 
 void DenoiseEffect::save_data(KeyFrame *keyframe)
@@ -185,14 +177,6 @@ int DenoiseEffect::save_defaults()
 	return 0;
 }
 
-void DenoiseEffect::load_configuration()
-{
-	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(-1);
-
-	read_data(prev_keyframe);
-}
-
 void DenoiseEffect::update_gui()
 {
 	if(thread)
@@ -201,58 +185,6 @@ void DenoiseEffect::update_gui()
 		thread->window->update();
 		thread->window->unlock_window();
 	}
-}
-
-int DenoiseEffect::show_gui()
-{
-	load_configuration();
-	
-	thread = new DenoiseThread(this);
-	thread->start();
-	return 0;
-}
-
-void DenoiseEffect::raise_window()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		thread->window->raise_window();
-		thread->window->flush();
-		thread->window->unlock_window();
-	}
-}
-
-int DenoiseEffect::set_string()
-{
-	if(thread) 
-	{
-		thread->window->lock_window();
-		thread->window->set_title(gui_string);
-		thread->window->unlock_window();
-	}
-	return 0;
-}
-
-int DenoiseEffect::start_realtime()
-{
-	long size_factor = (int)(pow(2, levels));
-	dsp_in = new double[window_size * size_factor];
-	dsp_out = new double[window_size * 2];
-	dsp_iteration = new double[window_size * 2];
-
-
-	ex_coeff_d = new Tree(window_size, levels);
-	ex_coeff_r = new Tree(window_size, levels);
-	ex_coeff_rn = new Tree(window_size, levels);
-	wave_coeff_d = new WaveletCoeffs(alpha, beta);
-	wave_coeff_r = new WaveletCoeffs(alpha, beta);
-	decomp_filter = new WaveletFilters(wave_coeff_d, DECOMP);
-	recon_filter = new WaveletFilters(wave_coeff_r, RECON);
-	in_scale = 65535 / sqrt(window_size) / iterations;
-	out_scale = output_level / 65535 * sqrt(window_size);
-
-	return 0;
 }
 
 
@@ -531,6 +463,26 @@ void DenoiseEffect::process_window()
 int DenoiseEffect::process_realtime(long size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
+
+	if(!initialized)
+	{
+		long size_factor = (int)(pow(2, levels));
+		dsp_in = new double[window_size * size_factor];
+		dsp_out = new double[window_size * 2];
+		dsp_iteration = new double[window_size * 2];
+
+
+		ex_coeff_d = new Tree(window_size, levels);
+		ex_coeff_r = new Tree(window_size, levels);
+		ex_coeff_rn = new Tree(window_size, levels);
+		wave_coeff_d = new WaveletCoeffs(alpha, beta);
+		wave_coeff_r = new WaveletCoeffs(alpha, beta);
+		decomp_filter = new WaveletFilters(wave_coeff_d, DECOMP);
+		recon_filter = new WaveletFilters(wave_coeff_r, RECON);
+		in_scale = 65535 / sqrt(window_size) / iterations;
+		out_scale = output_level / 65535 * sqrt(window_size);
+		initialized = 1;
+	}
 	
 // Append input buffer
 	if(input_size + size > input_allocation)
@@ -565,9 +517,10 @@ int DenoiseEffect::process_realtime(long size, double *input_ptr, double *output
 
 
 
-
-
-		process_window();
+// First window produces garbage
+		if(!first_window)
+			process_window();
+		first_window = 0;
 
 
 
@@ -635,6 +588,7 @@ int DenoiseEffect::process_realtime(long size, double *input_ptr, double *output
 	}
 	else
 	{
+//printf("DenoiseEffect::process_realtime 1\n");
 		bzero(output_ptr, sizeof(double) * size);
 	}
 
@@ -770,43 +724,39 @@ DenoiseConfig::DenoiseConfig()
 	level = 1.0;
 }
 
-
-
-
-
-
-
-
-
-
-DenoiseThread::DenoiseThread(DenoiseEffect *plugin)
- : Thread()
+void DenoiseConfig::copy_from(DenoiseConfig &that)
 {
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
+	level = that.level;
 }
 
-DenoiseThread::~DenoiseThread()
+int DenoiseConfig::equivalent(DenoiseConfig &that)
 {
-	delete window;
+	return EQUIV(level, that.level);
+}
+
+void DenoiseConfig::interpolate(DenoiseConfig &prev, 
+	DenoiseConfig &next, 
+	long prev_frame, 
+	long next_frame, 
+	long current_frame)
+{
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	this->level = prev.level * prev_scale + next.level * next_scale;
 }
 
 
-void DenoiseThread::run()
-{
-	BC_DisplayInfo info;
 
-	window = new DenoiseWindow(plugin,
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
 
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command in thread
-	if(result) plugin->client_side_close();
-}
+
+
+
+
+
+
+PLUGIN_THREAD_OBJECT(DenoiseEffect, DenoiseThread, DenoiseWindow)
+
+
 
 
 

@@ -4,7 +4,6 @@
 #include "canvas.h"
 #include "guicast.h"
 #include "channelpicker.inc"
-#include "libdv.h"
 #include "libmjpeg.h"
 #include "meterpanel.inc"
 #include "preferences.inc"
@@ -262,7 +261,8 @@ public:
 	Record *record;
 
 private:
-	dv_t *dv;
+// Don't want theme to need libdv to compile
+	void *dv;
 };
 
 #endif

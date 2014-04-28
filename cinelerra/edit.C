@@ -551,13 +551,12 @@ int Edit::shift_end_out(int edit_mode,
 // Extend length
 		this->length += cut_length;
 
-//printf("Edit::shift_end_out 2 %ld\n", this->length);
-		edits->shift_keyframes_recursive(startproject + length, 
-			cut_length);
 // Effects are shifted in length extension
 		if(edit_plugins)
-			edits->shift_effects_recursive(startproject + length, 
+			edits->shift_effects_recursive(startproject, 
 				cut_length);
+		edits->shift_keyframes_recursive(oldposition/* startproject */, 
+			cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
 		{

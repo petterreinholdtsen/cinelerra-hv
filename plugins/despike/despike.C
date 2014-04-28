@@ -12,52 +12,34 @@
 #include <string.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new Despike(server);
-}
+REGISTER_PLUGIN(Despike)
 
 
 
 Despike::Despike(PluginServer *server)
  : PluginAClient(server)
 {
-	thread = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
+	last_sample = 0;
 }
 
 Despike::~Despike()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 char* Despike::plugin_title() { return "Despike"; }
 int Despike::is_realtime() { return 1; }
 
-VFrame* Despike::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(Despike)
 
-int Despike::start_realtime()
-{
-	last_sample = 0;
-	return 0;
-}
 
-int Despike::stop_realtime()
-{
-	return 0;
-}
+SHOW_GUI_MACRO(Despike, DespikeThread)
+SET_STRING_MACRO(Despike)
+RAISE_WINDOW_MACRO(Despike)
+
+LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
+
 
 int Despike::process_realtime(long size, double *input_ptr, double *output_ptr)
 {
@@ -86,30 +68,6 @@ int Despike::process_realtime(long size, double *input_ptr, double *output_ptr)
 }
 
 
-
-int Despike::show_gui()
-{
-	load_configuration();
-	thread = new DespikeThread(this);
-	thread->start();
-	return 0;
-}
-
-int Despike::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void Despike::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
 int Despike::load_defaults()
 {
 	char directory[1024];
@@ -136,8 +94,6 @@ int Despike::save_defaults()
 	defaults->save();
 	return 0;
 }
-
-LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
 
 void Despike::save_data(KeyFrame *keyframe)

@@ -119,7 +119,7 @@ int EditMoveTrackDown::handle_event()
 
 
 EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Resize track")
+ : BC_MenuItem("Resize track...")
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

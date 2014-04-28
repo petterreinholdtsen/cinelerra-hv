@@ -174,6 +174,7 @@ int AudioOSS::open_input()
 
 int AudioOSS::open_output()
 {
+//printf("AudioOSS::open_output 1\n");
 	device->out_channels = 0;
 	
 	for(int i = 0; i < MAXDEVICES; i++)

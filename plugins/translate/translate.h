@@ -37,8 +37,6 @@ public:
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	char* plugin_title();
-	int start_realtime();
-	int stop_realtime();
 	int show_gui();
 	void raise_window();
 	void update_gui();

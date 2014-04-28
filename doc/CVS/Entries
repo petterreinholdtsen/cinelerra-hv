@@ -4,8 +4,6 @@
 /doc_2002.html/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /history.html/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /installation.html/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/manual.pdf/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/manual.ps/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /manual.sdw/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /title.png/1.1.1.1/Fri Jun 21 12:35:26 2002//
 D/.xvpics////
@@ -28,5 +26,10 @@ D/.xvpics////
 /splice_button.png/1.1/Tue Jul  9 14:38:05 2002/-kb/
 /toclip_button.png/1.1/Tue Jul  9 14:38:45 2002/-kb/
 /ibeam_mode.png/1.1/Wed Jul 10 13:54:22 2002/-kb/
-/Makefile/1.2/Wed Jul 10 19:06:59 2002//
-/cinelerra.texi/1.10/Wed Jul 10 19:06:59 2002//
+/channelpositions.png/1.1/Wed Jul 24 12:53:34 2002/-kb/
+/compositing_pipeline.png/1.1/Tue Jul 30 15:26:36 2002/-kb/
+/compositing_pipeline2.png/1.1/Mon Aug  5 12:57:17 2002/-kb/
+/recording.png/1.1/Tue Aug  6 15:10:22 2002/-kb/
+/Makefile/1.9/Thu Aug  8 14:45:37 2002//
+/cinelerra.texi/1.26/Fri Aug  9 15:57:12 2002//
+/press/1.4/Fri Aug  9 15:57:12 2002//

@@ -40,6 +40,7 @@ typedef struct
 	int still_alive;
 	int interrupted;
 	int capturing;
+	int frame_locked;
 	struct timeval delay;
 	pthread_t keepalive_tid;
 

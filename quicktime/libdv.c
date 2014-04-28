@@ -1,28 +1,5 @@
-/* 
- *  libdv.c
- *
- *     Copyright (C) Heroine Virtual (Motion picture solutions for Linux) - Oct 2001
- *     Copyright (C) Charles 'Buck' Krasic - April 2000
- *     Copyright (C) Erik Walthinsen - April 2000
- *
- *  This file is part of libdv, a free DV (IEC 61834/SMPTE 314M)
- *  decoder.
- *
- *  libdv is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your
- *  option) any later version.
- *   
- *  libdv is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  General Public License for more details.
- *   
- *  You should have received a copy of the GNU General Public License
- *  along with GNU Make; see the file COPYING.  If not, write to
- *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. 
- *
- *  The libdv homepage is http://libdv.sourceforge.net/.  
+/*
+ * Grabbing algorithm is from dvgrab
  */
 
 #include "colormodels.h"
@@ -50,6 +27,12 @@ int dv_advance_frame(dv_grabber_t *grabber, int *frame_number)
 }
 
 
+void dv_reset_keepalive(dv_grabber_t *grabber)
+{
+	grabber->capturing = 0;
+	grabber->still_alive = 1;
+}
+
 // From DVGRAB
 int dv_iso_handler(raw1394handle_t handle, 
 		int channel, 
@@ -61,6 +44,8 @@ int dv_iso_handler(raw1394handle_t handle,
 	if(!grabber) return 0;
 	if(grabber->done) return 0;
 
+
+#define BLOCK_SIZE 480
 	if(length > 16)
 	{
 		unsigned char *ptr = (unsigned char*)&data[3];
@@ -73,18 +58,21 @@ int dv_iso_handler(raw1394handle_t handle,
 // Frame completed
 			if(grabber->bytes_read)
 			{
-//printf("dv_iso_handler 2 %d %d\n", grabber->bytes_read, grabber->input_frame);
 // Need to conform the frame size so our format detection is right
 				if(grabber->bytes_read == DV_PAL_SIZE ||
 					grabber->bytes_read == DV_NTSC_SIZE)
 				{
 					grabber->frame_size = grabber->bytes_read;
+//printf("dv_iso_handler 1 %d\n", grabber->input_frame);
 					pthread_mutex_unlock(&grabber->output_lock[grabber->input_frame]);
 					dv_advance_frame(grabber, &(grabber->input_frame));
+					dv_reset_keepalive(grabber);
+
 					pthread_mutex_lock(&grabber->input_lock[grabber->input_frame]);
 					bzero(grabber->frame_buffer[grabber->input_frame], DV_PAL_SIZE);
 				}
 				grabber->bytes_read = 0;
+//printf("dv_iso_handler 2\n");
 			}
 		}
 
@@ -92,42 +80,42 @@ int dv_iso_handler(raw1394handle_t handle,
 		{
 			case 0: // Header
                 memcpy(grabber->frame_buffer[grabber->input_frame] + 
-					dif_sequence * 150 * 80, ptr, length - 16);
+					dif_sequence * 150 * 80, ptr, BLOCK_SIZE);
 				break;
 
 			case 1: // Subcode
 				memcpy(grabber->frame_buffer[grabber->input_frame] + 
 					dif_sequence * 150 * 80 + (1 + dif_block) * 80, 
 					ptr, 
-					length - 16);
+					BLOCK_SIZE);
 				break;
 
 			case 2: // VAUX
 				memcpy(grabber->frame_buffer[grabber->input_frame] + 
 					dif_sequence * 150 * 80 + (3 + dif_block) * 80, 
 					ptr, 
-					length - 16);
+					BLOCK_SIZE);
 				break;
 
 			case 3: // Audio block
 				memcpy(grabber->frame_buffer[grabber->input_frame] + 
 					dif_sequence * 150 * 80 + (6 + dif_block * 16) * 80, 
 					ptr, 
-					length - 16);
+					BLOCK_SIZE);
 				break;
 
 			case 4: // Video block
 				memcpy(grabber->frame_buffer[grabber->input_frame] + 
 					dif_sequence * 150 * 80 + (7 + (dif_block / 15) + dif_block) * 80, 
 					ptr, 
-					length - 16);
+					BLOCK_SIZE);
 				break;
 			
 			default:
 				break;
 		}
 
-		grabber->bytes_read += length - 16;
+		grabber->bytes_read += BLOCK_SIZE;
 	}
 	return 0;
 }
@@ -174,12 +162,6 @@ void dv_keepalive_thread(dv_grabber_t *grabber)
 		else
 			grabber->crash = 0;
 	}
-}
-
-void dv_reset_keepalive(dv_grabber_t *grabber)
-{
-	grabber->capturing = 0;
-	grabber->still_alive = 1;
 }
 
 // ===================================================================
@@ -350,33 +332,61 @@ int dv_interrupt_grabber(dv_grabber_t* grabber)
 		grabber->done = 1;
 		pthread_cancel(grabber->tid);
 		for(i = 0; i < grabber->frames; i++)
+		{
 			pthread_mutex_unlock(&(grabber->output_lock[i]));
+		}
 	}
 	return 0;
 }
 
 int dv_grab_frame(dv_grabber_t* grabber, unsigned char **frame, long *size)
 {
-// Device failed to open
-	if(!grabber->frame_buffer || grabber->crash)
+	int result = 0;
+	if(!grabber->frame_locked)
 	{
-		return 1;
-	}
+// Device failed to open.
+// dv_interrupt_grabber should be relied on instead of dv_grab_frame for
+// getting out of a crash.
+		if(!grabber->frame_buffer)
+		{
+			*frame = 0;
+			*size = 0;
+			return 1;
+		}
 
 // Wait for frame to become available
-	grabber->capturing = 1;
-	pthread_mutex_lock(&(grabber->output_lock[grabber->output_frame]));
-	dv_reset_keepalive(grabber);
+		grabber->capturing = 1;
+		pthread_mutex_lock(&(grabber->output_lock[grabber->output_frame]));
+//printf("dv_grab_frame 1 %d\n", grabber->output_frame);
 
-	*frame = grabber->frame_buffer[grabber->output_frame];
-	*size = grabber->frame_size;
-	return 0;
+		if(grabber->done)
+		{
+			*frame = 0;
+			*size = 0;
+			return 1;
+		}
+
+		*frame = grabber->frame_buffer[grabber->output_frame];
+		*size = grabber->frame_size;
+		grabber->frame_locked = 1;
+	}
+	else
+		printf("dv_grab_frame: attempted to grab %d before unlocking previous frame.\n", grabber->output_frame);
+	return result;
 }
 
 int dv_unlock_frame(dv_grabber_t* grabber)
 {
-	pthread_mutex_unlock(&(grabber->input_lock[grabber->output_frame]));
-	dv_advance_frame(grabber, &grabber->output_frame);
+	if(grabber->frame_locked)
+	{
+		pthread_mutex_unlock(&(grabber->input_lock[grabber->output_frame]));
+//printf("dv_unlock_frame 2 %d\n", grabber->output_frame);
+		dv_advance_frame(grabber, &grabber->output_frame);
+//printf("dv_unlock_frame 3 %d\n", grabber->output_frame);
+		grabber->frame_locked = 0;
+	}
+	else
+		printf("dv_unlock_frame: attempted to unlock unlocked frame %d\n", grabber->output_frame);
 	return 0;
 }
 

@@ -21,41 +21,22 @@ PluginClient* new_plugin(PluginServer *server)
 Gain::Gain(PluginServer *server)
  : PluginAClient(server)
 {
-	thread = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 Gain::~Gain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 char* Gain::plugin_title() { return "Gain"; }
 int Gain::is_realtime() { return 1; }
 
-VFrame* Gain::new_picon()
-{
-	return new VFrame(picon_png);
-}
 
-int Gain::start_realtime()
-{
-	return 0;
-}
-
-int Gain::stop_realtime()
-{
-	return 0;
-}
+SHOW_GUI_MACRO(Gain, GainThread)
+SET_STRING_MACRO(Gain)
+RAISE_WINDOW_MACRO(Gain)
+NEW_PICON_MACRO(Gain)
 
 int Gain::process_realtime(long size, double *input_ptr, double *output_ptr)
 {
@@ -72,29 +53,6 @@ int Gain::process_realtime(long size, double *input_ptr, double *output_ptr)
 }
 
 
-
-int Gain::show_gui()
-{
-	load_configuration();
-	thread = new GainThread(this);
-	thread->start();
-	return 0;
-}
-
-int Gain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void Gain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
 
 int Gain::load_defaults()
 {
@@ -126,8 +84,7 @@ void Gain::load_configuration()
 	KeyFrame *prev_keyframe, *next_keyframe;
 //printf("BlurMain::load_configuration 1\n");
 
-	prev_keyframe = get_prev_keyframe(-1);
-	next_keyframe = get_next_keyframe(-1);
+	prev_keyframe = get_prev_keyframe(get_source_position());
 //printf("BlurMain::load_configuration %s\n", prev_keyframe->data);
 	read_data(prev_keyframe);
 }

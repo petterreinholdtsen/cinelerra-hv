@@ -8,10 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new RGB601Main(server);
-}
+REGISTER_PLUGIN(RGB601Main)
+
+
 
 
 RGB601Config::RGB601Config()
@@ -22,30 +21,36 @@ RGB601Config::RGB601Config()
 RGB601Main::RGB601Main(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 RGB601Main::~RGB601Main()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 char* RGB601Main::plugin_title() { return "RGB - 601"; }
 int RGB601Main::is_realtime() { return 1; }
 
-VFrame* RGB601Main::new_picon()
+
+SHOW_GUI_MACRO(RGB601Main, RGB601Thread)
+
+SET_STRING_MACRO(RGB601Main)
+
+RAISE_WINDOW_MACRO(RGB601Main)
+
+NEW_PICON_MACRO(RGB601Main)
+
+void RGB601Main::update_gui()
 {
-	return new VFrame(picon_png);
+	if(thread)
+	{
+		load_configuration();
+		thread->window->lock_window();
+		thread->window->forward->update(config.direction == 1);
+		thread->window->reverse->update(config.direction == 2);
+		thread->window->unlock_window();
+	}
 }
 
 int RGB601Main::load_defaults()
@@ -73,7 +78,7 @@ void RGB601Main::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 
-	prev_keyframe = get_prev_keyframe(-1);
+	prev_keyframe = get_prev_keyframe(get_source_position());
 // Must also switch between interpolation between keyframes and using first keyframe
 	read_data(prev_keyframe);
 }
@@ -120,16 +125,6 @@ void RGB601Main::read_data(KeyFrame *keyframe)
 }
 
 
-int RGB601Main::start_realtime()
-{
-	return 0;
-}
-
-int RGB601Main::stop_realtime()
-{
-	return 0;
-}
-
 #define CREATE_TABLE(max) \
 { \
 	for(int i = 0; i < max; i++) \
@@ -172,28 +167,22 @@ void RGB601Main::create_table(VFrame *input_ptr)
 		if(yuv) \
 		{ \
 /* Just do Y */ \
-			for(int j = 0; j < bytes; j++) \
+			for(int j = 0; j < w; j++) \
 			{ \
-				int component = j % components; \
-/* Y */ \
-				if(component == 0) \
-					out_row[j] = table[in_row[j]]; \
-/* UV */ \
-				else \
-					out_row[j] = in_row[j]; \
+				out_row[j * components] = table[in_row[j * components]]; \
+				out_row[j * components + 1] = in_row[j * components + 1]; \
+				out_row[j * components + 2] = in_row[j * components + 2]; \
+				if(components == 4) out_row[j * components + 3] = in_row[j * components + 3]; \
 			} \
 		} \
 		else \
 		{ \
 			for(int j = 0; j < bytes; j++) \
 			{ \
-				int component = j % components; \
-/* A */ \
-				if(component == 3) \
-					out_row[j] = in_row[j]; \
-				else \
-/* RGB */ \
-					out_row[j] = table[in_row[j]]; \
+				out_row[j * components] = in_row[j * components]; \
+				out_row[j * components + 1] = table[in_row[j * components + 1]]; \
+				out_row[j * components + 2] = table[in_row[j * components + 2]]; \
+				if(components == 4) out_row[j * components + 3] = table[in_row[j * components + 3]]; \
 			} \
 		} \
 	} \
@@ -282,29 +271,5 @@ int RGB601Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	return 0;
 }
-
-int RGB601Main::show_gui()
-{
-	load_configuration();
-	thread = new RGB601Thread(this);
-	thread->start();
-	return 0;
-}
-
-int RGB601Main::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void RGB601Main::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
 
 

@@ -69,8 +69,9 @@ int RecordThread::stop_recording(int resume_monitor)
 {
 	engine_done = 1;
 	this->resume_monitor = resume_monitor;
-// In the monitor engine, stops the engine
-// In the recording engine, causes the monitor engine not to be restarted
+// In the monitor engine, stops the engine.
+// In the recording engine, causes the monitor engine not to be restarted.
+// Video thread stops the audio thread itself
 	if(record_video)
 	{
 //printf("RecordThread::stop_recording 1\n");
@@ -82,13 +83,18 @@ int RecordThread::stop_recording(int resume_monitor)
 	else
 	if(record_audio && context != CONTEXT_SINGLEFRAME) 
 	{
+//printf("RecordThread::stop_recording 3\n");
 		record_audio->batch_done = 1;
+//printf("RecordThread::stop_recording 4\n");
 		record_audio->stop_recording();
+//printf("RecordThread::stop_recording 5\n");
 	}
 
 
+//printf("RecordThread::stop_recording 6\n");
 	completion_lock.lock();
 	completion_lock.unlock();
+//printf("RecordThread::stop_recording 7\n");
 	return 0;
 }
 
@@ -232,6 +238,7 @@ void RecordThread::run()
 
 			if(!monitor)
 			{
+// This draws to RecordGUI, incidentally
 				record->open_output_file();
 				if(mwindow->edl->session->record_sync_drives)
 				{
@@ -277,11 +284,13 @@ void RecordThread::run()
 			if(record->default_asset->video_data)
 				record_video->start_recording();
 
+//printf("RecordThread::run 8\n");
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->join();
 			if(record->default_asset->video_data)
 				record_video->join();
+//printf("RecordThread::run 9\n");
 
 // Stop file threads here to keep loop synchronized
 			if(!monitor)
@@ -338,6 +347,7 @@ void RecordThread::run()
 		}
 	}while(!engine_done);
 
+//printf("RecordThread::run 10\n");
 	record->close_input_devices();
 
 // Resume monitoring only if not a monitor ourselves

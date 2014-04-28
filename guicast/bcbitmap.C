@@ -100,7 +100,7 @@ int BC_Bitmap::params_match(int w, int h, int color_model, int use_shm)
 		this->h == h &&
 		this->color_model == color_model)
 	{
-		if(use_shm == this->use_shm || use_shm == INFINITY)
+		if(use_shm == this->use_shm || use_shm == BC_INFINITY)
 			result = 1;
 	}
 

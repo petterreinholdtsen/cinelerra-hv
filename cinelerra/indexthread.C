@@ -92,6 +92,7 @@ void IndexThread::run()
 	long *lowpoint;             
 // position in current indexframe
 	long *frame_position;
+	int first_point = 1;
 
 	highpoint = new long[asset->channels];
 	lowpoint = new long[asset->channels];
@@ -105,9 +106,10 @@ void IndexThread::run()
 			(length_source / asset->index_zoom * 2 + 1) * channel;
 		lowpoint[channel] = highpoint[channel] + 1;
 
+// Not effective when index_zoom == 1
 // zero the first point
-		asset->index_buffer[highpoint[channel]] = 0;
-		asset->index_buffer[lowpoint[channel]] = 0;
+// 		asset->index_buffer[highpoint[channel]] = 0;
+// 		asset->index_buffer[lowpoint[channel]] = 0;
 		frame_position[channel] = 0;
 	}
 
@@ -133,12 +135,12 @@ void IndexThread::run()
 //printf("IndexThread::run 1\n");
 			for(int channel = 0; channel < asset->channels; channel++)
 			{
-				register long *highpoint_channel = &highpoint[channel];
-				register long *lowpoint_channel = &lowpoint[channel];
-				register long *frame_position_channel = &frame_position[channel];
+				long *highpoint_channel = &highpoint[channel];
+				long *lowpoint_channel = &lowpoint[channel];
+				long *frame_position_channel = &frame_position[channel];
 				double *buffer_source = buffer_in[current_buffer][channel];
 
-				for(register long i = 0; i < fragment_size; i++)
+				for(long i = 0; i < fragment_size; i++)
 				{
 					if(*frame_position_channel == zoomx)
 					{
@@ -151,11 +153,20 @@ void IndexThread::run()
 					else
 					{
 // get high and low points
-						if(buffer_source[i] > index_buffer[*highpoint_channel]) 
-							index_buffer[*highpoint_channel] = buffer_source[i];
-						else 
-						if(buffer_source[i] < index_buffer[*lowpoint_channel]) 
-							index_buffer[*lowpoint_channel] = buffer_source[i];
+						if(first_point)
+						{
+							index_buffer[*highpoint_channel] = 
+								index_buffer[*lowpoint_channel] = buffer_source[i];
+							first_point = 0;
+						}
+						else
+						{
+							if(buffer_source[i] > index_buffer[*highpoint_channel]) 
+								index_buffer[*highpoint_channel] = buffer_source[i];
+							else 
+							if(buffer_source[i] < index_buffer[*lowpoint_channel]) 
+								index_buffer[*lowpoint_channel] = buffer_source[i];
+						}
 					}
 					(*frame_position_channel)++;
 				} // end index one buffer

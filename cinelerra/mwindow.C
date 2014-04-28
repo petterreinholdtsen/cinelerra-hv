@@ -54,6 +54,7 @@
 #include "transportque.h"
 #include "videodevice.inc"
 #include "videowindow.h"
+#include "vplayback.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
 #include "zoombar.h"
@@ -228,7 +229,7 @@ void MWindow::init_plugins(Preferences *preferences, ArrayList<PluginServer*>* &
 // Try to query the plugin
 //printf("MWindow::init_plugins 3\n", path);
 					fs.complete_path(path);
-//printf("MWindow::init_plugins 4\n", path);
+//printf("MWindow::init_plugins 4 %s\n", path);
 					PluginServer *new_plugin = new PluginServer(path);
 //printf("MWindow::init_plugins 5\n", path);
 					if(!new_plugin->open_plugin(1, 0, 0))
@@ -419,12 +420,19 @@ void MWindow::init_theme()
 		if(plugindb->values[i]->theme &&
 			!strcasecmp(preferences->theme, plugindb->values[i]->title))
 		{
+//printf("MWindow::init_theme 1\n");
 			PluginServer plugin = *plugindb->values[i];
+//printf("MWindow::init_theme 1\n");
 			plugin.open_plugin(0, 0, 0);
+//printf("MWindow::init_theme 1\n");
 			theme = plugin.new_theme();
+//printf("MWindow::init_theme 1\n");
 			theme->mwindow = this;
+//printf("MWindow::init_theme 1\n");
 			strcpy(theme->path, plugin.path);
+//printf("MWindow::init_theme 1\n");
 			plugin.close_plugin();
+//printf("MWindow::init_theme 2\n");
 		}
 	}
 
@@ -434,7 +442,9 @@ void MWindow::init_theme()
 		exit(1);
 	}
 
+//printf("MWindow::init_theme 3 %p\n", theme);
 	theme->initialize();
+//printf("MWindow::init_theme 4\n");
 }
 
 void MWindow::init_edl()
@@ -570,6 +580,18 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 	ArrayList<Asset*> new_assets;
 //printf("load_filenames 1\n");
 
+// Need to stop playback since tracking depends on the EDL not getting
+// deleted.
+	cwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	vwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	cwindow->playback_engine->interrupt_playback(0);
+	vwindow->playback_engine->interrupt_playback(0);
 
 
 
@@ -720,18 +742,20 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
 //printf("load_filenames 3\n");
-				strcpy(session->filename, filenames->values[i]);
-				gui->lock_window();
-				gui->update_title(session->filename);
-				gui->unlock_window();
+//				gui->lock_window();
+//				gui->update_title(session->filename);
+//				gui->unlock_window();
 // Load EDL for pasting
 //printf("load_filenames 3\n");
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
 //printf("load_filenames 3\n");
-				strcpy(new_edl->local_session->clip_title, filenames->values[i]);
-//printf("load_filenames 3\n");
-				set_filename(new_edl->local_session->clip_title);
-//printf("load_filenames 3\n");
+				if(load_mode == LOAD_REPLACE || 
+					load_mode == LOAD_REPLACE_CONCATENATE)
+				{
+					strcpy(session->filename, filenames->values[i]);
+					strcpy(new_edl->local_session->clip_title, filenames->values[i]);
+					set_filename(new_edl->local_session->clip_title);
+				}
 //new_edl->dump();
 //printf("load_filenames 2\n");
 				new_edls.append(new_edl);
@@ -980,6 +1004,53 @@ int MWindow::set_editing_mode(int new_editing_mode)
 	return 0;
 }
 
+
+void MWindow::sync_parameters(int change_type)
+{
+
+// Sync engines which are playing back
+	if(cwindow->playback_engine->is_playing_back)
+	{
+		if(change_type == CHANGE_PARAMS)
+		{
+// TODO: block keyframes until synchronization is done
+			cwindow->playback_engine->sync_parameters(edl);
+		}
+		else
+// Stop and restart
+		{
+//printf("MWindow::sync_parameters 1\n");
+			int command = cwindow->playback_engine->command->command;
+			cwindow->playback_engine->que->send_command(STOP,
+				CHANGE_NONE, 
+				0,
+				0);
+//printf("MWindow::sync_parameters 2\n");
+// Waiting for tracking to finish would make the restart position more
+// accurate but it can't lock the window to stop tracking for some reason.
+// Not waiting for tracking gives a faster response but restart position is
+// only as accurate as the last tracking update.
+			cwindow->playback_engine->interrupt_playback(0);
+//printf("MWindow::sync_parameters 3\n");
+			cwindow->playback_engine->que->send_command(command,
+					change_type, 
+					edl,
+					1,
+					0);
+//printf("MWindow::sync_parameters 4\n");
+		}
+	}
+	else
+	{
+//printf("MWindow::sync_parameters 1\n");
+		cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
+							change_type,
+							edl,
+							1);
+//printf("MWindow::sync_parameters 2\n");
+	}
+}
+
 void MWindow::update_caches()
 {
 	audio_cache->set_edl(edl);
@@ -1027,8 +1098,10 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 	plugin->show = 0;
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
+//printf("MWindow::hide_plugin 1 %p %p\n", plugin, plugin_guis->values[i]->plugin);
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
+//printf("MWindow::hide_plugin 2\n");
 			PluginServer *ptr = plugin_guis->values[i];
 			plugin_guis->remove(ptr);
 			if(lock) plugin_gui_lock->unlock();
@@ -1066,9 +1139,11 @@ void MWindow::update_plugin_states()
 	plugin_gui_lock->lock();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
+// Get a plugin GUI
 		Plugin *src_plugin = plugin_guis->values[i]->plugin;
+		PluginServer *src_plugingui = plugin_guis->values[i];
 
-// Search for plugin pointer in EDL.  Only the master EDL shows plugin GUIs.
+// Search for plugin in EDL.  Only the master EDL shows plugin GUIs.
 		for(Track *track = edl->tracks->first; 
 			track && !result; 
 			track = track->next)
@@ -1082,7 +1157,8 @@ void MWindow::update_plugin_states()
 					plugin && !result; 
 					plugin = (Plugin*)plugin->next)
 				{
-					if(plugin == src_plugin) result = 1;
+					if(plugin == src_plugin &&
+						!strcmp(plugin->title, src_plugingui->title)) result = 1;
 				}
 			}
 		}
@@ -1199,15 +1275,13 @@ void MWindow::update_project(int load_mode)
 
 
 
-//	vwindow->gui->update_sources("None");
-//	vwindow->change_source((EDL*)0);
-
 // Since VWindow splices using paste_edls this won't work for VWindow.
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
 	{
-		vwindow->change_source(edl->session->vwindow_folder, 
-			edl->session->vwindow_source);
+// 		vwindow->change_source(edl->session->vwindow_folder, 
+// 			edl->session->vwindow_source);
+		vwindow->change_source();
 	}
 	else
 	{
@@ -1247,6 +1321,7 @@ void MWindow::rebuild_indices()
 
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
+//printf("MWindow::rebuild_indices 1 %s\n", session->drag_assets->values[i]->path);
 // Erase file
 		IndexFile::get_index_filename(source_filename, 
 			preferences->index_directory,
@@ -1266,7 +1341,9 @@ void MWindow::save_backup()
 	FileXML file;
 	edl->save_xml(plugindb, 
 		&file, 
-		BACKUP_PATH);
+		BACKUP_PATH,
+		0,
+		0);
 	file.terminate_string();
 	char path[BCTEXTLEN];
 	FileSystem fs;

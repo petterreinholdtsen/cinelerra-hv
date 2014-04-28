@@ -40,6 +40,7 @@ public:
 	virtual void dispatch_plugin_server(int buffer_number, 
 		long current_position, 
 		long fragment_size) {};
+	virtual int get_buffer_size() { return 0; };
 
 // For unshared plugins, virtual plugins to send configuration events to.
 // For shared plugins, virtual plugins to allocate buffers for.

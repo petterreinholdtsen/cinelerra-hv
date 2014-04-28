@@ -16,7 +16,7 @@
 class FileVorbis : public FileBase
 {
 public:
-	FileVorbis(Asset *asset, File *file, ArrayList<PluginServer*> *plugindb);
+	FileVorbis(Asset *asset, File *file);
 	~FileVorbis();
 
 	static void get_parameters(BC_WindowBase *parent_window, 
@@ -24,56 +24,86 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
+	int reset_parameters_derived();
 
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	int close_file();
-	int set_video_position(long x);
-	int set_audio_position(long x);
 	int write_samples(double **buffer, 
 			long len);
-	int write_frames(VFrame ***frames, int len);
 
-	int read_frame(VFrame *frame);
 	int read_samples(double *buffer, long len);
 
-// Direct copy routines
-	int get_best_colormodel(int driver, int colormodel);
-// This file can copy frames directly from the asset
-	int can_copy_from(Edit *edit, long position); 
-	static char *strtocompression(char *string);
-	static char *compressiontostr(char *string);
+// Decoding
+	OggVorbis_File vf;
+	FILE *fd;
+	double **pcm_history;
+#define HISTORY_MAX 0x100000
+	int history_size;
+	int history_start;
 
-private:
-	FileVorbisBuffer* oldest_buffer();
-	void to_streamchannel(int channel, int &stream_out, int &channel_out);
-	void new_audio_temp(long len);
-	int reset_parameters_derived();
-// File descriptor for decoder
-	mpeg3_t *fd;
-
-// Fork for video encoder
-	ThreadFork *video_out;
-
-// Fork for audio encoder
-	ThreadFork *audio_out;
-	
-	ArrayList<PluginServer*> *plugindb;
-
-// Temporary for color conversion
-	VFrame *temp_frame;
-	long last_sample;
-
-	FileVorbisBuffer history[HISTORY_SIZE];
-	
-	unsigned char *audio_temp;
-	long audio_allocation;
+// Encoding
+	vorbis_info vi;
+	vorbis_comment vc;
+	vorbis_dsp_state vd;
+	vorbis_block vb;
+	ogg_stream_state os;
+	ogg_page og;
+	ogg_packet op;
 };
 
 
-class VorbisConfigAudioPopup;
-class VorbisABitrate;
+class VorbisConfigAudio;
 
+
+class VorbisFixedBitrate : public BC_Radial
+{
+public:
+	VorbisFixedBitrate(int x, int y, VorbisConfigAudio *gui);
+	int handle_event();
+	VorbisConfigAudio *gui;
+};
+
+class VorbisVariableBitrate : public BC_Radial
+{
+public:
+	VorbisVariableBitrate(int x, int y, VorbisConfigAudio *gui);
+	int handle_event();
+	VorbisConfigAudio *gui;
+};
+
+class VorbisMinBitrate : public BC_TextBox
+{
+public:
+	VorbisMinBitrate(int x, 
+		int y, 
+		VorbisConfigAudio *gui, 
+		char *text);
+	int handle_event();
+	VorbisConfigAudio *gui;
+};
+
+class VorbisMaxBitrate : public BC_TextBox
+{
+public:
+	VorbisMaxBitrate(int x, 
+		int y, 
+		VorbisConfigAudio *gui, 
+		char *text);
+	int handle_event();
+	VorbisConfigAudio *gui;
+};
+
+class VorbisAvgBitrate : public BC_TextBox
+{
+public:
+	VorbisAvgBitrate(int x, 
+		int y, 
+		VorbisConfigAudio *gui, 
+		char *text);
+	int handle_event();
+	VorbisConfigAudio *gui;
+};
 
 class VorbisConfigAudio : public BC_Window
 {
@@ -84,39 +114,13 @@ public:
 	int create_objects();
 	int close_event();
 
+	VorbisFixedBitrate *fixed_bitrate;
+	VorbisVariableBitrate *variable_bitrate;
 	BC_WindowBase *parent_window;
-	VorbisABitrate *bitrate;
 	char string[BCTEXTLEN];
 	Asset *asset;
 };
 
-
-class VorbisLayer : public BC_PopupMenu
-{
-public:
-	VorbisLayer(int x, int y, VorbisConfigAudio *gui);
-	void create_objects();
-	int handle_event();
-	static int string_to_layer(char *string);
-	static char* layer_to_string(int derivative);
-	
-	VorbisConfigAudio *gui;
-};
-
-class VorbisABitrate : public BC_PopupMenu
-{
-public:
-	VorbisABitrate(int x, int y, VorbisConfigAudio *gui);
-
-	void create_objects();
-	void set_layer(int layer);
-
-	int handle_event();
-	static int string_to_bitrate(char *string);
-	static char* bitrate_to_string(char *string, int bitrate);
-	
-	VorbisConfigAudio *gui;
-};
 
 
 #endif

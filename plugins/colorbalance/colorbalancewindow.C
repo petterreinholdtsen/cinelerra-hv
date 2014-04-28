@@ -2,38 +2,11 @@
 #include "colorbalancewindow.h"
 
 
-ColorBalanceThread::ColorBalanceThread(ColorBalanceMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-ColorBalanceThread::~ColorBalanceThread()
-{
-// Window always deleted here
-	delete window;
-}
 
-void ColorBalanceThread::run()
-{
-//printf("ColorBalanceThread::run 1\n");
-	BC_DisplayInfo info;
-//printf("ColorBalanceThread::run 1\n");
-	window = new ColorBalanceWindow(client, 
-		info.get_abs_cursor_x() - 165, 
-		info.get_abs_cursor_y() - 80);
-//printf("ColorBalanceThread::run 1\n");
-	window->create_objects();
-//printf("ColorBalanceThread::run 1\n");
-	int result = window->run_window();
-//printf("ColorBalanceThread::run 2\n");
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
+
+
+PLUGIN_THREAD_OBJECT(ColorBalanceMain, ColorBalanceThread, ColorBalanceWindow)
 
 
 
@@ -90,12 +63,7 @@ int ColorBalanceWindow::create_objects()
 	return 0;
 }
 
-int ColorBalanceWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(ColorBalanceWindow)
 
 ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client, float *output, int x, int y)
  : BC_ISlider(x, 

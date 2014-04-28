@@ -86,6 +86,8 @@ public:
 	int color;
 // Motion of title across frame
 	int motion_strategy;
+// Loop motion path
+	int loop;
 // Speed of motion
 	float pixels_per_second;
 	int hjustification;
@@ -94,6 +96,8 @@ public:
 	double fade_in, fade_out;
 // Position in frame relative to top left
 	float x, y;
+// Pixels down and right of dropshadow
+	int dropshadow;
 // Calculated during every frame for motion strategy
 	long prev_keyframe_position;
 	long next_keyframe_position;

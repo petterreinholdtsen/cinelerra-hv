@@ -35,8 +35,6 @@ public:
 	VFrame* new_picon();
 	int is_realtime();
 	int process_realtime(long size, double *input_ptr, double *output_ptr);
-	int start_realtime();
-	int stop_realtime();
 	int show_gui();
 	int set_string();
 	void save_data(KeyFrame *keyframe);

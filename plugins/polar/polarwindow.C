@@ -1,26 +1,8 @@
 #include "polarwindow.h"
 
 
-PolarThread::PolarThread(PolarMain *client)
- : Thread()
-{
-	this->client = client;
-	synchronous = 1; // make thread wait for join
-	gui_started.lock();
-}
+PLUGIN_THREAD_OBJECT(PolarMain, PolarThread, PolarWindow)
 
-PolarThread::~PolarThread()
-{
-}
-	
-void PolarThread::run()
-{
-	window = new PolarWindow(client);
-	window->create_objects();
-	gui_started.unlock();
-	window->run_window();
-	delete window;
-}
 
 
 
@@ -28,8 +10,18 @@ void PolarThread::run()
 
 
 PolarWindow::PolarWindow(PolarMain *client)
- : BC_Window("", MEGREY, client->gui_string, 210, 120, 200, 120, 0, !client->show_initially)
-{ this->client = client; }
+ : BC_Window("", 
+ 	MEGREY, 
+	client->gui_string, 
+	210, 
+	120, 
+	200, 
+	120, 
+	0, 
+	!client->show_initially)
+{
+	this->client = client; 
+}
 
 PolarWindow::~PolarWindow()
 {

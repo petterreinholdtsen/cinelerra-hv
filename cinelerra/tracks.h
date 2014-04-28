@@ -9,6 +9,7 @@
 #include "filexml.inc"
 #include "linklist.h"
 #include "mwindow.inc"
+#include "pluginserver.inc"
 #include "threadindexer.inc"
 #include "track.h"
 #include "trackcanvas.inc"
@@ -44,8 +45,9 @@ public:
 	int move_track_down(Track *track);      // move recordable tracks down
 	int move_tracks_up();                   // move recordable tracks up
 	int move_tracks_down();                 // move recordable tracks down
-	void paste_audio_transition();
-	void paste_video_transition();
+	void paste_audio_transition(PluginServer *server);
+	void paste_video_transition(PluginServer *server);
+	void paste_transition(PluginServer *server, Edit *dest_edit);
 // Return the numbers of tracks with the play patch enabled
 	int playable_audio_tracks();
 	int playable_video_tracks();

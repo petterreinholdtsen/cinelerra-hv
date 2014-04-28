@@ -7,10 +7,7 @@
 #include <string.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new TranslateMain(server);
-}
+REGISTER_PLUGIN(TranslateMain)
 
 TranslateConfig::TranslateConfig()
 {
@@ -77,32 +74,25 @@ void TranslateConfig::interpolate(TranslateConfig &prev,
 TranslateMain::TranslateMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
 	temp_frame = 0;
 	overlayer = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 TranslateMain::~TranslateMain()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-	
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
+
+	if(temp_frame) delete temp_frame;
+	temp_frame = 0;
+	if(overlayer) delete overlayer;
+	overlayer = 0;
 }
 
 char* TranslateMain::plugin_title() { return "Translate"; }
 int TranslateMain::is_realtime() { return 1; }
 
-VFrame* TranslateMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(TranslateMain)
 
 int TranslateMain::load_defaults()
 {
@@ -199,21 +189,6 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 
 
 
-
-int TranslateMain::start_realtime()
-{
-	temp_frame = 0;
-	overlayer = 0;
-}
-
-int TranslateMain::stop_realtime()
-{
-	if(temp_frame) delete temp_frame;
-	temp_frame = 0;
-	if(overlayer) delete overlayer;
-	overlayer = 0;
-}
-
 int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	VFrame *input, *output;
@@ -279,35 +254,15 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 
+SHOW_GUI_MACRO(TranslateMain, TranslateThread)
 
+RAISE_WINDOW_MACRO(TranslateMain)
 
-int TranslateMain::show_gui()
-{
-	load_configuration();
-	thread = new TranslateThread(this);
-	thread->start();
-	return 0;
-}
-
-void TranslateMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
-int TranslateMain::set_string()
-{
-	if(thread)
-		thread->window->set_title(gui_string);
-	return 0;
-}
+SET_STRING_MACRO(TranslateMain)
 
 void TranslateMain::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		thread->window->lock_window();

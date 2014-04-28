@@ -1,0 +1,17 @@
+/Makefile/1.1/Tue Jul 16 15:03:45 2002//
+/Makefile.am/1.1/Tue Jul 16 15:03:45 2002//
+/Makefile.in/1.1/Tue Jul 16 15:03:45 2002//
+/control.c/1.1/Tue Jul 16 15:03:45 2002//
+/latency.c/1.1/Tue Jul 16 15:03:45 2002//
+/midifile.3/1.1/Tue Jul 16 15:03:45 2002//
+/midifile.c/1.1/Tue Jul 16 15:03:45 2002//
+/midifile.h/1.1/Tue Jul 16 15:03:45 2002//
+/midiloop.c/1.1/Tue Jul 16 15:03:45 2002//
+/pcm.c/1.1/Tue Jul 16 15:03:45 2002//
+/playmidi1.c/1.1/Tue Jul 16 15:03:45 2002//
+/rawmidi.c/1.1/Tue Jul 16 15:03:45 2002//
+/seq-decoder.c/1.1/Tue Jul 16 15:03:45 2002//
+/seq-sender.c/1.1/Tue Jul 16 15:03:45 2002//
+/seq.c/1.1/Tue Jul 16 15:03:45 2002//
+/timer.c/1.1/Tue Jul 16 15:03:45 2002//
+D

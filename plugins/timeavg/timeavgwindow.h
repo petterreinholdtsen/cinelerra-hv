@@ -9,18 +9,7 @@ class TimeAvgWindow;
 #include "mutex.h"
 #include "timeavg.h"
 
-class TimeAvgThread : public Thread
-{
-public:
-	TimeAvgThread(TimeAvgMain *client);
-	~TimeAvgThread();
-
-	void run();
-
-	Mutex gui_started, completion;
-	TimeAvgMain *client;
-	TimeAvgWindow *window;
-};
+PLUGIN_THREAD_HEADER(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
 
 class TimeAvgSlider;
 

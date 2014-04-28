@@ -2,34 +2,8 @@
 #include "sharpenwindow.h"
 
 
-SharpenThread::SharpenThread(SharpenMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
+PLUGIN_THREAD_OBJECT(SharpenMain, SharpenThread, SharpenWindow)
 
-SharpenThread::~SharpenThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void SharpenThread::run()
-{
-	BC_DisplayInfo info;
-	window = new SharpenWindow(client, 
-		info.get_abs_cursor_x() - 105, 
-		info.get_abs_cursor_y() - 60);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
 
 
 

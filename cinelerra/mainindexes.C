@@ -33,16 +33,22 @@ void MainIndexes::add_next_asset(Asset *asset)
 
 // Test current asset
 	IndexFile indexfile(mwindow);
+
+//printf("MainIndexes::add_next_asset 1 %s\n", asset->path);
 	if(!indexfile.open_index(asset))
 	{
+//printf("MainIndexes::add_next_asset 2\n");
 		asset->index_status = INDEX_READY;
 		indexfile.close_index();
 	}
 	else
 // Put copy of asset in stack
 	{
+//printf("MainIndexes::add_next_asset 3\n");
 		Asset *new_asset = new Asset;
 		*new_asset = *asset;
+// If the asset existed and was overwritten, the status will be READY.
+		new_asset->index_status = INDEX_NOTTESTED;
 		next_assets.append(new_asset);
 	}
 

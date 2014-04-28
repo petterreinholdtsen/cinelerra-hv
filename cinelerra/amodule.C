@@ -74,6 +74,11 @@ void AModule::create_objects()
 	}
 }
 
+int AModule::get_buffer_size()
+{
+//printf("AModule::get_buffer_size 1 %p\n", get_edl());
+	return get_edl()->session->audio_module_fragment;
+}
 
 void AModule::reverse_buffer(double *buffer, long len)
 {

@@ -107,19 +107,16 @@ int VirtualAConsole::process_buffer(long input_len,
 	int last_buffer,
 	long absolute_position)
 {
-// printf("VirtualAConsole::process_buffer 1 %d\n", current_input_buffer);
 	int result = 0;
 // wait for an input_buffer to become available
 	if(renderengine->command->realtime)
 		output_lock[current_input_buffer]->lock();
 
-// printf("VirtualAConsole::process_buffer 2 %p\n", virtual_modules);
 	if(!interrupt)
 	{
 // Load tracks
 		double **buffer_in = this->buffer_in[current_input_buffer];
 
-// printf("VirtualAConsole::process_buffer 3 %ld\n", input_position);
 		for(int i = 0; i < total_tracks; i++)
 		{
 			result |= ((AModule*)virtual_modules[i]->real_module)->render(buffer_in[i],
@@ -128,7 +125,8 @@ int VirtualAConsole::process_buffer(long input_len,
 				renderengine->command->get_direction());
 		}
 
-// printf("VirtualAConsole::process_buffer 4\n");
+
+
 		this->input_len[current_input_buffer] = input_len;
 		this->input_position[current_input_buffer] = input_position;
 		this->last_playback[current_input_buffer] = last_buffer;
@@ -140,10 +138,16 @@ int VirtualAConsole::process_buffer(long input_len,
 		else
 			process_console();
 
-// printf("VirtualAConsole::process_buffer 5\n");
+
+//printf("VirtualAConsole::process_buffer 5 %p\n", buffer_in[0]);
+// for(int i = 0; i < input_len; i++)
+// {
+// int16_t value = (int16_t)(buffer_in[0][i] * 32767);
+// fwrite(&value, 2, 1, stdout);
+// }
+
 
 		swap_input_buffer();
-// printf("VirtualAConsole::process_buffer 6\n");
 	}
 	return result;
 }
@@ -168,7 +172,8 @@ void VirtualAConsole::process_console()
 
 
 
-//printf("VirtualAConsole::process_console 1 %d\n", input_len);
+//printf("VirtualAConsole::process_console 1 %p\n", this->buffer_in[buffer][0]);
+
 // process entire input buffer by filling one output buffer at a time
 	for(fragment_position = 0; 
 		fragment_position < input_len && !interrupt; )
@@ -179,20 +184,21 @@ void VirtualAConsole::process_console()
 		if(fragment_position + fragment_len > input_len)
 			fragment_len = input_len - fragment_position;
 
-//printf("VirtualAConsole::process_console 2 %d %d %p\n", fragment_position, fragment_len, arender);
-//printf("VirtualAConsole::process_console 2.1 %p\n", arender->audio_out);
+
+
 
 // clear output buffers
 		for(i = 0; i < MAX_CHANNELS; i++)
 		{
-//printf("VirtualAConsole::process_console 2.2 %p\n", arender->audio_out[i]);
 			if(arender->audio_out[i])
 			{
 				bzero(arender->audio_out[i], fragment_len * sizeof(double));
 			}
 		}
 
-//printf("VirtualAConsole::process_console 3\n");
+
+
+
 
 // get the start of the fragment in the project
 		real_position = 
@@ -200,11 +206,10 @@ void VirtualAConsole::process_console()
 				input_position - fragment_position : 
 				input_position + fragment_position;
 
-//printf("VirtualAConsole::process_console 4 %d\n", render_list.total);
-
 // render nodes in sorted list
 		for(i = 0; i < render_list.total; i++)
 		{
+//printf("VirtualAConsole::process_console 1 %p\n", this->buffer_in[buffer][i] + fragment_position);
 			((VirtualANode*)render_list.values[i])->render(arender->audio_out, 
 					0, 
 					buffer,
@@ -216,7 +221,6 @@ void VirtualAConsole::process_console()
 					arender);
 		}
 
-//printf("VirtualAConsole::process_console 5 %d\n", fragment_len);
 // get peaks and limit volume in the fragment
 		for(i = 0; i < MAX_CHANNELS; i++)
 		{
@@ -224,7 +228,6 @@ void VirtualAConsole::process_console()
 			if(current_buffer)
 			{
 
-//printf("VirtualAConsole::process_console 6 %d %d\n", fragment_len, arender->meter_render_fragment);
 				for(j = 0; j < fragment_len; )
 				{
 // Get length to test for meter
@@ -238,7 +241,6 @@ void VirtualAConsole::process_console()
 
 					min = max = 0;
 
-//printf("VirtualAConsole::process_console 7 %d %d\n", j, meter_render_end);
 					for( ; j < meter_render_end; j++)
 					{
 // Level history comes before clipping to get over status
@@ -251,7 +253,6 @@ void VirtualAConsole::process_console()
 						if(current_buffer[j] < -1) current_buffer[j] = -1;
 					}
 
-//printf("VirtualAConsole::process_console 8 %ld %ld\n", real_position, j);
 
 					if(fabs(max) > fabs(min))
 						peak = fabs(max);
@@ -266,21 +267,15 @@ void VirtualAConsole::process_console()
 							real_position - j : 
 							real_position + j;
  						arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
-//for(int k = 0; k <= arender->current_level[i]; k++)
-//	printf("%ld ", arender->level_samples[k]);
-//printf("\n");
  					}
 				}
 
-//printf("VirtualAConsole::process_console 9 %d\n", fragment_len);
 			}
 		}
 
-//printf("VirtualAConsole::process_console 10\n");
 
 // advance fragment
 		fragment_position += fragment_len;
-//printf("VirtualAConsole::process_console 11\n");
 
 // Pack channels, fix speed and send to device.
 		if(renderengine->command->realtime && !interrupt)
@@ -291,7 +286,6 @@ void VirtualAConsole::process_console()
 			int k;
 			double *audio_out_packed[MAX_CHANNELS];
 
-//printf("VirtualAConsole::process_console 12\n");
 			for(i = 0, j = 0; i < MAX_CHANNELS; i++)
 			{
 				if(renderengine->config->aconfig->do_channel[i])
@@ -300,7 +294,6 @@ void VirtualAConsole::process_console()
 				}
 			}
 
-//printf("VirtualAConsole::process_console 13 %f\n", renderengine->command->get_speed());
 			for(i = 0; 
 				i < renderengine->config->aconfig->total_playable_channels(); 
 				i++)
@@ -345,68 +338,58 @@ void VirtualAConsole::process_console()
 				else
 					real_output_len = fragment_len;
 			}
-//printf("VirtualAConsole::process_console 14\n");
 
 			if(!renderengine->audio->get_interrupted())
 			{
-//printf("VirtualAConsole::process_console 15 %f %f %f %f %f\n", audio_out_packed[0][0], audio_out_packed[0][1], audio_out_packed[0][2], audio_out_packed[0][3], audio_out_packed[0][4]);
 				renderengine->audio->write_buffer(audio_out_packed, 
 					real_output_len, 
 					renderengine->config->aconfig->total_playable_channels());
-//printf("VirtualAConsole::process_console 16\n");
 			}
 
 			if(renderengine->audio->get_interrupted()) interrupt = 1;
 		}
-//printf("VirtualAConsole::process_console 17\n");
 
+
+// for(int i = 0; i < fragment_len; i++)
+// {
+// int16_t value = (int16_t)(arender->audio_out[0][i] * 32767);
+// fwrite(&value, 2, 1, stdout);
+// }
 	}
-//printf("VirtualAConsole::process_console 18\n");
 }
 
 
 void VirtualAConsole::run()
 {
 	startup_lock->unlock();
-//printf("VirtualConsole::run 0\n");
 
 	while(!done && !interrupt)
 	{
-//printf("VirtualConsole::run 1\n");
 // wait for a buffer to render through console
 		input_lock[current_vconsole_buffer]->lock();
 
-//printf("VirtualConsole::run 2\n");
 		if(!done && !interrupt && !last_reconfigure[current_vconsole_buffer])
 		{
 // render it if not last buffer
 // send to output device or the previously set output buffer
-//printf("VirtualConsole::run 3 %d\n", current_vconsole_buffer);
 			process_console();
-//printf("VirtualConsole::run 4\n");
 
 // test for exit conditions tied to the buffer
 			if(last_playback[current_vconsole_buffer]) done = 1;
-//printf("VirtualConsole::run 2\n");
 
 // free up buffer for reading from disk
 			output_lock[current_vconsole_buffer]->unlock();
 
-//printf("VirtualConsole::run 2\n");
 // get next buffer
 			if(!done) swap_thread_buffer();
-//printf("VirtualConsole::run 2\n");
 		}
 		else
 		if(last_reconfigure[current_vconsole_buffer])
 			done = 1;
-//printf("VirtualConsole::run 3\n");
 	}
 
-//printf("VirtualConsole::run 4\n");
 	if(interrupt)
 	{
-//		commonrender->interrupt = 1;
 		for(int i = 0; i < total_ring_buffers(); i++)
 		{
 			output_lock[i]->unlock();
@@ -418,7 +401,6 @@ void VirtualAConsole::run()
 		if(renderengine->command->realtime)
 			send_last_output_buffer();
 	}
-//printf("VirtualConsole::run 5\n");
 }
 
 

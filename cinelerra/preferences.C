@@ -11,7 +11,7 @@
 #include "videodevice.inc"
 #include <string.h>
 
-#define CLAMP(x, y, z) (x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
+//#define CLAMP(x, y, z) (x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
 
 
 

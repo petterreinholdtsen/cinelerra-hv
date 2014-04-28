@@ -182,6 +182,7 @@ public:
 	int vorbis_min_bitrate;
 	int vorbis_bitrate;
 	int vorbis_max_bitrate;
+	int vorbis_vbr;
 
 // mp3 compression
 	int mp3_bitrate;

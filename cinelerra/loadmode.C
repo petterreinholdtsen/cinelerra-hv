@@ -109,8 +109,10 @@ LoadModeListBox::~LoadModeListBox()
 
 int LoadModeListBox::handle_event()
 {
+//printf("LoadModeListBox::handle_event 1 %d\n", get_selection(0, 0));
 	if(get_selection(0, 0) >= 0)
 	{
+//printf("LoadModeListBox::handle_event 2 %s\n", get_selection(0, 0)->get_text());
 		loadmode->textbox->update(get_selection(0, 0)->get_text());
 		*(loadmode->output) = ((LoadModeItem*)get_selection(0, 0))->value;
 	}

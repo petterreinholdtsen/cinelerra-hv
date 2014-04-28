@@ -166,7 +166,7 @@ int VirtualANode::render(double **audio_out,
 				arender);
 	}
 	else
-	if(real_plugin || real_transition)
+	if(real_plugin)
 	{
 //printf("VirtualANode::render 1\n");
 		render_as_plugin(real_position,
@@ -202,7 +202,15 @@ int VirtualANode::render_as_module(double **audio_out,
 	double *buffer_out = get_module_output(ring_buffer, fragment_position);
 	int direction = renderengine->command->get_direction();
 
-//printf("VirtualANode::render_as_module 1\n");
+//printf("VirtualANode::render_as_module 1 %p\n", this->buffer_in[ring_buffer] + fragment_position);
+
+// for(int i = 0; i < fragment_len; i++)
+// {
+// int16_t value = (int16_t)(buffer_in[i] * 32767);
+// fwrite(&value, 2, 1, stdout);
+// }
+
+//printf("VirtualANode::render_as_module 1 %d\n", ring_buffer);
 // Render fade
 	render_fade(buffer_in, 
 				buffer_out,
@@ -313,12 +321,16 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
 
+
 	if(((FloatAutos*)autos)->automation_is_constant(input_position, 
 		fragment_len,
 		direction,
 		intercept))
 	{
-		value = DB::fromdb(intercept);
+		if(intercept <= INFINITYGAIN) 
+			value = 0;
+		else
+			value = DB::fromdb(intercept);
 		for(long i = 0; i < fragment_len; i++)
 		{
 			output[i] = input[i] * value;
@@ -335,7 +347,11 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 				previous,
 				next);
 
-			value = DB::fromdb(intercept);
+			if(intercept <= INFINITYGAIN) 
+				value = 0;
+			else
+				value = DB::fromdb(intercept);
+
 			output[i] = input[i] * value;
 
 			if(direction == PLAY_FORWARD)
@@ -429,6 +445,13 @@ int VirtualANode::render_pan(double *input,        // start of input fragment
 		else
 			input_position -= slope_len;
 	}
+
+// if(channel == 0)
+// for(int i = 0; i < fragment_len; i++)
+// {
+// int16_t value = (int16_t)(input[i] * 32767);
+// fwrite(&value, 2, 1, stdout);
+// }
 
 	return 0;
 }

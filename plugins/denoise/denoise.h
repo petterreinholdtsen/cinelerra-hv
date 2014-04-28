@@ -31,21 +31,19 @@ public:
 	DenoiseEffect *plugin;
 };
 
-class DenoiseThread : public Thread
-{
-public:
-	DenoiseThread(DenoiseEffect *plugin);
-	~DenoiseThread();
-	void run();
-	Mutex completion;
-	DenoiseWindow *window;
-	DenoiseEffect *plugin;
-};
+PLUGIN_THREAD_HEADER(DenoiseEffect, DenoiseThread, DenoiseWindow)
 
 class DenoiseConfig
 {
 public:
 	DenoiseConfig();
+	void copy_from(DenoiseConfig &that);
+	int equivalent(DenoiseConfig &that);
+	void interpolate(DenoiseConfig &prev, 
+		DenoiseConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame);
 	double level;
 };
 
@@ -86,23 +84,17 @@ public:
 	DenoiseEffect(PluginServer *server);
 	~DenoiseEffect();
 
-	VFrame* new_picon();
 	char* plugin_title();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int start_realtime();
 	int process_realtime(long size, double *input_ptr, double *output_ptr);
-	int show_gui();
-	void raise_window();
-	int set_string();
 
 
 
 
 	int load_defaults();
 	int save_defaults();
-	void load_configuration();
 	void reset();
 	void update_gui();
 	void delete_dsp();
@@ -145,7 +137,7 @@ public:
 		double *out_data);
 
 
-
+	PLUGIN_CLASS_MEMBERS(DenoiseConfig, DenoiseThread)
 
 // buffer for storing fragments until a complete window size is armed
 	double *input_buffer;
@@ -180,17 +172,8 @@ public:
 // higher number kills more noise at the expense of more aliasing
 	float noise_level;
 	long window_size;
-
-
-
-
-
-
-
-
-	Defaults *defaults;
-	DenoiseThread *thread;
-	DenoiseConfig config;
+	int first_window;
+	int initialized;
 };
 
 

@@ -33,7 +33,9 @@ class TitleItalic;
 class TitleBold;
 class TitleSize;
 class TitleColorButton;
+class TitleDropShadow;
 class TitleMotion;
+class TitleLoop;
 class TitleFade;
 class TitleFont;
 class TitleText;
@@ -73,6 +75,8 @@ public:
 	TitleX *title_x;
 	BC_Title *y_title;
 	TitleY *title_y;
+	BC_Title *dropshadow_title;
+	TitleDropShadow *dropshadow;
 	BC_Title *style_title;
 	TitleItalic *italic;
 	TitleBold *bold;
@@ -82,6 +86,7 @@ public:
 	TitleColorThread *color_thread;
 	BC_Title *motion_title;
 	TitleMotion *motion;
+	TitleLoop *loop;
 	BC_Title *fadein_title;
 	TitleFade *fade_in;
 	BC_Title *fadeout_title;
@@ -160,6 +165,14 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
+class TitleLoop : public BC_CheckBox
+{
+public:
+	TitleLoop(TitleMain *client, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
 class TitleFade : public BC_TextBox
 {
 public:
@@ -202,6 +215,14 @@ class TitleY : public BC_TumbleTextBox
 {
 public:
 	TitleY(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleDropShadow : public BC_TumbleTextBox
+{
+public:
+	TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;

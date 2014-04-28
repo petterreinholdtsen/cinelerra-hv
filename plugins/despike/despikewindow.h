@@ -4,22 +4,12 @@
 class DespikeThread;
 class DespikeWindow;
 
+#include "despike.h"
 #include "guicast.h"
 #include "mutex.h"
-#include "despike.h"
+#include "pluginclient.h"
 
-class DespikeThread : public Thread
-{
-public:
-	DespikeThread(Despike *despike);
-	~DespikeThread();
-	
-	void run();
-	
-	Mutex completion, gui_started; // prevent loading data until the GUI is started
-	Despike *despike;
-	DespikeWindow *window;
-};
+PLUGIN_THREAD_HEADER(Despike, DespikeThread, DespikeWindow)
 
 class DespikeLevel;
 class DespikeSlope;

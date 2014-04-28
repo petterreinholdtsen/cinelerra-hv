@@ -19,8 +19,6 @@ public:
 	int is_transition();
 	char* plugin_title();
 	VFrame* new_picon();
-	int start_realtime();
-	int stop_realtime();
 };
 
 #endif

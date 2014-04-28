@@ -18,6 +18,11 @@ OBJS := \
 LIBS := -L/usr/X11R6/lib \
 	-lGL -lX11 -lXext -lXv -lpthread -lglib -lm -lpng -lz -ldl $(XXF86VM)
 
+# Static libraries for distribution
+ifeq ($(USE_STATIC),y)
+LIBS += -static
+endif
+
 OUTPUT = $(OBJDIR)/mix2000
 
 $(OUTPUT): $(OBJS)
@@ -31,6 +36,7 @@ $(OBJS):
 	$(CC) -c $(CFLAGS) $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 install:
+	rm -f $(PREFIX)/bin/mix2000
 	cp $(OUTPUT) $(PREFIX)/bin
 
 

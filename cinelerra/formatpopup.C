@@ -59,6 +59,7 @@ int FormatPopup::create_objects()
 	format_items.append(new BC_ListBoxItem(MOV_NAME));
 	format_items.append(new BC_ListBoxItem(AMPEG_NAME));
 	format_items.append(new BC_ListBoxItem(VMPEG_NAME));
+	format_items.append(new BC_ListBoxItem(VORBIS_NAME));
 	format_items.append(new BC_ListBoxItem(PCM_NAME));
 	format_items.append(new BC_ListBoxItem(PNG_NAME));
 	format_items.append(new BC_ListBoxItem(PNG_LIST_NAME));

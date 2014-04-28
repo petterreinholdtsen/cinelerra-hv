@@ -13,6 +13,7 @@
 #include "interfaceprefs.h"
 #include "keys.h"
 #include "levelwindow.h"
+#include "levelwindowgui.h"
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -149,20 +150,33 @@ int PreferencesThread::apply_settings()
 
 //printf("PreferencesThread::apply_settings 1\n");
 //printf("PreferencesThread::apply_settings %d %d\n", redraw_meters, redraw_times);
-	if(redraw_meters) 
+	if(redraw_meters)
 	{
 		mwindow->cwindow->gui->lock_window();
 		mwindow->cwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->cwindow->gui->unlock_window();
+
+
+
 		mwindow->vwindow->gui->lock_window();
 		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->vwindow->gui->unlock_window();
+
+
+
 		mwindow->gui->lock_window();
 		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->gui->unlock_window();
+
+
+
+		mwindow->lwindow->gui->lock_window();
+		mwindow->lwindow->gui->panel->change_format(edl->session->meter_format,
+			edl->session->min_meter_db);
+		mwindow->lwindow->gui->unlock_window();
 	}
 
 //printf("PreferencesThread::apply_settings 1\n");
@@ -248,8 +262,8 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
  	WIDTH, 
 	HEIGHT,
-	(int)INFINITY,
-	(int)INFINITY,
+	(int)BC_INFINITY,
+	(int)BC_INFINITY,
 	0,
 	0,
 	1)

@@ -2,34 +2,10 @@
 #include "rgb601window.h"
 
 
-RGB601Thread::RGB601Thread(RGB601Main *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-RGB601Thread::~RGB601Thread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void RGB601Thread::run()
-{
-	BC_DisplayInfo info;
-	window = new RGB601Window(client, 
-		info.get_abs_cursor_x() - 105, 
-		info.get_abs_cursor_y() - 100);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
+
+
+PLUGIN_THREAD_OBJECT(RGB601Main, RGB601Thread, RGB601Window)
 
 
 

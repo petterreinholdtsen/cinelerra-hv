@@ -210,13 +210,13 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 	pause_lock.unlock();
 
 // Wait for tracking to finish if it is running
-//printf("PlaybackEngine::interrupt_playback 1\n");
+//printf("PlaybackEngine::interrupt_playback 2\n");
 	if(wait_tracking)
 	{
 		tracking_done.lock();
 		tracking_done.unlock();
 	}
-//printf("PlaybackEngine::interrupt_playback 2\n");
+//printf("PlaybackEngine::interrupt_playback 3\n");
 }
 
 

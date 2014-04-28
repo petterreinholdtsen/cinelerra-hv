@@ -24,11 +24,16 @@ public:
 	void change_source(Asset *asset);
 // Change source to EDL
 	void change_source(EDL *edl);
+// Change source to master EDL's vwindow EDL after a load.
+	void change_source();
 // Change source to folder and item number
 	void change_source(char *folder, int item);
 // Remove source
 	void remove_source();
 // Returns private EDL of VWindow
+// If an asset is dropped in, a new VWindow EDL is created in the master EDL
+// and this points to it.
+// If a clip is dropped in, it points to the clip EDL.
 	EDL* get_edl();
 // Returns last argument of change_source or 0 if it was an EDL
 	Asset* get_asset();
@@ -58,11 +63,13 @@ public:
 	VPlayback *playback_engine;
 	ClipEdit *clip_edit;
 // Object being played back.
-// An EDL is created for every asset dropped in but shared for clips dropped in
-	EDL *edl;
+
 // Pointer to asset for accounting
 	Asset *asset;
+// When not using the VWindow EDL of the master EDL.
 	int edl_shared;
+// Pointer to clip in master EDL.
+	EDL *edl;
 };
 
 

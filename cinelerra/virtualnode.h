@@ -91,8 +91,6 @@ public:
 	Module *real_module;
 // When this node is a plugin.  Redirected to the shared plugin in expansion.
 	Plugin *real_plugin;
-// When this node is a transition
-	Plugin *real_transition;
 
 
 	Track *track;

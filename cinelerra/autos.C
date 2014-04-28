@@ -503,7 +503,15 @@ int Autos::clear(long start,
 //	new_default->position = 0;
 
 	current = autoof(start);
-	while(current && current->position <= end)
+
+// If a range is selected don't delete the ending keyframe but do delete
+// the beginning keyframe because shifting end handle forward shouldn't
+// delete the first keyframe of the next edit.
+
+	while(current && 
+		((end != start && current->position < end) ||
+		(end == start && current->position <= end)))
+//	while(current && current->position <= end)
 	{
 		next = NEXT;
 		remove(current);

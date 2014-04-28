@@ -14,7 +14,8 @@
 #include <string.h>
 
 
-#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
+#define FONT_SEARCHPATH "/usr/lib/cinelerra/fonts"
+//#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
 
 
 REGISTER_PLUGIN(TitleMain)
@@ -26,20 +27,24 @@ TitleConfig::TitleConfig()
 	color = BLACK;
 	size = 24;
 	motion_strategy = NO_MOTION;
+	loop = 0;
 	hjustification = JUSTIFY_CENTER;
 	vjustification = JUSTIFY_MID;
 	fade_in = 0.0;
 	fade_out = 0.0;
 	x = 0.0;
 	y = 0.0;
+	dropshadow = 10;
 	sprintf(font, "fixed");
 	sprintf(text, "hello world");
 	pixels_per_second = 1.0;
 }
 
+// Does not test equivalency but determines if redrawing text is necessary.
 int TitleConfig::equivalent(TitleConfig &that)
 {
-	return style == that.style &&
+	return dropshadow == that.dropshadow &&
+		style == that.style &&
 		size == that.size &&
 		color == that.color &&
 		hjustification == that.hjustification &&
@@ -57,12 +62,14 @@ void TitleConfig::copy_from(TitleConfig &that)
 	color = that.color;
 	pixels_per_second = that.pixels_per_second;
 	motion_strategy = that.motion_strategy;
+	loop = that.loop;
 	hjustification = that.hjustification;
 	vjustification = that.vjustification;
 	fade_in = that.fade_in;
 	fade_out = that.fade_out;
 	x = that.x;
 	y = that.y;
+	dropshadow = that.dropshadow;
 	strcpy(text, that.text);
 }
 
@@ -77,6 +84,7 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	size = prev.size;
 	color = prev.color;
 	motion_strategy = prev.motion_strategy;
+	loop = prev.loop;
 	hjustification = prev.hjustification;
 	vjustification = prev.vjustification;
 	fade_in = prev.fade_in;
@@ -88,8 +96,12 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
 
-	this->x = prev.x * prev_scale + next.x * next_scale;
-	this->y = prev.y * prev_scale + next.y * next_scale;
+//	this->x = prev.x * prev_scale + next.x * next_scale;
+//	this->y = prev.y * prev_scale + next.y * next_scale;
+	this->x = prev.x;
+	this->y = prev.y;
+//	this->dropshadow = (int)(prev.dropshadow * prev_scale + next.dropshadow * next_scale);
+	this->dropshadow = prev.dropshadow;
 }
 
 
@@ -236,6 +248,19 @@ void GlyphUnit::process_package(LoadPackage *package)
 		if(FT_Load_Char(freetype_face, glyph->c, FT_LOAD_RENDER))
 		{
 			printf("GlyphUnit::process_package FT_Load_Char failed.\n");
+// Prevent a crash here
+			glyph->width = 8;
+			glyph->height = 8;
+			glyph->pitch = 8;
+			glyph->left = 9;
+			glyph->top = 9;
+			glyph->freetype_index = 0;
+			glyph->advance_w = 8;
+			glyph->data = new VFrame(0,
+				8,
+				8,
+				BC_A8,
+				8);
 		}
 		else
 		{
@@ -458,41 +483,54 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 			{ \
 				if(j >= 0 && j < server->output_w) \
 				{ \
-				int in_x1; \
-				int in_x2; \
-				float x_fraction1; \
-				float x_fraction2; \
-				float x_output_fraction; \
-				in_x1 =  \
-					server->x_table[j - server->out_x1_int].in_x1; \
-				in_x2 =  \
-					server->x_table[j - server->out_x1_int].in_x2; \
-				x_fraction1 =  \
-					server->x_table[j - server->out_x1_int].in_fraction1; \
-				x_fraction2 =  \
-					server->x_table[j - server->out_x1_int].in_fraction2; \
-				x_output_fraction =  \
-					server->x_table[j - server->out_x1_int].output_fraction; \
+					int in_x1; \
+					int in_x2; \
+					float x_fraction1; \
+					float x_fraction2; \
+					float x_output_fraction; \
+					in_x1 =  \
+						server->x_table[j - server->out_x1_int].in_x1; \
+					in_x2 =  \
+						server->x_table[j - server->out_x1_int].in_x2; \
+					x_fraction1 =  \
+						server->x_table[j - server->out_x1_int].in_fraction1; \
+					x_fraction2 =  \
+						server->x_table[j - server->out_x1_int].in_fraction2; \
+					x_output_fraction =  \
+						server->x_table[j - server->out_x1_int].output_fraction; \
  \
-				float fraction1 = x_fraction1 * y_fraction1; \
-				float fraction2 = x_fraction2 * y_fraction1; \
-				float fraction3 = x_fraction1 * y_fraction2; \
-				float fraction4 = x_fraction2 * y_fraction2; \
-				int input = (int)(in_row1[in_x1] * fraction1 +  \
-							in_row1[in_x2] * fraction2 +  \
-							in_row2[in_x1] * fraction3 +  \
-							in_row2[in_x2] * fraction4 + 0.5); \
-				input *= plugin->alpha; \
-				input >>= 8; \
+					float fraction1 = x_fraction1 * y_fraction1; \
+					float fraction2 = x_fraction2 * y_fraction1; \
+					float fraction3 = x_fraction1 * y_fraction2; \
+					float fraction4 = x_fraction2 * y_fraction2; \
+					int input = (int)(in_row1[in_x1] * fraction1 +  \
+								in_row1[in_x2] * fraction2 +  \
+								in_row2[in_x1] * fraction3 +  \
+								in_row2[in_x2] * fraction4 + 0.5); \
+					input *= plugin->alpha; \
+					input >>= 8; \
  \
-				out_row[j * components + 0] =  \
-					(r * input + out_row[j * components + 0] * (max - input)) / max; \
-				out_row[j * components + 1] =  \
-					(g * input + out_row[j * components + 1] * (max - input)) / max; \
-				out_row[j * components + 2] =  \
-					(b * input + out_row[j * components + 2] * (max - input)) / max; \
-				if(components == 4) out_row[j * components + 3] =  \
-					MAX(input, out_row[j * components + 3]); \
+					int anti_input = max - input; \
+					if(components == 4) \
+					{ \
+						out_row[j * components + 0] =  \
+							(r * input + out_row[j * components + 0] * anti_input) / max; \
+						out_row[j * components + 1] =  \
+							(g * input + out_row[j * components + 1] * anti_input) / max; \
+						out_row[j * components + 2] =  \
+							(b * input + out_row[j * components + 2] * anti_input) / max; \
+						out_row[j * components + 3] =  \
+							MAX(input, out_row[j * components + 3]); \
+					} \
+					else \
+					{ \
+						out_row[j * components + 0] =  \
+							(r * input + out_row[j * components + 0] * anti_input) / max; \
+						out_row[j * components + 1] =  \
+							(g * input + out_row[j * components + 1] * anti_input) / max; \
+						out_row[j * components + 2] =  \
+							(b * input + out_row[j * components + 2] * anti_input) / max; \
+					} \
 				} \
 			} \
 		} \
@@ -934,10 +972,17 @@ void TitleMain::build_fonts()
 // Add to list
 				if(strlen(entry->foundary))
 				{
-					if(1)
+					char *face_buffer = 0;
+					int face_size = 0;
+//printf("TitleMain::build_fonts 1 %s\n", entry->path);
+// This takes a real long time to do.  Instead just take all fonts
 // 					if(!load_freetype_face(freetype_library, 
 // 						freetype_face,
-// 						entry->path))
+// 						entry->path,
+// 						face_buffer,
+// 						face_size))
+//					if(1)
+					if(entry->family[0])
 					{
 // Fix parameters
 						sprintf(string, "%s (%s)", entry->family, entry->foundary);
@@ -953,11 +998,13 @@ void TitleMain::build_fonts()
 						fonts->append(entry);
 //						printf("TitleMain::build_fonts %s: success\n",
 //							entry->path);
+//printf("TitleMain::build_fonts 2\n");
 					}
 					else
 					{
 //						printf("TitleMain::build_fonts %s: FT_New_Face failed\n",
 //							entry->path);
+//printf("TitleMain::build_fonts 3\n");
 						delete entry;
 					}
 				}
@@ -1249,7 +1296,9 @@ void TitleMain::get_total_extents()
 			current_w = 0;
 		}
 	}
+	text_w += config.dropshadow;
 	text_h = text_rows * get_char_height();
+	text_h += config.dropshadow;
 
 // Now that text_w is known
 // Justify rows based on configuration
@@ -1301,19 +1350,33 @@ int TitleMain::draw_mask()
 // Determine y of visible text
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
-		text_y1 = config.y +
-			input->get_h() - 
-			config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
+		float magnitude = config.pixels_per_second * 
+			(get_source_position() - 
+				get_source_start() - 
+				config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
+		if(config.loop)
+		{
+			int loop_size = text_h + input->get_h();
+			magnitude -= (int)(magnitude / loop_size) * loop_size;
+		}
+		text_y1 = config.y + input->get_h() - magnitude;
 	}
 	else
 	if(config.motion_strategy == TOP_TO_BOTTOM)
 	{
-		text_y1 = config.y +
-			config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
+		float magnitude = config.pixels_per_second * 
+			(get_source_position() - 
+				get_source_start() -
+				config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
+		if(config.loop)
+		{
+			int loop_size = text_h + input->get_h();
+			magnitude -= (int)(magnitude / loop_size) * loop_size;
+		}
+		text_y1 = config.y + magnitude;
+		text_y1 -= text_h;
 	}
 	else
 	if(config.vjustification == JUSTIFY_TOP)
@@ -1333,22 +1396,35 @@ int TitleMain::draw_mask()
 
 	text_y2 = text_y1 + text_h + 0.5;
 
+// Determine x of visible text
 	if(config.motion_strategy == RIGHT_TO_LEFT)
 	{
-		text_x1 = config.x + 
-			(float)input->get_w() - 
-			config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
+		float magnitude = config.pixels_per_second * 
+			(get_source_position() - 
+				get_source_start() - 
+				config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
+		if(config.loop)
+		{
+			int loop_size = text_w + input->get_w();
+			magnitude -= (int)(magnitude / loop_size) * loop_size;
+		}
+		text_x1 = config.x + (float)input->get_w() - magnitude;
 	}
 	else
 	if(config.motion_strategy == LEFT_TO_RIGHT)
 	{
-		text_x1 = config.x + 
-			(float)-text_w +
-			config.pixels_per_second * 
-			(get_source_position() - config.prev_keyframe_position) / 
+		float magnitude = config.pixels_per_second * 
+			(get_source_position() - 
+				get_source_start() - 
+				config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
+		if(config.loop)
+		{
+			int loop_size = text_w + input->get_w();
+			magnitude -= (int)(magnitude / loop_size) * loop_size;
+		}
+		text_x1 = config.x + -(float)text_w + magnitude;
 	}
 	else
 	if(config.hjustification == JUSTIFY_LEFT)
@@ -1465,7 +1541,9 @@ void TitleMain::overlay_mask()
 	if(!EQUIV(config.fade_in, 0))
 	{
 		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
-		int fade_position = get_source_position() - config.prev_keyframe_position;
+		int fade_position = get_source_position() - 
+			get_source_start() - 
+			config.prev_keyframe_position;
 
 		if(fade_position < fade_len)
 		{
@@ -1478,7 +1556,9 @@ void TitleMain::overlay_mask()
 	if(!EQUIV(config.fade_out, 0))
 	{
 		int fade_len = (int)(config.fade_out * PluginVClient::project_frame_rate);
-		int fade_position = config.next_keyframe_position - get_source_position();
+		int fade_position = config.next_keyframe_position - 
+			get_source_position() -
+			get_source_start();
 
 //printf("TitleMain::overlay_mask %d %d\n", config.next_keyframe_position, get_source_position());
 		if(fade_position < fade_len)
@@ -1489,7 +1569,28 @@ void TitleMain::overlay_mask()
 		}
 	}
 
-//printf("TitleMain::overlay_mask 1\n");
+	if(config.dropshadow)
+	{
+		text_x1 += config.dropshadow;
+		text_x2 += config.dropshadow;
+		mask_y1 += config.dropshadow;
+		mask_y2 += config.dropshadow;
+		if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
+			mask_y1 < input->get_h() && mask_y2 > 0)
+		{
+			if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
+// Do 2 passes if dropshadow.
+			int temp_color = config.color;
+			config.color = 0x0;
+			translate->process_packages();
+			config.color = temp_color;
+		}
+		text_x1 -= config.dropshadow;
+		text_x2 -= config.dropshadow;
+		mask_y1 -= config.dropshadow;
+		mask_y2 -= config.dropshadow;
+	}
+
 	if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
 		mask_y1 < input->get_h() && mask_y2 > 0)
 	{
@@ -1675,6 +1776,7 @@ int TitleMain::load_defaults()
 	config.size = defaults->get("SIZE", config.size);
 	config.color = defaults->get("COLOR", config.color);
 	config.motion_strategy = defaults->get("MOTION_STRATEGY", config.motion_strategy);
+	config.loop = defaults->get("LOOP", config.loop);
 	config.pixels_per_second = defaults->get("PIXELS_PER_SECOND", config.pixels_per_second);
 	config.hjustification = defaults->get("HJUSTIFICATION", config.hjustification);
 	config.vjustification = defaults->get("VJUSTIFICATION", config.vjustification);
@@ -1682,6 +1784,7 @@ int TitleMain::load_defaults()
 	config.fade_out = defaults->get("FADE_OUT", config.fade_out);
 	config.x = defaults->get("TITLE_X", config.x);
 	config.y = defaults->get("TITLE_Y", config.y);
+	config.dropshadow = defaults->get("DROPSHADOW", config.dropshadow);
 	window_w = defaults->get("WINDOW_W", 640);
 	window_h = defaults->get("WINDOW_H", 480);
 
@@ -1714,6 +1817,7 @@ int TitleMain::save_defaults()
 	defaults->update("SIZE", config.size);
 	defaults->update("COLOR", config.color);
 	defaults->update("MOTION_STRATEGY", config.motion_strategy);
+	defaults->update("LOOP", config.loop);
 	defaults->update("PIXELS_PER_SECOND", config.pixels_per_second);
 	defaults->update("HJUSTIFICATION", config.hjustification);
 	defaults->update("VJUSTIFICATION", config.vjustification);
@@ -1721,6 +1825,7 @@ int TitleMain::save_defaults()
 	defaults->update("FADE_OUT", config.fade_out);
 	defaults->update("TITLE_X", config.x);
 	defaults->update("TITLE_Y", config.y);
+	defaults->update("DROPSHADOW", config.dropshadow);
 	defaults->update("WINDOW_W", window_w);
 	defaults->update("WINDOW_H", window_h);
 	defaults->save();
@@ -1802,6 +1907,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SIZE", config.size);
 	output.tag.set_property("COLOR", config.color);
 	output.tag.set_property("MOTION_STRATEGY", config.motion_strategy);
+	output.tag.set_property("LOOP", config.loop);
 	output.tag.set_property("PIXELS_PER_SECOND", config.pixels_per_second);
 	output.tag.set_property("HJUSTIFICATION", config.hjustification);
 	output.tag.set_property("VJUSTIFICATION", config.vjustification);
@@ -1809,6 +1915,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("FADE_OUT", config.fade_out);
 	output.tag.set_property("TITLE_X", config.x);
 	output.tag.set_property("TITLE_Y", config.y);
+	output.tag.set_property("DROPSHADOW", config.dropshadow);
 	output.append_tag();
 	output.append_newline();
 	
@@ -1847,6 +1954,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.size = input.tag.get_property("SIZE", config.size);
 				config.color = input.tag.get_property("COLOR", config.color);
 				config.motion_strategy = input.tag.get_property("MOTION_STRATEGY", config.motion_strategy);
+				config.loop = input.tag.get_property("LOOP", config.loop);
 				config.pixels_per_second = input.tag.get_property("PIXELS_PER_SECOND", config.pixels_per_second);
 				config.hjustification = input.tag.get_property("HJUSTIFICATION", config.hjustification);
 				config.vjustification = input.tag.get_property("VJUSTIFICATION", config.vjustification);
@@ -1854,6 +1962,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.fade_out = input.tag.get_property("FADE_OUT", config.fade_out);
 				config.x = input.tag.get_property("TITLE_X", config.x);
 				config.y = input.tag.get_property("TITLE_Y", config.y);
+				config.dropshadow = input.tag.get_property("DROPSHADOW", config.dropshadow);
 				strcpy(config.text, input.read_text());
 //printf("TitleMain::read_data 1\n%s\n", input.string);
 //printf("TitleMain::read_data 2\n%s\n", config.text);

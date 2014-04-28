@@ -119,8 +119,9 @@ int RecordGUI::create_objects()
 	status_thread->start();
 	set_icon(mwindow->theme->record_icon);
 
-//printf("RecordGUI::create_objects 1\n");
 	mwindow->theme->get_recordgui_sizes(this, get_w(), get_h());
+//printf("RecordGUI::create_objects 1\n");
+	mwindow->theme->draw_rwindow_bg(this);
 
 
 	monitor_video = 0;
@@ -440,6 +441,14 @@ void RecordGUI::update_batch_sources()
 //printf("RecordGUI::update_batch_sources 2\n");
 }
 
+int RecordGUI::translation_event()
+{
+	mwindow->session->rwindow_x = get_x();
+	mwindow->session->rwindow_y = get_y();
+	return 0;
+}
+
+
 int RecordGUI::resize_event(int w, int h)
 {
 	int x, y, x1;
@@ -513,16 +522,16 @@ int RecordGUI::resize_event(int w, int h)
 
 void RecordGUI::update_batch_tools()
 {
-printf("RecordGUI::update_batch_tools 1\n");
+//printf("RecordGUI::update_batch_tools 1\n");
 	char string[BCTEXTLEN];
 	Batch *batch = record->get_editing_batch();
 	batch_path->update(batch->get_current_asset()->path);
 
 // File is open in editing batch
-	if(record->current_batch == record->editing_batch && record->file)
-		batch_path->disable();
-	else
-		batch_path->enable();
+// 	if(record->current_batch == record->editing_batch && record->file)
+// 		batch_path->disable();
+// 	else
+// 		batch_path->enable();
 
 	batch_start->update(&batch->start_day, &batch->start_time);
 	batch_duration->update(0, &batch->duration);

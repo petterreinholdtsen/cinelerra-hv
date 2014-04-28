@@ -16,7 +16,6 @@
 #include "recordgui.inc"
 #include "recordlabel.inc"
 #include "recordthread.inc"
-#include "recordpreview.inc"
 #include "timer.h"
 #include "videodevice.inc"
 
@@ -101,7 +100,6 @@ public:
 
 	RecordThread *monitor_thread;
 	RecordThread *record_thread;
-	RecordPreview *preview_thread;
 	PlaybackEngine *duplex_thread;
 
 	RecordGUI *gui;

@@ -112,7 +112,7 @@ float TransportCommand::get_speed()
 }
 
 // Assume starting without pause
-void TransportCommand::set_playback_range()
+void TransportCommand::set_playback_range(EDL *edl)
 {
 	switch(command)
 	{
@@ -124,6 +124,7 @@ void TransportCommand::set_playback_range()
 				end_position = edl->tracks->total_playable_length();
 			else
 				end_position = edl->local_session->selectionend;
+//printf("TransportCommand::set_playback_range 1 %f %f\n", start_position, end_position);
 			break;
 		
 		case SLOW_REWIND:
@@ -162,8 +163,9 @@ void TransportCommand::set_playback_range()
 			playbackstart = end_position;
 			break;
 	}
-//printf("TransportCommand::set_playback_range %d %d %d\n", start_sample, end_sample, playbackstart);
-//printf("TransportCommand::set_playback_range %d %d %d\n", start_sample, end_sample, playbackstart);
+// printf("TransportCommand::set_playback_range %f %f\n", 
+// start_position * edl->session->frame_rate, 
+// end_position * edl->session->frame_rate);
 }
 
 
@@ -199,13 +201,23 @@ int TransportQue::send_command(int command,
 
 	if(new_edl)
 	{
+// Just change the EDL if the change requires it because renderengine
+// structures won't point to the new EDL otherwise and because copying the
+// EDL for every cursor movement is slow.
+		if(change_type == CHANGE_EDL ||
+			change_type == CHANGE_ALL)
+		{
 // Copy EDL
-//printf("TransportQue::send_command 2.1\n");
-		*this->command.get_edl() = *new_edl;
+			*this->command.get_edl() = *new_edl;
+		}
+		else
+		if(change_type == CHANGE_PARAMS)
+		{
+			this->command.get_edl()->synchronize_params(new_edl);
+		}
+
 // Set playback range
-//printf("TransportQue::send_command 2.2\n");
-		this->command.set_playback_range();
-//printf("TransportQue::send_command 2.3\n");
+		this->command.set_playback_range(new_edl);
 	}
 
 //printf("TransportQue::send_command 3\n");

@@ -50,7 +50,7 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	this->sharpness = prev.sharpness * prev_scale + next.sharpness * next_scale;
 	this->interlace = prev.interlace;
-	this->sharpness = prev.sharpness;
+	this->horizontal = prev.horizontal;
 	this->luminance = prev.luminance;
 }
 
@@ -95,13 +95,18 @@ SharpenMain::~SharpenMain()
 	}
 }
 
+SHOW_GUI_MACRO(SharpenMain, SharpenThread)
+
+SET_STRING_MACRO(SharpenMain)
+
+RAISE_WINDOW_MACRO(SharpenMain)
+
+NEW_PICON_MACRO(SharpenMain)
+
+LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
+
 char* SharpenMain::plugin_title() { return "Sharpen"; }
 int SharpenMain::is_realtime() { return 1; }
-
-VFrame* SharpenMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
 
 
 
@@ -151,26 +156,17 @@ int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	return 0;
 }
 
-int SharpenMain::show_gui()
-{
-	load_configuration();
-	thread = new SharpenThread(this);
-	thread->start();
-	return 0;
-}
-
-int SharpenMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void SharpenMain::raise_window()
+void SharpenMain::update_gui()
 {
 	if(thread)
 	{
-		thread->window->raise_window();
-		thread->window->flush();
+		load_configuration();
+		thread->window->lock_window();
+		thread->window->sharpen_slider->update((int)config.sharpness);
+		thread->window->sharpen_interlace->update(config.interlace);
+		thread->window->sharpen_horizontal->update(config.horizontal);
+		thread->window->sharpen_luminance->update(config.luminance);
+		thread->window->unlock_window();
 	}
 }
 
@@ -204,8 +200,6 @@ int SharpenMain::save_defaults()
 }
 
 
-
-LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
 
 
 int SharpenMain::get_luts(int *pos_lut, int *neg_lut, int color_model)

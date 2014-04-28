@@ -400,9 +400,13 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 	char new_dir[BCTEXTLEN];
 	struct stat ostat;    // entire name is a directory
 
+//printf("FileSystem::is_dir 1\n");
 	strcpy(new_dir, path);
+//printf("FileSystem::is_dir 1\n");
 	complete_path(new_dir);
+//printf("FileSystem::is_dir 1 %s\n", new_dir);
 	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) return 0;
+//printf("FileSystem::is_dir 2\n");
 	return 1;
 }
 
@@ -587,11 +591,12 @@ int FileSystem::extract_dir(char *out, const char *in)
 	return 0;
 }
 
-int FileSystem::extract_name(char *out, const char *in)
+int FileSystem::extract_name(char *out, const char *in, int test_dir)
 {
 	int i;
-	
-	if(!is_dir(in)) sprintf(out, "");    // complete string is directory
+
+	if(test_dir && !is_dir(in))
+		sprintf(out, "");    // complete string is directory
 	else
 	{
 		for(i = strlen(in)-1; i > 0 && in[i] != '/'; i--)

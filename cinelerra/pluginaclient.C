@@ -24,52 +24,6 @@ int PluginAClient::is_audio()
 	return 1;
 }
 
-int PluginAClient::create_buffer_ptrs()
-{
-	int i, j;
-	
-	for(i = 0; i < total_in_buffers; i++)
-	{
-		input_ptr_master.append(new float*[MAX_BUFFERS]);
-//printf("double_buffers_in.values[i] %d\n", double_buffers_in.values[i]);
-		for(j = 0; j < double_buffers_in.values[i]; j++)
-		{
-			input_ptr_master.values[i][j] = (float*)data_in_realtime.values[i][j]->get_data();
-//printf("input_ptr_master.values[%d][%d] = %x\n", i, j, input_ptr_master.values[i][j]);
-		}
-	}
-	input_ptr_render = new float*[total_in_buffers];
-
-	for(i = 0; i < total_out_buffers; i++)
-	{
-		output_ptr_master.append(new float*[MAX_BUFFERS]);
-		for(j = 0; j < double_buffers_out.values[i]; j++)
-		{
-			output_ptr_master.values[i][j] = (float*)data_out_realtime.values[i][j]->get_data();
-		}
-	}
-	
-	output_ptr_render = new float*[total_out_buffers];
-	return 0;
-}
-
-int PluginAClient::delete_buffer_ptrs()
-{
-	int i;
-// delete double buffer arrays
-	for(int i = 0; i < total_in_buffers; i++)
-	{
-		delete input_ptr_master.values[i];
-	}
-	for(int i = 0; i < total_out_buffers; i++)
-	{
-		delete output_ptr_master.values[i];
-	}
-	input_ptr_master.remove_all();
-	output_ptr_master.remove_all();
-	delete input_ptr_render;
-	delete output_ptr_render;
-}
 
 int PluginAClient::get_render_ptrs()
 {

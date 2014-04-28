@@ -2,7 +2,6 @@
 #include "bccapture.h"
 #include "channel.h"
 #include "chantables.h"
-#include "mwindow.h"
 #include "playbackconfig.h"
 #include "playbackengine.h"
 #include "preferences.h"
@@ -55,7 +54,7 @@ void KeepaliveThread::run()
 // See if a capture happened
 		if(still_alive == 0 && capturing)
 		{
-			printf("KeepaliveThread::run: device crashed\n");
+//			printf("KeepaliveThread::run: device crashed\n");
 			failed++;
 		}
 		else
@@ -90,15 +89,6 @@ int KeepaliveThread::stop()
 
 VideoDevice::VideoDevice()
 {
-	mwindow = 0;
-	in_config = new VideoInConfig;
-	out_config = new VideoOutConfig(0, 0);
-	initialize();
-}
-
-VideoDevice::VideoDevice(MWindow *mwindow)
-{
-	this->mwindow = mwindow;
 	in_config = new VideoInConfig;
 	out_config = new VideoOutConfig(0, 0);
 	initialize();
@@ -565,12 +555,6 @@ void VideoDevice::new_output_buffers(VFrame **outputs, int colormodel)
 int VideoDevice::interrupt_playback()
 {
 	interrupt = 1;
-	return 0;
-}
-
-ArrayList<int>* VideoDevice::get_render_strategies()
-{
-	if(output_base) return output_base->get_render_strategies();
 	return 0;
 }
 

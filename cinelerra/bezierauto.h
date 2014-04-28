@@ -47,6 +47,7 @@ public:
 				int mouse_button,
 				int vertical);
 
+// Z is no longer used
 	float center_x, center_y, center_z;
 // ***control points are relative to center points***
 	float control_in_x, control_in_y;

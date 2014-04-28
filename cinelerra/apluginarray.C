@@ -7,7 +7,6 @@
 #include "file.h"
 #include "mwindow.h"
 #include "playbackengine.h"
-#include "pluginbuffer.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "recordableatracks.h"
@@ -40,7 +39,7 @@ void APluginArray::create_modules()
 	modules = new Module*[total_tracks()];
 	for(int i = 0; i < total_tracks(); i++)
 	{
-		modules[i] = new AModule(0, 0, tracks->values[i]);
+		modules[i] = new AModule(0, 0, this, tracks->values[i]);
 		modules[i]->cache = cache;
 		modules[i]->edl = edl;
 		modules[i]->create_objects();
@@ -50,14 +49,11 @@ void APluginArray::create_modules()
 
 void APluginArray::load_module(int module, long input_position, long len)
 {
-//printf("APluginArray::load_module 1\n");
 	if(module == 0) realtime_buffers = file->get_audio_buffer();
-//printf("APluginArray::load_module 2\n");
 	((AModule*)modules[module])->render(realtime_buffers[module], 
 		len, 
 		input_position,
 		PLAY_FORWARD);
-//printf("APluginArray::load_module 3\n");
 }
 
 void APluginArray::process_realtime(int module, long input_position, long len)
@@ -71,10 +67,12 @@ void APluginArray::process_realtime(int module, long input_position, long len)
 
 int APluginArray::process_loop(int module, long &write_length)
 {
-//printf("APluginArray::process_loop %p\n", realtime_buffers);
+//printf("APluginArray::process_loop 1\n");
 	if(!realtime_buffers) realtime_buffers = file->get_audio_buffer();
+//printf("APluginArray::process_loop 2\n");
 	int result = values[module]->process_loop(&realtime_buffers[module], 
 		write_length);
+//printf("APluginArray::process_loop 3\n");
 	return result;
 }
 

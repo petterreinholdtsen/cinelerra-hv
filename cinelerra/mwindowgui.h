@@ -30,7 +30,6 @@ public:
 
 // ======================== event handlers
 
-// REMOVE
 // Replace with update
 	void redraw_time_dependancies();
 
@@ -47,12 +46,10 @@ public:
 	void update_title(char *path);
 	int translation_event();
 	int resize_event(int w, int h);          // handle a resize event
-	int flip_vertical();
 	int keypress_event();
 	int close_event();
 	int quit();
 	int save_defaults(Defaults *defaults);
-	int get_top();
 	int menu_h();
 // Draw on the status bar only.
 	int show_message(char *message, int color = BLACK);

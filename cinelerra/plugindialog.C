@@ -1,11 +1,10 @@
-#include "console.h"
 #include "edl.h"
 #include "localsession.h"
 #include "mainsession.h"
+#include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "module.h"
-#include "modules.h"
 #include "plugin.h"
 #include "plugindialog.h"
 #include "pluginserver.h"
@@ -21,7 +20,6 @@ PluginDialogThread::PluginDialogThread(MWindow *mwindow)
 	this->mwindow = mwindow;
 	window = 0;
 	plugin = 0;
-//	edit = 0;
 	Thread::set_synchronous(0);
 }
 
@@ -36,7 +34,6 @@ PluginDialogThread::~PluginDialogThread()
 }
 
 void PluginDialogThread::start_window(Track *track,
-	Edit *edit, 
 	Plugin *plugin, 
 	char *title)
 {
@@ -47,14 +44,14 @@ void PluginDialogThread::start_window(Track *track,
 	}
 	else
 	{
-//		this->edit = edit;
 		this->track = track;
 		this->data_type = track->data_type;
 		this->plugin = plugin;
 
 		if(plugin)
 		{
-			strcpy(plugin_title, plugin->title);
+			plugin->calculate_title(plugin_title);
+//			strcpy(plugin_title, plugin->title);
 			this->shared_location = plugin->shared_location;
 			this->plugin_type = plugin->plugin_type;
 //			this->in = plugin->in;
@@ -89,30 +86,37 @@ void PluginDialogThread::run()
 	window = new PluginDialog(mwindow, this, window_title);
 	window->create_objects();
 	result = window->run_window();
-//printf("PluginDialogThread::run 1\n");
 	delete window;
-//printf("PluginDialogThread::run 1\n");
 	window = 0;
-//printf("PluginDialogThread::run 1\n");
 	completion.unlock();
 
 // Done at closing
 	if(!result)
 	{
-//printf("PluginDialogThread::run 2\n");
 		if(plugin_type)
 		{
-//printf("PluginDialogThread::run 3\n");
 			mwindow->gui->lock_window();
-//printf("PluginDialogThread::run 4 %s %d\n", plugin_title, plugin_type);
-			mwindow->insert_effect(plugin_title, 
-							&shared_location,
-							track,
-							0,
-							0,
-							0,
-							plugin_type);
-//printf("PluginDialogThread::run 5\n");
+
+			if(plugin)
+			{
+				mwindow->undo->update_undo_before("attach effect", LOAD_EDITS | LOAD_PATCHES);
+				plugin->change_plugin(plugin_title,
+					&shared_location,
+					plugin_type);
+				mwindow->undo->update_undo_after();
+				mwindow->sync_parameters(CHANGE_EDL);
+			}
+			else
+			{
+				mwindow->insert_effect(plugin_title, 
+								&shared_location,
+								track,
+								0,
+								0,
+								0,
+								plugin_type);
+			}
+
 			mwindow->gui->update(1,
 				1,
 				0,
@@ -121,11 +125,9 @@ void PluginDialogThread::run()
 				0,
 				0);
 			mwindow->gui->unlock_window();
-//printf("PluginDialogThread::run 6\n");
 		}
 	}
 	plugin = 0;
-//	edit = 0;
 }
 
 

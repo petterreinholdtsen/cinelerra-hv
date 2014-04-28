@@ -8,20 +8,13 @@ class ReverbWindow;
 
 #include "guicast.h"
 #include "mutex.h"
-#include "reverb.h"
+#include "pluginclient.h"
+#include "reverb.inc"
 
-class ReverbThread : public Thread
-{
-public:
-	ReverbThread(Reverb *reverb);
-	~ReverbThread();
-	
-	void run();
-	
-	Mutex completion, gui_started; // prevent loading data until the GUI is started
-	Reverb *reverb;
-	ReverbWindow *window;
-};
+
+
+PLUGIN_THREAD_HEADER(Reverb, ReverbThread, ReverbWindow)
+
 
 class ReverbLevelInit;
 class ReverbDelayInit;

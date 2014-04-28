@@ -1,34 +1,23 @@
 #ifndef FLIPWINDOW_H
 #define FLIPWINDOW_H
 
-#include "bcbase.h"
 
 class FlipThread;
 class FlipWindow;
 
-#include "filexml.h"
-#include "mutex.h"
+#include "filexml.inc"
 #include "flip.h"
+#include "mutex.h"
+#include "pluginvclient.h"
 
-class FlipThread : public Thread
-{
-public:
-	FlipThread(FlipMain *client);
-	~FlipThread();
-
-	void run();
-
-	Mutex gui_started; // prevent loading data until the GUI is started
-	FlipMain *client;
-	FlipWindow *window;
-};
+PLUGIN_THREAD_HEADER(FlipMain, FlipThread, FlipWindow)
 
 class FlipToggle;
 
 class FlipWindow : public BC_Window
 {
 public:
-	FlipWindow(FlipMain *client);
+	FlipWindow(FlipMain *client, int x, int y);
 	~FlipWindow();
 	
 	int create_objects();
@@ -42,7 +31,7 @@ public:
 class FlipToggle : public BC_CheckBox
 {
 public:
-	FlipToggle(FlipMain *client, int *output, int x, int y);
+	FlipToggle(FlipMain *client, int *output, char *string, int x, int y);
 	~FlipToggle();
 	int handle_event();
 

@@ -44,10 +44,36 @@ float FloatAuto::value_to_percentage()
 	return (value - autos->min) / (autos->max - autos->min);
 }
 
+float FloatAuto::invalue_to_percentage()
+{
+//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
+	return (value + control_in_value - autos->min) / 
+		(autos->max - autos->min);
+}
+
+float FloatAuto::outvalue_to_percentage()
+{
+//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
+	return (value + control_out_value - autos->min) / 
+		(autos->max - autos->min);
+}
+
 float FloatAuto::percentage_to_value(float percentage)
 {
 //printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
 	return percentage * (autos->max - autos->min) + autos->min;
+}
+
+float FloatAuto::percentage_to_invalue(float percentage)
+{
+//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
+	return percentage * (autos->max - autos->min) + autos->min - value;
+}
+
+float FloatAuto::percentage_to_outvalue(float percentage)
+{
+//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
+	return percentage * (autos->max - autos->min) + autos->min - value;
 }
 
 void FloatAuto::copy_from(Auto *that)
@@ -114,8 +140,8 @@ void FloatAuto::copy(long start, long end, FileXML *file)
 void FloatAuto::load(FileXML *file)
 {
 	value = file->tag.get_property("VALUE", value);
-	control_in_value = file->tag.set_property("CONTROL_IN_VALUE", control_in_value);
-	control_out_value = file->tag.set_property("CONTROL_OUT_VALUE", control_out_value);
-	control_in_position = file->tag.set_property("CONTROL_IN_POSITION", control_in_position);
-	control_out_position = file->tag.set_property("CONTROL_OUT_POSITION", control_out_position);
+	control_in_value = file->tag.get_property("CONTROL_IN_VALUE", control_in_value);
+	control_out_value = file->tag.get_property("CONTROL_OUT_VALUE", control_out_value);
+	control_in_position = file->tag.get_property("CONTROL_IN_POSITION", control_in_position);
+	control_out_position = file->tag.get_property("CONTROL_OUT_POSITION", control_out_position);
 }

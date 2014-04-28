@@ -1,11 +1,9 @@
-#include "assetmanager.h"
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "cache.h"
 #include "channel.h"
 #include "colormodels.h"
-#include "console.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "cwindowgui.h"
@@ -30,8 +28,7 @@
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mbuttons.h"
-#include "module.h"
-#include "modules.h"
+#include "mutex.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "new.h"
@@ -108,6 +105,7 @@ int atexit(void (*function)(void))
 
 MWindow::MWindow()
 {
+	plugin_gui_lock = new Mutex;
 }
 
 MWindow::~MWindow()
@@ -152,6 +150,7 @@ MWindow::~MWindow()
 //printf("MWindow::~MWindow 2\n");
 	delete plugin_guis;
 //printf("MWindow::~MWindow 2\n");
+	delete plugin_gui_lock;
 }
 
 void MWindow::init_defaults(Defaults* &defaults)
@@ -793,7 +792,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 		mainindexes->start_build();
 	}
 
-printf("MWindow::load_filenames 9\n");
+//printf("MWindow::load_filenames 9\n");
 //sleep(10);
 
 	new_edls.remove_all_objects();
@@ -990,6 +989,8 @@ void MWindow::update_caches()
 void MWindow::show_plugin(Plugin *plugin)
 {
 	int done = 0;
+//printf("MWindow::show_plugin 1\n");
+	plugin_gui_lock->lock();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
@@ -1000,6 +1001,7 @@ void MWindow::show_plugin(Plugin *plugin)
 		}
 	}
 
+//printf("MWindow::show_plugin 1\n");
 	if(!done)
 	{
 		PluginServer *server = scan_plugindb(plugin->title);
@@ -1015,44 +1017,53 @@ void MWindow::show_plugin(Plugin *plugin)
 			plugin->show = 1;
 		}
 	}
+//printf("MWindow::show_plugin 2\n");
+	plugin_gui_lock->unlock();
 }
 
-void MWindow::hide_plugin(Plugin *plugin)
+void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
+	if(lock) plugin_gui_lock->lock();
 	plugin->show = 0;
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
-//printf("MWindow::hide_plugin 1\n");
+			PluginServer *ptr = plugin_guis->values[i];
+			plugin_guis->remove(ptr);
+			if(lock) plugin_gui_lock->unlock();
 // Last command executed in client side close
-			plugin_guis->remove_object(plugin_guis->values[i]);
-//printf("MWindow::hide_plugin 2\n");
-			break;
+			delete ptr;
+			return;
 		}
 	}
+	if(lock) plugin_gui_lock->unlock();
 }
 
 void MWindow::hide_plugins()
 {
+	plugin_gui_lock->lock();
 	plugin_guis->remove_all_objects();
+	plugin_gui_lock->unlock();
 }
 
 void MWindow::update_plugin_guis()
 {
-//printf("MWindow::update_plugin_guis 1\n");
 
+	plugin_gui_lock->lock();
 
 
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		plugin_guis->values[i]->update_gui();
 	}
+	plugin_gui_lock->unlock();
 }
 
 void MWindow::update_plugin_states()
 {
 	int result = 0;
+	plugin_gui_lock->lock();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		Plugin *src_plugin = plugin_guis->values[i]->plugin;
@@ -1080,10 +1091,11 @@ void MWindow::update_plugin_states()
 // Doesn't exist anymore
 		if(!result)
 		{
-			hide_plugin(src_plugin);
+			hide_plugin(src_plugin, 0);
 			i--;
 		}
 	}
+	plugin_gui_lock->unlock();
 }
 
 
@@ -1386,82 +1398,6 @@ int MWindow::run_script(FileXML *script)
 
 // ================================= synchronization
 
-int MWindow::lock_resize() { resize_lock = 1; return 0; }
-
-int MWindow::unlock_resize() { resize_lock = 0; return 0; }
-
-
-// =============================== file operations
-
-// REMOVE
-int MWindow::load(FileXML *xml, int import_,
-		int edits_only,
-		int patches_only,
-		int console_only,
-		int timebar_only,
-		int automation_only)
-{
-
-	return 0;
-}
-
-// REMOVE
-int MWindow::load_video_config(FileXML *xml, int import_)
-{
-	if(!import_) 
-	{
-// 		session->frame_rate = xml->tag.get_property("FRAMERATE", session->frame_rate);
-// 		preferences->frames_per_foot = xml->tag.get_property("FRAMES_PER_FOOT", preferences->frames_per_foot);
-// 		session->track_w = xml->tag.get_property("TRACKW", session->track_w);
-// 		session->track_h = xml->tag.get_property("TRACKH", session->track_h);
-// 		session->output_w = xml->tag.get_property("OUTPUTW", session->output_w);
-// 		session->output_h = xml->tag.get_property("OUTPUTH", session->output_h);
-// 		session->aspect_w = xml->tag.get_property("ASPECTW", session->aspect_w);
-// 		session->aspect_h = xml->tag.get_property("ASPECTH", session->aspect_h);
-// 		video_window->resize_window();
-	}
-	return 0;
-}
-
-// REMOVE
-int MWindow::load_audio_config(FileXML *xml, int import_,
-		int edits_only, 
-		int patches_only,
-		int console_only,
-		int automation_only)
-{
-	return 0; 
-}
-
-// REMOVE
-int MWindow::load_edits(FileXML *xml)
-{
-	return 0; 
-}
-
-// REMOVE
-int MWindow::load_patches(FileXML *xml)
-{
-	return 0; 
-}
-
-// REMOVE
-int MWindow::load_console(FileXML *xml)	
-{
-	return 0; 
-}
-
-// REMOVE
-int MWindow::load_timebar(FileXML *xml)	
-{
-	return 0; 
-}
-
-// REMOVE
-int MWindow::load_automation(FileXML *xml)
-{
-	return 0; 
-}
 
 int MWindow::interrupt_indexes()
 {
@@ -1514,61 +1450,11 @@ int MWindow::set_filename(char *filename)
 	return 0; 
 }
 
-// ========================================== drawing
-
-// REMOVE
-int MWindow::draw()
-{
-	if(gui)
-	{
-		gui->zoombar->draw();
-//		tracks->draw();
-		gui->samplescroll->set_position();
-		timebar->draw();
-
-//		tracks->show_overlays(1);
-	}
-	return 0; 
-}
-
-
-// ======================================= cursors
-
-
-// REMOVE
-int MWindow::draw_floating_handle(int flash) 
-{ 
-//	tracks->draw_floating_handle(flash); 
-	return 0; 
-}
 
 
 
 
 
-
-
-// ============================================ selecting
-
-int MWindow::set_selectionend(long new_position)
-{
-	return 0; 
-}
-
-int MWindow::set_selectionstart(long new_position)
-{
-	return 0; 
-}
-
-int MWindow::set_selection(long selectionstart, long selectionend)
-{
-	return 0; 
-}
-
-int MWindow::get_affected_range(long *start, long *end, int reverse)
-{
-	return 0; 
-}
 
 
 int MWindow::set_loop_boundaries()
@@ -1601,70 +1487,9 @@ int MWindow::set_loop_boundaries()
 }
 
 
-// ======================================= playback
-
-int MWindow::update_playback_cursor(long new_position, int view_follows_playback)
-{
-	return 0; 
-}
-
-int MWindow::show_playback_cursor(long position, int flash)
-{
-	return 0;
-}
-
-int MWindow::hide_playback_cursor(int flash)
-{
-	return 0; 
-}
-
-int MWindow::set_playback_range(long start_position, int reverse, float speed)
-{
-	return 0; 
-}
-
-int MWindow::arm_playback(int follow_loop, 
-					int use_buttons, 
-					int infinite, 
-					AudioDevice *audio)
-{
-	return 0; 
-}
 
 
 
-int MWindow::start_playback() 
-{ 
-	return 0; 
-}
-
-int MWindow::stop_playback(int update_button) 
-{
-	return 0; 
-}
-
-int MWindow::wait_for_playback()
-{
-	return 0; 
-}
-
-
-
-
-long MWindow::get_playback_position() 
-{
-	return 0;
-}
-
-int MWindow::start_reconfigure(int unlock_window)
-{
-	return 0; 
-}
-
-int MWindow::stop_reconfigure(int unlock_window)
-{
-	return 0; 
-}
 
 
 int MWindow::reset_meters()
@@ -1677,38 +1502,13 @@ int MWindow::reset_meters()
 	vwindow->gui->meters->reset_meters();
 	vwindow->gui->unlock_window();
 
+	lwindow->gui->lock_window();
+	lwindow->gui->panel->reset_meters();
+	lwindow->gui->unlock_window();
+
 	gui->lock_window();
 	gui->patchbay->reset_meters();
 	gui->unlock_window();
 	return 0; 
 }
 
-
-// ======================================= window sizes
-
-
-int MWindow::get_top() 
-{ 
-	if(gui)
-	{
-		if(session->tracks_vertical)
-			return gui->get_w() - 18 - 17;     // timebar + scrollbar
-		else
-			return timebar->gui->get_y() + timebar->gui->get_h();
-	}
-	else
-	return 0;
-}
-
-int MWindow::get_bottom() 
-{  
-	if(gui)
-	{
-		if(session->tracks_vertical)
-			return BUTTONBARWIDTH;         // mbuttons
-		else
-			return gui->get_h() - 24 - 17;      // zoombar + scrollbar
-	}
-	else
-	return 0;
-}

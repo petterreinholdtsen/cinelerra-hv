@@ -127,7 +127,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 		asset_columns[i] = defaults->get(string, 100);
 	}
 	audio_channels = defaults->get("ACHANNELS", 2);
-	audio_module_fragment = defaults->get("AUDIO_MODULE_FRAGMENT", 4096);
+	audio_module_fragment = defaults->get("AUDIO_MODULE_FRAGMENT", 2048);
 	audio_read_length = defaults->get("PLAYBACK_READ_LENGTH", 131072);
 	audio_tracks = defaults->get("ATRACKS", 2);
 	auto_conf->load_defaults(defaults);

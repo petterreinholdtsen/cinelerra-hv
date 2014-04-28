@@ -419,12 +419,12 @@ dv_t* dv_new()
 	{
 		pthread_mutexattr_t attr;
 		dv_initted = 1;
-		dv_init();
+//		dv_init();
 		pthread_mutexattr_init(&attr);
 		pthread_mutex_init(&dv_lock, &attr);
 	}
 
-	dv->decoder = dv_decoder_new();
+	dv->decoder = dv_decoder_new(0, 0, 0);
 	dv->decoder->quality = dv->decoder->video->quality;
 	dv->decoder->prev_frame_decoded = 0;
 	dv->use_mmx = 1;
@@ -577,7 +577,7 @@ int dv_read_audio(dv_t *dv,
 	if(!dv->temp_audio[0])
 	{
 		for(i = 0; i < 4; i++)
-			dv->temp_audio[i] = calloc(1, sizeof(gint16) * DV_AUDIO_MAX_SAMPLES);
+			dv->temp_audio[i] = calloc(1, sizeof(int16_t) * DV_AUDIO_MAX_SAMPLES);
 	}
 
 	switch(size)
@@ -629,6 +629,7 @@ void dv_write_video(dv_t *dv,
 		int color_model,
 		int norm)
 {
+#if 0
 	dv_videosegment_t videoseg ALIGN64;
 	int numDIFseq;
 	int ds;
@@ -699,7 +700,7 @@ void dv_write_video(dv_t *dv,
 	
 	
 	write_meta_data(target, 0, isPAL, &now);
-	
+#endif	
 }
 
 

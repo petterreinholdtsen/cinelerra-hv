@@ -1,4 +1,4 @@
-/* $Id: ath.c,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $ */
+/* $Id: ath.c,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $ */
 /*
  * Known bugs (sorted by importance): 
  *     - human delay (ca. 200 ms or more???) and buffering delay (341 ms @48 kHz/64 KByte)

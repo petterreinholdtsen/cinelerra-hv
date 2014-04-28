@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.3 2002/04/15 06:57:56 markt Exp $
+## $Id: Makefile.am,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $
 
 include $(top_srcdir)/Makefile.am.global
 

@@ -4,7 +4,7 @@
  * details.  THERE IS ABSOLUTELY NO WARRANTY FOR THIS SOFTWARE.
  */
 
-static char const	ident[] = "$Header: /usr/cvs/libsndfile/GSM610/gsm_create.c,v 1.1.1.1 2001/11/06 13:32:00 heroine Exp $";
+static char const	ident[] = "$Header: /usr/cvs/hvirtual/libsndfile/GSM610/gsm_create.c,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $";
 
 #include	"config.h"
 

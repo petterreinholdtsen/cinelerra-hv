@@ -73,57 +73,6 @@ int PluginVClient::delete_nonrealtime_parameters()
 	return 0;
 }
 
-// Run after the realtime plugin is done.
-int PluginVClient::delete_buffer_ptrs()
-{
-	int i, j, k, size;
-	if(total_in_buffers)
-	{
-		for(i = 0; i < total_in_buffers; i++)
-		{
-			for(j = 0; j < double_buffers_in.values[i]; i++)
-			{
-// delete the frames from the double buffer
-				size = realtime_in_size.values[i];
-				for(k = 0; k < size; k++)
-				{
-					delete input_ptr_master.values[i][j][k];
-				}
-// delete the double buffer from the channel
-				delete input_ptr_master.values[i][j];
-			}
-// delete array of double buffers
-			delete input_ptr_master.values[i];
-		}
-// delete all the channels
-		input_ptr_master.remove_all();
-		delete input_ptr_render;
-	}
-
-	if(total_out_buffers)
-	{
-		for(i = 0; i < total_out_buffers; i++)
-		{
-			for(j = 0; j < double_buffers_out.values[i]; i++)
-			{
-// delete the frames from the double buffer
-				size = realtime_out_size.values[i];
-				for(k = 0; k < size; k++)
-				{
-					delete output_ptr_master.values[i][j][k];
-				}
-// delete the double buffer from the channel
-				delete output_ptr_master.values[i][j];
-			}
-			delete output_ptr_master.values[i];
-		}
-// delete all the channels
-		output_ptr_master.remove_all();
-		delete output_ptr_render;
-	}
-	return 0;
-}
-
 int PluginVClient::init_realtime_parameters()
 {
 	project_frame_rate = server->edl->session->frame_rate;

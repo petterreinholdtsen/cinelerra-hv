@@ -295,11 +295,6 @@ void Spectrogram::reset()
 }
 
 
-VFrame* Spectrogram::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
 char* Spectrogram::plugin_title()
 {
 	return "Spectrogram";
@@ -328,22 +323,13 @@ int Spectrogram::process_realtime(long size, double *input_ptr, double *output_p
 	return 0;
 }
 
-int Spectrogram::show_gui()
-{
-	load_configuration();
-	thread = new SpectrogramThread(this);
-	thread->start();
-	return 0;
-}
+SET_STRING_MACRO(Spectrogram)
 
-void Spectrogram::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+NEW_PICON_MACRO(Spectrogram)
+
+SHOW_GUI_MACRO(Spectrogram, SpectrogramThread)
+
+RAISE_WINDOW_MACRO(Spectrogram)
 
 void Spectrogram::update_gui()
 {
@@ -359,8 +345,8 @@ void Spectrogram::update_gui()
 void Spectrogram::load_configuration()
 {
 	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(-1);
-	
+	prev_keyframe = get_prev_keyframe(get_source_position());
+
  	read_data(prev_keyframe);
 }
 
@@ -411,13 +397,6 @@ int Spectrogram::save_defaults()
 {
 	defaults->update("LEVEL", config.level);
 	defaults->save();
-	return 0;
-}
-
-
-int Spectrogram::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
 	return 0;
 }
 

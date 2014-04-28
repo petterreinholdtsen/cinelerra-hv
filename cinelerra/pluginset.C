@@ -60,27 +60,21 @@ Plugin* PluginSet::insert_plugin(char *title,
 	KeyFrame *default_keyframe,
 	int do_optimize)
 {
-//printf("PluginSet::insert_plugin 1 %d %d\n", unit_position, unit_length);
 	Plugin *plugin = (Plugin*)paste_silence(unit_position, 
 		unit_position + unit_length);
 
-//printf("PluginSet::insert_plugin 1\n");
 
 	if(title) strcpy(plugin->title, title);
-//printf("PluginSet::insert_plugin 1\n");
 
 	if(shared_location) plugin->shared_location = *shared_location;
-//printf("PluginSet::insert_plugin 1\n");
 
 	plugin->plugin_type = plugin_type;
-//printf("PluginSet::insert_plugin 1\n");
 
 	if(default_keyframe) 
 		*plugin->keyframes->default_auto = *default_keyframe;
 
 // May delete the plugin we just added so not desirable while loading.
 	if(do_optimize) optimize();
-//printf("PluginSet::insert_plugin 2\n");
 	return plugin;
 }
 

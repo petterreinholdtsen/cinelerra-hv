@@ -1,41 +1,12 @@
 #include "bcdisplayinfo.h"
 #include "defaults.h"
 #include "filesystem.h"
+#include "reverb.h"
 #include "reverbwindow.h"
 
 #include <string.h>
 
-ReverbThread::ReverbThread(Reverb *reverb)
- : Thread()
-{
-	this->reverb = reverb;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
-
-ReverbThread::~ReverbThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void ReverbThread::run()
-{
-	BC_DisplayInfo info;
-	window = new ReverbWindow(reverb, 
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) reverb->client_side_close();
-}
-
-
-
+PLUGIN_THREAD_OBJECT(Reverb, ReverbThread, ReverbWindow)
 
 
 

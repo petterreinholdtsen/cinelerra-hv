@@ -48,8 +48,6 @@ private:
 	int *over;
 	double **input;
 	RecordGUI *gui;
-// REMOVE
-	BC_Meter **meter;
 	long buffer_size, fragment_size, fragment_position;
 	int record_channels;
 	Mutex timer_lock;

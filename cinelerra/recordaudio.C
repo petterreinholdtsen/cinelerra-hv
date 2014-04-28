@@ -67,9 +67,9 @@ int RecordAudio::stop_recording()
 // Device won't exist if interrupting a cron job
 	if(record->adevice)
 	{
-printf("RecordAudio::stop_recording 1\n");
+//printf("RecordAudio::stop_recording 1\n");
 		record->adevice->interrupt_crash();
-printf("RecordAudio::stop_recording 2\n");
+//printf("RecordAudio::stop_recording 2\n");
 		//Thread::join();
 	}
 	return 0;

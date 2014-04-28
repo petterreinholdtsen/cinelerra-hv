@@ -34,6 +34,25 @@ public:
 	long temp_allocated;
 };
 
+class SndFileConfig;
+
+class SndFileHILO : public BC_Radial
+{
+public:
+	SndFileHILO(SndFileConfig *gui, int x, int y);
+	int handle_event();
+	SndFileConfig *gui;
+};
+
+class SndFileLOHI : public BC_Radial
+{
+public:
+	SndFileLOHI(SndFileConfig *gui, int x, int y);
+	int handle_event();
+	SndFileConfig *gui;
+};
+
+
 class SndFileConfig : public BC_Window
 {
 public:
@@ -45,6 +64,8 @@ public:
 
 	BC_WindowBase *parent_window;
 	BitsPopup *bits_popup;
+	SndFileHILO *hilo;
+	SndFileLOHI *lohi;
 	Asset *asset;
 };
 

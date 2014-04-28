@@ -200,10 +200,12 @@ int MWindow::goto_end()
 	if(edl->local_session->view_start != old_view_start) 
 		samplemovement(edl->local_session->view_start);
 
+	update_plugin_guis();
+	gui->patchbay->update();
 	gui->cursor->update();
 	gui->canvas->activate();
 	gui->zoombar->update();
-	cwindow->update(1, 0, 0);
+	cwindow->update(1, 0, 0, 0, 0);
 	return 0;
 }
 
@@ -227,10 +229,12 @@ int MWindow::goto_start()
 		samplemovement(edl->local_session->view_start);
 
 //printf("MWindow::goto_start 1\n");
+	update_plugin_guis();
+	gui->patchbay->update();
 	gui->cursor->update();
 	gui->canvas->activate();
 	gui->zoombar->update();
-	cwindow->update(1, 0, 0);
+	cwindow->update(1, 0, 0, 0, 0);
 	return 0;
 }
 
@@ -331,9 +335,12 @@ int MWindow::next_label()
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
 				2));
+			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 		{
+			update_plugin_guis();
+			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide();
 			gui->cursor->draw();
@@ -380,10 +387,12 @@ int MWindow::prev_label()
 		edl->local_session->selectionstart = current->position;
 		if(!gui->shift_down()) edl->local_session->selectionend = edl->local_session->selectionstart;
 
+// Scroll the display
 		if(edl->local_session->selectionstart >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate + 
-			gui->canvas->time_visible() ||
+			gui->canvas->time_visible() 
+		||
 			edl->local_session->selectionstart < edl->local_session->view_start *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
@@ -393,9 +402,13 @@ int MWindow::prev_label()
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
 				2));
+			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
+// Don't scroll the display
 		{
+			update_plugin_guis();
+			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide();
 			gui->cursor->draw();

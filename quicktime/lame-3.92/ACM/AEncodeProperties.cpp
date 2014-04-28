@@ -22,7 +22,7 @@
  
 /*!
 	\author Steve Lhomme
-	\version \$Id: AEncodeProperties.cpp,v 1.1 2002/04/19 05:50:29 myrina Exp $
+	\version \$Id: AEncodeProperties.cpp,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $
 */
 
 #if !defined(STRICT)

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: predefined encoding modes; 32kHz stereo ~48kbps true VBR
- last mod: $Id: mode_32c_Z.h,v 1.1 2002/05/07 09:16:53 myrina Exp $
+ last mod: $Id: mode_32c_Z.h,v 1.1.1.1 2002/06/21 12:35:23 myrina Exp $
 
  ********************************************************************/
 

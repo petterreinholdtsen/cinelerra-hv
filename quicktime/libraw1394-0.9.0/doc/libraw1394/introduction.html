@@ -1,0 +1,166 @@
+<HTML
+><HEAD
+><TITLE
+>Introduction</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.49"><LINK
+REL="HOME"
+TITLE="libraw1394"
+HREF="book1.html"><LINK
+REL="PREVIOUS"
+TITLE="libraw1394"
+HREF="book1.html"><LINK
+REL="NEXT"
+TITLE="Short Introduction into IEEE 1394"
+HREF="intro1394.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>libraw1394: version 0.9</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="book1.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="intro1394.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="INTRODUCTION"
+>Chapter 1. Introduction</A
+></H1
+><P
+>      The Linux kernel's IEEE 1394 subsystem provides access to the raw 1394 bus
+      through the raw1394 module.  This includes the standard 1394 transactions
+      (read, write, lock) on the active side, isochronous stream receiving and
+      sending and dumps of data written to the FCP_COMMAND and FCP_RESPONSE
+      registers.  raw1394 uses a character device to communicate to user
+      programs using a special protocol.
+    </P
+><P
+>      libraw1394 was created with the intent to hide that protocol from
+      applications so that
+      <P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+>	    the protocol has to be implemented correctly only once.
+	  </P
+></LI
+><LI
+><P
+>	    all work can be done using easy to understand functions instead of
+	    handling a complicated command structure.
+	  </P
+></LI
+><LI
+><P
+>	    only libraw1394 has to be changed when raw1394's interface changes.
+	  </P
+></LI
+></OL
+>
+    </P
+><P
+>      To fully achieve the goals (especially 3) libraw1394 is distributed under
+      the LGPL (Lesser General Public License - see file COPYING.LIB for more
+      information.) to allow linking with any program, be it open source or
+      binary only.  The requirements are that the libraw1394 part can be
+      replaced (relinked) with another version of the library and that changes
+      to libraw1394 itself fall under LGPL again.  Refer to the LGPL text for
+      details.
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="book1.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="intro1394.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>libraw1394</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Short Introduction into IEEE 1394</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -34,12 +34,17 @@ endif
 
 $(shell if ! test -d $(OBJDIR) \; then mkdir -p $(OBJDIR) \; fi )
 
+DIRS = $(OBJDIR)
+
+
+
 
 include Makefile.jpeg
+include Makefile.libraw
 include Makefile.vorbis
 include Makefile.ffmpeg
 include Makefile.lame
-
+include Makefile.dv
 
 
 
@@ -54,31 +59,7 @@ CFLAGS += -I. \
 	-I$(JPEG_DIR) \
 	-I$(MPEG3_DIR) \
 	-I$(LAME_DIR)/include \
-	-Ilibdv \
-	-Ilibraw1394 \
 	$(shell glib-config --cflags)
-
-ifeq ($(USE_MMX), 1)
-
-
-
-
-CFLAGS += -DARCH_X86
-
-DVMMXOBJ = libdv/asmoff.h
-
-DVMMXOBJS = \
-  $(OBJDIR)/libdv/dct_block_mmx.o \
-  $(OBJDIR)/libdv/encode_x86.o \
-  $(OBJDIR)/libdv/idct_block_mmx.o \
-  $(OBJDIR)/libdv/vlc_x86.o \
-  $(OBJDIR)/libdv/quant_x86.o \
-  $(OBJDIR)/libdv/transpose_x86.o
-
-
-
-
-endif
 
 
 
@@ -149,41 +130,10 @@ OBJS += \
 	$(OBJDIR)/workarounds.o \
 	$(OBJDIR)/yuv2.o \
 	$(OBJDIR)/yuv4.o \
-	$(OBJDIR)/yv12.o \
-	$(OBJDIR)/libraw1394/src/errors.o \
-	$(OBJDIR)/libraw1394/src/eventloop.o \
-	$(OBJDIR)/libraw1394/src/fcp.o \
-	$(OBJDIR)/libraw1394/src/iso.o \
-	$(OBJDIR)/libraw1394/src/main.o \
-	$(OBJDIR)/libraw1394/src/readwrite.o
+	$(OBJDIR)/yv12.o
 
 
 
-
-
-
-
-
-
-
-OBJS += \
-	$(OBJDIR)/libdv/YUY2.o \
-	$(OBJDIR)/libdv/YV12.o \
-	$(OBJDIR)/libdv/audio.o \
-	$(OBJDIR)/libdv/bitstream.o \
-	$(OBJDIR)/libdv/dct.o \
-	$(OBJDIR)/libdv/dv.o \
-	$(OBJDIR)/libdv/encode.o \
-	$(OBJDIR)/libdv/enc_input.o \
-	$(OBJDIR)/libdv/headers.o \
-	$(OBJDIR)/libdv/idct_248.o \
-	$(OBJDIR)/libdv/parse.o \
-	$(OBJDIR)/libdv/place.o \
-	$(OBJDIR)/libdv/quant.o \
-	$(OBJDIR)/libdv/rgb.o \
-	$(OBJDIR)/libdv/util.o \
-	$(OBJDIR)/libdv/vlc.o \
-	$(OBJDIR)/libdv/weighting.o
 
 # OBJS += \
 # 	$(OBJDIR)/$(DECORE_DIR)/bitstream.o \
@@ -288,7 +238,6 @@ OBJS += \
 
 OUTPUT = $(OBJDIR)/libquicktime.a
 SHAREDOUTPUT = $(OBJDIR)/libquicktime.so
-CFLAGS += -Ilibraw1394/src
 
 CFLAGS += \
 	-I$(DECORE_DIR) \
@@ -334,14 +283,6 @@ CFLAGS += \
 
 
 
-DIRS = $(OBJDIR) \
-	$(OBJDIR)/$(JPEG_DIR) \
-	$(OBJDIR)/libraw1394/src \
-	$(OBJDIR)/libdv \
-	$(FFMPEG_DIRS) \
-	$(LAME_DIRS)
-	
-
 DIRS += \
 	$(OBJDIR)/$(DECORE_DIR)
 
@@ -365,14 +306,15 @@ DIRS += \
 LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -lglib -ldl -lm
 
 $(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
-$(shell echo  $(OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
+$(shell echo  $(LIBRAW_CFLAGS) > $(OBJDIR)/libraw_cflags)
+$(shell echo  $(OBJS) $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
 
 all: $(DIRS) $(OUTPUT)
 
 $(DIRS):
 	if ! test -d $@ ; then mkdir -p $@ ; fi
 
-$(OUTPUT): $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
+$(OUTPUT): $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
 $(OBJDIR)/qtdump: $(OBJDIR)/dump.o $(OUTPUT)
@@ -426,13 +368,18 @@ $(OBJS):
 $(JPEG_FAIL):
 	$(CC) -c -O3 -march=i686 -fmessage-length=0 $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
+$(DV_OBJS):
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
-$(DVMMXOBJ):
-	$(CC) `cat $(OBJDIR)/c_flags` libdv/gasmoff.c -o $(OBJDIR)/gasmoff -lm
-	$(OBJDIR)/gasmoff > libdv/asmoff.h
+$(LIBRAW_OBJS):
+	$(CC) -c `cat $(OBJDIR)/libraw_cflags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 $(DVMMXOBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
+
+$(DVMMXOBJ):
+	$(CC) `cat $(OBJDIR)/c_flags` $(DV_DIR)/libdv/gasmoff.c -o $(OBJDIR)/$(DV_DIR)/libdv/gasmoff -lm
+	$(OBJDIR)/$(DV_DIR)/libdv/gasmoff > $(DV_DIR)/libdv/asmoff.h
 
 $(JPEG_NASM):
 	nasm -f elf $(subst $(OBJDIR)/,, $*.s) -o $*.o
@@ -529,31 +476,6 @@ $(OBJDIR)/yv12.o:			  yv12.c
 
 
 
-
-
-$(OBJDIR)/libdv/YUY2.o:		  	  libdv/YUY2.c
-$(OBJDIR)/libdv/YV12.o:		  	  libdv/YV12.c
-$(OBJDIR)/libdv/audio.o:		  libdv/audio.c
-$(OBJDIR)/libdv/bitstream.o:		  libdv/bitstream.c
-$(OBJDIR)/libdv/dct.o: 		  	  libdv/dct.c
-$(OBJDIR)/libdv/dv.o:			  libdv/dv.c
-$(OBJDIR)/libdv/encode.o:                 libdv/encode.c
-$(OBJDIR)/libdv/enc_input.o:              libdv/enc_input.c
-$(OBJDIR)/libdv/headers.o:                libdv/headers.c
-$(OBJDIR)/libdv/idct_248.o:		  libdv/idct_248.c
-$(OBJDIR)/libdv/parse.o:		  libdv/parse.c
-$(OBJDIR)/libdv/place.o:		  libdv/place.c
-$(OBJDIR)/libdv/quant.o:		  libdv/quant.c
-$(OBJDIR)/libdv/rgb.o: 		  	  libdv/rgb.c
-$(OBJDIR)/libdv/util.o:		  	  libdv/util.c
-$(OBJDIR)/libdv/vlc.o: 		  	  libdv/vlc.c
-$(OBJDIR)/libdv/weighting.o:		  libdv/weighting.c
-$(OBJDIR)/libraw1394/src/errors.o:        libraw1394/src/errors.c
-$(OBJDIR)/libraw1394/src/eventloop.o:	  libraw1394/src/eventloop.c
-$(OBJDIR)/libraw1394/src/fcp.o:		  libraw1394/src/fcp.c
-$(OBJDIR)/libraw1394/src/iso.o:		  libraw1394/src/iso.c
-$(OBJDIR)/libraw1394/src/main.o:	  libraw1394/src/main.c
-$(OBJDIR)/libraw1394/src/readwrite.o:	  libraw1394/src/readwrite.c
 
 
 
@@ -660,3 +582,5 @@ include depend.vorbis
 include depend.ffmpeg
 include depend.jpeg
 include depend.lame
+include depend.dv
+include depend.libraw

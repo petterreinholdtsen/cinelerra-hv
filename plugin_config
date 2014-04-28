@@ -9,7 +9,7 @@ $(OUTPUT): $(OBJS)
 
 
 install:
-	cp $(OUTPUT) /usr/lib/cinelerra
+	cp $(OUTPUT) $(PLUGINDIR)
 
 clean:
 	find \( -name core 		-o -name '*.o' 		-o -name '*.a' \) -exec rm -f {} \;

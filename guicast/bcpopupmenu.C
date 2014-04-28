@@ -327,8 +327,16 @@ int BC_PopupMenu::button_release_event()
 	return result;
 }
 
+int BC_PopupMenu::translation_event()
+{
+//printf("BC_PopupMenu::translation_event 1\n");
+	if(popup_down) menu_popup->dispatch_translation_event();
+	return 0;
+}
+
 int BC_PopupMenu::cursor_leave_event()
 {
+
 	if(status == BUTTON_HI && use_title)
 	{
 		status = BUTTON_UP;

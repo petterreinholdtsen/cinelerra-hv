@@ -2,7 +2,6 @@
 #include "assets.h"
 #include "audiodevice.inc"
 #include "cache.h"
-#include "console.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -17,17 +16,14 @@
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "modules.h"
 #include "patchbay.h"
 #include "performanceprefs.h"
 #include "playbackengine.h"
 #include "playbackprefs.h"
-//#include "pluginprefs.h"
 #include "preferences.h"
 #include "recordprefs.h"
 #include "theme.h"
 #include "transportque.h"
-#include "videoprefs.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 
@@ -105,15 +101,6 @@ void PreferencesThread::run()
 	delete edl;
 
 	mwindow->defaults->update("DEFAULTPREF", current_dialog);
-
-// indexes were deleted
-	if(need_new_indexes)
-	{
-// create new index files
-		mwindow->assets->build_indexes();
-// draw
-		mwindow->draw();
-	}
 }
 
 int PreferencesThread::update_framerate()

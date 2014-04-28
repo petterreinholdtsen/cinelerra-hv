@@ -33,6 +33,7 @@
 #include "lame_global_flags.h"
 #include "lame-analysis.h"
 #include "id3tag.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

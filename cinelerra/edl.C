@@ -1,6 +1,7 @@
 #include "assets.h"
 #include "atrack.h"
 #include "autoconf.h"
+#include "automation.h"
 #include "awindowgui.inc"
 #include "clip.h"
 #include "colormodels.h"
@@ -11,12 +12,14 @@
 #include "guicast.h"
 #include "labels.h"
 #include "localsession.h"
+#include "panauto.h"
+#include "panautos.h"
 #include "playbackconfig.h"
-#include "sharedlocation.h"
 #include "plugin.h"
 #include "preferences.h"
 #include "recordconfig.h"
 #include "recordlabel.h"
+#include "sharedlocation.h"
 #include "theme.h"
 #include "tracks.h"
 #include "transportque.inc"
@@ -181,17 +184,14 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 			clips.remove_all_objects();
 		}
 
-//printf("EDL::load_xml 2\n");
 		if(load_flags & LOAD_TIMEBAR)
 		{
 			while(labels->last) delete labels->last;
 		}
-//printf("EDL::load_xml 3\n");
 
 		do{
 			result = file->read_tag();
 
-//printf("EDL::load_xml 4 %s\n", file->tag.get_title());
 			if(!result)
 			{
 				if(file->tag.title_is("/XML"))
@@ -232,10 +232,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				else
 				if(file->tag.title_is("ASSETS"))
 				{
-//printf("EDL::load_xml 3\n");
 					if(load_flags & LOAD_ASSETS)
 						assets->load(plugindb, file, load_flags);
-//printf("EDL::load_xml 4\n");
 				}
 				else
 				if(file->tag.title_is(labels->xml_tag))
@@ -266,7 +264,6 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("TRACK"))
 				{
 					tracks->load(file, track_offset, load_flags);
-//printf("EDL::load_xml 5\n");
 				}
 				else
 // Sub EDL.
@@ -367,15 +364,29 @@ int EDL::copy_assets(double start,
 	file->append_tag();
 	file->append_newline();
 
-	for(current = tracks->first; 
-		current; 
-		current = NEXT)
+// Copy everything for a save
+	if(all)
 	{
-		if(all || current->record)
+		for(Asset *asset = assets->first;
+			asset;
+			asset = asset->next)
 		{
-			current->copy_assets(start, 
-				end, 
-				&asset_list);
+			asset_list.append(asset);
+		}
+	}
+	else
+// Copy just the ones being used.
+	{
+		for(current = tracks->first; 
+			current; 
+			current = NEXT)
+		{
+			if(current->record)
+			{
+				current->copy_assets(start, 
+					end, 
+					&asset_list);
+			}
 		}
 	}
 
@@ -425,9 +436,10 @@ int EDL::copy(double start,
 
 //printf("EDL::copy 1\n");
 
-// Top level stuff
-	if(!parent_edl)
+// Top level stuff.
+//	if(!parent_edl)
 	{
+// Need to copy all this from child EDL if pasting is desired.
 // Session
 		session->save_xml(file);
 		session->save_video_config(file);
@@ -487,6 +499,24 @@ int EDL::copy(double start,
 		file->rewind();
 	}
 	return 0;
+}
+
+void EDL::rechannel()
+{
+	for(Track *current = tracks->first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_AUDIO)
+		{
+			PanAutos *autos = current->automation->pan_autos;
+			((PanAuto*)autos->default_auto)->rechannel();
+			for(PanAuto *keyframe = (PanAuto*)autos->first;
+				keyframe;
+				keyframe = (PanAuto*)keyframe->next)
+			{
+				keyframe->rechannel();
+			}
+		}
+	}
 }
 
 void EDL::resample(double old_rate, double new_rate, int data_type)
@@ -690,6 +720,16 @@ void EDL::remove_from_project(ArrayList<Asset*> *assets)
 		{
 			this->assets->remove_asset(assets->values[i]);
 		}
+	}
+}
+
+void EDL::update_assets(EDL *src)
+{
+	for(Asset *current = src->assets->first;
+		current;
+		current = NEXT)
+	{
+		assets->update(current);
 	}
 }
 

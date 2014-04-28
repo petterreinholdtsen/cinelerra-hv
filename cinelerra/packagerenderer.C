@@ -89,7 +89,7 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	command->command = NORMAL_FWD;
 	*command->get_edl() = *edl;
 	command->change_type = CHANGE_ALL;
-	command->set_playback_range();
+	command->set_playback_range(edl);
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
@@ -232,7 +232,6 @@ void PackageRenderer::create_engine()
 
 
 	playable_tracks = new PlayableTracks(render_engine, 
-		vconfig->do_channel, 
 		video_position, 
 		TRACK_VIDEO);
 
@@ -417,8 +416,6 @@ void PackageRenderer::do_video()
 
 void PackageRenderer::stop_engine()
 {
-
-	render_engine->stop_playback();
 	delete render_engine;
 	delete playable_tracks;
 }

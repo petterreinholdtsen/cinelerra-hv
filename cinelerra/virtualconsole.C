@@ -8,7 +8,6 @@
 #include "module.h"
 #include "mutex.h"
 #include "playabletracks.h"
-#include "pluginbuffer.h"
 #include "renderengine.h"
 #include "intautos.h"
 #include "tracks.h"
@@ -110,12 +109,13 @@ Module* VirtualConsole::module_of(Track *track)
 
 Module* VirtualConsole::module_number(int track_number)
 {
-// All modules is are the data_type modules but track_number counts
-// all tracks.
+// The track number is an absolute number of the track independant of
+// the tracks with matching data type.
+// The data_type_number is calculated here and determines which module in the
+// virtual console to use.
 	Track *current = renderengine->edl->tracks->first;
 	int data_type_number = 0, number = 0;
 
-//printf("VirtualConsole::module_number %d\n", track_number);
 	for( ; current; current = NEXT, number++)
 	{
 		if(current->data_type == data_type)
@@ -222,13 +222,21 @@ void VirtualConsole::dump()
 }
 
 
-int VirtualConsole::test_reconfigure(long position, long &length)
+int VirtualConsole::test_reconfigure(long position, 
+	long &length, 
+	int &last_playback)
 {
 	int result = 0;
 	Track *current_track;
 	Module *module;
 
-//printf("VirtualConsole::test_reconfigure 1 %d\n", result);
+// printf("VirtualConsole::test_reconfigure 2 %d %p %p\n", 
+// renderengine->config->vconfig->do_channel[0],
+// renderengine->config->vconfig->do_channel,
+// playable_tracks->do_channel);
+
+//printf("VirtualConsole::test_reconfigure 1 %d\n", playable_tracks->total);
+
 // Test playback status against virtual console for current position.
 	for(current_track = renderengine->edl->tracks->first;
 		current_track && !result;
@@ -237,11 +245,13 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 		if(current_track->data_type == data_type)
 		{
 // Playable status changed
-			if(playable_tracks->is_playable(current_track, commonrender->current_position))
+// printf("VirtualConsole::test_reconfigure 2 %d\n", 
+// current_track->data_type);
+			if(playable_tracks->is_playable(current_track, 
+				commonrender->current_position))
 			{
 				if(!playable_tracks->is_listed(current_track))
 					result = 1;
-//printf("VirtualConsole::test_reconfigure 2 %d\n", result);
 			}
 			else
 			if(playable_tracks->is_listed(current_track))
@@ -252,12 +262,12 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 		}
 	}
 
-//printf("VirtualConsole::test_reconfigure 4 %d\n", result);
+//printf("VirtualConsole::test_reconfigure 2 %d %d\n", length, result);
 // Test plugins against virtual console at current position
 	for(int i = 0; i < commonrender->total_modules && !result; i++)
 		result = commonrender->modules[i]->test_plugins();
 
-//printf("VirtualConsole::test_reconfigure 5 %d\n", result);
+//printf("VirtualConsole::test_reconfigure 3 %d %d\n", length, result);
 
 
 
@@ -284,8 +294,7 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 			current_track /* && !result */;
 			current_track = current_track->next)
 		{
-			if(current_track->automate && 
-				current_track->data_type == data_type)
+			if(current_track->data_type == data_type)
 			{
 				current_auto = current_track->automation->play_autos->nearest_before(commonrender->current_position);
 				if(current_auto && nearest_auto < current_auto->position) nearest_auto = current_auto->position;
@@ -295,6 +304,7 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 		if(commonrender->current_position - nearest_auto < length)
 		{
 			length = commonrender->current_position - nearest_auto;
+			last_playback = 0;
 		}
 	}
 	else
@@ -309,8 +319,7 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 			current_track = current_track->next)
 		{
 //printf("VirtualConsole::test_reconfigure 5.1 %d\n", result);
-			if(current_track->automate && 
-				current_track->data_type == data_type)
+			if(current_track->data_type == data_type)
 			{
 //printf("VirtualConsole::test_reconfigure 5.2 %d\n", result);
 				current_auto = current_track->automation->play_autos->nearest_after(commonrender->current_position);
@@ -323,17 +332,19 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 		if(nearest_auto - commonrender->current_position < length)
 		{
 			length = nearest_auto - commonrender->current_position;
+			last_playback = 0;
 		}
 //printf("VirtualConsole::test_reconfigure 5.5 %d\n", result);
 	}
 
-//printf("VirtualConsole::test_reconfigure 6 %d %d\n", result, length);
+//printf("VirtualConsole::test_reconfigure 6 %d %d\n", length, result);
 
 
 
 
 
-// Length of time until next transition, edit, or effect change
+// Length of time until next transition, edit, or effect change.
+// Why do we need the edit change?  Probably for changing to and from silence.
 	for(current_track = renderengine->edl->tracks->first;
 		current_track /* && !result */;
 		current_track = current_track->next)
@@ -344,18 +355,26 @@ int VirtualConsole::test_reconfigure(long position, long &length)
 //printf("VirtualConsole::test_reconfigure 8 %d %d\n", result, length);
 			longest_duration = current_track->edit_change_duration(commonrender->current_position, length, direction, 1);
 
-			if(longest_duration < length) length = longest_duration;
+			if(longest_duration < length)
+			{
+				length = longest_duration;
+				last_playback = 0;
+			}
 //printf("VirtualConsole::test_reconfigure 9 %d %d\n", result, length);
 
 			if(renderengine->edl->session->test_playback_edits)
 			{
 				longest_duration = current_track->edit_change_duration(commonrender->current_position, length, direction, 0);
-				if(longest_duration < length) length = longest_duration;
+				if(longest_duration < length)
+				{
+					length = longest_duration;
+					last_playback = 0;
+				}
 			}
 //printf("VirtualConsole::test_reconfigure 10 %d %d\n", result, length);
 		}
 	}
-//printf("VirtualConsole::test_reconfigure 11 %d %d\n", result, length);
+//printf("VirtualConsole::test_reconfigure 11 %d %d\n", length, result);
 
 	return result;
 }
@@ -384,19 +403,6 @@ void VirtualConsole::run()
 
 
 
-
-VirtualConsole::VirtualConsole(MWindow *mwindow, CommonRender *commonrender)
- : Thread()
-{
-	this->mwindow = mwindow;
-	this->renderengine = commonrender->renderengine;
-	this->commonrender = commonrender;
-	interrupt = 0;
-	done = 0;
-	current_input_buffer = 0;
-	current_vconsole_buffer = 0;
-	startup_lock = new Mutex;
-}
 
 
 int VirtualConsole::delete_virtual_console()

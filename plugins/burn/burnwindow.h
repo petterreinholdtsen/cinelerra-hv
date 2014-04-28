@@ -10,19 +10,10 @@ class BurnWindow;
 #include "mutex.h"
 #include "burn.h"
 
-class BurnThread : public Thread
-{
-public:
-	BurnThread(BurnMain *client);
-	~BurnThread();
 
-	void run();
+PLUGIN_THREAD_HEADER(BurnMain, BurnThread, BurnWindow)
 
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	BurnMain *client;
-	BurnWindow *window;
-};
+
 
 class BurnWindow : public BC_Window
 {

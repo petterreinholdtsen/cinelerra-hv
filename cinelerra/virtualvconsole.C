@@ -1,9 +1,7 @@
-#include "console.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mwindow.h"
-#include "modules.h"
 #include "playabletracks.h"
 #include "preferences.h"
 #include "renderengine.h"
@@ -43,7 +41,6 @@ void VirtualVConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
-			renderengine->config->vconfig->do_channel, 
 			commonrender->current_position, 
 			TRACK_VIDEO);
 }
@@ -103,7 +100,7 @@ int VirtualVConsole::process_buffer(long input_position)
 			vrender->video_out[i]->clear_frame();
 	}
 
-//printf("VirtualVConsole::process_buffer 2 %ld\n", input_position);
+//printf("VirtualVConsole::process_buffer 2 %d\n", total_tracks);
 // Arm input buffers
 	for(i = 0; i < total_tracks; i++)
 		result |= ((VModule*)virtual_modules[i]->real_module)->render(buffer_in[i],
@@ -111,7 +108,7 @@ int VirtualVConsole::process_buffer(long input_position)
 			renderengine->command->get_direction());
 //return;
 
-//printf("VirtualVConsole::process_buffer 3\n");
+//printf("VirtualVConsole::process_buffer 3 %d\n", render_list.total);
 // render nodes in sorted list
 	for(i = 0; i < render_list.total; i++)
 	{
@@ -138,12 +135,6 @@ int VirtualVConsole::process_buffer(long input_position)
 
 
 
-
-VirtualVConsole::VirtualVConsole(MWindow *mwindow, VRender *vrender)
- : VirtualConsole(mwindow, vrender)
-{
-	this->vrender = vrender;
-}
 
 int VirtualVConsole::init_rendering(int duplicate)
 {

@@ -72,6 +72,7 @@ public:
 
 
 // Scale all sample values since everything is locked to audio
+	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);
 	void copy_tracks(EDL *edl);
 	void copy_session(EDL *edl);
@@ -86,6 +87,8 @@ public:
 	void set_outpoint(double position);
 // Redraw resources during index builds
 	void set_index_file(Asset *asset);
+// Add assets from the src to the destination
+	void update_assets(EDL *src);
 	void optimize();
 // Debug
 	int dump();

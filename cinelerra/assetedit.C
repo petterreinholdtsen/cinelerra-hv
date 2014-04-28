@@ -1,5 +1,4 @@
 #include "assetedit.h"
-#include "assetmanager.h"
 #include "assets.h"
 #include "awindow.h"
 #include "awindowgui.h"
@@ -27,15 +26,6 @@ AssetEdit::AssetEdit(MWindow *mwindow)
 	set_synchronous(0);
 }
 
-
-// REMOVE
-AssetEdit::AssetEdit(AssetManagerThread *thread)
- : Thread()
-{
-	this->thread = thread;
-	this->asset = 0;
-	set_synchronous(0);
-}
 
 AssetEdit::~AssetEdit()
 {
@@ -73,7 +63,7 @@ void AssetEdit::run()
 
  		if(!result)
  		{
- 			if(*asset != *new_asset)
+ 			if(!asset->equivalent(*new_asset, 1, 1))
  			{
 // // 				thread->window->disable_window();
 // 				thread->mwindow->cache->delete_entry(asset);

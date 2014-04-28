@@ -1,7 +1,6 @@
 #include "assets.h"
 #include "file.h"
 #include "filethread.h"
-#include "pluginbuffer.h"
 #include "vframe.h"
 
 #include <unistd.h>
@@ -58,7 +57,6 @@ void FileThread::create_objects(File *file,
 	current_buffer = ring_buffers - 1;
 	return_value = 0;
 	local_buffer = 0;
-	video_ram = 0;
 }
 
 FileThread::~FileThread()
@@ -143,17 +141,16 @@ int FileThread::stop_writing()
 	file_lock.lock();
 	if(do_audio)
 	{
-		delete audio_ram;
-
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
+			for(i = 0; i < file->asset->channels; i++)
+				delete [] audio_buffer[buffer][i];
 			delete [] audio_buffer[buffer];
 		}
 	}
 
 	if(do_video)
 	{
-		if(video_ram) delete video_ram;
 		for(buffer = 0; buffer > ring_buffers; buffer++)
 		{
 			for(layer = 0; layer < file->asset->layers; layer++)
@@ -187,8 +184,7 @@ int FileThread::start_writing(long buffer_size,
 {
 // allocate buffers
 	int buffer, layer, frame;
-	long offset, bytes_per_frame;
-	long total_size;
+	long bytes_per_frame;
 
 	this->ring_buffers = ring_buffers;
 	this->buffer_size = buffer_size;
@@ -196,45 +192,24 @@ int FileThread::start_writing(long buffer_size,
 	file_lock.lock();
 	if(do_audio)
 	{
-//printf("FileThread::start_writing 1 %d %d %d %d\n", ring_buffers, file->asset->channels, buffer_size, total_size);
-		total_size = ring_buffers * 
-				file->asset->channels * 
-				buffer_size * 
-				sizeof(double);
-		audio_ram = new PluginBuffer(ring_buffers * 
-				file->asset->channels * 
-				buffer_size * 
-				sizeof(double), 1);
-//printf("FileThread::start_writing 1\n");
-		offset = 0;
-
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
 			audio_buffer[buffer] = new double*[file->asset->channels];
-			byte_offset[buffer] = offset;
 
 			for(int channel = 0; channel < file->asset->channels; channel++)
 			{
-				audio_buffer[buffer][channel] = (double*)((char*)audio_ram->get_data() + offset);
-				offset += buffer_size * sizeof(double);
+				audio_buffer[buffer][channel] = new double[buffer_size];
 			}
 		}
-//printf("FileThread::start_writing 2\n");
 	}
 
 	if(do_video)
 	{
 		this->color_model = color_model;
-		offset = 0;
 		bytes_per_frame = VFrame::calculate_data_size(file->asset->width,
 			file->asset->height,
 			-1,
 			color_model);
-		if(!compressed)
-			video_ram = new PluginBuffer(ring_buffers * 
-					file->asset->layers * 
-					buffer_size *
-					bytes_per_frame, 1);
 
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
@@ -249,12 +224,10 @@ int FileThread::start_writing(long buffer_size,
 					else
 					{
 						video_buffer[buffer][layer][frame] = 
-							new VFrame((unsigned char*)video_ram->get_data() + offset, 
+							new VFrame(0, 
 								file->asset->width, 
 								file->asset->height, 
 								color_model);
-						video_buffer[buffer][layer][frame]->set_shm_offset(offset);
-						offset += bytes_per_frame;
 					}
 				}
 			}

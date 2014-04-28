@@ -4,7 +4,6 @@
 #include "guicast.h"
 #include "record.inc"
 
-//class RecordGUIDuplex;
 class RecordGUIEnd;
 class RecordGUIBack;
 class RecordGUIFwd;
@@ -71,12 +70,12 @@ public:
 class RecordGUIRecFrame : public BC_Button
 {
 public:
-	RecordGUIRecFrame(MWindow *mwindow, int x, int y);
+	RecordGUIRecFrame(MWindow *mwindow, Record *record, int x, int y);
 	~RecordGUIRecFrame();
 
 	int handle_event();
 	int keypress_event();
-	RecordEngine *engine;
+	Record *record;
 };
 
 class RecordGUIPlay : public BC_Button

@@ -18,11 +18,6 @@ public:
 	Autos(EDL *edl, 
 		Track *track);
 		
-	Autos(Track *track, 
-			int color, 
-			double default_, 
-			int stack_number = 0, 
-			int stack_total = 1);
 	virtual ~Autos();
 
 	void resample(double old_rate, double new_rate);
@@ -47,7 +42,12 @@ public:
 		long length_units,
 		int replace_default);
 	virtual int load(FileXML *xml);
-	void paste(long start, long length, double scale, FileXML *file, int default_only);
+	void paste(long start, 
+		long length, 
+		double scale, 
+		FileXML *file, 
+		int default_only);
+	void remove_nonsequential(Auto *keyframe);
 	void optimize();
 
 	EDL *edl;
@@ -87,6 +87,7 @@ public:
 	virtual Auto* add_auto(long position, float value) { printf("virtual Autos::add_auto\n"); };
 	virtual Auto* append_auto() { printf("virtual Autos::append_auto();\n"); };
 	int scale_time(float rate_scale, int scale_edits, int scale_autos, long start, long end);
+	long get_length();
 
 // rendering utilities
 	int get_neighbors(long start, long end, Auto **before, Auto **after);
@@ -135,13 +136,13 @@ public:
 	Auto* nearest_after(long position);     // return nearest auto after or 0
 
 	int color;
-	double default_;
 	Auto *selected;
 	int skip_selected;      // if selected was added
 	long selected_position, selected_position_;      // original position for moves
 	double selected_value, selected_value_;      // original position for moves
 	float virtual_h;  // height cursor moves to cover entire range when track height is less than this
 	double min, max;    // boundaries of this auto
+	double default_;
 	int virtual_center;
 	int stack_number;
 	int stack_total;

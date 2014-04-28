@@ -55,7 +55,7 @@ int VRender::get_total_tracks()
 Module* VRender::new_module(Track *track)
 {
 //printf("VRender::new_module\n");
-	return new VModule(renderengine, this, track);
+	return new VModule(renderengine, this, 0, track);
 }
 
 int VRender::flash_output()
@@ -73,24 +73,19 @@ int VRender::process_buffer(VFrame **video_out,
 	long render_len = 1;
 	int reconfigure = 0;
 
-//printf("VRender::process_buffer 1 %p\n", this);
 	for(i = 0; i < MAX_CHANNELS; i++)
 		this->video_out[i] = video_out[i];
-//printf("VRender::process_buffer 2\n");
 	this->last_playback = last_buffer;
-//printf("VRender::process_buffer 3\n");
 
 	current_position = input_position;
 
-//printf("VRender::process_buffer 4\n");
 // test for automation configuration and shorten the fragment len if necessary
-	reconfigure = vconsole->test_reconfigure(input_position, render_len);
-//printf("VRender::process_buffer 5 %d %d %d\n", input_position, render_len, reconfigure);
+	reconfigure = vconsole->test_reconfigure(input_position, 
+		render_len,
+		last_playback);
 
 	if(reconfigure) restart_playback();
-//printf("VRender::process_buffer 6\n");
 	return process_buffer(input_position);
-//printf("VRender::process_buffer 7\n");
 }
 
 
@@ -114,7 +109,7 @@ int VRender::process_buffer(long input_position)
 	if(renderengine->command->realtime)
 		renderengine->video->new_output_buffers(video_out, colormodel);
 
-//printf("VRender::process_buffer 3 %p %d %d %d\n", this, use_vconsole, colormodel, video_out[0]->get_color_model());
+//printf("VRender::process_buffer 3 %d %d\n", current_position, use_vconsole);
 // Read directly from file to video_out
 	if(!use_vconsole)
 	{
@@ -135,7 +130,7 @@ int VRender::process_buffer(long input_position)
 // Read into virtual console
 	{
 
-//printf("VRender::process_buffer 6\n");
+//printf("VRender::process_buffer 6 %d\n", input_position);
 // process this buffer now in the virtual console
 		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
 
@@ -154,7 +149,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 {
 	Track *playable_track;
 
-//printf("VRender::get_use_vconsole 1 %d\n", vconsole->total_tracks);
+//printf("VRender::get_use_vconsole 1\n");
 // Total number of playable tracks is 1
 	if(vconsole->total_tracks != 1) return 1;
 
@@ -243,9 +238,9 @@ void VRender::run()
 
 //printf("VRender:run 3 %d\n", current_position);
 		reconfigure = vconsole->test_reconfigure(current_position, 
-			current_input_length);
+			current_input_length,
+			last_playback);
 
-//reconfigure = 1;
 //printf("VRender:run 4 %d %d\n", current_position, reconfigure);
 		if(reconfigure) restart_playback();
 //printf("VRender:run 5 %p\n", renderengine);
@@ -434,7 +429,6 @@ int VRender::init_device_buffers()
 	if(renderengine->video)
 	{
 		video_out[0] = 0;
-		video_out_byte = 0;
 		render_strategy = -1;
 	}
 }
@@ -464,13 +458,6 @@ int VRender::wait_for_startup()
 
 
 
-
-// REMOVE
-long VRender::get_render_length(long current_render_length)
-{
-// not used
-	return 0;
-}
 
 long VRender::tounits(double position, int round)
 {

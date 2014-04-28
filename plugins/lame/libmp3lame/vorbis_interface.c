@@ -1,4 +1,4 @@
-/* $Id: vorbis_interface.c,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $ */
+/* $Id: vorbis_interface.c,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $ */
 
 
 /* Compile lame with

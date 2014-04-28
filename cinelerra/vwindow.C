@@ -4,9 +4,11 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
+#include "filexml.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "mwindow.h"
+#include "mwindowgui.h"
 #include "playbackengine.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -320,6 +322,25 @@ void VWindow::clear_outpoint()
 
 void VWindow::copy()
 {
+	EDL *edl = get_edl();
+	if(edl)
+	{
+		double start = edl->local_session->get_selectionstart();
+		double end = edl->local_session->get_selectionend();
+		FileXML file;
+		edl->copy(start,
+			end,
+			0,
+			&file,
+			mwindow->plugindb,
+			"",
+			1);
+		mwindow->gui->lock_window();
+		mwindow->gui->get_clipboard()->to_clipboard(file.string,
+			strlen(file.string),
+			SECONDARY_SELECTION);
+		mwindow->gui->unlock_window();
+	}
 }
 
 void VWindow::splice_selection()

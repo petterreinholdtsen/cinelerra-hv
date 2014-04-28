@@ -9,11 +9,14 @@ FloatAutos::FloatAutos(EDL *edl,
 				int color, 
 				float min, 
 				float max, 
+				float default_,
 				int virtual_h,
 				int use_floats)
  : Autos(edl, track)
 {
-	this->max = max; this->min = min;
+	this->max = max; 
+	this->min = min;
+	this->default_ = default_;
 	this->virtual_h = virtual_h;
 	this->use_floats = use_floats;
 }
@@ -88,35 +91,42 @@ int FloatAutos::get_testy(float slope, int cursor_x, int ax, int ay)
 	return (int)(slope * (cursor_x - ax)) + ay;
 }
 
-int FloatAutos::automation_is_constant(long start, long end)
+int FloatAutos::automation_is_constant(long start, 
+	long length, 
+	int direction,
+	double &constant)
 {
-	Auto *current_auto, *before = 0, *after = 0;
-	int result;
+	FloatAuto *previous = 0;
+	FloatAuto *next = 0;
 
-	result = 1;          // default to constant
-	if(!last && !first) return result; // no automation at all
+	previous = (FloatAuto*)get_prev_auto(start, direction, (Auto*)previous);
+	next = (FloatAuto*)get_next_auto(start, direction, (Auto*)next);
 
-// quickly get autos just outside range	
-	get_neighbors(start, end, &before, &after);
-
-// autos before range
-	if(before) 
-		current_auto = before;   // try first auto
-	else 
-		current_auto = first;
-
-// test autos in range	
-	for( ; result && 
-		current_auto && 
-		current_auto->next && 
-		current_auto->position < end; 
-		current_auto = current_auto->next)
+	if(previous == next)
 	{
-// not constant
-		if(((FloatAuto*)current_auto->next)->value != ((FloatAuto*)current_auto)->value) result = 0;
+		constant = previous->value;
+		return 1;
 	}
-
-	return result;
+	else
+	if(direction == PLAY_FORWARD &&
+		EQUIV(previous->value, next->value) &&
+		EQUIV(previous->control_out_value, 0) &&
+		EQUIV(next->control_in_value, 0))
+	{
+		constant = previous->value;
+		return 1;
+	}
+	else
+	if(direction == PLAY_REVERSE &&
+		EQUIV(previous->value, next->value) &&
+		EQUIV(previous->control_in_value, 0) &&
+		EQUIV(next->control_out_value, 0))
+	{
+		constant = previous->value;
+		return 1;
+	}
+	else
+		return 0;
 }
 
 double FloatAutos::get_automation_constant(long start, long end)
@@ -147,28 +157,62 @@ float FloatAutos::get_value(long position,
 	double slope;
 	double intercept;
 	long slope_len;
-
 // Calculate bezier equation at position
 	float y0, y1, y2, y3;
  	float t;
 
+	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto*)previous);
+	next = (FloatAuto*)get_next_auto(position, direction, (Auto*)next);
 
+// Constant
+	if(EQUIV(previous->value, next->value) &&
+		previous->control_in_value == next->control_in_value &&
+		previous->control_out_value == next->control_out_value)
+	{
+		return previous->value;
+	}
 
+	y0 = previous->value;
+	y3 = next->value;
+
+	if(direction == PLAY_FORWARD)
+	{
+		y1 = previous->value + previous->control_out_value * 2;
+		y2 = next->value + next->control_in_value * 2;
+		t = (double)(position - previous->position) / 
+			(next->position - previous->position);
+	}
+	else
+	{
+		y1 = previous->value + previous->control_in_value * 2;
+		y2 = next->value + next->control_out_value * 2;
+		t = (double)(previous->position - position) / 
+			(previous->position - next->position);
+	}
+
+ 	float tpow2 = t * t;
+	float tpow3 = t * t * t;
+	float invt = 1 - t;
+	float invtpow2 = invt * invt;
+	float invtpow3 = invt * invt * invt;
 	
+	float result = (  invtpow3 * y0
+		+ 3 * t     * invtpow2 * y1
+		+ 3 * tpow2 * invt     * y2 
+		+     tpow3            * y3);
+//printf("FloatAutos::get_value %f %f %d %d %d %d\n", result, t, direction, position, previous->position, next->position);
+
+	return result;
 
 
 
-
-
-
-
-	get_fade_automation(slope,
-		intercept,
-		position,
-		slope_len,
-		PLAY_FORWARD);
-
-	return (float)intercept;
+// 	get_fade_automation(slope,
+// 		intercept,
+// 		position,
+// 		slope_len,
+// 		PLAY_FORWARD);
+// 
+// 	return (float)intercept;
 }
 
 
@@ -241,10 +285,16 @@ float FloatAutos::value_to_percentage(float value)
 int FloatAutos::dump()
 {
 	printf("	FloatAutos::dump %p\n", this);
-	printf("	Default: position %ld value %f\n", default_auto->position, ((FloatAuto*)default_auto)->value);
+	printf("	Default: position %ld value=%f\n", 
+		default_auto->position, 
+		((FloatAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %ld value %f\n", current->position, ((FloatAuto*)current)->value);
+		printf("	position %ld value=%f invalue=%f outvalue=%f\n", 
+			current->position, 
+			((FloatAuto*)current)->value,
+			((FloatAuto*)current)->control_in_value,
+			((FloatAuto*)current)->control_out_value);
 	}
 	return 0;
 }

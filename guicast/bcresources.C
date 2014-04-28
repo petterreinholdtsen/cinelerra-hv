@@ -1,3 +1,4 @@
+#include "bcdisplayinfo.h"
 #include "bcipc.h"
 #include "bclistbox.inc"
 #include "bcresources.h"
@@ -18,9 +19,11 @@
 #include "vframe.h"
 
 #include <locale.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
+#include <unistd.h>
 
 int BC_Resources::error = 0;
 
@@ -72,7 +75,7 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 
 BC_Resources::BC_Resources()
 {
-//printf("BC_Resources::BC_Resources 1\n");
+	display_info = new BC_DisplayInfo("", 0);
 	use_xvideo = 1;
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
@@ -492,6 +495,7 @@ int BC_Resources::initialize_display(BC_WindowBase *window)
 	return 0;
 }
 
+
 int BC_Resources::init_shm(BC_WindowBase *window)
 {
 	use_shm = 1;
@@ -519,6 +523,27 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 //	XSetErrorHandler(0);
 	return 0;
 }
+
+int BC_Resources::get_top_border()
+{
+	return display_info->get_top_border();
+}
+
+int BC_Resources::get_left_border()
+{
+	return display_info->get_left_border();
+}
+
+int BC_Resources::get_right_border()
+{
+	return display_info->get_right_border();
+}
+
+int BC_Resources::get_bottom_border()
+{
+	return display_info->get_bottom_border();
+}
+
 
 int BC_Resources::get_bg_color() { return bg_color; }
 

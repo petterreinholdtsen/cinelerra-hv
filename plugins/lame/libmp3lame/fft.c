@@ -31,7 +31,7 @@
 **           Takehiro  - some dirty hack for speed up
 */
 
-/* $Id: fft.c,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $ */
+/* $Id: fft.c,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

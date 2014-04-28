@@ -553,7 +553,7 @@ Zoombar clamps more selection values.
 
 
 
-5/3
+5/3/02
 
 Microsoft MPEG-4 and MP3 encoding in Quicktime, AVI edition.  
 	100% Readable by Cinelerra and Xine but not by Microsoft.
@@ -579,7 +579,7 @@ Got rid of AVIFile and obsolete ffmpeg copy.
 
 
 
-5/10
+5/10/02
 
 Better handling of non-existent files in edit lists and renderfarms.
 Hopefully better reporting of errors with the renderfarm.
@@ -607,7 +607,7 @@ Mix2000 update for mouse wheel.
 
 
 
-5/17
+5/17/02
 
 Pulling the official MICROSOFT mouse wheel back zooms out the CWindow
 when using the zoom tool.
@@ -641,7 +641,7 @@ Decompression of YUV 4:4:4 JPEG.
 
 
 
-6/10
+6/10/02
 
 New option to disable thumbnails in AWindow.
 Shift right handle out doesn't shift keyframes before it.
@@ -683,5 +683,153 @@ of the effect instead of crashing.
 
 Dragging an effect from the Resource Window onto a zero length track doesn't
 insert the effect on the track.
+
+
+
+
+
+
+
+6/14/02
+
+Bilinear interpolation from Broadcast 2000 migrated over.  This
+averaged more pixels than the standard bilinear interpolation we
+upgraded to in 2000.
+
+Mutual exclusion lock for liba52 since liba52 can't run two frame
+decodes simultaneously.
+
+Removed double lock from Heroine College Concert Hall.
+
+Correctly detects playable tracks more often.
+
+Bezier curves for fade and zoom.
+
+64 bit mpeg file support.  XMovie plays 64 bit mpeg files.
+
+Variable channel numbers work finally.  Audio pans adjust when channel
+count changes.
+
+DV encoding in color works slightly better but still corrupted on the
+right side.  The libdv upgrade can't decode of course.
+
+After assessing levels of interest, marketing direction, and
+experiencing a CVS erasing filesystem crash we moved forward on the
+folding of all code into a single repository.  Moved quicktime,
+libmpeg3, xmovie, mix2000, and 2 mpeg multiplexing tools into the
+cinelerra tree and renamed the one gigantic tree hvirtual.  The upside
+is Cinelerra compilation only requires exporting CFLAGS instead of
+hunting down 5 packages and exporting CFLAGS.  The downside is the one
+guy who uses Quicktime has to download a bigger package through his
+bankrupt ISP's refurbished 1998 reissued cable modem.
+
+Mind you everything except cinelerra and plugins will remain
+independant of each other.
+
+While it may work for servers ext3 isn't suitable for desktops which
+are constantly shut down and restarted.
+
+
+
+6/21/02
+
+DV decoder 0.9.5 migrated.  Not tested for error resilience yet.
+Made to_clip not copy all to the temporary clipboard so it wouldn't
+copy the child EDL's.
+Sort items put in AssetPopup.
+Plugin titles don't extend beyond background.
+Menus reposition when the window is repositioned.
+Default window positions is more accurate.
+Despike migrated to interpolated keyframes.
+Level window resets with everything else.
+Fixed detection of playable tracks error that was introduced with bezier faders.
+More often plays full audio track instead of truncating it.
+MPEG decoder supports XVideo better.
+Going to next and previous label with scrolling refreshes the compositor.
+Drawing of highlight box when dragging over the timeline is more accurate.
+Dragging one keyframe beyond another deletes the keyframe like it should.
+Bezier keyframes may work better than before.
+
+tracks->get_total_length considers keyframe length as well as edit
+length.  This allows keyframe undo for regions where no edits exist.
+
+Update undo routines can be called recursively without corrupting the
+undo table.
+Undoing and redoing keyframe adjustments works better.
+
+Bilinear reduction with alpha channels fixed.
+
+Memory leak removed from Quicktime udta.
+Kludge for 88200 samplerate in Quicktime.  Not tested.
+
+
+
+
+
+
+
+
+
+7/12/02
+
+Sharpen GUI synchronized to keyframes.
+Flip video.
+Freezeframe.
+Freeverb.
+Shift interlace.
+AWindow scrollbars calculated more accurately.
+Attach when effect is already in slot lets you change the effect.
+Faders and effect GUI's track playback.
+More frequent updating of patchbay when scrubbing.
+Pan automation works.
+Raw PCM export supports endian changes.
+All assets are saved during Save File.
+Keyframing right curves for projector zoom.
+All paste_edl operations copy all the assets.
+Camera zoom and projector zoom keyframes are properly generated from CWindow.
+Better bezier keyframe drawing in CWindow.
+Default window positions work in KDE, Gnome, and fvwm.
+
+Can grab control points in CWindow more easily if they're both against
+the left side.
+
+Large amout of unused Broadcast 2000 code removed.
+RecordGUI uses EDL aspect ratio.
+
+Grabbing control points in CWindow works better.
+Different colors for curves.
+Frame advance reverse plays the last frame in the timeline properly.
+Single frame record.
+Rendered effects handle transitions.
+
+Fewer crashes when hiding and showing effects during playback.
+More macros for plugins.
+Ganged faders are unaffected with record off.
+
+Pasting shared effects to different tracks than they were copied from
+doesn't crash but shared effect resolution will be broken.
+
+Shift key snaps curve values when dragging curves.
+
+Documentation buildout.
+
+Creating a clip in the VWindow doesn't automatically set the VWindow to
+the new clip.
+
+Changing asset sample rate works again.
+List boxes updated in AWindow after changing mode.
+Interface preferences have options for trimming.
+
+Copy added to CWindow buttons.  Cut removed from VWindow buttons.
+Copying always takes session parameters, so it works in VWindow instead
+of crashing.
+
+Audio module fragment reduced to support Linux 2.4.18.  Maximum DMA
+allocation is no longer supported in 2.4.18 so audio fragments must be
+kept below 4096.
+
+Units in freeverb changed to DB.
+
+
 
 

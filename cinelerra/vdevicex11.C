@@ -109,6 +109,7 @@ int VDeviceX11::close_all()
 //printf("VDeviceX11::close_all 4\n");
 		if(!device->single_frame)
 		{
+//printf("VDeviceX11::close_all 5\n");
 			output->canvas->stop_video();
 		}
 
@@ -250,7 +251,7 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 // Create new bitmap
 	if(!bitmap)
 	{
-//printf("VDeviceX11::new_output_buffer 1 %d\n", device->out_config->driver);
+//printf("VDeviceX11::new_output_buffer 1 %d\n", best_colormodel);
 // Try hardware accelerated
 		switch(best_colormodel)
 		{
@@ -403,8 +404,6 @@ int VDeviceX11::stop_playback()
 {
 	if(!device->single_frame)
 		output->canvas->stop_video();
-	if(bitmap) 
-		video_window->update(bitmap);
 // Record window goes back to monitoring
 // get the last frame played and store it in the video_out
 	return 0;
@@ -570,39 +569,3 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 }
 
 
-int VDeviceX11::get_output_w()
-{
-	return video_window->get_w();
-	return 0;
-}
-
-int VDeviceX11::get_output_h()
-{
-	return video_window->get_h();
-	return 0;
-}
-
-ArrayList<int>* VDeviceX11::get_render_strategies()
-{
-	return &render_strategies;
-}
-
-BC_Bitmap* VDeviceX11::get_bitmap()
-{
-// test size of bitmap against window size
-	if(bitmap && 
-		(bitmap_w != get_output_w() ||
-		bitmap_h != get_output_h()))
-	{
-		delete bitmap;
-		bitmap = 0;
-	}
-
-// allocate bitmap object
-	if(!bitmap)
-	{
-		bitmap = video_window->get_bitmap();
-	}
-
-	return bitmap;
-}

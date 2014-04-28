@@ -3,7 +3,6 @@
 
 #include "edl.inc"
 #include "pluginarray.h"
-#include "pluginbuffer.inc"
 #include "pluginserver.inc"
 #include "recordablevtracks.inc"
 #include "track.inc"

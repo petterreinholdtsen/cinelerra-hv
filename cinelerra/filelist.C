@@ -53,11 +53,8 @@ int FileList::open_file(int rd, int wr)
 	{
 // Frame files are created in write_frame and list index is created when
 // file is closed.
-//printf("FileList::open_file 1\n");
 		path_list.remove_all_objects();
-//printf("FileList::open_file 1\n");
 		writer = new FrameWriter(this, asset->format == list_type ? file->cpus : 1);
-//printf("FileList::open_file 3\n");
 	}
 	else
 	if(rd)
@@ -69,11 +66,9 @@ int FileList::open_file(int rd, int wr)
 			char string[BCTEXTLEN];
 			fread(string, strlen(list_prefix), 1, stream);
 			fclose(stream);
-//printf("FileList::open_file 1\n");
 
 			if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
 			{
-//printf("FileList::open_file 2\n");
 
 				asset->format = list_type;
 
@@ -83,14 +78,12 @@ int FileList::open_file(int rd, int wr)
 			}
 			else
 			{
-//printf("FileList::open_file 3\n");
 				asset->format = frame_type;
 				result = read_frame_header(asset->path);
 				asset->layers = 1;
 				if(!asset->frame_rate)
 					asset->frame_rate = 1;
 				asset->video_length = -1;
-//printf("FileList::open_file 4\n");
 			}
 		}
 	}
@@ -105,24 +98,18 @@ int FileList::open_file(int rd, int wr)
 
 int FileList::close_file()
 {
-//printf("FileList::close_file 1 %d %d %d %d\n", 
 //	path_list.total, asset->format, list_type, wr);
 	if(asset->format == list_type && path_list.total)
 	{
 		if(wr) write_list_header();
 		path_list.remove_all_objects();
 	}
-//printf("FileList::close_file 1\n");
 	if(data) delete data;
-//printf("FileList::close_file 1\n");
 	if(writer) delete writer;
 	if(temp) delete temp;
-//printf("FileList::close_file 1\n");
 	reset_parameters();
-//printf("FileList::close_file 1\n");
 
 	FileBase::close_file();
-//printf("FileList::close_file 2\n");
 	return 0;
 }
 
@@ -139,7 +126,6 @@ int FileList::write_list_header()
 	fprintf(stream, "%d\n", asset->height);
 	fprintf(stream, "# List of image files follows\n");
 
-//printf("write_list_header 1 %d\n", path_list.total);
 	for(int i = 0; i < path_list.total; i++)
 	{
 		fprintf(stream, "%s\n", path_list.values[i]);
@@ -208,7 +194,6 @@ int FileList::read_list_header()
 int FileList::read_frame(VFrame *frame)
 {
 	int result = 0;
-//printf("FileList::read_frame 1\n");
 	if(asset->format == list_type)
 	{
 		char *path = path_list.values[file->current_frame];
@@ -245,23 +230,18 @@ int FileList::read_frame(VFrame *frame)
 	}
 	else
 	{
-//printf("FileList::read_frame 2 %p\n", temp);
 
 // Allocate and decompress once into temporary
 		if(!temp || temp->get_color_model() != frame->get_color_model())
 		{
-//printf("FileList::read_frame 3\n");
 			if(temp) delete temp;
 			temp = 0;
-//printf("FileList::read_frame 3\n");
 		
 			FILE *fd = fopen(asset->path, "rb");
-//printf("FileList::read_frame 3\n");
 			if(fd)
 			{
 				struct stat ostat;
 				stat(asset->path, &ostat);
-//printf("FileList::read_frame 4\n");
 
 				switch(frame->get_color_model())
 				{
@@ -281,33 +261,25 @@ int FileList::read_frame(VFrame *frame)
 						read_frame(temp, data);
 						break;
 				}
-//printf("FileList::read_frame 4\n");
 				fclose(fd);
-//printf("FileList::read_frame 5\n");
 				
 			}
 			else
 			{
-				fprintf(stderr, "FileList::read_frame %s: %s", asset->path, strerror(errno));
+				fprintf(stderr, "FileList::read_frame %s: %s\n", asset->path, strerror(errno));
 				result = 1;
 			}
-//printf("FileList::read_frame 6\n");
 		}
-//printf("FileList::read_frame 7\n");
 
 		if(!temp) return result;
 
-//printf("FileList::read_frame 8\n");
 		if(frame->get_color_model() == temp->get_color_model())
 		{
-//printf("FileList::read_frame 9\n");
 			frame->copy_from(temp);
-//printf("FileList::read_frame 10\n");
 		}
 		else
 		{
 // Never happens
-//printf("FileList::read_frame 11\n");
 			cmodel_transfer(frame->get_rows(), /* Leave NULL if non existent */
 				temp->get_rows(),
 				frame->get_y(), /* Leave NULL if non existent */
@@ -329,12 +301,10 @@ int FileList::read_frame(VFrame *frame)
 				0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 				temp->get_w(),       /* For planar use the luma rowspan */
 				frame->get_w());
-//printf("FileList::read_frame 12\n");
 		}
 	}
 
 
-//printf("FileList::read_frame 13\n");
 
 
 	return result;
@@ -344,16 +314,12 @@ int FileList::write_frames(VFrame ***frames, int len)
 {
 	return_value = 0;
 
-//printf("FileList::write_frames 1 %d\n", len);
 	if(frames[0][0]->get_color_model() == BC_COMPRESSED)
 	{
-//printf("FileList::write_frames 1\n");
 		for(int i = 0; i < asset->layers && !return_value; i++)
 		{
-//printf("FileList::write_frames 1\n");
 			for(int j = 0; j < len && !return_value; j++)
 			{
-//printf("FileList::write_frames 1\n");
 				char *path = create_path();
 				FILE *fd = fopen(path, "wb");
 				if(fd)
@@ -368,13 +334,11 @@ int FileList::write_frames(VFrame ***frames, int len)
 				else
 					return_value++;
 					
-//printf("FileList::write_frames 2\n");
 			}
 		}
 	}
 	else
 	{
-//printf("FileList::write_frames 3\n");
 		writer->write_frames(frames, len);
 	}
 	return return_value;
@@ -397,7 +361,6 @@ void FileList::add_return_value(int amount)
 
 char* FileList::create_path()
 {
-//printf("FileList::create_path 1 %d %d\n", asset->format, list_type);
 	if(asset->format != list_type) return asset->path;
 
 	table_lock->lock();
@@ -522,7 +485,6 @@ void FrameWriter::init_packages()
 		i++)
 	{
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
-//printf("FrameWriter::init_packages %d %d\n", layer, number);
 		package->input = frames[layer][number];
 		package->path = file->create_path();
 		number++;

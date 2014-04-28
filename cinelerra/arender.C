@@ -8,13 +8,10 @@
 #include "auto.h"
 #include "cache.h"
 #include "virtualconsole.h"
-#include "console.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "levelwindow.h"
-#include "mwindow.h"
-#include "modules.h"
 #include "playabletracks.h"
 #include "playbackengine.h"
 #include "preferences.h"
@@ -70,7 +67,7 @@ int ARender::get_total_tracks()
 Module* ARender::new_module(Track *track)
 {
 //printf("VirtualAConsole::new_module %p\n", track);
-	return new AModule(renderengine, this, track);
+	return new AModule(renderengine, this, 0, track);
 }
 
 int ARender::history_size()
@@ -189,7 +186,8 @@ int ARender::process_buffer(double **buffer_out,
 
 //printf("ARender::process_buffer 3 %d\n", fragment_len);
 		reconfigure = vconsole->test_reconfigure(input_position, 
-			fragment_len);
+			fragment_len,
+			last_playback);
 
 //printf("ARender::process_buffer 4 %d %d %d\n", input_position, fragment_len, reconfigure);
 
@@ -303,7 +301,8 @@ void ARender::run()
 		{
 //printf("ARender::run 4 %d\n", current_input_length);
 			reconfigure = vconsole->test_reconfigure(current_position, 
-				current_input_length);
+				current_input_length,
+				last_playback);
 //printf("ARender::run 5 %d\n", current_input_length);
 			
 			
@@ -313,9 +312,9 @@ void ARender::run()
 // 			test_virtualnodes(current_position, 
 // 				current_input_length, 
 // 				get_datatype());
-//printf("ARender::run 4 %d %d %d\n", current_position, current_input_length, reconfigure);
 			if(reconfigure) restart_playback();
 		}
+//printf("ARender::run 4 %d %d %d\n", current_position, current_input_length, reconfigure);
 
 
 // Update tracking
@@ -344,8 +343,8 @@ void ARender::run()
 //printf("ARender::run 8 %d %d %d\n", done, interrupt, last_playback);
 
 		advance_position(get_render_length(current_input_length));
-//printf("ARender::run 9 %d %d %d\n", done, interrupt, last_playback);
 		if(vconsole->interrupt) interrupt = 1;
+//printf("ARender::run 9 %d %d %d\n", done, interrupt, last_playback);
 	}
 
 //printf("ARender::run 10\n");
@@ -370,13 +369,6 @@ void ARender::run()
 
 
 
-
-ARender::ARender(MWindow *mwindow, RenderEngine *renderengine)
-: CommonRender(mwindow, renderengine)
-{
-	audio_out[0] = 0;
-	input_length = 0;
-}
 
 
 int ARender::get_datatype()
@@ -404,9 +396,6 @@ int ARender::arm_playback(long current_position,
 		init_meters();
 	}
 
-// start the thread waiting on input
-//	vconsole = new VirtualAConsole(mwindow, this);
-//	vconsole->start_rendering(0);
 
 // start reading input and sending to arenderthread
 // only if there's an audio device

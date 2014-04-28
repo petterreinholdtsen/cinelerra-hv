@@ -148,6 +148,7 @@ public:
 	int paste_silence(long start, long end);
 	int modify_handles(long oldposition, long newposition, int currentend);
 	int select_region(double position);
+	void get_edl_length();
 
 	MWindow *mwindow;
 	BC_WindowBase *gui;
@@ -157,12 +158,8 @@ public:
 // Operation started by a buttonpress
 	int current_operation;
 
-// REMOVE
-	TimeBarLeftArrow *left_arrow;
-	TimeBarRightArrow *right_arrow;
 
 private:
-	void get_edl_length();
 	int get_preview_pixels(int &x1, int &x2);
 	int draw_bevel();
 	ArrayList<LabelGUI*> labels;

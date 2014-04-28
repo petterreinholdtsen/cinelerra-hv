@@ -41,7 +41,8 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int use_labels,
 	int use_toclip,
 	int use_meters,
-	int is_mwindow)
+	int is_mwindow,
+	int use_cut)
 {
 	this->editing_mode = editing_mode;
 	this->use_editing_mode = use_editing_mode;
@@ -60,7 +61,8 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->use_toclip = use_toclip;
 	this->use_meters = use_meters;
 	this->is_mwindow = is_mwindow;
-	
+	this->use_cut = use_cut;
+
 	this->x = x;
 	this->y = y;
 	this->meter_panel = 0;
@@ -182,8 +184,12 @@ void EditPanel::create_buttons()
 		subwindow->add_subwindow(clip = new EditToClip(mwindow, this, x1, y1));
 		x1 += clip->get_w();
 	}
-	subwindow->add_subwindow(cut = new EditCut(mwindow, this, x1, y1));
-	x1 += cut->get_w();
+	
+	if(use_cut)
+	{
+		subwindow->add_subwindow(cut = new EditCut(mwindow, this, x1, y1));
+		x1 += cut->get_w();
+	}
 	if(use_copy)
 	{
 		subwindow->add_subwindow(copy = new EditCopy(mwindow, this, x1, y1));
@@ -344,8 +350,11 @@ void EditPanel::reposition_buttons(int x, int y)
 		clip->reposition_window(x1, y1);
 		x1 += clip->get_w();
 	}
-	cut->reposition_window(x1, y1);
-	x1 += cut->get_w();
+	if(use_cut)
+	{
+		cut->reposition_window(x1, y1);
+		x1 += cut->get_w();
+	}
 	if(use_copy)
 	{
 		copy->reposition_window(x1, y1);

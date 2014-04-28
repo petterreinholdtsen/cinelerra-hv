@@ -10,7 +10,6 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "localsession.h"
-#include "mwindow.h"
 #include "plugin.h"
 #include "strategies.inc"
 #include "track.h"
@@ -73,7 +72,6 @@ void Edits::insert_asset(Asset *asset,
 
 void Edits::insert_edits(Edits *source_edits, long position)
 {
-//printf("Edits::insert_edits 1\n");
 	long clipboard_length = 
 		track->to_units(source_edits->edl->local_session->clipboard_length, 1);
 	long clipboard_end = position + clipboard_length;
@@ -85,24 +83,18 @@ void Edits::insert_edits(Edits *source_edits, long position)
 		paste_silence(length(), position);
 	}
 
-//printf("Edits::insert_edits 2 %d\n", source_edits->total());
 
 	for(Edit *source_edit = source_edits->first;
 		source_edit;
 		source_edit = source_edit->next)
 	{
-//printf("Edits::insert_edits 3 %p\n", source_edit->asset);
 // Update Assets
 		Asset *dest_asset = edl->assets->update(source_edit->asset);
 // Open destination area
-//printf("Edits::insert_edits 1 %d %d\n", dest_asset->sample_rate, source_edit->asset->sample_rate);
 		Edit *dest_edit = insert_new_edit(position + source_edit->startproject);
-//printf("Edits::insert_edits 1\n");
 
 		dest_edit->copy_from(source_edit);
-//printf("Edits::insert_edits 2\n");
 		dest_edit->asset = dest_asset;
-//printf("Edits::insert_edits 1\n");
 		dest_edit->startproject = position + source_edit->startproject;
 		for(Edit *future_edit = dest_edit->next;
 			future_edit;
@@ -117,7 +109,6 @@ void Edits::insert_edits(Edits *source_edits, long position)
 				clipboard_end);
 		}
 	}
-//printf("Edits::insert_edits 4\n");
 }
 
 
@@ -340,12 +331,6 @@ int Edits::optimize()
 
 
 
-Edits::Edits(MWindow *mwindow, Track *track) : List<Edit>()
-{
-	this->track = track;
-	this->mwindow = mwindow;
-}
-
 // ===================================== file operations
 
 int Edits::load(FileXML *file, int track_offset)
@@ -525,98 +510,6 @@ Edit* Edits::get_playable_edit(long position)
 
 // ================================================ editing
 
-Edit* Edits::insert(long start, long lengthsamples)
-{
-	Edit *old_edit, *new_edit;
-	
-	old_edit = editof(start, PLAY_FORWARD);
-
-	if(old_edit)
-	{       // ========================== split the edit
-		new_edit = insert_edit_after(old_edit);
-
-		new_edit->startsource = old_edit->startsource + (start - old_edit->startproject);
-// will be shifted later
-		new_edit->startproject = old_edit->startproject + (start - old_edit->startproject);
-		new_edit->length = old_edit->length - (start - old_edit->startproject);
-		new_edit->feather_left = 0;
-		new_edit->feather_right = old_edit->feather_right;
-
-		old_edit->length -= new_edit->length;
-		old_edit->feather_right = 0;
-
-		new_edit->asset = old_edit->asset;
-
-		if(old_edit->transition)
-		{
-//			new_edit->transition = new Transition(old_edit->transition, new_edit);
-		}
-		else
-			new_edit->transition = 0;
-
-		clone_derived(new_edit, old_edit);
-
-		new_edit = old_edit;
-	}
-	else
-	{       // extend track with silence
-		new_edit = append_new_edit();
-
-		if(new_edit->previous)
-			new_edit->startproject = new_edit->previous->startproject + new_edit->previous->length;
-
-		new_edit->length = start - new_edit->startproject;
-
-		new_edit->asset = mwindow->assets->update(SILENCE);
-	}
-
-	Edit* result = new_edit;
-
-// shift everything after old_edit
-	for(new_edit = new_edit->next; new_edit; new_edit = new_edit->next)
-	{            // shift
-		new_edit->startproject += lengthsamples;
-	}
-
-	return result;
-}
-
-// REMOVE
-int Edits::paste_transition(long startproject, 
-				long endproject, 
-				Transition *transition)
-{
-	return 0;
-}
-
-Edit* Edits::paste_edit_base(long start, 
-				long end, 
-				long startsource, 
-				long length, 
-				Asset *asset)
-{
-	int result;
-	Edit *current_edit;
-
-// clear selection
-	clear(start, end);
-
-// Insert silence before new edit.
-	current_edit = insert(start, length);
-
-// create a new edit for the data and point *current to that edit
-	current_edit = insert_edit_after(current_edit);
-
-// put the data in the new edit
-	current_edit->startsource = startsource;
-	current_edit->startproject = start;
-	current_edit->length = length;
-	current_edit->feather_left = 0;
-	current_edit->feather_right = 0;
-	current_edit->asset = asset;
-
-	return current_edit;
-}
 
 
 int Edits::copy(long start, long end, FileXML *file, char *output_path)
@@ -637,53 +530,7 @@ int Edits::copy(long start, long end, FileXML *file, char *output_path)
 	file->append_newline();
 }
 
-// REPLACE with insertion
-int Edits::paste(long start, long end, long total_length, FileXML *file)
-{
-	Edit *current_edit;
-	current_edit = insert(start, total_length);
 
-	int result = 0;
-	long startproject = start;
-
-	do{
-		result = file->read_tag();
-
-		if(!result)
-		{
-			if(!strcmp(file->tag.get_title(), "/EDITS"))
-			{
-				result = 1;
-			}
-			else
-			if(!strcmp(file->tag.get_title(), "EDIT"))
-			{
-				current_edit = insert_edit_after(current_edit);
-
-				current_edit->startsource = file->tag.get_property("STARTSOURCE", (long)0);
-				current_edit->startproject = startproject;
-
-				current_edit->load_properties_derived(file);
-
-				startproject += current_edit->length;
-				current_edit->paste(file);
-			}
-		}
-	}while(!result);
-
-
-// fill end manually since it can't be optimized
-	current_edit = insert_edit_after(current_edit);
-
-	current_edit->startproject = startproject;
-	current_edit->length = total_length + start - startproject;
-
-	current_edit->asset = mwindow->assets->update(SILENCE);
-
-// optimize it out
-	optimize();
-	return 0;
-}
 
 int Edits::clear(long start, long end)
 {

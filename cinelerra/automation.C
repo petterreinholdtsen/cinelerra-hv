@@ -488,6 +488,48 @@ int Automation::direct_copy_possible(long start, int direction)
 	return 1;
 }
 
+
+
+long Automation::get_length()
+{
+	long length = 0;
+	long total_length = 0;
+
+	if(play_autos) length = play_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(mute_autos) length = mute_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(camera_autos) length = camera_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(projector_autos) length = projector_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(fade_autos) length = fade_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(pan_autos) length = pan_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(mode_autos) length = mode_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(mask_autos) length = mask_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(czoom_autos) length = czoom_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	if(pzoom_autos) length = pzoom_autos->get_length();
+	if(length > total_length) total_length = length;
+
+	return total_length;
+}
+
+
+
 void Automation::dump()
 {
 	printf("   Automation: %p\n", this);

@@ -1,62 +1,59 @@
+#include "bcdisplayinfo.h"
 #include "flipwindow.h"
 
 
-FlipThread::FlipThread(FlipMain *client)
- : Thread()
-{
-	this->client = client;
-	synchronous = 1; // make thread wait for join
-	gui_started.lock();
+PLUGIN_THREAD_OBJECT(FlipMain, FlipThread, FlipWindow)
+
+
+
+
+
+
+FlipWindow::FlipWindow(FlipMain *client, int x, int y)
+ : BC_Window(client->get_gui_string(),
+ 	x,
+	y,
+	140,
+	100,
+	140,
+	100,
+	0,
+	0,
+	1)
+{ 
+	this->client = client; 
 }
-
-FlipThread::~FlipThread()
-{
-}
-	
-void FlipThread::run()
-{
-	window = new FlipWindow(client);
-	window->create_objects();
-	gui_started.unlock();
-	window->run_window();
-	delete window;
-}
-
-
-
-
-
-
-FlipWindow::FlipWindow(FlipMain *client)
- : BC_Window("", MEGREY, client->gui_string, 210, 120, 200, 120, 0, !client->show_initially)
-{ this->client = client; }
 
 FlipWindow::~FlipWindow()
 {
-	delete flip_vertical;
-	delete flip_horizontal;
 }
 
 int FlipWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Vertical"));
-	y += 20;
-	add_tool(flip_vertical = new FlipToggle(client, &(client->flip_vertical), x, y));
+	add_tool(flip_vertical = new FlipToggle(client, 
+		&(client->config.flip_vertical), 
+		"Vertical",
+		x, 
+		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Horizontal"));
-	y += 20;
-	add_tool(flip_horizontal = new FlipToggle(client, &(client->flip_horizontal), x, y));
+	add_tool(flip_horizontal = new FlipToggle(client, 
+		&(client->config.flip_horizontal), 
+		"Horizontal",
+		x, 
+		y));
+	show_window();
+	flush();
 }
 
 int FlipWindow::close_event()
 {
-	hide_window();
-	client->send_hide_gui();
+	set_done(1);
+	return 1;
 }
 
-FlipToggle::FlipToggle(FlipMain *client, int *output, int x, int y)
- : BC_CheckBox(x, y, 16, 16, *output)
+FlipToggle::FlipToggle(FlipMain *client, int *output, char *string, int x, int y)
+ : BC_CheckBox(x, y, *output, string)
 {
 	this->client = client;
 	this->output = output;
@@ -68,4 +65,5 @@ int FlipToggle::handle_event()
 {
 	*output = get_value();
 	client->send_configure_change();
+	return 1;
 }

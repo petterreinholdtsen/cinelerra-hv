@@ -34,7 +34,11 @@ BC_Pan::BC_Pan(int x,
 	this->value_y = new int[total_values];
 	this->stick_x = stick_x;
 	this->stick_y = stick_y;
-	get_channel_positions();
+	get_channel_positions(value_x, 
+		value_y, 
+		value_positions,
+		virtual_r,
+		total_values);
 	if(stick_x < 0 || stick_y < 0)
 		calculate_stick_position(total_values, 
 			value_positions, 
@@ -201,10 +205,14 @@ int BC_Pan::activate()
 
 int BC_Pan::update(int x, int y)
 {
-	stick_x = x;
-	stick_y = y;
-	stick_to_values();
-	draw();
+	if(x != stick_x ||
+		y != stick_y)
+	{
+		stick_x = x;
+		stick_y = y;
+		stick_to_values();
+		draw();
+	}
 	return 0;
 }
 
@@ -257,7 +265,11 @@ void BC_Pan::draw()
 	draw_top_background(parent_window, 0, 0, w, h);
 	
 	draw_pixmap(images[highlighted ? PAN_HI : PAN_UP]);
-	get_channel_positions();
+	get_channel_positions(value_x, 
+		value_y, 
+		value_positions,
+		virtual_r,
+		total_values);
 
 // draw channels
 	int x1, y1, x2, y2, w, h, j;
@@ -300,13 +312,36 @@ void BC_Pan::draw()
 
 int BC_Pan::stick_to_values()
 {
+	return stick_to_values(values,
+		total_values, 
+		value_positions, 
+		stick_x, 
+		stick_y,
+		virtual_r,
+		maxvalue);
+}
+
+int BC_Pan::stick_to_values(float *values,
+		int total_values, 
+		int *value_positions, 
+		int stick_x, 
+		int stick_y,
+		int virtual_r,
+		float maxvalue)
+{
 // find shortest distance to a channel
 	float shortest = 2 * virtual_r, test_distance;
 	int i;
+	int *value_x = new int[total_values];
+	int *value_y = new int[total_values];
 
+	get_channel_positions(value_x, value_y, value_positions, virtual_r, total_values);
 	for(i = 0; i < total_values; i++)
 	{
-		if((test_distance = distance(stick_x, value_x[i], stick_y, value_y[i])) < shortest)
+		if((test_distance = distance(stick_x, 
+			value_x[i], 
+			stick_y, 
+			value_y[i])) < shortest)
 			shortest = test_distance;
 	}
 
@@ -326,7 +361,10 @@ int BC_Pan::stick_to_values()
 		for(i = 0; i < total_values; i++)
 		{
 			values[i] = shortest;
-			values[i] -= (float)(distance(stick_x, value_x[i], stick_y, value_y[i]) - shortest);
+			values[i] -= (float)(distance(stick_x, 
+				value_x[i], 
+				stick_y, 
+				value_y[i]) - shortest);
 			if(values[i] < 0) values[i] = 0;
 			values[i] = values[i] / shortest * maxvalue;
 		}
@@ -336,8 +374,12 @@ int BC_Pan::stick_to_values()
 	{
 		values[i] = Units::quantize10(values[i]);
 	}
+
+	delete [] value_x;
+	delete [] value_y;
 	return 0;
 }
+
 
 float BC_Pan::distance(int x1, int x2, int y1, int y2)
 {
@@ -360,13 +402,21 @@ int BC_Pan::change_channels(int new_channels, int *value_positions)
 	{
 		this->value_positions[i] = value_positions[i];
 	}
-	get_channel_positions();
+	get_channel_positions(value_x, 
+		value_y, 
+		value_positions,
+		virtual_r,
+		total_values);
 	stick_to_values();
 	draw();
 	return 0;
 }
 
-int BC_Pan::get_channel_positions()
+int BC_Pan::get_channel_positions(int *value_x, 
+	int *value_y, 
+	int *value_positions,
+	int virtual_r,
+	int total_values)
 {
 	for(int i = 0; i < total_values; i++)
 	{

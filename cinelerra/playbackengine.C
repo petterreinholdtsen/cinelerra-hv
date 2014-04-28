@@ -5,7 +5,6 @@
 #include "mbuttons.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "modules.h"
 #include "patchbay.h"
 #include "tracking.h"
 #include "playbackengine.h"
@@ -516,37 +515,6 @@ int PlaybackEngine::init_video_device()
 	return 0;
 }
 
-
-int PlaybackEngine::set_range(long start,
-					long end,
-					long current,
-					int reverse,
-					float speed)
-{
-	this->playback_start = start;
-	this->playback_end = end;
-	this->last_position = current;
-	this->reverse = reverse;
-	this->speed = speed;
-	if(speed == FRAME_SPEED)
-	{
-// Fix positions for frame advance
-		long frame = (long)(((float)(last_position + 1) / mwindow->session->sample_rate) * mwindow->session->frame_rate);
-		last_position = (long)(((float)frame / mwindow->session->frame_rate) * mwindow->session->sample_rate);
-
-		if(reverse)
-		{
-			playback_end = last_position;
-			playback_start = (long)(((float)(frame - 1) / mwindow->session->frame_rate) * mwindow->session->sample_rate);
-		}
-		else
-		{
-			playback_start = last_position;
-			playback_end = (long)(((float)(frame + 1) / mwindow->session->frame_rate) * mwindow->session->sample_rate);
-		}
-	}
-	return 0;
-}
 
 
 int PlaybackEngine::start_reconfigure()

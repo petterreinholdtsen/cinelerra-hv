@@ -1,7 +1,6 @@
 #include "assets.h"
 #include "mbuttons.h"
 #include "confirmquit.h"
-#include "console.h"
 #include "errorbox.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
@@ -31,7 +30,6 @@ int Quit::create_objects(Save *save)
 
 int Quit::handle_event() 
 {
-	mwindow->stop_playback();
 
 //printf("Quit::handle_event 1 %d\n", mwindow->session->changes_made);
 	if(mwindow->session->changes_made ||
@@ -73,7 +71,7 @@ void Quit::run()
 		error.run_window();
 		return;
 	}
-	
+
 
 //printf("Quit::run 1\n");
 
@@ -95,19 +93,15 @@ void Quit::run()
 			if(mwindow->gui)
 			{
 				mwindow->interrupt_indexes();
-// core dumps when mwindow is killed first
-				mwindow->console->gui->set_done(0);
-				mwindow->level_window->gui->set_done(0);
-				mwindow->video_window->gui->set_done(0);
 // Last command in program
 				mwindow->gui->set_done(0);
 			}
 			break;
-			
+
 		case 1:        // cancel
 			return;
 			break;
-		
+
 		case 2:           // save
 			save->save_before_quit(); 
 			return;

@@ -130,9 +130,12 @@ int RecordMonitor::fix_size(int &w, int &h, int width_given, float aspect_ratio)
 
 float RecordMonitor::get_scale(int w)
 {
-	if(record->get_aspect_ratio() > (float)record->frame_w / record->frame_h)
+	if(mwindow->edl->get_aspect_ratio() > 
+		(float)record->frame_w / record->frame_h)
 	{
-		return (float)w / ((float)record->frame_h * record->get_aspect_ratio());
+		return (float)w / 
+			((float)record->frame_h * 
+			mwindow->edl->get_aspect_ratio());
 	}
 	else
 	{

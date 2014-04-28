@@ -1,4 +1,3 @@
-#include "console.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -9,7 +8,6 @@
 #include "messages.h"
 #include "module.h"
 #include "plugin.h"
-#include "pluginbuffer.h"
 #include "pluginpopup.h"
 #include "pluginset.h"
 #include "pluginserver.h"
@@ -53,18 +51,13 @@ Plugin::Plugin(EDL *edl, PluginSet *plugin_set, char *title)
 
 Plugin::~Plugin()
 {
-//printf("Plugin::~Plugin 1 %p %p\n", keyframes, keyframes->last);
 	while(keyframes->last) delete keyframes->last;
-//printf("Plugin::~Plugin 2\n");
 	delete keyframes;
-//printf("Plugin::~Plugin 3\n");
 }
 
 Edit& Plugin::operator=(Edit& edit)
 {
-//printf("Plugin::operator= called\n");
 	copy_from(&edit);
-//printf("Plugin::operator= 2\n");
 	return *this;
 }
 
@@ -86,7 +79,6 @@ int Plugin::operator==(Edit& that)
 
 int Plugin::silence()
 {
-//printf("Plugin::silence 1 %p %d\n", this, plugin_type);
 	if(plugin_type != PLUGIN_NONE) 
 		return 0;
 	else
@@ -113,6 +105,7 @@ void Plugin::copy_from(Edit *edit)
 	this->out = plugin->out;
 	this->show = plugin->show;
 	this->on = plugin->on;
+// Should reconfigure this based on where the first track is now.
 	this->shared_location = plugin->shared_location;
 	strcpy(this->title, plugin->title);
 
@@ -163,11 +156,17 @@ int Plugin::identical(Plugin *that)
 			((KeyFrame*)that->keyframes->default_auto)));
 }
 
-// FIXME
-int Plugin::get_plugin_number()
+
+void Plugin::change_plugin(char *title, 
+		SharedLocation *shared_location, 
+		int plugin_type)
 {
-	return 0;
+	strcpy(this->title, title);
+	this->shared_location = *shared_location;
+	this->plugin_type = plugin_type;
 }
+
+
 
 KeyFrame* Plugin::get_prev_keyframe(long position)
 {
@@ -512,265 +511,3 @@ void Plugin::dump()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Plugin::Plugin(MWindow *mwindow, Module *module, int plugin_number)
- : Edit((EDL*)0, (Edits*)0)
-{
-printf("Plugin::Plugin(MWindow *mwindow, Module *module, int plugin_number)\n");
-	this->mwindow = mwindow;
-	this->plugin_number = plugin_number;
-	this->module = module;
-//	plugin_server = 0;
-	in = out = 0;
-	on = 1;
-	show = 1;
-	plugin_type = 0;
-//	sprintf(plugin_title, default_title());
-	plugin_popup = 0;
-	show_title = 0;
-	show_toggle = 0;
-	on_toggle = 0;
-	on_title = 0;
-//	total_input_buffers = 0;
-//	new_total_input_buffers = 0;
-}
-
-char* Plugin::default_title()
-{
-	return "Plugin";
-}
-
-int Plugin::update_derived()
-{
-//	plugin_popup->update(in, out, plugin_title);
-}
-
-int Plugin::update_display()
-{
-	if(mwindow->gui)
-	{
-//		plugin_popup->update(in, out, plugin_title);
-//		show_toggle->update(show);
-//		on_toggle->update(on);
-	}
-}
-
-int Plugin::swap_modules(int number1, int number2)
-{
-// 	if(shared_plugin_location.module == number1) shared_plugin_location.module == number2;
-// 	else
-// 	if(shared_plugin_location.module == number2) shared_plugin_location.module == number1;
-// 
-// 	if(shared_module_location.module == number1) shared_module_location.module == number2;
-// 	else
-// 	if(shared_module_location.module == number2) shared_module_location.module == number1;
-}
-
-int Plugin::set_show_derived(int value)
-{
-	if(show_toggle) show_toggle->update(value);
-}
-
-int Plugin::set_string()
-{
-// 	if(plugin_server)
-// 	{
-// 		if(use_gui())
-// 		{
-// 			char new_string[1024];
-// 			sprintf(new_string, "%s: %s\n", get_module_title(), plugin_title);
-// 			plugin_server->set_string(new_string);
-// 		}
-// 	}
-}
-
-char* Plugin::get_module_title()
-{
-	return module->title;
-}
-
-int Plugin::resize_plugin(int x, int y)
-{
-	if(plugin_popup) plugin_popup->reposition_window(x, y);
-	if(show_toggle) show_toggle->reposition_window(x + 10, y + 23);
-	if(show_title) show_title->reposition_window(x + 30, y + 25);
-	if(on_toggle) on_toggle->reposition_window(x + 60, y + 23);
-	if(on_title) on_title->reposition_window(x + 80, y + 25);
-}
-
-
-
-
-// ======================================= radial
-
-PluginShowToggle::PluginShowToggle(Plugin *plugin, Console *console, int x, int y)
- : BC_Radial(x, y, plugin->show)
-{
-	this->console = console;
-	this->plugin = plugin;
-}
-
-int PluginShowToggle::handle_event()
-{
-	if(shift_down())
-	{
-		int total_selected = console->toggles_selected(0, 1, 0);
-
-		if(total_selected == 0)
-		{
-// nothing previously selected
-			console->select_all_toggles(0, 1, 0);
-		}
-		else
-		if(total_selected == 1)
-		{
-			if(plugin->show)
-			{
-// this patch was previously the only one on
-				console->select_all_toggles(0, 1, 0);
-			}
-			else
-			{
-// another patch was previously the only one on
-				console->deselect_all_toggles(0, 1, 0);
-				plugin->show = 1;
-			}
-		}
-		else
-		if(total_selected > 1)
-		{
-// other patches were previously on
-			console->deselect_all_toggles(0, 1, 0);
-			plugin->show = 1;
-		}
-		
-		update(plugin->show);
-	}
-	else
-	{
-		if(get_value() != plugin->show)
-		{
-			plugin->show = get_value();
-//			if(plugin->plugin_server)
-//			{
-//				if(get_value()) plugin->show_gui();
-//				else plugin->hide_gui();
-//			}
-		}
-	}
-
-	console->button_down = 1;
-	console->new_status = get_value();
-	return 1;
-}
-
-int PluginShowToggle::cursor_moved_over()
-{
-	if(console->button_down && console->new_status != get_value())
-	{
-		update(console->new_status);
-		plugin->show = get_value();
-
-// 		if(plugin->plugin_server && console->gui)
-// 		{
-// 			if(get_value()) plugin->show_gui();
-// 			else plugin->hide_gui();
-// 		}
-	}
-}
-
-int PluginShowToggle::button_release()
-{
-	console->button_down = 0;
-}
-
-PluginOnToggle::PluginOnToggle(Plugin *plugin, Console *console, int x, int y)
- : BC_Radial(x, y, plugin->show)
-{
-	this->console = console;
-	this->plugin = plugin;
-}
-
-int PluginOnToggle::handle_event()
-{
-	if(shift_down())
-	{
-		int total_selected = console->toggles_selected(1, 0, 0);
-
-		if(total_selected == 0)
-		{
-// nothing previously selected
-			console->select_all_toggles(1, 0, 0);
-		}
-		else
-		if(total_selected == 1)
-		{
-			if(plugin->on)
-			{
-// this patch was previously the only one on
-				console->select_all_toggles(1, 0, 0);
-			}
-			else
-			{
-// another patch was previously the only one on
-				console->deselect_all_toggles(1, 0, 0);
-				plugin->on = 1;
-			}
-		}
-		else
-		if(total_selected > 1)
-		{
-// other patches were previously on
-			console->deselect_all_toggles(1, 0, 0);
-			plugin->on = 1;
-		}
-
-		update(plugin->on);
-	}
-	else
-	{
-		if(/*plugin->plugin_server && */get_value() != plugin->on)
-		{
-			plugin->on = get_value();
-		}
-	}
-
-	console->button_down = 1;
-	console->reconfigure_trigger = 1;
-	console->new_status = get_value();
-	return 0;
-}
-
-int PluginOnToggle::cursor_moved_over()
-{
-	if(console->button_down && console->new_status != get_value())
-	{
-		update(console->new_status);
-		plugin->on = get_value();
-	}
-}
-
-int PluginOnToggle::button_release()
-{
-	console->button_down = 0;
-}

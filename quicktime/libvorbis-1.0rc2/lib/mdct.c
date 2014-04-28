@@ -12,7 +12,7 @@
 
  function: normalized modified discrete cosine transform
            power of two length transform only [64 <= n ]
- last mod: $Id: mdct.c,v 1.1 2002/05/07 09:16:52 myrina Exp $
+ last mod: $Id: mdct.c,v 1.1.1.1 2002/06/21 12:35:23 myrina Exp $
 
  Original algorithm adapted long ago from _The use of multirate filter
  banks for coding of high quality digital audio_, by T. Sporer,

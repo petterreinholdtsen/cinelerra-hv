@@ -2,34 +2,10 @@
 #include "burnwindow.h"
 
 
-BurnThread::BurnThread(BurnMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-BurnThread::~BurnThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void BurnThread::run()
-{
-	BC_DisplayInfo info;
-	window = new BurnWindow(client, 
-		info.get_abs_cursor_x() - 105, 
-		info.get_abs_cursor_y() - 100);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
+
+
+PLUGIN_THREAD_OBJECT(BurnMain, BurnThread, BurnWindow)
 
 
 

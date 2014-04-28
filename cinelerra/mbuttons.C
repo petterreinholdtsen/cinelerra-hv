@@ -65,89 +65,6 @@ int MButtons::resize_event()
 	flash();
 }
 
-int MButtons::flip_vertical(int w, int h)
-{
-	if(mwindow->session->tracks_vertical)
-	{
-		int x = 3, y = 3;
-		reposition_window(0, 
-			mwindow->gui->menu_h(), 
-			BUTTONBARWIDTH, 
-			h - mwindow->gui->menu_h() - 24);
-		
-		transport->flip_vertical(mwindow->session->tracks_vertical, x, y);
-
-		x_title->reposition_window(x + 3, y); 
-		y += x_title->get_h();
-		expand_x_button->reposition_window(x, y);
-		zoom_x_button->reposition_window(x + 20, y); 
-		y += expand_x_button->get_h();
-
-		y_title->reposition_window(x + 3, y); 
-		y += y_title->get_h();
-		expand_y_button->reposition_window(x, y);
-		zoom_y_button->reposition_window(x + 20, y); 
-		y += zoom_y_button->get_h();
-
-		t_title->reposition_window(x + 3, y); 
-		y += t_title->get_h();
-		expand_t_button->reposition_window(x, y);
-		zoom_t_button->reposition_window(x + 20, y); 
-		y += expand_t_button->get_h();
-
-//		fit_button->reposition_window(x, y); 
-//		y += fit_button->get_h() + 5;
-//		label_button->reposition_window(x, y); 
-//		y += label_button->get_h();
-//		cut_button->reposition_window(x, y); 
-//		y += cut_button->get_h();
-//		copy_button->reposition_window(x, y); 
-//		y += copy_button->get_h();
-//		paste_button->reposition_window(x, y); 
-//		y += paste_button->get_h();
-	}
-	else
-	{
-		int x = 3, y = 5;
-		reposition_window(0, mwindow->gui->menu_h(), w, BUTTONBARHEIGHT);
-
-		transport->flip_vertical(mwindow->session->tracks_vertical, x, y);
-
-		x_title->reposition_window(x, y + 1); 
-		x += x_title->get_w();
-		expand_x_button->reposition_window(x, y); 
-		x += expand_x_button->get_w();
-		zoom_x_button->reposition_window(x, y); 
-		x += zoom_x_button->get_w();
-
-		y_title->reposition_window(x, y + 1); 
-		x += y_title->get_w();
-		expand_y_button->reposition_window(x, y); 
-		x += expand_y_button->get_w();
-		zoom_y_button->reposition_window(x, y); 
-		x += zoom_y_button->get_w();
-
-		t_title->reposition_window(x, y + 1); 
-		x += t_title->get_w();
-		expand_t_button->reposition_window(x, y); 
-		x += expand_t_button->get_w();
-		zoom_t_button->reposition_window(x, y); 
-		x += zoom_t_button->get_w();
-
-//		fit_button->reposition_window(x, y); 
-//		x += fit_button->get_w() + 5;
-//		label_button->reposition_window(x, y); 
-//		x += label_button->get_w();
-//		cut_button->reposition_window(x, y); 
-//		x += cut_button->get_w();
-//		copy_button->reposition_window(x, y); 
-//		x += copy_button->get_w();
-//		paste_button->reposition_window(x, y); 
-//		x += paste_button->get_w();
-	}
-	return 0;
-}
-
 int MButtons::keypress_event()
 {
 	int result = 0;
@@ -206,6 +123,7 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		1,
 		1,
 		0,
+		1,
 		1)
 {
 	this->mwindow = mwindow;

@@ -2,19 +2,16 @@
 #include "auto.h"
 #include "automation.h"
 #include "autos.h"
-#include "console.h"
 #include "floatauto.h"
 #include "floatautos.h"
 #include "intauto.h"
 #include "intautos.h"
 #include "mwindow.h"
 #include "module.h"
-#include "modules.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "patchbay.h"
 #include "plugin.h"
-#include "pluginbuffer.h"
 #include "pluginserver.h"
 #include "renderengine.h"
 #include "tracks.h"
@@ -82,27 +79,27 @@ void VirtualNode::dump()
 
 int VirtualNode::expand(int persistant_plugins, long current_position)
 {
-//printf("VirtualNode::expand 1 %p %p\n", real_module, real_plugin);
+//printf("VirtualNode::expand 1\n");
 	expand_buffers();
 
+//printf("VirtualNode::expand 2\n");
 // module needs to know where the input data for the next process is
 	data_in_input = 1;
 	if(real_module)
 	{
-//printf("VirtualNode::expand 2\n");
-		expand_as_module(persistant_plugins, current_position);
 //printf("VirtualNode::expand 3\n");
+		expand_as_module(persistant_plugins, current_position);
+//printf("VirtualNode::expand 4\n");
 	}
 	else
 	if(real_plugin)
 	{
 // attach to a real plugin for a plugin
 // plugin always takes data from input to output
-//printf("VirtualNode::expand 4 %s\n", real_plugin->title);
-		expand_as_plugin(persistant_plugins);
 //printf("VirtualNode::expand 5\n");
-	}
+		expand_as_plugin(persistant_plugins);
 //printf("VirtualNode::expand 6\n");
+	}
 
 	return 0;
 }
@@ -181,7 +178,6 @@ int VirtualNode::expand_as_plugin(int duplicate)
 {
 	plugin_type = real_plugin->plugin_type;
 
-// printf("VirtualNode::expand_as_plugin 1 %d\n", plugin_type);
 	if(plugin_type == PLUGIN_SHAREDPLUGIN)
 	{
 // Attached to a shared plugin.
@@ -194,12 +190,9 @@ int VirtualNode::expand_as_plugin(int duplicate)
 
 
 		real_module = vconsole->module_number(real_module_number);
-
-
-// printf("VirtualNode::expand_as_plugin 1 %p %d %d\n", real_module, real_module_number, real_plugin_number);
-// printf("VirtualNode::expand_as_plugin 1 %d\n", real_module->total_attachments);
-
-		if(real_plugin_number < real_module->total_attachments)
+// module references are absolute so may get the wrong data type track.
+		if(real_module &&
+			real_plugin_number < real_module->total_attachments)
 		{
 			attachment = real_module->attachments[real_plugin_number];
 // Attachment is NULL if off
@@ -215,9 +208,7 @@ int VirtualNode::expand_as_plugin(int duplicate)
 		}
 		else
 			real_plugin = 0;
-// printf("VirtualNode::expand_as_plugin 1\n");
 	}
-// printf("VirtualNode::expand_as_plugin 2\n");
 
 
 
@@ -229,7 +220,6 @@ int VirtualNode::expand_as_plugin(int duplicate)
 // Get plugin server
 		Module *module = vconsole->module_of(track);
 		attachment = module->attachment_of(real_plugin);
-//printf("VirtualNode::expand_as_plugin %p %p %p\n", module, real_plugin, attachment);
 	}
 
 
@@ -252,41 +242,7 @@ int VirtualNode::expand_as_plugin(int duplicate)
 
 
 
-//printf("VirtualNode::expand_as_plugin 3\n");
 	return 0;
-}
-
-int VirtualNode::expand_as_transition(int duplicate)
-{
-	plugin_type = real_transition->plugin_type;
-
-	if(plugin_type == 2)
-	{
-// Aattached to a shared plugin.
-// Get the real plugin it's attached to.
-// Redirect the real_plugin to the shared plugin.
-		int real_module_number = real_transition->shared_location.module;
-		int real_plugin_number = real_transition->shared_location.plugin;
-		Module *real_module = /* mwindow->console->modules->module_number(real_module_number) */ 0;
-		real_plugin = real_module->plugins[real_plugin_number];
-
-// Real plugin not on then null it.
-		if(!real_plugin->on) real_plugin = 0;
-
-//		if(real_plugin)
-//			plugin_buffer_number = real_plugin->attach_virtual_plugin(this);
-	}
-	else
-	{
-		if(!real_transition->on) real_transition = 0;
-
-// Add to the real plugin's list of virtual plugins for configuration updates
-// and plugin_server initializations.
-// Input and output are taken care of when the parent module creates this plugin.
-// Get number for passing to render.
-//		if(real_transition)
-//			plugin_buffer_number = real_transition->attach_virtual_plugin(this);
-	}
 }
 
 int VirtualNode::attach_virtual_module(Plugin *plugin, 
@@ -324,7 +280,6 @@ int VirtualNode::attach_virtual_plugin(Plugin *plugin,
 	int duplicate, 
 	long current_position)
 {
-//printf("VirtualNode::attach_virtual_plugin 1\n");
 	if(plugin->on)
 	{
 // working data is now in output
@@ -333,7 +288,6 @@ int VirtualNode::attach_virtual_plugin(Plugin *plugin,
 		VirtualNode *virtual_plugin = create_plugin(plugin);
 		vplugins.append(virtual_plugin);
 		virtual_plugin->expand(duplicate, current_position);
-//printf("VirtualNode::attach_virtual_plugin 5\n");
 	}
 	return 0;
 }
@@ -690,8 +644,10 @@ void VirtualNode::get_pan_automation(double &slope,
 // Two distinct automation points within range
 		if(next_keyframe->position > prev_keyframe->position)
 		{
-			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / slope_len;
-			intercept = ((double)input_position - prev_keyframe->position) * slope + prev_keyframe->values[channel];
+			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / 
+				((double)next_keyframe->position - prev_keyframe->position);
+			intercept = ((double)input_position - prev_keyframe->position) * slope + 
+				prev_keyframe->values[channel];
 
 			if(next_keyframe->position < input_position + slope_len)
 				slope_len = next_keyframe->position - input_position;
@@ -701,7 +657,6 @@ void VirtualNode::get_pan_automation(double &slope,
 		{
 			slope = 0;
 			intercept = prev_keyframe->values[channel];
-//printf("VirtualNode::get_pan_automation %d %f\n", channel, intercept);
 		}
 	}
 	else
@@ -709,11 +664,13 @@ void VirtualNode::get_pan_automation(double &slope,
 // Two distinct automation points within range
 		if(next_keyframe->position < prev_keyframe->position)
 		{
-			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / slope_len;
-			intercept = ((double)prev_keyframe->position - input_position) * slope + prev_keyframe->values[channel];
+			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / 
+				((double)next_keyframe->position - prev_keyframe->position);
+			intercept = ((double)input_position - prev_keyframe->position) * slope + 
+				prev_keyframe->values[channel];
 
-			if(prev_keyframe->position > input_position - slope_len)
-				slope_len = input_position - prev_keyframe->position;
+			if(next_keyframe->position > input_position - slope_len)
+				slope_len = input_position - next_keyframe->position;
 		}
 		else
 // One automation point within range
@@ -780,3 +737,7 @@ int VirtualNode::advance_slope(Autos *autos)
 				slope_position, 
 				reverse);
 }
+
+
+
+

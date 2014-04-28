@@ -56,17 +56,19 @@ PluginPopupAttach::PluginPopupAttach(MWindow *mwindow, PluginPopup *popup)
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
-//	dialog_thread = new PluginDialogThread(plugin->mwindow, plugin, 0, PROGRAM_NAME ": Plugin");
+	dialog_thread = new PluginDialogThread(mwindow);
 }
 
 PluginPopupAttach::~PluginPopupAttach()
 {
-//	delete dialog_thread;
+	delete dialog_thread;
 }
 
 int PluginPopupAttach::handle_event()
 {
-//	dialog_thread->start();
+	dialog_thread->start_window(popup->plugin->track,
+		popup->plugin, 
+		PROGRAM_NAME ": Attach Effect");
 }
 
 
@@ -88,7 +90,7 @@ PluginPopupDetach::~PluginPopupDetach()
 
 int PluginPopupDetach::handle_event()
 {
-	mwindow->hide_plugin(popup->plugin);
+	mwindow->hide_plugin(popup->plugin, 1);
 	mwindow->undo->update_undo_before("detach effect", LOAD_ALL);
 	popup->plugin->track->detach_effect(popup->plugin);
 	mwindow->save_backup();

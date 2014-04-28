@@ -49,29 +49,4 @@ Edit* VEdits::append_new_edit()
 	return (Edit*)current;
 }
 
-int VEdits::clone_derived(Edit* new_edit, Edit* old_edit)
-{
-	return 0;
-}
-
-int VEdits::paste_edit(long start, 
-				long end, 
-				long startsource, 
-				long length, 
-				int layer, 
-				int center_x, 
-				int center_y, 
-				int center_z, 
-				Asset *asset)
-{
-	VEdit* current = (VEdit*)paste_edit_base(start, end, startsource, length, asset);
-
-	current->channel = layer;
-	current->center_x = center_x;
-	current->center_y = center_y;
-	current->center_z = center_z;
-
-	optimize();
-}
-
 

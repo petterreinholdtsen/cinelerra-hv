@@ -42,7 +42,6 @@ PrevLabel::~PrevLabel() {}
 
 int PrevLabel::handle_event()
 {
-	mwindow->stop_playback(1);
 	mwindow->prev_label();
 	return 1;
 }
@@ -61,7 +60,6 @@ NextLabel::~NextLabel() {}
 
 int NextLabel::handle_event()
 {
-	mwindow->stop_playback(1);
 	mwindow->next_label();
 	return 1;
 }

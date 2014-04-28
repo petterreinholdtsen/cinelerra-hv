@@ -2,18 +2,14 @@
 #include "cache.h"
 #include "clip.h"
 #include "commonrender.h"
-#include "console.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
-#include "mwindow.h"
-#include "modules.h"
 #include "overlayframe.h"
 #include "patch.h"
-#include "pluginbuffer.h"
 #include "renderengine.h"
 #include "sharedlocation.h"
 #include "transition.h"
@@ -29,10 +25,10 @@
 
 VModule::VModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
+	PluginArray *plugin_array,
 	Track *track)
- : Module(renderengine, commonrender, track)
+ : Module(renderengine, commonrender, plugin_array, track)
 {
-//printf("VModule::VModule 1\n");
 	data_type = TRACK_VIDEO;
 	input_temp = transition_temp = 0;
 	overlayer = 0;
@@ -40,7 +36,6 @@ VModule::VModule(RenderEngine *renderengine,
 
 VModule::~VModule()
 {
-//printf("VModule::~VModule 1\n");
 	if(input_temp) 
 	{
 		delete input_temp;
@@ -318,253 +313,13 @@ int VModule::render(VFrame *output,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void VModule::create_objects()
 {
 	Module::create_objects();
 }
 
-// REMOVE
-int VModule::create_plugins(int &x, int &y)
-{
-	return 0;
-}
-
-// REMOVE
-int VModule::flip_plugins(int &x, int &y)
-{
-	return 0;
-}
-
-// REMOVE
-int VModule::set_pixel(int pixel)
-{
-	return 0;
-}
 
 
 
 
-
-
-
-
-// ================================ file operations
-
-int VModule::save(FileXML *xml)
-{
-	return 0;
-}
-
-int VModule::load(FileXML *xml, int track_offset)
-{
-	return 0;
-}
-
-int VModule::set_title(char *text)
-{
-	return 0;
-}
-
-int VModule::flip_vertical(int pixel) { if(gui) gui->flip_vertical(pixel); 	return 0;
-}
-
-int VModule::change_x(int new_pixel) { if(gui) gui->reposition_window(new_pixel, gui->get_x()); 	return 0;
-}
-
-int VModule::change_y(int new_pixel) { if(gui) gui->reposition_window(gui->get_x(), new_pixel); 	return 0;
-}
-
-int VModule::set_mute(int value)
-{
-	mute = value;
-	if(gui) gui->mute_toggle->update(value);
-	return 0;
-}
-
-
-
-
-VModuleGUI::VModuleGUI(MWindow *mwindow, VModule *module, int x, int y, int w, int h)
- : BC_SubWindow(x, y, w, h, MEGREY)
-{
-	this->mwindow = mwindow;
-	this->console = mwindow->console;
-	this->module = module;
-}
-
-VModuleGUI::~VModuleGUI()
-{
-	delete title;
-	delete fade_slider;
-}
-
-int VModuleGUI::create_objects()
-{
-	return 0;
-}
-
-int VModuleGUI::flip_vertical(int pixel)
-{
-	return 0;
-}
-
-
-VModuleTitle::VModuleTitle(VModule *module, Patch *patch, int x, int y)
- : BC_TextBox(x, y, 100, 1, patch->title, 0)
-{
-	this->module = module;
-	this->patch = patch;
-}
-
-int VModuleTitle::handle_event()
-{
-	patch->set_title(get_text());
-	strcpy(module->title, get_text());
-	
-	for(int i = 0; i < PLUGINS; i++)
-	{
-		((VPlugin*)module->plugins[i])->set_string();
-	}
-	return 0;
-}
-
-VModuleMute::VModuleMute(Console *console, VModule *module, int x, int y)
- : BC_CheckBox(x, y, 0)
-{
-	this->console = console;
-	this->module = module;
-}
-
-int VModuleMute::handle_event()
-{
-	// value is changed before this
-	console->button_down = 1;
-	console->new_status = get_value();
-	module->mute = get_value();
-	return 0;
-}
-
-int VModuleMute::cursor_moved_over()
-{
-	if(console->button_down && console->new_status != get_value())
-	{
-		update(console->new_status);
-		module->mute = get_value();
-	}
-	return 0;
-}
-
-int VModuleMute::button_release()
-{
-	console->button_down = 0;
-	return 0;
-}
-
-VModuleFade::VModuleFade(VModule *module, int x, int y, int w, int h)
- : BC_ISlider(x, 
- 	y, 
-	1, 
-	200, 
-	200, 
-	0, 
-	100, 
-	100)
-{
-	this->module = module;
-}
-
-VModuleFade::~VModuleFade()
-{
-}
-
-int VModuleFade::handle_event()
-{
-		// value is changed before this
-	module->fade = (float)get_value();
-//printf("VModuleFade::handle_event %f\n", module->fade);
-	return 0;
-}
-
-
-VModuleMode::VModuleMode(Console *console, VModule *module, int x, int y)
- : BC_PopupMenu(x, y, 80, mode_to_text(module->mode), 1)
-{
-	this->module = module;
-	this->console = console;
-}
-
-VModuleMode::~VModuleMode()
-{
-}
-
-int VModuleMode::handle_event()
-{
-	return 0;
-}
-
-int VModuleMode::add_items()         // add initial items
-{
-	return 0;
-}
-
-
-char* VModuleMode::mode_to_text(int mode)
-{
-	return 0;
-}
-
-VModuleModeItem::VModuleModeItem(VModuleMode *popup, char *text, int mode)
- : BC_MenuItem(text)
-{
-	this->popup = popup;
-	this->mode = mode;
-}
-
-VModuleModeItem::~VModuleModeItem()
-{
-}
-
-int VModuleModeItem::handle_event()
-{
-	popup->set_text(get_text());
-	popup->module->mode = mode;
-	return 0;
-}
 

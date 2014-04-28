@@ -54,6 +54,7 @@ public:
 
 	MWindow *mwindow;
 	PluginPopup *popup;
+	PluginDialogThread *dialog_thread;
 };
 
 class PluginPopupDetach : public BC_MenuItem

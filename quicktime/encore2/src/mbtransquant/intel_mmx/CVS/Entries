@@ -1,10 +1,10 @@
-/fdct_mmx.asm/1.2/Fri Nov 30 09:49:41 2001//
-/idct_mmx.asm/1.2/Fri Nov 30 09:49:41 2001//
-/idct_sse.asm/1.2/Fri Nov 30 09:49:41 2001//
-/quant_mmx.asm/1.2/Fri Nov 30 09:49:41 2001//
-/quantize_mmx.c/1.2/Fri Nov 30 09:49:41 2001//
-/text_fdct_mmx.c/1.1/Fri Nov 30 01:09:03 2001//
-/text_idct_mmx.c/1.1/Fri Nov 30 01:09:03 2001//
-/transfer_mmx.asm/1.2/Fri Nov 30 09:49:41 2001//
-/transferidct_mmx.c/1.1/Fri Nov 30 01:09:03 2001//
+/fdct_mmx.asm/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/idct_mmx.asm/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/idct_sse.asm/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/quant_mmx.asm/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/quantize_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/text_fdct_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/text_idct_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/transfer_mmx.asm/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/transferidct_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 D

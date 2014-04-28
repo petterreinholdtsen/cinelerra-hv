@@ -19,7 +19,7 @@ public:
 	float get_speed();
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range();
+	void set_playback_range(EDL *edl);
 	int single_frame();
 	EDL* get_edl();
 

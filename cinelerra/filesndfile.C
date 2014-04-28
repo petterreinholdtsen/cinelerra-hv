@@ -325,7 +325,7 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
  	parent_window->get_abs_cursor_x(),
  	parent_window->get_abs_cursor_y(),
-	210,
+	250,
 	200)
 {
 	this->parent_window = parent_window;
@@ -360,9 +360,15 @@ int SndFileConfig::create_objects()
 	x = 10;
 	if(asset->format != FILE_AU)
 		add_subwindow(new BC_CheckBox(x, y, &asset->dither, "Dither"));
-	x += 100;
+	y += 30;
 	if(asset->format == FILE_PCM)
+	{
 		add_subwindow(new BC_CheckBox(x, y, &asset->signed_, "Signed"));
+		y += 35;
+		add_subwindow(new BC_Title(x, y, "Byte order:"));
+		add_subwindow(hilo = new SndFileHILO(this, x + 100, y));
+		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
+	}
 	add_subwindow(new BC_OKButton(this));
 	return 0;
 }
@@ -373,5 +379,33 @@ int SndFileConfig::close_event()
 	return 1;
 }
 
+
+
+SndFileHILO::SndFileHILO(SndFileConfig *gui, int x, int y)
+ : BC_Radial(x, y, gui->asset->byte_order == 0, "Hi Lo")
+{
+	this->gui = gui;
+}
+int SndFileHILO::handle_event()
+{
+	gui->asset->byte_order = 0;
+	gui->lohi->update(0);
+	return 1;
+}
+
+
+
+
+SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
+ : BC_Radial(x, y, gui->asset->byte_order == 1, "Lo Hi")
+{
+	this->gui = gui;
+}
+int SndFileLOHI::handle_event()
+{
+	gui->asset->byte_order = 1;
+	gui->hilo->update(0);
+	return 1;
+}
 
 

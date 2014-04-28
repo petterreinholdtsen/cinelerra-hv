@@ -135,11 +135,15 @@ public:
 class ViewBehaviourText : public BC_PopupMenu
 {
 public:
-	ViewBehaviourText(int x, int y, char *text, PreferencesWindow *pwindow, int *output);
+	ViewBehaviourText(int x, 
+		int y, 
+		char *text, 
+		PreferencesWindow *pwindow, 
+		int *output);
 	~ViewBehaviourText();
 
 	int handle_event();  // user copies text to value here
-	int add_items();         // add initial items
+	int create_objects();         // add initial items
 	InterfacePrefs *tfwindow;
 	int *output;
 };

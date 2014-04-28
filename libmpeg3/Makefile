@@ -25,8 +25,9 @@ endif
 ifeq ($(OBJDIR), i686)
   USE_MMX = 1
   ifneq ($(HAVE_CFLAGS), yes)
-    CFLAGS := -O2 -D_FILE_OFFSET_BITS=64 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+    CFLAGS := -O2 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
   endif
+  CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
 endif
 
 

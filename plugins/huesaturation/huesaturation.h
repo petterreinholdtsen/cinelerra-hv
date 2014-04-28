@@ -35,6 +35,7 @@ public:
 	int save_defaults();
 	int save_data(char *text);
 	int read_data(char *text);
+	void update_gui();
 
 // parameters needed
 	int reconfigure();    // Rebuild tables

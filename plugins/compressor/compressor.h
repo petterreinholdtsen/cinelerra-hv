@@ -110,16 +110,7 @@ public:
 	CompressorEffect *plugin;
 };
 
-class CompressorThread : public Thread
-{
-public:
-	CompressorThread(CompressorEffect *plugin);
-	~CompressorThread();
-	void run();
-	Mutex completion;
-	CompressorWindow *window;
-	CompressorEffect *plugin;
-};
+PLUGIN_THREAD_HEADER(CompressorEffect, CompressorThread, CompressorWindow)
 
 
 typedef struct
@@ -132,6 +123,14 @@ class CompressorConfig
 {
 public:
 	CompressorConfig();
+
+	void copy_from(CompressorConfig &that);
+	int equivalent(CompressorConfig &that);
+	void interpolate(CompressorConfig &prev, 
+		CompressorConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame);
 
 	int total_points();
 	void remove_point(int number);
@@ -159,27 +158,23 @@ public:
 	CompressorEffect(PluginServer *server);
 	~CompressorEffect();
 
-	VFrame* new_picon();
 	char* plugin_title();
 	int is_multichannel();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_realtime(long size, double **input_ptr, double **output_ptr);
-	int show_gui();
-	void raise_window();
-	int set_string();
 
 
 
 
 	int load_defaults();
 	int save_defaults();
-	void load_configuration();
 	void reset();
 	void update_gui();
 	void delete_dsp();
 
+	PLUGIN_CLASS_MEMBERS(CompressorConfig, CompressorThread)
 
 	double **input_buffer;
 	long input_size;
@@ -194,12 +189,6 @@ public:
 	long coefs_allocated;
 	long last_peak_age;
 	double last_peak;
-
-
-
-	Defaults *defaults;
-	CompressorThread *thread;
-	CompressorConfig config;
 };
 
 

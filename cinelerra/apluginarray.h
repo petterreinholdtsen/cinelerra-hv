@@ -4,7 +4,6 @@
 #include "amodule.inc"
 #include "edl.inc"
 #include "pluginarray.h"
-#include "pluginbuffer.inc"
 #include "pluginserver.inc"
 #include "recordableatracks.inc"
 #include "track.inc"
@@ -29,7 +28,6 @@ public:
 	RecordableATracks *tracks;
 // Pointers to plugin buffers for plugin output
 	double **buffer;         // Buffer for processing
-	PluginBuffer **shared_buffer; // Buffer for reading from file
 // Pointer to file output
 	double **output_buffer;
 	double **realtime_buffers;

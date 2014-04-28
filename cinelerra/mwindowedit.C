@@ -4,7 +4,6 @@
 #include "cache.h"
 #include "clip.h"
 #include "clipedit.h"
-#include "console.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "cwindow.h"
@@ -233,7 +232,7 @@ int MWindow::copy(double start, double end)
 		end, 
 		0,
 		&file, 
-		this->plugindb,
+		plugindb,
 		"",
 		1);
 //printf("MWindow::copy 1\n");
@@ -1054,7 +1053,10 @@ int MWindow::paste_automation()
 	edl->tracks->paste_automation(edl->local_session->get_selectionstart(), 
 		&file,
 		0); 
+	save_backup();
 	undo->update_undo_after(); 
+
+
 	gui->canvas->draw_overlays();
 	gui->canvas->flash();
 	sync_parameters(CHANGE_PARAMS);
@@ -1062,7 +1064,6 @@ int MWindow::paste_automation()
 	cwindow->update(1, 0, 0);
 
 	delete [] string;
-	save_backup();
 	return 0;
 }
 
@@ -1226,13 +1227,15 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 
 //printf("MWindow::paste_edls 1 %d\n", new_edl->assets->total());
-// Prepare index files
-		for(Asset *new_asset = new_edl->assets->first;
+// Add assets and prepare index files
+		edl->update_assets(new_edl);
+		for(Asset *new_asset = edl->assets->first;
 			new_asset;
 			new_asset = new_asset->next)
 		{
 			mainindexes->add_next_asset(new_asset);
 		}
+
 
 // Get starting point of insertion.  Need this to paste labels.
 		switch(load_mode)
@@ -1339,7 +1342,6 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 //printf("MWindow::paste_edls 2\n");
 	update_project(load_mode);
 
-//printf("MWindow::paste_edls 2\n");
 
 // Start examining next batch of index files
 	mainindexes->start_build();
@@ -1594,22 +1596,24 @@ void MWindow::to_clip()
 		end = edl->tracks->total_length();
 	}
 
+// Don't copy all since we don't want the clips twice.
 	edl->copy(start, 
 		end, 
-		1,
+		0,
 		&file,
 		plugindb,
 		"",
 		1);
 
+//printf("MWindow::to_clip 1 %s\n", edl->local_session->clip_title);
+
+//file.dump();
 
 
-
-
-//printf("VWindowEditing::to_clip 1 %d\n", edl->assets->total());
 	EDL *new_edl = new EDL(edl);
 	new_edl->create_objects();
 	new_edl->load_xml(plugindb, &file, LOAD_ALL);
+	sprintf(new_edl->local_session->clip_title, "Clip %d\n", session->clip_number++);
 
 //printf("VWindowEditing::to_clip 2 %d\n", edl->assets->total());
 	awindow->clip_edit->create_clip(new_edl);
@@ -1781,6 +1785,7 @@ void MWindow::select_point(double position)
 // Que the CWindow
 	cwindow->update(1, 0, 0, 0, 1);
 	update_plugin_guis();
+	gui->patchbay->update();
 	gui->cursor->hide();
 	gui->cursor->draw();
 	gui->mainclock->update(edl->local_session->selectionstart);
@@ -1789,22 +1794,6 @@ void MWindow::select_point(double position)
 	gui->flush();
 }
 
-// REMOVE
-int MWindow::delete_project(int flash)
-{
-//	if(gui) tracks->hide_overlays(0);
-//	tracks->delete_all(flash);
-// 	patches->delete_all();
-// 	timebar->delete_project();
-// 	console->delete_project();
-// 	assets->delete_all();
-// 	if(gui)
-// 	{
-// 		gui->trackscroll->update();
-// 		gui->samplescroll->set_position();
-// 		tracks->show_overlays(0); // don't flash since this is an intermediate step
-// 	}
-}
 
 
 void MWindow::sync_parameters(int change_type)

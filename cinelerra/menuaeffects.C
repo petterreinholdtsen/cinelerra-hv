@@ -51,7 +51,7 @@ int MenuAEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
 	if(!file.supports_audio(mwindow->plugindb, string)) sprintf(string, WAV_NAME);
 	asset->format = file.strtoformat(mwindow->plugindb, string);
 //printf("MenuAEffectThread::get_derived_attributes %s\n", string);
-	asset->sample_rate = mwindow->session->sample_rate;
+	asset->sample_rate = mwindow->edl->session->sample_rate;
 	asset->bits = defaults->get("AEFFECTBITS", 16);
 	dither = defaults->get("AEFFECTDITHER", 0);
 	asset->signed_ = defaults->get("AEFFECTSIGNED", 1);

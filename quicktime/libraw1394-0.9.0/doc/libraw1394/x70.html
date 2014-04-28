@@ -1,0 +1,176 @@
+<HTML
+><HEAD
+><TITLE
+>Handles</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.49"><LINK
+REL="HOME"
+TITLE="libraw1394"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Data Structures and Program Flow"
+HREF="general.html"><LINK
+REL="PREVIOUS"
+TITLE="Data Structures and Program Flow"
+HREF="general.html"><LINK
+REL="NEXT"
+TITLE="Ports"
+HREF="x86.html"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>libraw1394: version 0.9</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="general.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Data Structures and Program Flow</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x86.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN70"
+>Handles</A
+></H1
+><P
+>	The handle presented to the application for using libraw1394 is the
+	raw1394handle_t, an opaque data structure (which means you don't need to
+	know its internals).  The handle (and with it a connection to the kernel
+	side of raw1394) is obtained using
+	<TT
+CLASS="FUNCTION"
+>raw1394_new_handle()</TT
+>.  Insufficient permissions to
+	access the kernel driver will result in failure of this function, among
+	other possibilities of failure.
+      </P
+><P
+>	While initializing the handle, a certain order of function calls have to
+	be obeyed or undefined results will occur.  This order reflects the
+	various states of initialization to be done:
+      </P
+><P
+>	<P
+></P
+><OL
+TYPE="1"
+><LI
+><P
+><TT
+CLASS="FUNCTION"
+>raw1394_new_handle()</TT
+></P
+></LI
+><LI
+><P
+><TT
+CLASS="FUNCTION"
+>raw1394_get_port_info()</TT
+></P
+></LI
+><LI
+><P
+><TT
+CLASS="FUNCTION"
+>raw1394_set_port()</TT
+></P
+></LI
+></OL
+>
+      </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="general.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x86.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Data Structures and Program Flow</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="general.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Ports</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

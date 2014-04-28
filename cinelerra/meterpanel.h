@@ -69,7 +69,7 @@ public:
 	MeterMeter(MWindow *mwindow, MeterPanel *panel, int x, int y, int h, int titles);
 	~MeterMeter();
 	
-	int button_release();
+	int button_press_event();
 	
 	MWindow *mwindow;
 	MeterPanel *panel;

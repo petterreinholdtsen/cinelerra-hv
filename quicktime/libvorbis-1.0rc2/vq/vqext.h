@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: prototypes for extermal metrics specific to data type
- last mod: $Id: vqext.h,v 1.1 2002/05/07 09:16:53 myrina Exp $
+ last mod: $Id: vqext.h,v 1.1.1.1 2002/06/21 12:35:23 myrina Exp $
 
  ********************************************************************/
 

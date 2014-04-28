@@ -7,7 +7,6 @@
 #include "filempeg.h"
 #include "guicast.h"
 #include "mwindow.inc"
-#include "pluginbuffer.h"
 #include "pluginserver.h"
 #include "threadfork.h"
 #include "vframe.h"
@@ -306,11 +305,13 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 	switch(driver)
 	{
 		case PLAYBACK_X11:
+			return BC_RGB888;
 			if(asset->vmpeg_cmodel == 0) return BC_YUV420P;
 			if(asset->vmpeg_cmodel == 1) return BC_YUV422P;
 			break;
 		case PLAYBACK_X11_XV:
-			return BC_RGB888;
+			if(asset->vmpeg_cmodel == 0) return BC_YUV420P;
+			if(asset->vmpeg_cmodel == 1) return BC_YUV422P;
 			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:

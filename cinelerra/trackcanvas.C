@@ -110,8 +110,10 @@ int TrackCanvas::create_objects()
 
 void TrackCanvas::resize_event()
 {
+//printf("TrackCanvas::resize_event 1\n");
 	draw(0, 0);
 	flash();
+//printf("TrackCanvas::resize_event 2\n");
 }
 
 int TrackCanvas::keypress_event()
@@ -614,7 +616,7 @@ int TrackCanvas::drag_stop()
 void TrackCanvas::draw(int force, int hide_cursor)
 {
 // Swap pixmap layers
-// printf("TrackCanvas::draw 1\n");
+//printf("TrackCanvas::draw 1\n");
  	if(get_w() != background_pixmap->get_w() ||
  		get_h() != background_pixmap->get_h())
  	{
@@ -622,17 +624,17 @@ void TrackCanvas::draw(int force, int hide_cursor)
  		background_pixmap = new BC_Pixmap(this, get_w(), get_h());
  	}
 
-// printf("TrackCanvas::draw 2\n");
+//printf("TrackCanvas::draw 2\n");
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
-// printf("TrackCanvas::draw 3\n");
+//printf("TrackCanvas::draw 3\n");
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
-// printf("TrackCanvas::draw 4\n");
+//printf("TrackCanvas::draw 4\n");
 	draw_resources(force);
-// printf("TrackCanvas::draw 5\n");
+//printf("TrackCanvas::draw 5\n");
 	draw_overlays();
-// printf("TrackCanvas::draw 6\n");
+//printf("TrackCanvas::draw 6\n");
 }
 
 void TrackCanvas::update_cursor()
@@ -971,10 +973,11 @@ void TrackCanvas::draw_paste_destination()
 					position = mwindow->session->track_highlighted->from_units(
 						mwindow->session->track_highlighted->edits->length());
 
-//printf("draw_paste_destination 1 %f\n", position);
+// Get the x coordinate
 				x = Units::to_long(position * 
 					mwindow->edl->session->sample_rate /
-					mwindow->edl->local_session->zoom_sample);
+					mwindow->edl->local_session->zoom_sample) - 
+					mwindow->edl->local_session->view_start;
 
 				if(dest->data_type == TRACK_AUDIO)
 				{
@@ -1206,7 +1209,7 @@ void TrackCanvas::draw_highlighting()
 						draw_box = 1;
 						get_transition_coords(x, y, w, h);
 					}
-printf("TrackCanvas::draw_highlighting 3\n");
+//printf("TrackCanvas::draw_highlighting 3\n");
 				}
 			}
 			break;
@@ -1238,7 +1241,7 @@ printf("TrackCanvas::draw_highlighting 3\n");
 				else
 				{
 					track_dimensions(mwindow->session->track_highlighted, x, y, w, h);
-					
+
 					if(mwindow->edl->local_session->get_selectionend() > 
 						mwindow->edl->local_session->get_selectionstart())
 					{
@@ -1249,8 +1252,7 @@ printf("TrackCanvas::draw_highlighting 3\n");
 						w = Units::to_long((mwindow->edl->local_session->get_selectionend() - 
 							mwindow->edl->local_session->get_selectionstart()) *
 							mwindow->edl->session->sample_rate / 
-							mwindow->edl->local_session->zoom_sample -
-							mwindow->edl->local_session->view_start);
+							mwindow->edl->local_session->zoom_sample);
 					}
 				}
 //printf("TrackCanvas::draw_highlighting 1\n");
@@ -1260,7 +1262,7 @@ printf("TrackCanvas::draw_highlighting 3\n");
 				{
 					draw_box = 1;
 				}
-//printf("TrackCanvas::draw_highlighting 1\n");
+//printf("TrackCanvas::draw_highlighting 1 %d %d %d %d\n", x, y, w, h);
 			}
 //printf("TrackCanvas::draw_highlighting 2\n");
 			break;
@@ -1417,7 +1419,7 @@ void TrackCanvas::draw_plugins()
 						plugin->plugin_type != PLUGIN_NONE)
 					{
 //printf("TrackCanvas::draw_plugins 4\n");
-						int x = total_x, w = total_w;
+						int x = total_x, w = total_w, left_margin = 5;
 						if(x < 0)
 						{
 							w -= -x;
@@ -1439,8 +1441,22 @@ void TrackCanvas::draw_plugins()
 //printf("TrackCanvas::draw_plugins 6 %d %d\n", plugin->shared_location.module, plugin->shared_location.plugin);
 //plugin->dump();
 						plugin->calculate_title(string);
-//printf("TrackCanvas::draw_plugins 7\n");
-						draw_text(total_x + 10, 
+
+//printf("TrackCanvas::draw_plugins 7 %s\n", string);
+// Truncate string to longest visible in background
+						int len = strlen(string), j;
+						for(j = len; j >= 0; j--)
+						{
+							if(left_margin + get_text_width(MEDIUMFONT_3D, string) > w)
+							{
+								string[j] = 0;
+							}
+							else
+								break;
+						}
+//printf("TrackCanvas::draw_plugins 8 %s\n", string);
+
+						draw_text(total_x + left_margin, 
 							y + get_text_ascent(MEDIUMFONT_3D) + 2, 
 							string,
 							strlen(string),
@@ -1570,15 +1586,15 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		Automation *automation = track->automation;
 
 //printf("TrackCanvas::draw_keyframes 1\n");
-		if(session->auto_conf->fade)
+		if(!result && session->auto_conf->fade)
 		{
-			if(draw) set_color(WHITE);
 			result = do_float_autos(track, 
 				automation->fade_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress, 
+				WHITE);
 			if(result && mwindow->session->current_operation == DRAG_FADE)
 			{
 				rerender = 1;
@@ -1590,15 +1606,17 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-		if(session->auto_conf->czoom)
+//printf("TrackCanvas::draw_keyframes 1 %d\n", result);
+
+		if(!result && session->auto_conf->czoom && automation->czoom_autos)
 		{
-			if(draw) set_color(WHITE);
 			result = do_float_autos(track, 
 				automation->czoom_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress,
+				MEPURPLE);
 			if(result && mwindow->session->current_operation == DRAG_CZOOM)
 			{
 				rerender = 1;
@@ -1610,15 +1628,16 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-		if(session->auto_conf->pzoom)
+//printf("TrackCanvas::draw_keyframes 2 %d\n", result);
+		if(!result && session->auto_conf->pzoom && automation->pzoom_autos)
 		{
-			if(draw) set_color(WHITE);
 			result = do_float_autos(track, 
 				automation->pzoom_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress,
+				PINK);
 			if(result && mwindow->session->current_operation == DRAG_PZOOM)
 			{
 				rerender = 1;
@@ -1630,16 +1649,16 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-//printf("TrackCanvas::draw_keyframes 1 %d\n", result);
+//printf("TrackCanvas::draw_keyframes 3 %d\n", result);
 		if(!result && session->auto_conf->play)
 		{
-			if(draw) set_color(GREEN);
 			result = do_toggle_autos(track, 
 				automation->play_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress,
+				RED);
 			if(result && mwindow->session->current_operation == DRAG_PLAY)
 			{
 				rerender = 1;
@@ -1654,13 +1673,13 @@ int TrackCanvas::do_keyframes(int cursor_x,
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
 		if(!result && session->auto_conf->mute)
 		{
-			if(draw) set_color(WHITE);
 			result = do_toggle_autos(track, 
 				automation->mute_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress,
+				BLUE);
 			if(result && mwindow->session->current_operation == DRAG_MUTE)
 			{
 				rerender = 1;
@@ -1839,8 +1858,8 @@ void TrackCanvas::draw_auto(Auto *current,
 	int x, 
 	int y, 
 	int center_pixel, 
-	int zoom_track, 
-	int show_caption)
+	int zoom_track,
+	int color)
 {
 	int x1, y1, x2, y2;
 	char string[BCTEXTLEN];
@@ -1855,22 +1874,77 @@ void TrackCanvas::draw_auto(Auto *current,
 
 	set_color(BLACK);
 	draw_box(x1 + 1, y1 + 1, x2 - x1, y2 - y1);
-	set_color(WHITE);
+	set_color(color);
 	draw_box(x1, y1, x2 - x1, y2 - y1);
-//printf("TrackCanvas::draw_auto %d %d\n", x, y);
+}
 
-	if(show_caption)
-	{
-		current->get_caption(string);
-		if(y > 0)
-		{
-			draw_text(x + 5, center_pixel + y - 5, string);
-		}
-		else
-		{
-			draw_text(x + 5, center_pixel + y + 20, string);
-		}
-	}
+void TrackCanvas::draw_floatauto(Auto *current, 
+	int x, 
+	int y, 
+	int in_x, 
+	int in_y, 
+	int out_x, 
+	int out_y, 
+	int center_pixel, 
+	int zoom_track,
+	int color)
+{
+	int x1, y1, x2, y2;
+	int in_x1, in_y1, in_x2, in_y2;
+	int out_x1, out_y1, out_x2, out_y2;
+	char string[BCTEXTLEN];
+
+// Center
+	x1 = x - HANDLE_W / 2;
+	x2 = x + HANDLE_W / 2;
+	y1 = center_pixel + y - HANDLE_W / 2;
+	y2 = center_pixel + y + HANDLE_W / 2;
+
+	CLAMP(y1, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
+	CLAMP(y2, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
+
+	set_color(BLACK);
+	draw_box(x1 + 1, y1 + 1, x2 - x1, y2 - y1);
+	set_color(color);
+	draw_box(x1, y1, x2 - x1, y2 - y1);
+
+// In handle
+	in_x1 = in_x - HANDLE_W / 2;
+	in_x2 = in_x + HANDLE_W / 2;
+	in_y1 = center_pixel + in_y - HANDLE_W / 2;
+	in_y2 = center_pixel + in_y + HANDLE_W / 2;
+
+	CLAMP(in_y1, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
+	CLAMP(in_y2, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
+	CLAMP(in_y, -zoom_track / 2, zoom_track / 2);
+
+	set_color(BLACK);
+	draw_line(x + 1, center_pixel + y + 1, in_x + 1, center_pixel + in_y + 1);
+	draw_box(in_x1 + 1, in_y1 + 1, in_x2 - in_x1, in_y2 - in_y1);
+	set_color(color);
+	draw_line(x, center_pixel + y, in_x, center_pixel + in_y);
+	draw_box(in_x1, in_y1, in_x2 - in_x1, in_y2 - in_y1);
+
+
+
+// Out handle
+	out_x1 = out_x - HANDLE_W / 2;
+	out_x2 = out_x + HANDLE_W / 2;
+	out_y1 = center_pixel + out_y - HANDLE_W / 2;
+	out_y2 = center_pixel + out_y + HANDLE_W / 2;
+
+	CLAMP(out_y1, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
+	CLAMP(out_y2, center_pixel + -zoom_track / 2, center_pixel + zoom_track / 2);
+	CLAMP(out_y, -zoom_track / 2, zoom_track / 2);
+
+
+	set_color(BLACK);
+	draw_line(x + 1, center_pixel + y + 1, out_x + 1, center_pixel + out_y + 1);
+	draw_box(out_x1 + 1, out_y1 + 1, out_x2 - out_x1, out_y2 - out_y1);
+	set_color(color);
+	draw_line(x, center_pixel + y, out_x, center_pixel + out_y);
+	draw_box(out_x1, out_y1, out_x2 - out_x1, out_y2 - out_y1);
+
 }
 
 int TrackCanvas::test_auto(Auto *current, 
@@ -1913,6 +1987,121 @@ int TrackCanvas::test_auto(Auto *current,
 	return result;
 }
 
+int TrackCanvas::test_floatauto(Auto *current, 
+	int x, 
+	int y, 
+	int in_x,
+	int in_y,
+	int out_x,
+	int out_y,
+	int center_pixel, 
+	int zoom_track, 
+	int cursor_x, 
+	int cursor_y, 
+	int buttonpress)
+{
+	int x1, y1, x2, y2;
+	int in_x1, in_y1, in_x2, in_y2;
+	int out_x1, out_y1, out_x2, out_y2;
+	char string[BCTEXTLEN];
+	int result = 0;
+
+	x1 = x - HANDLE_W / 2;
+	x2 = x + HANDLE_W / 2;
+	y1 = center_pixel + y - HANDLE_W / 2;
+	y2 = center_pixel + y + HANDLE_W / 2;
+
+	if(y1 < center_pixel + -zoom_track / 2) y1 = center_pixel + -zoom_track / 2;
+	if(y2 > center_pixel + zoom_track / 2) y2 = center_pixel + zoom_track / 2;
+
+	in_x1 = in_x - HANDLE_W / 2;
+	in_x2 = in_x + HANDLE_W / 2;
+	in_y1 = center_pixel + in_y - HANDLE_W / 2;
+	in_y2 = center_pixel + in_y + HANDLE_W / 2;
+
+	if(in_y1 < center_pixel + -zoom_track / 2) in_y1 = center_pixel + -zoom_track / 2;
+	if(in_y2 > center_pixel + zoom_track / 2) in_y2 = center_pixel + zoom_track / 2;
+
+	out_x1 = out_x - HANDLE_W / 2;
+	out_x2 = out_x + HANDLE_W / 2;
+	out_y1 = center_pixel + out_y - HANDLE_W / 2;
+	out_y2 = center_pixel + out_y + HANDLE_W / 2;
+
+	if(out_y1 < center_pixel + -zoom_track / 2) out_y1 = center_pixel + -zoom_track / 2;
+	if(out_y2 > center_pixel + zoom_track / 2) out_y2 = center_pixel + zoom_track / 2;
+
+// Test value
+	if(!ctrl_down() &&
+		cursor_x >= x1 && 
+		cursor_x < x2 && 
+		cursor_y >= y1 && 
+		cursor_y < y2)
+	{
+		if(buttonpress)
+		{
+			mwindow->session->drag_auto = current;
+			mwindow->session->drag_start_percentage = current->value_to_percentage();
+			mwindow->session->drag_start_position = current->position;
+			mwindow->session->drag_origin_x = cursor_x;
+			mwindow->session->drag_origin_y = cursor_y;
+			mwindow->session->drag_handle = 0;
+		}
+		result = 1;
+	}
+	else
+// Test in control
+	if(ctrl_down() &&
+		cursor_x >= in_x1 && 
+		cursor_x < in_x2 && 
+		cursor_y >= in_y1 && 
+		cursor_y < in_y2)
+	{
+		if(buttonpress)
+		{
+			mwindow->session->drag_auto = current;
+			mwindow->session->drag_start_percentage = 
+				current->invalue_to_percentage();
+			mwindow->session->drag_start_position = 
+				((FloatAuto*)current)->control_in_position;
+			mwindow->session->drag_origin_x = cursor_x;
+			mwindow->session->drag_origin_y = cursor_y;
+			mwindow->session->drag_handle = 1;
+		}
+		result = 1;
+	}
+	else
+// Test out control
+	if(ctrl_down() &&
+		cursor_x >= out_x1 && 
+		cursor_x < out_x2 && 
+		cursor_y >= out_y1 && 
+		cursor_y < out_y2)
+	{
+		if(buttonpress)
+		{
+			mwindow->session->drag_auto = current;
+			mwindow->session->drag_start_percentage = 
+				current->outvalue_to_percentage();
+			mwindow->session->drag_start_position = 
+				((FloatAuto*)current)->control_out_position;
+			mwindow->session->drag_origin_x = cursor_x;
+			mwindow->session->drag_origin_y = cursor_y;
+			mwindow->session->drag_handle = 2;
+		}
+		result = 1;
+	}
+
+// if(buttonpress) 
+// printf("TrackCanvas::test_floatauto 2 drag_handle=%d ctrl_down=%d cursor_x=%d cursor_y=%d x1=%d x2=%d y1=%d y2=%d\n", 
+// mwindow->session->drag_handle,
+// ctrl_down(),
+// cursor_x,
+// cursor_y,
+// x1, x2, y1, y2);
+
+	return result;
+}
+
 void TrackCanvas::draw_floatline(int center_pixel, 
 	FloatAuto *previous,
 	FloatAuto *next,
@@ -1923,13 +2112,16 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	int x1,
 	int y1,
 	int x2,
-	int y2)
+	int y2,
+	int color)
 {
 // Solve bezier equation for either every pixel or a certain large number of
 // points.
 
 
 
+// Not using slope intercept
+	x1 = MAX(0, x1);
 
 
 
@@ -1951,7 +2143,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 		{
  			set_color(BLACK);
  			draw_line(x - 1, prev_y + 1, x, y + 1);
- 			set_color(WHITE);
+ 			set_color(color);
  			draw_line(x - 1, prev_y, x, y);
 		}
 		prev_y = y;
@@ -1985,6 +2177,12 @@ int TrackCanvas::test_floatline(Autos *autos,
 {
 //printf("TrackCanvas::test_floatline 1\n ");
 	int result = 0;
+
+
+// Not using slope intercept
+	x1 = MAX(0, x1);
+
+
 	if(cursor_x >= x1 && cursor_x < x2)
 	{
 		float slope = (float)(y2 - y1) / (x2 - x1);
@@ -2022,7 +2220,6 @@ int TrackCanvas::test_floatline(Autos *autos,
 				mwindow->session->drag_origin_y = cursor_y;
 
 
-				mwindow->undo->update_undo_after();
 			}
 		}
 	}
@@ -2035,18 +2232,19 @@ void TrackCanvas::draw_toggleline(int center_pixel,
 	int x1,
 	int y1,
 	int x2,
-	int y2)
+	int y2,
+	int color)
 {
 	set_color(BLACK);
 	draw_line(x1, center_pixel + y1 + 1, x2, center_pixel + y1 + 1);
-	set_color(WHITE);
+	set_color(color);
 	draw_line(x1, center_pixel + y1, x2, center_pixel + y1);
 
 	if(y2 != y1)
 	{
 		set_color(BLACK);
 		draw_line(x2 + 1, center_pixel + y1, x2 + 1, center_pixel + y2);
-		set_color(WHITE);
+		set_color(color);
 		draw_line(x2, center_pixel + y1, x2, center_pixel + y2);
 	}
 }
@@ -2091,7 +2289,6 @@ int TrackCanvas::test_toggleline(Autos *autos,
 				mwindow->session->drag_origin_x = cursor_x;
 				mwindow->session->drag_origin_y = cursor_y;
 
-				mwindow->undo->update_undo_after();
 			}
 		}
 	}
@@ -2132,7 +2329,8 @@ int TrackCanvas::do_float_autos(Track *track,
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress)
+		int buttonpress,
+		int color)
 {
 	int result = 0;
 
@@ -2145,9 +2343,10 @@ int TrackCanvas::do_float_autos(Track *track,
 	double zoom_sample;
 	double zoom_units;
 	double ax, ay, ax2, ay2;
+	double in_x2, in_y2, out_x2, out_y2;
 	double slope;
+	int skip = 0;
 
-//printf("TrackCanvas::do_float_autos 1\n");
 	calculate_viewport(track, 
 		view_start,
 		unit_start,
@@ -2158,7 +2357,6 @@ int TrackCanvas::do_float_autos(Track *track,
 		zoom_sample,
 		zoom_units);
 
-//printf("TrackCanvas::do_float_autos 1 %d\n", autos->total());
 
 
 // Get first auto before start
@@ -2190,22 +2388,31 @@ int TrackCanvas::do_float_autos(Track *track,
 		}
 	}
 
-//printf("TrackCanvas::do_float_autos 2\n");
 
 	do
 	{
-
-//printf("TrackCanvas::do_float_autos 3\n");
+		skip = 0;
 
 		if(current)
 		{
 			ax2 = (double)(current->position - unit_start) / zoom_units;
 			ay2 = (((FloatAuto*)current)->value_to_percentage() - 0.5) * -yscale;
+			in_x2 = (double)(current->position + 
+				((FloatAuto*)current)->control_in_position - 
+				unit_start) / 
+				zoom_units;
+			in_y2 = (((FloatAuto*)current)->invalue_to_percentage() - 0.5) * -yscale;
+			out_x2 = (double)(current->position + 
+				((FloatAuto*)current)->control_out_position - 
+				unit_start) / 
+				zoom_units;
+			out_y2 = (((FloatAuto*)current)->outvalue_to_percentage() - 0.5) * -yscale;
 		}
 		else
 		{
 			ax2 = get_w();
 			ay2 = ay;
+			skip = 1;
 		}
 
 		slope = (ay2 - ay) / (ax2 - ax);
@@ -2222,7 +2429,6 @@ int TrackCanvas::do_float_autos(Track *track,
 			ax = 0;
 		}
 
-//printf("TrackCanvas::do_float_autos 4\n");
 
 
 
@@ -2242,26 +2448,33 @@ int TrackCanvas::do_float_autos(Track *track,
 			if(current != autos->default_auto)
 			{
 				if(!draw)
-					result = test_auto(current, 
+					result = test_floatauto(current, 
 						(int)ax2, 
 						(int)ay2, 
+						(int)in_x2,
+						(int)in_y2,
+						(int)out_x2,
+						(int)out_y2,
 						(int)center_pixel, 
 						(int)yscale, 
 						cursor_x, 
 						cursor_y, 
 						buttonpress);
 				else
-					draw_auto(current, 
+					draw_floatauto(current, 
 						(int)ax2, 
 						(int)ay2, 
+						(int)in_x2,
+						(int)in_y2,
+						(int)out_x2,
+						(int)out_y2,
 						(int)center_pixel, 
-						(int)yscale, 
-						0);
+						(int)yscale,
+						color);
 			}
 		}
 
 
-//printf("TrackCanvas::do_float_autos 5\n");
 
 
 
@@ -2292,10 +2505,10 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ax, 
 				(int)ay, 
 				(int)ax2, 
-				(int)ay2);
+				(int)ay2,
+				color);
 
 
-//printf("TrackCanvas::do_float_autos 6\n");
 
 
 
@@ -2308,7 +2521,6 @@ int TrackCanvas::do_float_autos(Track *track,
 		}
 
 
-//printf("TrackCanvas::do_float_autos 7\n");
 
 		ax = ax2;
 		ay = ay2;
@@ -2319,7 +2531,6 @@ int TrackCanvas::do_float_autos(Track *track,
 
 
 
-//printf("TrackCanvas::do_float_autos 8\n");
 
 
 
@@ -2352,7 +2563,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ax, 
 				(int)ay, 
 				(int)ax2, 
-				(int)ay2);
+				(int)ay2,
+				color);
 	}
 
 
@@ -2361,7 +2573,6 @@ int TrackCanvas::do_float_autos(Track *track,
 
 
 
-//printf("TrackCanvas::do_float_autos 9\n");
 
 	return result;
 }
@@ -2372,7 +2583,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress)
+		int buttonpress,
+		int color)
 {
 	int result = 0;
 	double view_start;
@@ -2458,8 +2670,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 						(int)ax2, 
 						(int)ay2, 
 						(int)center_pixel, 
-						(int)yscale, 
-						0);
+						(int)yscale,
+						color);
 			}
 
 			current = NEXT;
@@ -2483,7 +2695,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 				(int)ax, 
 				(int)ay, 
 				(int)ax2, 
-				(int)ay2);
+				(int)ay2,
+				color);
 
 		ax = ax2;
 		ay = ay2;
@@ -2508,7 +2721,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 				(int)ax, 
 				(int)ay, 
 				(int)ax2, 
-				(int)ay2);
+				(int)ay2,
+				color);
 	}
 	return result;
 }
@@ -2791,8 +3005,6 @@ void TrackCanvas::update_drag_handle()
 	if(new_position != mwindow->session->drag_position)
 	{
 		mwindow->session->drag_position = new_position;
-//		mwindow->edl->local_session->selectionend = new_position;
-//		mwindow->edl->local_session->selectionstart = new_position;
 		gui->mainclock->update(new_position);
 // Que the CWindow.  Doesn't do anything if selectionstart and selection end 
 // aren't changed.
@@ -2809,11 +3021,12 @@ int TrackCanvas::update_drag_edit()
 	return result;
 }
 
-#define UPDATE_DRAG_HEAD \
+#define UPDATE_DRAG_HEAD(do_clamp) \
 	int result = 0; \
 	int x = cursor_x - mwindow->session->drag_origin_x; \
 	int y = cursor_y - mwindow->session->drag_origin_y; \
  \
+	if(!current->autos->track->record) return 0; \
 	double view_start; \
 	long unit_start; \
 	double view_end; \
@@ -2823,6 +3036,7 @@ int TrackCanvas::update_drag_edit()
 	double zoom_sample; \
 	double zoom_units; \
  \
+ 	mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION); \
 	calculate_viewport(current->autos->track,  \
 		view_start, \
 		unit_start, \
@@ -2836,13 +3050,13 @@ int TrackCanvas::update_drag_edit()
 	float percentage = (float)(mwindow->session->drag_origin_y - cursor_y) / \
 		MAX(128, yscale) +  \
 		mwindow->session->drag_start_percentage; \
-	CLAMP(percentage, 0, 1); \
+	if(do_clamp) CLAMP(percentage, 0, 1); \
  \
 	long position = Units::to_long(zoom_units * \
 		(cursor_x - mwindow->session->drag_origin_x) + \
 		mwindow->session->drag_start_position); \
  \
-	if(position < 0) position = 0;
+	if((do_clamp) && position < 0) position = 0;
 
 
 
@@ -2856,26 +3070,98 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 {
 	FloatAuto *current = (FloatAuto*)mwindow->session->drag_auto;
 
-	UPDATE_DRAG_HEAD
+	UPDATE_DRAG_HEAD(mwindow->session->drag_handle == 0);
 
-	float value = ((FloatAuto*)current)->percentage_to_value(percentage);
-//printf("TrackCanvas::update_drag_floatauto %ld\n", position);
+	float value;
+//printf("TrackCanvas::update_drag_floatauto %ld %d\n", 
+//position, 
+//mwindow->session->drag_handle);
 
-	if(value != current->value || position != current->position)
+	switch(mwindow->session->drag_handle)
 	{
-		result = 1;
-		current->value = value;
-		current->position = position;
+// Center
+		case 0:
+// Snap to nearby values
+			if(shift_down())
+			{
+				if(current->previous)
+					value = ((FloatAuto*)current->previous)->value;
+				else
+				if(current->next)
+					value = ((FloatAuto*)current->next)->value;
+				else
+					value = ((FloatAutos*)current->autos)->default_;
+			}
+			else
+				value = ((FloatAuto*)current)->percentage_to_value(percentage);
 
-		char string[BCTEXTLEN], string2[BCTEXTLEN];
-		Units::totext(string2, 
-			current->autos->track->from_units(current->position),
-			mwindow->edl->session->time_format,
-			mwindow->edl->session->sample_rate,
-			mwindow->edl->session->frame_rate,
-			mwindow->edl->session->frames_per_foot);
-		sprintf(string, "%s, %.2f", string2, current->value);
-		gui->show_message(string);
+//printf("TrackCanvas::update_drag_floatauto 1 %f\n", value);
+			if(value != current->value || position != current->position)
+			{
+				result = 1;
+				current->value = value;
+				current->position = position;
+
+				char string[BCTEXTLEN], string2[BCTEXTLEN];
+				Units::totext(string2, 
+					current->autos->track->from_units(current->position),
+					mwindow->edl->session->time_format,
+					mwindow->edl->session->sample_rate,
+					mwindow->edl->session->frame_rate,
+					mwindow->edl->session->frames_per_foot);
+				sprintf(string, "%s, %.2f", string2, current->value);
+				gui->show_message(string);
+			}
+			break;
+
+// In control
+		case 1:
+			value = ((FloatAuto*)current)->percentage_to_invalue(percentage);
+			position = MIN(0, position);
+			if(value != current->control_in_value || 
+				position != current->control_in_position)
+			{
+				result = 1;
+				current->control_in_value = value;
+				current->control_in_position = position;
+
+				char string[BCTEXTLEN], string2[BCTEXTLEN];
+				Units::totext(string2, 
+					current->autos->track->from_units(current->control_in_position),
+					mwindow->edl->session->time_format,
+					mwindow->edl->session->sample_rate,
+					mwindow->edl->session->frame_rate,
+					mwindow->edl->session->frames_per_foot);
+				sprintf(string, "%s, %.2f", string2, current->control_in_value);
+				gui->show_message(string);
+			}
+			break;
+
+// Out control
+		case 2:
+			value = ((FloatAuto*)current)->percentage_to_outvalue(percentage);
+			position = MAX(0, position);
+			if(value != current->control_out_value || 
+				position != current->control_out_position)
+			{
+				result = 1;
+				((FloatAuto*)current)->control_out_value = value;
+				((FloatAuto*)current)->control_out_position = position;
+
+				char string[BCTEXTLEN], string2[BCTEXTLEN];
+				Units::totext(string2, 
+					current->autos->track->from_units(
+						((FloatAuto*)current)->control_out_position),
+					mwindow->edl->session->time_format,
+					mwindow->edl->session->sample_rate,
+					mwindow->edl->session->frame_rate,
+					mwindow->edl->session->frames_per_foot);
+				sprintf(string, "%s, %.2f", 
+					string2, 
+					((FloatAuto*)current)->control_out_value);
+				gui->show_message(string);
+			}
+			break;
 	}
 
 	return result;
@@ -2885,7 +3171,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 {
 	IntAuto *current = (IntAuto*)mwindow->session->drag_auto;
 
-	UPDATE_DRAG_HEAD
+	UPDATE_DRAG_HEAD(1);
 
 	int value = ((IntAuto*)current)->percentage_to_value(percentage);
 
@@ -2914,9 +3200,8 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 int TrackCanvas::update_drag_auto(int cursor_x, int cursor_y)
 {
 	Auto *current = (Auto*)mwindow->session->drag_auto;
-	if(!current->autos->track->record) return 0;
 
-	UPDATE_DRAG_HEAD
+	UPDATE_DRAG_HEAD(1)
 
 	if(position != current->position)
 	{
@@ -3013,7 +3298,7 @@ int TrackCanvas::cursor_motion_event()
 				update_overlay = 1;
 			}
 			break;
-		
+
 		case DRAG_PLUGINHANDLE2:
 			update_drag_handle();
 			update_overlay = 1;
@@ -3177,6 +3462,7 @@ int TrackCanvas::cursor_motion_event()
 			break;
 	}
 
+//printf("TrackCanvas::cursor_motion_event 1\n");
 	if(update_cursor && new_cursor != get_cursor())
 	{
 		set_cursor(new_cursor);
@@ -3214,11 +3500,15 @@ int TrackCanvas::cursor_motion_event()
 			stop_dragscroll();
 	}
 
+//printf("TrackCanvas::cursor_motion_event 1 %d\n", get_window_lock());
 	if(update_overlay)
 	{
+//		lock_window();
 		draw_overlays();
 		flash();
+//		unlock_window();
 	}
+//printf("TrackCanvas::cursor_motion_event 2\n");
 	return result;
 }
 
@@ -3333,11 +3623,16 @@ int TrackCanvas::button_release_event()
 		case DRAG_PROJECTOR:
 		case DRAG_PLUGINKEY:
 			mwindow->session->current_operation = NO_OPERATION;
+			mwindow->session->drag_handle = 0;
+// Remove any out-of-order keyframe
 			if(mwindow->session->drag_auto)
 			{
-				mwindow->session->drag_auto->autos->optimize();
+				mwindow->session->drag_auto->autos->remove_nonsequential(
+					mwindow->session->drag_auto);
+//				mwindow->session->drag_auto->autos->optimize();
 				update_overlay = 1;
 			}
+			mwindow->undo->update_undo_after();
 			result = 1;
 			break;
 

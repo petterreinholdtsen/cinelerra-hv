@@ -27,7 +27,10 @@ DIRS = \
 	dissolve \
 	dot \
 	fieldframe \
+	flip \
 	framefield \
+	freeverb \
+	freezeframe \
 	gain \
 	holo \
 	huesaturation \
@@ -36,7 +39,6 @@ DIRS = \
 	irissquare \
 	ivtc \
 	lame \
-	microtheme \
 	mpeg2enc \
 	normalize \
 	oilpainting \
@@ -52,6 +54,7 @@ DIRS = \
 	rotate \
 	scale \
 	sharpen \
+	shiftinterlace \
 	slide \
 	spectrogram \
 	swapchannels \

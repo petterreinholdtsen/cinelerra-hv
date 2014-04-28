@@ -405,18 +405,8 @@ void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui)
 	ctimebar_w = ccanvas_w;
 	ctimebar_h = 16;
 
-
-//printf("Theme::get_cwindow_sizes 1\n");
-
-
-//printf("Theme::get_cwindow_sizes 1\n");
-
-//printf("Theme::get_cwindow_sizes 1\n");
-//printf("Theme::get_cwindow_sizes 1\n");
 	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
 	ctime_y = ctransport_y;
-//	czoom_x = ctime_x + 150;
-//printf("Theme::get_cwindow_sizes 1\n");
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
 }
@@ -648,7 +638,7 @@ void DefaultTheme::draw_mwindow_bg(MWindowGUI *gui)
 
 void DefaultTheme::draw_cwindow_bg(CWindowGUI *gui)
 {
-	const int button_division = 510;
+	const int button_division = 530;
 	gui->draw_3segmentv(0, 0, ccomposite_h, cpanel_bg);
 	gui->draw_3segmenth(0, ccomposite_h, button_division, cbuttons_left);
 	if(mwindow->edl->session->cwindow_meter)

@@ -37,18 +37,6 @@ public:
 
 	Edit* append_new_edit();
 	Edit* insert_edit_after(Edit* previous_edit);
-	int clone_derived(Edit* new_edit, Edit* old_edit);
-
-// also known as paste_output
-	int paste_edit(long start, 
-				long end, 
-				long startsource, 
-				long length, 
-				int layer, 
-				int center_x, 
-				int center_y, 
-				int center_z, 
-				Asset *asset);
 
 	VTrack *vtrack;
 };

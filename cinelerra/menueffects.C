@@ -550,7 +550,7 @@ int MenuEffectWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y, "Select an effect"));
 		add_subwindow(list = new MenuEffectWindowList(this, x, plugin_list));
-		x += 160;
+		x += 180;
 		y += 30;
 	}
 //printf("MenuEffectWindow::create_objects 1\n");
@@ -639,7 +639,7 @@ int MenuEffectWindowCancel::keypress_event()
 MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window, int x, ArrayList<BC_ListBoxItem*> *plugin_list)
  : BC_ListBox(x, 
  		30, 
-		130, 
+		170, 
 		270, 
 		LISTBOX_TEXT, 
 		plugin_list)

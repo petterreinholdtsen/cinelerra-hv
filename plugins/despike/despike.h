@@ -11,8 +11,14 @@ class DespikeConfig
 {
 public:
 	DespikeConfig();
-	int operator==(DespikeConfig& that);
-	DespikeConfig& operator=(DespikeConfig& that);
+
+	int equivalent(DespikeConfig &that);
+	void copy_from(DespikeConfig &that);
+	void interpolate(DespikeConfig &prev, 
+		DespikeConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame);
 
 	double level;
 	double slope;
@@ -25,7 +31,7 @@ public:
 	~Despike();
 
 	void update_gui();
-	void load_configuration();
+	int load_configuration();
 	
 // data for despike
 	DespikeConfig config;

@@ -41,6 +41,14 @@ int BC_MenuBar::initialize()
 	return 0;
 }
 
+void BC_MenuBar::draw_items()
+{
+//printf("BC_MenuBar::draw_items 1\n");
+	for(int i = 0; i < menu_titles.total; i++)
+		menu_titles.values[i]->draw_items();
+	flush();
+}
+
 int BC_MenuBar::add_menu(BC_Menu* menu)
 {
 	int x, w;
@@ -416,6 +424,11 @@ int BC_Menu::activate_menu()
 	return 0;
 }
 
+void BC_Menu::draw_items()
+{
+	if(active) menu_popup->draw_items();
+}
+
 int BC_Menu::set_text(char *text)
 {
 	strcpy(this->text, text);
@@ -605,9 +618,20 @@ int BC_MenuPopup::dispatch_translation_event()
 {
 	if(popup)
 	{
-		int new_x = x + (top_level->last_translate_x - top_level->x);
-		int new_y = y + (top_level->last_translate_y - top_level->y);
+		int new_x = x + 
+			(top_level->last_translate_x - 
+			top_level->prev_x - 
+			top_level->get_resources()->get_left_border());
+		int new_y = y + 
+			(top_level->last_translate_y - 
+			top_level->prev_y -
+			top_level->get_resources()->get_top_border());
 
+// printf("BC_MenuPopup::dispatch_translation_event %d %d %d %d\n", 
+// top_level->prev_x, 
+// top_level->last_translate_x, 
+// top_level->prev_y, 
+// top_level->last_translate_y);
 		popup->reposition_window(new_x, new_y, popup->get_w(), popup->get_h());
 		top_level->flush();
 		this->x = new_x;
@@ -750,8 +774,8 @@ int BC_MenuPopup::draw_items()
 	{
 		menu_items.values[i]->draw();
 	}
-
 	popup->flash();
+//printf("BC_MenuPopup::draw_items 1\n");
 	return 0;
 }
 

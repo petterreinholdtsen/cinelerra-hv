@@ -88,14 +88,11 @@ public:
 // ID for resource pixmaps
 	int id;
 
-// translation coordinates
-	int center_x, center_y;
-	float center_z;      
-
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
 	Transition *transition;
 	EDL *edl;
+	Edits *edits;
 	Track *track;
 // Asset is 0 if silence
 	Asset *asset;
@@ -112,8 +109,6 @@ public:
 
 
 
-
-	Edit(MWindow *mwindow, Edits *edits);
 
 // ============================= initialization
 
@@ -132,7 +127,6 @@ public:
 // ============================= editing
 
 	virtual int copy_properties_derived(FileXML *xml, long length_in_selection) {};
-	int paste(FileXML *xml);
 
 	int popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y);
 
@@ -143,12 +137,6 @@ public:
 	int dump();
 	virtual int dump_derived() {};
 
-// REMOVE
-	long feather_left, feather_right;
-
-// REMOVE
-	Edits *edits;
-	MWindow *mwindow;
 };
 
 

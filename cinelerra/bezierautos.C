@@ -164,12 +164,12 @@ int BezierAutos::get_center(float &x,
 	float invtpow2 = invt * invt;
 	float invtpow3 = invt * invt * invt;
 
-	x = (        invtpow3 * x0
+	x = (        	  invtpow3 * x0
 		+ 3 * t     * invtpow2 * x1
 		+ 3 * tpow2 * invt     * x2 
 		+     tpow3            * x3);
 
-	y = (        invtpow3 * y0 
+	y = (             invtpow3 * y0 
 		+ 3 * t     * invtpow2 * y1
 		+ 3 * tpow2 * invt     * y2 
 		+     tpow3            * y3);
@@ -177,7 +177,7 @@ int BezierAutos::get_center(float &x,
 // Z is defined as linear for now to simplify the user interface
 	z = t * (z3 - z0) + z0;
 
-// 	z = (        invtpow3 * z0 
+// 	z = (             invtpow3 * z0 
 // 		+ 3 * t     * invtpow2 * z1
 // 		+ 3 * tpow2 * invt     * z2 
 // 		+     tpow3            * z3);

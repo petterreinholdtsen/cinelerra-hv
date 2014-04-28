@@ -26,7 +26,6 @@ public:
 	virtual void build_virtual_console();
 	virtual VirtualConsole* new_vconsole_object() { return 0; };
 	virtual void init_output_buffers() {};
-	int test_virtualnodes(long current_position, long &current_input_length, int data_type);
 	void start_plugins();
 	int test_reconfigure(long position, long &length);
 

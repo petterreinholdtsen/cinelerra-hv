@@ -10,19 +10,7 @@ class DotWindow;
 #include "mutex.h"
 #include "dot.h"
 
-class DotThread : public Thread
-{
-public:
-	DotThread(DotMain *client);
-	~DotThread();
-
-	void run();
-
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	DotMain *client;
-	DotWindow *window;
-};
+PLUGIN_THREAD_HEADER(DotMain, DotThread, DotWindow)
 
 class DotWindow : public BC_Window
 {

@@ -13,7 +13,6 @@ class PluginClient;
 #include "mainprogress.inc"
 #include "maxbuffers.h"
 #include "messages.h"
-#include "pluginbuffer.h"
 #include "plugincommands.h"
 #include "pluginserver.inc"
 #include "sema.h"
@@ -45,6 +44,14 @@ PluginClient* new_plugin(PluginServer *server) \
 	return new class_title(server); \
 }
 
+
+#define WINDOW_CLOSE_EVENT(window_class) \
+int window_class::close_event() \
+{ \
+/* Set result to 1 to indicate a client side close */ \
+	set_done(1); \
+	return 1; \
+}
 
 
 #define PLUGIN_THREAD_HEADER(plugin_class, thread_class, window_class) \
@@ -82,13 +89,23 @@ void thread_class::run() \
 		info.get_abs_cursor_y() - 65); \
 	window->create_objects(); \
  \
+/* Only set it here so tracking doesn't update it until everything is created. */ \
+ 	plugin->thread = this; \
 	int result = window->run_window(); \
 	completion.unlock(); \
 	if(result) plugin->client_side_close(); \
 }
 
 
-
+#define PLUGIN_CLASS_MEMBERS(config_name, thread_name) \
+	int load_configuration(); \
+	VFrame* new_picon(); \
+	int show_gui(); \
+	int set_string(); \
+	void raise_window(); \
+	Defaults *defaults; \
+	config_name config; \
+	thread_name *thread;
 
 #define PLUGIN_CONSTRUCTOR_MACRO \
 	thread = 0; \
@@ -112,8 +129,8 @@ void thread_class::run() \
 int plugin_class::show_gui() \
 { \
 	load_configuration(); \
-	thread = new thread_class(this); \
-	thread->start(); \
+	thread_class *new_thread = new thread_class(this); \
+	new_thread->start(); \
 	return 0; \
 }
 
@@ -254,6 +271,7 @@ public:
 	virtual int plugin_process_loop(double **buffers, long &write_length) { return 1; };
 	virtual int init_realtime_parameters();     // get parameters depending on video or audio
 	int get_gui_status();
+	char* get_gui_string();
 
 // Return keyframe objects.  If position -1 use edl selection
 	KeyFrame* get_prev_keyframe(long position);
@@ -332,14 +350,11 @@ public:
 // Realtime operations.
 	int plugin_init(int argc, char *argv[]);
 	int reset();
-	int plugin_run();
 	virtual int plugin_command_derived(int plugin_command) {}; // Extension of plugin_run for derived plugins
 	int plugin_get_range();
-	int plugin_negotiate_buffers();
 	int plugin_start_plugin();    // Run a non realtime plugin
 	int plugin_init_realtime(int realtime_priority, int total_in_buffers);
 	int plugin_stop_realtime();
-	int plugin_delete_buffers();
 
 
 
@@ -358,12 +373,6 @@ public:
 	int send_cancelled();        // non realtime plugin sends when cancelled
 
 // ================================= Buffers ===============================
-// non realtime buffers
-	PluginBuffer **data_in;
-	PluginBuffer **data_out;
-// realtime buffers
-	ArrayList<PluginBuffer**> data_in_realtime;   // data coming in from plugin
-	ArrayList<PluginBuffer**> data_out_realtime;  // data going out to plugin
 
 // number of double buffers for each channel
 	ArrayList<int> double_buffers_in;    

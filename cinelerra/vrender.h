@@ -57,7 +57,6 @@ public:
 
 	long tounits(double position, int round);
 	double fromunits(long position);
-	long get_render_length(long current_render_length);
 
 // frames since start of playback
 	long session_frame;           
@@ -76,9 +75,6 @@ public:
 	long output_offset;
 	
 	
-// REMOVE
-// Byte offset of video_out in video_out_buffer
-	long video_out_byte;
 	long source_length;  // Total number of frames to render for transitions
 
 private:

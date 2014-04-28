@@ -1,24 +1,23 @@
-D/src////
-D/include////
-D/doc////
-D/win32////
+/AUTHORS/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/CHANGES/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/COPYING/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/Makefile.am/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/Makefile.in/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/README/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/aclocal.m4/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/config.guess/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/config.sub/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/configure/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/configure.in/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/install-sh/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/libogg.spec/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/ltconfig/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/ltmain.sh/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/missing/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/mkinstalldirs/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/ogg.m4/1.1.1.1/Fri Jun 21 12:35:23 2002//
 D/debian////
-D/CVS////
-/AUTHORS/1.1/Sun Sep  3 05:54:27 2000//
-/CHANGES/1.1/Tue Sep  5 19:47:01 2000//
-/COPYING/1.1/Mon Feb 26 03:49:57 2001//
-/Makefile.am/1.1/Sat Nov 18 04:16:52 2000//
-/Makefile.in/1.1/Mon Aug 13 11:39:34 2001//
-/README/1.1/Tue May  7 09:16:51 2002//
-/aclocal.m4/1.1/Mon Aug 13 11:39:14 2001//
-/config.guess/1.1/Thu Jul 13 21:54:58 2000//
-/config.sub/1.1/Thu Jul 13 21:54:58 2000//
-/configure/1.1/Mon Aug 13 11:39:18 2001//
-/configure.in/1.1/Mon Aug 13 03:48:22 2001//
-/install-sh/1.1/Wed Jul 12 09:40:03 2000//
-/libogg.spec/1.1/Sun Aug 12 18:17:32 2001//
-/ltconfig/1.1/Thu Jul 13 21:54:59 2000//
-/ltmain.sh/1.1/Thu Jul 13 21:54:59 2000//
-/missing/1.1/Wed Jul 12 09:40:03 2000//
-/mkinstalldirs/1.1/Tue May  7 09:16:51 2002//
-/ogg.m4/1.1/Mon Mar 26 22:31:36 2001//
+D/doc////
+D/include////
+D/src////
+D/win32////

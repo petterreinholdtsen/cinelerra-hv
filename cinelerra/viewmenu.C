@@ -66,6 +66,7 @@ int ShowTransitions::handle_event()
 	mwindow->edl->session->auto_conf->transitions = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -82,6 +83,7 @@ int FadeAutomation::handle_event()
 	mwindow->edl->session->auto_conf->fade = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -97,6 +99,7 @@ int PlayAutomation::handle_event()
 	mwindow->edl->session->auto_conf->play = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -113,6 +116,7 @@ int CameraAutomation::handle_event()
 	mwindow->edl->session->auto_conf->camera = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -129,6 +133,7 @@ int ProjectAutomation::handle_event()
 	mwindow->edl->session->auto_conf->projector = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -159,6 +164,7 @@ int MuteAutomation::handle_event()
 	mwindow->edl->session->auto_conf->mute = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -175,6 +181,7 @@ int PanAutomation::handle_event()
 	mwindow->edl->session->auto_conf->pan = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -190,6 +197,7 @@ int PluginAutomation::handle_event()
 	mwindow->edl->session->auto_conf->plugins = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -205,6 +213,7 @@ int ModeAutomation::handle_event()
 	mwindow->edl->session->auto_conf->mode = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -220,6 +229,7 @@ int MaskAutomation::handle_event()
 	mwindow->edl->session->auto_conf->mask = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
@@ -235,12 +245,14 @@ int CZoomAutomation::handle_event()
 	mwindow->edl->session->auto_conf->czoom = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
 
 PZoomAutomation::PZoomAutomation(MWindow *mwindow, char *hotkey)
  : BC_MenuItem("Projector Zoom", hotkey, hotkey[0])
 { 
+	set_shift(1); 
 	this->mwindow = mwindow;
 }
 
@@ -250,5 +262,6 @@ int PZoomAutomation::handle_event()
 	mwindow->edl->session->auto_conf->pzoom = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
+	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }

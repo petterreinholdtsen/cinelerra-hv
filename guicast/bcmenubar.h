@@ -26,6 +26,8 @@ public:
 	int translation_event();
 	int deactivate();
 	int unhighlight();
+// Redraws items in active menu
+	void draw_items();
 
 private:
 	int draw_face();
@@ -63,6 +65,7 @@ public:
 	int deactivate_menu();
 	int activate_menu();
 	int unhighlight();
+	void draw_items();
 
 private:
 	int draw_title();

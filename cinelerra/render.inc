@@ -4,7 +4,6 @@
 class PackageRenderer;
 class Render;
 class RenderItem;
-class RenderListItem; // REMOVE
 class RenderJob;
 
 

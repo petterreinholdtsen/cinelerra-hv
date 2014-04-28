@@ -3,9 +3,5 @@
 
 class SharedLocation;
 
-// REMOVE
-class SharedPluginLocation;
-// REMOVE
-class SharedModuleLocation;
 
 #endif

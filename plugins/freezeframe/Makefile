@@ -1,14 +1,9 @@
-#########################################################
-#                         INVERT VIDEO
-#########################################################
-
 include ../../global_config
 
-OBJS = freezeframe.o
+OBJS = $(OBJDIR)/freezeframe.o
 
-OUTPUT = ../freezeframe.plugin
-
-$(OUTPUT): $(OBJS)
-	$(CC) $(PLUGINLFLAGS) -o $(OUTPUT) $(OBJS) $(PLUGINVIDEOOBJS)
+OUTPUT = ../$(OBJDIR)/freezeframe.plugin
 
 include ../../plugin_config
+
+$(OBJDIR)/freezeframe.o: freezeframe.C

@@ -5,7 +5,6 @@
 #include "indexfile.inc"
 #include "mwindow.inc"
 #include "mutex.h"
-#include "pluginbuffer.h"
 #include "thread.h"
 
 #define TOTAL_BUFFERS 2

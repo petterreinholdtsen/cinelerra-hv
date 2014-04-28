@@ -186,24 +186,6 @@ int PlayTransport::keypress_event()
 	return result;
 }
 
-int PlayTransport::start_playback(PTransportButton *button, int reverse, float speed)
-{
-// start from wherever cursor is
-	long playback_position = mwindow->get_playback_position(); 
-
-// stop any current playback and update its button
-	mwindow->stop_playback(1);             
-// change button to a pause button
-	if(button) button->set_mode(2);
-	active_button = button;
-// set speed, direction, and position
-	mwindow->set_playback_range(playback_position, reverse, speed);
-// want to update this button if finished
-	mwindow->arm_playback(1, 1, 0, 0);
-// start playback
-	mwindow->start_playback();         
-	return 1;
-}
 
 void PlayTransport::goto_start()
 {
@@ -215,11 +197,6 @@ void PlayTransport::goto_end()
 	handle_transport(END, 1);
 }
 
-// REMOVE
-// Update GUI to reflect the current operation
-void PlayTransport::update_gui_state(int command, int paused)
-{
-}
 
 
 void PlayTransport::handle_transport(int command, int wait_tracking)

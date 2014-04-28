@@ -10,7 +10,6 @@
 #include "maxbuffers.h"
 #include "patch.h"
 #include "plugin.inc"
-#include "pluginbuffer.inc"
 #include "pluginserver.inc"
 #include "track.inc"
 #include "transition.inc"
@@ -37,7 +36,7 @@ public:
 	virtual ~VirtualNode();
 	void dump();
 
-// derived node creates PluginBuffers here
+// derived node creates buffers here
 	virtual void new_output_buffer() { };
 	virtual void new_input_buffer() { };
 
@@ -177,7 +176,6 @@ private:
 	int sort_as_plugin(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
 	int expand_as_module(int duplicate, long current_position);
 	int expand_as_plugin(int duplicate);
-	int expand_as_transition(int duplicate);
 };
 
 

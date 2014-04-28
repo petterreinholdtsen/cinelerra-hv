@@ -24,7 +24,12 @@ public:
 	
 	int equivalent(DelayVideoConfig &that);
 	void copy_from(DelayVideoConfig &that);
-	
+	void interpolate(DelayVideoConfig &prev, 
+		DelayVideoConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame);
+
 	double length;
 };
 
@@ -94,7 +99,7 @@ public:
 
 
 
-	void load_configuration();
+	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void update_gui();

@@ -210,6 +210,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 //printf("PatchBay::synchronize_faders %p %p\n", current, skip);
 		if(current->data_type == data_type &&
 			current->gang && 
+			current->record && 
 			current != skip)
 		{
 			FloatAutos *fade_autos = current->automation->fade_autos;
@@ -245,12 +246,6 @@ int PatchBay::resize_event(int top, int bottom)
  		mwindow->theme->patchbay_y,
 		mwindow->theme->patchbay_w,
 		mwindow->theme->patchbay_h);
-	return 0;
-}
-
-// REMOVE
-int PatchBay::load_patches(FileXML *xml, Patch *current_patch)
-{
 	return 0;
 }
 

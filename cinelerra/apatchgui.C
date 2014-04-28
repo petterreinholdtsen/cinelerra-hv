@@ -1,4 +1,5 @@
 #include "apatchgui.h"
+#include "apatchgui.inc"
 #include "atrack.h"
 #include "autoconf.h"
 #include "automation.h"
@@ -74,7 +75,17 @@ int APatchGUI::update(int x, int y)
 		else
 		{
 //printf("APatchGUI::update %f\n", fade->get_keyframe(mwindow, this)->value);
-			fade->update(fade->get_keyframe(mwindow, this)->value);
+			FloatAuto *previous = 0, *next = 0;
+			double unit_position = mwindow->edl->local_session->selectionstart;
+			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+			unit_position = atrack->to_units(unit_position, 0);
+			float value = atrack->automation->fade_autos->get_value(
+				(long)unit_position,
+				PLAY_FORWARD, 
+				previous, 
+				next);
+			fade->update(value);
+//			fade->update(fade->get_keyframe(mwindow, this)->value);
 		}
 	}
 	else
@@ -112,6 +123,27 @@ int APatchGUI::update(int x, int y)
 		{
 			delete pan;
 			pan = 0;
+		}
+		else
+		if(pan->get_total_values() != mwindow->edl->session->audio_channels)
+		{
+			pan->change_channels(mwindow->edl->session->audio_channels,
+				mwindow->edl->session->achannel_positions);
+		}
+		else
+		{
+			int handle_x, handle_y;
+			PanAuto *previous = 0, *next = 0;
+			double unit_position = mwindow->edl->local_session->selectionstart;
+			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+			unit_position = atrack->to_units(unit_position, 0);
+			atrack->automation->pan_autos->get_handle(handle_x,
+				handle_y,
+				(long)unit_position, 
+				PLAY_FORWARD,
+				previous,
+				next);
+			pan->update(handle_x, handle_y);
 		}
 	}
 	else
@@ -218,7 +250,7 @@ FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
  : BC_Pan(x, 
 		y, 
-		50, 
+		PAN_RADIUS, 
 		1, 
 		mwindow->edl->session->audio_channels, 
 		mwindow->edl->session->achannel_positions, 

@@ -12,8 +12,6 @@ public:
 	PluginAClient(PluginServer *server);
 	virtual ~PluginAClient();
 	
-	int create_buffer_ptrs();
-	int delete_buffer_ptrs();
 	int get_render_ptrs();
 	int init_realtime_parameters();
 	void plugin_process_realtime(double **input, 

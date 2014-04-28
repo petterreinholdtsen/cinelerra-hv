@@ -36,7 +36,11 @@ int RecordTransport::create_objects()
 
 	if(record->default_asset->video_data)
 	{
-		window->add_subwindow(record_frame = new RecordGUIRecFrame(mwindow, x, y));
+		window->add_subwindow(
+			record_frame = new RecordGUIRecFrame(mwindow, 
+				record, 
+				x, 
+				y));
 		x += record_frame->get_w();
 	}
 
@@ -124,7 +128,7 @@ RecordGUIRec::~RecordGUIRec()
 int RecordGUIRec::handle_event()
 {
 	unlock_window();
-	record->start_recording(0);
+	record->start_recording(0, CONTEXT_INTERACTIVE);
 	lock_window();
 	return 1;
 }
@@ -134,10 +138,10 @@ int RecordGUIRec::keypress_event()
 	return 0;
 }
 
-RecordGUIRecFrame::RecordGUIRecFrame(MWindow *mwindow, int x, int y)
+RecordGUIRecFrame::RecordGUIRecFrame(MWindow *mwindow, Record *record, int x, int y)
  : BC_Button(x, y, mwindow->theme->recframe_data)
 { 
-	this->engine = engine; 
+	this->record = record; 
 	set_tooltip("Record single frame");
 }
 
@@ -148,7 +152,7 @@ RecordGUIRecFrame::~RecordGUIRecFrame()
 int RecordGUIRecFrame::handle_event()
 {
 	unlock_window();
-//	engine->save_frame();
+	record->start_recording(0, CONTEXT_SINGLEFRAME);
 	lock_window();
 	return 1;
 }

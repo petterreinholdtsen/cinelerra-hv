@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.1 2002/04/19 05:50:28 myrina Exp $
+$Id: DEFINES,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $
 
 KLEMM_36:
  - portability fixes in the IO code

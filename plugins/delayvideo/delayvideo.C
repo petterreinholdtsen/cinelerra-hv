@@ -43,7 +43,14 @@ void DelayVideoConfig::copy_from(DelayVideoConfig &that)
 	length = that.length;
 }
 
-
+void DelayVideoConfig::interpolate(DelayVideoConfig &prev, 
+		DelayVideoConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame)
+{
+	this->length = prev.length;
+}
 
 
 
@@ -248,21 +255,27 @@ void DelayVideo::reconfigure()
 
 int DelayVideo::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
+//printf("DelayVideo::process_realtime 1 %d\n", config.length);
 	this->input = input_ptr;
 	this->output = output_ptr;
-	load_configuration();
+	need_reconfigure += load_configuration();
+	CLAMP(config.length, 0, 10);
+
+//printf("DelayVideo::process_realtime 2 %d\n", config.length);
 	if(need_reconfigure) reconfigure();
-	
+//printf("DelayVideo::process_realtime 3 %d %d\n", config.length, allocation);
+
 	buffer[allocation - 1]->copy_from(input_ptr);
 	output_ptr->copy_from(buffer[0]);
 	
 	VFrame *temp = buffer[0];
-	for(int i = 0; i < allocation -1; i++)
+	for(int i = 0; i < allocation - 1; i++)
 	{
 		buffer[i] = buffer[i + 1];
 	}
 
 	buffer[allocation - 1] = temp;
+//printf("DelayVideo::process_realtime 4\n");
 	
 	
 	return 0;
@@ -278,29 +291,16 @@ char* DelayVideo::plugin_title()
 	return "Delay Video";
 }
 
-int DelayVideo::show_gui()
-{
-	load_configuration();
-	
-	thread = new DelayVideoThread(this);
-	thread->start();
-	return 0;
-}
+SET_STRING_MACRO(DelayVideo)
 
-void DelayVideo::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+NEW_PICON_MACRO(DelayVideo)
 
-int DelayVideo::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
+LOAD_CONFIGURATION_MACRO(DelayVideo, DelayVideoConfig)
+
+SHOW_GUI_MACRO(DelayVideo, DelayVideoThread)
+
+RAISE_WINDOW_MACRO(DelayVideo)
+
 
 void DelayVideo::save_data(KeyFrame *keyframe)
 {
@@ -334,11 +334,6 @@ void DelayVideo::read_data(KeyFrame *keyframe)
 	}
 }
 
-VFrame* DelayVideo::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
 void DelayVideo::update_gui()
 {
 	if(thread) 
@@ -352,20 +347,6 @@ void DelayVideo::update_gui()
 
 
 
-void DelayVideo::load_configuration()
-{
-	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
-	
-	DelayVideoConfig old_config;
-	old_config.copy_from(config);
- 	read_data(prev_keyframe);
-
- 	if(!old_config.equivalent(config))
- 	{
-		need_reconfigure = 1;
-	}
-}
 
 int DelayVideo::load_defaults()
 {

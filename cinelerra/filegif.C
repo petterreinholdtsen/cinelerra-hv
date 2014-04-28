@@ -77,16 +77,6 @@ int FileGIF::read_header()
 	return 0;
 }
 
-int FileGIF::read_frame(VFrame *frame, PluginBuffer *buffer, long byte_offset, 
-		int in_x1, int in_y1, int in_x2, int in_y2,
-		int out_x1, int out_y1, int out_x2, int out_y2, 
-		int alpha, int use_alpha, int use_float)
-{
-	read_raw();
-	frame->transfer_from(this->data, in_x1, in_y1, in_x2, in_y2,
-						out_x1, out_y1, out_x2, out_y2, alpha,
-						use_alpha, use_float);
-}
 
 VFrame* FileGIF::read_frame(int use_alpha, int use_float)
 {

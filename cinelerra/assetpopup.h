@@ -49,6 +49,18 @@ public:
 	AssetPopup *popup;
 };
 
+class AssetPopupSort : public BC_MenuItem
+{
+public:
+	AssetPopupSort(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupSort();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
 class AssetPopupBuildIndex : public BC_MenuItem
 {
 public:

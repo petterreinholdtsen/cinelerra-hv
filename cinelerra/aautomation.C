@@ -23,7 +23,7 @@ int AAutomation::create_objects()
 	Automation::create_objects();
 
 //printf("AAutomation::create_objects 1\n");
-	fade_autos = new FloatAutos(edl, track, LTGREY, INFINITYGAIN, 6.0);
+	fade_autos = new FloatAutos(edl, track, LTGREY, INFINITYGAIN, 6.0, 0.0);
 	fade_autos->create_objects();
 //printf("AAutomation::create_objects 1\n");
 	((FloatAuto*)fade_autos->default_auto)->value = 0.0;

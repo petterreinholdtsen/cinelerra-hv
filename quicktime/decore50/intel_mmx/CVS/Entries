@@ -1,6 +1,6 @@
+/IDCT_MMX.C/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/basic_prediction_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/clearblock_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/transferIDCT_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/yuv2rgb_mmx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 D/postprocess////
-/IDCT_MMX.C/1.1/Fri Jan 19 14:34:12 2001//
-/basic_prediction_mmx.c/1.1/Sat Jan 20 12:17:06 2001//
-/clearblock_mmx.c/1.1/Tue Apr  3 07:09:06 2001//
-/transferIDCT_mmx.c/1.1/Thu Mar  1 06:32:58 2001//
-/yuv2rgb_mmx.c/1.1/Tue Apr 24 03:27:14 2001//

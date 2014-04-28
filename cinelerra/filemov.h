@@ -61,8 +61,6 @@ public:
 
 	int read_frame(VFrame *frame);
 	int read_samples(double *buffer, long len);
-	int read_raw_frame_possible();
-	int read_raw_frame(VFrame *buffer, PluginBuffer *plugin_buffer, long byte_offset);
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);

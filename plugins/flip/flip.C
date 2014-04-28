@@ -1,143 +1,201 @@
+#include "clip.h"
+#include "colormodels.h"
+#include "defaults.h"
 #include "filexml.h"
 #include "flip.h"
 #include "flipwindow.h"
+#include "picon_png.h"
 
-main(int argc, char *argv[])
+#include <stdint.h>
+#include <string.h>
+
+REGISTER_PLUGIN(FlipMain)
+
+
+
+
+
+
+FlipConfig::FlipConfig()
 {
-	FlipMain *plugin;
-
-	plugin = new FlipMain(argc, argv);
-	plugin->plugin_run();
-	delete plugin;
+	flip_horizontal = 0;
+	flip_vertical = 0;
 }
 
-FlipMain::FlipMain(int argc, char *argv[])
- : PluginVClient(argc, argv)
+void FlipConfig::copy_from(FlipConfig &that)
 {
-	flip_vertical = 0;
-	flip_horizontal = 0;
+	flip_horizontal = that.flip_horizontal;
+	flip_vertical = that.flip_vertical;
+}
+
+int FlipConfig::equivalent(FlipConfig &that)
+{
+	return flip_horizontal == that.flip_horizontal &&
+		flip_vertical == that.flip_vertical;
+}
+
+void FlipConfig::interpolate(FlipConfig &prev, 
+	FlipConfig &next, 
+	long prev_frame, 
+	long next_frame, 
+	long current_frame)
+{
+	this->flip_horizontal = prev.flip_horizontal;
+	this->flip_vertical = prev.flip_vertical;
+}
+
+
+
+
+
+
+
+
+
+
+FlipMain::FlipMain(PluginServer *server)
+ : PluginVClient(server)
+{
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 FlipMain::~FlipMain()
 {
+	PLUGIN_DESTRUCTOR_MACRO
 }
 
 char* FlipMain::plugin_title() { return "Flip"; }
-int FlipMain::plugin_is_realtime() { return 1; }
-int FlipMain::plugin_is_multi_channel() { return 0; }
+int FlipMain::is_realtime() { return 1; }
 	
-int FlipMain::start_realtime()
-{
+
+#define SWAP_PIXELS(components, in, out) \
+{ \
+	in[0] ^= out[0]; \
+	out[0] ^= in[0]; \
+	in[0] ^= out[0]; \
+ \
+	in[1] ^= out[1]; \
+	out[1] ^= in[1]; \
+	in[1] ^= out[1]; \
+ \
+	in[2] ^= out[2]; \
+	out[2] ^= in[2]; \
+	in[2] ^= out[2]; \
+ \
+	if(components == 4) \
+	{ \
+		in[3] ^= out[3]; \
+		out[3] ^= in[3]; \
+		in[3] ^= out[3]; \
+	} \
 }
 
-int FlipMain::stop_realtime()
-{
+#define FLIP_MACRO(type, components) \
+{ \
+	type **input_rows, **output_rows; \
+	type *input_row, *output_row; \
+	input_rows = ((type**)input_ptr->get_rows()); \
+	output_rows = ((type**)output_ptr->get_rows()); \
+ \
+	if(config.flip_vertical) \
+	{ \
+		for(i = 0, j = h - 1; i < h / 2; i++, j--) \
+		{ \
+			input_row = input_rows[i]; \
+			output_row = output_rows[j]; \
+			for(k = 0; k < w; k++) \
+			{ \
+				SWAP_PIXELS(components, output_row, input_row); \
+				output_row += components; \
+				input_row += components; \
+			} \
+		} \
+	} \
+ \
+	if(config.flip_horizontal) \
+	{ \
+		for(i = 0; i < h; i++) \
+		{ \
+			input_row = input_rows[i]; \
+			output_row = output_rows[i] + (w - 1) * components; \
+			for(k = 0; k < w / 2; k++) \
+			{ \
+				SWAP_PIXELS(components, output_row, input_row); \
+				input_row += components; \
+				output_row -= components; \
+			} \
+		} \
+	} \
 }
 
-int FlipMain::process_realtime(long size, VFrame **input_ptr, VFrame **output_ptr)
+int FlipMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-	register int i, j, k, l;
-	VPixel **input_rows, **output_rows;
-	VPixel *input_row, *output_row;
+	int i, j, k, l;
+	int w = input_ptr->get_w();
+	int h = input_ptr->get_h();
+	int colormodel = input_ptr->get_color_model();
 
-	for(i = 0; i < size; i++)
+	load_configuration();
+	switch(colormodel)
 	{
-		input_rows = ((VPixel**)input_ptr[i]->get_rows());
-		output_rows = ((VPixel**)output_ptr[i]->get_rows());
+		case BC_RGB888:
+		case BC_YUV888:
+			FLIP_MACRO(unsigned char, 3);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			FLIP_MACRO(uint16_t, 3);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			FLIP_MACRO(unsigned char, 4);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			FLIP_MACRO(uint16_t, 4);
+			break;
+	}
+	return 0;
+}
 
-// Copy to new frame if necessary
-		if(input_rows != output_rows)
-		{
-			for(j = 0; j < project_frame_h; j++)
-			{
-				for(k = 0; k < project_frame_w; k++)
-				{
-					output_rows[j][k] = input_rows[j][k];
-				}
-			}
-		}
 
-		input_rows = output_rows;
-		if(flip_vertical)
-		{
-			for(i = 0, j = project_frame_h - 1; i < project_frame_h / 2; i++, j--)
-			{
-				input_row = input_rows[i];
-				output_row = output_rows[j];
-				for(k = 0; k < project_frame_w; k++)
-				{
-					swap_pixels(&output_row[k], &input_row[k]);
-				}
-			}
-		}
+SHOW_GUI_MACRO(FlipMain, FlipThread)
 
-		if(flip_horizontal)
-		{
-			for(i = 0; i < project_frame_h; i++)
-			{
-				input_row = input_rows[i];
-				output_row = output_rows[i];
-				for(k = 0, l = project_frame_w - 1; k < project_frame_w / 2; k++, l--)
-				{
-					swap_pixels(&output_row[l], &input_row[k]);
-				}
-			}
-		}
+RAISE_WINDOW_MACRO(FlipMain)
+
+SET_STRING_MACRO(FlipMain)
+
+NEW_PICON_MACRO(FlipMain)
+
+LOAD_CONFIGURATION_MACRO(FlipMain, FlipConfig)
+
+void FlipMain::update_gui()
+{
+	if(thread)
+	{
+		load_configuration();
+		thread->window->lock_window();
+		thread->window->flip_vertical->update((int)config.flip_vertical);
+		thread->window->flip_horizontal->update((int)config.flip_horizontal);
+		thread->window->unlock_window();
 	}
 }
 
-int FlipMain::swap_pixels(VPixel *in, VPixel *out)
-{
-	static VPixel temp;
-	temp = *in;
-	*in = *out;
-	*out = temp;
-}
-
-
-int FlipMain::start_gui()
-{
-	thread = new FlipThread(this);
-	thread->start();
-	thread->gui_started.lock();
-}
-
-int FlipMain::stop_gui()
-{
-	thread->window->set_done(0);
-	thread->join();
-	delete thread;
-	thread = 0;
-}
-
-int FlipMain::show_gui()
-{
-	thread->window->show_window();
-}
-
-int FlipMain::hide_gui()
-{
-	thread->window->hide_window();
-}
-
-int FlipMain::set_string()
-{
-	thread->window->set_title(gui_string);
-}
-
-int FlipMain::save_data(char *text)
+void FlipMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(text, MESSAGESIZE);
-	if(flip_vertical)
+	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.tag.set_title("FLIP");
+	output.append_tag();
+	if(config.flip_vertical)
 	{
 		output.tag.set_title("VERTICAL");
 		output.append_tag();
 	}
 
-	if(flip_horizontal)
+	if(config.flip_horizontal)
 	{	
 		output.tag.set_title("HORIZONTAL");
 		output.append_tag();
@@ -146,14 +204,14 @@ int FlipMain::save_data(char *text)
 // data is now in *text
 }
 
-int FlipMain::read_data(char *text)
+void FlipMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(text, strlen(text));
+	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
 	int result = 0;
-	flip_vertical = flip_horizontal = 0;
+	config.flip_vertical = config.flip_horizontal = 0;
 
 	while(!result)
 	{
@@ -163,22 +221,36 @@ int FlipMain::read_data(char *text)
 		{
 			if(input.tag.title_is("VERTICAL"))
 			{
-				flip_vertical = 1;
-// You'll usually set a flag here to inform process_realtime
-// that it needs to reconfigure itself or something.
+				config.flip_vertical = 1;
 			}
 			else
 			if(input.tag.title_is("HORIZONTAL"))
 			{
-				flip_horizontal = 1;
-// You'll usually set a flag here to inform process_realtime
-// that it needs to reconfigure itself or something.
+				config.flip_horizontal = 1;
 			}
 		}
 	}
-	if(thread) 
-	{
-		thread->window->flip_vertical->update(flip_vertical);
-		thread->window->flip_horizontal->update(flip_horizontal);
-	}
+}
+
+int FlipMain::load_defaults()
+{
+	char directory[BCTEXTLEN], string[BCTEXTLEN];
+// set the default directory
+	sprintf(directory, "%sflip.rc", BCASTDIR);
+
+// load the defaults
+	defaults = new Defaults(directory);
+	defaults->load();
+
+	config.flip_horizontal = defaults->get("FLIP_HORIZONTAL", config.flip_horizontal);
+	config.flip_vertical = defaults->get("FLIP_VERTICAL", config.flip_vertical);
+	return 0;
+}
+
+int FlipMain::save_defaults()
+{
+	defaults->update("FLIP_HORIZONTAL", config.flip_horizontal);
+	defaults->update("FLIP_VERTICAL", config.flip_vertical);
+	defaults->save();
+	return 0;
 }

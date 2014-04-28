@@ -28,7 +28,7 @@
  * NOTE: See http://id3.org/ for more information about ID3 tag formats.
  */
 
-/* $Id: id3tag.c,v 1.1 2002/04/19 05:50:29 myrina Exp $ */
+/* $Id: id3tag.c,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

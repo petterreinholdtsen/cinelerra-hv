@@ -1,0 +1,41 @@
+Uniprocessor
+
+GNOME:
+
+BC_DisplayInfo::test_window 1 event=22 5
+BC_DisplayInfo::test_window 2 x_out=0 y_out=0 x_in=0 y_in=0 serial=0xd pending=5
+BC_DisplayInfo::test_window 1 event=21 4
+BC_DisplayInfo::test_window 1 event=22 3
+BC_DisplayInfo::test_window 2 x_out=6 y_out=22 x_in=0 y_in=0 serial=0xd pending=3
+BC_DisplayInfo::test_window 1 event=22 2
+BC_DisplayInfo::test_window 2 x_out=6 y_out=22 x_in=0 y_in=0 serial=0xd pending=2
+BC_DisplayInfo::test_window 1 event=19 1
+BC_DisplayInfo::test_window 1 event=22 0
+BC_DisplayInfo::test_window 2 x_out=6 y_out=22 x_in=0 y_in=0 serial=0xf pending=0
+
+
+
+
+FVWM:
+BC_DisplayInfo::test_window 1 event=21 3
+BC_DisplayInfo::test_window 1 event=22 2
+BC_DisplayInfo::test_window 2 x_out=6 y_out=24 x_in=0 y_in=0 serial=0xd pending=2
+BC_DisplayInfo::test_window 1 event=19 1
+BC_DisplayInfo::test_window 1 event=22 0
+BC_DisplayInfo::test_window 2 x_out=0 y_out=0 x_in=0 y_in=0 serial=0xf pending=0
+
+
+
+
+
+KDE:
+BC_DisplayInfo::test_window 1 event=22 5
+BC_DisplayInfo::test_window 2 x_out=4 y_out=20 x_in=0 y_in=0 serial=0xd pending=5
+BC_DisplayInfo::test_window 1 event=21 4
+BC_DisplayInfo::test_window 1 event=22 3
+BC_DisplayInfo::test_window 2 x_out=0 y_out=0 x_in=0 y_in=0 serial=0xd pending=3
+BC_DisplayInfo::test_window 1 event=19 2
+BC_DisplayInfo::test_window 1 event=22 1
+BC_DisplayInfo::test_window 2 x_out=4 y_out=20 x_in=0 y_in=0 serial=0xf pending=1
+BC_DisplayInfo::test_window 1 event=22 0
+BC_DisplayInfo::test_window 2 x_out=4 y_out=20 x_in=0 y_in=0 serial=0xf pending=0

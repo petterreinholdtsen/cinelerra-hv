@@ -24,6 +24,7 @@
 	} \
 }
 
+#if 1
 #define APPEND_VECTOR(data, size, allocation, track, value) \
 { \
 	if(!data[track] || allocation[track] <= size[track]) \
@@ -41,6 +42,10 @@
  \
 	data[track][size[track]++] = value; \
 }
+#else
+#define APPEND_VECTOR(data, size, allocation, track, value) \
+	;
+#endif
 
 #define DELETE_VECTORS(data, size, allocation, tracks) \
 { \

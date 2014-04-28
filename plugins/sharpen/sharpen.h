@@ -28,7 +28,7 @@ public:
 		long prev_frame, 
 		long next_frame, 
 		long current_frame);
-	
+
 	
 	
 	int horizontal;
@@ -50,6 +50,7 @@ public:
 	int show_gui();
 	void raise_window();
 	int set_string();
+	void update_gui();
 	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);

@@ -13,12 +13,10 @@
 #include "mainprogress.inc"
 #include "maxbuffers.h"
 #include "menueffects.inc"
-#include "messages.inc"
 #include "module.inc"
 #include "mutex.h"
 #include "mwindow.inc"
 #include "plugin.inc"
-#include "pluginbuffer.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
 #include "sema.inc"
@@ -46,7 +44,6 @@ public:
 	int start_gui_server(PluginServer *plugin_server, char *string);
 	void run();
 
-	Messages *messages;       // GUI from plugin to server only messages
 	PluginServer *plugin_server;
 	Mutex completion_lock;
 	char string[1024];      // Title given by the module
@@ -108,21 +105,13 @@ public:
 // =============================== for realtime plugins
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);          
-// notify plugin to load data in a separate routine so same buffer can have data written to it directly
-	int notify_load_data();   
-// load configuration of plugin after message buffer has been armed with data by get_message_buffer
-	int load_data();
 // Update EDL and playback engines to reflect changes
 	void sync_parameters();
-// update configuration to reflect the master plugin
-	int get_configuration_change(char *data); 
 // return pointer to the actual message buffer
 	char* get_message_buffer();   	
 // set for realtime processor usage
 	int set_realtime_sched();
 	int get_gui_status();
-// Send GUI status to the DSP plugins
-	int send_gui_status(int visible);
 // Raise the GUI
 	void raise_window();
 // cause the plugin to show the GUI
@@ -151,16 +140,8 @@ public:
 			long total_len);
 
 
-	int process_realtime(long source_len, long source_position, long fragment_len);
-// process data in the realtime buffers for parallelization
-	int process_realtime_start(long source_len, long source_position, long fragment_len);
-	int process_realtime_end();
-// Send new buffer information after the virtual console is rebuilt.
-	int restart_realtime();
 // Send the boundary autos of the next fragment
 	int set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);
-// Send the automation to the plugin
-	int send_automation(long source_len, long source_position, long buffer_len);
 
 
 
@@ -170,14 +151,6 @@ public:
 				long out_fragment_position,
 				int double_buffer_in,
 				int double_buffer_out);
-// Attach a shared buffer from a pluginarray.
-	int attach_input_buffer(PluginBuffer *input, long size);
-	int attach_output_buffer(PluginBuffer *output, long size);
-
-// Attach a shared buffer from a virtual module.
-// Returns the buffer number for arming.
-	int attach_input_buffer(PluginBuffer **input, long ring_buffers, long buffer_size, long fragment_size);
-	int attach_output_buffer(PluginBuffer **output, long ring_buffers, long buffer_size, long fragment_size);
 // Detach all the shared buffers.
 	int detach_buffers();
 
@@ -200,9 +173,6 @@ public:
 	int read_samples(double *buffer, int channel, long start_position, long total_samples);
 	int read_samples(double *buffer, long start_position, long total_samples);
 
-	int handle_plugin_command();     // handle one plugin command and return 1 if plugin completed
-	int load_defaults();             // loads defaults from disk file
-	int save_defaults();
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters();
 	int get_samplerate();      // get samplerate produced by plugin
@@ -217,38 +187,21 @@ public:
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 	int set_interactive();             // make this the master plugin for progress bars
-	int set_range(long start, long end);
 // add track to the list of affected tracks for a non realtime plugin
 	int set_module(Module *module);
 	int set_error();         // flag to send plugin an error on next request
 	MainProgressBar* start_progress(char *string, long length);
 
-	int send_cancel();            // send a cancel command to plugin
-	int negotiate_buffers(long recommended_size);          // get buffer size and allocate two buffers for each track
-	int write_samples();   // write all input buffers
 	int long get_written_samples();   // after samples are written, get the number written
-	int write_frames();   // write all input buffers
 	int long get_written_frames();   // after frames are written, get the number written
-	int send_write_result(int result);  // user must send result after write
 
-// for running plugin, wait for commands
-	int plugin_server_loop();
 
 // buffers
 	long out_buffer_size;   // size of a send buffer to the plugin
 	long in_buffer_size;    // size of a recieve buffer from the plugin
 	int total_in_buffers;
 	int total_out_buffers;
-// for non realtime plugin a list of channels for each buffer
-	ArrayList<PluginBuffer*> data_in;    // data coming in from plugin
-	ArrayList<PluginBuffer*> data_out;   // data going out to plugin
 
-// for realtime plugin
-// Some channels have 1 double buffer and some have 2 double buffers.
-// Buffer sizes inform plugin of the maximum size temporary buffer to allocate.
-// ArrayList of channels (which double buffer*)(PluginBuffer *)
-	ArrayList<PluginBuffer**> data_in_realtime;   // data coming in from plugin
-	ArrayList<PluginBuffer**> data_out_realtime;  // data going out to plugin
 // number of double buffers for each channel
 	ArrayList<int> ring_buffers_in;    
 	ArrayList<int> ring_buffers_out;
@@ -273,7 +226,6 @@ public:
 // Send new buffer information for next render
 	int new_buffers;
 
-	Messages *messages;
 // seperate render events from configuration events using a sema
 // using seperate message queueues was too messy
 	Sema *message_lock;
@@ -311,8 +263,6 @@ public:
 	MenuEffectPrompt *prompt;
 	int gui_on;
 
-// For I/O plugin temporary frame
-	PluginBuffer *temp_frame_buffer;
 	VFrame *temp_frame;
 
 // Icon for Asset Window

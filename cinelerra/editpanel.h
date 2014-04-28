@@ -48,7 +48,8 @@ public:
 		int use_labels,
 		int use_toclip,
 		int use_meters,
-		int is_mwindow);
+		int is_mwindow,
+		int use_cut);
 	~EditPanel();
 
 	void set_meters(MeterPanel *meter_panel);
@@ -90,6 +91,7 @@ public:
 	int use_meters;
 	int x, y, x1, y1;
 	int is_mwindow;
+	int use_cut;
 
 	EditFit *fit;
 	EditInPoint *inpoint;

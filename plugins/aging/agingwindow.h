@@ -10,19 +10,7 @@ class AgingWindow;
 #include "mutex.h"
 #include "aging.h"
 
-class AgingThread : public Thread
-{
-public:
-	AgingThread(AgingMain *client);
-	~AgingThread();
-
-	void run();
-
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	AgingMain *client;
-	AgingWindow *window;
-};
+PLUGIN_THREAD_HEADER(AgingMain, AgingThread, AgingWindow)
 
 class AgingColor;
 class AgingScratches;

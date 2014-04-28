@@ -2,17 +2,13 @@
 #define PLUGIN_H
 
 #include "guicast.h"
-#include "console.inc"
 #include "edit.h"
 #include "edl.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
 #include "keyframes.inc"
-#include "messages.inc"
-#include "mwindow.inc"
 #include "module.inc"
 #include "plugin.inc"
-#include "pluginbuffer.inc"
 #include "pluginset.inc"
 #include "pluginpopup.inc"
 #include "pluginserver.inc"
@@ -48,6 +44,10 @@ public:
 	virtual void copy_from(Edit *edit);
 	virtual int identical(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
+	
+	void change_plugin(char *title, 
+		SharedLocation *shared_location, 
+		int plugin_type);
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 // For copying to clipboard
@@ -59,8 +59,6 @@ public:
 	void load(FileXML *file);
 // Shift in time
 	void shift(long difference);
-// get the number of this plugin in the module
-	int get_plugin_number();
 	void dump();
 // Get keyframes for configuring plugin
 	KeyFrame* get_prev_keyframe(long position);
@@ -113,85 +111,20 @@ public:
 
 
 
-// REMOVE
-//	SharedPluginLocation shared_plugin_location;
-//	SharedModuleLocation shared_module_location;
 
 
 
 
 
 
-// REMOVE replaced by keyframes
-	char data[MESSAGESIZE];     // Data for the plugin currently attached
-// REMOVE
-	Plugin(MWindow *mwindow, Module *module, int plugin_number);
 
 
 
-
-	int update_derived();
-
-
-// swap module numbers when moving tracks
-	int swap_modules(int number1, int number2);
-	int set_show_derived(int value);
-	int set_string();     // set the string that appears on the plugin
-	virtual int use_gui() {};       // whether or not the module has a gui
-	char* get_module_title();
-	int resize_plugin(int x, int y);
-// Update the widgets after loading
-	int update_display();
-	char* default_title();
-
-// settings for plugin
-	int plugin_number;          // number of this plugin in the module starting with 1
-
-	MWindow *mwindow;
-	PluginPopup *plugin_popup;
-	PluginShowToggle *show_toggle;
-	PluginOnToggle *on_toggle;
-	BC_Title *show_title;
-	BC_Title *on_title;
 
 	Module *module;
 };
 
 
-
-class PluginShowToggle : public BC_Radial
-{
-public:
-	PluginShowToggle(Plugin *plugin, Console *console, int x, int y);
-	int handle_event();
-	int cursor_moved_over();
-	int button_release();
-
-	Console *console;
-	Plugin *plugin;
-};
-
-class PluginOnToggle : public BC_Radial
-{
-public:
-	PluginOnToggle(Plugin *plugin, Console *console, int x, int y);
-	int handle_event();
-	int cursor_moved_over();
-	int button_release();
-
-	Console *console;
-	Plugin *plugin;
-};
-
-/* class PluginSoloToggle : public BC_Radial
-{
-public:
-	PluginSoloToggle();
-	~PluginSoloToggle();
-
-	int handle_event();
-};
- */
 
 
 

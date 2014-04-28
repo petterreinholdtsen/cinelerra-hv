@@ -4,7 +4,6 @@
 #include "file.inc"
 #include "mutex.h"
 #include "mwindow.inc"
-#include "pluginbuffer.inc"
 #include "record.inc"
 #include "recordgui.inc"
 #include "thread.h"
@@ -61,7 +60,6 @@ public:
 	int grab_result;  
 // Capture frame
 	VFrame ***frame_ptr;
-	PluginBuffer *frame_shm;
 	long current_sample;   // Sample in time of the start of the capture
 	long next_sample;      // Sample of next frame
 	long total_dropped_frames;  // Total number of frames behind

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2000/10/22 11:39:44 aleidinger Exp $
+## $Id: Makefile.am,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $
 
 AUTOMAKE_OPTIONS = foreign ansi2knr
 

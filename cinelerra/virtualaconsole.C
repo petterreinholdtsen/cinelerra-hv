@@ -5,18 +5,14 @@
 #include "atrack.h"
 #include "audiodevice.h"
 #include "cache.h"
-#include "console.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
 #include "levelwindow.h"
-#include "mwindow.h"
-#include "modules.h"
 #include "playabletracks.h"
 #include "plugin.h"
-#include "pluginbuffer.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "thread.h"
@@ -51,7 +47,6 @@ void VirtualAConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
-			renderengine->config->aconfig->do_channel, 
 			commonrender->current_position, 
 			TRACK_AUDIO);
 }
@@ -450,12 +445,6 @@ void VirtualAConsole::run()
 
 
 
-
-VirtualAConsole::VirtualAConsole(MWindow *mwindow, ARender *arender)
- : VirtualConsole(mwindow, arender)
-{
-	this->arender = arender;
-}
 
 int VirtualAConsole::init_rendering(int duplicate)
 {

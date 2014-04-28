@@ -1,3 +1,4 @@
+DV_DIR := $(shell expr ../quicktime/libdv-0.9.5 )
 include ../global_config
 
 OBJS = \
@@ -9,14 +10,12 @@ OBJS = \
 	$(OBJDIR)/aedit.o \
 	$(OBJDIR)/aedits.o \
 	$(OBJDIR)/amodule.o \
-	$(OBJDIR)/apanel.o \
 	$(OBJDIR)/apatchgui.o \
 	$(OBJDIR)/aplugin.o \
 	$(OBJDIR)/apluginarray.o \
 	$(OBJDIR)/apluginset.o \
 	$(OBJDIR)/arender.o \
 	$(OBJDIR)/assetedit.o \
-	$(OBJDIR)/assetmanager.o \
 	$(OBJDIR)/assetpopup.o \
 	$(OBJDIR)/assetremove.o \
 	$(OBJDIR)/assets.o \
@@ -24,7 +23,6 @@ OBJS = \
 	$(OBJDIR)/attachmentpoint.o \
 	$(OBJDIR)/audio1394.o \
 	$(OBJDIR)/audioalsa.o \
-	$(OBJDIR)/audioconfig.o \
 	$(OBJDIR)/audiodevice.o \
 	$(OBJDIR)/audioesound.o \
 	$(OBJDIR)/audioidevice.o \
@@ -54,11 +52,8 @@ OBJS = \
 	$(OBJDIR)/commonrender.o \
 	$(OBJDIR)/confirmsave.o \
 	$(OBJDIR)/confirmquit.o \
-	$(OBJDIR)/console.o \
-	$(OBJDIR)/consolescroll.o \
 	$(OBJDIR)/cpanel.o \
 	$(OBJDIR)/cplayback.o \
-	$(OBJDIR)/cropvideo.o \
 	$(OBJDIR)/ctimebar.o \
 	$(OBJDIR)/ctracking.o \
 	$(OBJDIR)/cursor.o \
@@ -82,14 +77,11 @@ OBJS = \
 	$(OBJDIR)/filebaseaudio.o \
 	$(OBJDIR)/filebaseima4.o \
 	$(OBJDIR)/filebaseulaw.o \
-	$(OBJDIR)/filebasevideo.o \
 	$(OBJDIR)/fileformat.o \
 	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/filejpeg.o \
 	$(OBJDIR)/filemov.o \
 	$(OBJDIR)/filempeg.o \
-	$(OBJDIR)/filepcm.o \
-	$(OBJDIR)/fileplugin.o \
 	$(OBJDIR)/filepng.o \
 	$(OBJDIR)/filesndfile.o \
 	$(OBJDIR)/filetga.o \
@@ -147,7 +139,6 @@ OBJS = \
 	$(OBJDIR)/packagerenderer.o \
 	$(OBJDIR)/panauto.o \
 	$(OBJDIR)/panautos.o \
-	$(OBJDIR)/patch.o \
 	$(OBJDIR)/patchbay.o \
 	$(OBJDIR)/patchgui.o \
 	$(OBJDIR)/performanceprefs.o \
@@ -160,11 +151,8 @@ OBJS = \
 	$(OBJDIR)/pluginaclient.o \
 	$(OBJDIR)/pluginarray.o \
 	$(OBJDIR)/pluginautos.o \
-	$(OBJDIR)/pluginbuffer.o \
 	$(OBJDIR)/pluginclient.o \
 	$(OBJDIR)/plugindialog.o \
-	$(OBJDIR)/pluginioclient.o \
-	$(OBJDIR)/pluginioserver.o \
 	$(OBJDIR)/pluginpopup.o \
 	$(OBJDIR)/pluginset.o \
 	$(OBJDIR)/pluginserver.o \
@@ -173,8 +161,6 @@ OBJS = \
 	$(OBJDIR)/preferences.o \
 	$(OBJDIR)/preferencesthread.o \
 	$(OBJDIR)/presentations.o \
-	$(OBJDIR)/previewaudio.o \
-	$(OBJDIR)/previewvideo.o \
 	$(OBJDIR)/question.o \
 	$(OBJDIR)/quit.o \
 	$(OBJDIR)/recconfirmdelete.o \
@@ -187,7 +173,6 @@ OBJS = \
 	$(OBJDIR)/recordlabel.o \
 	$(OBJDIR)/recordmonitor.o \
 	$(OBJDIR)/recordprefs.o \
-	$(OBJDIR)/recordpreview.o \
 	$(OBJDIR)/recordthread.o \
 	$(OBJDIR)/recordtransport.o \
 	$(OBJDIR)/recordvideo.o \
@@ -235,10 +220,7 @@ OBJS = \
 	$(OBJDIR)/vdevicex11.o \
 	$(OBJDIR)/vedit.o \
 	$(OBJDIR)/vedits.o \
-	$(OBJDIR)/videoconfig.o \
 	$(OBJDIR)/videodevice.o \
-	$(OBJDIR)/videowindow.o \
-	$(OBJDIR)/videowindowgui.o \
 	$(OBJDIR)/viewmenu.o \
 	$(OBJDIR)/virtualnode.o \
 	$(OBJDIR)/virtualaconsole.o \
@@ -300,6 +282,7 @@ LIBS = \
 CFLAGS += \
 	-I../guicast \
 	-I../quicktime \
+	-I$(DV_DIR) \
 	-I../quicktime/libdv \
 	-I../quicktime/libraw1394/src \
 	-I../audiofile \
@@ -501,8 +484,6 @@ $(OBJDIR)/filejpeg.o: 				  filejpeg.C
 $(OBJDIR)/filelist.o: 				  filelist.C
 $(OBJDIR)/filemov.o: 				  filemov.C
 $(OBJDIR)/filempeg.o:                             filempeg.C
-$(OBJDIR)/filepcm.o: 				  filepcm.C
-$(OBJDIR)/fileplugin.o: 			  fileplugin.C
 $(OBJDIR)/filepng.o: 				  filepng.C
 $(OBJDIR)/filesndfile.o: 			  filesndfile.C
 $(OBJDIR)/filetga.o: 			  	  filetga.C
@@ -573,11 +554,8 @@ $(OBJDIR)/plugin.o: 				  plugin.C
 $(OBJDIR)/pluginaclient.o: 			  pluginaclient.C
 $(OBJDIR)/pluginarray.o: 			  pluginarray.C
 $(OBJDIR)/pluginautos.o: 			  pluginautos.C
-$(OBJDIR)/pluginbuffer.o: 			  pluginbuffer.C
 $(OBJDIR)/pluginclient.o: 			  pluginclient.C
 $(OBJDIR)/plugindialog.o: 			  plugindialog.C
-$(OBJDIR)/pluginioclient.o: 			  pluginioclient.C
-$(OBJDIR)/pluginioserver.o: 			  pluginioserver.C
 $(OBJDIR)/pluginpopup.o: 			  pluginpopup.C
 $(OBJDIR)/pluginprefs.o: 			  pluginprefs.C
 $(OBJDIR)/pluginset.o:  			  pluginset.C

@@ -35,6 +35,7 @@ int Save::handle_event()
 	else
 	{
 // save it
+// TODO: Move this into mwindow.
 		FileXML file;
 		mwindow->edl->save_xml(mwindow->plugindb, 
 			&file, 
@@ -104,15 +105,10 @@ void SaveAs::run()
 	do{
 		SaveFileWindow *window;
 
-//printf("SaveAs::run 1\n");
 		window = new SaveFileWindow(mwindow, directory);
-//printf("SaveAs::run 2\n");
 		window->create_objects();
-//printf("SaveAs::run 3\n");
 		result = window->run_window();
-//printf("SaveAs::run 4\n");
 		mwindow->defaults->update("DIRECTORY", window->get_path());
-//printf("SaveAs::run 5\n");
 		strcpy(filename, window->get_path());
 		delete window;
 

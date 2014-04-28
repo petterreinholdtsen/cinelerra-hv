@@ -26,23 +26,6 @@ public:
 	void default_window_positions();
 	void boundaries();
 
-// REMOVE AND REPLACE WITH EDL.H
-// Editing mode
-//	int editing_mode;
-// for vertical tracks
-	int tracks_vertical;
-// sample start of track view
-	long view_start;
-// pixel start of track view
-	long track_start;
-// zooming of the timeline
-	long zoom_sample, zoom_y, zoom_track;
-// labels follow edits during editing
-	int labels_follow_edits;
-// automation follows edits during editing
- 	int autos_follow_edits;
-// align cursor on frame boundaries
-	int cursor_on_frames;
 
 
 
@@ -88,31 +71,15 @@ public:
 	float drag_start_percentage;
 	long drag_start_position;
 
+// Clip number for automatic title generation
+	int clip_number;
+
 // Audio session
 	int changes_made;
-	int audio_channels;
-	int achannel_positions[MAXCHANNELS];
-// sample rate used by audio
-	long sample_rate;
 
-// Video session
-	float cwindow_zoom;
-	float vwindow_zoom;
-// frame rate used by video
-	float frame_rate;
-// size of the compositing surface
-	int track_w, track_h;              
-// size of the video output
-	int output_w, output_h;            
-// Aspect ratio
-	float aspect_w, aspect_h;
 // filename of the current project for window titling and saving
 	char filename[BCTEXTLEN];
 
-// Maintain playback cursor on GUI
-//	int playback_cursor_visible;
-// Position of playback cursor and position for pauses
-//	long playback_position;
 
 // Window positions
 	int lwindow_x, lwindow_y, lwindow_w, lwindow_h;

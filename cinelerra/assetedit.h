@@ -1,7 +1,6 @@
 #ifndef ASSETEDIT_H
 #define ASSETEDIT_H
 
-#include "assetmanager.inc"
 #include "assets.inc"
 #include "awindow.inc"
 #include "guicast.h"
@@ -21,7 +20,6 @@ class AssetEdit : public Thread
 {
 public:
 	AssetEdit(MWindow *mwindow);
-	AssetEdit(AssetManagerThread *thread);
 	~AssetEdit();
 	
 	void edit_asset(Asset *asset);
@@ -29,7 +27,6 @@ public:
 	void run();
 
 	Asset *asset, *new_asset;
-	AssetManagerThread *thread;
 	MWindow *mwindow;
 	AssetEditWindow *window;
 };

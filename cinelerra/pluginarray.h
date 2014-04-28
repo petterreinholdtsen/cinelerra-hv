@@ -9,9 +9,6 @@
 #include "keyframe.inc"
 #include "module.inc"
 #include "mwindow.inc"
-#include "pluginbuffer.inc"
-#include "pluginserver.inc"
-#include "pluginbuffer.inc"
 #include "pluginserver.inc"
 #include "recordableatracks.inc"
 #include "track.inc"
@@ -25,6 +22,7 @@ public:
 	PluginArray();
 	virtual ~PluginArray();
 
+	PluginServer* scan_plugindb(char *title);
 	int start_plugins(MWindow *mwindow, 
 		EDL *edl, 
 		PluginServer *plugin_server, 

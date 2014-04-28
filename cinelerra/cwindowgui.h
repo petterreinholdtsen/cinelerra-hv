@@ -1,7 +1,7 @@
 #ifndef CWINDOWGUI_H
 #define CWINDOWGUI_H
 
-#include "apanel.inc"
+//#include "apanel.inc"
 #include "auto.inc"
 #include "bezierauto.inc"
 #include "bezierautos.inc"
@@ -11,6 +11,7 @@
 #include "cwindow.inc"
 #include "cwindowtool.inc"
 #include "editpanel.h"
+#include "floatautos.inc"
 #include "guicast.h"
 #include "mainclock.inc"
 #include "maskauto.inc"
@@ -52,7 +53,7 @@ public:
 	MWindow *mwindow;
     CWindow *cwindow;
 	CWindowEditing *edit_panel;
-	APanel *automation_panel;
+//	APanel *automation_panel;
 	CPanel *composite_panel;
 	CWindowZoom *zoom_panel;
 	CWindowSlider *slider;
@@ -62,14 +63,10 @@ public:
 	CTimeBar *timebar;
 //	MainClock *clock;
 
-// REMOVE
-	CWindowDestination *destination;
 
 	CWindowMeters *meters;
 
 
-// REMOVE
-	ArrayList<BC_ListBoxItem*> destinations;
 	CWindowTool *tool_panel;
 
 // Cursor motion modification being done
@@ -214,6 +211,7 @@ public:
 	int test_crop(int button_press, int &redraw);
 	int test_bezier(int button_press, 
 		int &redraw, 
+		int &redraw_canvas, 
 		int &rerender,
 		int do_camera);
 	int test_zoom(int &redraw);
@@ -224,12 +222,16 @@ public:
 	int do_bezier_center(BezierAuto *current, 
 		BezierAutos *camera_autos,
 		BezierAutos *projector_autos, 
+		FloatAutos *czoom_autos,
+		FloatAutos *pzoom_autos,
 		int camera, 
 		int draw);
 	void draw_bezier_joining(BezierAuto *first, 
 		BezierAuto *last, 
 		BezierAutos *camera_autos,
 		BezierAutos *projector_autos, 
+		FloatAutos *czoom_autos,
+		FloatAutos *pzoom_autos,
 		int camera);
 	void draw_bezier(int do_camera);
 	void draw_crop();

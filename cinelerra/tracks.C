@@ -240,7 +240,6 @@ int Tracks::total_of(int play,
 		result += 
 			(play_keyframe->value && play) ||
 			(current->record && record) ||
-			(current->automate && automate) ||
 			(current->gang && gang) ||
 			(current->draw && draw) ||
 			(mute_keyframe->value && mute) ||
@@ -271,18 +270,21 @@ int Tracks::recordable_video_tracks()
 int Tracks::playable_audio_tracks()
 {
 	int result = 0;
-	IntAuto *play_keyframe = 0;
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
-		play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
-				unit_start, 
-				PLAY_FORWARD,
-				(Auto*)play_keyframe);
+		if(current->data_type == TRACK_AUDIO)
+		{
+			IntAuto *play_keyframe = 0;
+			long unit_start = current->to_units(edl->local_session->selectionstart, 0);
+			play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
+					unit_start, 
+					PLAY_FORWARD,
+					(Auto*)play_keyframe);
 
-		if(current->data_type == TRACK_AUDIO && 
-			play_keyframe->value) result++;
+//printf("Tracks::playable_audio_tracks 1 %p %d %d\n", play_keyframe, unit_start, play_keyframe->value);
+			if(play_keyframe->value) result++;
+		}
 	}
 
 	return result;
@@ -291,20 +293,22 @@ int Tracks::playable_audio_tracks()
 int Tracks::playable_video_tracks()
 {
 	int result = 0;
-	IntAuto *play_keyframe = 0;
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
-		play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
+		if(current->data_type == TRACK_VIDEO)
+		{
+			IntAuto *play_keyframe = 0;
+			long unit_start = current->to_units(edl->local_session->selectionstart, 0);
+			play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
 				unit_start, 
 				PLAY_FORWARD,
 				(Auto*)play_keyframe);
-		if(current->data_type == TRACK_VIDEO && 
-			((IntAuto*)current->automation->play_autos->get_prev_auto(
+			if(((IntAuto*)current->automation->play_autos->get_prev_auto(
 				unit_start, 
 				PLAY_FORWARD,
 				(Auto*)play_keyframe))->value) result++;
+		}
 	}
 	return result;
 }
@@ -360,6 +364,7 @@ double Tracks::total_length()
 	return total; 
 }
 
+
 void Tracks::translate_camera(float offset_x, float offset_y)
 {
 	for(Track *current = first; current; current = NEXT)
@@ -370,8 +375,6 @@ void Tracks::translate_camera(float offset_x, float offset_y)
 		}
 	}
 }
-
-
 void Tracks::translate_projector(float offset_x, float offset_y)
 {
 	for(Track *current = first; current; current = NEXT)
@@ -382,8 +385,6 @@ void Tracks::translate_projector(float offset_x, float offset_y)
 		}
 	}
 }
-
-
 
 void Tracks::update_y_pixels(Theme *theme)
 {
@@ -436,7 +437,6 @@ void Tracks::select_all(int play,
 		}
 
 		if(record) current->record = value;
-		if(automate) current->automate = value;
 		if(gang) current->gang = value;
 		if(draw) current->draw = value;
 		
@@ -586,33 +586,6 @@ int Tracks::change_channels(int oldchannels, int newchannels)
 	return 0;
 }
 
-// REMOVE
-long Tracks::view_samples() 
-{ 
-// 	if(mwindow->gui)
-// 		return edl->session->tracks_vertical ? (long)canvas->get_h() * mwindow->session->zoom_sample : (long)canvas->get_w() * mwindow->session->zoom_sample; 
-// 	else
- 		return 0;
-}
-
-// REMOVE
-int Tracks::view_pixels()
-{
-// 	if(mwindow->gui)
-// 		return mwindow->session->tracks_vertical ? canvas->get_h() : canvas->get_w();
-// 	else
-		return 0;
-}
-
-// REMOVE
-int Tracks::vertical_pixels()
-{
-// 	if(mwindow->gui)
-// 		return mwindow->session->tracks_vertical ? canvas->get_w() : canvas->get_h();
-// 	else
-		return 0;
-}
-
 
 
 int Tracks::totalpixels()
@@ -620,7 +593,7 @@ int Tracks::totalpixels()
 	int result = 0;
 	for(Track* current = first; current; current = NEXT)
 	{
-		result += mwindow->session->zoom_track;
+		result += edl->local_session->zoom_track;
 	}
 	return result;
 }

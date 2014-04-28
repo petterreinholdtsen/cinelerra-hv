@@ -1,6 +1,7 @@
 #include "audioconfig.h"
 #include "audiodevice.h"
 #include "audiooss.h"
+#include "clip.h"
 #include "errno.h"
 #include "playbackconfig.h"
 #include "preferences.h"
@@ -27,6 +28,7 @@ OSSThread::OSSThread(AudioOSS *device)
 	rd = 0;
 	wr = 0;
 	done = 0;
+	this->device = device;
 	input_lock.lock();
 }
 
@@ -36,30 +38,27 @@ OSSThread::~OSSThread()
 	input_lock.unlock();
 	Thread::join();
 }
-	
+
 void OSSThread::run()
 {
 	while(!done)
 	{
-//printf("OSSThread::run 1\n");
 		input_lock.lock();
 		if(rd)
 		{
-//printf("OSSThread::run 2 %d %p %d\n", fd, data, bytes);
 			int result = read(fd, data, bytes);
-//printf("OSSThread::run 3 %d\n", result);
 			read_lock.unlock();
-//printf("OSSThread::run 4\n");
 		}
 		else
 		if(wr)
 		{
+//fwrite(data, bytes, 1, stdout);
+//printf("OSSThread::run %p\n", device);
+//printf("OSSThread::run %d %d\n", bytes, device->device->get_device_buffer());
 			write(fd, data, bytes);
 			write_lock.unlock();
 		}
-//printf("OSSThread::run 5\n");
 		output_lock.unlock();
-//printf("OSSThread::run 6\n");
 	}
 }
 
@@ -176,6 +175,7 @@ int AudioOSS::open_input()
 int AudioOSS::open_output()
 {
 	device->out_channels = 0;
+	
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		if(device->out_config->oss_enable[i])
@@ -189,7 +189,11 @@ int AudioOSS::open_output()
 	{
 		if(device->out_config->oss_enable[i])
 		{
-			dsp_out[i] = open(device->out_config->oss_out_device[i], O_WRONLY /*| O_NDELAY*/);
+// Linux 2.4.18 no longer supports allocating the maximum buffer size.
+// Need the shrink fragment size in preferences until it works.
+			dsp_out[i] = 
+				open(device->out_config->oss_out_device[i], 
+					O_WRONLY /*| O_NDELAY*/);
 			if(dsp_out[i] < 0) perror("AudioOSS::open_output");
 
 			int format = get_fmt(device->out_config->oss_out_bits);
@@ -202,13 +206,13 @@ int AudioOSS::open_output()
 
 // For the ice1712 the buffer must be maximum or no space will be allocated.
 			if(device->driver == AUDIO_OSS_ENVY24) buffer_info = 0x7fff000f;
-			if(ioctl(dsp_out[i], SNDCTL_DSP_SETFRAGMENT, &buffer_info)) printf("SNDCTL_DSP_SETFRAGMENT failed.\n");
-			if(ioctl(dsp_out[i], SNDCTL_DSP_SETFMT, &format) < 0) printf("SNDCTL_DSP_SETFMT failed\n");
-			if(ioctl(dsp_out[i], SNDCTL_DSP_CHANNELS, &device->out_config->oss_out_channels[i]) < 0) printf("SNDCTL_DSP_CHANNELS failed\n");
-			if(ioctl(dsp_out[i], SNDCTL_DSP_SPEED, &device->out_samplerate) < 0) printf("SNDCTL_DSP_SPEED failed\n");
+			if(ioctl(dsp_out[i], SNDCTL_DSP_SETFRAGMENT, &buffer_info)) printf("SNDCTL_DSP_SETFRAGMENT 2 failed.\n");
+			if(ioctl(dsp_out[i], SNDCTL_DSP_SETFMT, &format) < 0) printf("SNDCTL_DSP_SETFMT 2 failed\n");
+			if(ioctl(dsp_out[i], SNDCTL_DSP_CHANNELS, &device->out_config->oss_out_channels[i]) < 0) printf("SNDCTL_DSP_CHANNELS 2 failed\n");
+			if(ioctl(dsp_out[i], SNDCTL_DSP_SPEED, &device->out_samplerate) < 0) printf("SNDCTL_DSP_SPEED 2 failed\n");
 			ioctl(dsp_out[i], SNDCTL_DSP_GETOSPACE, &playinfo);
-//printf("AudioOSS::open_output fragments=%d fragstotal=%d fragsize=%d bytes=%d\n", 
-//	playinfo.fragments, playinfo.fragstotal, playinfo.fragsize, playinfo.bytes);
+// printf("AudioOSS::open_output fragments=%d fragstotal=%d fragsize=%d bytes=%d\n", 
+// playinfo.fragments, playinfo.fragstotal, playinfo.fragsize, playinfo.bytes);
 			device->device_buffer = playinfo.bytes;
 			thread[i] = new OSSThread(this);
 			thread[i]->start();

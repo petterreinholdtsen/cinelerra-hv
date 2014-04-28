@@ -13,8 +13,6 @@ public:
 	void init_cursor();
 	void stop_cursor();
 
-// Reset the transport after completion
-	void update_transport(int command, int paused);
 	CWindow *cwindow;
 };
 

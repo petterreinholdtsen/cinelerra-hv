@@ -31,21 +31,6 @@ public:
 	Label();
 	~Label();
 
-// REMOVE
-	int create_objects(MWindow *mwindow, Labels *labels, long position_); // limitation of link list
-// REMOVE
-	int draw();
-
-	int samplemovement();
-	int get_pixel(long position);       // get pixel of label on screen
-
-// REMOVE
-	MWindow *mwindow;
-
-// REMOVE
-	LabelToggle *toggle;
-
-
 
 	EDL *edl;
 	Labels *labels;
@@ -64,10 +49,6 @@ public:
 	Labels& operator=(Labels &that);
 	void copy_from(Labels *labels);
 	int toggle_label(double start, double end);
-	int flip_vertical();
-	int draw();
-	int samplemovement();
-	int resize_event(int x);
 	int delete_all();
 	int save(FileXML *xml);
 	int load(FileXML *xml, unsigned long load_flags);

@@ -30,9 +30,7 @@ public:
 	int flip_vertical(int vertical, int &x, int &y);
 	int keypress_event();
 	void handle_transport(int command, int wait_tracking = 0);
-	void update_gui_state(int command, int paused);
 
-	int start_playback(PTransportButton *button, int reverse, float speed);
 	int pause_transport();
 	int reset_transport();
 	int get_w();

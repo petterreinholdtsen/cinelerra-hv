@@ -118,7 +118,7 @@ int 	raw_open_read	(SF_PRIVATE *psf)
 	if (psf->blockwidth)
 		psf->sf.samples = psf->filelength / psf->blockwidth ;
 
-printf("raw_open_read %d %d %d %d %d\n", psf->sf.pcmbitwidth, psf->bytewidth, psf->blockwidth, psf->filelength, psf->sf.samples);
+//printf("raw_open_read %d %d %d %d %d\n", psf->sf.pcmbitwidth, psf->bytewidth, psf->blockwidth, psf->filelength, psf->sf.samples);
  	psf->datalength = psf->filelength - psf->dataoffset ;
 
  	psf->current  = 0 ;

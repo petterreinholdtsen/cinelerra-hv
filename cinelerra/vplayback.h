@@ -14,8 +14,6 @@ public:
 	void stop_cursor();
 	void goto_start();
 	void goto_end();
-// Reset the transport after completion
-	void update_transport(int command, int paused);
 	VWindow *vwindow;
 };
 

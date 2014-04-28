@@ -1,4 +1,4 @@
-/* $Header: /usr/cvs/tiff/tif_unix.c,v 1.2 2002/05/13 16:18:50 myrina Exp $ */
+/* $Header: /usr/cvs/hvirtual/tiff/tif_unix.c,v 1.1.1.1 2002/06/21 12:35:26 myrina Exp $ */
 
 /*
  * Copyright (c) 1988-1996 Sam Leffler

@@ -12,7 +12,6 @@
 #include "formatwindow.inc"
 #include "guicast.h"
 #include "mutex.h"
-#include "pluginioserver.inc"
 #include "pluginserver.inc"
 #include "resample.inc"
 #include "sema.h"
@@ -185,7 +184,6 @@ private:
 
 	int getting_options;
 	BC_WindowBase *format_window;
-	PluginIOServer *format_plugin;
 	Mutex format_completion;
 };
 

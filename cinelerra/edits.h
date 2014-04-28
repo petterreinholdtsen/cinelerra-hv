@@ -8,7 +8,6 @@
 #include "edit.h"
 #include "filexml.inc"
 #include "linklist.h"
-#include "mwindow.inc"
 #include "track.inc"
 #include "transition.inc"
 
@@ -68,7 +67,6 @@ public:
 
 // ============================= initialization commands ====================
 	Edits() { printf("default edits constructor called\n"); };
-	Edits(MWindow *mwindow, Track *track);
 
 // ================================== file operations
 
@@ -92,7 +90,6 @@ public:
 
 // inserts space at the desired location and returns the edit before the space
 // fills end of track if range is after track
-	Edit* insert(long start, long lengthsamples);
 	int modify_handles(double oldposition, 
 		double newposition, 
 		int currentend,
@@ -100,12 +97,8 @@ public:
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins);
-	int paste(long start, long end, long total_length, FileXML *xml);
-	int paste_transition(long startproject, long endproject, Transition *transition);
-	Edit* paste_edit_base(long start, long end, long startsource, long length, Asset *asset);
 	virtual int optimize();
 
-	MWindow *mwindow;
 
 private:
 	virtual int clone_derived(Edit* new_edit, Edit* old_edit) {};

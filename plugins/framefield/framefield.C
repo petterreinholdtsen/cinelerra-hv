@@ -355,9 +355,11 @@ int FrameField::process_buffer(VFrame *frame,
 		if(!src_frame)
 		{
 			src_frame = new VFrame(0, 
+				-1,
 				frame->get_w(), 
 				frame->get_h(), 
-				frame->get_color_model());
+				frame->get_color_model(),
+				-1);
 		}
 		ptr = src_frame;
 	}

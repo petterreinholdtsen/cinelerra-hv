@@ -110,7 +110,6 @@ int RecordThread::start_recording(int monitor, int context)
 
 int RecordThread::stop_recording(int resume_monitor)
 {
-PRINT_TRACE
 // Stop RecordThread while waiting for batch
 	state_lock->lock("RecordThread::stop_recording");
 
@@ -120,13 +119,11 @@ PRINT_TRACE
 		pause_lock->unlock();
 	}
 
-PRINT_TRACE
 	this->resume_monitor = resume_monitor;
 // In the monitor engine, stops the engine.
 // In the recording engine, causes the monitor engine not to be restarted.
 // Video thread stops the audio thread itself
 // printf("RecordThread::stop_recording 1\n");
-PRINT_TRACE
 	if(record_video)
 	{
 		record_video->batch_done = 1;
@@ -141,9 +138,7 @@ PRINT_TRACE
 		record_audio->stop_recording();
 	}
 
-PRINT_TRACE
 	Thread::join();
-PRINT_TRACE
 	return 0;
 }
 
@@ -343,37 +338,29 @@ TRACE("RecordThread::run 9");
 TRACE("RecordThread::run 10");
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
-PRINT_TRACE
 			state_lock->unlock();
 
 // Trigger loops
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->start_recording();
-PRINT_TRACE
 			if(record->default_asset->video_data)
 				record_video->start_recording();
-PRINT_TRACE
 
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->Thread::join();
-PRINT_TRACE
 			if(record->default_asset->video_data)
 				record_video->Thread::join();
-PRINT_TRACE
 
 // Stop file threads here to keep loop synchronized
 			if(!monitor)
 			{
 				if(drivesync) drivesync->done = 1;
-PRINT_TRACE
 				if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 					record->file->stop_audio_thread();
-PRINT_TRACE
 				if(record->default_asset->video_data)
 					record->file->stop_video_thread();
-PRINT_TRACE
 
 // Update asset info
 				record->get_current_batch()->get_current_asset()->audio_length = 
@@ -406,18 +393,15 @@ PRINT_TRACE
 						engine_done = 1;
 					}
 				}
-PRINT_TRACE
 
 				if(drivesync) delete drivesync;
 			}
-PRINT_TRACE
 		}
 		else
 		{
 			state_lock->unlock();
 		}
 
-PRINT_TRACE
 // Wait for thread to stop before closing devices
 		loop_lock->unlock();
 		if(monitor)
@@ -426,12 +410,9 @@ PRINT_TRACE
 			pause_lock->lock("RecordThread::run");
 			pause_lock->unlock();
 		}
-PRINT_TRACE
 	}while(!engine_done);
 
-PRINT_TRACE
 	record->close_input_devices(monitor);
-PRINT_TRACE
 
 // Resume monitoring only if not a monitor ourselves
 	if(!monitor)
@@ -443,6 +424,5 @@ PRINT_TRACE
 	{
 		record->capture_state = IS_DONE;
 	}
-PRINT_TRACE
 }
 

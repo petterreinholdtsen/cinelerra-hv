@@ -21,6 +21,7 @@
 
 #include "attachmentpoint.h"
 #include "bcsignals.h"
+#include "cache.h"
 #include "commonrender.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -37,6 +38,7 @@
 #include "track.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "virtualconsole.h"
 
 
 Module::Module(RenderEngine *renderengine, 
@@ -54,6 +56,11 @@ Module::Module(RenderEngine *renderengine,
 	total_attachments = 0;
 	new_total_attachments = 0;
 	new_attachments = 0;
+	nested_edl = 0;
+	nested_renderengine = 0;
+	nested_command = 0;
+	private_cache = 0;
+	cache = 0;
 }
 
 Module::~Module()
@@ -76,6 +83,10 @@ Module::~Module()
 		transition_server->close_plugin();
 		delete transition_server;
 	}
+
+	delete nested_renderengine;
+	delete nested_command;
+	if(private_cache) delete cache;
 }
 
 void Module::create_objects()
@@ -87,10 +98,20 @@ void Module::create_objects()
 EDL* Module::get_edl()
 {
 	if(renderengine) 
-		return renderengine->edl;
+		return renderengine->get_edl();
 	else
 		return edl;
 }
+
+Preferences* Module::get_preferences()
+{
+	if(renderengine) 
+		return renderengine->preferences;
+	else
+	if(plugin_array)
+		return plugin_array->mwindow->preferences;
+}
+
 
 void Module::create_new_attachments()
 {
@@ -271,11 +292,11 @@ void Module::update_transition(int64_t current_position,
 	{
 		if(renderengine)
 		{
-			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
+			PluginServer *plugin_server = MWindow::scan_plugindb(transition->title,
 				track->data_type);
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
-				renderengine->preferences, 
+				get_preferences(), 
 				get_edl(), 
 				transition,
 				-1);
@@ -288,10 +309,11 @@ void Module::update_transition(int64_t current_position,
 		else
 		if(plugin_array)
 		{
-			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
+			PluginServer *plugin_server = MWindow::scan_plugindb(transition->title,
+				plugin_array->data_type);
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
-				plugin_array->mwindow->preferences,
+				get_preferences(),
 				get_edl(), 
 				transition,
 				-1);

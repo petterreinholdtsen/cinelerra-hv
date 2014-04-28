@@ -103,6 +103,7 @@ int FloatAutos::automation_is_constant(int64_t start,
 {
 	int total_autos = total();
 	int64_t end;
+
 	if(direction == PLAY_FORWARD)
 	{
 		end = start + length;
@@ -125,6 +126,7 @@ int FloatAutos::automation_is_constant(int64_t start,
 	if(total_autos == 1)
 	{
 		constant = ((FloatAuto*)first)->value;
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
 		return 1;
 	}
 	else
@@ -132,6 +134,7 @@ int FloatAutos::automation_is_constant(int64_t start,
 	if(last->position <= start)
 	{
 		constant = ((FloatAuto*)last)->value;
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
 		return 1;
 	}
 	else
@@ -139,6 +142,7 @@ int FloatAutos::automation_is_constant(int64_t start,
 	if(first->position > end)
 	{
 		constant = ((FloatAuto*)first)->value;
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
 		return 1;
 	}
 
@@ -184,19 +188,18 @@ int FloatAutos::automation_is_constant(int64_t start,
 
 		if(test_current_next)
 		{
-//printf("FloatAutos::automation_is_constant 1 %d\n", start);
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
 			FloatAuto *float_next = (FloatAuto*)current->next;
 
 // Change occurs between keyframes
-			if(!EQUIV(float_current->value, float_next->value))
-			{
-				if((float_current->mode != Auto::LINEAR ||
+			if(!EQUIV(float_current->value, float_next->value) ||
+				((float_current->mode != Auto::LINEAR ||
 					float_next->mode != Auto::LINEAR) &&
-					(!EQUIV(float_current->control_out_value, 0) ||
-						!EQUIV(float_next->control_in_value, 0)))
-				{
-					return 0;
-				}
+				(!EQUIV(float_current->control_out_value, 0) ||
+					!EQUIV(float_next->control_in_value, 0))))
+			{
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
+				return 0;
 			}
 		}
 
@@ -204,14 +207,14 @@ int FloatAutos::automation_is_constant(int64_t start,
 		{
 			FloatAuto *float_previous = (FloatAuto*)current->previous;
 
-// Change occurs between keyframes
-			if(!EQUIV(float_current->value, float_previous->value))
-			{
-				if((float_current->mode != Auto::LINEAR ||
+// Change occurs between keyframes if values differ or are joined by a curve.
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
+			if(!EQUIV(float_current->value, float_previous->value) ||
+				((float_current->mode != Auto::LINEAR ||
 					float_previous->mode != Auto::LINEAR) &&
-					(!EQUIV(float_current->control_out_value, 0) ||
-						!EQUIV(float_previous->control_in_value, 0)))
-				{
+				(!EQUIV(float_current->control_out_value, 0) ||
+					!EQUIV(float_previous->control_in_value, 0))))
+			{
 // printf("FloatAutos::automation_is_constant %d %d %d %f %f %f %f\n", 
 // start, 
 // float_previous->position, 
@@ -220,11 +223,12 @@ int FloatAutos::automation_is_constant(int64_t start,
 // float_current->value, 
 // float_previous->control_out_value, 
 // float_current->control_in_value);
-					return 0;
-				}
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
+				return 0;
 			}
 		}
 	}
+//printf("FloatAutos::automation_is_constant %d\n", __LINE__);
 
 // Got nothing that changes in the region.
 	return 1;

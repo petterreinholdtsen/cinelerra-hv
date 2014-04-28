@@ -34,13 +34,13 @@
 #include "filexml.inc"
 #include "floatautos.inc"
 #include "guicast.h"
+#include "indexable.inc"
 #include "keyframe.inc"
 #include "linklist.h"
 #include "module.inc"
 #include "patch.inc"
 #include "plugin.inc"
 #include "pluginset.inc"
-#include "renderengine.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "intautos.inc"
@@ -87,6 +87,7 @@ public:
 
 // Editing
 	void insert_asset(Asset *asset, 
+		EDL *nested_edl,
 		double length, 
 		double position, 
 		int track_number);
@@ -115,7 +116,7 @@ public:
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
 	void remove_pluginset(PluginSet *plugin_set);
-	void remove_asset(Asset *asset);
+	void remove_asset(Indexable *asset);
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value
@@ -147,8 +148,7 @@ public:
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 // Used by PlayableTracks::is_playable.
-	int is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
+	int is_synthesis(int64_t position, 
 		int direction);
 
 // Used by PlayableTracks::is_playable

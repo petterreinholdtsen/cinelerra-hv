@@ -41,7 +41,7 @@ AttachmentPoint::AttachmentPoint(RenderEngine *renderengine,
 	this->plugin_id = plugin->id;
 	this->renderengine = renderengine;
 	this->data_type = data_type;
-	plugin_server = renderengine->scan_plugindb(plugin->title,
+	plugin_server = MWindow::scan_plugindb(plugin->title,
 		data_type);
 }
 
@@ -97,11 +97,11 @@ int AttachmentPoint::render_init()
 					new_server->set_attachmentpoint(this);
 					plugin_servers.values[i]->open_plugin(0, 
 						renderengine->preferences,
-						renderengine->edl, 
+						renderengine->get_edl(), 
 						plugin,
 						-1);
 					plugin_servers.values[i]->init_realtime(
-						renderengine->edl->session->real_time_playback &&
+						renderengine->get_edl()->session->real_time_playback &&
 							renderengine->command->realtime,
 						plugin_server->multichannel ? new_virtual_plugins.total : 1,
 						get_buffer_size());

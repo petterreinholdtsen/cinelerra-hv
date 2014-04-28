@@ -615,13 +615,17 @@ static void draw_point(unsigned char **rows,
  \
 			CLAMP(x, 0, vector_w - 1); \
 			CLAMP(y, 0, vector_h - 1); \
-			if(sizeof(type) == 2) \
-			{ \
-				r /= 256; \
-				g /= 256; \
-				b /= 256; \
-			} \
-			else \
+			float r_f, g_f, b_f; \
+			HSV::hsv_to_rgb(r_f, \
+					g_f, \
+					b_f, \
+					h, \
+					1, \
+					1); \
+			r = (int)(r_f * 255); \
+			g = (int)(g_f * 255); \
+			b = (int)(b_f * 255); \
+ \
 			if(sizeof(type) == 4) \
 			{ \
 				r = CLIP(r, 0, 1) * 0xff; \

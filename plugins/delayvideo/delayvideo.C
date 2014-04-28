@@ -190,9 +190,11 @@ void DelayVideo::reconfigure()
 	for(int i = reuse; i < new_allocation; i++)
 	{
 		new_buffer[i] = new VFrame(0, 
+			-1,
 			input->get_w(),
 			input->get_h(),
-			PluginVClient::project_color_model);
+			PluginVClient::project_color_model,
+			-1);
 	}
 
 	for(int i = reuse; i < allocation; i++)

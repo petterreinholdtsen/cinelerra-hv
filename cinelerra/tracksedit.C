@@ -23,6 +23,7 @@
 #include "atrack.h"
 #include "automation.h"
 #include "aedits.h"
+#include "bcsignals.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
@@ -30,6 +31,7 @@
 #include "filexml.h"
 #include "intauto.h"
 #include "intautos.h"
+#include "labels.h"
 #include "localsession.h"
 #include "mainundo.h"
 #include "module.h"
@@ -106,6 +108,73 @@ void Tracks::clear_transitions(double start, double end)
 					current_edit->detach_transition();
 				}
 			}
+		}
+	}
+}
+
+void Tracks::set_edit_length(double start, double end, double length)
+{
+	int first_track = 1;
+	for(Track *current_track = first; 
+		current_track; 
+		current_track = current_track->next)
+	{
+		if(current_track->record)
+		{
+			int64_t start_units = current_track->to_units(start, 0);
+			int64_t end_units = current_track->to_units(end, 0);
+			int64_t length_units = current_track->to_units(length, 1);
+
+			for(Edit *current_edit = current_track->edits->last;
+				current_edit;
+				current_edit = current_edit->previous)
+			{
+				if(current_edit->startproject >= start_units &&
+					current_edit->startproject + current_edit->length <= end_units)
+				{
+// Go in using the edit handle interface
+					int64_t starting_length = current_edit->length;
+
+					if(length_units < current_edit->length)
+					{
+						current_edit->shift_end_in(MOVE_ALL_EDITS,
+							current_edit->startproject + length_units,
+							current_edit->startproject + current_edit->length,
+							1,
+							edl->session->labels_follow_edits,
+							edl->session->plugins_follow_edits,
+							0);
+					}
+					else
+					{
+						current_edit->shift_end_out(MOVE_ALL_EDITS,
+							current_edit->startproject + length_units,
+							current_edit->startproject + current_edit->length,
+							1,
+							edl->session->labels_follow_edits,
+							edl->session->plugins_follow_edits,
+							0);
+					}
+
+					int64_t ending_length = current_edit->length;
+
+					if(edl->session->labels_follow_edits && first_track)
+					{
+// printf("Tracks::set_edit_length %d %f %f\n", 
+// __LINE__, 
+// current_track->from_units(current_edit->startproject + starting_length),
+// current_track->from_units(current_edit->startproject + ending_length));
+						 edl->labels->modify_handles(
+							current_track->from_units(current_edit->startproject + starting_length),
+							current_track->from_units(current_edit->startproject + ending_length),
+							1,
+							MOVE_ALL_EDITS,
+							1);
+					}
+				}
+			}
+
+			first_track = 0;
 		}
 	}
 }

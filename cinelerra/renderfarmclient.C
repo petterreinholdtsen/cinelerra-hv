@@ -72,7 +72,7 @@ RenderFarmClient::RenderFarmClient(int port,
 	MWindow::init_defaults(boot_defaults, config_path);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
-	MWindow::init_plugins(boot_preferences, plugindb, 0);
+	MWindow::init_plugins(boot_preferences, 0);
 }
 
 
@@ -91,7 +91,7 @@ RenderFarmClient::~RenderFarmClient()
 void RenderFarmClient::main_loop()
 {
 	int socket_fd;
-
+	BC_WindowBase::get_resources()->vframe_shm = 1;
 
 
 // Open listening port
@@ -470,8 +470,7 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 
 
 
-	edl->load_xml(client->plugindb,
-		&file, 
+	edl->load_xml(&file, 
 		LOAD_ALL);
 
 
@@ -664,8 +663,7 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 	package_renderer.initialize(0,
 			edl, 
 			preferences, 
-			default_asset,
-			client->plugindb);
+			default_asset);
 
 // Read packages
 	while(1)
@@ -706,9 +704,9 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 
 
 //printf("RenderFarmClientThread::run 9\n");
-	Garbage::delete_object(default_asset);
+	default_asset->Garbage::remove_user();
 //printf("RenderFarmClientThread::run 10\n");
-	delete edl;
+	edl->Garbage::remove_user();
 //printf("RenderFarmClientThread::run 11\n");
 	delete preferences;
 printf(_("RenderFarmClientThread::run: Session finished.\n"));

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,11 @@
 #include "edit.inc"
 #include "filebase.inc"
 #include "file.inc"
+
+#ifdef USE_FILEFORK
+#include "filefork.inc"
+#endif
+
 #include "filethread.inc"
 #include "filexml.inc"
 #include "formatwindow.inc"
@@ -37,7 +42,7 @@
 #include "mutex.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
-#include "resample.inc"
+#include "samples.inc"
 #include "vframe.inc"
 
 // ======================================= include file types here
@@ -75,7 +80,7 @@ public:
 // Set whether to white balance raw images.  Always 0 if no interpolation.
 	void set_white_balance_raw(int value);
 // When loading, the asset is deleted and a copy created in the EDL.
-	void set_asset(Asset *asset);
+//	void set_asset(Asset *asset);
 
 // Enable or disable frame caching.  Must be tied to file to know when 
 // to delete the file object.  Otherwise we'd delete just the cached frames
@@ -89,15 +94,13 @@ public:
 	int open_file(Preferences *preferences, 
 		Asset *asset, 
 		int rd, 
-		int wr,
-		int64_t base_samplerate,
-		float base_framerate);
+		int wr);
 
 // Get index from the file if one exists.  Returns 0 on success.
 	int get_index(char *index_path);
 
 // start a thread for writing to avoid blocking during record
-	int start_audio_thread(int64_t buffer_size, int ring_buffers);
+	int start_audio_thread(int buffer_size, int ring_buffers);
 	int stop_audio_thread();
 // The ring buffer must either be 1 or 2.
 // The buffer_size for video needs to be > 1 on SMP systems to utilize 
@@ -105,7 +108,7 @@ public:
 // For audio it's the number of samples per buffer.
 // compressed - if 1 write_compressed_frame is called
 //              if 0 write_frames is called
-	int start_video_thread(int64_t buffer_size, 
+	int start_video_thread(int buffer_size, 
 		int color_model, 
 		int ring_buffers, 
 		int compressed);
@@ -122,12 +125,12 @@ public:
 	int close_file(int ignore_thread = 0);
 
 // get length of file normalized to base samplerate
-	int64_t get_audio_length(int64_t base_samplerate = -1);
-	int64_t get_video_length(float base_framerate = -1);
+	int64_t get_audio_length();
+	int64_t get_video_length();
 
 // get current position
-	int64_t get_audio_position(int64_t base_samplerate = -1);
-	int64_t get_video_position(float base_framerate = -1);
+	int64_t get_audio_position();
+	int64_t get_video_position();
 	
 
 
@@ -135,7 +138,7 @@ public:
 // written to disk and file pointer updated after last channel is written
 // return 1 if failed
 // subsequent writes must be <= than first write's size because of buffers
-	int write_samples(double **buffer, int64_t len);
+	int write_samples(Samples **buffer, int64_t len);
 
 // Only called by filethread to write an array of an array of channels of frames.
 	int write_frames(VFrame ***frames, int len);
@@ -144,7 +147,7 @@ public:
 
 // For writing buffers in a background thread use these functions to get the buffer.
 // Get a pointer to a buffer to write to.
-	double** get_audio_buffer();
+	Samples** get_audio_buffer();
 	VFrame*** get_video_buffer();
 
 // Used by ResourcePixmap to directly access the cache.
@@ -160,23 +163,25 @@ public:
 
 // set channel for buffer accesses
 	int set_channel(int channel);
+	int get_channel();
 // set position in samples
-	int set_audio_position(int64_t position, float base_samplerate);
+	int set_audio_position(int64_t position);
 
 // Read samples for one channel into a shared memory segment.
 // The offset is the offset in floats from the beginning of the buffer and the len
 // is the length in floats from the offset.
 // advances file pointer
 // return 1 if failed
-	int read_samples(double *buffer, int64_t len, int64_t base_samplerate);
+	int read_samples(Samples *buffer, int64_t len);
 
 
 // set layer for video read
 // is_thread is used by FileThread::run to prevent recursive lockup.
 	int set_layer(int layer, int is_thread = 0);
 // set position in frames
-// is_thread is used by FileThread::run to prevent recursive lockup.
-	int set_video_position(int64_t position, float base_framerate = -1, int is_thread = 0);
+// is_thread is set by FileThread::run to prevent recursive lockup.
+//	int set_video_position(int64_t position, float base_framerate /* = -1 */, int is_thread /* = 0 */);
+	int set_video_position(int64_t position, int is_thread /* = 0 */);
 
 // Read frame of video into the argument
 // is_thread is used by FileThread::run to prevent recursive lockup.
@@ -233,8 +238,6 @@ public:
 // Temporary storage for color conversions
 	VFrame *temp_frame;
 
-// Resampling engine
-	Resample *resample;
 
 // Lock writes while recording video and audio.
 // A binary lock won't do.  We need a FIFO lock.
@@ -267,6 +270,14 @@ private:
 	BC_WindowBase *format_window;
 	Condition *format_completion;
 	FrameCache *frame_cache;
+
+#ifdef USE_FILEFORK
+// Pointer to the fork object.  0 if this instance of File is the fork.
+	FileFork *file_fork;
+// If this instance is the fork.
+	int is_fork;
+#endif
+
 // Copy read frames to the cache
 	int use_cache;
 };

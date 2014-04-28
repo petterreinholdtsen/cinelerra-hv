@@ -382,6 +382,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 		case MotionConfig::LOAD:
 		{
+//printf("MotionScan::scan_frame %d\n", __LINE__);
 // Load result from disk
 			char string[BCTEXTLEN];
 			sprintf(string, "%s%06d", 
@@ -420,6 +421,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 // Perform scan
 	if(!skip)
 	{
+//printf("MotionScan::scan_frame %d\n", __LINE__);
 // Location of block in current frame
 		int origin_offset_x = this->global_origin_x * w / 100;
 		int origin_offset_y = this->global_origin_y * h / 100;
@@ -482,7 +484,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 				&scan_x2,
 				&scan_y2,
 				0);
-// printf("MotionScan::scan_frame 1 %d block_x1=%d block_y1=%d block_x2=%d block_y2=%d\n    scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n    x_result=%d y_result=%d\n", 
+// printf("MotionScan::scan_frame 1 %d block_x1=%d block_y1=%d block_x2=%d block_y2=%d\n	 scan_x1=%d scan_y1=%d scan_x2=%d scan_y2=%d\n    x_result=%d y_result=%d\n", 
 // __LINE__,
 // block_x1,
 // block_y1,
@@ -699,9 +701,11 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		dx_result *= -1;
 		dy_result *= -1;
 	}
+//printf("MotionScan::scan_frame %d\n", __LINE__);
 
 
-
+	if(vertical_only) dx_result = 0;
+	if(horizontal_only) dy_result = 0;
 
 
 
@@ -728,10 +732,10 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		}
 	}
 
-printf("MotionScan::scan_frame %d dx=%.2f dy=%.2f\n", 
-__LINE__,
-(float)this->dx_result / OVERSAMPLE,
-(float)this->dy_result / OVERSAMPLE);
+// printf("MotionScan::scan_frame %d dx=%.2f dy=%.2f\n", 
+// __LINE__,
+// (float)this->dx_result / OVERSAMPLE,
+// (float)this->dy_result / OVERSAMPLE);
 }
 
 

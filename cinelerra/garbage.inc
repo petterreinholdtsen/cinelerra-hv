@@ -25,7 +25,6 @@
 
 
 class Garbage;
-class GarbageObject;
 
 
 

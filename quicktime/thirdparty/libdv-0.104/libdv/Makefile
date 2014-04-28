@@ -38,9 +38,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = x86_64-unknown-linux-gnu
-host_triplet = x86_64-unknown-linux-gnu
-target_triplet = x86_64-unknown-linux-gnu
+build_triplet = i686-redhat-linux-gnu
+host_triplet = i686-redhat-linux-gnu
+target_triplet = i686-redhat-linux-gnu
 noinst_PROGRAMS = dovlc$(EXEEXT) testvlc$(EXEEXT) \
 	testbitstream$(EXEEXT) $(am__EXEEXT_1) recode$(EXEEXT) \
 	reppm$(EXEEXT) enctest$(EXEEXT)
@@ -72,23 +72,23 @@ am__libdv_la_SOURCES_DIST = dv.c dct.c idct_248.c weighting.c quant.c \
 	rgbtoyuv_x86_64.S encode_x86_64.S transpose_x86_64.S vlc_x86.S \
 	quant_x86.S idct_block_mmx.S dct_block_mmx.S rgbtoyuv.S \
 	encode_x86.S transpose_x86.S
-##am__objects_1 = vlc_x86.lo \
-##	quant_x86.lo \
-##	idct_block_mmx.lo \
-##	dct_block_mmx.lo rgbtoyuv.lo \
-##	encode_x86.lo \
-##	transpose_x86.lo
-am__objects_1 = vlc_x86_64.lo quant_x86_64.lo \
-	idct_block_mmx_x86_64.lo \
-	dct_block_mmx_x86_64.lo rgbtoyuv_x86_64.lo \
-	encode_x86_64.lo transpose_x86_64.lo
+am__objects_1 = vlc_x86.lo \
+	quant_x86.lo \
+	idct_block_mmx.lo \
+	dct_block_mmx.lo rgbtoyuv.lo \
+	encode_x86.lo \
+	transpose_x86.lo
+#am__objects_1 = vlc_x86_64.lo quant_x86_64.lo \
+#	idct_block_mmx_x86_64.lo \
+#	dct_block_mmx_x86_64.lo rgbtoyuv_x86_64.lo \
+#	encode_x86_64.lo transpose_x86_64.lo
 am_libdv_la_OBJECTS = dv.lo dct.lo idct_248.lo weighting.lo quant.lo \
 	vlc.lo place.lo parse.lo bitstream.lo YUY2.lo YV12.lo rgb.lo \
 	audio.lo util.lo encode.lo headers.lo enc_input.lo \
 	enc_audio_input.lo enc_output.lo $(am__objects_1)
 libdv_la_OBJECTS = $(am_libdv_la_OBJECTS)
-##am__EXEEXT_1 = gasmoff$(EXEEXT)
 am__EXEEXT_1 = gasmoff$(EXEEXT)
+#am__EXEEXT_1 = gasmoff$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am_dovlc_OBJECTS = dovlc.$(OBJEXT)
 dovlc_OBJECTS = $(am_dovlc_OBJECTS)
@@ -98,9 +98,9 @@ enctest_OBJECTS = $(am_enctest_OBJECTS)
 am__DEPENDENCIES_1 =
 enctest_DEPENDENCIES = libdv.la $(am__DEPENDENCIES_1)
 am__gasmoff_SOURCES_DIST = gasmoff.c bitstream.h
-##am_gasmoff_OBJECTS =  \
-##	gasmoff.$(OBJEXT)
-am_gasmoff_OBJECTS = gasmoff.$(OBJEXT)
+am_gasmoff_OBJECTS =  \
+	gasmoff.$(OBJEXT)
+#am_gasmoff_OBJECTS = gasmoff.$(OBJEXT)
 gasmoff_OBJECTS = $(am_gasmoff_OBJECTS)
 gasmoff_LDADD = $(LDADD)
 am_recode_OBJECTS = recode.$(OBJEXT)
@@ -153,7 +153,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/quicktime/thirdparty/libdv-0.104/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/quicktime/thirdparty/libdv-0.104/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/quicktime/thirdparty/libdv-0.104/missing --run automake-1.9
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCAS = gcc
 CCASFLAGS = -g -O2
@@ -174,15 +174,15 @@ ECHO_N = -n
 ECHO_T = 
 EGREP = grep -E
 EXEEXT = 
-F77 = 
-FFLAGS = 
+F77 = f95
+FFLAGS = -g -O2
 GTK_CFLAGS = 
 GTK_CONFIG = 
 GTK_LIBS = 
-HOST_X86_64_FALSE = #
-HOST_X86_64_TRUE = 
-HOST_X86_FALSE = 
-HOST_X86_TRUE = #
+HOST_X86_64_FALSE = 
+HOST_X86_64_TRUE = #
+HOST_X86_FALSE = #
+HOST_X86_TRUE = 
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
@@ -207,7 +207,7 @@ PACKAGE_VERSION =
 PATH_SEPARATOR = :
 PKG_CONFIG = 
 PLAYDV_SUBDIR = 
-POPT_LIB = 
+POPT_LIB = -lpopt
 PTHREAD_LIBS = -lpthread
 RANLIB = ranlib
 REQUIRES_NOPKGCONFIG = 
@@ -216,7 +216,7 @@ SDL_CFLAGS =
 SDL_CONFIG = 
 SDL_LIBS = 
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 VERSION = 0.104
 XV_LIB = 
@@ -224,7 +224,7 @@ ac_aux_dir = .
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
-ac_ct_F77 = 
+ac_ct_F77 = f95
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
 am__fastdepCC_FALSE = #
@@ -237,18 +237,18 @@ am__quote =
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
-build = x86_64-unknown-linux-gnu
+build = i686-redhat-linux-gnu
 build_alias = 
-build_cpu = x86_64
+build_cpu = i686
 build_os = linux-gnu
-build_vendor = unknown
+build_vendor = redhat
 datadir = ${prefix}/share
 exec_prefix = ${prefix}
-host = x86_64-unknown-linux-gnu
+host = i686-redhat-linux-gnu
 host_alias = 
-host_cpu = x86_64
+host_cpu = i686
 host_os = linux-gnu
-host_vendor = unknown
+host_vendor = redhat
 includedir = ${prefix}/include
 infodir = ${prefix}/info
 install_sh = /root/hvirtual/quicktime/thirdparty/libdv-0.104/install-sh
@@ -263,32 +263,32 @@ program_transform_name = s,x,x,
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 sysconfdir = ${prefix}/etc
-target = x86_64-unknown-linux-gnu
+target = i686-redhat-linux-gnu
 target_alias = 
-target_cpu = x86_64
+target_cpu = i686
 target_os = linux-gnu
-target_vendor = unknown
+target_vendor = redhat
 MAINTAINERCLEANFILES = Makefile.in $(AUX_DIST)
 CLEANFILES = asmoff.h 
 lib_LTLIBRARIES = libdv.la
-GASMOFF = gasmoff
 #GASMOFF = gasmoff
+GASMOFF = gasmoff
 
 #
 # If HOST_X86_64 is set, we build all the x86_64 asm stuff..
 #
-BUILT_SOURCES = asmoff.h
+#BUILT_SOURCES = asmoff.h
 
 #
 # If HOST_X86 is set, we build all the x86 asm stuff..
 #
-#BUILT_SOURCES = asmoff.h
-libdv_la_ASMS = vlc_x86_64.S quant_x86_64.S idct_block_mmx_x86_64.S dct_block_mmx_x86_64.S rgbtoyuv_x86_64.S encode_x86_64.S transpose_x86_64.S
-#libdv_la_ASMS = vlc_x86.S quant_x86.S idct_block_mmx.S dct_block_mmx.S rgbtoyuv.S encode_x86.S transpose_x86.S
-libdv_la_ASM_HS = asmoff.h  mmx.h
-#libdv_la_ASM_HS = asmoff.h  mmx.h 
-gasmoff_SOURCES = gasmoff.c bitstream.h
-#gasmoff_SOURCES = gasmoff.c bitstream.h 
+BUILT_SOURCES = asmoff.h
+#libdv_la_ASMS = vlc_x86_64.S quant_x86_64.S idct_block_mmx_x86_64.S dct_block_mmx_x86_64.S rgbtoyuv_x86_64.S encode_x86_64.S transpose_x86_64.S
+libdv_la_ASMS = vlc_x86.S quant_x86.S idct_block_mmx.S dct_block_mmx.S rgbtoyuv.S encode_x86.S transpose_x86.S
+#libdv_la_ASM_HS = asmoff.h  mmx.h
+libdv_la_ASM_HS = asmoff.h  mmx.h 
+#gasmoff_SOURCES = gasmoff.c bitstream.h
+gasmoff_SOURCES = gasmoff.c bitstream.h 
 pkginclude_HEADERS = dv_types.h dv.h
 noinst_HEADERS = YUY2.h      bitstream.h parse.h  rgb.h \
 	YV12.h   dct.h       idct_248.h  place.h  vlc.h \
@@ -675,16 +675,16 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES \
 
 
 # Automake doesn't do dependency tracking for asm
-#quant_x86.lo vlc_x86.lo: asmoff.h
-
-#asmoff.h: gasmoff
-#	./gasmoff > asmoff.h
-
-# Automake doesn't do dependency tracking for asm
-quant_x86_64.lo vlc_x86_64.lo: asmoff.h
+quant_x86.lo vlc_x86.lo: asmoff.h
 
 asmoff.h: gasmoff
 	./gasmoff > asmoff.h
+
+# Automake doesn't do dependency tracking for asm
+#quant_x86_64.lo vlc_x86_64.lo: asmoff.h
+
+#asmoff.h: gasmoff
+#	./gasmoff > asmoff.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

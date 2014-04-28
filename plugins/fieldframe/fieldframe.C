@@ -442,9 +442,11 @@ int FieldFrame::process_buffer(VFrame *frame,
 	if(!input)
 	{
 		input = new VFrame(0, 
+			-1,
 			frame->get_w(), 
 			frame->get_h(), 
-			frame->get_color_model());
+			frame->get_color_model(),
+			-1);
 	}
 
 // Get input frames

@@ -43,11 +43,9 @@ public:
 	Assets(EDL *edl);
 	virtual ~Assets();
 
-	int load(ArrayList<PluginServer*> *plugindb, 
-		FileXML *xml, 
+	int load(FileXML *xml, 
 		uint32_t load_flags);
-	int save(ArrayList<PluginServer*> *plugindb, 
-		FileXML *xml, 
+	int save(FileXML *xml, 
 		char *output_path);
 	Assets& operator=(Assets &assets);
 	void copy_from(Assets *assets);

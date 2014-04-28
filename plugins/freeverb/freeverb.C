@@ -28,6 +28,7 @@
 #include "picon_png.h"
 #include "pluginaclient.h"
 #include "revmodel.hpp"
+#include "samples.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -157,7 +158,7 @@ public:
 	int is_multichannel();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int64_t size, double **input_ptr, double **output_ptr);
+	int process_realtime(int64_t size, Samples **input_ptr, Samples **output_ptr);
 
 
 
@@ -563,8 +564,8 @@ void FreeverbEffect::update_gui()
 }
 
 int FreeverbEffect::process_realtime(int64_t size, 
-	double **input_ptr, 
-	double **output_ptr)
+	Samples **input_ptr, 
+	Samples **output_ptr)
 {
 	load_configuration();
 	if(!engine) engine = new revmodel;
@@ -618,7 +619,7 @@ int FreeverbEffect::process_realtime(int64_t size,
 	for(int i = 0; i < 2 && i < total_in_buffers; i++)
 	{
 		float *out = temp[i];
-		double *in = input_ptr[i];
+		double *in = input_ptr[i]->get_data();
 		for(int j = 0; j < size; j++)
 		{
 			out[j] = in[j];
@@ -647,7 +648,7 @@ int FreeverbEffect::process_realtime(int64_t size,
 
 	for(int i = 0; i < 2 && i < total_in_buffers; i++)
 	{
-		double *out = output_ptr[i];
+		double *out = output_ptr[i]->get_data();
 		float *in = temp_out[i];
 		for(int j = 0; j < size; j++)
 		{

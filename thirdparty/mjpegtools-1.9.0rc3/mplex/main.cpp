@@ -25,6 +25,7 @@
 *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 *************************************************************************/
 
+#include <string.h>
 #include <config.h>
 #include <stdio.h>
 #ifdef HAVE_GETOPT_H

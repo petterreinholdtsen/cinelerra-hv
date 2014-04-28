@@ -28,16 +28,18 @@
 #include "bctimer.inc"
 #include "edit.inc"
 #include "edithandles.inc"
+#include "edl.inc"
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "guicast.h"
+#include "indexable.h"
 #include "keyframe.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
-#include "resourcethread.inc"
 #include "plugin.inc"
 #include "plugintoggles.inc"
 #include "resourcepixmap.inc"
+#include "resourcethread.inc"
 #include "track.inc"
 #include "tracks.inc"
 #include "transitionhandles.inc"
@@ -60,7 +62,7 @@ public:
 //        3 causes resource pixmaps to ignore picon thread.  Used by Piconthread.
 	void draw_resources(int mode = 0,
 		int indexes_only = 0,     // Redraw only certain audio resources with indexes
-		Asset *index_asset = 0);
+		Indexable *indexable = 0);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
 	void draw_playback_cursor();
 	void draw_highlighting();
@@ -250,7 +252,7 @@ public:
 //        if 3 causes resource pixmaps to ignore picon thread
 	void draw(int mode = 0, int hide_cursor = 1);
 // Draw resources during index building
-	void draw_indexes(Asset *asset);
+	void draw_indexes(Indexable *indexable);
 // Get location of edit on screen without boundary checking
 	void edit_dimensions(Edit *edit, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
 	void track_dimensions(Track *track, int64_t &x, int64_t &y, int64_t &w, int64_t &h);

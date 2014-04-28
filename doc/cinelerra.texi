@@ -11,11 +11,11 @@
 
 @center 
 
-Version 4
+Version 4.1
 
 by Adam Williams
 
-Copyright @copyright{} 2008
+Copyright @copyright{} 2009
 
 
 
@@ -2201,14 +2201,17 @@ created in the timeline.
 
 But Cinelerra lets you change what happens when you load a file.
 
-In the file selection box go to the @b{Insertion strategy} box and
-select it.  Each of these options loads the file a different way.
+In the file selection box there is a range of options for @b{Insertion
+strategy}.  Each of these options loads the file a different way.
+
+@image{insertion_strategy}
 
 @itemize
 
 
 @item
-Replace current project
+@b{Replace current project}
+@image{loadmode_new}
 
 All tracks in the current project are deleted and new tracks are
 created to match the source.  Project attributes are only changed when
@@ -2216,33 +2219,51 @@ loading XML.  If multiple files are selected it adds new tracks for
 every file.
 
 @item
-Replace current project and concatenate tracks
+@b{Replace current project and concatenate tracks}
+@image{loadmode_newcat}
 
 Same as replace current project except if multiple files are selected
 it concatenates the tracks of every file after the first.
 
 @item
-Append in new tracks
+@b{Append in new tracks}
+@image{loadmode_newtracks}
 
 The current project is not deleted and new tracks are created for the
 source.
 
 @item
-Concatenate to existing tracks
+@b{Concatenate to existing tracks}
+@image{loadmode_cat}
 
 The current project is not deleted and new files are concatenated to
 the existing tracks.
 
 @item
-Paste at insertion point
+@b{Paste at insertion point}
+@image{loadmode_paste}
 
 The file is pasted in like a normal paste operation.
 
 @item
-Create new resources only
+@b{Create new resources only}
+@image{loadmode_resource}
 
 The timeline is unchanged and new resources are created in the Resource
 Window.
+
+@item
+@b{Nested EDL}
+@image{loadmode_nested}
+
+If the file is an EDL, the output of the EDL is pasted in like a media
+file.  Nested EDLs have 1 video track & a number of audio tracks
+corresponding to the number of output channels.  They allow larger
+sequences composed of many smaller sequences, transitions to be applied
+to the output of another EDL, & global processing on the output of an
+EDL without having to manipulate each track.
+
+
 
 @end itemize
 
@@ -9065,14 +9086,38 @@ should set the opengl state to RAM or TEXTURE if they do.
 
 @b{Colormodels in OpenGL}
 
-The colormodel exposed to OpenGL routines is always floating point
-since that is what OpenGL uses, but it may be YUV or RGB depending on
-the project settings.  If it's YUV, it's offset by 0.5 just like in
+The colormodel exposed to OpenGL routines is always floating point since
+that is what OpenGL uses, but it may be YUV or RGB depending on the
+project settings.  If it's YUV, the U & V are offset by 0.5 just like in
 software.  Passing YUV colormodels to plugins was necessary for speed. 
-The other option was to convert YUV to RGB in the first step that
-needed OpenGL.  Every effect and rendering step would have needed a YUV
-to RGB routine.  With the YUV retained, only the final compositing step
-needs a YUV to RGB routine.
+The other option was to convert YUV to RGB in the first step that needed
+OpenGL.  Every effect and rendering step would have needed a YUV to RGB
+routine.  With the YUV retained, only the final compositing step needs a
+YUV to RGB routine.
+
+The OpenGL mode differentiates between alpha & flat colormodels even
+though OpenGL always has an alpha channel.  For RGB colormodels, you
+must multiply the alpha component by the RGB & set the alpha component
+to 1 whenever the colormodel has no alpha to ensure consistency with the
+software mode.
+
+@example
+Rout = Rin * Ain
+Gout = Gin * Ain
+Bout = Bin * Ain
+Aout = 1
+@end example
+
+
+For YUV colormodels, you must multiply the alpha using the following
+formula.
+
+@example
+Yout = Yin * Ain
+Uout = Uin * Ain + 0.5 * (1 - Ain)
+Vout = Vin * Ain + 0.5 * (1 - Ain)
+Aout = 1
+@end example
 
 
 
@@ -9083,10 +9128,11 @@ needs a YUV to RGB routine.
 @subsection USING SHADERS
 
 Very few effects can do anything useful with just a straight drawing of
-the texture on the PBuffer.  They normally define a shader.  The shader
-is a C program which runs on the graphics card.  Since the graphics
-card is optimized for graphics, it can be much faster than running it
-on the CPU.  
+the texture on the PBuffer.  It's also not easy to figure out exactly
+what math is being used by the different OpenGL blending macros. 
+Normally you'll use shaders.  The shader is a C program which runs on
+the graphics card.  Since the graphics card is optimized for graphics,
+it can be much faster than running it on the CPU.
 
 Shaders are written in OpenGL Shading Language.  The shader source code
 is contained in a string.  The normal sequence for using a shader comes

@@ -205,6 +205,10 @@ const char* OverlayConfig::mode_to_text(int mode)
 			return "Max";
 			break;
 
+		case TRANSFER_MIN:
+			return "Min";
+			break;
+
 		default:
 			return "Normal";
 			break;
@@ -460,6 +464,7 @@ int Overlay::process_buffer(VFrame **frame,
 
 printf("Overlay::process_buffer mode=%d\n", config.mode);
 	if(!temp) temp = new VFrame(0,
+		-1,
 		frame[0]->get_w(),
 		frame[0]->get_h(),
 		frame[0]->get_color_model(),
@@ -578,6 +583,11 @@ int Overlay::handle_opengl()
 		"	result_color.g = max(abs(dst_color.g, src_color.g);\n"
 		"	result_color.b = max(abs(dst_color.b, src_color.b);\n";
 
+	static char *blend_min_frag = 
+		"	result_color.r = min(abs(dst_color.r, src_color.r);\n"
+		"	result_color.g = min(abs(dst_color.g, src_color.g);\n"
+		"	result_color.b = min(abs(dst_color.b, src_color.b);\n";
+
 	static char *blend_subtract_frag = 
 		"	result_color.rgb = dst_color.rgb - src_color.rgb;\n";
 
@@ -672,6 +682,9 @@ int Overlay::handle_opengl()
 				break;
 			case TRANSFER_MAX:
 				shader_stack[current_shader++] = blend_max_frag;
+				break;
+			case TRANSFER_MIN:
+				shader_stack[current_shader++] = blend_min_frag;
 				break;
 		}
 

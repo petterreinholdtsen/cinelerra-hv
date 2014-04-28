@@ -47,7 +47,7 @@ class RotateScan;
 
 // Limits of global range in percent
 #define MIN_RADIUS 1
-#define MAX_RADIUS 50
+#define MAX_RADIUS 100
 
 // Limits of rotation range in degrees
 #define MIN_ROTATION 1

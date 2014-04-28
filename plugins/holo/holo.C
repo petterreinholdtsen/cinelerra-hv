@@ -264,9 +264,11 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		{
 			effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
 			bgimage = new VFrame(0, 
+				-1,
 				input_ptr->get_w(), 
 				input_ptr->get_h(), 
-				input_ptr->get_color_model());
+				input_ptr->get_color_model(),
+				-1);
 
 			for(int i = 0; i < 256; i++)
 			{

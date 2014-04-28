@@ -82,7 +82,7 @@ NewPresetItem::NewPresetItem(MWindow *mwindow, NewWindow *window, char *text)
 
 NewPresetItem::~NewPresetItem()
 {
-	delete edl;
+	edl->Garbage::remove_user();
 }
 
 

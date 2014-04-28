@@ -19,7 +19,7 @@
  * 
  */
 
-#include "asset.h"
+#include "indexable.h"
 #include "mutex.h"
 #include "wavecache.h"
 
@@ -51,7 +51,7 @@ WaveCache::~WaveCache()
 }
 
 
-WaveCacheItem* WaveCache::get_wave(int asset_id,
+WaveCacheItem* WaveCache::get_wave(int indexable_id,
 	int channel,
 	int64_t start,
 	int64_t end)
@@ -63,7 +63,7 @@ WaveCacheItem* WaveCache::get_wave(int asset_id,
 	result = (WaveCacheItem*)get_item(start);
 	while(result && result->position == start)
 	{
-		if(result->asset_id == asset_id && 
+		if(result->indexable_id == indexable_id && 
 			result->channel == channel &&
 			result->end == end)
 		{
@@ -78,7 +78,7 @@ WaveCacheItem* WaveCache::get_wave(int asset_id,
 	return 0;
 }
 
-void WaveCache::put_wave(Asset *asset,
+void WaveCache::put_wave(Indexable *indexable,
 	int channel,
 	int64_t start,
 	int64_t end,
@@ -87,8 +87,8 @@ void WaveCache::put_wave(Asset *asset,
 {
 	lock->lock("WaveCache::put_wave");
 	WaveCacheItem *item = new WaveCacheItem;
-	item->asset_id = asset->id;
-	item->path = strdup(asset->path);
+	item->indexable_id = indexable->id;
+	item->path = strdup(indexable->path);
 	item->channel = channel;
 	item->position = start;
 	item->end = end;

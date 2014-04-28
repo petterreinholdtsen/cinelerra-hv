@@ -24,13 +24,14 @@
 
 #include "asset.inc"
 #include "awindow.inc"
-#include "guicast.h"
+#include "bcdialog.h"
 #include "bitspopup.inc"
 #include "browsebutton.h"
 #include "formatpopup.h"
+#include "guicast.h"
+#include "indexable.inc"
 #include "language.h"
 #include "mwindow.h"
-#include "thread.h"
 
 
 class AssetEditByteOrderHILO;
@@ -39,19 +40,24 @@ class AssetEditPath;
 class AssetEditPathText;
 class AssetEditWindow;
 
-class AssetEdit : public Thread
+class AssetEdit : public BC_DialogThread
 {
 public:
 	AssetEdit(MWindow *mwindow);
 	~AssetEdit();
 	
-	void edit_asset(Asset *asset);
-	int set_asset(Asset *asset);
-	void run();
+	void edit_asset(Indexable *indexable);
+	int set_asset(Indexable *indexable);
+	void handle_close_event(int result);
+	BC_Window* new_gui();
 
-	Asset *asset, *new_asset;
+	Indexable *indexable;
 	MWindow *mwindow;
 	AssetEditWindow *window;
+
+
+// Changed parameters
+	Asset *changed_params;
 };
 
 
@@ -66,7 +72,6 @@ public:
 	~AssetEditWindow();
 
 	void create_objects();
-	Asset *asset;
 	AssetEditPathText *path_text;
 	AssetEditPath *path_button;
 	AssetEditByteOrderHILO *hilo;

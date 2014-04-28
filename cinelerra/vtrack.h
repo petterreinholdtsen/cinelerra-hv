@@ -57,9 +57,18 @@ public:
 	double to_doubleunits(double position);
 	double from_units(int64_t position);
 
-	void calculate_input_transfer(Asset *asset, int64_t position, int direction, 
-		float &in_x, float &in_y, float &in_w, float &in_h,
-		float &out_x, float &out_y, float &out_w, float &out_h);
+	void calculate_input_transfer(int asset_w, 
+		int asset_h, 
+		int64_t position, 
+		int direction, 
+		float &in_x, 
+		float &in_y, 
+		float &in_w, 
+		float &in_h,
+		float &out_x, 
+		float &out_y, 
+		float &out_w, 
+		float &out_h);
 
 	void calculate_output_transfer(int64_t position, int direction, 
 		float &in_x, float &in_y, float &in_w, float &in_h,

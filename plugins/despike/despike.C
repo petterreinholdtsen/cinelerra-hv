@@ -28,6 +28,7 @@
 #include "picon_png.h"
 #include "despike.h"
 #include "despikewindow.h"
+#include "samples.h"
 
 #include "vframe.h"
 
@@ -60,7 +61,7 @@ NEW_WINDOW_MACRO(Despike, DespikeWindow)
 LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
 
-int Despike::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int Despike::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 {
 	load_configuration();
 
@@ -70,15 +71,15 @@ int Despike::process_realtime(int64_t size, double *input_ptr, double *output_pt
 //printf("Despike::process_realtime 1\n");
 	for(int64_t i = 0; i < size; i++)
 	{
-		if(fabs(input_ptr[i]) > threshold || 
-			fabs(input_ptr[i]) - fabs(last_sample) > change) 
+		if(fabs(input_ptr->get_data()[i]) > threshold || 
+			fabs(input_ptr->get_data()[i]) - fabs(last_sample) > change) 
 		{
-			output_ptr[i] = last_sample;
+			output_ptr->get_data()[i] = last_sample;
 		}
 		else
 		{
-			output_ptr[i] = input_ptr[i];
-			last_sample = input_ptr[i];
+			output_ptr->get_data()[i] = input_ptr->get_data()[i];
+			last_sample = input_ptr->get_data()[i];
 		}
 	}
 //printf("Despike::process_realtime 2\n");

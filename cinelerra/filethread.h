@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "condition.inc"
 #include "file.inc"
 #include "mutex.inc"
+#include "samples.inc"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -91,14 +92,14 @@ public:
 // write data into next available buffer
 	int write_buffer(long size);
 // get pointer to next buffer to be written and lock it
-	double** get_audio_buffer();     
+	Samples** get_audio_buffer();     
 // get pointer to next frame to be written and lock it
 	VFrame*** get_video_buffer();     
 
 	void run();
 	int swap_buffer();
 
-	double ***audio_buffer;
+	Samples ***audio_buffer;
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
 	VFrame ****video_buffer;      
 	long *output_size;  // Number of frames or samples to write

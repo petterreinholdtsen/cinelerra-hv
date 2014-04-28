@@ -27,6 +27,7 @@
 #include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "indexable.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
@@ -45,7 +46,7 @@
 VWindow::VWindow(MWindow *mwindow) : Thread()
 {
 	this->mwindow = mwindow;
-	asset = 0;
+	indexable = 0;
 }
 
 
@@ -70,8 +71,8 @@ void VWindow::delete_edl()
 		mwindow->edl->vwindow_edl_shared = 0;
 	}
 
-	if(asset) Garbage::delete_object(asset);
-	asset = 0;
+	if(indexable) indexable->Garbage::remove_user();
+	indexable = 0;
 }
 
 
@@ -114,9 +115,9 @@ EDL* VWindow::get_edl()
 	return mwindow->edl->vwindow_edl;
 }
 
-Asset* VWindow::get_asset()
+Indexable* VWindow::get_source()
 {
-	return this->asset;
+	return this->indexable;
 }
 
 void VWindow::change_source()
@@ -129,13 +130,13 @@ void VWindow::change_source()
 	}
 	else
 	{
-		if(asset) Garbage::delete_object(asset);
-		asset = 0;
+		if(indexable) indexable->Garbage::remove_user();
+		indexable = 0;
 		mwindow->edl->vwindow_edl_shared = 0;
 	}
 }
 
-void VWindow::change_source(Asset *asset)
+void VWindow::change_source(Indexable *indexable)
 {
 //printf("VWindow::change_source 1\n");
 // 	if(asset && this->asset &&
@@ -146,19 +147,34 @@ void VWindow::change_source(Asset *asset)
 
 	char title[BCTEXTLEN];
 	FileSystem fs;
-	fs.extract_name(title, asset->path);
+	fs.extract_name(title, indexable->path);
 //printf("VWindow::change_source 1\n");
 
 	delete_edl();
 //printf("VWindow::change_source 1\n");
 
 // Generate EDL off of main EDL for cutting
-	this->asset = new Asset;
-	*this->asset = *asset;
+	Asset *asset = 0;
+	EDL *nested_edl = 0;
+	if(indexable->is_asset)
+	{
+		this->indexable = asset = new Asset;
+		asset->copy_from((Asset*)this->indexable, 0);
+	}
+	else
+	{
+		this->indexable = nested_edl = new EDL;
+		nested_edl->create_objects();
+		nested_edl->copy_all((EDL*)indexable);
+	}
+
 	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
 	mwindow->edl->vwindow_edl_shared = 0;
 	mwindow->edl->vwindow_edl->create_objects();
-	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
+	if(asset)
+		mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
+	else
+		mwindow->edl_to_nested(mwindow->edl->vwindow_edl, nested_edl);
 //printf("VWindow::change_source 1 %d %d\n", edl->local_session->loop_playback, mwindow->edl->local_session->loop_playback);
 //edl->dump();
 
@@ -167,21 +183,6 @@ void VWindow::change_source(Asset *asset)
 	update_position(CHANGE_ALL, 1, 1);
 
 
-// Update master session
-	strcpy(mwindow->edl->session->vwindow_folder, MEDIA_FOLDER);
-	mwindow->edl->session->vwindow_source = 0;
-	int i = 0;
-	for(Asset *current = mwindow->edl->assets->first; 
-		current;
-		current = NEXT)
-	{
-		if(this->asset->equivalent(*current, 0, 0))
-		{
-			mwindow->edl->session->vwindow_source = i;
-			break;
-		}
-		i++;
-	}
 
 //printf("VWindow::change_source 2\n");
 }
@@ -198,7 +199,6 @@ void VWindow::change_source(EDL *edl)
 
 	if(edl)
 	{
-		this->asset = 0;
 		mwindow->edl->vwindow_edl = edl;
 // in order not to later delete edl if it is shared
 		mwindow->edl->vwindow_edl_shared = 1;
@@ -206,11 +206,6 @@ void VWindow::change_source(EDL *edl)
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
-
-// Update master session
-		strcpy(mwindow->edl->session->vwindow_folder, CLIP_FOLDER);
-		mwindow->edl->session->vwindow_source = 
-			mwindow->edl->clips.number_of(edl);
 	}
 	else
 		gui->change_source(edl, _("Viewer"));
@@ -372,7 +367,6 @@ void VWindow::copy()
 			0,
 			0,
 			&file,
-			mwindow->plugindb,
 			"",
 			1);
 		mwindow->gui->lock_window();

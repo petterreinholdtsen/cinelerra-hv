@@ -39,6 +39,7 @@ endif
 	$(MAKE) -C $(MJPEGDIR)/utils 
 	$(MAKE) -C $(MJPEGDIR)/mpeg2enc 
 	$(MAKE) -C $(MJPEGDIR)/mplex
+	cp $(MJPEGDIR)/mpeg2enc/mpeg2enc bin/mpeg2enc.plugin
 	$(MAKE) -C thirdparty/libsndfile*
 	$(MAKE) -C thirdparty/libtheora*
 	$(MAKE) -C thirdparty/ilmbase*

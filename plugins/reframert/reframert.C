@@ -319,9 +319,9 @@ int ReframeRT::process_buffer(VFrame *frame,
 	double input_rate = frame_rate;
 	int is_current_keyframe;
 
-	// if there are no keyframes, the default keyframe is used, and its position is always 0;
-	// if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
-	// so let's calculate using a fake keyframe with the same settings but position == effect start
+// if there are no keyframes, the default keyframe is used, and its position is always 0;
+// if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
+// so let's calculate using a fake keyframe with the same settings but position == effect start
 	KeyFrame *fake_keyframe = new KeyFrame();
 	fake_keyframe->copy_from(next_keyframe);
 	fake_keyframe->position = local_to_edl(get_source_start());
@@ -351,7 +351,8 @@ int ReframeRT::process_buffer(VFrame *frame,
 		input_frame += (int64_t)(segment_len * config.scale);
 	} while (!is_current_keyframe);
 
-	// Change rate
+// Change rate
+// Don't think this is what you want for downsampling.
 	if (!config.stretch)
 		input_rate *= config.scale;
 

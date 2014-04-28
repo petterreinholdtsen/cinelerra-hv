@@ -194,6 +194,13 @@ void SUV::initialize()
 		"loadmode_dn.png",
 		"loadmode_checkedhi.png",
 		"loadmode_resource");
+	new_toggle("loadmode_nested.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_nested");
 
 
 
@@ -431,6 +438,7 @@ void SUV::initialize()
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
 	new_image("mode_max", "mode_max.png");
+	new_image("mode_min", "mode_min.png");
 
 	new_image_set("plugin_on", 5, "plugin_on.png", "plugin_onhi.png", "plugin_onselect.png", "plugin_ondn.png", "plugin_onselecthi.png");
 	new_image_set("plugin_show", 5, "plugin_show.png", "plugin_showhi.png", "plugin_showselect.png", "plugin_showdn.png", "plugin_showselecthi.png");

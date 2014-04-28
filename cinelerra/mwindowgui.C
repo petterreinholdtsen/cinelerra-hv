@@ -44,6 +44,7 @@
 #include "mwindow.h"
 #include "patchbay.h"
 #include "pluginpopup.h"
+#include "renderengine.h"
 #include "samplescroll.h"
 #include "statusbar.h"
 #include "theme.h"
@@ -73,6 +74,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	trackscroll = 0;
 	cursor = 0;
 	canvas = 0;
+	render_engine = 0;
 }
 
 
@@ -91,6 +93,7 @@ MWindowGUI::~MWindowGUI()
 	delete plugin_menu;
 	delete keyframe_menu;
  	delete transition_menu;
+	delete render_engine;
 }
 
 void MWindowGUI::get_scrollbars()

@@ -51,15 +51,14 @@ public:
 
 // Composite a frame
 // start_position - start of buffer in project if forward. end of buffer if reverse
-	int process_buffer(int64_t input_position);
+	int process_buffer(int64_t input_position,
+		int use_opengl);
 
 // absolute frame the buffer starts on
 	int64_t absolute_frame;        
 
 	VFrame *output_temp;
 	VRender *vrender;
-// Calculated at the start of every process_buffer
-	int use_opengl;
 };
 
 

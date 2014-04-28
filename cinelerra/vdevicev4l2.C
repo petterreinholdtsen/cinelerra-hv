@@ -535,6 +535,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 				{
 					frame->set_compressed_memory(data,
 						0,
+						0,
 						buffer.length);
 				}
 				else
@@ -559,6 +560,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 
 //printf("VDeviceV4L2Thread::run color_model=%d\n", color_model);
 					frame->reallocate(data,
+						0,
 						y_offset,
 						u_offset,
 						v_offset,

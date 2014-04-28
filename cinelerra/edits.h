@@ -44,11 +44,13 @@ public:
 	void equivalent_output(Edits *edits, int64_t *result);
 	virtual void copy_from(Edits *edits);
 	virtual Edits& operator=(Edits& edits);
-// Editing
+// Insert edits from different EDL
 	void insert_edits(Edits *edits, 
 		int64_t position,
 		int64_t min_length);
+// Insert asset from same EDL
 	void insert_asset(Asset *asset, 
+		EDL *nested_edl,
 		int64_t length, 
 		int64_t sample, 
 		int track_number);

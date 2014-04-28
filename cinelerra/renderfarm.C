@@ -55,8 +55,7 @@
 
 
 
-RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
-	PackageDispatcher *packages,
+RenderFarmServer::RenderFarmServer(PackageDispatcher *packages,
 	Preferences *preferences,
 	int use_local_rate,
 	int *result_return,
@@ -66,7 +65,6 @@ RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb,
 	EDL *edl,
 	BRender *brender)
 {
-	this->plugindb = plugindb;
 	this->packages = packages;
 	this->preferences = preferences;
 	this->use_local_rate = use_local_rate;
@@ -93,8 +91,7 @@ int RenderFarmServer::start_clients()
 	for(int i = 0; i < preferences->get_enabled_nodes() && !result; i++)
 	{
 		client_lock->lock("RenderFarmServer::start_clients");
-		RenderFarmServerThread *client = new RenderFarmServerThread(plugindb, 
-			this, 
+		RenderFarmServerThread *client = new RenderFarmServerThread(this, 
 			i);
 		clients.append(client);
 
@@ -127,12 +124,10 @@ int RenderFarmServer::wait_clients()
 
 // Waits for requests from every client.
 // Joins when the client is finished.
-RenderFarmServerThread::RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
-	RenderFarmServer *server, 
+RenderFarmServerThread::RenderFarmServerThread(RenderFarmServer *server, 
 	int number)
  : Thread()
 {
-	this->plugindb = plugindb;
 	this->server = server;
 	this->number = number;
 	socket_fd = -1;
@@ -547,8 +542,7 @@ void RenderFarmServerThread::send_edl()
 	FileXML file;
 
 // Save the XML
-	server->edl->save_xml(plugindb,
-		&file, 
+	server->edl->save_xml(&file, 
 		0,
 		0,
 		0);

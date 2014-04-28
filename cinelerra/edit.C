@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edit.h"
 #include "edits.h"
@@ -31,6 +32,7 @@
 #include "localsession.h"
 #include "plugin.h"
 #include "mainsession.h"
+#include "nestededls.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transition.h"
@@ -79,9 +81,20 @@ void Edit::reset()
 	transition = 0;
 	channel = 0;
 	user_title[0] = 0;
+	nested_edl = 0;
 }
 
-int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_path)
+Indexable* Edit::get_source()
+{
+	if(asset) return asset;
+	if(nested_edl) return nested_edl;
+	return 0;
+}
+
+int Edit::copy(int64_t start, 
+	int64_t end, 
+	FileXML *file, 
+	const char *output_path)
 {
 // variables
 //printf("Edit::copy 1\n");
@@ -131,11 +144,19 @@ int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_pat
 //			file->append_newline();
 //printf("Edit::copy 6\n");
 
+			if(nested_edl)
+			{
+				file->tag.set_title("NESTED_EDL");
+				file->tag.set_property("SRC", nested_edl->path);
+				file->append_tag();
+			}
+
 			if(asset)
 			{
 //printf("Edit::copy 6 %s\n", asset->path);
-				char stored_path[1024];
-				char asset_directory[1024], output_directory[1024];
+				char stored_path[BCTEXTLEN];
+				char asset_directory[BCTEXTLEN];
+				char output_directory[BCTEXTLEN];
 				FileSystem fs;
 
 //printf("Edit::copy 6 %s\n", asset->path);
@@ -204,7 +225,7 @@ void Edit::detach_transition()
 
 int Edit::silence()
 {
-	if(asset) 
+	if(asset || nested_edl)
 		return 0;
 	else
 		return 1;
@@ -213,6 +234,7 @@ int Edit::silence()
 
 void Edit::copy_from(Edit *edit)
 {
+	this->nested_edl = edl->nested_edls->get_copy(edit->nested_edl);
 	this->asset = edl->assets->update(edit->asset);
 	this->startsource = edit->startsource;
 	this->startproject = edit->startproject;
@@ -235,32 +257,37 @@ void Edit::equivalent_output(Edit *edit, int64_t *result)
 // End of edit changed
 	if(startproject + length != edit->startproject + edit->length)
 	{
-		int64_t new_length = MIN(startproject + length, edit->startproject + edit->length);
+		int64_t new_length = MIN(startproject + length, 
+			edit->startproject + edit->length);
 		if(*result < 0 || new_length < *result) 
 			*result = new_length;
 	}
 
-// Start of edit changed
 	if(
-// One is silence and one isn't
+// Different nested EDLs
+		edit->nested_edl && !nested_edl ||
+		!edit->nested_edl && nested_edl ||
+// Different assets
 		edit->asset == 0 && asset != 0 ||
 		edit->asset != 0 && asset == 0 ||
-// One has transition and one doesn't
+// different transitions
 		edit->transition == 0 && transition != 0 ||
 		edit->transition != 0 && transition == 0 ||
 // Position changed
 		startproject != edit->startproject ||
 		startsource != edit->startsource ||
 // Transition changed
-		(transition && 
-			edit->transition && 
+		(transition && edit->transition && 
 			!transition->identical(edit->transition)) ||
 // Asset changed
-		(asset && 
-			edit->asset &&
-			!asset->equivalent(*edit->asset, 1, 1))
+		(asset && edit->asset &&
+			!asset->equivalent(*edit->asset, 1, 1)) ||
+// Nested EDL changed
+		(nested_edl && edit->nested_edl &&
+			strcmp(nested_edl->path, edit->nested_edl->path))
 		)
 	{
+// Start of edit changed
 		if(*result < 0 || startproject < *result) *result = startproject;
 	}
 }
@@ -282,12 +309,13 @@ void Edit::synchronize_params(Edit *edit)
 // Comparison for ResourcePixmap drawing
 int Edit::identical(Edit &edit)
 {
-	int result = (this->asset == edit.asset &&
-	this->startsource == edit.startsource &&
-	this->startproject == edit.startproject &&
-	this->length == edit.length &&
-	this->transition == edit.transition &&
-	this->channel == edit.channel);
+	int result = (this->nested_edl == edit.nested_edl &&
+		this->asset == edit.asset &&
+		this->startsource == edit.startsource &&
+		this->startproject == edit.startproject &&
+		this->length == edit.length &&
+		this->transition == edit.transition &&
+		this->channel == edit.channel);
 	return result;
 }
 
@@ -310,9 +338,16 @@ double Edit::frame_w()
 
 double Edit::picon_w()
 {
-	return (double)edl->local_session->zoom_track * 
-		asset->width / 
-		asset->height;
+	if(asset)
+		return (double)edl->local_session->zoom_track * 
+			asset->width / 
+			asset->height;
+	if(nested_edl)
+		return (double)edl->local_session->zoom_track * 
+			nested_edl->session->output_w / 
+			nested_edl->session->output_h;
+
+	return 0;
 }
 
 int Edit::picon_h()
@@ -324,7 +359,12 @@ int Edit::picon_h()
 int Edit::dump()
 {
 	printf("     EDIT %p\n", this); fflush(stdout);
-	printf("      asset %p\n", asset); fflush(stdout);
+	printf("      nested_edl=%p %s asset=%p %s\n", 
+		nested_edl, 
+		nested_edl ? nested_edl->path : "", 
+		asset,
+		asset ? asset->path : "");
+	fflush(stdout);
 	printf("      channel %d\n", channel);
 	if(transition) 
 	{
@@ -452,7 +492,8 @@ int Edit::shift_start_out(int edit_mode,
 {
 	int64_t cut_length = oldposition - newposition;
 
-	if(asset)
+
+	if(asset || nested_edl)
 	{
 		int64_t end_source = get_source_end(1);
 

@@ -107,7 +107,7 @@ void BC_DialogThread::run()
 	handle_close_event(result);
 }
 
-void BC_DialogThread::lock_gui(char *location)
+void BC_DialogThread::lock_gui(const char *location)
 {
 	window_lock->lock(location);
 }

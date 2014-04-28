@@ -82,7 +82,7 @@ public:
 	int signal_process();
 	int read_samples(int64_t output_sample, 
 		int samples, 
-		double *buffer);
+		Samples *buffer);
 	PitchEffect *plugin;
 	
 	double *last_phase;
@@ -105,7 +105,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 

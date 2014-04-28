@@ -190,7 +190,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(SpectrogramConfig)
 	int is_realtime();
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 	int load_defaults();
@@ -209,7 +209,7 @@ public:
 // Data buffer for frequency & magnitude
 	unsigned char *data;
 // This stores 2 windows at a time to pull off the fragmenting
-	double *audio_buffer;
+	Samples *audio_buffer;
 // Temporaries for the FFT
 	double *freq_real;
 	double *freq_imag;

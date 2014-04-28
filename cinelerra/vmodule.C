@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bcpbuffer.h"
 #include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
@@ -37,6 +38,7 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "sharedlocation.h"
+#include "tracks.h"
 #include "transition.h"
 #include "transportque.h"
 #include "units.h"
@@ -108,13 +110,18 @@ int VModule::import_frame(VFrame *output,
 	float out_w1;
 	float out_h1;
 	int result = 0;
+	const int debug = 0;
 	double edl_rate = get_edl()->session->frame_rate;
-	int64_t input_position_project = (int64_t)(input_position * 
+	int64_t input_position_project = Units::to_int64(input_position * 
 		edl_rate / 
 		frame_rate + 
 		0.001);
 	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
+	if(debug) printf("VModule::import_frame %d this=%p\n", 
+		__LINE__,
+		this);
+// Convert to position going forward
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
 	if(direction == PLAY_REVERSE)
@@ -122,6 +129,7 @@ int VModule::import_frame(VFrame *output,
 		corrected_position--;
 		input_position_project--;
 	}
+	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
 	VDeviceX11 *x11_device = 0;
 	if(use_opengl)
@@ -130,49 +138,202 @@ int VModule::import_frame(VFrame *output,
 		{
 			x11_device = (VDeviceX11*)renderengine->video->get_output_base();
 			output->set_opengl_state(VFrame::RAM);
+			if(!x11_device) use_opengl = 0;
 		}
 	}
 
+	if(!output) printf("VModule::import_frame 10 output=%p x11_device=%p nested_edl=%p\n", 
+		output,
+		x11_device,
+		nested_edl);
+
+
+	if(debug) printf("VModule::import_frame %d current_edit=%p\n", 
+		__LINE__,
+		current_edit);
+
 
 // Load frame into output
-	if(current_edit &&
-		current_edit->asset)
-	{
-		get_cache()->age();
-		File *source = get_cache()->check_out(current_edit->asset,
-			get_edl());
-//		get_cache()->dump();
 
-		if(source)
+// Create objects for nested EDL
+	if(current_edit &&
+		current_edit->nested_edl)
+	{
+		int command;
+		if(debug) printf("VModule::import_frame %d nested_edl=%p current_edit->nested_edl=%p\n", 
+			__LINE__,
+			nested_edl,
+			current_edit->nested_edl);
+
+// Convert requested direction to command
+		if(renderengine->command->command == CURRENT_FRAME)
+			command = CURRENT_FRAME;
+		else
+		if(direction == PLAY_REVERSE)
 		{
-			int64_t edit_startproject = (int64_t)(current_edit->startproject * 
+			if(renderengine->command->single_frame())
+				command = SINGLE_FRAME_REWIND;
+			else
+				command = NORMAL_REWIND;
+		}
+		else
+		{
+			if(renderengine->command->single_frame())
+				command = SINGLE_FRAME_FWD;
+			else
+				command = NORMAL_FWD;
+		}
+
+		if(!nested_edl || nested_edl->id != current_edit->nested_edl->id)
+		{
+			nested_edl = current_edit->nested_edl;
+			if(nested_renderengine)
+			{
+				delete nested_renderengine;
+				nested_renderengine = 0;
+			}
+
+			if(!nested_command)
+			{
+				nested_command = new TransportCommand;
+			}
+
+
+			if(!nested_renderengine)
+			{
+				nested_command->command = command;
+				nested_command->get_edl()->copy_all(nested_edl);
+				nested_command->change_type = CHANGE_ALL;
+				nested_command->realtime = renderengine->command->realtime;
+				nested_renderengine = new RenderEngine(0,
+					get_preferences(), 
+					0,
+					renderengine ? renderengine->channeldb : 0,
+					1);
+				nested_renderengine->set_vcache(get_cache());
+				nested_renderengine->arm_command(nested_command);
+			}
+		}
+		else
+		{
+
+// Update nested command
+			nested_renderengine->command->command = command;
+			nested_command->realtime = renderengine->command->realtime;
+		}
+
+// Update nested video driver for opengl
+		nested_renderengine->video = renderengine->video;
+	}
+	else
+	{
+		nested_edl = 0;
+	}
+	if(debug) printf("VModule::import_frame %d\n", __LINE__);
+
+	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
+
+	if(current_edit &&
+		(current_edit->asset ||
+		(current_edit->nested_edl && nested_renderengine->vrender)))
+	{
+		File *file = 0;
+	
+		if(debug) printf("VModule::import_frame %d cache=%p\n", 
+			__LINE__,
+			get_cache());
+		if(current_edit->asset)
+		{
+			get_cache()->age();
+			file = get_cache()->check_out(current_edit->asset,
+				get_edl());
+//			get_cache()->dump();
+		}
+
+// File found
+		if(file || nested_edl)
+		{
+// Make all positions based on requested frame rate.
+			int64_t edit_startproject = Units::to_int64(current_edit->startproject * 
 				frame_rate / 
 				edl_rate);
-			int64_t edit_startsource = (int64_t)(current_edit->startsource *
+			int64_t edit_startsource = Units::to_int64(current_edit->startsource *
 				frame_rate /
 				edl_rate);
+// Source position going forward
 			uint64_t position = corrected_position - 
 				edit_startproject + 
 				edit_startsource;
-			// if we hit the end of stream, freeze at last frame
-			uint64_t max_position = source->get_video_length(frame_rate) - 1;
-			if (position > max_position) position = max_position;
+			int64_t nested_position = 0;
+
+			int asset_w;
+			int asset_h;
+			if(debug) printf("VModule::import_frame %d\n", __LINE__);
+
+// if we hit the end of stream, freeze at last frame
+			uint64_t max_position = 0;
+			if(file)
+			{
+				max_position = Units::to_int64((double)file->get_video_length() *
+					frame_rate / 
+					current_edit->asset->frame_rate - 1);
+			}
+			else
+			{
+				max_position = Units::to_int64(nested_edl->tracks->total_playable_length() *
+					frame_rate - 1);
+			}
+
+
+			if(position > max_position) position = max_position;
+			else
+			if(position < 0) position = 0;
+
 			int use_cache = renderengine && 
 				renderengine->command->single_frame();
 			int use_asynchronous = !use_cache && 
 				renderengine &&
 				renderengine->command->realtime &&
-				renderengine->edl->session->video_asynchronous;
+				renderengine->get_edl()->session->video_asynchronous;
 
-			if(use_asynchronous)
-				source->start_video_decode_thread();
+			if(file)
+			{
+				if(debug) printf("VModule::import_frame %d\n", __LINE__);
+				if(use_asynchronous)
+					file->start_video_decode_thread();
+				else
+					file->stop_video_thread();
+
+				int64_t normalized_position = Units::to_int64(position *
+					current_edit->asset->frame_rate /
+					frame_rate);
+// printf("VModule::import_frame %d %lld %lld\n", 
+// __LINE__, 
+// position, 
+// normalized_position);
+				file->set_video_position(normalized_position,
+					0);
+				file->set_layer(current_edit->channel);
+				asset_w = current_edit->asset->width;
+				asset_h = current_edit->asset->height;
+//printf("VModule::import_frame %d normalized_position=%lld\n", __LINE__, normalized_position);
+			}
 			else
-				source->stop_video_thread();
-
-			source->set_video_position(position, frame_rate);
-			source->set_layer(current_edit->channel);
-
-			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
+			{
+				if(debug) printf("VModule::import_frame %d\n", __LINE__);
+				asset_w = nested_edl->session->output_w;
+				asset_h = nested_edl->session->output_h;
+// Get source position in nested frame rate in direction of playback.
+				nested_position = Units::to_int64(position * 
+					nested_edl->session->frame_rate / 
+					frame_rate);
+				if(direction == PLAY_REVERSE)
+					nested_position++;
+			}
+			
+			
+			((VTrack*)track)->calculate_input_transfer(asset_w, 
+				asset_h,
 				input_position_project, 
 				direction, 
 				in_x1, 
@@ -185,6 +346,12 @@ int VModule::import_frame(VFrame *output,
 				out_h1);
 
 
+// printf("VModule::import_frame %d %f %d %f %d\n", 
+// __LINE__,
+// in_w1, 
+// asset_w,
+// in_h1,
+// asset_h);
 
 // file -> temp -> output
 			if( !EQUIV(in_x1, 0) || 
@@ -195,9 +362,10 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(out_y1, 0) ||
 				!EQUIV(out_w1, track->track_w) ||
 				!EQUIV(out_h1, track->track_h) ||
-				!EQUIV(in_w1, current_edit->asset->width) ||
-				!EQUIV(in_h1, current_edit->asset->height))
+				!EQUIV(in_w1, asset_w) ||
+				!EQUIV(in_h1, asset_h))
 			{
+				if(debug) printf("VModule::import_frame %d file -> temp -> output\n", __LINE__);
 
 
 
@@ -218,8 +386,8 @@ int VModule::import_frame(VFrame *output,
 
 
 				if((*input) && 
-					((*input)->get_w() != current_edit->asset->width ||
-					(*input)->get_h() != current_edit->asset->height))
+					((*input)->get_w() != asset_w ||
+					(*input)->get_h() != asset_h))
 				{
 					delete (*input);
 					(*input) = 0;
@@ -232,8 +400,9 @@ int VModule::import_frame(VFrame *output,
 				if(!(*input))
 				{
 					(*input) = new VFrame(0,
-						current_edit->asset->width,
-						current_edit->asset->height,
+						-1,
+						asset_w,
+						asset_h,
 						get_edl()->session->color_model,
 						-1);
 				}
@@ -244,12 +413,135 @@ int VModule::import_frame(VFrame *output,
 
 // file -> temp
 // Cache for single frame only
-				if(use_cache) source->set_cache_frames(1);
-				result = source->read_frame((*input));
-				if(use_cache) source->set_cache_frames(0);
-				(*input)->set_opengl_state(VFrame::RAM);
+				if(file)
+				{
+					if(debug) printf("VModule::import_frame %d this=%p file=%s\n", 
+						__LINE__, 
+						this,
+						current_edit->asset->path);
+					if(use_cache) file->set_cache_frames(1);
+					result = file->read_frame((*input));
+					if(use_cache) file->set_cache_frames(0);
+					(*input)->set_opengl_state(VFrame::RAM);
+				}
+				else
+				if(nested_edl)
+				{
+// If the colormodels differ, change input to nested colormodel
+					int nested_cmodel = nested_renderengine->get_edl()->session->color_model;
+					int current_cmodel = output->get_color_model();
+					int output_w = output->get_w();
+					int output_h = output->get_h();
+					VFrame *input2 = (*input);
 
-//printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
+					if(nested_cmodel != current_cmodel)
+					{
+// If opengl, input -> input -> output
+						if(use_opengl)
+						{
+						}
+						else
+						{
+// If software, input2 -> input -> output
+// Use output as a temporary.
+							input2 = output;
+						}
+
+						input2->reallocate(0, 
+							0,
+							0,
+							0,
+							0,
+							(*input)->get_w(), 
+							(*input)->get_h(), 
+							nested_cmodel, 
+							-1);
+					}
+
+
+					if(debug) printf("VModule::import_frame %d this=%p nested_edl=%s\n", 
+						__LINE__,
+						this,
+						nested_edl->path);
+
+					result = nested_renderengine->vrender->process_buffer(
+						input2, 
+						nested_position,
+						use_opengl);
+
+					if(debug) printf("VModule::import_frame %d this=%p nested_edl=%s\n", 
+						__LINE__,
+						this,
+						nested_edl->path);
+
+					if(nested_cmodel != current_cmodel)
+					{
+						if(debug) printf("VModule::import_frame %d\n", __LINE__);
+						if(use_opengl)
+						{
+// Change colormodel in hardware.
+							if(debug) printf("VModule::import_frame %d\n", __LINE__);
+							x11_device->convert_cmodel(input2, 
+								current_cmodel);
+
+// The converted color model is now in hardware, so return the input2 buffer
+// to the expected color model.
+							input2->reallocate(0, 
+								0,
+								0,
+								0,
+								0,
+								(*input)->get_w(), 
+								(*input)->get_h(), 
+								current_cmodel, 
+								-1);
+						}
+						else
+						{
+// Transfer from input2 to input
+if(debug) printf("VModule::import_frame %d nested_cmodel=%d current_cmodel=%d input2=%p input=%p output=%p\n", 
+__LINE__, 
+nested_cmodel,
+current_cmodel,
+input2, 
+(*input),
+output);
+							cmodel_transfer((*input)->get_rows(),
+								input2->get_rows(),
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+							    input2->get_w(),
+							    input2->get_h(),
+								0,
+								0,
+								(*input)->get_w(),
+								(*input)->get_h(),
+								nested_cmodel,
+								current_cmodel,
+								0,
+								input2->get_w(),
+								(*input)->get_w());
+
+// input2 was the output buffer, so it must be restored
+						input2->reallocate(0, 
+							0,
+							0,
+							0,
+							0,
+							output_w, 
+							output_h, 
+							current_cmodel, 
+							-1);
+						}
+					}
+
+				}
 
 // Find an overlayer object to perform the camera transformation
 				OverlayFrame *overlayer = 0;
@@ -257,6 +549,7 @@ int VModule::import_frame(VFrame *output,
 // OpenGL playback uses hardware
 				if(use_opengl)
 				{
+//printf("VModule::import_frame %d\n", __LINE__);
 				}
 				else
 // Realtime playback
@@ -303,6 +596,10 @@ int VModule::import_frame(VFrame *output,
 						out_y1,
 						out_x1 + out_w1,
 						out_y1 + out_h1);
+if(debug) printf("VModule::import_frame %d %d %d\n", 
+__LINE__, 
+output->get_opengl_state(),
+(*input)->get_opengl_state());
 				}
 				else
 				{
@@ -319,6 +616,7 @@ int VModule::import_frame(VFrame *output,
 						cmodel_is_yuv(output->get_color_model()))
 						mode = TRANSFER_NORMAL;
 
+					if(debug) printf("VModule::import_frame %d temp -> output\n", __LINE__);
 					overlayer->overlay(output,
 						(*input), 
 						in_x1,
@@ -339,17 +637,135 @@ int VModule::import_frame(VFrame *output,
 			else
 // file -> output
 			{
-// Cache single frames only
-				if(use_cache) source->set_cache_frames(1);
-				result = source->read_frame(output);
-				if(use_cache) source->set_cache_frames(0);
-				output->set_opengl_state(VFrame::RAM);
+				if(debug) printf("VModule::import_frame %d file -> output nested_edl=%p file=%p\n", 
+					__LINE__,
+					nested_edl,
+					file);
+				if(nested_edl)
+				{
+					VFrame **input = &output;
+// If colormodels differ, reallocate output in nested colormodel.
+					int nested_cmodel = nested_renderengine->get_edl()->session->color_model;
+					int current_cmodel = output->get_color_model();
+
+if(debug) printf("VModule::import_frame %d nested_cmodel=%d current_cmodel=%d\n", 
+__LINE__, 
+nested_cmodel, 
+current_cmodel);
+
+					if(nested_cmodel != current_cmodel)
+					{
+						if(use_opengl)
+						{
+						}
+						else
+						{
+							if(commonrender)
+							{
+								input = &((VRender*)commonrender)->input_temp;
+							}
+							else
+							{
+								input = &input_temp;
+							}
+
+							if(!(*input)) (*input) = new VFrame;
+						}
+
+						(*input)->reallocate(0,
+							0,
+							0,
+							0,
+							0,
+							output->get_w(),
+							output->get_h(),
+							nested_cmodel,
+							-1);
+					}
+
+					result = nested_renderengine->vrender->process_buffer(
+						(*input), 
+						nested_position,
+						use_opengl);
+
+// If colormodels differ, change colormodels in opengl if possible.
+// Swap output for temp if not possible.
+					if(nested_cmodel != current_cmodel)
+					{
+						if(use_opengl)
+						{
+							x11_device->convert_cmodel(output, 
+								current_cmodel);
+
+// The color model was changed in place, so return output buffer
+							output->reallocate(0, 
+								0,
+								0,
+								0,
+								0,
+								output->get_w(), 
+								output->get_h(), 
+								current_cmodel, 
+								-1);
+						}
+						else
+						{
+// Transfer from temporary to output
+if(debug) printf("VModule::import_frame %d %d %d %d %d %d %d\n", 
+__LINE__,
+(*input)->get_w(),
+(*input)->get_h(),
+output->get_w(),
+output->get_h(),
+nested_cmodel,
+current_cmodel);
+							cmodel_transfer(output->get_rows(),
+								(*input)->get_rows(),
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								0,
+								(*input)->get_w(),
+								(*input)->get_h(),
+								0,
+								0,
+								output->get_w(),
+								output->get_h(),
+								nested_cmodel,
+								current_cmodel,
+								0,
+								(*input)->get_w(),
+								output->get_w());
+						}
+
+					}
+					
+				}
+				else
+				if(file)
+				{
+// Cache single frames
+					if(use_cache) file->set_cache_frames(1);
+					result = file->read_frame(output);
+					if(use_cache) file->set_cache_frames(0);
+					output->set_opengl_state(VFrame::RAM);
+				}
 			}
 
-			get_cache()->check_in(current_edit->asset);
+			if(file)
+			{
+				get_cache()->check_in(current_edit->asset);
+				file = 0;
+			}
 		}
 		else
+// Source not found
 		{
+			if(debug) printf("VModule::import_frame %d\n", __LINE__);
 			if(use_opengl)
 			{
 				x11_device->clear_input(output);
@@ -362,8 +778,9 @@ int VModule::import_frame(VFrame *output,
 		}
 	}
 	else
-// Silence
+// Source is silence
 	{
+		if(debug) printf("VModule::import_frame %d\n", __LINE__);
 		if(use_opengl)
 		{
 			x11_device->clear_input(output);
@@ -374,6 +791,7 @@ int VModule::import_frame(VFrame *output,
 		}
 	}
 
+	if(debug) printf("VModule::import_frame %d done\n", __LINE__);
 
 	return result;
 }
@@ -393,11 +811,11 @@ int VModule::render(VFrame *output,
 
 //printf("VModule::render %lld\n", start_position);
 
-	if(use_nudge) start_position += (int64_t)(track->nudge * 
+	if(use_nudge) start_position += Units::to_int64(track->nudge * 
 		frame_rate / 
 		edl_rate);
 
-	int64_t start_position_project = (int64_t)(start_position *
+	int64_t start_position_project = Units::to_int64(start_position *
 		edl_rate /
 		frame_rate + 
 		0.5);
@@ -457,12 +875,14 @@ int VModule::render(VFrame *output,
 		if(!(*transition_input))
 		{
 			(*transition_input) = new VFrame(0,
+				-1,
 				track->track_w,
 				track->track_h,
 				get_edl()->session->color_model,
 				-1);
 		}
 
+//printf("VModule::render %d\n", __LINE__);
 		result = import_frame((*transition_input), 
 			current_edit, 
 			start_position,
@@ -480,6 +900,15 @@ int VModule::render(VFrame *output,
 			frame_rate,
 			direction,
 			use_opengl);
+//printf("VModule::render %d\n", __LINE__);
+
+// printf("VModule::render %d %p %p %p %p\n", 
+// __LINE__,
+// (*transition_input),
+// (*transition_input)->get_pbuffer(),
+// output,
+// output->get_pbuffer());
+
 
 // Execute plugin with transition_input and output here
 		if(renderengine) 

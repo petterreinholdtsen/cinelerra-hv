@@ -35,6 +35,7 @@
 
 #include <string.h>
 
+// This doesn't appear to be used anymore.
 
 
 
@@ -98,7 +99,7 @@ void ThreadIndexer::run()
 
 			if(result2 == 1)
 			{
-				strcpy(new_filename, SILENCE);
+				new_filename[0] = 0;
 			}
 			else
 			{
@@ -138,7 +139,7 @@ void ThreadIndexer::run()
 					progress->start();
 				}
 
-//				indexfile->create_index(mwindow, current_asset, progress);
+//				indexfile->create_index(current_asset, 0, progress);
 				if(progress->is_cancelled()) interrupt_flag = 1;
 			}
 			else

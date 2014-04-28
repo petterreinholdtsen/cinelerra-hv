@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 				
 				if(argv[i][2] != 0)
 				{
-					stream = argv[i][2] - '0';
+					stream = atoi(argv[i] + 2);
 				}
 			}
 		}

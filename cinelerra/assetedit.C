@@ -24,15 +24,20 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bcprogressbox.h"
+#include "bcsignals.h"
 #include "bitspopup.h"
 #include "cache.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "file.h"
 #include "filempeg.h"
 #include "filesystem.h"
+#include "indexable.h"
 #include "indexfile.h"
+#include "indexstate.h"
 #include "language.h"
 #include "mainindexes.h"
 #include "mwindow.h"
@@ -46,99 +51,131 @@
 
 
 AssetEdit::AssetEdit(MWindow *mwindow)
- : Thread()
+ : BC_DialogThread()
 {
 	this->mwindow = mwindow;
-	asset = 0;
+	indexable = 0;
 	window = 0;
+	changed_params = new Asset;
 	set_synchronous(0);
 }
 
 
 AssetEdit::~AssetEdit()
 {
+	changed_params->remove_user();
 }
 
 
-void AssetEdit::edit_asset(Asset *asset)
+void AssetEdit::edit_asset(Indexable *indexable)
 {
-	if(asset)
+	if(this->indexable)
 	{
-// Allow more than one window
-		this->asset = asset;
-		Thread::start();
+		BC_DialogThread::close_window();
 	}
-}
 
-
-int AssetEdit::set_asset(Asset *asset)
-{
-	this->asset = asset;
-	return 0;
-}
-
-void AssetEdit::run()
-{
-	if(asset)
+	this->indexable = indexable;
+	this->indexable->add_user();
+	if(indexable->is_asset)
 	{
-		new_asset = new Asset(asset->path);
-		*new_asset = *asset;
-		int result = 0;
+		changed_params->copy_from((Asset*)indexable, 0);
+	}
+	else
+	{
+		EDL *nested_edl = (EDL*)indexable;
+		changed_params->sample_rate = nested_edl->session->sample_rate;
+		changed_params->frame_rate = nested_edl->session->frame_rate;
+	}
 
-		window = new AssetEditWindow(mwindow, this);
-		window->create_objects();
-		window->raise_window();
-		result = window->run_window();
+	BC_DialogThread::start();
+}
 
- 		if(!result)
+void AssetEdit::handle_close_event(int result)
+{
+ 	if(!result)
+ 	{
+		int changed = 0;
+		Asset *asset = 0;
+		EDL *nested_edl = 0;
+
+		if(indexable->is_asset)
+		{
+			asset = (Asset*)indexable;
+			if(!changed_params->equivalent(*asset, 1, 1))
+				changed = 1;
+		}
+		else
+		{
+			nested_edl = (EDL*)indexable;
+			if(changed_params->sample_rate != nested_edl->session->sample_rate ||
+				!EQUIV(changed_params->frame_rate, changed_params->frame_rate))
+				changed = 1;
+		}
+
+ 		if(changed)
  		{
- 			if(!asset->equivalent(*new_asset, 1, 1))
- 			{
-				mwindow->gui->lock_window();
-				mwindow->remove_asset_from_caches(asset);
+			mwindow->gui->lock_window();
+			mwindow->remove_asset_from_caches(asset);
+
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
-				asset->copy_from(new_asset, 0);
+			if(asset)
+			{
+//printf("AssetEdit::handle_close_event %d %f\n", __LINE__, asset->get_frame_rate());
+				asset->copy_from(changed_params, 0);
+//printf("AssetEdit::handle_close_event %d %f\n", __LINE__, asset->get_frame_rate());
+			}
+			else
+			{
+				strcpy(nested_edl->path, changed_params->path);
+			}
 
-				mwindow->gui->update(0,
-					2,
-					0,
-					0,
-					0, 
-					0,
-					0);
+			mwindow->gui->update(0,
+				2,
+				0,
+				0,
+				0, 
+				0,
+				0);
 
 // Start index rebuilding
-				if(asset->audio_data)
-				{
-					char source_filename[BCTEXTLEN];
-					char index_filename[BCTEXTLEN];
-					IndexFile::get_index_filename(source_filename, 
-						mwindow->preferences->index_directory,
-						index_filename, 
-						asset->path);
-					remove(index_filename);
-					asset->index_status = INDEX_NOTTESTED;
-					mwindow->mainindexes->add_next_asset(0, asset);
-					mwindow->mainindexes->start_build();
-				}
-				mwindow->gui->unlock_window();
+			if(asset && asset->audio_data ||
+				nested_edl)
+			{
+				char source_filename[BCTEXTLEN];
+				char index_filename[BCTEXTLEN];
+				IndexFile::get_index_filename(source_filename, 
+					mwindow->preferences->index_directory,
+					index_filename, 
+					indexable->path);
+				remove(index_filename);
+				indexable->index_state->index_status = INDEX_NOTTESTED;
+				mwindow->mainindexes->add_next_asset(0, indexable);
+				mwindow->mainindexes->start_build();
+			}
+			mwindow->gui->unlock_window();
 
 
-				mwindow->awindow->gui->lock_window();
-				mwindow->awindow->gui->update_assets();
-				mwindow->awindow->gui->unlock_window();
+			mwindow->awindow->gui->lock_window();
+			mwindow->awindow->gui->update_assets();
+			mwindow->awindow->gui->unlock_window();
 
-				mwindow->restart_brender();
-				mwindow->sync_parameters(CHANGE_ALL);
- 			}
+			mwindow->restart_brender();
+			mwindow->sync_parameters(CHANGE_ALL);
  		}
+ 	}
 
-		Garbage::delete_object(new_asset);
-		delete window;
-		window = 0;
-	}
+	this->indexable->remove_user();
+	this->indexable = 0;
 }
+
+BC_Window* AssetEdit::new_gui()
+{
+	window = new AssetEditWindow(mwindow, this);
+	window->create_objects();
+	return window;
+}
+
 
 
 
@@ -161,12 +198,12 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 {
 	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;
-	this->asset = asset_edit->new_asset;
 	bitspopup = 0;
-	if(asset->format == FILE_PCM)
-		allow_edits = 1;
-	else
-		allow_edits = 0;
+	path_text = 0;
+	path_button = 0;
+	hilo = 0;
+	lohi = 0;
+	allow_edits = 0;
 }
 
 
@@ -175,7 +212,9 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 
 AssetEditWindow::~AssetEditWindow()
 {
+	lock_window("AssetEditWindow::~AssetEditWindow");
 	if(bitspopup) delete bitspopup;
+	unlock_window();
 }
 
 
@@ -189,6 +228,19 @@ void AssetEditWindow::create_objects()
 	int hmargin1 = 180, hmargin2 = 290;
 	FileSystem fs;
 	BC_Title *title;
+	Asset *asset = 0;
+	EDL *nested_edl = 0;
+	int subtitle_tracks = 0;
+
+	if(asset_edit->indexable->is_asset)
+		asset = (Asset*)asset_edit->indexable;
+	else
+		nested_edl = (EDL*)asset_edit->indexable;
+
+	if(asset && asset->format == FILE_PCM)
+		allow_edits = 1;
+	else
+		allow_edits = 0;
 
 	lock_window("AssetEditWindow::create_objects");
 	if(allow_edits) 
@@ -201,57 +253,62 @@ void AssetEditWindow::create_objects()
 		this, 
 		path_text, 
 		y, 
-		asset->path, 
+		asset_edit->indexable->path, 
 		PROGRAM_NAME ": Asset path", _("Select a file for this asset:")));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, _("File format:")));
-	x = x2;
-	add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, YELLOW));
-	x = x1;
-	y += 20;
+	if(asset)
+	{
+		add_subwindow(new BC_Title(x, y, _("File format:")));
+		x = x2;
+		add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb, 
+				asset->format), 
+			MEDIUMFONT, 
+			YELLOW));
+		x = x1;
+		y += 20;
 
-	int64_t bytes = 1;
-	int subtitle_tracks = 0;
-	if(asset->format == FILE_MPEG &&
-		asset->video_data)
-	{
+		int64_t bytes = 1;
+		if(asset->format == FILE_MPEG &&
+			asset->video_data)
+		{
 // Get length from TOC
-		FileMPEG::get_info(asset, &bytes, &subtitle_tracks);
-	}
-	else
-	{
-		bytes = fs.get_size(asset->path);
-	}
-	add_subwindow(new BC_Title(x, y, _("Bytes:")));
-	sprintf(string, "%lld", bytes);
-	Units::punctuate(string);
+			FileMPEG::get_info(asset, &bytes, &subtitle_tracks);
+		}
+		else
+		{
+			bytes = fs.get_size(asset->path);
+		}
+		add_subwindow(new BC_Title(x, y, _("Bytes:")));
+		sprintf(string, "%lld", bytes);
+		Units::punctuate(string);
 	
 
-	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
-	y += 20;
-	x = x1;
+		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
+		y += 20;
+		x = x1;
 
-	double length;
-	if(asset->audio_length > 0)
-		length = (double)asset->audio_length / asset->sample_rate;
-	if(asset->video_length > 0)
-		length = MAX(length, (double)asset->video_length / asset->frame_rate);
-	int64_t bitrate;
-	if(!EQUIV(length, 0))
-		bitrate = (int64_t)(bytes * 8 / length);
-	else
-		bitrate = bytes;
-	add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
-	sprintf(string, "%lld", bitrate);
+		double length;
+		if(asset->audio_length > 0)
+			length = (double)asset->audio_length / asset->sample_rate;
+		if(asset->video_length > 0)
+			length = MAX(length, (double)asset->video_length / asset->frame_rate);
+		int64_t bitrate;
+		if(!EQUIV(length, 0))
+			bitrate = (int64_t)(bytes * 8 / length);
+		else
+			bitrate = bytes;
+		add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
+		sprintf(string, "%lld", bitrate);
 
-	Units::punctuate(string);
-	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
+		Units::punctuate(string);
+		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
 
-	y += 30;
-	x = x1;
+		y += 30;
+		x = x1;
+	}
 
-	if(asset->audio_data)
+	if((asset && asset->audio_data) || nested_edl)
 	{
 		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
 		y += 5;
@@ -260,26 +317,32 @@ void AssetEditWindow::create_objects()
 
 		y += 30;
 
-		if(asset->get_compression_text(1, 0))
+		if(asset)
 		{
-			add_subwindow(new BC_Title(x, y, _("Compression:")));
-			x = x2;
-			add_subwindow(new BC_Title(x, 
-				y, 
-				asset->get_compression_text(1, 0), 
-				MEDIUMFONT, 
-				YELLOW));
-			y += vmargin;
-			x = x1;
+			if(asset->get_compression_text(1, 0))
+			{
+				add_subwindow(new BC_Title(x, y, _("Compression:")));
+				x = x2;
+				add_subwindow(new BC_Title(x, 
+					y, 
+					asset->get_compression_text(1, 0), 
+					MEDIUMFONT, 
+					YELLOW));
+				y += vmargin;
+				x = x1;
+			}
 		}
 
 		add_subwindow(new BC_Title(x, y, _("Channels:")));
-		sprintf(string, "%d", asset->channels);
+		sprintf(string, "%d", asset_edit->indexable->get_audio_channels());
 
 		x = x2;
 		if(allow_edits)
 		{
-			BC_TumbleTextBox *textbox = new AssetEditChannels(this, string, x, y);
+			BC_TumbleTextBox *textbox = new AssetEditChannels(this, 
+				string, 
+				x, 
+				y);
 			textbox->create_objects();
 			y += vmargin;
 		}
@@ -291,11 +354,10 @@ void AssetEditWindow::create_objects()
 
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Sample rate:")));
-		sprintf(string, "%d", asset->sample_rate);
+		sprintf(string, "%d", asset_edit->indexable->get_sample_rate());
 
 		x = x2;
-//		if(allow_edits)
-		if(1)
+		if(asset)
 		{
 			BC_TextBox *textbox;
 			add_subwindow(textbox = new AssetEditRate(this, string, x, y));
@@ -310,146 +372,159 @@ void AssetEditWindow::create_objects()
 		y += 30;
 		x = x1;
 
-		add_subwindow(new BC_Title(x, y, _("Bits:")));
-		x = x2;
-		if(allow_edits)
+		if(asset)
 		{
-			bitspopup = new BitsPopup(this, 
-				x, 
-				y, 
-				&asset->bits, 
-				1, 
-				1, 
-				1,
-				0,
-				1);
-			bitspopup->create_objects();
-		}
-		else
-			add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, _("Bits:")));
+			x = x2;
+			if(allow_edits)
+			{
+				bitspopup = new BitsPopup(this, 
+					x, 
+					y, 
+					&asset->bits, 
+					1, 
+					1, 
+					1,
+					0,
+					1);
+				bitspopup->create_objects();
+			}
+			else
+				add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, YELLOW));
 
+
+			x = x1;
+			y += vmargin;
+			add_subwindow(new BC_Title(x, y, _("Header length:")));
+			sprintf(string, "%d", asset->header);
+
+			x = x2;
+			if(allow_edits)
+				add_subwindow(new AssetEditHeader(this, string, x, y));
+			else
+				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+
+			y += vmargin;
+			x = x1;
+
+			add_subwindow(new BC_Title(x, y, _("Byte order:")));
+
+			if(allow_edits)
+			{
+				x = x2;
+
+				add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
+					asset->byte_order, 
+					x, 
+					y));
+				x += 70;
+				add_subwindow(hilo = new AssetEditByteOrderHILO(this, 
+					!asset->byte_order, 
+					x, 
+					y));
+				y += vmargin;
+			}
+			else
+			{
+				x = x2;
+				if(asset->byte_order)
+					add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, YELLOW));
+				else
+					add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, YELLOW));
+				y += vmargin;
+			}
+
+
+			x = x1;
+			if(allow_edits)
+			{
+	//			add_subwindow(new BC_Title(x, y, _("Values are signed:")));
+				add_subwindow(new AssetEditSigned(this, asset->signed_, x, y));
+			}
+			else
+			{
+				if(!asset->signed_ && asset->bits == 8)
+					add_subwindow(new BC_Title(x, y, _("Values are unsigned")));
+				else
+					add_subwindow(new BC_Title(x, y, _("Values are signed")));
+			}
+
+			y += 30;
+		}
+	}
 
 		x = x1;
-		y += vmargin;
-		add_subwindow(new BC_Title(x, y, _("Header length:")));
-		sprintf(string, "%d", asset->header);
+		if(asset && asset->video_data || nested_edl)
+		{
+			add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
+			y += 5;
 
-		x = x2;
-		if(allow_edits)
-			add_subwindow(new AssetEditHeader(this, string, x, y));
-		else
+			add_subwindow(new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
+			y += 30;
+			x = x1;
+
+
+			if(asset && asset->get_compression_text(0,1))
+			{
+				add_subwindow(new BC_Title(x, y, _("Compression:")));
+				x = x2;
+				add_subwindow(new BC_Title(x, 
+					y, 
+					asset->get_compression_text(0,1), 
+					MEDIUMFONT, 
+					YELLOW));
+				y += vmargin;
+				x = x1;
+			}
+
+			add_subwindow(new BC_Title(x, y, _("Frame rate:")));
+			x = x2;
+			sprintf(string, "%.2f", 
+				asset ? asset->frame_rate : nested_edl->session->frame_rate);
+			
+			if(asset)
+			{
+				BC_TextBox *framerate;
+				add_subwindow(framerate = new AssetEditFRate(this, string, x, y));
+				x += 105;
+				add_subwindow(new FrameRatePulldown(mwindow, framerate, x, y));
+			}
+			else
+			{
+				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			}
+
+			y += 30;
+			x = x1;
+			add_subwindow(new BC_Title(x, y, _("Width:")));
+			x = x2;
+			sprintf(string, "%d", 
+				asset ? asset->width : nested_edl->session->output_w);
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
 
-		y += vmargin;
-		x = x1;
-
-		add_subwindow(new BC_Title(x, y, _("Byte order:")));
-
-		if(allow_edits)
-		{
-			x = x2;
-
-			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
-				asset->byte_order, 
-				x, 
-				y));
-			x += 70;
-			add_subwindow(hilo = new AssetEditByteOrderHILO(this, 
-				!asset->byte_order, 
-				x, 
-				y));
-			y += vmargin;
-		}
-		else
-		{
-			x = x2;
-			if(asset->byte_order)
-				add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, YELLOW));
-			else
-				add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, YELLOW));
-			y += vmargin;
-		}
-
-
-		x = x1;
-		if(allow_edits)
-		{
-//			add_subwindow(new BC_Title(x, y, _("Values are signed:")));
-			add_subwindow(new AssetEditSigned(this, asset->signed_, x, y));
-		}
-		else
-		{
-			if(!asset->signed_ && asset->bits == 8)
-				add_subwindow(new BC_Title(x, y, _("Values are unsigned")));
-			else
-				add_subwindow(new BC_Title(x, y, _("Values are signed")));
-		}
-
-		y += 30;
-	}
-
-	x = x1;
-	if(asset->video_data)
-	{
-		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
-		y += 5;
-
-		add_subwindow(new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
-
-
-		y += 30;
-		x = x1;
-		if(asset->get_compression_text(0,1))
-		{
-			add_subwindow(new BC_Title(x, y, _("Compression:")));
-			x = x2;
-			add_subwindow(new BC_Title(x, 
-				y, 
-				asset->get_compression_text(0,1), 
-				MEDIUMFONT, 
-				YELLOW));
 			y += vmargin;
 			x = x1;
-		}
-
-		add_subwindow(new BC_Title(x, y, _("Frame rate:")));
-		x = x2;
-		sprintf(string, "%.2f", asset->frame_rate);
-		BC_TextBox *framerate;
-		add_subwindow(framerate = new AssetEditFRate(this, string, x, y));
-		x += 105;
-		add_subwindow(new FrameRatePulldown(mwindow, framerate, x, y));
-		
-		y += 30;
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Width:")));
-		x = x2;
-		sprintf(string, "%d", asset->width);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
-		
-		y += vmargin;
-		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Height:")));
-		x = x2;
-		sprintf(string, "%d", asset->height);
-		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
-		y += title->get_h() + 5;
-
-		if(asset->format == FILE_MPEG)
-		{
-			x = x1;
-			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
+			add_subwindow(new BC_Title(x, y, _("Height:")));
 			x = x2;
-			sprintf(string, "%d", subtitle_tracks);
+			sprintf(string, "%d", 
+				asset ? asset->height : nested_edl->session->output_h);
 			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
 			y += title->get_h() + 5;
+
+			if(asset && asset->format == FILE_MPEG)
+			{
+				x = x1;
+				add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
+				x = x2;
+				sprintf(string, "%d", subtitle_tracks);
+				add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+				y += title->get_h() + 5;
+			}
 		}
-	}
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	flush();
 	unlock_window();
 }
 
@@ -470,7 +545,8 @@ AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow,
 
 int AssetEditChannels::handle_event()
 {
-	fwindow->asset->channels = atol(get_text());
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->channels = atol(get_text());
 	return 1;
 }
 
@@ -482,7 +558,8 @@ AssetEditRate::AssetEditRate(AssetEditWindow *fwindow, char *text, int x, int y)
 
 int AssetEditRate::handle_event()
 {
-	fwindow->asset->sample_rate = atol(get_text());
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->sample_rate = atol(get_text());
 	return 1;
 }
 
@@ -494,7 +571,8 @@ AssetEditFRate::AssetEditFRate(AssetEditWindow *fwindow, char *text, int x, int 
 
 int AssetEditFRate::handle_event()
 {
-	fwindow->asset->frame_rate = atof(get_text());
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->frame_rate = atof(get_text());
 	return 1;
 }
 
@@ -506,7 +584,8 @@ AssetEditHeader::AssetEditHeader(AssetEditWindow *fwindow, char *text, int x, in
 
 int AssetEditHeader::handle_event()
 {
-	fwindow->asset->header = atol(get_text());
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->header = atol(get_text());
 	return 1;
 }
 
@@ -521,7 +600,8 @@ AssetEditByteOrderLOHI::AssetEditByteOrderLOHI(AssetEditWindow *fwindow,
 
 int AssetEditByteOrderLOHI::handle_event()
 {
-	fwindow->asset->byte_order = 1;
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->byte_order = 1;
 	fwindow->hilo->update(0);
 	update(1);
 	return 1;
@@ -538,7 +618,8 @@ AssetEditByteOrderHILO::AssetEditByteOrderHILO(AssetEditWindow *fwindow,
 
 int AssetEditByteOrderHILO::handle_event()
 {
-	fwindow->asset->byte_order = 0;
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->byte_order = 0;
 	fwindow->lohi->update(0);
 	update(1);
 	return 1;
@@ -555,7 +636,8 @@ AssetEditSigned::AssetEditSigned(AssetEditWindow *fwindow,
 
 int AssetEditSigned::handle_event()
 {
-	fwindow->asset->signed_ = get_value();
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->signed_ = get_value();
 	return 1;
 }
 
@@ -566,7 +648,7 @@ int AssetEditSigned::handle_event()
 
 
 AssetEditPathText::AssetEditPathText(AssetEditWindow *fwindow, int y)
- : BC_TextBox(5, y, 300, 1, fwindow->asset->path) 
+ : BC_TextBox(5, y, 300, 1, fwindow->asset_edit->changed_params->path) 
 {
 	this->fwindow = fwindow; 
 }
@@ -575,7 +657,7 @@ AssetEditPathText::~AssetEditPathText()
 }
 int AssetEditPathText::handle_event() 
 {
-	strcpy(fwindow->asset->path, get_text());
+	strcpy(fwindow->asset_edit->changed_params->path, get_text());
 	return 1;
 }
 
@@ -615,7 +697,9 @@ AssetEditFormat::~AssetEditFormat()
 }
 int AssetEditFormat::handle_event()
 {
-	fwindow->asset->format = File::strtoformat(fwindow->mwindow->plugindb, get_selection(0, 0)->get_text());
+	Asset *asset = (Asset*)fwindow->asset_edit->changed_params;
+	asset->format = File::strtoformat(fwindow->mwindow->plugindb, 
+		get_selection(0, 0)->get_text());
 	return 1;
 }
 

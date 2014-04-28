@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 
 #include "attachmentpoint.h"
+#include "samples.inc"
 
 class AAttachmentPoint : public AttachmentPoint
 {
@@ -33,7 +34,7 @@ public:
 	
 	void delete_buffer_vector();
 	void new_buffer_vector(int total, int size);
-	void render(double *output, 
+	void render(Samples *output, 
 		int buffer_number,
 		int64_t start_position, 
 		int64_t len,
@@ -43,8 +44,8 @@ public:
 		long fragment_size);
 	int get_buffer_size();
 
-// Storage for multichannel plugins
-	double **buffer_vector;
+// Buffers for multichannel plugins
+	Samples **buffer_vector;
 	int buffer_allocation;
 };
 

@@ -47,10 +47,9 @@ class RenderEngine : public Thread
 public:
 	RenderEngine(PlaybackEngine *playback_engine,
 		Preferences *preferences, 
-		TransportCommand *command, 
 		Canvas *output,
-		ArrayList<PluginServer*> *plugindb,
-		ChannelDB *channeldb);
+		ChannelDB *channeldb,
+		int is_nested);
 	~RenderEngine();
 
 	void get_duty();
@@ -65,9 +64,6 @@ public:
 // Get current channel for the BUZ output
 	Channel* get_current_channel();
 	double get_tracking_position();
-// Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title,
-		int data_type);
 	CICache* get_acache();
 	CICache* get_vcache();
 	void set_acache(CICache *cache);
@@ -75,12 +71,11 @@ public:
 // Get levels for tracking
 	void get_output_levels(double *levels, int64_t position);
 	void get_module_levels(ArrayList<double> *module_levels, int64_t position);
+	EDL* get_edl();
 
 	void run();
 // Sends the command sequence, compensating for network latency
-	int arm_command(TransportCommand *command,
-		int &current_vchannel, 
-		int &current_achannel);
+	int arm_command(TransportCommand *command);
 // Start the command
 	int start_command();
 
@@ -98,8 +93,6 @@ public:
 
 // Copy of command
 	TransportCommand *command;
-// EDL to be used by renderengine since not all commands involve an EDL change
-	EDL *edl;
 // Pointer to playback config for one head
 	PlaybackConfig *config;
 // Defined only for the master render engine
@@ -123,6 +116,8 @@ public:
 
 
 	int done;
+	int is_nested;
+// If nested, the devices are owned by someone else
 	AudioDevice *audio;
 	VideoDevice *video;
 	ARender *arender;
@@ -131,11 +126,9 @@ public:
 	int do_video;
 // Timer for synchronization without audio
 	Timer timer;
-	float actual_frame_rate;
 // If the termination came from interrupt or end of selection
 	int interrupted;
 
-	ArrayList<PluginServer*> *plugindb;
 // Channels for the BUZ output
 	ChannelDB *channeldb;
 
@@ -198,7 +191,10 @@ public:
 	int64_t end_position;        // highest numbered sample in playback range
 	int64_t current_sample;
 	int every_frame;
-
+// This is created in the first arm_command and not changed until deletion.
+// The EDL in the command changes & pointers in it should not be referenced.
+	EDL *edl;
+	
 	MWindow *mwindow;
 };
 

@@ -91,15 +91,15 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 
 
 
-int FilePNG::can_copy_from(Edit *edit, int64_t position)
+int FilePNG::can_copy_from(Asset *asset, int64_t position)
 {
-	if(edit->asset->format == FILE_MOV)
+	if(asset->format == FILE_MOV)
 	{
-		if(match4(edit->asset->vcodec, QUICKTIME_PNG)) return 1;
+		if(match4(asset->vcodec, QUICKTIME_PNG)) return 1;
 	}
 	else
-	if(edit->asset->format == FILE_PNG || 
-		edit->asset->format == FILE_PNG_LIST)
+	if(asset->format == FILE_PNG || 
+		asset->format == FILE_PNG_LIST)
 		return 1;
 
 	return 0;
@@ -266,9 +266,11 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	if(frame->get_color_model() != native_cmodel)
 	{
 		if(!png_unit->temp_frame) png_unit->temp_frame = new VFrame(0, 
+			-1,
 			asset->width, 
 			asset->height, 
-			native_cmodel);
+			native_cmodel,
+			-1);
 
 		cmodel_transfer(png_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
 			frame->get_rows(),

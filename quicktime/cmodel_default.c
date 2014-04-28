@@ -951,6 +951,11 @@ static inline void transfer_UYVA8888_to_YUVA16161616(uint16_t *(*output), unsign
 					transfer_YUVA8888_to_VYU888((output), (input));   \
 					TRANSFER_FRAME_TAIL \
 					break; \
+				case BC_YUV888: \
+					TRANSFER_FRAME_HEAD \
+					transfer_YUVA8888_to_YUV888((output), (input));   \
+					TRANSFER_FRAME_TAIL \
+					break; \
 				case BC_YUVA8888: \
 					TRANSFER_FRAME_HEAD \
 					transfer_YUVA8888_to_YUVA8888((output), (input));   \

@@ -376,9 +376,11 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
 	{
 		if(!temp) temp = new VFrame(0,
+			-1,
 			input_ptr->get_w(),
 			input_ptr->get_h(),
-			input_ptr->get_color_model());
+			input_ptr->get_color_model(),
+			-1);
 		temp->copy_from(input_ptr);
 		this->input = temp;
 	}

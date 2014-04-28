@@ -192,11 +192,13 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 //printf("IVTCMain::process_realtime %d %d\n", pattern_position, config.first_field);
 	if(!temp_frame[0]) temp_frame[0] = new VFrame(0,
+		-1,
 		input_ptr->get_w(),
 		input_ptr->get_h(),
 		input_ptr->get_color_model(),
 		-1);
 	if(!temp_frame[1]) temp_frame[1] = new VFrame(0,
+		-1,
 		input_ptr->get_w(),
 		input_ptr->get_h(),
 		input_ptr->get_color_model(),

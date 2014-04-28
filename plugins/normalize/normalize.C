@@ -25,6 +25,7 @@
 #include "normalize.h"
 #include "normalizewindow.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -113,7 +114,7 @@ int NormalizeMain::start_loop()
 }
 
 
-int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
+int NormalizeMain::process_loop(Samples **buffer, int64_t &write_length)
 {
 	int result = 0;
 	int64_t fragment_len;
@@ -129,7 +130,7 @@ int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
 		{
 			read_samples(buffer[i], i, current_position, fragment_len);
 			for(int j = 0; j < fragment_len; j++)
-				buffer[i][j] *= scale[i];
+				buffer[i]->get_data()[j] *= scale[i];
 		}
 
 //printf("NormalizeMain::process_loop 1 %d %f\n", current_position, scale[0]);
@@ -161,7 +162,8 @@ int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
 				
 				for(int k = 0; k < fragment_len; k++)
 				{
-					if(peak[j] < fabs(buffer[j][k])) peak[j] = fabs(buffer[j][k]);
+					if(peak[j] < fabs(buffer[j]->get_data()[k])) 
+						peak[j] = fabs(buffer[j]->get_data()[k]);
 				}
 			}
 //printf("NormalizeMain::process_loop 8\n");

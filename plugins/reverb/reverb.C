@@ -28,6 +28,7 @@
 #include "picon_png.h"
 #include "reverb.h"
 #include "reverbwindow.h"
+#include "samples.h"
 
 #include "vframe.h"
 
@@ -102,17 +103,29 @@ int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }
 
 int Reverb::process_realtime(int64_t size, 
-	double **input_ptr, 
-	double **output_ptr)
+	Samples **input_ptr, 
+	Samples **output_ptr)
 {
 	int64_t new_dsp_length, i, j;
-	main_in = input_ptr;
-	main_out = output_ptr;
+	main_in = new double*[total_in_buffers];
+	main_out = new double*[total_in_buffers];
+
+	for(i = 0; i < total_in_buffers; i++)
+	{
+		main_in[i] = input_ptr[i]->get_data();
+		main_out[i] = output_ptr[i]->get_data();
+	}
+
 //printf("Reverb::process_realtime 1\n");
 	redo_buffers |= load_configuration();
 
 //printf("Reverb::process_realtime 1\n");
-	if(!config.ref_total) return 0;
+	if(!config.ref_total) 
+	{
+		delete [] main_in;
+		delete [] main_out;
+		return 0;
+	}
 
 
 	if(!initialized)
@@ -258,6 +271,10 @@ int Reverb::process_realtime(int64_t size,
 		for(; k < dsp_in_length; k++) current_in[k] = 0;
 	}
 //printf("Reverb::process_realtime 2 %d %d\n", total_in_buffers, size);
+
+
+	delete [] main_in;
+	delete [] main_out;
 	return 0;
 }
 

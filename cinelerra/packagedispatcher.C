@@ -431,18 +431,23 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 }
 
 
-ArrayList<Asset*>* PackageDispatcher::get_asset_list()
+ArrayList<Indexable*>* PackageDispatcher::get_asset_list()
 {
-	ArrayList<Asset*> *assets = new ArrayList<Asset*>;
+	ArrayList<Indexable*> *assets = new ArrayList<Indexable*>;
 
+const int debug = 0;
+if(debug) printf("PackageDispatcher::get_asset_list %d\n", __LINE__);
+if(debug) default_asset->dump();
 	for(int i = 0; i < current_package; i++)
 	{
 		Asset *asset = new Asset;
-		*asset = *default_asset;
+		asset->copy_from(default_asset, 1);
 		strcpy(asset->path, packages[i]->path);
 		asset->video_length = packages[i]->video_end - packages[i]->video_start;
 		asset->audio_length = packages[i]->audio_end - packages[i]->audio_start;
 		assets->append(asset);
+if(debug) printf("PackageDispatcher::get_asset_list %d\n", __LINE__);
+if(debug) asset->dump();
 	}
 
 	return assets;

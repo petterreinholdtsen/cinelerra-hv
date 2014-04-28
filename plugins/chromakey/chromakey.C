@@ -732,6 +732,8 @@ int ChromaKey::handle_opengl()
 		"	gl_FragColor = vec4(color.rgb, min(color.a, alpha));\n"
 		"}\n";
 
+
+
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();

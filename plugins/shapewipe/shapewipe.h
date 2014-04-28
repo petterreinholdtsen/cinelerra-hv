@@ -53,41 +53,6 @@ public:
 	ShapeWipeWindow *window;
 };
 
-// class ShapeWipeFilename : public BC_TextBox
-// {
-// public:
-// 	ShapeWipeFilename(ShapeWipeMain *plugin,
-// 		ShapeWipeWindow *window,
-// 		char *value,
-// 		int x,
-// 		int y);
-// 	int handle_event();
-// 	ShapeWipeMain *plugin;
-// 	ShapeWipeWindow *window;
-// 	char *value;
-// };
-// 
-// class ShapeWipeBrowseButton : public BC_GenericButton
-// {
-// public:
-// 	ShapeWipeBrowseButton(ShapeWipeMain *plugin,
-// 		ShapeWipeWindow *window,
-// 		ShapeWipeFilename *filename,
-// 		int x,
-// 		int y);
-// 	int handle_event();
-// 	ShapeWipeMain *plugin;
-// 	ShapeWipeWindow *window;
-// 	ShapeWipeFilename *filename;
-// };
-// 
-// class ShapeWipeLoad : public BC_FileBox
-// {
-// public:
-// 	ShapeWipeLoad(ShapeWipeFilename *filename,
-// 		char *init_directory);
-// 	ShapeWipeFilename *filename;
-// };
 
 class ShapeWipeTumble : public BC_Tumbler
 {

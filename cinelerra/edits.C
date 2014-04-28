@@ -23,6 +23,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "automation.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "edit.h"
@@ -33,6 +34,7 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "localsession.h"
+#include "nestededls.h"
 #include "plugin.h"
 #include "strategies.inc"
 #include "track.h"
@@ -110,22 +112,35 @@ printf("Edits::operator= 1\n");
 
 
 void Edits::insert_asset(Asset *asset,
+	EDL *nested_edl,
 	int64_t length,
 	int64_t position,
 	int track_number)
 {
 	Edit *new_edit = insert_new_edit(position);
 
+	new_edit->nested_edl = nested_edl;
 	new_edit->asset = asset;
 	new_edit->startsource = 0;
 	new_edit->startproject = position;
 	new_edit->length = length;
 
-	if(asset->audio_data)
-		new_edit->channel = track_number % asset->channels;
-	else
-	if(asset->video_data)
-		new_edit->channel = track_number % asset->layers;
+	if(nested_edl)
+	{
+		if(track->data_type == TRACK_AUDIO)
+			new_edit->channel = track_number % nested_edl->session->audio_channels;
+		else
+			new_edit->channel = 0;
+	}
+
+	if(asset && !nested_edl)
+	{
+		if(asset->audio_data)
+			new_edit->channel = track_number % asset->channels;
+		else
+		if(asset->video_data)
+			new_edit->channel = track_number % asset->layers;
+	}
 
 //printf("Edits::insert_asset %d %d\n", new_edit->channel, new_edit->length);
 	for(Edit *current = new_edit->next; current; current = NEXT)
@@ -154,13 +169,20 @@ void Edits::insert_edits(Edits *source_edits,
 		source_edit;
 		source_edit = source_edit->next)
 	{
+		EDL *dest_nested_edl = 0;
+		if(source_edit->nested_edl)
+			dest_nested_edl = edl->nested_edls->get_copy(source_edit->nested_edl);
+
 // Update Assets
-		Asset *dest_asset = edl->assets->update(source_edit->asset);
+		Asset *dest_asset = 0;
+		if(source_edit->asset)
+			dest_asset = edl->assets->update(source_edit->asset);
 // Open destination area
 		Edit *dest_edit = insert_new_edit(position + source_edit->startproject);
 
 		dest_edit->copy_from(source_edit);
 		dest_edit->asset = dest_asset;
+		dest_edit->nested_edl = dest_nested_edl;
 		dest_edit->startproject = position + source_edit->startproject;
 
 
@@ -371,16 +393,15 @@ int Edits::optimize()
 		for(current = first; 
 			current && current->next && !result; )
 		{
-// assets identical
 			Edit *next_edit = current->next;
-    		if(current->asset == next_edit->asset && 
-    		   	(!current->asset ||
-					(current->startsource + current->length == next_edit->startsource &&
-	       			current->channel == next_edit->channel)
-				)
-			)
-        	{       
 // source positions are consecutive
+    		if(current->startsource + current->length == next_edit->startsource &&
+// source channels are identical
+	       		current->channel == next_edit->channel &&
+// assets are identical
+				current->asset == next_edit->asset && 
+    		   	current->nested_edl == next_edit->nested_edl)
+			{
         		current->length += next_edit->length;
         		remove(next_edit);
         		result = 1;
@@ -455,32 +476,43 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 {
 	Edit* current;
 
-//printf("Edits::load_edit 1 %d\n", total());
 	current = append_new_edit();
-//printf("Edits::load_edit 2 %d\n", total());
 
 	current->load_properties(file, startproject);
 
 	startproject += current->length;
 
 	int result = 0;
-//printf("Edits::load_edit 1\n");
 
 	do{
-//printf("Edits::load_edit 2\n");
 		result = file->read_tag();
-//printf("Edits::load_edit 3 %s\n", file->tag.get_title());
 
 		if(!result)
 		{
+			if(file->tag.title_is("NESTED_EDL"))
+			{
+				char path[BCTEXTLEN];
+				path[0] = 0;
+				file->tag.get_property("SRC", path);
+
+//printf("Edits::load_edit %d path=%s\n", __LINE__, path);
+
+				if(path[0] != 0)
+				{
+					current->nested_edl = edl->nested_edls->get(path);
+				}
+// printf("Edits::load_edit %d nested_edl->path=%s\n", 
+// __LINE__, 
+// current->nested_edl->project_path);
+			}
+			else
 			if(file->tag.title_is("FILE"))
 			{
 				char filename[BCTEXTLEN];
-				sprintf(filename, SILENCE);
+				filename[0] = 0;
 				file->tag.get_property("SRC", filename);
 // Extend path
-//printf("Edits::load_edit 4 %s\n", filename);
-				if(strcmp(filename, SILENCE))
+				if(filename[0] != 0)
 				{
 					char directory[BCTEXTLEN], edl_directory[BCTEXTLEN];
 					FileSystem fs;
@@ -496,7 +528,7 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 				}
 				else
 				{
-					current->asset = edl->assets->get_asset(SILENCE);
+					current->asset = 0;
 				}
 //printf("Edits::load_edit 5\n");
 			}
@@ -510,24 +542,16 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 				current->transition->load_xml(file);
 			}
 			else
-			if(file->tag.title_is(SILENCE))
-			{
-//printf("Edits::load_edit 6\n");
-				current->asset = edl->assets->get_asset(SILENCE);
-//printf("Edits::load_edit 7\n");
-			}
-			else
 			if(file->tag.title_is("/EDIT"))
 			{
 				result = 1;
 			}
 		}
-//printf("Edits::load_edit 8\n");
 	}while(!result);
 
-//printf("Edits::load_edit 5\n");
-// in case of incomplete edit tag
-	if(!current->asset) current->asset = edl->assets->get_asset(SILENCE);
+//printf("Edits::load_edit %d\n", __LINE__);
+//track->dump();
+//printf("Edits::load_edit %d\n", __LINE__);
 	return 0;
 }
 
@@ -540,17 +564,8 @@ int64_t Edits::length()
 	else 
 		return 0;
 }
-// 
-// int64_t Edits::total_length() 
-// {
-// 	int64_t total = 0;
-// 	Edit* current;
-// 	for(current = first; current; current = NEXT)
-// 	{
-// 		total += current->length;
-// 	}
-// 	return total; 
-// };
+
+
 
 Edit* Edits::editof(int64_t position, int direction, int use_nudge)
 {
@@ -592,6 +607,7 @@ Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 	}
 
 // Get the edit's asset
+// TODO: descend into nested EDLs
 	if(current)
 	{
 		if(!current->asset)

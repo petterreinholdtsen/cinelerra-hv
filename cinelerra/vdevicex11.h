@@ -87,6 +87,7 @@ public:
 		MaskAutos *keyframe_set, 
 		MaskAuto *keyframe,
 		MaskAuto *default_auto);
+	void convert_cmodel(VFrame *output, int dst_cmodel);
 
 // The idea is to composite directly in the frame buffer if OpenGL.
 // OpenGL can do all the blending using the frame buffer.
@@ -111,7 +112,8 @@ public:
 		float out_y2, 
 		float alpha,        // 0 - 1
 		int mode,
-		EDL *edl);
+		EDL *edl,
+		int is_nested);
 
 // For plugins, lock the canvas, enable opengl, and run a function in the
 // plugin client in the synchronous thread.  The user must override the

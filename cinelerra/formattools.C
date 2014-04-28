@@ -56,15 +56,24 @@ FormatTools::FormatTools(MWindow *mwindow,
 
 FormatTools::~FormatTools()
 {
+SET_TRACE
 	delete path_button;
+SET_TRACE
 	delete path_textbox;
+SET_TRACE
 	delete format_button;
+SET_TRACE
 
 	if(aparams_button) delete aparams_button;
+SET_TRACE
 	if(vparams_button) delete vparams_button;
+SET_TRACE
 	if(aparams_thread) delete aparams_thread;
+SET_TRACE
 	if(vparams_thread) delete vparams_thread;
+SET_TRACE
 	if(channels_tumbler) delete channels_tumbler;
+SET_TRACE
 }
 
 void FormatTools::create_objects(int &init_x, 
@@ -529,7 +538,7 @@ int FormatVParams::handle_event()
 
 
 FormatAThread::FormatAThread(FormatTools *format)
- : Thread()
+ : Thread(1, 0, 0)
 { 
 	this->format = format; 
 	file = new File;
@@ -540,8 +549,9 @@ FormatAThread::~FormatAThread()
 {
 	if(!joined)
 	{
-		delete file;
+		file->close_window();
 		join();
+		delete file;
 	}
 	else
 	{
@@ -575,7 +585,7 @@ void FormatAThread::run()
 
 
 FormatVThread::FormatVThread(FormatTools *format)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->format = format;
 	file = new File;
@@ -586,12 +596,18 @@ FormatVThread::~FormatVThread()
 {
 	if(!joined)
 	{
-		delete file;
+		file->close_window();
+SET_TRACE
 		join();
+SET_TRACE
+		delete file;
+SET_TRACE
 	}
 	else
 	{
+SET_TRACE
 		delete file;
+SET_TRACE
 	}
 }
 

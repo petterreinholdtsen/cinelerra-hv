@@ -34,8 +34,12 @@
 #include "arraylist.h"
 #include "bctimer.inc"
 #include "condition.inc"
+#include "indexable.inc"
+#include "maxchannels.h"
 #include "mwindow.inc"
+#include "renderengine.inc"
 #include "resourcepixmap.inc"
+#include "samples.inc"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -44,13 +48,13 @@ class ResourceThreadItem
 {
 public:
 	ResourceThreadItem(ResourcePixmap *pixmap, 
-		Asset *asset,
+		Indexable *indexable,
 		int data_type,
 		int operation_count);
 	virtual ~ResourceThreadItem();
 
 	ResourcePixmap *pixmap;
-	Asset *asset;
+	Indexable *indexable;
 	int data_type;
 	int operation_count;
 	int last;
@@ -61,7 +65,7 @@ class AResourceThreadItem : public ResourceThreadItem
 {
 public:
 	AResourceThreadItem(ResourcePixmap *pixmap,
-		Asset *asset,
+		Indexable *indexable,
 		int x,
 		int channel,
 		int64_t start,
@@ -85,7 +89,7 @@ public:
 		double frame_rate,
 		int64_t position,
 		int layer,
-		Asset *asset,
+		Indexable *indexable,
 		int operation_count);
 	~VResourceThreadItem();
 
@@ -123,10 +127,10 @@ public:
 		double frame_rate,
 		int64_t position,
 		int layer,
-		Asset *asset);
+		Indexable *indexable);
 
 	void add_wave(ResourcePixmap *pixmap,
-		Asset *asset,
+		Indexable *indexable,
 		int x,
 		int channel,
 // samples relative to asset rate
@@ -138,6 +142,11 @@ public:
 	void do_video(VResourceThreadItem *item);
 	void do_audio(AResourceThreadItem *item);
 
+	void open_render_engine(EDL *nested_edl, 
+		int do_audio, 
+		int do_video);
+
+
 	MWindow *mwindow;
 	Condition *draw_lock;
 //	Condition *interrupted_lock;
@@ -146,9 +155,15 @@ public:
 	int interrupted;
 	VFrame *temp_picon;
 	VFrame *temp_picon2;
+// Render engine for nested EDL
+	RenderEngine *render_engine;
+// ID of nested EDL being rendered
+	int render_engine_id;
 
 // Current audio buffer for spanning multiple pixels
-	double *audio_buffer;
+	Samples *audio_buffer;
+// Temporary for nested EDL
+	Samples *temp_buffer[MAX_CHANNELS];
 	int audio_channel;
 	int64_t audio_start;
 	int audio_samples;

@@ -163,9 +163,11 @@ void RecordVideo::get_capture_frame()
 		else
 		{
 			capture_frame = new VFrame(0, 
+				-1,
 				record->default_asset->width, 
 				record->default_asset->height, 
-				record->vdevice->get_best_colormodel(record->default_asset));
+				record->vdevice->get_best_colormodel(record->default_asset),
+				-1);
 //printf("RecordVideo::get_capture_frame %d %d\n", capture_frame->get_w(), capture_frame->get_h());
 		}
 		frame_ptr = new VFrame**[1];
@@ -183,7 +185,7 @@ void RecordVideo::run()
 // Thread out the I/O
 	if(!record_thread->monitor)
 	{
-		record_start = record->file->get_video_position(record->default_asset->frame_rate);
+		record_start = record->file->get_video_position();
 		frame_ptr = record->file->get_video_buffer();
 	}
 	else
@@ -412,7 +414,7 @@ void RecordVideo::rewind_file()
 {
 	write_buffer(1);
 	record->file->stop_video_thread();
-	record->file->set_video_position(0, record->default_asset->frame_rate);
+	record->file->set_video_position(0, 0);
 	record->file->start_video_thread(buffer_size,
 		record->vdevice->get_best_colormodel(record->default_asset),
 		2,

@@ -1,4 +1,4 @@
-
+;
 /*
  * CINELERRA
  * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
@@ -776,6 +776,7 @@ void VDeviceBUZ::new_output_buffer(VFrame *output,
 				break;
 			default:
 				user_frame = new VFrame(0,
+					-1,
 					device->out_w,
 					device->out_h,
 					colormodel,
@@ -783,7 +784,7 @@ void VDeviceBUZ::new_output_buffer(VFrame *output,
 				break;
 		}
 	}
-	user_frame->set_shm_offset(0);
+//	user_frame->set_shm_offset(0);
 	output = user_frame;
 //printf("VDeviceBUZ::new_output_buffer 2\n");
 }

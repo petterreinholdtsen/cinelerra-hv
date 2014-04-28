@@ -332,9 +332,11 @@ int _720to480Main::process_loop(VFrame *output)
 
 	if(!temp)
 		temp = new VFrame(0,
+			-1,
 			output->get_w(),
 			output->get_h(),
-			output->get_color_model());
+			output->get_color_model(),
+			-1);
 
 	if(config.direction == FORWARD)
 	{

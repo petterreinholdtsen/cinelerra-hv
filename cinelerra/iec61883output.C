@@ -371,9 +371,11 @@ void IEC61883Output::write_frame(VFrame *input)
 				if(h != 480 && h != 576) h = 480;
 
 				temp_frame2 = new VFrame(0,
+					-1,
 					720,
 					h,
-					BC_YUV422);
+					BC_YUV422,
+					-1);
 				
 			}
 

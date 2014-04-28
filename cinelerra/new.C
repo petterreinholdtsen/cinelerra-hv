@@ -120,7 +120,7 @@ int New::create_new_project()
 	mwindow->save_defaults();
 
 // Load file sequence
-	mwindow->update_project(LOAD_REPLACE);
+	mwindow->update_project(LOADMODE_REPLACE);
 	mwindow->session->changes_made = 0;
 	mwindow->undo->update_undo_after(_("New"), LOAD_ALL);
 	mwindow->gui->unlock_window();

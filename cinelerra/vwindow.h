@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "asset.inc"
 #include "clipedit.inc"
 #include "edl.inc"
+#include "indexable.inc"
 #include "mwindow.inc"
 #include "thread.h"
 #include "transportque.inc"
@@ -42,7 +43,7 @@ public:
 	void create_objects();
 	void run();
 // Change source to asset, creating a new EDL
-	void change_source(Asset *asset);
+	void change_source(Indexable *indexable);
 // Change source to EDL
 	void change_source(EDL *edl);
 // Change source to master EDL's vwindow EDL after a load.
@@ -57,7 +58,8 @@ public:
 // If a clip is dropped in, it points to the clip EDL.
 	EDL* get_edl();
 // Returns last argument of change_source or 0 if it was an EDL
-	Asset* get_asset();
+//  Asset* get_asset();
+	Indexable* get_source();
 	void update(int do_timebar);
 		
 	void update_position(int change_type = CHANGE_NONE,
@@ -85,8 +87,8 @@ public:
 	ClipEdit *clip_edit;
 // Object being played back.
 
-// Pointer to asset for accounting
-	Asset *asset;
+// Pointer to source for accounting
+	Indexable *indexable;
 };
 
 

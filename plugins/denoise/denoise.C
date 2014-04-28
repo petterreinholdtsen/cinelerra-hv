@@ -26,6 +26,7 @@
 #include "denoise.h"
 #include "language.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -469,7 +470,7 @@ void DenoiseEffect::process_window()
 
 
 
-int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int DenoiseEffect::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 {
 	load_configuration();
 
@@ -506,7 +507,7 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 		input_allocation = input_size + size;
 	}
 	memcpy(input_buffer + input_size, 
-		input_ptr, 
+		input_ptr->get_data(), 
 		size * sizeof(double));
 	input_size += size;
 
@@ -590,7 +591,7 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 // Have enough to send to output
 	if(output_size - WINDOW_BORDER >= size)
 	{
-		memcpy(output_ptr, output_buffer, sizeof(double) * size);
+		memcpy(output_ptr->get_data(), output_buffer, sizeof(double) * size);
 		for(int i = size, j = 0; i < output_size; i++, j++)
 			output_buffer[j] = output_buffer[i];
 		output_size -= size;
@@ -598,7 +599,7 @@ int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *out
 	else
 	{
 //printf("DenoiseEffect::process_realtime 1\n");
-		bzero(output_ptr, sizeof(double) * size);
+		bzero(output_ptr->get_data(), sizeof(double) * size);
 	}
 
 	return 0;

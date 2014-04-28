@@ -10,6 +10,7 @@ TOPDIR=`pwd`
 
 
 
+
 # test for nasm
 if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then HAVE_NASM=y; else HAVE_NASM=n; fi
 
@@ -64,15 +65,24 @@ echo "CONFIGURING FAAD"
 cd $LIBFAAD_PATH && ./configure && sed 's/       /\t/' Makefile > Makefile2 && mv -f Makefile2 Makefile && cd ../..
 #cd $LIBFAAD_PATH && ./configure && cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo "CONFIGURING FAAC"
 cd thirdparty/faac* && ./configure && cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo "CONFIGURING FFMPEG"
 # Currently using the last version which works.  The latest version doesn't.
 # For the latest version,
 # delete faad tests in configure so it passes before faad is compiled.
 # Change -O3 to -O2 to fix compiler errors.
-cd thirdparty/ffmpeg* && ./configure --enable-pthreads --enable-libfaad --enable-gpl --disable-ffplay --extra-cflags=-I$TOPDIR/$LIBFAAD_PATH/include --extra-libs=-L$TOPDIR/$LIBFAAD_PATH/libfaad/.libs/ --disable-ffmpeg --disable-ffserver --disable-ffplay  && cd ../..
+# 030209
+#cd thirdparty/ffmpeg* && ./configure --enable-pthreads --enable-libfaad --enable-gpl --disable-ffplay --extra-cflags=-I$TOPDIR/$LIBFAAD_PATH/include --extra-libs=-L$TOPDIR/$LIBFAAD_PATH/libfaad/.libs/ --disable-ffmpeg --disable-ffserver --disable-ffplay  && cd ../..
+# 052906
+cd thirdparty/ffmpeg* && ./configure --enable-pthreads --enable-gpl --disable-ffplay --extra-cflags=-I$TOPDIR/$LIBFAAD_PATH/include --extra-libs=-L$TOPDIR/$LIBFAAD_PATH/libfaad/.libs/ --disable-ffserver --disable-ffplay  && cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo "CONFIGURING X264"
 # Currently using the last version which works with mplayer.
@@ -80,16 +90,25 @@ echo "CONFIGURING X264"
 # add asm=no and AS= in place of exit
 cd thirdparty/x264* && ./configure --enable-pthread && cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo "CONFIGURING LIBDV"
 cd thirdparty/libdv* && ./configure --disable-gtk --enable-shared=no && cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo "CONFIGURING LIBOGG"
 cd thirdparty/libogg* && ./configure && cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
+echo "CONFIGURING LIBVORBIS"
 LIBOGG_PATH=`expr thirdparty/libogg*` && \
 cd thirdparty/libvorbis* && \
 CFLAGS="-I$TOPDIR/$LIBOGG_PATH/include -L$TOPDIR/$LIBOGG_PATH/src/" ./configure --disable-oggtest --enable-shared=no && \
 cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 
 

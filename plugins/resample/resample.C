@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,13 @@
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "../../cinelerra/resample.h"
 #include "resample.h"
+#include "samples.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 
@@ -75,15 +78,35 @@ ResampleWindow::ResampleWindow(ResampleEffect *plugin, int x, int y)
 void ResampleWindow::create_objects()
 {
 	int x = 10, y = 10;
+	lock_window("ResampleWindow::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
 	y += 20;
 	add_subwindow(new ResampleFraction(plugin, x, y));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	flush();
+	unlock_window();
 }
 
+
+
+
+
+
+
+
+ResampleResample::ResampleResample(ResampleEffect *plugin)
+{
+	this->plugin = plugin;
+}
+
+int ResampleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
+{
+	return plugin->read_samples(buffer, 
+		0, 
+		start + plugin->get_source_start(), 
+		len);
+}
 
 
 
@@ -160,7 +183,7 @@ int ResampleEffect::start_loop()
 	current_position = PluginClient::start;
 	total_written = 0;
 
-	resample = new Resample(0, 1);
+	resample = new ResampleResample(this);
 	return 0;
 }
 
@@ -174,7 +197,7 @@ int ResampleEffect::stop_loop()
 	return 0;
 }
 
-int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
+int ResampleEffect::process_loop(Samples *buffer, int64_t &write_length)
 {
 	int result = 0;
 
@@ -185,51 +208,63 @@ SET_TRACE
 	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
 SET_TRACE
 
-	double *input = new double[size];
+	Samples *input = new Samples(size);
 SET_TRACE
+	
 	read_samples(input, 0, current_position, size);
 	current_position += size;
 
 SET_TRACE
-	resample->resample_chunk(input, 
-		size, 
+	resample->resample(buffer,
+		PluginAClient::out_buffer_size,
 		1000000, 
 		(int)(1000000.0 / scale), 
-		0);
+		total_written,
+		PLAY_FORWARD);
 
-SET_TRACE
+	write_length = PluginAClient::out_buffer_size;
+	if(total_written + write_length > predicted_total)
+		write_length = predicted_total - total_written;
 
-	if(resample->get_output_size(0))
-	{
-		int64_t output_size = resample->get_output_size(0);
-
-SET_TRACE
-		if(output_size)
-		{
-			total_written += output_size;
-		}
-
-SET_TRACE
-// Trim output to predicted length of stretched selection.
-		if(total_written > predicted_total)
-		{
-			output_size -= total_written - predicted_total;
-			result = 1;
-		}
-
-SET_TRACE
-		resample->read_output(buffer, 0, output_size);
-
-SET_TRACE
-		write_length = output_size;
-	}
+// 	resample->resample_chunk(input, 
+// 		size, 
+// 		1000000, 
+// 		(int)(1000000.0 / scale), 
+// 		0);
+// 
+// SET_TRACE
+// 
+// 	if(resample->get_output_size(0))
+// 	{
+// 		int64_t output_size = resample->get_output_size(0);
+// 
+// SET_TRACE
+// 		if(output_size)
+// 		{
+// 			total_written += output_size;
+// 		}
+// 
+// SET_TRACE
+// // Trim output to predicted length of stretched selection.
+// 		if(total_written > predicted_total)
+// 		{
+// 			output_size -= total_written - predicted_total;
+// 			result = 1;
+// 		}
+// 
+// SET_TRACE
+// 		resample->read_output(buffer, 0, output_size);
+// 
+// SET_TRACE
+// 		write_length = output_size;
+// 	}
 
 SET_TRACE
 	if(PluginClient::interactive) result = progress->update(total_written);
 //printf("TimeStretch::process_loop 1\n");
 
 SET_TRACE
-	delete [] input;
+	delete input;
 SET_TRACE
 	return result;
 }

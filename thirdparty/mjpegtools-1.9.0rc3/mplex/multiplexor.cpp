@@ -19,6 +19,7 @@
  */
 
 #define STREAM_LOGGING
+#include <string.h>
 #include <config.h>
 #include <math.h>
 #include <stdlib.h>

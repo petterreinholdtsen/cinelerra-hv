@@ -280,9 +280,11 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	{
 		if(!first_frame)
 			first_frame = new VFrame(0, 
+				-1,
 				frame->get_w(), 
 				frame->get_h(),
-				frame->get_color_model());
+				frame->get_color_model(),
+				-1);
 printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
 		read_frame(first_frame, 
 				0, 

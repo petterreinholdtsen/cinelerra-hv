@@ -162,9 +162,7 @@ enum
 class RenderFarmServer
 {
 public:
-// MWindow is required to get the plugindb to save the EDL.
-	RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
-		PackageDispatcher *packages,
+	RenderFarmServer(PackageDispatcher *packages,
 		Preferences *preferences,
 		int use_local_rate,
 		int *result_return,
@@ -186,7 +184,6 @@ public:
 
 
 	ArrayList<RenderFarmServerThread*> clients;
-	ArrayList<PluginServer*> *plugindb;
 //	MWindow *mwindow;
 	PackageDispatcher *packages;
 	Preferences *preferences;
@@ -210,8 +207,7 @@ public:
 class RenderFarmServerThread : public Thread
 {
 public:
-	RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
-		RenderFarmServer *server, 
+	RenderFarmServerThread(RenderFarmServer *server, 
 		int number);
 	~RenderFarmServerThread();
 
@@ -242,8 +238,6 @@ public:
 	
 	void run();
 	
-//	MWindow *mwindow;
-	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
 	RenderFarmWatchdog *watchdog;
 	int socket_fd;

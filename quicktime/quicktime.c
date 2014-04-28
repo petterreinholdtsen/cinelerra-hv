@@ -843,6 +843,12 @@ long quicktime_read_frame(quicktime_t *file, unsigned char *video_buffer, int tr
 	bytes = quicktime_frame_size(file, file->vtracks[track].current_position, track);
 
 	quicktime_set_video_position(file, file->vtracks[track].current_position, track);
+
+/*
+ * printf("quicktime_read_frame 0x%llx %lld\n", 
+ * quicktime_ftell(file),
+ * bytes);
+ */
 	result = quicktime_read_data(file, video_buffer, bytes);
 	file->vtracks[track].current_position++;
 

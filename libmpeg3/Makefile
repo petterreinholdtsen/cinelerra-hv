@@ -69,7 +69,7 @@ CFLAGS += \
 
 
 
-CFLAGS += -g
+#CFLAGS += -g
 
 
 

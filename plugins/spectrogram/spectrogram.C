@@ -26,6 +26,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
+#include "samples.h"
 #include "spectrogram.h"
 #include "transportque.inc"
 #include "units.h"
@@ -402,7 +403,7 @@ Spectrogram::~Spectrogram()
 {
 	delete fft;
 	delete [] data;
-	delete [] audio_buffer;
+	delete audio_buffer;
 	delete [] freq_real;
 	delete [] freq_imag;
 	delete timer;
@@ -433,7 +434,7 @@ const char* Spectrogram::plugin_title() { return N_("Spectrogram"); }
 int Spectrogram::is_realtime() { return 1; }
 
 int Spectrogram::process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate)
 {
@@ -470,7 +471,7 @@ int Spectrogram::process_buffer(int64_t size,
 
 	if(!audio_buffer)
 	{
-		audio_buffer = new double[MAX_WINDOW];
+		audio_buffer = new Samples(MAX_WINDOW);
 	}
 
 // Total fragments rendered in this call
@@ -489,6 +490,7 @@ int Spectrogram::process_buffer(int64_t size,
 		int current_fragment_size = fragment_size;
 		if(current_fragment_size + sample > size)
 			current_fragment_size = size - sample;
+
 // Keep audio buffer full.
 // Forward playback.
 		if(get_direction() == PLAY_FORWARD &&
@@ -499,17 +501,22 @@ int Spectrogram::process_buffer(int64_t size,
 			if(difference)
 			{
 				int64_t old_chunk = config.window_size - difference;
-				memcpy(audio_buffer, 
-					audio_buffer + difference,
+				memcpy(audio_buffer->get_data(), 
+					audio_buffer->get_data() + difference,
 					old_chunk * sizeof(double));
 //printf("Spectrogram::process_buffer %d %d\n", __LINE__, current_start_position + old_chunk);
-				read_samples(audio_buffer + old_chunk,
+				audio_buffer->set_offset(old_chunk);
+				read_samples(audio_buffer,
 					0,
 					get_samplerate(),
 					current_start_position + old_chunk,
 					difference);
+				audio_buffer->set_offset(0);
 			}
-			memcpy(buffer + sample, audio_buffer, current_fragment_size * sizeof(double));
+
+			memcpy(buffer->get_data() + sample, 
+				audio_buffer->get_data(), 
+				current_fragment_size * sizeof(double));
 			audio_buffer_start = current_start_position;
 		}
 		else
@@ -523,8 +530,8 @@ int Spectrogram::process_buffer(int64_t size,
 			int64_t old_chunk = config.window_size - difference;
 			if(difference)
 			{
-				memcpy(audio_buffer,
-					audio_buffer + difference, 
+				memcpy(audio_buffer->get_data(),
+					audio_buffer->get_data() + difference, 
 					old_chunk * sizeof(double));
 
 // printf("Spectrogram::process_buffer %d %lld %lld\n", 
@@ -538,8 +545,8 @@ int Spectrogram::process_buffer(int64_t size,
 					difference);
 			}
 
-			memcpy(buffer + sample, 
-				audio_buffer, 
+			memcpy(buffer->get_data() + sample, 
+				audio_buffer->get_data(), 
 				current_fragment_size * sizeof(double));
 			audio_buffer_start = current_start_position;
 		}
@@ -552,7 +559,9 @@ int Spectrogram::process_buffer(int64_t size,
 				get_samplerate(),
 				current_start_position,
 				config.window_size);
-			memcpy(buffer + sample, audio_buffer, current_fragment_size * sizeof(double));
+			memcpy(buffer->get_data() + sample, 
+				audio_buffer->get_data(), 
+				current_fragment_size * sizeof(double));
 			audio_buffer_start = current_start_position;
 		}
 		else
@@ -563,8 +572,8 @@ int Spectrogram::process_buffer(int64_t size,
 				get_samplerate(),
 				current_start_position,
 				config.window_size);
-			memcpy(buffer + sample, 
-				audio_buffer, 
+			memcpy(buffer->get_data() + sample, 
+				audio_buffer->get_data(), 
 				current_fragment_size * sizeof(double));
 			audio_buffer_start = current_start_position;
 		}
@@ -572,7 +581,7 @@ int Spectrogram::process_buffer(int64_t size,
 // Process FFT
 		fft->do_fft(config.window_size,  // must be a power of 2
     		0,         // 0 = forward FFT, 1 = inverse
-    		audio_buffer,     // array of input's real samples
+    		audio_buffer->get_data(),     // array of input's real samples
     		0,     // array of input's imag samples
     		freq_real,    // array of output's reals
     		freq_imag);

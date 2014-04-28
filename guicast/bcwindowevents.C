@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplay.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "bcwindowevents.h"
 
@@ -56,19 +57,40 @@ void BC_WindowEvents::start()
 void BC_WindowEvents::run()
 {
 	XEvent *event;
+#ifndef SINGLE_THREAD
+	int x_fd = ConnectionNumber(window->display);
+#endif
+
+
 
 	while(!done)
 	{
-		event = new XEvent;
 
 // Can't cancel in XNextEvent because X server never figures out it's not
 // listening anymore and XCloseDisplay locks up.
 #ifdef SINGLE_THREAD
+		event = new XEvent;
 		XNextEvent(display->display, event);
 		display->put_event(event);
 #else
-		XNextEvent(window->display, event);
-		window->put_event(event);
+// This came from a linuxquestions post.
+// We can get a file descriptor for the X display & use select instead of XNextEvent.  
+// The newest X11 library requires locking the display to use XNextEvent.
+		fd_set x_fds;
+		FD_ZERO(&x_fds);
+		FD_SET(x_fd, &x_fds);
+		select(x_fd + 1, &x_fds, 0, 0, 0);
+		
+		
+		
+		XLockDisplay(window->display);
+		while(XPending(window->display))
+		{
+			event = new XEvent;
+			XNextEvent(window->display, event);
+			window->put_event(event);
+		}
+		XUnlockDisplay(window->display);
 #endif
 
 	}

@@ -69,8 +69,7 @@ public:
 // Test for reconfiguration.
 // If reconfiguration is coming up, truncate length and reset last_playback.
 	int test_reconfigure(int64_t position, 
-		int64_t &length,
-		int &last_playback);
+		int64_t &length);
 
 
 	RenderEngine *renderengine;

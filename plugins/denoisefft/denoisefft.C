@@ -109,7 +109,7 @@ public:
 	int signal_process();
 	int read_samples(int64_t output_sample, 
 		int samples, 
-		double *buffer);
+		Samples *buffer);
 	DenoiseFFTEffect *plugin;
 };
 
@@ -120,7 +120,7 @@ public:
 	int signal_process();
 	int read_samples(int64_t output_sample, 
 		int samples, 
-		double *buffer);
+		Samples *buffer);
 	DenoiseFFTEffect *plugin;
 };
 
@@ -134,7 +134,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 	void collect_noise();
@@ -404,7 +404,7 @@ int DenoiseFFTEffect::load_configuration()
 }
 
 int DenoiseFFTEffect::process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate)
 {
@@ -499,7 +499,7 @@ int DenoiseFFTRemove::signal_process()
 
 int DenoiseFFTRemove::read_samples(int64_t output_sample, 
 	int samples, 
-	double *buffer)
+	Samples *buffer)
 {
 	return plugin->read_samples(buffer,
 		0,
@@ -529,7 +529,7 @@ int DenoiseFFTCollect::signal_process()
 
 int DenoiseFFTCollect::read_samples(int64_t output_sample, 
 	int samples, 
-	double *buffer)
+	Samples *buffer)
 {
 	return plugin->read_samples(buffer,
 		0,

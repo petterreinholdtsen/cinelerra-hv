@@ -36,6 +36,7 @@
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "renderengine.inc"
+#include "samples.inc"
 #include "track.inc"
 #include "transportque.inc"
 #include "vframe.inc"
@@ -76,8 +77,7 @@ public:
 	int initialize(MWindow *mwindow,
 		EDL *edl, 
 		Preferences *preferences, 
-		Asset *default_asset,
-		ArrayList<PluginServer*> *plugindb);
+		Asset *default_asset);
 
 // Aborts and returns 1 if an error is encountered.
 	int render_package(RenderPackage *package);
@@ -117,11 +117,10 @@ public:
 	EDL *edl;
 	Preferences *preferences;
 	Asset *default_asset;
-	ArrayList<PluginServer*> *plugindb;
 
 // Created locally
 	Asset *asset;
-	double **audio_output;
+	Samples **audio_output;
 	int64_t audio_position;
 	int64_t audio_preroll;
 	int64_t audio_read_length;
@@ -132,7 +131,7 @@ public:
 // A nonzero mwindow signals master render engine to the engine.
 // A zero mwindow signals client or non interactive.
 	MWindow *mwindow;
-	double *audio_output_ptr[MAX_CHANNELS];
+	Samples *audio_output_ptr[MAX_CHANNELS];
 	CICache *audio_cache;
 	CICache *video_cache;
 	VFrame *compressed_output;

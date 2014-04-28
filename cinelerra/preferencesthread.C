@@ -142,7 +142,7 @@ void PreferencesThread::handle_close_event(int result)
 
 	window = 0;
 	delete preferences;
-	delete edl;
+	edl->Garbage::remove_user();
 	preferences = 0;
 	edl = 0;
 
@@ -349,6 +349,7 @@ PreferencesWindow::~PreferencesWindow()
 void PreferencesWindow::create_objects()
 {
 	BC_Button *button;
+
 	lock_window("PreferencesWindow::create_objects");
 
 
@@ -396,8 +397,6 @@ int PreferencesWindow::update_framerate()
 	lock_window("PreferencesWindow::update_framerate");
 	if(thread->current_dialog == 0)
 	{
-		thread->edl->session->actual_frame_rate = 
-			mwindow->edl->session->actual_frame_rate;
 		dialog->draw_framerate();
 		flash();
 	}

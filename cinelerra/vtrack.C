@@ -308,7 +308,8 @@ int VTrack::is_playable(int64_t position, int direction)
 	return result;
 }
 
-void VTrack::calculate_input_transfer(Asset *asset, 
+void VTrack::calculate_input_transfer(int asset_w, 
+	int asset_h,
 	int64_t position, 
 	int direction, 
 	float &in_x, 
@@ -322,8 +323,8 @@ void VTrack::calculate_input_transfer(Asset *asset,
 {
 	float auto_x, auto_y, auto_z;
 	float camera_z = 1;
-	float camera_x = asset->width / 2;
-	float camera_y = asset->height / 2;
+	float camera_x = asset_w / 2;
+	float camera_y = asset_h / 2;
 // camera and output coords
 	float z[6], x[6], y[6];        
 
@@ -363,15 +364,15 @@ void VTrack::calculate_input_transfer(Asset *asset,
 		y[2] -= y[0] * camera_z;
 		y[0] = 0;
 	}
-	if(x[1] > asset->width)
+	if(x[1] > asset_w)
 	{
-		x[3] -= (x[1] - asset->width) * camera_z;
-		x[1] = asset->width;
+		x[3] -= (x[1] - asset_w) * camera_z;
+		x[1] = asset_w;
 	}
-	if(y[1] > asset->height)
+	if(y[1] > asset_h)
 	{
-		y[3] -= (y[1] - asset->height) * camera_z;
-		y[1] = asset->height;
+		y[3] -= (y[1] - asset_h) * camera_z;
+		y[1] = asset_h;
 	}
 
 // get output bounding box

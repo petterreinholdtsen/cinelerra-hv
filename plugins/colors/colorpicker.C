@@ -369,7 +369,7 @@ void PaletteWheel::create_objects()
 	float x1, y1, x2, y2;
 	float distance;
 	int default_r, default_g, default_b;
-	VFrame frame(0, get_w(), get_h(), BC_RGBA8888);
+	VFrame frame(0, -1, get_w(), get_h(), BC_RGBA8888, -1);
 	x1 = get_w() / 2;
 	y1 = get_h() / 2;
 	default_r = (get_resources()->get_bg_color() & 0xff0000) >> 16;
@@ -512,7 +512,7 @@ PaletteWheelValue::~PaletteWheelValue()
 
 void PaletteWheelValue::create_objects()
 {
-	frame = new VFrame(0, get_w(), get_h(), BC_RGB888);
+	frame = new VFrame(0, -1, get_w(), get_h(), BC_RGB888, -1);
 	draw(window->h, window->s, window->v);
 	flash();
 }

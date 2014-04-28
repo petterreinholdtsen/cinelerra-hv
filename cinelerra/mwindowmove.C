@@ -564,7 +564,7 @@ int MWindow::next_edit_handle(int shift_down)
 	{
 
 		edl->local_session->set_selectionend(new_position);
-printf("MWindow::next_edit_handle %d\n", shift_down);
+//printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down) 
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
@@ -629,7 +629,7 @@ int MWindow::prev_edit_handle(int shift_down)
 	{
 
 		edl->local_session->set_selectionstart(new_position);
-printf("MWindow::next_edit_handle %d\n", shift_down);
+//printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 

@@ -55,6 +55,8 @@
 #include <errno.h>
 #include <string.h>
 
+#define NEW_VFRAME \
+new VFrame(0, -1, default_data.get_w(), default_data.get_h(), BC_RGBA8888, -1)
 
 Theme::Theme()
  : BC_Theme()
@@ -272,9 +274,9 @@ void Theme::build_transport(char *title,
 	if(!png_overlay) return;
 	VFrame default_data(png_overlay);
 	VFrame *data[3];
-	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[1] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[2] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
+	data[0] = NEW_VFRAME;
+	data[1] = NEW_VFRAME;
+	data[2] = NEW_VFRAME;
 	data[0]->clear_frame();
 	data[1]->clear_frame();
 	data[2]->clear_frame();
@@ -330,11 +332,11 @@ void Theme::build_patches(VFrame** &data,
 	if(!png_overlay || !bg_data) return;
 	VFrame default_data(png_overlay);
 	data = new VFrame*[5];
-	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[1] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[2] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[3] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[4] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
+	data[0] = NEW_VFRAME;
+	data[1] = NEW_VFRAME;
+	data[2] = NEW_VFRAME;
+	data[3] = NEW_VFRAME;
+	data[4] = NEW_VFRAME;
 
 	for(int i = 0; i < 5; i++)
 	{
@@ -384,9 +386,9 @@ void Theme::build_button(VFrame** &data,
 
 	if(!up_vframe || !hi_vframe || !dn_vframe) return;
 	data = new VFrame*[3];
-	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[1] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[2] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
+	data[0] = NEW_VFRAME;
+	data[1] = NEW_VFRAME;
+	data[2] = NEW_VFRAME;
 	data[0]->copy_from(up_vframe);
 	data[1]->copy_from(hi_vframe);
 	data[2]->copy_from(dn_vframe);
@@ -411,11 +413,11 @@ void Theme::build_toggle(VFrame** &data,
 		!checkedhi_vframe) return;
 	VFrame default_data(png_overlay);
 	data = new VFrame*[5];
-	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[1] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[2] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[3] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
-	data[4] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
+	data[0] = NEW_VFRAME;
+	data[1] = NEW_VFRAME;
+	data[2] = NEW_VFRAME;
+	data[3] = NEW_VFRAME;
+	data[4] = NEW_VFRAME;
 	data[0]->copy_from(up_vframe);
 	data[1]->copy_from(hi_vframe);
 	data[2]->copy_from(checked_vframe);

@@ -1,4 +1,4 @@
-IlmThreadSemaphorePosixCompat.lo IlmThreadSemaphorePosixCompat.o:  \
- IlmThreadSemaphorePosixCompat.cpp ../config/IlmBaseConfig.h
+IlmThreadSemaphorePosixCompat.lo: IlmThreadSemaphorePosixCompat.cpp \
+  ../config/IlmBaseConfig.h
 
 ../config/IlmBaseConfig.h:

@@ -30,6 +30,7 @@
 
 // ================================= builds the indexes as a thread
 // Runs through all the assets and starts an index file building for each asset.
+// This doesn't appear to be used anymore.
 
 class ThreadIndexer : public Thread
 {

@@ -51,6 +51,15 @@ public:
 	ResampleEffect *plugin;
 };
 
+class ResampleResample : public Resample
+{
+public:
+	ResampleResample(ResampleEffect *plugin);
+
+	int read_samples(Samples *buffer, int64_t start, int64_t len);
+
+	ResampleEffect *plugin;
+};
 
 
 class ResampleEffect : public PluginAClient
@@ -63,14 +72,14 @@ public:
 	int get_parameters();
 	VFrame* new_picon();
 	int start_loop();
-	int process_loop(double *buffer, int64_t &write_length);
+	int process_loop(Samples *buffer, int64_t &write_length);
 	int stop_loop();
 	int load_defaults();
 	int save_defaults();
 	void reset();
 
 
-	Resample *resample;
+	ResampleResample *resample;
 	double scale;
 	MainProgressBar *progress;
 	int64_t total_written;

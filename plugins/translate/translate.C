@@ -228,9 +228,11 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		if(!temp_frame) 
 			temp_frame = new VFrame(0, 
+				-1,
 				input_ptr->get_w(), 
 				input_ptr->get_h(),
-				input->get_color_model());
+				input->get_color_model(),
+				-1);
 		temp_frame->copy_from(input);
 		input = temp_frame;
 	}

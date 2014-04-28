@@ -35,11 +35,9 @@
 #include <string.h>
 
 // edl came from a command which won't exist anymore
-CICache::CICache(Preferences *preferences,
-	ArrayList<PluginServer*> *plugindb)
+CICache::CICache(Preferences *preferences)
  : List<CICacheItem>()
 {
-	this->plugindb = plugindb;
 	this->preferences = preferences;
 	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
@@ -52,7 +50,7 @@ CICache::~CICache()
 		CICacheItem *item = last;
 //printf("CICache::~CICache: %s\n", item->asset->path);
 		remove_pointer(item);
-		Garbage::delete_object(item);
+		item->Garbage::remove_user();
 	}
 	delete check_out_lock;
 	delete total_lock;
@@ -86,10 +84,10 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 		{
 			if(!current->checked_out)
 			{
-// Return it
+// Return existing item
 				current->age = EDL::next_id();
 				current->checked_out = 1;
-				current->GarbageObject::add_user();
+				current->Garbage::add_user();
 				total_lock->unlock();
 				return current->file;
 			}
@@ -104,7 +102,7 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 // opened successfully.
 				new_item->age = EDL::next_id();
 				new_item->checked_out = 1;
-				new_item->GarbageObject::add_user();
+				new_item->Garbage::add_user();
 				total_lock->unlock();
 				return new_item->file;
 			}
@@ -112,7 +110,7 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 			else
 			{
 				remove_pointer(new_item);
-				Garbage::delete_object(new_item);
+				new_item->Garbage::remove_user();
 				total_lock->unlock();
 				return 0;
 			}
@@ -142,7 +140,7 @@ int CICache::check_in(Asset *asset)
 		if(!strcmp(current->asset->path, asset->path))
 		{
 			current->checked_out = 0;
-			current->GarbageObject::remove_user();
+			current->Garbage::remove_user();
 // Pointer no longer valid here
 			break;
 		}
@@ -169,7 +167,7 @@ void CICache::remove_all()
 		{
 //printf("CICache::remove_all: %s\n", current->asset->path);
 			remove_pointer(current);
-			Garbage::delete_object(current);
+			current->Garbage::remove_user();
 		}
 	}
 	total_lock->unlock();
@@ -186,7 +184,7 @@ int CICache::delete_entry(char *path)
 			{
 //printf("CICache::delete_entry: %s\n", current->asset->path);
 				remove_pointer(current);
-				Garbage::delete_object(current);
+				current->Garbage::remove_user();
 				break;
 			}
 		}
@@ -209,7 +207,7 @@ int CICache::delete_entry(Asset *asset)
 			{
 //printf("CICache::delete_entry: %s\n", current->asset->path);
 				remove_pointer(current);
-				Garbage::delete_object(current);
+				current->Garbage::remove_user();
 				break;
 			}
 		}
@@ -306,7 +304,7 @@ int CICache::delete_oldest()
 
 				remove_pointer(oldest);
 
-				Garbage::delete_object(oldest);
+				oldest->Garbage::remove_user();
 
 			}
 
@@ -349,13 +347,13 @@ int CICache::dump()
 
 
 CICacheItem::CICacheItem()
-: ListItem<CICacheItem>(), GarbageObject("CICacheItem")
+: ListItem<CICacheItem>(), Garbage("CICacheItem")
 {
 }
 
 
 CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
- : ListItem<CICacheItem>(), GarbageObject("CICacheItem")
+ : ListItem<CICacheItem>(), Garbage("CICacheItem")
 {
 	int result = 0;
 	age = EDL::next_id();
@@ -366,7 +364,7 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	
 
 // Must copy Asset since this belongs to an EDL which won't exist forever.
-	*this->asset = *asset;
+	this->asset->copy_from(asset, 1);
 	this->cache = cache;
 	checked_out = 0;
 
@@ -385,7 +383,7 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 
 
 
-	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
+	if(result = file->open_file(cache->preferences, this->asset, 1, 0))
 	{
 SET_TRACE
 		delete file;
@@ -398,6 +396,6 @@ SET_TRACE
 CICacheItem::~CICacheItem()
 {
 	if(file) delete file;
-	if(asset) Garbage::delete_object(asset);
+	if(asset) asset->Garbage::remove_user();
 	if(item_lock) delete item_lock;
 }

@@ -66,8 +66,16 @@ int AEdit::dump_derived()
 
 int64_t AEdit::get_source_end(int64_t default_)
 {
-	if(!asset) return default_;   // Infinity
+	if(!nested_edl && !asset) return default_;   // Infinity
 
-	return (int64_t)((double)asset->audio_length / asset->sample_rate * edl->session->sample_rate + 0.5);
+	if(nested_edl)
+	{
+		return (int64_t)(nested_edl->tracks->total_playable_length() *
+			edl->session->sample_rate + 0.5);
+	}
+
+	return (int64_t)((double)asset->audio_length / 
+		asset->sample_rate * 
+		edl->session->sample_rate + 0.5);
 }
 

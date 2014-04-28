@@ -185,7 +185,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 // Create new frames
 				for( ; i < config.frames; i++)
 				{
-					history2[i] = new VFrame(0, w, h, color_model);
+					history2[i] = new VFrame(w, h, color_model);
 					history_frame2[i] = -0x7fffffff;
 					history_valid2[i] = 0;
 				}
@@ -202,7 +202,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 		{
 			history = new VFrame*[config.frames];
 			for(int i = 0; i < config.frames; i++)
-				history[i] = new VFrame(0, w, h, color_model);
+				history[i] = new VFrame(w, h, color_model);
 			history_size = config.frames;
 			history_frame = new int64_t[config.frames];
 			bzero(history_frame, sizeof(int64_t) * config.frames);
@@ -353,7 +353,7 @@ i);
 // Transfer accumulation to output with division if average is desired.
 	transfer_accum(frame);
 
-printf("TimeAvgMain::process_buffer %d\n", __LINE__);
+//printf("TimeAvgMain::process_buffer %d\n", __LINE__);
 
 
 	return 0;

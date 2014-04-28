@@ -45,13 +45,10 @@ Assets::~Assets()
 	delete_all();
 }
 
-int Assets::load(ArrayList<PluginServer*> *plugindb, 
-	FileXML *file, 
-	uint32_t load_flags)
+int Assets::load(FileXML *file, uint32_t load_flags)
 {
 	int result = 0;
 
-//printf("Assets::load 1\n");
 	while(!result)
 	{
 		result = file->read_tag();
@@ -64,24 +61,21 @@ int Assets::load(ArrayList<PluginServer*> *plugindb,
 			else
 			if(file->tag.title_is("ASSET"))
 			{
-//printf("Assets::load 2\n");
 				char *path = file->tag.get_property("SRC");
-//printf("Assets::load 3\n");
-				Asset *new_asset = new Asset(path ? path : SILENCE);
-//printf("Assets::load 4\n");
-				new_asset->read(file);
-//printf("Assets::load 5\n");
-				update(new_asset);
-				Garbage::delete_object(new_asset);
-//printf("Assets::load 6\n");
+				if(path && path[0] != 0)
+				{
+					Asset *new_asset = new Asset(path);
+					new_asset->read(file);
+					update(new_asset);
+					new_asset->Garbage::remove_user();
+				}
 			}
 		}
 	}
-//printf("Assets::load 7\n");
 	return 0;
 }
 
-int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
+int Assets::save(FileXML *file, char *path)
 {
 	file->tag.set_title("ASSETS");
 	file->append_tag();
@@ -123,6 +117,7 @@ printf("Assets::operator= 1\n");
 
 void Assets::update_index(Asset *asset)
 {
+	if(!asset) return;
 	for(Asset* current = first; current; current = NEXT)
 	{
 		if(current->test_path(asset->path))
@@ -198,7 +193,7 @@ Asset* Assets::get_asset(const char *filename)
 Asset* Assets::remove_asset(Asset *asset)
 {
 	remove_pointer(asset);
-	Garbage::delete_object(asset);
+	asset->Garbage::remove_user();
 }
 
 

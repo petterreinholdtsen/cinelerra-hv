@@ -28,10 +28,7 @@
 #include <stdint.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new FlashMain(server);
-}
+REGISTER_PLUGIN(FlashMain)
 
 
 
@@ -111,10 +108,17 @@ int FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
 	int half = PluginClient::get_total_len() / 2;
 	int position = half - labs(PluginClient::get_source_position() - half);
-	float fraction = (float)position / half;
-	int is_before = PluginClient::get_source_position() < half;
+	fraction = (float)position / half;
+	is_before = PluginClient::get_source_position() < half;
 	int w = incoming->get_w();
 	int h = incoming->get_h();
+
+// Use hardware
+	if(get_use_opengl())
+	{
+		run_opengl();
+		return 0;
+	}
 
 	switch(incoming->get_color_model())
 	{
@@ -152,3 +156,74 @@ int FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	return 0;
 }
+
+
+
+int FlashMain::handle_opengl()
+{
+#ifdef HAVE_GL
+
+// printf("FlashMain::handle_opengl %d %d %d %d\n", 
+// get_input()->get_opengl_state(),
+// get_input()->get_opengl_state(),
+// get_output()->get_w(),
+// get_output()->get_h());
+	if(is_before)
+	{
+// Read images from RAM
+		get_output()->to_texture();
+
+// Create output pbuffer
+		get_output()->enable_opengl();
+		VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+
+// Enable output texture
+		get_output()->bind_texture(0);
+		get_output()->draw_texture();
+	}
+	else
+	{
+// Read images from RAM
+		get_input()->to_texture();
+
+// Create output pbuffer
+		get_output()->enable_opengl();
+		VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+
+// Enable output texture
+		get_input()->bind_texture(0);
+// Draw input texture on output pbuffer
+		get_output()->draw_texture();
+	}
+
+	get_output()->set_opengl_state(VFrame::SCREEN);
+
+// Draw flash overlay
+	glDisable(GL_TEXTURE_2D);
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if(cmodel_is_yuv(get_output()->get_color_model())) 
+		glColor4f(1.0, 0.5, 0.5, fraction);
+	else
+		glColor4f(1.0, 1.0, 1.0, fraction);
+
+	glBegin(GL_QUADS);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(get_output()->get_w(), 0.0, 0.0);
+	glVertex3f(get_output()->get_w(), -get_output()->get_h(), 0.0);
+	glVertex3f(0.0, -get_output()->get_h(), 0.0);
+	glEnd();
+	glDisable(GL_BLEND);
+
+	glColor4f(1.0, 1.0, 1.0, 1.0);
+
+	return 1;
+#endif
+
+	return 0;
+}
+
+
+
+

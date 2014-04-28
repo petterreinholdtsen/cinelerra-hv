@@ -29,6 +29,7 @@
 #include "keys.h"
 #include "language.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -919,7 +920,7 @@ void GraphicEQ::reconfigure()
 }
 
 int GraphicEQ::process_buffer(int64_t size, 
-	double *buffer, 
+	Samples *buffer, 
 	int64_t start_position,
 	int sample_rate)
 {
@@ -1028,7 +1029,12 @@ void GraphicEQ::calculate_envelope()
 				else
 					envelope[i] = point1->value;
 			}
-			envelope[i] = DB::fromdb(envelope[i]);
+
+
+			if(envelope[i] < MIN_DB + 0.01) 
+				envelope[i] = 0;
+			else
+				envelope[i] = DB::fromdb(envelope[i]);
 		}
 	}
 	else
@@ -1074,7 +1080,7 @@ int GraphicFFT::signal_process()
 
 int GraphicFFT::read_samples(int64_t output_sample, 
 	int samples, 
-	double *buffer)
+	Samples *buffer)
 {
 	return plugin->read_samples(buffer,
 		0,

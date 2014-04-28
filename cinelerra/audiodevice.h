@@ -44,6 +44,7 @@
 #include "mwindow.inc"
 #include "preferences.inc"
 #include "recordgui.inc"
+#include "samples.inc"
 #include "sema.inc"
 #include "thread.h"
 #include "vdevice1394.inc"
@@ -107,8 +108,8 @@ public:
 
 // read from the record device
 // Conversion between double and int is done in AudioDevice
-	int read_buffer(double **input, 
-		int samples, 
+	int read_buffer(Samples **input, 
+		int samples,
 		int *over, 
 		double *max, 
 		int input_offset = 0);  

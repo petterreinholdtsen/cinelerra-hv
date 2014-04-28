@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include "pluginserver.h"
 #include "pluginvclient.h"
 #include "preferences.h"
+#include "samples.h"
 #include "sema.h"
 #include "mainsession.h"
 #include "trackcanvas.h"
@@ -416,8 +417,8 @@ void PluginServer::process_transition(VFrame *input,
 	use_opengl = 0;
 }
 
-void PluginServer::process_transition(double *input, 
-		double *output,
+void PluginServer::process_transition(Samples *input, 
+		Samples *output,
 		int64_t current_position, 
 		int64_t fragment_size,
 		int64_t total_len)
@@ -480,7 +481,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	use_opengl = 0;
 }
 
-void PluginServer::process_buffer(double **buffer,
+void PluginServer::process_buffer(Samples **buffer,
 	int64_t current_position,
 	int64_t fragment_size,
 	int64_t sample_rate,
@@ -489,6 +490,7 @@ void PluginServer::process_buffer(double **buffer,
 {
 	if(!plugin_open) return;
 	PluginAClient *aclient = (PluginAClient*)client;
+
 	aclient->source_position = current_position;
 	aclient->total_len = total_len;
 	aclient->sample_rate = sample_rate;
@@ -500,10 +502,12 @@ void PluginServer::process_buffer(double **buffer,
 
 	aclient->direction = direction;
 	if(multichannel)
+	{
 		aclient->process_buffer(fragment_size, 
 			buffer, 
 			current_position, 
 			sample_rate);
+	}
 	else
 	{
 		aclient->process_buffer(fragment_size, 
@@ -621,7 +625,7 @@ int PluginServer::process_loop(VFrame **buffers, int64_t &write_length)
 	return client->plugin_process_loop(buffers, write_length);
 }
 
-int PluginServer::process_loop(double **buffers, int64_t &write_length)
+int PluginServer::process_loop(Samples **buffers, int64_t &write_length)
 {
 	if(!plugin_open) return 1;
 	return client->plugin_process_loop(buffers, write_length);
@@ -657,14 +661,47 @@ int PluginServer::read_frame(VFrame *buffer,
 	return 0;
 }
 
-int PluginServer::read_samples(double *buffer, 
-	int channel, 
-	int64_t start_position, 
-	int64_t total_samples)
+int PluginServer::read_samples(Samples *buffer,
+	int channel,
+	int64_t sample_rate,
+	int64_t start_position,
+	int64_t len)
 {
+// len is now in buffer
+	if(!multichannel) channel = 0;
+
+	if(nodes->total > channel)
+		return ((VirtualANode*)nodes->values[channel])->read_data(buffer,
+			len,
+			start_position,
+			sample_rate);
+	else
+	if(modules->total > channel)
+		return ((AModule*)modules->values[channel])->render(buffer,
+			len,
+			start_position,
+			PLAY_FORWARD,
+			sample_rate,
+			0);
+	else
+	{
+		printf("PluginServer::read_samples no object available for channel=%d\n",
+			channel);
+	}
+
+	return -1;
+}
+
+
+int PluginServer::read_samples(Samples *buffer, 
+	int channel, 
+	int64_t start_position,
+	int64_t size)
+{
+// total_samples is now set in buffer
 	((AModule*)modules->values[channel])->render(buffer, 
+		size,
 		start_position,
-		total_samples, 
 		PLAY_FORWARD,
 		mwindow->edl->session->sample_rate,
 		0);
@@ -721,36 +758,6 @@ int PluginServer::read_frame(VFrame *buffer,
 	buffer->pop_next_effect();
 
 	return result;
-}
-
-int PluginServer::read_samples(double *buffer,
-	int channel,
-	int64_t sample_rate,
-	int64_t start_position, 
-	int64_t len)
-{
-	if(!multichannel) channel = 0;
-
-	if(nodes->total > channel)
-		return ((VirtualANode*)nodes->values[channel])->read_data(buffer,
-			start_position,
-			len,
-			sample_rate);
-	else
-	if(modules->total > channel)
-		return ((AModule*)modules->values[channel])->render(buffer,
-			start_position,
-			len,
-			PLAY_FORWARD,
-			sample_rate,
-			0);
-	else
-	{
-		printf("PluginServer::read_samples no object available for channel=%d\n",
-			channel);
-	}
-
-	return -1;
 }
 
 

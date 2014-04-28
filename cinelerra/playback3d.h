@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,7 +183,8 @@ public:
 		PLUGIN,
 		CLEAR_INPUT,
 		DO_CAMERA,
-		COPY_FROM
+		COPY_FROM,
+		CONVERT_CMODEL
 	};
 
 	Canvas *canvas;
@@ -204,7 +205,9 @@ public:
 	int interpolation_type;
 	VFrame *input;
 	int want_texture;
+	int is_nested;
 
+	int dst_cmodel;
 	int64_t start_position_project;
 	MaskAutos *keyframe_set;
 	MaskAuto *keyframe;
@@ -246,7 +249,9 @@ public:
 // output - passed when rendering refresh frame.  If 0, the canvas is cleared.
 	void clear_output(Canvas *canvas, VFrame *output);
 
-	void do_fade(Canvas *canvas, VFrame *fade, float fade);
+	void convert_cmodel(Canvas *canvas, VFrame *output, int dst_cmodel);
+
+	void do_fade(Canvas *canvas, VFrame *frame, float fade);
 
 	void do_mask(Canvas *canvas,
 		VFrame *output, 
@@ -271,7 +276,8 @@ public:
 		int mode,
 		int interpolation_type,
 // supplied if rendering single frame to PBuffer.
-		VFrame *output = 0);
+		VFrame *output = 0,
+		int is_nested = 0);
 
 
 	int run_plugin(Canvas *canvas, PluginClient *client);
@@ -305,6 +311,7 @@ private:
 	void do_camera_sync(Playback3DCommand *command);
 //	void draw_refresh_sync(Playback3DCommand *command);
 	void copy_from_sync(Playback3DCommand *command);
+	void convert_cmodel_sync(Playback3DCommand *command);
 
 // Print errors from shader compilation
 	void print_error(unsigned int object, int is_program);

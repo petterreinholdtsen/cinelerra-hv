@@ -565,7 +565,7 @@ ViewTheme::~ViewTheme()
 void ViewTheme::create_objects()
 {
 	ArrayList<PluginServer*> themes;
-	pwindow->mwindow->create_plugindb(0, 
+	MWindow::search_plugindb(0, 
 		0, 
 		0, 
 		0,

@@ -19,6 +19,7 @@
  * 
  */
 
+#include "samples.h"
 #include "timestretchengine.h"
 
 
@@ -75,7 +76,7 @@ void TimeStretchEngine::overlay(double *out, double *in, int size, int skirt)
 	}
 }
 
-int TimeStretchEngine::process(double *in_buffer, int in_size)
+int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 {
 //printf("TimeStretchEngine::process 1\n");
 // Stack on input buffer
@@ -94,7 +95,7 @@ int TimeStretchEngine::process(double *in_buffer, int in_size)
 
 //printf("TimeStretchEngine::process 10\n");
 
-	memcpy(input + input_size, in_buffer, in_size * sizeof(double));
+	memcpy(input + input_size, in_buffer->get_data(), in_size * sizeof(double));
 	input_size += in_size;
 
 //printf("TimeStretchEngine::process 20\n");
@@ -155,9 +156,9 @@ int TimeStretchEngine::process(double *in_buffer, int in_size)
 	return output_size;
 }
 
-void TimeStretchEngine::read_output(double *buffer, int size)
+void TimeStretchEngine::read_output(Samples *buffer, int size)
 {
-	memcpy(buffer, output, size * sizeof(double));
+	memcpy(buffer->get_data(), output, size * sizeof(double));
 	memcpy(output, output + size, (output_size + window_skirt - size) * sizeof(double));
 	output_size -= size;
 	output_sample += size;

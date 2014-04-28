@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -134,6 +135,9 @@ int PluginPopupDetach::handle_event()
 	popup->plugin->track->detach_effect(popup->plugin);
 	mwindow->save_backup();
 	mwindow->undo->update_undo_after(_("detach effect"), LOAD_ALL);
+
+
+	mwindow->gui->lock_window("PluginPopupDetach::handle_event");
 	mwindow->gui->update(0,
 		1,
 		0,
@@ -141,6 +145,7 @@ int PluginPopupDetach::handle_event()
 		0, 
 		0,
 		0);
+	mwindow->gui->unlock_window();
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;

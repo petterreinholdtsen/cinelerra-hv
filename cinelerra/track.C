@@ -161,8 +161,7 @@ void Track::equivalent_output(Track *track, double *result)
 }
 
 
-int Track::is_synthesis(RenderEngine *renderengine, 
-	int64_t position, 
+int Track::is_synthesis(int64_t position, 
 	int direction)
 {
 	int is_synthesis = 0;
@@ -179,8 +178,7 @@ int Track::is_synthesis(RenderEngine *renderengine,
 			if(plugin->plugin_type == PLUGIN_SHAREDMODULE) 
 				is_synthesis = 1;
 			else
-				is_synthesis = plugin->is_synthesis(renderengine, 
-					position, 
+				is_synthesis = plugin->is_synthesis(position, 
 					direction);
 			if(is_synthesis) break;
 		}
@@ -363,12 +361,13 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 }
 
 void Track::insert_asset(Asset *asset, 
-		double length, 
-		double position, 
-		int track_number)
+	EDL *nested_edl,
+	double length, 
+	double position, 
+	int track_number)
 {
-//printf("Track::insert_asset %f\n", length);
 	edits->insert_asset(asset, 
+		nested_edl,
 		to_units(length, 1), 
 		to_units(position, 0), 
 		track_number);
@@ -565,13 +564,22 @@ void Track::move_plugins_down(PluginSet *plugin_set)
 }
 
 
-void Track::remove_asset(Asset *asset)
+void Track::remove_asset(Indexable *asset)
 {
 	for(Edit *edit = edits->first; edit; edit = edit->next)
 	{
-		if(edit->asset && edit->asset == asset)
+		if(asset->is_asset && 
+			edit->asset && 
+			edit->asset == (Asset*)asset)
 		{
 			edit->asset = 0;
+		}
+		else
+		if(!asset->is_asset && 
+			edit->nested_edl && 
+			edit->nested_edl == (EDL*)asset)
+		{
+			edit->nested_edl = 0;
 		}
 	}
 	optimize();
@@ -1299,7 +1307,9 @@ int Track::playable_edit(int64_t position, int direction)
 			current->startproject + current->length > position)
 		{
 //printf("Track::playable_edit %p %p\n", current->transition, current->asset);
-			if(current->transition || current->asset) result = 1;
+			if(current->transition || 
+				current->asset ||
+				current->nested_edl) result = 1;
 		}
 	}
 	return result;

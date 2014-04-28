@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,14 @@ class LoadMode;
 
 // Load modes for loading files, importing recordings, importing effects
 // Be sure to change mode_images in LoadMode::create_objects if you change this.
-#define LOAD_NOTHING 0
-#define LOAD_REPLACE 1
-#define LOAD_REPLACE_CONCATENATE 2
-#define LOAD_NEW_TRACKS 3
-#define LOAD_CONCATENATE 4
-#define LOAD_PASTE 5
-#define LOAD_RESOURCESONLY 6
-#define TOTAL_LOADMODES 7
+#define LOADMODE_NOTHING 0
+#define LOADMODE_REPLACE 1
+#define LOADMODE_REPLACE_CONCATENATE 2
+#define LOADMODE_NEW_TRACKS 3
+#define LOADMODE_CONCATENATE 4
+#define LOADMODE_PASTE 5
+#define LOADMODE_RESOURCESONLY 6
+#define LOADMODE_NESTED 7
+#define TOTAL_LOADMODES 8
 
 #endif

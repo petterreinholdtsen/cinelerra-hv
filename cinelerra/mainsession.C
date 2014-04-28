@@ -25,6 +25,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "guicast.h"
+#include "indexable.h"
 #include "mainsession.h"
 #include "meterpanel.h"
 #include "mwindow.h"
@@ -47,7 +48,7 @@ MainSession::MainSession(MWindow *mwindow)
 	current_operation = NO_OPERATION;
 	drag_pluginservers = new ArrayList<PluginServer*>;
 	drag_plugin = 0;
-	drag_assets = new ArrayList<Asset*>;
+	drag_assets = new ArrayList<Indexable*>;
 	drag_auto_gang = new ArrayList<Auto*>;
 	drag_clips = new ArrayList<EDL*>;
 	drag_edits = new ArrayList<Edit*>;
@@ -63,6 +64,7 @@ MainSession::MainSession(MWindow *mwindow)
 	cwindow_fullscreen = 0;
 	rwindow_fullscreen = 0;
 	vwindow_fullscreen = 0;
+	actual_frame_rate = 0;
 }
 
 MainSession::~MainSession()
@@ -252,6 +254,7 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	transitiondialog_h = defaults->get("TRANSITIONDIALOG_H", 512);
 
 	current_tip = defaults->get("CURRENT_TIP", current_tip);
+	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
 
 	boundaries();
 	return 0;
@@ -336,6 +339,7 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("TRANSITIONDIALOG_W", transitiondialog_w);
 	defaults->update("TRANSITIONDIALOG_H", transitiondialog_h);
 
+    defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
 	defaults->update("CURRENT_TIP", current_tip);
 
 

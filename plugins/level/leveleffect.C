@@ -27,6 +27,7 @@
 #include "language.h"
 #include "leveleffect.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -261,14 +262,14 @@ void SoundLevelEffect::update_gui()
 //printf("SoundLevelEffect::update_gui 2\n");
 }
 
-int SoundLevelEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int SoundLevelEffect::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 {
 	load_configuration();
 
 	accum_size += size;
 	for(int i = 0; i < size; i++)
 	{
-		double value = fabs(input_ptr[i]);
+		double value = fabs(input_ptr->get_data()[i]);
 		if(value > max_accum) max_accum = value;
 		rms_accum += value * value;
 	}

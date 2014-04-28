@@ -1488,6 +1488,7 @@ int FileOGG::read_frame(VFrame *frame)
 		yuv.y_stride = - yuv.y_stride;
 		yuv.uv_stride = - yuv.uv_stride;*/
 		VFrame *temp_frame = new VFrame(yuv.y, 
+						-1,
 						0,
 						yuv.u - yuv.y,
 						yuv.v - yuv.y,
@@ -1949,9 +1950,11 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 		if (!temp_frame)
 		{
 			temp_frame = new VFrame (0, 
+						-1,
 						tf->ti.width, 
 						tf->ti.height,
-						BC_YUV420P);
+						BC_YUV420P,
+						-1);
 		} 
 		VFrame *frame = frames[0][j];
 		int in_color_model = frame->get_color_model();

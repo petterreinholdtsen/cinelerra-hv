@@ -37,6 +37,7 @@
 #include "plugin.h"
 #include "preferences.h"
 #include "renderengine.h"
+#include "samples.h"
 #include "thread.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -55,15 +56,16 @@ VirtualAConsole::VirtualAConsole(RenderEngine *renderengine, ARender *arender)
 
 VirtualAConsole::~VirtualAConsole()
 {
-	if(output_temp) delete [] output_temp;
+	if(output_temp) delete output_temp;
 }
 
 
 void VirtualAConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
-		playable_tracks = new PlayableTracks(renderengine, 
+		playable_tracks = new PlayableTracks(renderengine->get_edl(), 
 			commonrender->current_position, 
+			renderengine->command->get_direction(),
 			TRACK_AUDIO,
 			1);
 }
@@ -85,42 +87,51 @@ VirtualNode* VirtualAConsole::new_entry_node(Track *track,
 
 
 int VirtualAConsole::process_buffer(int64_t len,
-	int64_t start_position,
-	int last_buffer,
-	int64_t absolute_position)
+	int64_t start_position)
 {
 	int result = 0;
+	const int debug = 0;
+if(debug) printf("VirtualAConsole::process_buffer %d this=%p len=%lld\n", 
+__LINE__, 
+this,
+len);
 
 
 // clear output buffers
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
-// printf("VirtualAConsole::process_buffer 2 %d %p %lld\n", 
+// if(debug) printf("VirtualAConsole::process_buffer 2 %d %p %lld\n", 
 // i, 
 // arender->audio_out[i],
 // len);
+
 		if(arender->audio_out[i])
 		{
-			bzero(arender->audio_out[i], len * sizeof(double));
+			bzero(arender->audio_out[i]->get_data(), len * sizeof(double));
 		}
 	}
 
 // Create temporary output
 	if(output_temp && output_allocation < len)
 	{
-		delete [] output_temp;
+		delete output_temp;
 		output_temp = 0;
 	}
 
 	if(!output_temp)
 	{
-		output_temp = new double[len];
+		output_temp = new Samples(len);
 		output_allocation = len;
 	}
+if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
+
 
 // Reset plugin rendering status
 	reset_attachments();
 //printf("VirtualAConsole::process_buffer 1 %p\n", output_temp);
+
+if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
+
 
 // Render exit nodes
 	for(int i = 0; i < exit_nodes.total; i++)
@@ -129,19 +140,21 @@ int VirtualAConsole::process_buffer(int64_t len,
 		Track *track = node->track;
 
 		result |= node->render(output_temp, 
-			start_position + track->nudge,
 			len,
-			renderengine->edl->session->sample_rate);
+			start_position + track->nudge,
+			renderengine->get_edl()->session->sample_rate);
 	}
+if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
+
 
 
 // get peaks and limit volume in the fragment
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
-		double *current_buffer = arender->audio_out[i];
-
-		if(current_buffer)
+		if(arender->audio_out[i])
 		{
+			double *current_buffer = arender->audio_out[i]->get_data();
+
 
 			for(int j = 0; j < len; )
 			{
@@ -184,12 +197,16 @@ int VirtualAConsole::process_buffer(int64_t len,
 		}
 	}
 
+if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
+
 
 
 
 
 // Pack channels, fix speed and send to device.
-	if(renderengine->command->realtime && !interrupt)
+	if(!renderengine->is_nested &&
+		renderengine->command->realtime && 
+		!interrupt)
 	{
 // speed parameters
 // length compensated for speed
@@ -198,13 +215,13 @@ int VirtualAConsole::process_buffer(int64_t len,
 		double sample;
 		int k;
 		double *audio_out_packed[MAX_CHANNELS];
-		int audio_channels = renderengine->edl->session->audio_channels;
+		int audio_channels = renderengine->get_edl()->session->audio_channels;
 
 		for(int i = 0, j = 0; 
 			i < audio_channels; 
 			i++)
 		{
-			audio_out_packed[j++] = arender->audio_out[i];
+			audio_out_packed[j++] = arender->audio_out[i]->get_data();
 		}
 
 		for(int i = 0; 
@@ -228,6 +245,7 @@ int VirtualAConsole::process_buffer(int64_t len,
 					{
 						sample += current_buffer[in++];
 					}
+
 					sample /= renderengine->command->get_speed();
 					current_buffer[out++] = sample;
 				}
@@ -268,8 +286,7 @@ int VirtualAConsole::process_buffer(int64_t len,
 		if(renderengine->audio->get_interrupted()) interrupt = 1;
 	}
 
-
-
+if(debug) printf("VirtualAConsole::process_buffer %d\n", __LINE__);
 
 
 

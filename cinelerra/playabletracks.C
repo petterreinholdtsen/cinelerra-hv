@@ -27,34 +27,41 @@
 #include "playabletracks.h"
 #include "plugin.h"
 #include "preferences.h"
-#include "renderengine.h"
 #include "intauto.h"
 #include "intautos.h"
 #include "tracks.h"
 #include "transportque.h"
 
 
-PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
-	long current_position, 
+PlayableTracks::PlayableTracks(EDL *edl, 
+	int64_t current_position, 
+	int direction,
 	int data_type,
 	int use_nudge)
  : ArrayList<Track*>()
 {
-	this->renderengine = renderengine;
 	this->data_type = data_type;
 
-//printf("PlayableTracks::PlayableTracks 1 %d\n", renderengine->edl->tracks->total());
-	for(Track *current_track = renderengine->edl->tracks->first; 
+	for(Track *current_track = edl->tracks->first; 
 		current_track; 
 		current_track = current_track->next)
 	{
-		if(is_playable(current_track, current_position, use_nudge))
+		if(is_playable(current_track, current_position, direction, use_nudge))
 		{
-//printf("PlayableTracks::PlayableTracks 1 %p %d %d\n", this, total, current_position);
+// printf("PlayableTracks::PlayableTracks %d this=%p current_track=%p total=%d current_position=%lld\n", 
+// __LINE__,
+// this, 
+// current_track,
+// total, 
+// current_position);
 			append(current_track);
 		}
 	}
-//printf("PlayableTracks::PlayableTracks %d %d %d\n", data_type, total, current_position);
+// printf("PlayableTracks::PlayableTracks %d data_type=%d total=%d current_position=%lld\n", 
+// __LINE__,
+// data_type, 
+// total, 
+// current_position);
 }
 
 PlayableTracks::~PlayableTracks()
@@ -63,11 +70,11 @@ PlayableTracks::~PlayableTracks()
 
 
 int PlayableTracks::is_playable(Track *current_track, 
-	long position,
+	int64_t position,
+	int direction,
 	int use_nudge)
 {
 	int result = 1;
-	int direction = renderengine->command->get_direction();
 	if(use_nudge) position += current_track->nudge;
 
 	Auto *current = 0;
@@ -97,8 +104,7 @@ int PlayableTracks::is_playable(Track *current_track,
 		if(!current_track->playable_edit(position, direction))
 		{
 // Test for playable effect
-			if(!current_track->is_synthesis(renderengine,
-						position,
+			if(!current_track->is_synthesis(position,
 						direction))
 			{
 				result = 0;

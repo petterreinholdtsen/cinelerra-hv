@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,88 +19,60 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
-#include "file.h"
 #include "resample.h"
+#include "samples.h"
+#include "transportque.inc"
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // Resampling from Lame
 
-Resample::Resample(File *file, int channels)
+Resample::Resample()
 {
-//printf("Resample::Resample 1 %d\n", channels);
-	this->file = file;
-	this->channels = channels;
-
-	old = new double*[channels];
-	for(int i = 0; i < channels; i++)
-	{
-		old[i] = new double[BLACKSIZE];
-	}
-	itime = new double[channels];
-	output_temp_start = new long[channels];
-	bzero(output_temp_start, sizeof(long) * channels);
-	resample_init = new int[channels];
-	bzero(resample_init, sizeof(int) * channels);
+	old = new double[BLACKSIZE];
+	resample_init = 0;
 	last_ratio = 0;
 	output_temp = 0;
-	output_size = new long[channels];
-	bzero(output_size, sizeof(long) * channels);
+	output_size = 0;
 	output_allocation = 0;
 	input_size = RESAMPLE_CHUNKSIZE;
-	input_chunk_end = new long[channels];
-	bzero(input_chunk_end, sizeof(long) * channels);
-	input = new double[input_size];
-	last_out_end = new long[channels];
-	bzero(last_out_end, sizeof(long) * channels);
-//printf("Resample::Resample 2 %d\n", channels);
+	input_position = 0;
+	input = new Samples(input_size + 1);
+	output_position = 0;
+	itime = 0;
+	direction = PLAY_FORWARD;
 }
 
 
 Resample::~Resample()
 {
-	for(int i = 0; i < channels; i++)
-	{
-		delete [] old[i];
-	}
-	if(output_temp)
-	{
-		for(int i = 0; i < channels; i++)
-		{
-			delete [] output_temp[i];
-		}
-		delete [] output_temp;
-	}
-
-	delete [] input_chunk_end;
-	delete [] input;
 	delete [] old;
-	delete [] itime;
-	delete [] output_temp_start;
-	delete [] output_size;
-	delete [] last_out_end;
+	delete [] output_temp;
+	delete input;
 }
 
-void Resample::reset(int channel)
+int Resample::read_samples(Samples *buffer, int64_t start, int64_t len)
 {
-//printf("Resample::reset 1 channel=%d normalized_sample_rate=%d\n", channel, file->normalized_sample_rate);
-	if(channel < 0)
-	{
-		bzero(resample_init, sizeof(int) * channels);
-		bzero(output_size, sizeof(long) * channels);
-		bzero(last_out_end, sizeof(long) * channels);
-		bzero(input_chunk_end, sizeof(long) * channels);
-	}
-	else
-	{
-		resample_init[channel] = 0;
-		output_size[channel] = 0;
-		last_out_end[channel] = 0;
-		input_chunk_end[channel] = 0;
-	}
+	return 0;
+}
+
+int Resample::get_direction()
+{
+	return direction;
+}
+
+
+void Resample::reset()
+{
+	resample_init = 0;
+	output_size = 0;
+	output_position = 0;
+	input_position = 0;
 }
 
 double Resample::blackman(int i, double offset, double fcn, int l)
@@ -126,27 +98,26 @@ S.D. Stearns and R.A. David, Prentice-Hall, 1992
 }
 
 
-int Resample::get_output_size(int channel)
+int Resample::get_output_size()
 {
-	return output_size[channel];
+	return output_size;
 }
 
-void Resample::read_output(double *output, int channel, int size)
-{
-	memcpy(output, output_temp[channel], size * sizeof(double));
-// Shift leftover forward
-	for(int i = size; i < output_size[channel]; i++)
-		output_temp[channel][i - size] = output_temp[channel][i];
-	output_size[channel] -= size;
-}
+// void Resample::read_output(double *output, int size)
+// {
+// 	memcpy(output, output_temp, size * sizeof(double));
+// // Shift leftover forward
+// 	for(int i = size; i < output_size; i++)
+// 		output_temp[i - size] = output_temp[i];
+// 	output_size -= size;
+// }
 
 
 
-void Resample::resample_chunk(double *input,
-	long in_len,
+void Resample::resample_chunk(Samples *input_buffer,
+	int64_t in_len,
 	int in_rate,
-	int out_rate,
-	int channel)
+	int out_rate)
 {
 	double resample_ratio = (double)in_rate / out_rate;
   	int filter_l;
@@ -154,6 +125,11 @@ void Resample::resample_chunk(double *input,
 	double offset, xvalue;
 	int num_used;
 	int i, j, k;
+	double *input = input_buffer->get_data();
+//printf("Resample::resample_chunk %d in_len=%lld input_size=%d\n", 
+//__LINE__,
+//in_len,
+//input_size);
 
   	intratio = (fabs(resample_ratio - floor(.5 + resample_ratio)) < .0001);
 	fcn = .90 / resample_ratio;
@@ -167,11 +143,11 @@ void Resample::resample_chunk(double *input,
 
 // Blackman filter initialization must be called whenever there is a 
 // sampling ratio change
-	if(!resample_init[channel] || last_ratio != resample_ratio)
+	if(!resample_init || last_ratio != resample_ratio)
 	{
-		resample_init[channel] = 1;
-		itime[channel] = 0;
-		bzero(old[channel], sizeof(double) * BLACKSIZE);
+		resample_init = 1;
+		itime = 0;
+		bzero(old, sizeof(double) * BLACKSIZE);
 
 // precompute blackman filter coefficients
     	for (j = 0; j <= 2 * BPC; ++j) 
@@ -188,156 +164,180 @@ void Resample::resample_chunk(double *input,
 	}
 
 // Main loop
-	double *inbuf_old = old[channel];
+	double *inbuf_old = old;
 	for(k = 0; 1; k++)
 	{
 		double time0;
 		int joff;
 		
 		time0 = k * resample_ratio;
-		j = (int)floor(time0 - itime[channel]);
+		j = (int)floor(time0 - itime);
 
 //		if(j + filter_l / 2 >= input_size) break;
 		if(j + filter_l / 2 >= in_len) break;
 
 /* blackman filter.  by default, window centered at j+.5(filter_l%2) */
 /* but we want a window centered at time0.   */
-		offset = (time0 - itime[channel] - (j + .5 * (filter_l % 2)));
+		offset = (time0 - itime - (j + .5 * (filter_l % 2)));
 		joff = (int)floor((offset * 2 * BPC) + BPC + .5);
 		xvalue = 0;
+
 
 		for(i = 0; i <= filter_l; i++)
 		{
 			int j2 = i + j - filter_l / 2;
+//printf("j2=%d\n", j2);
 			double y = ((j2 < 0) ? inbuf_old[BLACKSIZE + j2] : input[j2]);
 
 			xvalue += y * blackfilt[joff][i];
 		}
-		
-		if(output_allocation <= output_size[channel])
+
+
+		if(output_allocation <= output_size)
 		{
-			double **new_output = new double*[channels];
-			long new_allocation = output_allocation ? (output_allocation * 2) : 16384;
-			for(int l = 0; l < channels; l++)
+			double *new_output = 0;
+			int64_t new_allocation = output_allocation ? (output_allocation * 2) : 16384;
+			new_output = new double[new_allocation];
+			if(output_temp)
 			{
-				new_output[l] = new double[new_allocation];
-				if(output_temp) 
-				{
-					bcopy(output_temp[l], new_output[l], output_allocation * sizeof(double));
-					delete [] output_temp[l];
-				}
+				bcopy(output_temp, new_output, output_allocation * sizeof(double));
+				delete [] output_temp;
 			}
 
-			if(output_temp) delete [] output_temp;
 			output_temp = new_output;
 			output_allocation = new_allocation;
 		}
 
-		output_temp[channel][output_size[channel]++] = xvalue;
+		output_temp[output_size++] = xvalue;
 	}
 
 	num_used = MIN(in_len, j + filter_l / 2);
-	itime[channel] += num_used - k * resample_ratio;
+	itime += num_used - k * resample_ratio;
 	for(i = 0; i < BLACKSIZE; i++)
 		inbuf_old[i] = input[num_used + i - BLACKSIZE];
 
 	last_ratio = resample_ratio;
+
 }
 
-void Resample::read_chunk(double *input, long len, int &reseek, int iteration)
+int Resample::read_chunk(Samples *input, 
+	int64_t len)
 {
-//printf("Resample::read_chunk 1\n");
-	if(reseek)
+	int fragment = len;
+	if(direction == PLAY_REVERSE &&
+		input_position - len < 0)
 	{
-		file->set_audio_position(file->current_sample, 0);
-		reseek= 0;
+		fragment = input_position;
+	}
+
+	int result = read_samples(input, input_position, fragment);
+
+	if(direction == PLAY_FORWARD)
+	{
+		input_position += fragment;
 	}
 	else
-	if(iteration == 0)
 	{
-// Resume at the end of the last resample call
-		file->set_audio_position(input_chunk_end[file->current_channel], 0);
+		input_position -= fragment;
+// Mute unused part of buffer
+		if(fragment < len)
+		{
+			bzero(input->get_data() + fragment, 
+				(len - fragment) * sizeof(double));
+		}
 	}
-
-	file->read_samples(input, len, 0);
-	input_chunk_end[file->current_channel] = file->current_sample;
-
-//printf("Resample::read_chunk 2\n");
+	
+	return result;
 }
 
-int Resample::resample(double *output, 
-	long out_len,
+
+void Resample::reverse_buffer(double *buffer, int64_t len)
+{
+	int start, end;
+	double temp;
+
+	for(start = 0, end = len - 1; end > start; start++, end--)
+	{
+		temp = buffer[start];
+		buffer[start] = buffer[end];
+		buffer[end] = temp;
+	}
+}
+
+
+int Resample::resample(Samples *output, 
+	int64_t out_len,
 	int in_rate,
 	int out_rate,
-	int channel,
-	long in_position,
-	long out_position)
+	int64_t out_position,
+	int direction)
 {
-	int total_input = 0;
-	int reseek = 0;
-
-#define REPOSITION(x, y) \
-	(labs((x) - (y)) > 1)
+	int result = 0;
 
 
-
-//printf("Resample::resample 1 last_out_end=%d out_position=%d\n", last_out_end[channel], out_position);
-
-	if(REPOSITION(last_out_end[channel], out_position))
+// printf("Resample::resample 1 output_position=%lld out_position=%lld out_len=%lld\n", 
+// output_position, 
+// out_position,
+// out_len);
+// Changed position
+	if(labs(this->output_position - out_position) > 0 ||
+		direction != this->direction)
 	{
-		reseek = 1;
-		reset(channel);
+		reset();
+
+// Compute starting point in input rate.
+		this->input_position = out_position * in_rate / out_rate;
+		this->direction = direction;
 	}
 
 
-
-
-
-
-	output_temp_start[channel] = file->get_audio_position(out_rate) + out_len;
-	last_out_end[channel] = out_position + out_len;
-
-	int i = 0;
-	while(out_len > 0)
+	int remaining_len = out_len;
+	double *output_ptr = output->get_data();
+	while(remaining_len > 0 && !result)
 	{
 // Drain output buffer
-		if(output_size[channel])
+		if(output_size)
 		{
-			int fragment_len = output_size[channel];
-			if(fragment_len > out_len) fragment_len = out_len;
+			int fragment_len = output_size;
+			if(fragment_len > remaining_len) fragment_len = remaining_len;
 
-//printf("Resample::resample 1 %d %d %d\n", out_len, output_size[channel], channel);
-			bcopy(output_temp[channel], output, fragment_len * sizeof(double));
+//printf("Resample::resample 1 %d %d\n", remaining_len, output_size);
+			bcopy(output_temp, output_ptr, fragment_len * sizeof(double));
 
 // Shift leftover forward
-			for(int i = fragment_len; i < output_size[channel]; i++)
-				output_temp[channel][i - fragment_len] = output_temp[channel][i];
+			for(int i = fragment_len; i < output_size; i++)
+				output_temp[i - fragment_len] = output_temp[i];
 
-			output_size[channel] -= fragment_len;
-			out_len -= fragment_len;
-			output += fragment_len;
+			output_size -= fragment_len;
+			remaining_len -= fragment_len;
+			output_ptr += fragment_len;
 		}
 
 // Import new samples
-//printf("Resample::resample 2 %d %d\n", out_len, channel);
-		if(out_len > 0)
+//printf("Resample::resample 2 %d\n", remaining_len);
+		if(remaining_len > 0)
 		{
-//printf("Resample::resample 3 input_size=%d reseek=%d out_position=%d channel=%d\n", input_size, reseek, out_position, channel);
-			read_chunk(input, input_size, reseek, i);
+//printf("Resample::resample 3 input_size=%d out_position=%d\n", input_size, out_position);
+			result = read_chunk(input, input_size);
 			resample_chunk(input,
 				input_size,
 				in_rate,
-				out_rate,
-				channel);
-			total_input += input_size;
+				out_rate);
 		}
-
-		i++;
 	}
-//printf("Resample::resample 2 %d %d\n", last_out_end[channel], out_position);
-//printf("Resample::resample 2 %d %d %d\n", out_len, output_size[channel], channel);
 
-//printf("Resample::resample 2 %d %d\n", channel, output_size[channel]);
 
-	return total_input;
+	if(direction == PLAY_FORWARD)
+		this->output_position = out_position + out_len;
+	else
+		this->output_position = out_position - out_len;
+
+//printf("Resample::resample 2 %d %d\n", this->output_position, out_position);
+//printf("Resample::resample 2 %d %d\n", out_len, output_size);
+
+//printf("Resample::resample 2 %d\n", output_size);
+	return result;
 }
+
+
+

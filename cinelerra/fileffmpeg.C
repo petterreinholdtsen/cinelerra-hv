@@ -92,7 +92,7 @@ if(debug) printf("FileFFMPEG::get_format_string %d\n", __LINE__);
 			test[3] == 0xa3)
 		{
 if(debug) printf("FileFFMPEG::get_format_string %d\n", __LINE__);
-			format_string = "matroska";
+			format_string = (char*)"matroska";
 		}
 if(debug) printf("FileFFMPEG::get_format_string %d\n", __LINE__);
 
@@ -106,6 +106,10 @@ if(debug) printf("FileFFMPEG::get_format_string %d\n", __LINE__);
 
 int FileFFMPEG::check_sig(Asset *asset)
 {
+	char *ptr = strstr(asset->path, ".pcm");
+	if(ptr) return 0;
+
+
 	ffmpeg_lock->lock("FileFFMPEG::check_sig");
 	avcodec_init();
     avcodec_register_all();
@@ -124,9 +128,18 @@ int FileFFMPEG::check_sig(Asset *asset)
 	if(result >= 0)
 	{
 //printf("FileFFMPEG::check_sig %d result=%d\n", __LINE__, result);
-		av_close_input_file(ffmpeg_file_context);
+		result = av_find_stream_info(ffmpeg_file_context);
+
+		
+		if(result >= 0)
+		{
+			av_close_input_file(ffmpeg_file_context);
+			ffmpeg_lock->unlock();
+			return 1;
+		}
+		
 		ffmpeg_lock->unlock();
-		return 1;
+		return 0;
 	}
 	else
 	{
@@ -208,6 +221,7 @@ if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
 		else
 		{
 			ffmpeg_lock->unlock();
+printf("FileFFMPEG::open_file %d\n", __LINE__);
 			return 1;
 		}
 if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
@@ -261,9 +275,10 @@ if(debug) printf("FileFFMPEG::open_file %d i=%d video_index=%d\n", __LINE__, i, 
 							asset->layers = 1;
 							asset->width = decoder_context->width;
 							asset->height = decoder_context->height;
-							asset->frame_rate = 
-								(double)stream->r_frame_rate.num /
-								stream->r_frame_rate.den;
+							if(EQUIV(asset->frame_rate, 0))
+								asset->frame_rate = 
+									(double)stream->r_frame_rate.num /
+									stream->r_frame_rate.den;
 // 								(double)decoder_context->time_base.den / 
 // 								decoder_context->time_base.num;
 							asset->video_length = (int64_t)(((AVFormatContext*)ffmpeg_file_context)->duration *
@@ -298,10 +313,12 @@ decoder_context->codec_id);
 		else
 		{
 			ffmpeg_lock->unlock();
+printf("FileFFMPEG::open_file %d\n", __LINE__);
 			return 1;
 		}
 	}
 
+printf("FileFFMPEG::open_file result=%d\n", result);
 	ffmpeg_lock->unlock();
 	return result;
 }
@@ -384,7 +401,7 @@ void FileFFMPEG::dump_context(void *ptr)
 	printf("    codec_id=%d\n", context->codec_id);
 	printf("    codec_tag=%d\n", context->codec_tag);
 	printf("    workaround_bugs=%d\n", context->workaround_bugs);
-	printf("    error_resilience=%d\n", context->error_resilience);
+//	printf("    error_resilience=%d\n", context->error_resilience);
 	printf("    has_b_frames=%d\n", context->has_b_frames);
 	printf("    block_align=%d\n", context->block_align);
 	printf("    parse_only=%d\n", context->parse_only);
@@ -393,7 +410,7 @@ void FileFFMPEG::dump_context(void *ptr)
 	printf("    slice_offset=%p\n", context->slice_offset);
 	printf("    error_concealment=%d\n", context->error_concealment);
 	printf("    dsp_mask=%p\n", context->dsp_mask);
-	printf("    bits_per_sample=%d\n", context->bits_per_sample);
+//	printf("    bits_per_sample=%d\n", context->bits_per_sample);
 	printf("    slice_flags=%d\n", context->slice_flags);
 	printf("    xvmc_acceleration=%d\n", context->xvmc_acceleration);
 	printf("    antialias_algo=%d\n", context->antialias_algo);
@@ -404,7 +421,6 @@ void FileFFMPEG::dump_context(void *ptr)
 	printf("    lowres=%d\n", context->lowres);
 	printf("    coded_width=%d\n", context->coded_width);
 	printf("    coded_height=%d\n", context->coded_height);
-	printf("    request_channels=%d\n", context->request_channels);
 }
 
 
@@ -683,11 +699,19 @@ packet_len,
 packet_ptr,
 decoder_context->codec_id);
 //av_log_set_level(AV_LOG_DEBUG);
+#if 1
 				int bytes_decoded = avcodec_decode_audio2(decoder_context, 
 					ffmpeg_samples, 
 					&data_size,
                     packet_ptr, 
 					packet_len);
+#else
+				int bytes_decoded = avcodec_decode_audio(decoder_context, 
+					ffmpeg_samples, 
+					&data_size,
+                    packet_ptr, 
+					packet_len);
+#endif
 if(debug) PRINT_TRACE
 //				if(bytes_decoded < 0) error = 1;
 				packet_ptr += bytes_decoded;

@@ -73,6 +73,7 @@ void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 		for(int i = 0; i < virtual_plugins.total; i++)
 		{
 			buffer_vector[i] = new VFrame(0,
+				-1,
 				width,
 				height,
 				colormodel,
@@ -157,7 +158,7 @@ void VAttachmentPoint::render(VFrame *output,
 			frame_rate,
 			(int64_t)Units::round(plugin->length * 
 				frame_rate / 
-				renderengine->edl->session->frame_rate),
+				renderengine->get_edl()->session->frame_rate),
 			renderengine->command->get_direction());
 //printf("VAttachmentPoint::render 2\n");
 
@@ -177,7 +178,7 @@ void VAttachmentPoint::render(VFrame *output,
 			frame_rate,
 			(int64_t)Units::round(plugin->length * 
 				frame_rate / 
-				renderengine->edl->session->frame_rate),
+				renderengine->get_edl()->session->frame_rate),
 			renderengine->command->get_direction());
 	}
 }

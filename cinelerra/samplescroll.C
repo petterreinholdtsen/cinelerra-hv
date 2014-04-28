@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "samplescroll.h"
@@ -94,24 +95,19 @@ int SampleScroll::set_position()
 
 int SampleScroll::handle_event()
 {
-//printf("SampleScroll::handle_event 1 %d %d\n", mwindow->edl->session->sample_rate, get_value());
+//printf("SampleScroll::handle_event %d %d\n", __LINE__, get_window_lock());
 	mwindow->edl->local_session->view_start = get_value();
 
-
-//printf("SampleScroll::handle_event 1 %ld\n", mwindow->edl->local_session->view_start);
 	mwindow->gui->canvas->draw();
 	mwindow->gui->cursor->draw(1);
 
-//printf("SampleScroll::handle_event 1\n");
 	mwindow->gui->canvas->flash();
 
-//printf("SampleScroll::handle_event 1\n");
 	mwindow->gui->patchbay->update();
 
-//printf("SampleScroll::handle_event 1\n");
 	mwindow->gui->timebar->update();
 
+//printf("SampleScroll::handle_event %d %d\n", __LINE__, get_window_lock());
 
-//printf("SampleScroll::handle_event 2\n");
 	return 1;
 }

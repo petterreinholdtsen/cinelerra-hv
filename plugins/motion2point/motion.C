@@ -526,7 +526,7 @@ void MotionMain2::allocate_temp(int w, int h, int color_model)
 		temp_frame = 0;
 	}
 	if(!temp_frame)
-		temp_frame = new VFrame(0, w, h, color_model);
+		temp_frame = new VFrame(w, h, color_model);
 }
 
 
@@ -872,16 +872,16 @@ printf("MotionMain2::process_buffer 1 start_position=%lld\n", start_position);
 // The center of the search area is fixed in compensate mode or
 // the user value + the accumulation vector in track mode.
 		if(!prev_global_ref)
-			prev_global_ref = new VFrame(0, w, h, color_model);
+			prev_global_ref = new VFrame(w, h, color_model);
 		if(!current_global_ref)
-			current_global_ref = new VFrame(0, w, h, color_model);
+			current_global_ref = new VFrame(w, h, color_model);
 
 // Global loads the current target frame into the src and 
 // writes it to the dst frame with desired translation.
 		if(!global_target_src)
-			global_target_src = new VFrame(0, w, h, color_model);
+			global_target_src = new VFrame(w, h, color_model);
 		if(!global_target_dst)
-			global_target_dst = new VFrame(0, w, h, color_model);
+			global_target_dst = new VFrame(w, h, color_model);
 
 
 // Load the global frames
@@ -1907,6 +1907,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 		case MotionConfig::LOAD:
 		{
+printf("MotionScan::scan_frame %d\n", __LINE__);
 // Load result from disk
 			char string[BCTEXTLEN];
 			sprintf(string, "%s%06d", 
@@ -1938,6 +1939,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 // Perform scan
 	if(!skip)
 	{
+printf("MotionScan::scan_frame %d\n", __LINE__);
 // Calculate center of search area in current frame
 		int origin_offset_x = plugin->config.global_origin_x[point] * w / 100;
 		int origin_offset_y = plugin->config.global_origin_y[point] * h / 100;

@@ -151,11 +151,17 @@ fi
 echo CONFIGURING QUICKTIME
 cd quicktime* && ./configure && cd ..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo CONFIGURING LIBMPEG3
 cd libmpeg3* && ./configure && cd ..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo CONFIGURING FFTW
 cd thirdparty/fftw* && CFLAGS=-fPIC ./configure --disable-fortran && cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo CONFIGURING MJPEGTOOLS
 cd thirdparty/mjpegtools* && \
@@ -164,10 +170,14 @@ CFLAGS="-I$TOPDIR/quicktime/thirdparty/jpeg -L$TOPDIR/quicktime/thirdparty/jpeg 
 cd ../..
 
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 
 echo CONFIGURING SNDFILE
 cd thirdparty/libsndfile* && chmod a+x ./configure && ./configure && \
 cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo CONFIGURING RAW1394
 cd thirdparty/libraw1394* && \
@@ -175,17 +185,23 @@ cd thirdparty/libraw1394* && \
 ln -sf src libraw1394 && \
 cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo CONFIGURING AVC1394
 cd thirdparty/libavc1394* && \
 RAW1394_PATH=`expr $TOPDIR/thirdparty/libraw1394*` && \
 PKG_CONFIG_PATH=$RAW1394_PATH CFLAGS=-I$RAW1394_PATH/ LDFLAGS=-L$RAW1394_PATH/src/.libs ./configure --enable-shared=no && \
 cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo CONFIGURING IEC61883
 RAW1394_PATH=`expr $TOPDIR/thirdparty/libraw1394*` && \
 cd thirdparty/libiec61883* && \
 PKG_CONFIG_PATH=$RAW1394_PATH CFLAGS=-I$RAW1394_PATH/ LDFLAGS=-L$RAW1394_PATH/src/.libs ./configure --enable-shared=no && \
 cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo CONFIGURING THEORA
 LIBOGG_PATH=`expr $TOPDIR/quicktime/thirdparty/libogg*` && \
@@ -194,22 +210,28 @@ cd thirdparty/libtheora* && \
 PKG_CONFIG_PATH=$LIBOGG_PATH:$LIBVORBIS_PATH CFLAGS="-I$LIBOGG_PATH/include -L$LIBOGG_PATH/src -I$LIBVORBIS_PATH/include -L$LIBVORBIS_PATH/lib" ./configure --enable-shared=no && \
 cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo CONFIGURING FLAC
 cd thirdparty/flac* && \
 ./configure && \
 cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 echo CONFIGURING ILMBASE
 cd thirdparty/ilmbase* && \
 PTHREAD_LIBS=-lpthread CFLAGS=-lpthread ./configure --prefix=$TOPDIR/thirdparty/ && \
 cd ../..
 
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 echo CONFIGURING EXR
 cd thirdparty/openexr* && \
 PTHREAD_LIBS=-lpthread CFLAGS=-lpthread PKG_CONFIG_PATH=$TOPDIR/thirdparty/lib/pkgconfig LD_LIBRARY_PATH=$TOPDIR/thirdparty/lib/ ./configure --prefix=$TOPDIR/thirdparty/ --disable-ilmbasetest && \
 cd ../..
 
-
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
 
 # write configuration header
 echo "Writing hvirtual_config.h"

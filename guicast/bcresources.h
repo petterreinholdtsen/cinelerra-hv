@@ -318,7 +318,8 @@ public:
 // This must be constitutive since applications access the private members here.
 	int use_xft;
 
-
+// Make VFrame use shm
+	int vframe_shm;
 
 // Available display extensions
 	int use_shm;

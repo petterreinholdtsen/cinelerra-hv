@@ -326,6 +326,7 @@ int Labels::clear(double start, double end, int follow)
 //printf("Labels::clear 1\n");
 	current = label_of(start);
 //printf("Labels::clear 2\n");
+
 // remove selected labels
 	while(current && current->position < end)
 	{
@@ -333,13 +334,15 @@ int Labels::clear(double start, double end, int follow)
 		delete current;              
 		current = next;
 	}
+
 // Shift later labels
-//printf("Labels::clear 3\n");
 	if(follow)
 	{
 		while(current)
 		{
+//printf("Labels::clear %d %f %f\n", __LINE__, current->position, end - start);
 			current->position -= end - start;   // shift labels forward
+//printf("Labels::clear %d %f %f\n", __LINE__, current->position, end - start);
 			current = NEXT;
 		}
 //printf("Labels::clear 4\n");
@@ -406,9 +409,11 @@ Label* Labels::next_label(double position)
 }
 
 int Labels::insert(double start, double length)
-{      // shift every label including the first one back
+{
+// shift every label including the first one back
 	Label *current;
 
+//printf("Labels::insert %d\n", __LINE__);
 	for(current = label_of(start); current; current = NEXT)
 	{
 		current->position += length;

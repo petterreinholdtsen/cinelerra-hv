@@ -475,7 +475,13 @@ int CWindowGUI::keypress_event()
 				}
 				else
 				{
+					unlock_window();
+					
+					mwindow->gui->lock_window("CWindowGUI::keypress_event 3");
 					mwindow->move_left(); 
+					mwindow->gui->unlock_window();
+
+					lock_window("CWindowGUI::keypress_event 2");
 				}
  				result = 1; 
 			}
@@ -496,7 +502,15 @@ int CWindowGUI::keypress_event()
 					lock_window("CWindowGUI::keypress_event 2");
 				}
 				else
+				{
+					unlock_window();
+
+					mwindow->gui->lock_window("CWindowGUI::keypress_event 4");
 					mwindow->move_right(); 
+					mwindow->gui->unlock_window();
+
+					lock_window("CWindowGUI::keypress_event 3");
+				}
 				result = 1; 
 			}
 			break;
@@ -596,7 +610,7 @@ int CWindowGUI::drag_stop()
 			mwindow->clear(0);
 			mwindow->load_assets(mwindow->session->drag_assets, 
 				mwindow->edl->local_session->get_selectionstart(), 
-				LOAD_PASTE,
+				LOADMODE_PASTE,
 				mwindow->session->track_highlighted,
 				0,
 				mwindow->edl->session->labels_follow_edits, 
@@ -608,7 +622,7 @@ int CWindowGUI::drag_stop()
 			mwindow->gui->lock_window("CWindowGUI::drag_stop 2");
 			mwindow->clear(0);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
-				LOAD_PASTE, 
+				LOADMODE_PASTE, 
 				mwindow->session->track_highlighted,
 				mwindow->edl->local_session->get_selectionstart(),
 				mwindow->edl->session->labels_follow_edits, 

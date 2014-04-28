@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "file.h"
 #include "mwindow.h"
 #include "patch.h"
+#include "playabletracks.h"
 #include "preferences.h"
 #include "mainsession.h"
 #include "trackcanvas.h"
@@ -56,8 +57,55 @@ int VEdit::load_properties_derived(FileXML *xml)
 
 
 
-// ================================================== editing
+Asset* VEdit::get_nested_asset(int64_t *source_position,
+	int64_t position,
+	int direction)
+{
+	Asset *result = 0;
+// Make position relative to edit
+	*source_position = position - startproject + startsource;
 
+// Descend into nested EDLs
+	if(nested_edl)
+	{
+// Convert position to nested EDL rate
+		*source_position = Units::to_int64(*source_position *
+			nested_edl->session->frame_rate /
+			edl->session->frame_rate);
+		PlayableTracks *playable_tracks = new PlayableTracks(
+			nested_edl, 
+			*source_position, 
+			direction,
+			TRACK_VIDEO,
+			1);
+		if(playable_tracks->size())
+		{
+			VTrack *nested_track = (VTrack*)playable_tracks->get(0);
+			VEdit* nested_edit = (VEdit*)nested_track->edits->editof(
+				*source_position, 
+				direction,
+				1);
+			if(nested_edit)
+			{
+				result = nested_edit->get_nested_asset(
+					source_position,
+					*source_position,
+					direction);
+			}
+		}
+
+		delete playable_tracks;
+		return result;
+	}
+	else
+	{
+// Convert position to asset rate
+		*source_position = Units::to_int64((double)*source_position * 
+			asset->frame_rate / 
+			edl->session->frame_rate);
+		return asset;
+	}
+}
 
 
 int VEdit::read_frame(VFrame *video_out, 
@@ -68,29 +116,52 @@ int VEdit::read_frame(VFrame *video_out,
 	int use_cache,
 	int use_asynchronous)
 {
+	int64_t source_position = 0;
+	const int debug = 0;
+
+	if(use_nudge) input_position += track->nudge;
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
+	Asset *asset = get_nested_asset(&source_position,
+		input_position,
+		direction);
+
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
+
 	File *file = cache->check_out(asset,
 		edl);
 	int result = 0;
-	if(use_nudge) input_position += track->nudge;
 
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 	if(file)
 	{
 
-		input_position = (direction == PLAY_FORWARD) ? input_position : (input_position - 1);
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
+		source_position = (direction == PLAY_FORWARD) ? 
+			source_position : 
+			(source_position - 1);
+if(debug) printf("VEdit::read_frame %d %lld %lld\n", 
+__LINE__,
+input_position,
+source_position);
 
 		if(use_asynchronous)
 			file->start_video_decode_thread();
 		else
 			file->stop_video_thread();
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 
 		file->set_layer(channel);
-		file->set_video_position(input_position - startproject + startsource, edl->session->frame_rate);
+		file->set_video_position(source_position, 0);
+
 		if(use_cache) file->set_cache_frames(use_cache);
 		result = file->read_frame(video_out);
 
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 		if(use_cache) file->set_cache_frames(0);
 
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 		cache->check_in(asset);
+if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 	}
 	else
 		result = 1;
@@ -112,7 +183,15 @@ int VEdit::dump_derived()
 
 int64_t VEdit::get_source_end(int64_t default_)
 {
-	if(!asset) return default_;   // Infinity
+	if(!nested_edl && !asset) return default_;   // Infinity
 
-	return (int64_t)((double)asset->video_length / asset->frame_rate * edl->session->frame_rate + 0.5);
+	if(nested_edl)
+	{
+		return (int64_t)(nested_edl->tracks->total_playable_length() *
+			edl->session->frame_rate + 0.5);
+	}
+
+	return (int64_t)((double)asset->video_length / 
+		asset->frame_rate * 
+		edl->session->frame_rate + 0.5);
 }

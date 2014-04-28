@@ -102,6 +102,7 @@ OBJS = \
 	$(OBJDIR)/drivesync.o \
 	$(OBJDIR)/edit.o \
 	$(OBJDIR)/edithandles.o \
+	$(OBJDIR)/editlength.o \
 	$(OBJDIR)/editpanel.o \
 	$(OBJDIR)/editpopup.o \
 	$(OBJDIR)/edits.o \
@@ -140,7 +141,9 @@ OBJS = \
 	$(OBJDIR)/gwindowgui.o \
 	$(OBJDIR)/iec61883input.o \
 	$(OBJDIR)/iec61883output.o \
+	$(OBJDIR)/indexable.o \
 	$(OBJDIR)/indexfile.o \
+	$(OBJDIR)/indexstate.o \
 	$(OBJDIR)/indexthread.o \
 	$(OBJDIR)/intauto.o \
 	$(OBJDIR)/intautos.o \
@@ -174,6 +177,7 @@ OBJS = \
 	$(OBJDIR)/menuaeffects.o \
 	$(OBJDIR)/menuattacheffect.o \
 	$(OBJDIR)/menuattachtransition.o \
+	$(OBJDIR)/menueditlength.o \
 	$(OBJDIR)/menueffects.o \
 	$(OBJDIR)/menutransitionlength.o \
 	$(OBJDIR)/menuveffects.o \
@@ -184,6 +188,7 @@ OBJS = \
 	$(OBJDIR)/mwindowedit.o \
 	$(OBJDIR)/mwindowgui.o \
 	$(OBJDIR)/mwindowmove.o \
+	$(OBJDIR)/nestededls.o \
 	$(OBJDIR)/new.o \
 	$(OBJDIR)/newfolder.o \
 	$(OBJDIR)/overlayframe.o \
@@ -242,6 +247,7 @@ OBJS = \
 	$(OBJDIR)/resizetrackthread.o \
 	$(OBJDIR)/resourcepixmap.o \
 	$(OBJDIR)/resourcethread.o \
+	$(OBJDIR)/samples.o \
 	$(OBJDIR)/samplescroll.o \
 	$(OBJDIR)/savefile.o \
 	$(OBJDIR)/setformat.o \
@@ -252,7 +258,6 @@ OBJS = \
 	$(OBJDIR)/statusbar.o \
 	$(OBJDIR)/theme.o \
 	$(OBJDIR)/threadexec.o \
-	$(OBJDIR)/threadindexer.o \
 	$(OBJDIR)/threadloader.o \
 	$(OBJDIR)/threadfork.o \
 	$(OBJDIR)/timebar.o \
@@ -613,6 +618,7 @@ $(OBJDIR)/drivesync.o:  			  drivesync.C
 $(OBJDIR)/dvbtune.o:  			  	  dvbtune.C
 $(OBJDIR)/edit.o: 				  edit.C
 $(OBJDIR)/edithandles.o: 			  edithandles.C
+$(OBJDIR)/editlength.o:                           editlength.C
 $(OBJDIR)/editpanel.o:  			  editpanel.C
 $(OBJDIR)/editpopup.o:  			  editpopup.C
 $(OBJDIR)/edits.o: 				  edits.C
@@ -655,6 +661,8 @@ $(OBJDIR)/gwindowgui.o:                           gwindowgui.C
 $(OBJDIR)/iec61883input.o:                        iec61883input.C
 $(OBJDIR)/iec61883output.o:                       iec61883output.C
 $(OBJDIR)/indexfile.o:  			  indexfile.C
+$(OBJDIR)/indexable.o:                            indexable.C
+$(OBJDIR)/indexstate.o:                           indexstate.C
 $(OBJDIR)/indexthread.o: 			  indexthread.C
 $(OBJDIR)/intauto.o:                              intauto.C
 $(OBJDIR)/intautos.o:                             intautos.C
@@ -688,6 +696,7 @@ $(OBJDIR)/mbuttons.o: 				  mbuttons.C
 $(OBJDIR)/menuattacheffect.o:                     menuattacheffect.C
 $(OBJDIR)/menuattachtransition.o:                 menuattachtransition.C
 $(OBJDIR)/menuaeffects.o: 			  menuaeffects.C
+$(OBJDIR)/menueditlength.o:                       menueditlength.C
 $(OBJDIR)/menueffects.o: 			  menueffects.C
 $(OBJDIR)/menutransitionlength.o:                 menutransitionlength.C
 $(OBJDIR)/menuveffects.o: 			  menuveffects.C
@@ -699,6 +708,7 @@ $(OBJDIR)/mwindow.o: 				  mwindow.C
 $(OBJDIR)/mwindowedit.o: 			  mwindowedit.C
 $(OBJDIR)/mwindowgui.o: 			  mwindowgui.C
 $(OBJDIR)/mwindowmove.o: 			  mwindowmove.C
+$(OBJDIR)/nestededls.o: 			  nestededls.C
 $(OBJDIR)/new.o: 				  new.C
 $(OBJDIR)/newfolder.o:  			  newfolder.C
 $(OBJDIR)/overlayframe.o: 			  overlayframe.C
@@ -764,6 +774,7 @@ $(OBJDIR)/resample.o: 				  resample.C
 $(OBJDIR)/resizetrackthread.o:                    resizetrackthread.C
 $(OBJDIR)/resourcepixmap.o: 			  resourcepixmap.C
 $(OBJDIR)/resourcethread.o:                       resourcethread.C
+$(OBJDIR)/samples.o: 			          samples.C
 $(OBJDIR)/samplescroll.o: 			  samplescroll.C
 $(OBJDIR)/savefile.o: 				  savefile.C
 $(OBJDIR)/setformat.o:                            setformat.C
@@ -775,7 +786,6 @@ $(OBJDIR)/statusbar.o:  			  statusbar.C
 $(OBJDIR)/theme.o: 				  theme.C
 $(OBJDIR)/threadexec.o:                           threadexec.C
 $(OBJDIR)/threadfork.o:                           threadfork.C
-$(OBJDIR)/threadindexer.o: 			  threadindexer.C
 $(OBJDIR)/threadloader.o: 			  threadloader.C
 $(OBJDIR)/timebar.o: 				  timebar.C
 $(OBJDIR)/timebomb.o: 				  timebomb.C

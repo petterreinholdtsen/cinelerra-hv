@@ -71,7 +71,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 	this->end = end;
 	this->file = file;
 
-	cache = new CICache(mwindow->preferences, mwindow->plugindb);
+	cache = new CICache(mwindow->preferences);
 	buffer_size = get_bufsize();
 	get_recordable_tracks();
 	create_modules();

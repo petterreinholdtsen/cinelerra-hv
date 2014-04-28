@@ -22,6 +22,7 @@ DIRS = \
 	colorbalance \
 	compressor \
 	crossfade \
+	dcoffset \
 	decimate \
 	deinterlace \
 	delayaudio \
@@ -102,6 +103,7 @@ DIRS = \
 	whirl \
 	wipe \
 	yuv \
+	zoom \
 	zoomblur
 
 # Make static table of all plugins

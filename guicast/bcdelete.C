@@ -57,6 +57,8 @@ void BC_DeleteFile::create_objects()
 	char *path;
 	FileSystem fs;
 
+
+	lock_window("BC_DeleteFile::create_objects");
 	while((path = filebox->get_path(i)))
 	{
 		data->append(new BC_ListBoxItem(path));
@@ -77,6 +79,7 @@ void BC_DeleteFile::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
+	unlock_window();
 }
 
 

@@ -60,13 +60,17 @@ public:
 		int x, 
 		int y, 
 		int *output,
-		int use_nothing);
+		int use_nothing,
+		int use_nested);
 	~LoadMode();
 	
 	void create_objects();
 	int reposition_window(int x, int y);
 	static int calculate_h(BC_WindowBase *gui, Theme *theme);
-	static int calculate_w(BC_WindowBase *gui, Theme *theme, int use_none);
+	static int calculate_w(BC_WindowBase *gui, 
+		Theme *theme, 
+		int use_none, 
+		int use_nested);
 	int get_h();
 	int get_x();
 	int get_y();
@@ -81,6 +85,7 @@ public:
 	int y;
 	int *output;
 	int use_nothing;
+	int use_nested;
 	LoadModeToggle *mode[TOTAL_LOADMODES];
 //	BC_TextBox *textbox;
 //	ArrayList<LoadModeItem*> load_modes;

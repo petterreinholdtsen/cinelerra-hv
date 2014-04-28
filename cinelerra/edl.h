@@ -26,14 +26,19 @@
 #include "assets.inc"
 #include "autoconf.inc"
 #include "bchash.inc"
+#include "edit.inc"
 #include "edits.inc"
 #include "edl.inc"
 #include "edlsession.inc"
 #include "filexml.inc"
+#include "indexable.h"
+#include "indexstate.inc"
 #include "labels.inc"
 #include "localsession.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
+#include "nestededls.inc"
+#include "playabletracks.inc"
 #include "playbackconfig.h"
 #include "pluginserver.h"
 #include "preferences.inc"
@@ -41,7 +46,7 @@
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "tracks.inc"
-#include "edit.inc"
+#include "vedit.inc"
 
 
 // Loading and saving are built on load and copy except for automation:
@@ -65,7 +70,7 @@
 
 
 
-class EDL
+class EDL : public Indexable
 {
 public:
 	EDL(EDL *parent_edl = 0);
@@ -81,18 +86,20 @@ public:
 	void boundaries();
 // Create tracks using existing configuration
 	int create_default_tracks();
-	int load_xml(ArrayList<PluginServer*> *plugindb, 
-		FileXML *file, 
+	int load_xml(FileXML *file, 
 		uint32_t load_flags);
-	int save_xml(ArrayList<PluginServer*> *plugindb,
-		FileXML *xml, 
+	int save_xml(FileXML *xml, 
 		const char *output_path,
 		int is_clip,
 		int is_vwindow);
     int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
     int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
-
+// Return 1 if rendering requires a virtual console.
+	int get_use_vconsole(VEdit* *playable_edit,
+		int64_t position, 
+		int direction,
+		PlayableTracks *playable_tracks);
 
 // Convert position to frames if cursor alignment is enabled
 	double align_to_frame(double position, int round);
@@ -123,12 +130,12 @@ public:
 // This is used by BRender.
 	double equivalent_output(EDL *edl);
 // Set project path for filename prefixes in the assets
-	void set_project_path(char *path);
+	void set_path(char *path);
 // Set points and labels
 	void set_inpoint(double position);
 	void set_outpoint(double position);
 // Redraw resources during index builds
-	void set_index_file(Asset *asset);
+	void set_index_file(Indexable *indexable);
 // Add assets from the src to the destination
 	void update_assets(EDL *src);
 	void optimize();
@@ -162,7 +169,6 @@ public:
 		double end, 
 		FileXML *file, 
 		int all, 
-		ArrayList<PluginServer*> *plugindb,
 		const char *output_path);
 	int copy(double start, 
 		double end, 
@@ -170,14 +176,13 @@ public:
 		int is_clip,
 		int is_vwindow,
 		FileXML *file, 
-		ArrayList<PluginServer*> *plugindb,
 		const char *output_path,
 		int rewind_it);     // Rewind EDL for easy pasting
 	void paste_silence(double start, 
 		double end, 
 		int edit_labels /* = 1 */, 
 		int edit_plugins);
-	void remove_from_project(ArrayList<Asset*> *assets);
+	void remove_from_project(ArrayList<Indexable*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
 	int clear(double start, 
 		double end, 
@@ -185,6 +190,7 @@ public:
 		int clear_plugins);
 // Insert the asset at a point in the EDL
 	void insert_asset(Asset *asset, 
+		EDL *nested_edl,
 		double position, 
 		Track *first_track = 0, 
 		RecordLabels *labels = 0);
@@ -205,22 +211,32 @@ public:
 
     int get_tracks_height(Theme *theme);
     int64_t get_tracks_width();
-// Return the dimension for a single pane if single_channel is set.
-// Otherwise add all panes.
-/*
- * 	int calculate_output_w(int single_channel);
- * 	int calculate_output_h(int single_channel);
- */
 // Return dimensions for canvas if smaller dimensions has zoom of 1
 	void calculate_conformed_dimensions(int single_channel, float &w, float &h);
 // Get the total output size scaled to aspect ratio
 	void output_dimensions_scaled(int &w, int &h);
 	float get_aspect_ratio();
 
+
+// For Indexable
+	int get_audio_channels();
+	int get_sample_rate();
+	int64_t get_audio_samples();
+	int have_audio();
+	int have_video();
+	int get_w();
+	int get_h();
+	double get_frame_rate();
+	int get_video_layers();
+	int64_t get_video_frames();
+
+
 // Titles of all subfolders
 	ArrayList<char*> folders;
 // Clips
 	ArrayList<EDL*> clips;
+// Nested EDLs
+	NestedEDLs *nested_edls;
 // VWindow
 	EDL *vwindow_edl;
 // is the vwindow_edl shared and therefore should not be deleted in destructor
@@ -239,12 +255,8 @@ public:
 // Specific to this EDL, for clips.
 	LocalSession *local_session;
 
-// In the top EDL, this is the path it was loaded from.  Restores 
-// project titles from backups.  This is only used for loading backups.
-// All other loads keep the path in mainsession->filename.
-// This can't use the output_path argument to save_xml because that points
-// to the backup file, not the project file.
-	char project_path[BCTEXTLEN];
+
+
 
 
 
@@ -254,8 +266,6 @@ public:
 
 	static Mutex *id_lock;
 
-// unique ID of this EDL for resource window
-	int id;
 };
 
 #endif

@@ -114,12 +114,14 @@ TransitionLengthDialog::~TransitionLengthDialog()
 	
 void TransitionLengthDialog::create_objects()
 {
+	lock_window("TransitionLengthDialog::create_objects");
 	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
 	text = new TransitionLengthText(mwindow, this, 100, 10);
 	text->create_objects();
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
+	unlock_window();
 }
 
 int TransitionLengthDialog::close_event()

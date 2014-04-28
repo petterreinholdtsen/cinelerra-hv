@@ -162,3 +162,7 @@ int main(int argc, char *argv[]){
   ioctl(dsp, SNDCTL_DSP_RESET);
   close(dsp);
 }
+
+
+
+

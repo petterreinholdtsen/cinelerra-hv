@@ -1,0 +1,74 @@
+D/alpha////
+D/armv4l////
+D/i386////
+D/liba52////
+D/libac3////
+D/mlib////
+D/ppc////
+D/ps2////
+/Makefile/1.1/Fri Dec 27 14:35:45 2002//
+/a52dec.c/1.1/Fri Dec 27 14:35:45 2002//
+/ac3.h/1.1/Fri Dec 27 14:35:45 2002//
+/ac3dec.c/1.1/Fri Dec 27 14:35:45 2002//
+/ac3enc.c/1.1/Fri Dec 27 14:35:45 2002//
+/ac3tab.h/1.1/Fri Dec 27 14:35:45 2002//
+/adpcm.c/1.1/Fri Dec 27 14:35:45 2002//
+/allcodecs.c/1.1/Fri Dec 27 14:35:45 2002//
+/apiexample.c/1.1/Fri Dec 27 14:35:45 2002//
+/avcodec.c/1.1/Fri Dec 27 14:35:45 2002//
+/bswap.h/1.1/Fri Dec 27 14:35:45 2002//
+/common.c/1.1/Fri Dec 27 14:35:45 2002//
+/common.h/1.1/Fri Dec 27 14:35:45 2002//
+/dct-test.c/1.1/Fri Dec 27 14:35:45 2002//
+/dsputil.c/1.1/Fri Dec 27 14:35:45 2002//
+/dsputil.h/1.1/Fri Dec 27 14:35:45 2002//
+/dv.c/1.1/Fri Dec 27 14:35:45 2002//
+/dvdata.h/1.1/Fri Dec 27 14:35:45 2002//
+/error_resilience.c/1.1/Fri Dec 27 14:35:45 2002//
+/eval.c/1.1/Fri Dec 27 14:35:45 2002//
+/fastmemcpy.h/1.1/Fri Dec 27 14:35:45 2002//
+/fdctref.c/1.1/Fri Dec 27 14:35:45 2002//
+/fft-test.c/1.1/Fri Dec 27 14:35:45 2002//
+/fft.c/1.1/Fri Dec 27 14:35:45 2002//
+/h263.c/1.1/Fri Dec 27 14:35:45 2002//
+/h263data.h/1.1/Fri Dec 27 14:35:45 2002//
+/huffyuv.c/1.1/Fri Dec 27 14:35:45 2002//
+/imgconvert.c/1.1/Fri Dec 27 14:35:45 2002//
+/imgresample.c/1.1/Fri Dec 27 14:35:45 2002//
+/jfdctfst.c/1.1/Fri Dec 27 14:35:45 2002//
+/jfdctint.c/1.1/Fri Dec 27 14:35:45 2002//
+/jrevdct.c/1.1/Fri Dec 27 14:35:45 2002//
+/mace.c/1.1/Fri Dec 27 14:35:45 2002//
+/mdct.c/1.1/Fri Dec 27 14:35:45 2002//
+/mem.c/1.1/Fri Dec 27 14:35:45 2002//
+/mjpeg.c/1.1/Fri Dec 27 14:35:45 2002//
+/motion_est.c/1.1/Fri Dec 27 14:35:46 2002//
+/motion_test.c/1.1/Fri Dec 27 14:35:46 2002//
+/mp3lameaudio.c/1.1/Fri Dec 27 14:35:46 2002//
+/mpeg12.c/1.1/Fri Dec 27 14:35:46 2002//
+/mpeg12data.h/1.1/Fri Dec 27 14:35:46 2002//
+/mpeg4data.h/1.1/Fri Dec 27 14:35:46 2002//
+/mpegaudio.c/1.1/Fri Dec 27 14:35:46 2002//
+/mpegaudio.h/1.1/Fri Dec 27 14:35:46 2002//
+/mpegaudiodec.c/1.1/Fri Dec 27 14:35:46 2002//
+/mpegaudiodectab.h/1.1/Fri Dec 27 14:35:46 2002//
+/mpegaudiotab.h/1.1/Fri Dec 27 14:35:46 2002//
+/mpegvideo.h/1.1/Fri Dec 27 14:35:46 2002//
+/msmpeg4.c/1.1/Fri Dec 27 14:35:46 2002//
+/msmpeg4data.h/1.1/Fri Dec 27 14:35:46 2002//
+/oggvorbis.c/1.1/Fri Dec 27 14:35:46 2002//
+/oggvorbis.h/1.1/Fri Dec 27 14:35:46 2002//
+/pcm.c/1.1/Fri Dec 27 14:35:46 2002//
+/ratecontrol.c/1.1/Fri Dec 27 14:35:46 2002//
+/resample.c/1.1/Fri Dec 27 14:35:46 2002//
+/rv10.c/1.1/Fri Dec 27 14:35:46 2002//
+/simple_idct.c/1.1/Fri Dec 27 14:35:46 2002//
+/simple_idct.h/1.1/Fri Dec 27 14:35:46 2002//
+/svq1.c/1.1/Fri Dec 27 14:35:46 2002//
+/svq1_cb.h/1.1/Fri Dec 27 14:35:46 2002//
+/wmadata.h/1.1/Fri Dec 27 14:35:46 2002//
+/wmadec.c/1.1/Fri Dec 27 14:35:46 2002//
+/avcodec.h/1.2/Fri Apr 25 05:03:05 2003//
+/h263dec.c/1.3/Wed May  7 06:54:57 2003//
+/utils.c/1.3/Wed May  7 06:15:34 2003//
+/mpegvideo.c/1.1/Wed May  7 06:14:36 2003//

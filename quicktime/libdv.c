@@ -583,11 +583,13 @@ int dv_read_audio(dv_t *dv,
     int audio_bytes;
 	short *samples_int16 = (short*)samples;
 	int samples_read;
-	
+
+// For some reason someone had problems with libdv's maxmimum audio samples
+#define MAX_AUDIO_SAMPLES 1944
 	if(!dv->temp_audio[0])
 	{
 		for(i = 0; i < 4; i++)
-			dv->temp_audio[i] = calloc(1, sizeof(int16_t) * DV_AUDIO_MAX_SAMPLES);
+			dv->temp_audio[i] = calloc(1, sizeof(int16_t) * MAX_AUDIO_SAMPLES);
 	}
 
 	switch(size)

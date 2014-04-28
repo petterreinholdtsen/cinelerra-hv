@@ -1,0 +1,16 @@
+***************
+*** 1686,1691 ****
+  
+  	if(config.size <= 0 || config.size >= 2048) return 0;
+  	if(!strlen(config.text)) return 0;
+  
+  // Handle reconfiguration
+  	if(need_reconfigure)
+--- 1640,1646 ----
+  
+  	if(config.size <= 0 || config.size >= 2048) return 0;
+  	if(!strlen(config.text)) return 0;
++ 	if(!strlen(config.encoding)) return 0;
+  
+  // Handle reconfiguration
+  	if(need_reconfigure)

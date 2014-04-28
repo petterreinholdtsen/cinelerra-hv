@@ -745,7 +745,7 @@ void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 	dest_edit->insert_transition(server->title);
 }
 
-void Tracks::paste_video_transition(PluginServer *server, int first_track = 0)
+void Tracks::paste_video_transition(PluginServer *server, int first_track)
 {
 	for(Track *current = first; current; current = NEXT)
 	{

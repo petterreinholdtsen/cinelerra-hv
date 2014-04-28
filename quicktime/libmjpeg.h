@@ -79,6 +79,7 @@ typedef struct
 	unsigned char **mcu_rows[3];
 /* Height of the field */
 	int field_h; 
+	int coded_field_h; 
 } mjpeg_compressor;
 
 typedef struct

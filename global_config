@@ -25,7 +25,7 @@ GCC = gcc
 PLUGINDIR := /usr/lib/cinelerra
 
 ifneq ($(HAVE_CFLAGS), yes)
-CFLAGS = -O2 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+CFLAGS = -O2 -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2
 endif
 
 ifeq ($(HAVE_GL), yes)

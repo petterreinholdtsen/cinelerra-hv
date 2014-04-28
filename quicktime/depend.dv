@@ -4,6 +4,7 @@ $(OBJDIR)/$(DV_DIR)/libdv/audio.o:		      $(DV_DIR)/libdv/audio.c
 $(OBJDIR)/$(DV_DIR)/libdv/bitstream.o:		  $(DV_DIR)/libdv/bitstream.c
 $(OBJDIR)/$(DV_DIR)/libdv/dct.o: 		  	  $(DV_DIR)/libdv/dct.c
 $(OBJDIR)/$(DV_DIR)/libdv/dv.o:			      $(DV_DIR)/libdv/dv.c
+$(OBJDIR)/$(DV_DIR)/libdv/dv_workaround.o:	  $(DV_DIR)/libdv/dv_workaround.c
 $(OBJDIR)/$(DV_DIR)/libdv/enc_input.o:        $(DV_DIR)/libdv/enc_input.c
 $(OBJDIR)/$(DV_DIR)/libdv/encode.o:           $(DV_DIR)/libdv/encode.c
 $(OBJDIR)/$(DV_DIR)/libdv/enc_output.o:       $(DV_DIR)/libdv/enc_output.c

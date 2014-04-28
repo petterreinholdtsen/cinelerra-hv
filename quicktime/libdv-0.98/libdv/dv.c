@@ -51,9 +51,6 @@
 #include "rgb.h"
 #include "YUY2.h"
 #include "YV12.h"
-#if ARCH_X86
-#include "mmx.h"
-#endif
 
 #if YUV_420_USE_YV12
 #define DV_MB420_YUV(a,b,c)     dv_mb420_YV12    (a,b,c)
@@ -176,7 +173,7 @@ dv_init(int clamp_luma, int clamp_chroma) {
   static int done=FALSE;
   if(done) goto init_done;
 #if ARCH_X86
-  dv_use_mmx = mmx_ok(); 
+  dv_use_mmx = mmx_ok_workaround(); 
 #endif
   weight_init();
   dct_init();

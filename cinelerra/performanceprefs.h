@@ -1,13 +1,13 @@
 #ifndef PERFORMANCEPREFS_H
 #define PERFORMANCEPREFS_H
 
-class CICacheSize;
 
 #include "formattools.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
 
 
+class CICacheSize;
 class PrefsRenderFarmEditNode;
 class PrefsRenderFarmNodes;
 class PrefsRenderFarmPort;
@@ -25,7 +25,7 @@ public:
 
 	int hot_node;
 
-	CICacheSize *csize;
+	CICacheSize *cache_size;
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
@@ -277,19 +277,17 @@ public:
 
 
 
-
-
-
-
-
-
-class CICacheSize : public BC_TextBox
+class CICacheSize : public BC_TumbleTextBox
 {
 public:
-	CICacheSize(int x, int y, PreferencesWindow *pwindow, char *text);
+	CICacheSize(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PerformancePrefs *subwindow);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
+
 
 
 

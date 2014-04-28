@@ -15,7 +15,6 @@
 #include "maxbuffers.h"
 #include "menueffects.inc"
 #include "module.inc"
-#include "mutex.h"
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginaclientlad.inc"
@@ -79,6 +78,8 @@ public:
 	KeyFrame* get_keyframe();
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
+// Get theme being used by Cinelerra currently.  Used by all plugins.
+	Theme* get_theme();
 
 
 

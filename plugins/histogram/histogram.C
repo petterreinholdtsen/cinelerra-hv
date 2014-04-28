@@ -1011,7 +1011,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	lookup[0] = lookup[1] = lookup[2] = lookup[3] = 0;
-	accum[0] = accum[1] = accum[2] = accum[3] = accum[3] = 0;
+	accum[0] = accum[1] = accum[2] = accum[3] = accum[4] = 0;
 }
 
 HistogramMain::~HistogramMain()
@@ -1029,7 +1029,7 @@ HistogramMain::~HistogramMain()
 	if(engine) delete engine;
 }
 
-char* HistogramMain::plugin_title() { return _("Histogram"); }
+char* HistogramMain::plugin_title() { return N_("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 

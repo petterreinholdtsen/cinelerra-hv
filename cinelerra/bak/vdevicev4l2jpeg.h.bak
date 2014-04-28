@@ -1,0 +1,59 @@
+#ifndef VDEVICEV4L2JPEG_H
+#define VDEVICEV4L2JPEG_H
+
+#include "condition.inc"
+#include "mutex.inc"
+#include "vdevicebase.h"
+#include <linux/types.h>
+#include <linux/videodev2.h>
+#include "videodevice.inc"
+#include "vdevicev4l2jpeg.inc"
+
+
+// Isolate the application from the grabbing operation.
+class VDeviceV4L2JPEGThread : public Thread
+{
+public:
+	VDeviceV4L2JPEGThread(VDeviceV4L2JPEG *device);
+	~VDeviceV4L2JPEGThread();
+
+	void start();
+	void run();
+	VFrame* get_buffer(int *timed_out);
+	void put_buffer();
+
+	Mutex *buffer_lock;
+	Condition *video_lock;
+	VDeviceV4L2JPEG *device;
+	VFrame **user_buffers;
+	VFrame **device_buffers;
+	int *buffer_valid;
+	int total_buffers;
+	int current_inbuffer;
+	int current_outbuffer;
+// Don't block if first frame not recieved yet.
+// This frees up the GUI during driver initialization.
+	int first_frame;
+	int done;
+	int input_fd;
+};
+
+
+
+class VDeviceV4L2JPEG : public VDeviceBase
+{
+public:
+	VDeviceV4L2JPEG(VideoDevice *device);
+	~VDeviceV4L2JPEG();
+
+	int initialize();
+	int open_input();
+	int close_all();
+	int get_best_colormodel(Asset *asset);
+	int read_buffer(VFrame *frame);
+
+	VDeviceV4L2JPEGThread *thread;
+	int input_fd;
+};
+
+#endif

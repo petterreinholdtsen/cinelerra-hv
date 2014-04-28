@@ -17,7 +17,6 @@ void SigHandler::signal_handler(int signum)
 		printf("Closing %s\n", files.values[i]->asset->path);
 		files.values[i]->close_file(1);
 	}
-	BC_Signals::signal_handler(signum);
 }
 
 void SigHandler::push_file(File *file)

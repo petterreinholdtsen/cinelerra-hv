@@ -319,17 +319,11 @@ FieldFrame::~FieldFrame()
 	if(input) delete input;
 }
 
-char* FieldFrame::plugin_title()
-{
-	return _("Fields to frames");
-}
+char* FieldFrame::plugin_title() { return N_("Fields to frames"); }
+int FieldFrame::is_realtime() { return 1; }
+
 
 NEW_PICON_MACRO(FieldFrame)
-
-int FieldFrame::is_realtime()
-{
-	return 1;
-}
 
 SHOW_GUI_MACRO(FieldFrame, FieldFrameThread)
 

@@ -25,7 +25,7 @@ AudioOutConfig::AudioOutConfig(int playback_strategy,
 	sprintf(esound_out_server, "");
 	esound_out_port = 0;
 
-	sprintf(alsa_out_device, "");
+	sprintf(alsa_out_device, "default");
 	alsa_out_channels = 2;
 	alsa_out_bits = 16;
 

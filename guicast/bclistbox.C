@@ -7,7 +7,7 @@
 #include "cursors.h"
 #include "fonts.h"
 #include "keys.h"
-#include "timer.h"
+#include "bctimer.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -395,8 +395,8 @@ BC_ListBox::BC_ListBox(int x,
 
 //printf("BC_ListBox::BC_ListBox 3\n");
 
-	drag_icon = 0;
-	drag_column_icon = 0;
+	drag_icon_vframe = 0;
+	drag_column_icon_vframe = 0;
 
 
 
@@ -424,8 +424,6 @@ BC_ListBox::~BC_ListBox()
 	if(column_sort_dn) delete column_sort_dn;
 
 	delete_columns();
-	if(drag_icon) delete drag_icon;
-	if(drag_column_icon) delete drag_column_icon;
 	if(drag_popup) delete drag_popup;
 }
 
@@ -539,12 +537,14 @@ int BC_ListBox::initialize()
 		PIXMAP_ALPHA);
 
 //printf("BC_ListBox::initialize 10\n");
-	drag_icon = new BC_Pixmap(parent_window, 
-		get_resources()->type_to_icon[ICON_UNKNOWN], 
-		PIXMAP_ALPHA);
-	drag_column_icon = new BC_Pixmap(parent_window,
-		get_resources()->type_to_icon[ICON_COLUMN],
-		PIXMAP_ALPHA);
+	drag_icon_vframe = get_resources()->type_to_icon[ICON_UNKNOWN];
+	drag_column_icon_vframe = get_resources()->type_to_icon[ICON_COLUMN];
+// = new BC_Pixmap(parent_window, 
+//		get_resources()->type_to_icon[ICON_UNKNOWN], 
+//		PIXMAP_ALPHA);
+//	drag_column_icon = new BC_Pixmap(parent_window,
+//		get_resources()->type_to_icon[ICON_COLUMN],
+//		PIXMAP_ALPHA);
 	BC_SubWindow::initialize();
 
 	init_column_width();
@@ -1014,10 +1014,10 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		if(display_format == LISTBOX_ICONS)
 		{
 			get_icon_mask(item, x, y, w, h);
-			if(y + h > highest) highest = y + h;
+			if(y + h + yposition > highest) highest = y + h + yposition;
 
 			get_text_mask(item, x, y, w, h);
-			if(y + h > highest) highest = y + h;
+			if(y + h + yposition > highest) highest = y + h + yposition;
 		}
 		else
 		{
@@ -1852,9 +1852,12 @@ int BC_ListBox::get_scrollbars()
 			xscrollbar->bound_to = this;
 		}
 		else
+		{
+		    xscrollbar->update_length(w_needed, xposition, view_w);
 			xscrollbar->reposition_window(get_xscroll_x(),
 				get_xscroll_y(),
 				get_xscroll_width());
+		}
 	}
 	else
 	{
@@ -1875,9 +1878,12 @@ int BC_ListBox::get_scrollbars()
 			yscrollbar->bound_to = this;
 		}
 		else
+		{
+			yscrollbar->update_length(h_needed, yposition, view_h);
 			yscrollbar->reposition_window(get_yscroll_x(),
 				get_yscroll_y(),
 				get_yscroll_height());
+		}
 	}
 	else
 	{
@@ -3532,13 +3538,26 @@ int BC_ListBox::drag_start_event()
 
 				if(selection_number >= 0)
 				{
-					BC_Pixmap *pixmap = item_return->icon ? 
-						item_return->icon : 
-						drag_icon;
-					drag_popup = new BC_DragWindow(this, 
-						pixmap, 
-						get_abs_cursor_x() - pixmap->get_w() / 2,
-						get_abs_cursor_y() - pixmap->get_h() / 2);
+					
+					if (item_return->icon_vframe)
+					{
+						drag_popup = new BC_DragWindow(this, 
+							item_return->icon_vframe, 
+							get_abs_cursor_x() - item_return->icon_vframe->get_w() / 2,
+							get_abs_cursor_y() - item_return->icon_vframe->get_h() / 2);
+					}
+					else	
+// this probably works not!
+					if (item_return->icon)  
+						drag_popup = new BC_DragWindow(this, 
+							item_return->icon, 
+							get_abs_cursor_x() - item_return->icon->get_w() / 2,
+							get_abs_cursor_y() - item_return->icon->get_h() / 2);
+					else
+						drag_popup = new BC_DragWindow(this, 
+							drag_icon_vframe, 
+							get_abs_cursor_x() - drag_icon_vframe->get_w() / 2,
+							get_abs_cursor_y() - drag_icon_vframe->get_h() / 2);
 					current_operation = DRAG_ITEM;
 					return 1;
 				}
@@ -3548,11 +3567,10 @@ int BC_ListBox::drag_start_event()
 		case COLUMN_DN:
 			if(gui && gui->is_event_win() && allow_drag_column)
 			{
-				BC_Pixmap *pixmap = drag_column_icon;
 				drag_popup = new BC_DragWindow(this, 
-					pixmap, 
-					get_abs_cursor_x() - pixmap->get_w() / 2,
-					get_abs_cursor_y() - pixmap->get_h() / 2);
+					drag_column_icon_vframe, 
+					get_abs_cursor_x() - drag_column_icon_vframe->get_w() / 2,
+					get_abs_cursor_y() - drag_column_icon_vframe->get_h() / 2);
 				dragged_title = highlighted_title;
 				current_operation = COLUMN_DRAG;
 				draw_titles(1);
@@ -3597,7 +3615,6 @@ int BC_ListBox::drag_motion_event()
 			}
 
 			return drag_popup->cursor_motion_event();
-			return 1;
 			break;
 		}
 

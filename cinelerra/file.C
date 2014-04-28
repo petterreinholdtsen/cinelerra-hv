@@ -1,9 +1,12 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "byteorder.h"
+#include "cache.inc"
+#include "condition.h"
 #include "edit.h"
 #include "errorbox.h"
 #include "file.h"
+#include "fileac3.h"
 #include "fileavi.h"
 #include "filebase.h"
 #include "filexml.h"
@@ -17,6 +20,7 @@
 #include "filetiff.h"
 #include "filevorbis.h"
 #include "formatwindow.h"
+#include "framecache.h"
 #include "language.h"
 #include "pluginserver.h"
 #include "resample.h"
@@ -30,6 +34,9 @@ File::File()
 {
 	cpus = 1;
 	asset = new Asset;
+	format_completion = new Mutex("File::format_completion");
+	write_lock = new Condition(1, "File::write_lock");
+	frame_cache = new FrameCache;
 	reset_parameters();
 }
 
@@ -38,23 +45,18 @@ File::~File()
 	if(getting_options)
 	{
 		if(format_window) format_window->set_done(0);
-		format_completion.lock("File::~File");
-		format_completion.unlock();
+		format_completion->lock("File::~File");
+		format_completion->unlock();
 	}
 
-	if(temp_frame)
-	{
-		delete temp_frame;
-	}
-
-	if(return_frame)
-	{
-		delete return_frame;
-	}
+	if(temp_frame) delete temp_frame;
 
 	close_file();
 	reset_parameters();
 	delete asset;
+	delete format_completion;
+	delete write_lock;
+	if(frame_cache) delete frame_cache;
 }
 
 void File::reset_parameters()
@@ -65,8 +67,6 @@ void File::reset_parameters()
 	getting_options = 0;
 	format_window = 0;
 	temp_frame = 0;
-	temp_frame = 0;
-	return_frame = 0;
 	current_sample = 0;
 	current_frame = 0;
 	current_channel = 0;
@@ -74,8 +74,8 @@ void File::reset_parameters()
 	normalized_sample = 0;
 	normalized_sample_rate = 0;
 	resample = 0;
+	use_cache = 0;
 }
-
 
 int File::raise_window()
 {
@@ -106,9 +106,16 @@ int File::get_options(BC_WindowBase *parent_window,
 	int lock_compressor)
 {
 	getting_options = 1;
-	format_completion.lock("File::get_options");
+	format_completion->lock("File::get_options");
 	switch(asset->format)
 	{
+		case FILE_AC3:
+			FileAC3::get_parameters(parent_window,
+				asset,
+				format_window,
+				audio_options,
+				video_options);
+			break;
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_AU:
@@ -216,7 +223,7 @@ int File::get_options(BC_WindowBase *parent_window,
 
 	getting_options = 0;
 	format_window = 0;
-	format_completion.unlock();
+	format_completion->unlock();
 	return 0;
 }
 
@@ -227,7 +234,6 @@ void File::set_asset(Asset *asset)
 
 int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
-//printf("File::set_processors 1 %d\n", cpus);
 	this->cpus = cpus;
 	return 0;
 }
@@ -237,6 +243,26 @@ int File::set_preload(int64_t size)
 	this->playback_preload = size;
 	return 0;
 }
+
+void File::set_cache_frames(int value)
+{
+	use_cache = value;
+}
+
+int File::purge_cache()
+{
+	return frame_cache->delete_oldest();
+}
+
+
+
+
+
+
+
+
+
+
 
 int File::open_file(ArrayList<PluginServer*> *plugindb, 
 	Asset *asset, 
@@ -346,6 +372,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			break;
 
 // format already determined
+		case FILE_AC3:
+			file = new FileAC3(this->asset, this);
+			break;
+
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_AU:
@@ -662,7 +692,10 @@ int File::set_video_position(int64_t position, float base_framerate)
 
 // Convert to file's rate
 	if(base_framerate > 0)
-		position = (int64_t)((double)position / base_framerate * asset->frame_rate + 0.5);
+		position = (int64_t)((double)position / 
+			base_framerate * 
+			asset->frame_rate + 
+			0.5);
 
 	if(current_frame != position && file)
 	{
@@ -680,12 +713,12 @@ int File::write_samples(double **buffer, int64_t len)
 	
 	if(file)
 	{
-		write_lock.lock("File::write_samples");
+		write_lock->lock("File::write_samples");
 		result = file->write_samples(buffer, len);
 		current_sample += len;
 		normalized_sample += len;
 		asset->audio_length += len;
-		write_lock.unlock();
+		write_lock->unlock();
 	}
 	return result;
 }
@@ -698,7 +731,7 @@ int File::write_frames(VFrame ***frames, int len)
 	int result;
 	int current_frame_temp = current_frame;
 	int video_length_temp = asset->video_length;
-	write_lock.lock("File::write_frames");
+	write_lock->lock("File::write_frames");
 
 
 
@@ -711,18 +744,18 @@ int File::write_frames(VFrame ***frames, int len)
 
 	current_frame = current_frame_temp + len;
 	asset->video_length = video_length_temp + len;
-	write_lock.unlock();
+	write_lock->unlock();
 	return result;
 }
 
 int File::write_compressed_frame(VFrame *buffer)
 {
 	int result = 0;
-	write_lock.lock("File::write_compressed_frame");
+	write_lock->lock("File::write_compressed_frame");
 	result = file->write_compressed_frame(buffer);
 	current_frame++;
 	asset->video_length++;
-	write_lock.unlock();
+	write_lock->unlock();
 	return result;
 }
 
@@ -823,61 +856,31 @@ int64_t File::compressed_frame_size()
 		return 0;
 }
 
-// Return a pointer to a frame in the video file for drawing purposes.
-// The temporary frame is created by the file handler so that still frame
-// files don't have to copy to a new buffer.
-VFrame* File::read_frame(int color_model)
-{
-	VFrame* result = 0;
-//printf("File::read_frame 1\n");
-	if(file)
-	{
-//printf("File::read_frame 2\n");
-		if(return_frame && 
-			(return_frame->get_w() != asset->width || 
-			return_frame->get_h() != asset->height || 
-			return_frame->get_color_model() != color_model))
-		{
-			delete return_frame;
-			return_frame = 0;
-		}
 
-//printf("File::read_frame 3\n");
-		if(!return_frame)
-		{
-			return_frame = new VFrame(0,
-				asset->width,
-				asset->height,
-				color_model);
-		}
-//printf("File::read_frame 4\n");
-
-		read_frame(return_frame);
-//printf("File::read_frame 5\n");
-		result = return_frame;
-	}
-//printf("File::read_frame 6\n");
-
-	return result;
-}
 
 
 int File::read_frame(VFrame *frame)
 {
 	if(file)
 	{
-//printf("File::read_frame 1\n");
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 
-//printf("File::read_frame 1 %d %d\n", supported_colormodel, frame->get_color_model());
+
+// Test cache
+		if(use_cache &&
+			frame_cache->get_frame(frame,
+				current_frame,
+				asset->frame_rate))
+		{
+			;
+		}
+		else
 // Need temp
-//printf("File::read_frame 2\n");
 		if(frame->get_color_model() != BC_COMPRESSED &&
 			(supported_colormodel != frame->get_color_model() ||
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
-//printf("File::read_frame 3\n");
 			if(temp_frame)
 			{
 				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
@@ -886,7 +889,6 @@ int File::read_frame(VFrame *frame)
 					temp_frame = 0;
 				}
 			}
-//printf("File::read_frame 4 %p %d %d %d\n", asset , asset->width, asset->height, supported_colormodel);
 
 			if(!temp_frame)
 			{
@@ -896,9 +898,6 @@ int File::read_frame(VFrame *frame)
 					supported_colormodel);
 			}
 
-//printf("File::read_frame 5 %d %d\n", 
-//	temp_frame->get_color_model(), 
-//	frame->get_color_model());
 			file->read_frame(temp_frame);
 			cmodel_transfer(frame->get_rows(), 
 				temp_frame->get_rows(),
@@ -921,18 +920,17 @@ int File::read_frame(VFrame *frame)
 				0,
 				temp_frame->get_w(),
 				frame->get_w());
-//printf("File::read_frame 6\n");
 		}
 		else
 		{
-//printf("File::read_frame 7\n");
 			file->read_frame(frame);
-//printf("File::read_frame 8\n");
 		}
+		if(use_cache) frame_cache->put_frame(frame,
+			current_frame,
+			asset->frame_rate,
+			1);
 
-//printf("File::read_frame 9\n");
 		current_frame++;
-//printf("File::read_frame 2 %d\n", supported_colormodel);
 		return 0;
 	}
 	else
@@ -961,6 +959,8 @@ int File::strtoformat(char *format)
 
 int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 {
+	if(!strcasecmp(format, _(AC3_NAME))) return FILE_AC3;
+	else
 	if(!strcasecmp(format, _(WAV_NAME))) return FILE_WAV;
 	else
 	if(!strcasecmp(format, _(PCM_NAME))) return FILE_PCM;
@@ -1019,6 +1019,9 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 {
 	switch(format)
 	{
+		case FILE_AC3:
+			return _(AC3_NAME);
+			break;
 		case FILE_WAV:
 			return _(WAV_NAME);
 			break;
@@ -1232,24 +1235,27 @@ int File::colormodel_supported(int colormodel)
 }
 
 
+int File::get_memory_usage()
+{
+	int result = 0;
+	if(temp_frame) result += temp_frame->get_data_size();
+	if(file) result += file->get_memory_usage();
+	result += frame_cache->get_memory_usage();
 
+	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
+	return result;
+}
 
+FrameCache* File::get_frame_cache()
+{
+	return frame_cache;
+}
 
 int File::supports_video(ArrayList<PluginServer*> *plugindb, char *format)
 {
 	int i, format_i = strtoformat(plugindb, format);
 	
 	return supports_video(format_i);
-
-// 	for(i = 0; i < plugindb->total; i++)
-// 	{	
-// 		if(plugindb->values[i]->fileio && 
-// 			!strcmp(plugindb->values[i]->title, format))
-// 		{
-// 			if(plugindb->values[i]->video) return 1;
-// 		}
-// 	}
-
 	return 0;
 }
 
@@ -1258,16 +1264,6 @@ int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
 	int i, format_i = strtoformat(plugindb, format);
 
 	return supports_audio(format_i);
-
-// 	for(i = 0; i < plugindb->total; i++)
-// 	{	
-// 		if(plugindb->values[i]->fileio && 
-// 			!strcmp(plugindb->values[i]->title, format))
-// 		{
-// 			if(plugindb->values[i]->audio) return 1;
-// 		}
-// 	}
-
 	return 0;
 }
 
@@ -1305,6 +1301,7 @@ int File::supports_audio(int format)
 {
 	switch(format)
 	{
+		case FILE_AC3:
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_MOV:

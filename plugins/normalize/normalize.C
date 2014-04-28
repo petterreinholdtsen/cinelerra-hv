@@ -34,11 +34,10 @@ NormalizeMain::~NormalizeMain()
 	delete defaults;
 }
 
-char* NormalizeMain::plugin_title() { return _("Normalize"); }
-
+char* NormalizeMain::plugin_title() { return N_("Normalize"); }
 int NormalizeMain::is_realtime() { return 0; }
-
 int NormalizeMain::is_multichannel() { return 1; }
+
 
 VFrame* NormalizeMain::new_picon()
 {

@@ -126,19 +126,23 @@ int VirtualANode::render(double *output_temp,
 	ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 	if(real_module)
 	{
+//printf("VirtualANode::render 1\n");
 		render_as_module(arender->audio_out, 
 			output_temp,
 			start_position, 
 			len,
 			sample_rate);
+//printf("VirtualANode::render 2\n");
 	}
 	else
 	if(real_plugin)
 	{
+//printf("VirtualANode::render 3\n");
 		render_as_plugin(output_temp,
 			start_position,
 			len,
 			sample_rate);
+//printf("VirtualANode::render 4\n");
 	}
 	return 0;
 }
@@ -148,12 +152,12 @@ void VirtualANode::render_as_plugin(double *output_temp,
 	int64_t len,
 	int64_t sample_rate)
 {
+//printf("VirtualANode::render_as_plugin 1 %p\n", this);
 	if(!attachment ||
 		!real_plugin ||
 		!real_plugin->on) return;
-//printf("VirtualANode::render_as_plugin 1 %p\n", this);
 
-//printf("VirtualANode::render_as_plugin 1 %p\n", output_temp);
+//printf("VirtualANode::render_as_plugin 2 %p\n", output_temp);
 // If we're the first plugin in the parent module, data needs to be read from 
 // what comes before the parent module.  Otherwise, data needs to come from the
 // previous plugin.

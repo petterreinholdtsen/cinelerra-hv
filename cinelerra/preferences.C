@@ -2,6 +2,7 @@
 #include "audioconfig.h"
 #include "audiodevice.inc"
 #include "bcmeter.inc"
+#include "cache.inc"
 #include "clip.h"
 #include "defaults.h"
 #include "file.inc"
@@ -35,8 +36,8 @@ Preferences::Preferences()
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
-	cache_size = 5;
-	index_size = 3000000;
+	cache_size = 0xa00000;
+	index_size = 0x300000;
 	index_count = 100;
 	use_thumbnails = 1;
 	theme[0] = 0;
@@ -47,7 +48,7 @@ Preferences::Preferences()
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 1;
-	renderfarm_job_count = 1;
+	renderfarm_job_count = 20;
 	processors = calculate_processors();
 
 // Default brender asset
@@ -158,9 +159,14 @@ void Preferences::copy_from(Preferences *that)
 		fs.complete_path(global_plugin_dir);
 		fs.add_end_slash(global_plugin_dir);
 	}
-	
+
+	boundaries();
+}
+
+void Preferences::boundaries()
+{
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
-	CLAMP(cache_size, 1, 100);
+	CLAMP(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 }
 
 Preferences& Preferences::operator=(Preferences &that)
@@ -179,7 +185,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	sprintf(global_plugin_dir, "/usr/lib/cinelerra");
+	sprintf(global_plugin_dir, PLUGIN_DIR);
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	if(getenv("GLOBAL_PLUGIN_DIR"))
 	{
@@ -241,6 +247,8 @@ int Preferences::load_defaults(Defaults *defaults)
 			add_node(result, result_port, result_enabled, result_rate);
 		}
 	}
+
+	boundaries();
 
 	return 0;
 }

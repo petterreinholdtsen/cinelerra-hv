@@ -8,7 +8,7 @@
 #include "cursors.h"
 #include "keys.h"
 #include <math.h>
-#include "timer.h"
+#include "bctimer.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -1857,6 +1857,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	use_float = 0;
 	precision = 4;
+	increment = 1;
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -1877,6 +1878,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	use_float = 0;
 	precision = 4;
+	increment = 1;
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -1897,6 +1899,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	use_float = 1;
 	precision = 4;
+	increment = 1;
 }
 
 BC_TumbleTextBox::~BC_TumbleTextBox()
@@ -1969,7 +1972,7 @@ int BC_TumbleTextBox::create_objects()
 			x, 
 			y));
 
-	tumbler->set_increment(precision);
+	tumbler->set_increment(increment);
 	return 0;
 }
 

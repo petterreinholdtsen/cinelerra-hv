@@ -81,39 +81,35 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	VirtualNode *previous_plugin = 0;
 
 	if(!output_temp) printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
-//printf("VirtualVNode::read_data 1\n");
+
+
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-//printf("VirtualVNode::read_data 2\n");
-		((VirtualVNode*)previous_plugin)->render(output_temp,
+		return ((VirtualVNode*)previous_plugin)->render(output_temp,
 			start_position,
 			frame_rate);
-//printf("VirtualVNode::read_data 3\n");
 	}
 	else
 // First plugin on parent module.
 // Read data from parent module
 	if(parent_node)
 	{
-		((VirtualVNode*)parent_node)->read_data(output_temp,
+		return ((VirtualVNode*)parent_node)->read_data(output_temp,
 			start_position,
 			frame_rate);
 	}
 	else
 	{
 // This is the first node in the tree
-//printf("VirtualVNode::read_data 8\n");
-		((VModule*)real_module)->render(output_temp,
+		return ((VModule*)real_module)->render(output_temp,
 			start_position,
 			renderengine->command->get_direction(),
 			frame_rate,
 			0);
-//printf("VirtualVNode::read_data 9\n");
 	}
 
-//printf("VirtualVNode::read_data 10\n");
 	return 0;
 }
 
@@ -135,11 +131,9 @@ int VirtualVNode::render(VFrame *output_temp,
 	else
 	if(real_plugin)
 	{
-//printf("VirtualVNode::render 20\n");
 		render_as_plugin(output_temp,
 			start_position,
 			frame_rate);
-//printf("VirtualVNode::render 30\n");
 	}
 	return 0;
 }
@@ -148,18 +142,15 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 	int64_t start_position,
 	double frame_rate)
 {
-//printf("VirtualVNode::render_as_plugin 1\n");
 	if(!attachment ||
 		!real_plugin ||
 		!real_plugin->on) return;
 
-//printf("VirtualVNode::render_as_plugin 2 %p\n", output_temp);
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
 		start_position,
 		frame_rate);
-//printf("VirtualVNode::render_as_plugin 100\n");
 }
 
 

@@ -70,7 +70,6 @@ int VirtualAConsole::process_buffer(int64_t len,
 	int result = 0;
 
 
-//printf("VirtualAConsole::process_buffer 1\n");
 // clear output buffers
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -83,7 +82,6 @@ int VirtualAConsole::process_buffer(int64_t len,
 			bzero(arender->audio_out[i], len * sizeof(double));
 		}
 	}
-//printf("VirtualAConsole::process_buffer 1\n");
 
 // Create temporary output
 	if(output_temp && output_allocation < len)
@@ -91,14 +89,12 @@ int VirtualAConsole::process_buffer(int64_t len,
 		delete [] output_temp;
 		output_temp = 0;
 	}
-//printf("VirtualAConsole::process_buffer 1\n");
 
 	if(!output_temp)
 	{
 		output_temp = new double[len];
 		output_allocation = len;
 	}
-//printf("VirtualAConsole::process_buffer 1\n");
 
 // Reset plugin rendering status
 	reset_attachments();
@@ -110,7 +106,7 @@ int VirtualAConsole::process_buffer(int64_t len,
 		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
 		Track *track = node->track;
 
-//printf("VirtualAConsole::process_buffer 2 %p\n", output_temp);
+//printf("VirtualAConsole::process_buffer 2 %d %p\n", i, output_temp);
 		result |= node->render(output_temp, 
 			start_position + track->nudge,
 			len,

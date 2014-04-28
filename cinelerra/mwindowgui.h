@@ -3,9 +3,10 @@
 
 #include "editpopup.inc"
 #include "guicast.h"
+#include "keyframepopup.inc"
 #include "mbuttons.inc"
 #include "mainclock.inc"
-#include "maincursor.h"
+#include "maincursor.inc"
 #include "mainmenu.inc"
 #include "mtimebar.inc"
 #include "mwindow.inc"
@@ -70,6 +71,7 @@ public:
 // Popup menus
 	EditPopup *edit_menu;
 	PluginPopup *plugin_menu;
+	KeyframePopup *keyframe_menu;
 	TransitionPopup *transition_menu;
 
 	MainClock *mainclock;

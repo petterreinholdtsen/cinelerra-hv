@@ -132,10 +132,11 @@ WipeMain::~WipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* WipeMain::plugin_title() { return _("Wipe"); }
+char* WipeMain::plugin_title() { return N_("Wipe"); }
 int WipeMain::is_video() { return 1; }
 int WipeMain::is_transition() { return 1; }
 int WipeMain::uses_gui() { return 1; }
+
 SHOW_GUI_MACRO(WipeMain, WipeThread);
 SET_STRING_MACRO(WipeMain)
 RAISE_WINDOW_MACRO(WipeMain)

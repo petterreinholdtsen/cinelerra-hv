@@ -1,0 +1,67 @@
+#########################################################
+#                  DiffKey Makefile
+#########################################################
+#
+# You MUST edit the line below so that it points to your
+# copy of the Cinelerra source code:
+
+CINELERRA_DIR=/root/d/cinelerra-1.1.8
+
+
+
+
+
+PROJECT_NAME=diffkey
+
+include $(CINELERRA_DIR)/global_config
+
+OBJS = $(OBJDIR)/$(PROJECT_NAME).o \
+	$(OBJDIR)/$(PROJECT_NAME)window.o \
+	$(CINELERRA_DIR)/plugins/colors/$(OBJDIR)/plugincolors.o
+
+OUTPUT = $(PROJECT_NAME).plugin
+
+CFLAGS += -I$(CINELERRA_DIR)/plugins -I$(CINELERRA_DIR)/cinelerra \
+	-I$(CINELERRA_DIR)/guicast \
+	-I$(CINELERRA_DIR)/quicktime \
+	-I$(CINELERRA_DIR)/plugins/colors \
+	-fPIC
+
+$(shell echo $(CFLAGS) > $(CINELERRA_DIR)/plugins/$(OBJDIR)/c_flags)
+
+$(OUTPUT): $(OBJS)
+	$(LDLINKER) -o $(OUTPUT) $(OBJS)
+	strip $(OUTPUT)
+
+.PHONY: install uninstall now kill clean new wc bogus
+
+install:
+	cp $(OUTPUT) $(PLUGINDIR)
+
+uninstall:
+	rm -f $(PLUGINDIR)/$(OUTPUT)
+
+new: clean bogus now
+
+bogus:
+	mkdir $(OBJDIR)
+
+now: $(OUTPUT) install
+
+kill: clean uninstall
+
+clean:
+	find \( -name core 		-o -name '*.o' 		-o -name '*.a' \) -exec rm -f {} \;
+	rm -f $(OUTPUT)
+	rm -rf $(OBJDIR)
+
+wc:
+	cat *.C *.h | wc
+
+$(OBJS):
+	$(CC) -c `cat $(CINELERRA_DIR)/plugins/$(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+
+
+$(OBJDIR)/$(PROJECT_NAME).o: $(PROJECT_NAME).C
+$(OBJDIR)/$(PROJECT_NAME)window.o: $(PROJECT_NAME)window.C
+

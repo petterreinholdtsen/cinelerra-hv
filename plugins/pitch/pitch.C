@@ -37,16 +37,8 @@ PitchEffect::~PitchEffect()
 	if(fft) delete fft;
 }
 
-char* PitchEffect::plugin_title()
-{
-	return _("Pitch shift");
-}
-
-
-int PitchEffect::is_realtime()
-{
-	return 1;
-}
+char* PitchEffect::plugin_title() { return N_("Pitch shift"); }
+int PitchEffect::is_realtime() { return 1; }
 
 
 

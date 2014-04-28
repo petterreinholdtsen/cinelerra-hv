@@ -148,7 +148,9 @@ int AudioOSS::open_input()
 	{
 		if(device->in_config->oss_enable[i])
 		{
+//printf("AudioOSS::open_input 10\n");
 			dsp_in[i] = open(device->in_config->oss_in_device[i], O_RDONLY/* | O_NDELAY*/);
+//printf("AudioOSS::open_input 20\n");
 			if(dsp_in[i] < 0) fprintf(stderr, "AudioOSS::open_input %s: %s\n", 
 				device->in_config->oss_in_device[i], 
 				strerror(errno));
@@ -323,7 +325,7 @@ int AudioOSS::close_all()
 		}
 		
 		if(thread[i]) delete thread[i];
-		if(data[i]) delete data[i];
+		if(data[i]) delete [] data[i];
 	}
 	return 0;
 }
@@ -383,7 +385,7 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 
 			if(data[i] && data_allocated[i] < bytes)
 			{
-				delete data[i];
+				delete [] data[i];
 				data[i] = 0;
 			}
 			if(!data[i])
@@ -440,7 +442,7 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 			int out_frame_size = device->out_config->oss_out_channels[i] * sample_size;
 			if(data[i] && data_allocated[i] < bytes)
 			{
-				delete data[i];
+				delete [] data[i];
 				data[i] = 0;
 			}
 			if(!data[i])

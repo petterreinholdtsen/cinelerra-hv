@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
 static int signal_done = 0;
@@ -115,8 +116,11 @@ static bc_table_t lock_table = { 0, 0, 0 };
 // Table of buffers
 static bc_table_t memory_table = { 0, 0, 0 };
 
+static bc_table_t temp_files = { 0, 0, 0 };
+
 // Can't use Mutex because it would be recursive
 static pthread_mutex_t *lock = 0;
+static pthread_mutex_t *handler_lock = 0;
 // Don't trace memory until this is true to avoid initialization
 static int trace_memory = 0;
 
@@ -143,26 +147,33 @@ static char* signal_titles[] =
 
 static void signal_entry(int signum)
 {
+	signal(signum, SIG_DFL);
 
+	pthread_mutex_lock(handler_lock);
 	if(signal_done)
 	{
-		return;
+		pthread_mutex_unlock(handler_lock);
+		exit(0);
 	}
 
 	signal_done = 1;
+	pthread_mutex_unlock(handler_lock);
 
-	printf("signal_entry: got %s execution table %d:\n", 
+
+	printf("signal_entry: got %s my pid=%d execution table %d:\n", 
 		signal_titles[signum],
+		getpid(),
 		execution_table.size);
 
 	BC_Signals::dump_traces();
 	BC_Signals::dump_locks();
 	BC_Signals::dump_buffers();
+	BC_Signals::delete_temps();
 
+// Call user defined signal handler
 	BC_Signals::global_signals->signal_handler(signum);
-	signal(signum, SIG_DFL);
 
-
+	exit(0);
 }
 
 BC_Signals::BC_Signals()
@@ -209,12 +220,51 @@ void BC_Signals::dump_buffers()
 	pthread_mutex_unlock(lock);
 }
 
+void BC_Signals::delete_temps()
+{
+	pthread_mutex_lock(lock);
+	printf("BC_Signals::delete_temps: deleting %d temp files\n", temp_files.size);
+	for(int i = 0; i < temp_files.size; i++)
+	{
+		printf("    %s\n", (char*)temp_files.values[i]);
+		remove((char*)temp_files.values[i]);
+	}
+	pthread_mutex_unlock(lock);
+}
+
+void BC_Signals::set_temp(char *string)
+{
+	char *new_string = strdup(string);
+	append_table(&temp_files, new_string);
+}
+
+void BC_Signals::unset_temp(char *string)
+{
+	for(int i = 0; i < temp_files.size; i++)
+	{
+		if(!strcmp((char*)temp_files.values[i], string))
+		{
+			clear_table_entry(&temp_files, i, 1);
+			break;
+		}
+	}
+}
+
+
 void BC_Signals::initialize()
 {
 	BC_Signals::global_signals = this;
 	lock = (pthread_mutex_t*)calloc(1, sizeof(pthread_mutex_t));
+	handler_lock = (pthread_mutex_t*)calloc(1, sizeof(pthread_mutex_t));
 	pthread_mutex_init(lock, 0);
+	pthread_mutex_init(handler_lock, 0);
 
+	initialize2();
+}
+
+
+void BC_Signals::initialize2()
+{
 	signal(SIGHUP, signal_entry);
 	signal(SIGINT, signal_entry);
 	signal(SIGQUIT, signal_entry);

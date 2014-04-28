@@ -34,11 +34,10 @@ CDRipMain::~CDRipMain()
 	delete defaults;
 }
 
-char* CDRipMain::plugin_title() { return _("CD Ripper"); }
-
+char* CDRipMain::plugin_title() { return N_("CD Ripper"); }
 int CDRipMain::is_realtime() { return 0; }
-
 int CDRipMain::is_multichannel() { return 1; }
+
 
 int CDRipMain::load_defaults()
 {

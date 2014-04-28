@@ -161,15 +161,8 @@ ReverseAudio::~ReverseAudio()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* ReverseAudio::plugin_title()
-{
-	return _("Reverse audio");
-}
-
-int ReverseAudio::is_realtime()
-{
-	return 1;
-}
+char* ReverseAudio::plugin_title() { return N_("Reverse audio"); }
+int ReverseAudio::is_realtime() { return 1; }
 
 #include "picon_png.h"
 NEW_PICON_MACRO(ReverseAudio)

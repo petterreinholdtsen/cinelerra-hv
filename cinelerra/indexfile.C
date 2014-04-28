@@ -10,6 +10,7 @@
 #include "file.h"
 #include "indexfile.h"
 #include "indexthread.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainprogress.h"
 #include "mwindow.h"
@@ -17,16 +18,10 @@
 #include "preferences.h"
 #include "resourcepixmap.h"
 #include "theme.h"
-#include "timer.h"
+#include "bctimer.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "vframe.h"
-
-#include <string.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 // Use native sampling rates for files so the same index can be used in
 // multiple projects.

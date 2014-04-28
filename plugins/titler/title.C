@@ -9,6 +9,7 @@
 #include "colormodels.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
@@ -780,7 +781,7 @@ TitleMain::~TitleMain()
 	if(translate) delete translate;
 }
 
-char* TitleMain::plugin_title() { return "Title"; }
+char* TitleMain::plugin_title() { return N_("Title"); }
 int TitleMain::is_realtime() { return 1; }
 int TitleMain::is_synthesis() { return 1; }
 

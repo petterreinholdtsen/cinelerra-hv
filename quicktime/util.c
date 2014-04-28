@@ -48,6 +48,7 @@ int quicktime_file_open(quicktime_t *file, char *path, int rd, int wr)
 		return 1;
 	}
 
+
 	if(rd && exists)
 	{
 		file->total_length = quicktime_get_file_length(path);		

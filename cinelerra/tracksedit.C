@@ -189,9 +189,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	int edit_labels,  // Ignored
 	int edit_plugins)  // Ignored
 {
-	int current_aedit = 0;
-	int current_vedit = 0;
-
 //printf("Tracks::move_edits 1\n");
 	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
 	{
@@ -201,10 +198,13 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // change in the editing operation.
 			Edit *source_edit = 0;
 			Track *source_track = 0;
+
+
 // Get source track
-			if(dest_track->data_type == TRACK_AUDIO &&
-				current_aedit < edits->total)
+			if(dest_track->data_type == TRACK_AUDIO)
 			{
+				int current_aedit = 0;
+
 				while(current_aedit < edits->total &&
 					edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
 					current_aedit++;
@@ -213,13 +213,13 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				{
 					source_edit = edits->values[current_aedit];
 					source_track = source_edit->track;
-					current_aedit++;
+					edits->remove_number(current_aedit);
 				}
 			}
 			else
-			if(dest_track->data_type == TRACK_VIDEO &&
-				current_vedit < edits->total)
+			if(dest_track->data_type == TRACK_VIDEO)
 			{
+				int current_vedit = 0;
 				while(current_vedit < edits->total &&
 					edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
 					current_vedit++;
@@ -228,7 +228,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				{
 					source_edit = edits->values[current_vedit];
 					source_track = source_edit->track;
-					current_vedit++;
+					edits->remove_number(current_vedit);
 				}
 			}
 
@@ -243,6 +243,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				int64_t source_length = source_edit->length;
 
 				temp_autoconf.set_all();
+
 				source_track->automation->copy(source_edit->startproject, 
 					source_edit->startproject + source_edit->length, 
 					&temp, 
@@ -250,6 +251,29 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					0);
 				temp.terminate_string();
 				temp.rewind();
+// Insert new keyframes
+//printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
+				source_track->automation->clear(source_edit->startproject,
+					source_edit->startproject + source_edit->length, 
+					&temp_autoconf,
+					1);
+				int64_t position_a = position_i;
+				if (dest_track == source_track)
+                {
+                    if (position_a > source_edit->startproject)
+                            position_a -= source_length;
+                }	        
+
+				dest_track->automation->paste_silence(position_a, 
+					position_a + source_length);
+				while(!temp.read_tag())
+					dest_track->automation->paste(position_a, 
+						source_length, 
+						1.0, 
+						&temp, 
+						0,
+						&temp_autoconf);
+
 
 
 //printf("Tracks::move_edits 1 %d\n", source_edit->length);
@@ -262,34 +286,16 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				result->startproject = position_i;
 				result->length = source_length;
 
-// Insert new keyframes
-//printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
-				dest_track->automation->paste_silence(source_edit->startproject, 
-					source_edit->startproject + source_length);
-				while(!temp.read_tag())
-					dest_track->automation->paste(position_i, 
-						source_length, 
-						1.0, 
-						&temp, 
-						0,
-						&temp_autoconf);
-
 //printf("Tracks::move_edits 5\n");
 //dest_track->dump();
 
 // Clear source
-				int64_t clear_start = source_edit->startproject;
-				int64_t clear_end = clear_start + source_length;
-
 //printf("Tracks::move_edits 7 %d %d\n", clear_start, clear_end);
-				source_track->edits->clear(clear_start, 
-					clear_end);
-				source_track->automation->clear(clear_start,
-					clear_end,
-					&temp_autoconf,
-					1);
+				source_track->edits->clear(source_edit->startproject, 
+					source_edit->startproject + source_length);
 
 
+                                
 //printf("Tracks::move_edits 8 %d %d\n", clear_start, source_edit->length);
 //dest_track->dump();
 //printf("Tracks::move_edits 9\n");

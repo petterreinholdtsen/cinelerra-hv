@@ -6,7 +6,6 @@
 #include "filebase.h"
 #include "lame.h"
 #include "libmpeg3.h"
-#include "mutex.h"
 #include "thread.h"
 
 

@@ -12,6 +12,7 @@
 #define FILE_UNKNOWN    		0
 #define FILE_AIFF       		10
 #define FILE_AMPEG      	  	16    // For encoding only
+#define FILE_AC3                25    // AC3 encoding
 #define FILE_AU         		9
 #define FILE_AVI_ARNE1          20    // DV type 1
 #define FILE_AVI                24    // Heroine Virtual
@@ -22,7 +23,7 @@
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
 #define FILE_MOV  	    		3
-#define FILE_MPEG       	  	15    // For decoding only
+#define FILE_MPEG       	  	15    // Libmpeg3 decoding only
 #define FILE_PCM  	    		1
 #define FILE_PLUGIN     	  	0x8000
 #define FILE_PNG  	    		4
@@ -40,6 +41,7 @@
 // plugin list ORed with 0x8000.
 
 #if 0
+N_("AC3")
 N_("Apple/SGI AIFF")
 N_("MPEG Audio")    // For encoding only
 N_("Sun/NeXT AU")
@@ -65,6 +67,7 @@ N_("MPEG Video")    // For encoding only
 N_("OGG Vorbis")
 #endif
 
+#define AC3_NAME "AC3"
 #define AIFF_NAME "Apple/SGI AIFF"
 #define AMPEG_NAME "MPEG Audio"    // For encoding only
 #define AU_NAME "Sun/NeXT AU"

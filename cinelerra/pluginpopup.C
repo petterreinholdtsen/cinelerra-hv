@@ -1,3 +1,4 @@
+#include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -6,10 +7,6 @@
 #include "pluginpopup.h"
 #include "track.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)

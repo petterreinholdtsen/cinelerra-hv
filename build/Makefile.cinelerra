@@ -28,9 +28,9 @@ DISTOBJS = \
 
 
 all: $(OBJDIR)/soundtest
-	$(MAKE) -f build/Makefile.libavc
 ifeq ($(HAVE_FIREWIRE), y)
 	$(MAKE) -f build/Makefile.libraw
+	$(MAKE) -f build/Makefile.libavc
 endif
 	$(MAKE) -f build/Makefile.esound
 	$(MAKE) -f build/Makefile.freetype

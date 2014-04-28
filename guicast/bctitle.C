@@ -71,6 +71,11 @@ int BC_Title::update(char *text)
 	return 0;
 }
 
+char* BC_Title::get_text()
+{
+	return text;
+}
+
 int BC_Title::draw()
 {
 	int i, j, x, y;

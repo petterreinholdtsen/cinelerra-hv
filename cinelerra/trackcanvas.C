@@ -19,10 +19,12 @@
 #include "floatautos.h"
 #include "intauto.h"
 #include "keyframe.h"
+#include "keyframepopup.h"
 #include "keyframes.h"
 #include "keys.h"
 #include "localsession.h"
 #include "mainclock.h"
+#include "maincursor.h"
 #include "mainundo.h"
 #include "maskautos.h"
 #include "mbuttons.h"
@@ -72,9 +74,9 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	which_handle = 0;
 	handle_pixel = 0;
 	drag_scroll = 0;
-	drag_pixmap = 0;
 	drag_popup = 0;
 	active = 0;
+	temp_picon = 0;
 }
 
 TrackCanvas::~TrackCanvas()
@@ -90,6 +92,7 @@ TrackCanvas::~TrackCanvas()
 	delete projectorkeyframe_pixmap;
 	delete maskkeyframe_pixmap;
 	delete background_pixmap;
+	if(temp_picon) delete temp_picon;
 }
 
 int TrackCanvas::create_objects()
@@ -190,6 +193,10 @@ int TrackCanvas::keypress_event()
 			}
 			break;
 	}
+
+// since things under cursor have changed...
+	if (result) 
+		cursor_motion_event(); 
 
 	return result;
 }
@@ -327,7 +334,9 @@ int TrackCanvas::drag_start_event()
 		if(test_plugins(get_drag_x(), 
 			get_drag_y(), 
 			1,
-			0))
+			0,
+			redraw,
+			rerender))
 		{
 			result = 1;
 		}
@@ -353,6 +362,14 @@ int TrackCanvas::drag_motion_event()
 	return drag_motion();
 }
 
+int TrackCanvas::cursor_leave_event()
+{
+	// because drag motion calls get_cursor_over_window we can be sure that all highlights get deleted now
+	drag_motion();
+	return 0;
+}
+
+
 int TrackCanvas::drag_stop_event()
 {
 	int result = drag_stop();
@@ -361,9 +378,7 @@ int TrackCanvas::drag_stop_event()
 	{
 //printf("TrackCanvas::drag_stop_event 1 %p\n", drag_popup);
 		delete drag_popup;
-		delete drag_pixmap;
 		drag_popup = 0;
-		drag_pixmap = 0;
 	}
 	return result;
 }
@@ -434,7 +449,6 @@ int TrackCanvas::drag_stop()
 							mwindow->session->plugin_highlighted->plugin_set,
 							0,
 							mwindow->session->plugin_highlighted->startproject);
-						result = 1;
 					}
 					else
 					{
@@ -442,8 +456,8 @@ int TrackCanvas::drag_stop()
 							mwindow->session->pluginset_highlighted,
 							0,
 							mwindow->session->pluginset_highlighted->length());
-						result = 1;
 					}
+					result = 1;
 				}
 				else
 // Move to a new plugin set between two edits
@@ -514,9 +528,10 @@ int TrackCanvas::drag_stop()
 // 				}
 
 				mwindow->insert_effects_canvas(start, length);
-				result = 1;
 				redraw = 1;
 			}
+			if (mwindow->session->track_highlighted)
+				result = 1;  // we have to cleanup
 			break;
 
 		case DRAG_ASSET:
@@ -527,8 +542,8 @@ int TrackCanvas::drag_stop()
 					mwindow->session->track_highlighted->edits->length();
 				double position_f = mwindow->session->track_highlighted->from_units(position);
 				Track *track = mwindow->session->track_highlighted;
-				mwindow->session->track_highlighted = 0;
-				result = mwindow->paste_assets(position_f, track);
+				mwindow->paste_assets(position_f, track);
+				result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 			}
 			break;
 
@@ -543,7 +558,6 @@ int TrackCanvas::drag_stop()
 						mwindow->session->track_highlighted->edits->length();
 					double position_f = mwindow->session->track_highlighted->from_units(position);
 					Track *track = mwindow->session->track_highlighted;
-					mwindow->session->track_highlighted = 0;
 					mwindow->move_edits(mwindow->session->drag_edits,
 						track,
 						position_f);
@@ -554,11 +568,18 @@ int TrackCanvas::drag_stop()
 			break;
 	}
 
+// since we don't have subwindows we have to terminate any drag operation
 	if(result)
 	{
+		if (mwindow->session->track_highlighted
+			|| mwindow->session->edit_highlighted
+			|| mwindow->session->plugin_highlighted
+			|| mwindow->session->pluginset_highlighted) 
+			redraw = 1;
 		mwindow->session->track_highlighted = 0;
 		mwindow->session->edit_highlighted = 0;
 		mwindow->session->plugin_highlighted = 0;
+		mwindow->session->pluginset_highlighted = 0;
 		mwindow->session->current_operation = NO_OPERATION;
 	}
 
@@ -1482,7 +1503,8 @@ void TrackCanvas::draw_transitions()
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 					MWindowGUI::visible(y, y + h, 0, get_h()))
 				{
-					PluginServer *server = mwindow->scan_plugindb(edit->transition->title);
+					PluginServer *server = mwindow->scan_plugindb(edit->transition->title,
+						track->data_type);
 					draw_vframe(server->picon, 
 						x, 
 						y, 
@@ -1764,20 +1786,31 @@ int TrackCanvas::do_keyframes(int cursor_x,
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
 		if(!result && session->auto_conf->plugins)
 		{
+			Plugin *plugin;
+			KeyFrame *keyframe;
 			result = do_plugin_autos(track,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress,
+				plugin,
+				keyframe);
 			if(result && mwindow->session->current_operation == DRAG_PLUGINKEY)
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && (buttonpress == 1))
 			{
 				mwindow->session->current_operation = DRAG_PLUGINKEY_PRE;
 				update_drag_caption();
 				rerender = 1;
+			}
+			else
+			if(result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(plugin, keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
 			}
 		}
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
@@ -2797,7 +2830,9 @@ int TrackCanvas::do_plugin_autos(Track *track,
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress)
+		int buttonpress,
+		Plugin* &keyframe_plugin,
+		KeyFrame* &keyframe_instance)
 {
 	int result = 0;
 
@@ -2852,6 +2887,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 							cursor_y < y + keyframe_pixmap->get_h())
 						{
 							result = 1;
+							keyframe_plugin = plugin;
+							keyframe_instance = keyframe;
 
 							if(buttonpress)
 							{
@@ -2907,28 +2944,27 @@ TRACE("TrackCanvas::draw_overlays 1")
 		0);
 TRACE("TrackCanvas::draw_overlays 10")
 
-//printf("TrackCanvas::draw_overlays 4\n");
 // In/Out points
 	draw_inout_points();
 
-//printf("TrackCanvas::draw_overlays 5\n");
+TRACE("TrackCanvas::draw_overlays 11");
 // Transitions
 	if(mwindow->edl->session->auto_conf->transitions) draw_transitions();
 
-//printf("TrackCanvas::draw_overlays 6\n");
+TRACE("TrackCanvas::draw_overlays 12");
 // Plugins
 	draw_plugins();
 
-//printf("TrackCanvas::draw_overlays 2\n");
+TRACE("TrackCanvas::draw_overlays 13");
 // Loop points
 	draw_loop_points();
 	draw_brender_start();
 
-//printf("TrackCanvas::draw_overlays 7\n");
+TRACE("TrackCanvas::draw_overlays 14");
 // Highlighted areas
 	draw_highlighting();
 
-//printf("TrackCanvas::draw_overlays 8\n");
+TRACE("TrackCanvas::draw_overlays 15");
 // Automation
 	do_keyframes(0, 
 		0, 
@@ -2938,15 +2974,15 @@ TRACE("TrackCanvas::draw_overlays 10")
 		update_cursor,
 		rerender);
 
-//printf("TrackCanvas::draw_overlays 9\n");
+TRACE("TrackCanvas::draw_overlays 16\n");
 // Selection cursor
 	if(gui->cursor) gui->cursor->restore();
 
-//printf("TrackCanvas::draw_overlays 10\n");
+TRACE("TrackCanvas::draw_overlays 17\n");
 // Handle dragging
 	draw_drag_handle();
 
-//printf("TrackCanvas::draw_overlays 11\n");
+TRACE("TrackCanvas::draw_overlays 20");
 // Playback cursor
 	draw_playback_cursor();
 
@@ -3069,13 +3105,34 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // Snap to nearby values
 			if(shift_down())
 			{
+				double value1;
+				double distance1;
+				double value2;
+				double distance2;
+				value = ((FloatAuto*)current)->percentage_to_value(percentage);
+
 				if(current->previous)
-					value = ((FloatAuto*)current->previous)->value;
-				else
+				{
+					value1 = ((FloatAuto*)current->previous)->value;
+					distance1 = fabs(value - value1);
+					current->value = value1;
+				}
+
 				if(current->next)
-					value = ((FloatAuto*)current->next)->value;
-				else
+				{
+					value2 = ((FloatAuto*)current->next)->value;
+					distance2 = fabs(value - value2);
+					if(!current->previous || distance2 < distance1)
+					{
+						current->value = value2;
+					}
+				}
+
+				if(!current->previous && !current->next)
+				{
 					value = ((FloatAutos*)current->autos)->default_;
+				}
+				value = current->value;
 			}
 			else
 				value = ((FloatAuto*)current)->percentage_to_value(percentage);
@@ -3684,7 +3741,8 @@ int TrackCanvas::button_release_event()
 			}
 			break;
 	}
-
+	if (result) 
+		cursor_motion_event();
 	if(update_overlay)
 	{
 		draw_overlays();
@@ -3719,7 +3777,7 @@ int TrackCanvas::test_edit_handles(int cursor_x,
 			int64_t edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
 
-			if(cursor_x >= edit_x && cursor_x < edit_x + edit_w &&
+			if(cursor_x >= edit_x && cursor_x <= edit_x + edit_w &&
 				cursor_y >= edit_y && cursor_y < edit_y + edit_h)
 			{
 				if(cursor_x < edit_x + HANDLE_W)
@@ -3811,7 +3869,7 @@ int TrackCanvas::test_plugin_handles(int cursor_x,
 				int64_t plugin_x, plugin_y, plugin_w, plugin_h;
 				plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
 				
-				if(cursor_x >= plugin_x && cursor_x < plugin_x + plugin_w &&
+				if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
 					cursor_y >= plugin_y && cursor_y < plugin_y + plugin_h)
 				{
 					if(cursor_x < plugin_x + HANDLE_W)
@@ -3982,13 +4040,10 @@ int TrackCanvas::test_edits(int cursor_x,
 						mwindow->session->drag_origin_x = cursor_x;
 						mwindow->session->drag_origin_y = cursor_y;
 
-						drag_pixmap = new BC_Pixmap(gui,
-							mwindow->theme->clip_icon,
-							PIXMAP_ALPHA);
 						drag_popup = new BC_DragWindow(gui, 
-							drag_pixmap, 
-							get_abs_cursor_x() - drag_pixmap->get_w() / 2,
-							get_abs_cursor_y() - drag_pixmap->get_h() / 2);
+							mwindow->theme->clip_icon, 
+							get_abs_cursor_x() - mwindow->theme->clip_icon->get_w() / 2,
+							get_abs_cursor_y() - mwindow->theme->clip_icon->get_h() / 2);
 //printf("TrackCanvas::test_edits 3 %p\n", drag_popup);
 
 						result = 1;
@@ -4009,15 +4064,18 @@ int TrackCanvas::test_resources(int cursor_x, int cursor_y)
 int TrackCanvas::test_plugins(int cursor_x, 
 	int cursor_y, 
 	int drag_start,
-	int button_press)
+	int button_press,
+	int &redraw,
+	int &rerender)
 {
 	Plugin *plugin = 0;
 	int result = 0;
 	int done = 0;
 	int64_t x, y, w, h;
+	Track *track = 0;
 
 //printf("TrackCanvas::test_plugins 1\n");
-	for(Track *track = mwindow->edl->tracks->first;
+	for(track = mwindow->edl->tracks->first;
 		track && !done;
 		track = track->next)
 	{
@@ -4055,6 +4113,26 @@ int TrackCanvas::test_plugins(int cursor_x,
 				gui->plugin_menu->update(plugin);
 				gui->plugin_menu->activate_menu();
 				result = 1;
+			} 
+			else
+// Select range of plugin on doubleclick over plugin
+			if (get_double_click() && !drag_start)
+			{
+				mwindow->edl->local_session->selectionstart = 
+					plugin->track->from_units(plugin->startproject);
+				mwindow->edl->local_session->selectionend = 
+					plugin->track->from_units(plugin->startproject) + 
+					plugin->track->from_units(plugin->length);
+				if(mwindow->edl->session->cursor_on_frames) 
+				{
+					mwindow->edl->local_session->selectionstart = 
+						mwindow->edl->align_to_frame(mwindow->edl->local_session->selectionstart, 0);
+					mwindow->edl->local_session->selectionend = 
+						mwindow->edl->align_to_frame(mwindow->edl->local_session->selectionend, 1);
+				}
+				rerender = 1;
+				redraw = 1;
+				result = 1;
 			}
 //printf("TrackCanvas::test_plugins 3\n");
 		}
@@ -4084,49 +4162,29 @@ int TrackCanvas::test_plugins(int cursor_x,
 				{
 					case PLUGIN_STANDALONE:
 					{
-						PluginServer *server = mwindow->scan_plugindb(plugin->title);
+						PluginServer *server = mwindow->scan_plugindb(plugin->title,
+							track->data_type);
 						VFrame *frame = server->picon;
 //printf("TrackCanvas::test_plugins 7\n");
-						if(frame->get_color_model() == BC_RGB888)
-						{
-							drag_pixmap = new BC_Pixmap(gui, frame->get_w(), frame->get_h());
-							drag_pixmap->draw_vframe(frame,
-								0,
-								0,
-								frame->get_w(),
-								frame->get_h(),
-								0,
-								0);
-						}
-						else
-						{
-							drag_pixmap = new BC_Pixmap(gui,
-								frame,
-								PIXMAP_ALPHA);
-						}
-//printf("TrackCanvas::test_plugins 8\n");
+						drag_popup = new BC_DragWindow(gui, 
+							frame, 
+							get_abs_cursor_x() - frame->get_w() / 2,
+							get_abs_cursor_y() - frame->get_h() / 2);
 						break;
 					}
 					
 					case PLUGIN_SHAREDPLUGIN:
-						drag_pixmap = new BC_Pixmap(gui,
-							mwindow->theme->clip_icon,
-							PIXMAP_ALPHA);
-						break;
-
 					case PLUGIN_SHAREDMODULE:
-						drag_pixmap = new BC_Pixmap(gui,
-							mwindow->theme->clip_icon,
-							PIXMAP_ALPHA);
+						drag_popup = new BC_DragWindow(gui, 
+							mwindow->theme->clip_icon, 
+							get_abs_cursor_x() - mwindow->theme->clip_icon->get_w() / 2,
+							get_abs_cursor_y() - mwindow->theme->clip_icon->get_h() / 2);
 						break;
 //printf("test plugins %d %p\n", mwindow->edl->session->editing_mode, mwindow->session->drag_plugin);
 				}
 
 //printf("TrackCanvas::test_plugins 9 %p\n");
-				drag_popup = new BC_DragWindow(gui, 
-					drag_pixmap, 
-					get_abs_cursor_x() - drag_pixmap->get_w() / 2,
-					get_abs_cursor_y() - drag_pixmap->get_h() / 2);
+
 //printf("TrackCanvas::test_plugins 10\n");
 				result = 1;
 			}
@@ -4253,7 +4311,7 @@ int TrackCanvas::button_press_event()
 				if(do_keyframes(cursor_x, 
 					cursor_y, 
 					0, 
-					1, 
+					get_buttonpress(), 
 					new_cursor, 
 					update_cursor,
 					rerender))
@@ -4278,7 +4336,7 @@ int TrackCanvas::button_press_event()
 					break;
 				}
 				else
-				if(test_plugins(cursor_x, cursor_y, 0, 1))
+				if(test_plugins(cursor_x, cursor_y, 0, 1, update_cursor, rerender))
 				{
 					break;
 				}
@@ -4319,7 +4377,7 @@ int TrackCanvas::button_press_event()
 				if(do_keyframes(cursor_x, 
 					cursor_y, 
 					0, 
-					1, 
+					get_buttonpress(), 
 					new_cursor, 
 					update_cursor,
 					rerender))
@@ -4345,7 +4403,7 @@ int TrackCanvas::button_press_event()
 					break;
 				}
 				else
-				if(test_plugins(cursor_x, cursor_y, 0, 1))
+				if(test_plugins(cursor_x, cursor_y, 0, 1, update_cursor, rerender))
 				{
 					break;
 				}

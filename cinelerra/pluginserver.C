@@ -184,8 +184,7 @@ void PluginServer::set_title(char *string)
 
 void PluginServer::generate_display_title(char *string)
 {
-//printf("PluginServer::generate_display_title %s %s\n", plugin->track->title, title);
-	if(plugin) 
+	if(plugin && plugin->track) 
 		sprintf(string, "%s: %s", plugin->track->title, title);
 	else
 		strcpy(string, title);
@@ -396,10 +395,17 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->project_frame_rate :
 		0);
 	vclient->direction = direction;
+
 	if(multichannel)
+	{
 		vclient->process_buffer(frame, current_position, frame_rate);
+	}
 	else
+	{
 		vclient->process_buffer(frame[0], current_position, frame_rate);
+	}
+
+
 	vclient->age_temp();
 }
 
@@ -415,11 +421,10 @@ void PluginServer::process_buffer(double **buffer,
 	aclient->source_position = current_position;
 	aclient->total_len = total_len;
 	aclient->sample_rate = sample_rate;
-	aclient->source_start = plugin ?
-		plugin->startproject * 
-		sample_rate /
-		aclient->project_sample_rate :
-		0;
+	if(plugin)
+		aclient->source_start = plugin->startproject * 
+			sample_rate /
+			aclient->project_sample_rate;
 	aclient->direction = direction;
 	if(multichannel)
 		aclient->process_buffer(fragment_size, 
@@ -427,10 +432,12 @@ void PluginServer::process_buffer(double **buffer,
 			current_position, 
 			sample_rate);
 	else
+	{
 		aclient->process_buffer(fragment_size, 
 			buffer[0], 
 			current_position, 
 			sample_rate);
+	}
 }
 
 
@@ -606,16 +613,20 @@ int PluginServer::read_frame(VFrame *buffer,
 	if(!multichannel) channel = 0;
 
 	if(nodes->total > channel)
+	{
 		return ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
 			start_position,
 			frame_rate);
+	}
 	else
 	if(modules->total > channel)
+	{
 		return ((VModule*)modules->values[channel])->render(buffer,
 			start_position,
 			PLAY_FORWARD,
 			frame_rate,
 			0);
+	}
 	else
 	{
 		printf("PluginServer::read_frame no object available for channel=%d\n",
@@ -692,10 +703,10 @@ void PluginServer::raise_window()
 
 void PluginServer::show_gui()
 {
-	if(!plugin_open || !plugin) return;
+	if(!plugin_open) return;
 	client->smp = preferences->processors - 1;
-	client->total_len = plugin->length;
-	client->source_start = plugin->startproject;
+	if(plugin) client->total_len = plugin->length;
+	if(plugin) client->source_start = plugin->startproject;
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -910,6 +921,13 @@ Theme* PluginServer::new_theme()
 	}
 	else
 		return 0;
+}
+
+Theme* PluginServer::get_theme()
+{
+	if(mwindow) return mwindow->theme;
+	printf("PluginServer::get_theme mwindow not set\n");
+	return 0;
 }
 
 

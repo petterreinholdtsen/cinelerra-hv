@@ -244,10 +244,20 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		input->get_data()[1] != 0xd8)
 		return 1;
 
-//printf("FileJPEG::read_frame %d\n", __LINE__);
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
+// printf("FileJPEG::read_frame %d %p %d %d %d %p %p %p %p %d\n", 
+// __LINE__,
+// input->get_data(), 
+// input->get_compressed_size(),
+// output->get_w(),
+// output->get_h(),
+// output->get_rows(), 
+// output->get_y(), 
+// output->get_u(), 
+// output->get_v(),
+// output->get_color_model());
 	mjpeg_decompress((mjpeg_t*)decompressor, 
 		input->get_data(), 
 		input->get_compressed_size(),
@@ -258,6 +268,7 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		output->get_v(),
 		output->get_color_model(),
 		1);
+//	PRINT_TRACE
 
 //printf("FileJPEG::read_frame %d\n", __LINE__);
 	return 0;

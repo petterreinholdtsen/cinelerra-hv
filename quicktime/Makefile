@@ -28,7 +28,7 @@ FFMPEG_INCLUDE := -I$(FFMPEG_DIR) \
 -I$(FFMPEG_DIR)/libavformat \
 -I$(FFMPEG_DIR)/libavutil
 
-FAAD_DIR := thirdparty/faad2-2.7
+FAAD_DIR := $(shell expr thirdparty/faad*)
 FAAD_LIB := $(OBJDIR)/faad/
 FAAD_INCLUDE := $(FAAD_DIR)/include/
 
@@ -102,7 +102,7 @@ include Makefile.encore50
 
 
 
-CFLAGS += -g
+CFLAGS += 
 CFLAGS += -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
 CFLAGS += -DHAVE_FIREWIRE
 
@@ -262,7 +262,7 @@ $(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
 
 all: $(OBJDIR) $(OUTPUT)
 
-$(OUTPUT): $(OBJS) $(FFMPEG_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(LAME_OBJS) $(FAAD_LIB) $(FAAC_LIB) $(FFMPEG_LIB) $(X264_LIB) $(DV_LIB) $(JPEG_LIB) $(OGG_LIB)/ $(VORBIS_LIB)
+$(OUTPUT): $(OBJS) $(FFMPEG_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(LAME_OBJS) $(FAAD_LIB) $(FAAC_LIB) $(FFMPEG_LIB) $(X264_LIB) $(DV_LIB) $(JPEG_LIB) $(OGG_LIB) $(VORBIS_LIB)
 	find $(FFMPEG_DIR)/libavcodec/ -name *.o >> $(OBJDIR)/objs
 	find $(FFMPEG_DIR)/libavformat/ -name *.o >> $(OBJDIR)/objs
 	find $(FFMPEG_DIR)/libavutil/ -name *.o >> $(OBJDIR)/objs

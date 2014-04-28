@@ -627,7 +627,8 @@ int CWindowGUI::drag_stop()
 				mwindow->session->track_highlighted,
 				0,
 				mwindow->edl->session->labels_follow_edits, 
-				mwindow->edl->session->plugins_follow_edits);
+				mwindow->edl->session->plugins_follow_edits,
+				mwindow->edl->session->autos_follow_edits);
 		}
 
 		if(mwindow->session->drag_clips->total)
@@ -639,7 +640,8 @@ int CWindowGUI::drag_stop()
 				mwindow->session->track_highlighted,
 				mwindow->edl->local_session->get_selectionstart(),
 				mwindow->edl->session->labels_follow_edits, 
-				mwindow->edl->session->plugins_follow_edits);
+				mwindow->edl->session->plugins_follow_edits,
+				mwindow->edl->session->autos_follow_edits);
 		}
 
 		if(mwindow->session->drag_assets->total ||

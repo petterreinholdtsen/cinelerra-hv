@@ -233,11 +233,24 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 
 	int direction = renderengine->command->get_direction();
 	double edl_rate = renderengine->get_edl()->session->frame_rate;
+
+
+
+
+
 // Get position relative to project, compensated for direction
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate / 
 		frame_rate);
 	if(direction == PLAY_REVERSE) start_position_project--;
+
+
+// speed curve
+	if(track->has_speed())
+	{
+// integrate position from start of track.  1/speed is duration of each frame
+		
+	}
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_as_module title=%s use_opengl=%d video_out=%p output_temp=%p\n", 

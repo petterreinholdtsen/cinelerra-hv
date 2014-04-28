@@ -811,11 +811,14 @@ int IndexFile::read_info(Indexable *test_indexable)
 		int temp = fread((char*)&(index_state->index_start), sizeof(int64_t), 1, fd);
 //printf("IndexFile::read_info %d %f\n", __LINE__, test_indexable->get_frame_rate());
 
+		if(!temp) return 1;
 // read test_indexable info from index
 		char *data;
 		
 		data = new char[index_state->index_start];
 		temp = fread(data, index_state->index_start - sizeof(int64_t), 1, fd);
+		if(!temp) return 1;
+
 		data[index_state->index_start - sizeof(int64_t)] = 0;
 		FileXML xml;
 		xml.read_from_string(data);

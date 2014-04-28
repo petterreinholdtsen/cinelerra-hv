@@ -70,8 +70,8 @@ class RotateScan;
 #define MIN_BLOCKS 1
 #define MAX_BLOCKS 200
 
-#define MOTION_FILE "/tmp/motion"
-#define ROTATION_FILE "/tmp/rotate"
+#define MOTION_FILE "/tmp/m"
+#define ROTATION_FILE "/tmp/r"
 
 class MotionConfig
 {

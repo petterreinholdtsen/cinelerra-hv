@@ -1253,6 +1253,8 @@ static int matroska_read_header(AVFormatContext *s, AVFormatParameters *ap)
         }
 
         st = track->stream = av_new_stream(s, 0);
+//printf("matroska_read_header %d %p\n", __LINE__, st);
+
         if (st == NULL)
             return AVERROR(ENOMEM);
 

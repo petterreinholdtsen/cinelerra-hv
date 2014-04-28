@@ -277,7 +277,8 @@ void RecordMonitorGUI::create_objects()
 			driver == VIDEO4LINUX2 ||
 			driver == VIDEO4LINUX2JPEG ||
 			driver == CAPTURE_JPEG_WEBCAM ||
-			driver == CAPTURE_YUYV_WEBCAM);
+			driver == CAPTURE_YUYV_WEBCAM ||
+			driver == CAPTURE_MPEG);
 	int do_scopes = do_channel || driver == SCREENCAPTURE;
 	int do_interlace = (driver == CAPTURE_BUZ ||
 		driver == VIDEO4LINUX2JPEG);
@@ -557,7 +558,8 @@ int RecordMonitorGUI::resize_event(int w, int h)
 			driver == VIDEO4LINUX2 ||
 			driver == VIDEO4LINUX2JPEG ||
 			driver == CAPTURE_JPEG_WEBCAM ||
-			driver == CAPTURE_YUYV_WEBCAM);
+			driver == CAPTURE_YUYV_WEBCAM ||
+			driver == CAPTURE_MPEG);
 	int do_scopes = do_channel || driver == SCREENCAPTURE;
 	int do_interlace = (driver == CAPTURE_BUZ ||
 		driver == VIDEO4LINUX2JPEG);

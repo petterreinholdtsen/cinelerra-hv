@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,6 +92,11 @@ CICache* VModule::get_cache()
 		return cache;
 }
 
+
+
+
+
+
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
 	int64_t input_position,
@@ -99,8 +104,7 @@ int VModule::import_frame(VFrame *output,
 	int direction,
 	int use_opengl)
 {
-	int64_t corrected_position;
-	int64_t corrected_position_project;
+	int64_t direction_position;
 // Translation of edit
 	float in_x;
 	float in_y;
@@ -113,10 +117,18 @@ int VModule::import_frame(VFrame *output,
 	int result = 0;
 	const int debug = 0;
 	double edl_rate = get_edl()->session->frame_rate;
+
 	int64_t input_position_project = Units::to_int64(input_position * 
 		edl_rate / 
 		frame_rate + 
 		0.001);
+
+
+
+
+
+
+
 	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
 	//output->dump_params();
 
@@ -127,12 +139,11 @@ int VModule::import_frame(VFrame *output,
 		(long long)input_position,
 		direction);
 
-// Convert to position going forward
-	corrected_position = input_position;
-	corrected_position_project = input_position_project;
+// Convert to position corrected for direction
+	direction_position = input_position;
 	if(direction == PLAY_REVERSE)
 	{
-		corrected_position--;
+		direction_position--;
 		input_position_project--;
 	}
 	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
@@ -270,14 +281,47 @@ int VModule::import_frame(VFrame *output,
 				frame_rate /
 				edl_rate);
 // Source position going forward
-			uint64_t position = corrected_position - 
+			uint64_t position = direction_position - 
 				edit_startproject + 
 				edit_startsource;
 			int64_t nested_position = 0;
 
+
+			
+
+
+// apply speed curve to source position so the timeline agrees with the playback
+			if(track->has_speed())
+			{
+// integrate position from start of edit.
+				double speed_position = edit_startsource;
+				FloatAuto *previous = 0;
+				FloatAuto *next = 0;
+				FloatAutos *speed_autos = (FloatAutos*)track->automation->autos[AUTOMATION_SPEED];
+				for(int64_t i = edit_startproject; i < direction_position; i++)
+				{
+					double speed = speed_autos->get_value(i, 
+						PLAY_FORWARD,
+						previous,
+						next);
+					speed_position += speed;
+				}
+//printf("VModule::import_frame %d %lld %lld\n", __LINE__, position, (int64_t)speed_position);
+				position = (int64_t)speed_position;
+			}
+
+
+
+
+
 			int asset_w;
 			int asset_h;
 			if(debug) printf("VModule::import_frame %d\n", __LINE__);
+
+
+// maybe apply speed curve here, so timeline reflects actual playback
+
+
 
 // if we hit the end of stream, freeze at last frame
 			uint64_t max_position = 0;
@@ -302,7 +346,8 @@ int VModule::import_frame(VFrame *output,
 				renderengine->command->single_frame();
 			int use_asynchronous = !use_cache && 
 				renderengine &&
-// Try to make rendering go faster.  Don't know why realtime was required.
+// Try to make rendering go faster.
+// But converts some formats to YUV420, which may degrade input format.
 //				renderengine->command->realtime &&
 				renderengine->get_edl()->session->video_asynchronous;
 
@@ -417,6 +462,7 @@ int VModule::import_frame(VFrame *output,
 				if(commonrender)
 				{
 					VRender *vrender = (VRender*)commonrender;
+//printf("VModule::import_frame %d vrender->input_temp=%p\n", __LINE__, vrender->input_temp);
 					input = &vrender->input_temp;
 				}
 				else
@@ -488,8 +534,13 @@ int VModule::import_frame(VFrame *output,
 							input2 = output;
 						}
 
+						if(debug) printf("VModule::import_frame %d this=%p nested_cmodel=%d\n", 
+							__LINE__,
+							this,
+							nested_cmodel);
+						input2->dump();
 						input2->reallocate(0, 
-							0,
+							-1,
 							0,
 							0,
 							0,
@@ -497,13 +548,15 @@ int VModule::import_frame(VFrame *output,
 							(*input)->get_h(), 
 							nested_cmodel, 
 							-1);
+						input2->dump();
 					}
 
 
-					if(debug) printf("VModule::import_frame %d this=%p nested_edl=%s\n", 
+					if(debug) printf("VModule::import_frame %d this=%p nested_edl=%s input2=%p\n", 
 						__LINE__,
 						this,
-						nested_edl->path);
+						nested_edl->path,
+						input2);
 
 					result = nested_renderengine->vrender->process_buffer(
 						input2, 
@@ -528,7 +581,7 @@ int VModule::import_frame(VFrame *output,
 // The converted color model is now in hardware, so return the input2 buffer
 // to the expected color model.
 							input2->reallocate(0, 
-								0,
+								-1,
 								0,
 								0,
 								0,
@@ -568,10 +621,11 @@ output);
 								0,
 								input2->get_w(),
 								(*input)->get_w());
+//printf("VModule::import_frame %d\n", __LINE__);
 
 // input2 was the output buffer, so it must be restored
 						input2->reallocate(0, 
-							0,
+							-1,
 							0,
 							0,
 							0,
@@ -579,6 +633,7 @@ output);
 							output_h, 
 							current_cmodel, 
 							-1);
+//printf("VModule::import_frame %d\n", __LINE__);
 						}
 					}
 
@@ -644,6 +699,9 @@ output->get_opengl_state(),
 				}
 				else
 				{
+
+
+
 					output->clear_frame();
 
 
@@ -714,7 +772,7 @@ current_cmodel);
 						}
 
 						(*input)->reallocate(0,
-							0,
+							-1,
 							0,
 							0,
 							0,
@@ -722,12 +780,22 @@ current_cmodel);
 							output->get_h(),
 							nested_cmodel,
 							-1);
+if(debug) printf("VModule::import_frame %d\n", 
+__LINE__);
+//(*input)->dump();
+//(*input)->clear_frame();
 					}
 
+if(debug) printf("VModule::import_frame %d %p %p\n", 
+__LINE__,
+(*input)->get_rows(),
+(*input));
 					result = nested_renderengine->vrender->process_buffer(
 						(*input), 
 						nested_position,
 						use_opengl);
+if(debug) printf("VModule::import_frame %d\n", 
+__LINE__);
 
 // If colormodels differ, change colormodels in opengl if possible.
 // Swap output for temp if not possible.
@@ -740,7 +808,7 @@ current_cmodel);
 
 // The color model was changed in place, so return output buffer
 							output->reallocate(0, 
-								0,
+								-1,
 								0,
 								0,
 								0,

@@ -400,6 +400,7 @@ int Edit::shift_start_in(int edit_mode,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
@@ -414,6 +415,7 @@ int Edit::shift_start_in(int edit_mode,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
+				edit_autos,
 				trim_edits);
 		}
 		else
@@ -423,6 +425,7 @@ int Edit::shift_start_in(int edit_mode,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
+				edit_autos,
 				trim_edits);
 		}
 	}
@@ -467,6 +470,7 @@ int Edit::shift_start_in(int edit_mode,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
+				edit_autos,
 				trim_edits);
 		}
 //printf("Edit::shift_start_in 3\n");
@@ -489,6 +493,7 @@ int Edit::shift_start_out(int edit_mode,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	int64_t cut_length = oldposition - newposition;
@@ -511,11 +516,13 @@ int Edit::shift_start_out(int edit_mode,
 		startsource -= cut_length;
 		length += cut_length;
 
-		edits->shift_keyframes_recursive(startproject, 
-			cut_length);
+		if(edit_autos)
+			edits->shift_keyframes_recursive(startproject, 
+				cut_length);
 		if(edit_plugins)
 			edits->shift_effects_recursive(startproject, 
-				cut_length);
+				cut_length,
+				edit_autos);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
 		{
@@ -562,6 +569,7 @@ int Edit::shift_end_in(int edit_mode,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	int64_t cut_length = oldposition - newposition;
@@ -577,6 +585,7 @@ int Edit::shift_end_in(int edit_mode,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
+				edit_autos,
 				trim_edits);
 		}
 		else
@@ -586,6 +595,7 @@ int Edit::shift_end_in(int edit_mode,
 				edit_edits,
 				edit_labels,
 				edit_plugins,
+				edit_autos,
 				trim_edits);
 		}
 	}
@@ -635,6 +645,7 @@ int Edit::shift_end_in(int edit_mode,
 					edit_edits,
 					edit_labels,
 					edit_plugins,
+					edit_autos,
 					trim_edits);
 			}
 		}
@@ -660,6 +671,7 @@ int Edit::shift_end_out(int edit_mode,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
@@ -678,9 +690,11 @@ int Edit::shift_end_out(int edit_mode,
 // Effects are shifted in length extension
 		if(edit_plugins)
 			edits->shift_effects_recursive(oldposition /* startproject */, 
+				cut_length,
+				edit_autos);
+		if(edit_autos)
+			edits->shift_keyframes_recursive(oldposition /* startproject */, 
 				cut_length);
-		edits->shift_keyframes_recursive(oldposition /* startproject */, 
-			cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)
 		{

@@ -151,7 +151,8 @@ void Edits::insert_asset(Asset *asset,
 
 void Edits::insert_edits(Edits *source_edits, 
 	int64_t position,
-	int64_t min_length)
+	int64_t min_length,
+	int edit_autos)
 {
 	int64_t clipboard_end = position + min_length;
 // Length pasted so far
@@ -189,7 +190,7 @@ void Edits::insert_edits(Edits *source_edits,
 
 // Shift keyframes in source edit to their position in the
 // destination edit for plugin case
-		dest_edit->shift_keyframes(position);
+		if(edit_autos) dest_edit->shift_keyframes(position);
 
 
 
@@ -411,7 +412,7 @@ int Edits::optimize()
 // source positions are consecutive
 
     		if((current->asset == next_edit->asset) &&
-				(current->asset == 0) ||
+//				(current->asset == 0) ||
 				(current->startsource + current->length == next_edit->startsource &&
 // source channels are identical
 	       		current->channel == next_edit->channel &&
@@ -419,7 +420,7 @@ int Edits::optimize()
 				current->asset == next_edit->asset && 
     		   	current->nested_edl == next_edit->nested_edl))
 			{
-//printf("Edits::optimize %d\n", __LINE__);
+printf("Edits::optimize %d\n", __LINE__);
         		current->length += next_edit->length;
         		remove(next_edit);
         		result = 1;
@@ -726,6 +727,7 @@ void Edits::clear_recursive(int64_t start,
 	int edit_edits,
 	int edit_labels, 
 	int edit_plugins,
+	int edit_autos,
 	Edits *trim_edits)
 {
 //printf("Edits::clear_recursive 1\n");
@@ -734,6 +736,7 @@ void Edits::clear_recursive(int64_t start,
 		edit_edits,
 		edit_labels,
 		edit_plugins,
+		edit_autos,
 		0,
 		trim_edits);
 }
@@ -742,6 +745,7 @@ void Edits::clear_recursive(int64_t start,
 int Edits::clear_handle(double start, 
 	double end, 
 	int edit_plugins, 
+	int edit_autos,
 	double &distance)
 {
 	Edit *current_edit;
@@ -773,13 +777,15 @@ int Edits::clear_handle(double start,
 					length += current_edit->length;
 
 // Lengthen automation
-					track->automation->paste_silence(current_edit->next->startproject, 
-						current_edit->next->startproject + length);
+					if(edit_autos)
+						track->automation->paste_silence(current_edit->next->startproject, 
+							current_edit->next->startproject + length);
 
 // Lengthen effects
 					if(edit_plugins)
 						track->shift_effects(current_edit->next->startproject, 
-							length);
+							length,
+							edit_autos);
 
 					for(current_edit = current_edit->next; current_edit; current_edit = current_edit->next)
 					{
@@ -804,6 +810,7 @@ int Edits::modify_handles(double oldposition,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	int result = 0;
@@ -833,6 +840,7 @@ int Edits::modify_handles(double oldposition,
 						edit_edits,
 						edit_labels,
 						edit_plugins,
+						edit_autos,
 						trim_edits);
 				}
 				else
@@ -845,6 +853,7 @@ int Edits::modify_handles(double oldposition,
 						edit_edits,
 						edit_labels,
 						edit_plugins,
+						edit_autos,
 						trim_edits);
 				}
 			}
@@ -875,6 +884,7 @@ int Edits::modify_handles(double oldposition,
 						edit_edits,
 						edit_labels,
 						edit_plugins,
+						edit_autos,
 						trim_edits);
 //printf("Edits::modify_handle 5\n");
 				}
@@ -888,6 +898,7 @@ int Edits::modify_handles(double oldposition,
 						edit_edits,
 						edit_labels,
 						edit_plugins,
+						edit_autos,
 						trim_edits);
 //printf("Edits::modify_handle 7\n");
 				}
@@ -937,8 +948,8 @@ void Edits::shift_keyframes_recursive(int64_t position, int64_t length)
 	track->shift_keyframes(position, length);
 }
 
-void Edits::shift_effects_recursive(int64_t position, int64_t length)
+void Edits::shift_effects_recursive(int64_t position, int64_t length, int edit_autos)
 {
-	track->shift_effects(position, length);
+	track->shift_effects(position, length, edit_autos);
 }
 

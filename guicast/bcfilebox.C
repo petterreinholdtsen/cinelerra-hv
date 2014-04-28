@@ -212,7 +212,12 @@ BC_FileBoxTextBox::~BC_FileBoxTextBox()
 
 int BC_FileBoxTextBox::handle_event()
 {
-	return calculate_suggestions(&filebox->list_column[0]);
+	int result = 0;
+	if(get_keypress() != RETURN)
+	{
+		result = calculate_suggestions(&filebox->list_column[0]);
+	}
+	return result;
 }
 
 
@@ -1067,6 +1072,8 @@ int BC_FileBox::submit_file(char *path, int use_this)
 	else
 // Is a file or desired directory.  Quit the operation.
 	{
+
+
 // save directory for defaults
 		fs->extract_dir(directory, path);     
 

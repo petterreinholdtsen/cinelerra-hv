@@ -48,7 +48,7 @@ public:
 		double &constant);
 	double get_automation_constant(int64_t start, int64_t end);
 // Get value at a specific point.  This needs previous and next stores
-// because it is used for every pixel in the drawing function.
+// because it is used for every pixel in the timeline drawing function.
 	float get_value(int64_t position, 
 		int direction,
 		FloatAuto* &previous,

@@ -182,6 +182,8 @@ int VTrack::direct_copy_possible(int64_t start, int direction, int use_nudge)
 // Track size must equal output size
 	if(track_w != edl->session->output_w || track_h != edl->session->output_h)
 		return 0;
+		
+	if(has_speed()) return 0;
 
 // No automation must be present in the track
 	if(!automation->direct_copy_possible(start, direction))

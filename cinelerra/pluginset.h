@@ -48,8 +48,8 @@ public:
 // Clear edits only for a handle modification
 	void clear_recursive(int64_t start, int64_t end);
 	void shift_keyframes_recursive(int64_t position, int64_t length);
-	void shift_effects_recursive(int64_t position, int64_t length);
-	void clear(int64_t start, int64_t end);
+	void shift_effects_recursive(int64_t position, int64_t length, int edit_autos);
+	void clear(int64_t start, int64_t end, int edit_autos);
 	void copy_from(PluginSet *src);
 	void copy(int64_t start, int64_t end, FileXML *file);
 	void copy_keyframes(int64_t start, 
@@ -66,7 +66,7 @@ public:
 	int64_t plugin_change_duration(int64_t input_position, 
 		int64_t input_length, 
 		int reverse);
-	void shift_effects(int64_t start, int64_t length);
+	void shift_effects(int64_t start, int64_t length, int edit_autos);
 	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();
 // For testing output equivalency when a new pluginset is added.

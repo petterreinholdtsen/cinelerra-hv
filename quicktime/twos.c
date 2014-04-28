@@ -9,6 +9,7 @@ typedef struct
 {
 	char *work_buffer;
 	long buffer_size;
+	int little_endian;
 } quicktime_twos_codec_t;
 
 static int byte_order(void)
@@ -162,8 +163,16 @@ static int decode(quicktime_t *file,
 			{
 				for(i = 0, j = channel * 2; i < samples; i++)
 				{
-					output_i[i] = ((int16_t)codec->work_buffer[j]) << 8 |
-									((unsigned char)codec->work_buffer[j + 1]);
+					if(codec->little_endian)
+					{
+						output_i[i] = ((int16_t)codec->work_buffer[j + 1]) << 8 |
+										((unsigned char)codec->work_buffer[j]);
+					}
+					else
+					{
+						output_i[i] = ((int16_t)codec->work_buffer[j]) << 8 |
+										((unsigned char)codec->work_buffer[j + 1]);
+					}
 					j += step;
 				}
 			}
@@ -172,8 +181,17 @@ static int decode(quicktime_t *file,
 			{
 				for(i = 0, j = channel * 2; i < samples; i++)
 				{
-					output_f[i] = (float)((((int16_t)codec->work_buffer[j]) << 8) |
+					if(codec->little_endian)
+					{
+						output_f[i] = (float)((((int16_t)codec->work_buffer[j + 1]) << 8) |
+									((unsigned char)codec->work_buffer[j])) / 0x7fff;
+					}
+					else
+					{
+						output_f[i] = (float)((((int16_t)codec->work_buffer[j]) << 8) |
 									((unsigned char)codec->work_buffer[j + 1])) / 0x7fff;
+					}
+					
 					j += step;
 				}
 			}
@@ -322,7 +340,10 @@ static int encode(quicktime_t *file,
 	return result;
 }
 
-void quicktime_init_codec_twos(quicktime_audio_map_t *atrack)
+static void init_common(quicktime_audio_map_t *atrack, 
+	char *fourcc,
+	char *title,
+	char *description)
 {
 	quicktime_twos_codec_t *codec;
 	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
@@ -331,13 +352,25 @@ void quicktime_init_codec_twos(quicktime_audio_map_t *atrack)
 	codec_base->delete_acodec = delete_codec;
 	codec_base->decode_audio = decode;
 	codec_base->encode_audio = encode;
-	codec_base->fourcc = QUICKTIME_TWOS;
-	codec_base->title = "Twos complement";
-	codec_base->desc = "Twos complement";
+	codec_base->fourcc = fourcc;
+	codec_base->title = title;
+	codec_base->desc = description;
 	codec_base->wav_id = 0x01;
 
 /* Init private items */
 	codec = codec_base->priv = calloc(1, sizeof(quicktime_twos_codec_t));
 	codec->work_buffer = 0;
 	codec->buffer_size = 0;
+	if(quicktime_match_32(fourcc, QUICKTIME_SOWT)) 
+		codec->little_endian = 1;
+}
+
+void quicktime_init_codec_twos(quicktime_audio_map_t *atrack)
+{
+	init_common(atrack, QUICKTIME_TWOS, "Twos complement", "Twos complement");
+}
+
+void quicktime_init_codec_sowt(quicktime_audio_map_t *atrack)
+{
+	init_common(atrack, QUICKTIME_SOWT, "Twos complement", "Twos complement");
 }

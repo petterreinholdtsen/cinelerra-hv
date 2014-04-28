@@ -260,6 +260,30 @@ double Track::get_length()
 	return total_length;
 }
 
+int Track::has_speed()
+{
+	FloatAutos *autos = (FloatAutos*)automation->autos[AUTOMATION_SPEED];
+	if(autos)
+	{
+		if(autos->first)
+		{
+			for(FloatAuto *current = (FloatAuto*)autos->first;
+				current;
+				current = (FloatAuto*)current->next)
+			{
+				if(!EQUIV(current->value, 1.0) ||
+					!EQUIV(current->control_in_value, 0.0) ||
+					!EQUIV(current->control_out_value, 0.0))
+				{
+					return 1;
+				}
+			}
+		}
+	}
+	
+	return 0;
+}
+
 
 
 void Track::get_source_dimensions(double position, int &w, int &h)
@@ -393,6 +417,7 @@ void Track::insert_track(Track *track,
 	double position, 
 	int replace_default,
 	int edit_plugins,
+	int edit_autos,
 	double edl_length)
 {
 // Calculate minimum length of data to pad.
@@ -406,17 +431,20 @@ void Track::insert_track(Track *track,
 
 	edits->insert_edits(track->edits, 
 		to_units(position, 0),
-		min_length);
+		min_length,
+		edit_autos);
 
 	if(edit_plugins)
 		insert_plugin_set(track, 
 			to_units(position, 0),
-			min_length);
+			min_length,
+			edit_autos);
 
-	automation->insert_track(track->automation, 
-		to_units(position, 0), 
-		min_length,
-		replace_default);
+	if(edit_autos)
+		automation->insert_track(track->automation, 
+			to_units(position, 0), 
+			min_length,
+			replace_default);
 
 	optimize();
 
@@ -425,13 +453,15 @@ void Track::insert_track(Track *track,
 // Called by insert_track
 void Track::insert_plugin_set(Track *track, 
 	int64_t position,
-	int64_t min_length)
+	int64_t min_length,
+	int edit_autos)
 {
 // Extend plugins if no incoming plugins
 	if(!track->plugin_set.total)
 	{
 		shift_effects(position, 
-			min_length);
+			min_length,
+			edit_autos);
 	}
 	else
 	for(int i = 0; i < track->plugin_set.total; i++)
@@ -441,7 +471,8 @@ void Track::insert_plugin_set(Track *track,
 
 		plugin_set.values[i]->insert_edits(track->plugin_set.values[i], 
 			position,
-			min_length);
+			min_length,
+			edit_autos);
 	}
 }
 
@@ -611,12 +642,13 @@ void Track::shift_keyframes(int64_t position, int64_t length)
 // Effect keyframes are shifted in shift_effects
 }
 
-void Track::shift_effects(int64_t position, int64_t length)
+void Track::shift_effects(int64_t position, int64_t length, int edit_autos)
 {
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		plugin_set.values[i]->shift_effects(position, 
-			length);
+			length,
+			edit_autos);
 	}
 }
 
@@ -635,7 +667,7 @@ void Track::detach_effect(Plugin *plugin)
 				int64_t start = plugin->startproject;
 				int64_t end = plugin->startproject + plugin->length;
 
-				plugin_set->clear(start, end);
+				plugin_set->clear(start, end, 1);
 				plugin_set->paste_silence(start, end);
 
 // Delete 0 length pluginsets	
@@ -676,7 +708,7 @@ void Track::detach_shared_effects(int module)
 				int64_t start = dest->startproject;
 				int64_t end = dest->startproject + dest->length;
 
-				plugin_set->clear(start, end);
+				plugin_set->clear(start, end, 1);
 				plugin_set->paste_silence(start, end);
 
 // Delete 0 length pluginsets
@@ -1148,6 +1180,7 @@ int Track::clear(double start,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	int convert_units,
 	Edits *trim_edits)
 {
@@ -1160,15 +1193,18 @@ int Track::clear(double start,
 		end = to_units(end, 0);
 	}
 
-	if(edit_edits)
+
+	if(edit_autos)
 		automation->clear((int64_t)start, (int64_t)end, 0, 1);
 
 	if(edit_plugins)
+	{
 		for(int i = 0; i < plugin_set.total; i++)
 		{
 			if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
-				plugin_set.values[i]->clear((int64_t)start, (int64_t)end);
+				plugin_set.values[i]->clear((int64_t)start, (int64_t)end, edit_autos);
 		}
+	}
 
 	if(edit_edits)
 		edits->clear((int64_t)start, (int64_t)end);
@@ -1179,9 +1215,10 @@ int Track::clear_handle(double start,
 	double end, 
 	int clear_labels,
 	int clear_plugins, 
+	int edit_autos,
 	double &distance)
 {
-	edits->clear_handle(start, end, clear_plugins, distance);
+	edits->clear_handle(start, end, clear_plugins, edit_autos, distance);
 }
 
 int Track::popup_transition(int cursor_x, int cursor_y)
@@ -1196,7 +1233,8 @@ int Track::modify_edithandles(double oldposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 	edits->modify_handles(oldposition, 
 		newposition, 
@@ -1205,6 +1243,7 @@ int Track::modify_edithandles(double oldposition,
 		1,
 		edit_labels,
 		edit_plugins,
+		edit_autos,
 		0);
 
 
@@ -1216,6 +1255,7 @@ int Track::modify_pluginhandles(double oldposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	for(int i = 0; i < plugin_set.total; i++)
@@ -1229,20 +1269,21 @@ int Track::modify_pluginhandles(double oldposition,
 				0,
 				edit_labels,
 				1,
+				edit_autos,
 				trim_edits);
 	}
 	return 0;
 }
 
 
-int Track::paste_silence(double start, double end, int edit_plugins)
+int Track::paste_silence(double start, double end, int edit_plugins, int edit_autos)
 {
 	int64_t start_i = to_units(start, 0);
 	int64_t end_i = to_units(end, 1);
 
 	edits->paste_silence(start_i, end_i);
-	shift_keyframes(start_i, end_i - start_i);
-	if(edit_plugins) shift_effects(start_i, end_i - start_i);
+	if(edit_autos) shift_keyframes(start_i, end_i - start_i);
+	if(edit_plugins) shift_effects(start_i, end_i - start_i, edit_autos);
 
 	edits->optimize();
 	return 0;
@@ -1626,8 +1667,9 @@ void Track::align_edits(double start,
 				{
 					edits->clear(desired_startunits,
 						current_startunits);
-					shift_keyframes(desired_startunits,
-						current_startunits - desired_startunits);
+					if(edl->session->autos_follow_edits)
+						shift_keyframes(desired_startunits,
+							current_startunits - desired_startunits);
 				}
 
 				current_time++;

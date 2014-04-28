@@ -116,7 +116,10 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 	else
 	{
 // clear device buffer
+//printf("VirtualVConsole::process_buffer %d %p\n", __LINE__, vrender->video_out);
+//vrender->video_out->dump();
 		vrender->video_out->clear_frame();
+//printf("VirtualVConsole::process_buffer %d\n", __LINE__);
 	}
 
 
@@ -127,7 +130,7 @@ int VirtualVConsole::process_buffer(int64_t input_position,
 // Reset plugin rendering status
 	reset_attachments();
 
-Timer timer;
+//	Timer timer;
 // Render exit nodes from bottom to top
 	for(current_exit_node = exit_nodes.total - 1; current_exit_node >= 0; current_exit_node--)
 	{

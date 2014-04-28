@@ -2202,7 +2202,7 @@ void BC_WindowBase::set_line_width(int value)
 		top_level->gc, 
     	value,	/* line_width */
     	line_dashes == 0 ? LineSolid : LineOnOffDash,			/* line_style */
-    	CapButt,			/* cap_style */
+    	line_dashes == 0 ? CapRound : CapNotLast,			/* cap_style */
     	JoinMiter			/* join_style */
 		);
 

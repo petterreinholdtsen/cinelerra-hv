@@ -284,9 +284,9 @@ int FileFFMPEG::check_sig(Asset *asset)
 		0, 
 		&params);
 
+//printf("FileFFMPEG::check_sig %d result=%d\n", __LINE__, result);
 	if(result >= 0)
 	{
-//printf("FileFFMPEG::check_sig %d result=%d\n", __LINE__, result);
 		result = av_find_stream_info(ffmpeg_file_context);
 
 		

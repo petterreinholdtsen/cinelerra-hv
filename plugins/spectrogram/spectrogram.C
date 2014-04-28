@@ -812,6 +812,7 @@ int Spectrogram::process_buffer(int64_t size,
 		{
 			sample_output[i + 1] = sqrt(freq_real[i] * freq_real[i] +
 				freq_imag[i] * freq_imag[i]);
+//			sample_output[i + 1] = freq_real[i];
 		}
 
 // Shift audio buffer out

@@ -59,6 +59,7 @@ APatchGUI::APatchGUI(MWindow *mwindow,
 	pan = 0;
 	fade = 0;
 }
+
 APatchGUI::~APatchGUI()
 {
 	if(fade) delete fade;

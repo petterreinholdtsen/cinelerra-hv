@@ -11,7 +11,7 @@
 
 
 #include "funcprotos.h"
-#include "neaacdec.h"
+#include "faad.h"
 #include "quicktime.h"
 
 

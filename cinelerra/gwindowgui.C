@@ -75,7 +75,7 @@ static const char *auto_text[] =
 	"Pan",
 	"Mode",
 	"Mask",
-	"Nudge"
+	"Speed"
 };
 
 void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)

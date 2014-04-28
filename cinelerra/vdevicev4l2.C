@@ -496,6 +496,10 @@ printf("VDeviceV4L2Thread::run %d\n", __LINE__);
 			v4l2_params.fmt.pix.pixelformat = 
 				V4L2_PIX_FMT_MJPEG;
 		else
+		if(device->in_config->driver == CAPTURE_MPEG)
+			v4l2_params.fmt.pix.pixelformat = 
+				V4L2_PIX_FMT_MPEG;
+		else
 		if(device->in_config->driver == CAPTURE_YUYV_WEBCAM)
 			v4l2_params.fmt.pix.pixelformat = 
 				V4L2_PIX_FMT_YUYV;
@@ -659,7 +663,10 @@ printf("VDeviceV4L2Thread::run %d\n", __LINE__);
 				perror("VDeviceV4L2Thread::run VIDIOC_S_FREQUENCY");
 		}
 
-
+// 		struct v4l2_crop crop;
+// 		if(ioctl(input_fd, VIDIOC_G_CROP, &crop) < 0)
+// 				perror("VDeviceV4L2Thread::run VIDIOC_G_CROP");
+// 		printf("VDeviceV4L2Thread::run %d\n", __LINE__);
 
 // Set compression
 		if(device->in_config->driver == VIDEO4LINUX2JPEG ||
@@ -719,7 +726,8 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 
 				VFrame *frame = device_buffers[i];
 				if(device->in_config->driver == VIDEO4LINUX2JPEG ||
-					device->in_config->driver == CAPTURE_JPEG_WEBCAM)
+					device->in_config->driver == CAPTURE_JPEG_WEBCAM ||
+					device->in_config->driver == CAPTURE_MPEG)
 				{
 					frame->set_compressed_memory(data,
 						0,

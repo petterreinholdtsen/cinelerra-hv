@@ -87,19 +87,25 @@ int HistogramConfig::equivalent(HistogramConfig &that)
 // EQUIV isn't precise enough to detect changes in points
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
-		if(!EQUIV(low_input[i], that.low_input[i]) ||
-			!EQUIV(high_input[i], that.high_input[i]) ||
-			!EQUIV(gamma[i], that.gamma[i]) ||
-			!EQUIV(low_output[i], that.low_output[i]) ||
-			!EQUIV(high_output[i], that.high_output[i])) return 0;
+// 		if(!EQUIV(low_input[i], that.low_input[i]) ||
+// 			!EQUIV(high_input[i], that.high_input[i]) ||
+// 			!EQUIV(gamma[i], that.gamma[i]) ||
+// 			!EQUIV(low_output[i], that.low_output[i]) ||
+// 			!EQUIV(high_output[i], that.high_output[i])) return 0;
+		if(low_input[i] != that.low_input[i] ||
+			high_input[i] != that.high_input[i] ||
+			gamma[i] != that.gamma[i] ||
+			low_output[i] != that.low_output[i] ||
+			high_output[i] != that.high_output[i]) return 0;
 	}
 
 	if(automatic != that.automatic ||
 		automatic_v != that.automatic_v ||
-		!EQUIV(threshold, that.threshold)) return 0;
+		threshold != that.threshold) return 0;
 
 	if(plot != that.plot ||
 		split != that.split) return 0;
+
 	return 1;
 }
 
@@ -144,6 +150,8 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 	automatic_v = prev.automatic_v;
 	plot = prev.plot;
 	split = prev.split;
+
+
 }
 
 

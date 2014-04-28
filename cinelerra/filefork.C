@@ -500,10 +500,10 @@ int FileFork::handle_command()
 			int allocated_data = frame->get_compressed_allocated();
 			
 			
-// printf("FileFork::handle_command %d file=%p size=%d\n", 
+// printf("FileFork::handle_command %d file=%p\n", 
 // __LINE__, 
-// file,
-// frame->get_compressed_size());
+// file);
+// frame->dump();
 			result = file->read_frame(frame, 0);
 
 

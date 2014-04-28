@@ -37,7 +37,7 @@ static const char *xml_titles[] =
 	"SHOW_PAN",
 	"SHOW_MODE",
 	"SHOW_MASK",
-	"SHOW_NUDGE"
+	"SHOW_SPEED"
 };
 
 static int auto_defaults[] = 
@@ -50,6 +50,8 @@ static int auto_defaults[] =
 	0,
 	1,
 	1,
+	0,
+	0,
 	0,
 	0
 };

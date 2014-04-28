@@ -61,22 +61,25 @@ Asset* VEdit::get_nested_asset(int64_t *source_position,
 	int64_t position,
 	int direction)
 {
+	const int debug = 0;
 	Asset *result = 0;
 // Make position relative to edit
 	*source_position = position - startproject + startsource;
 
-// printf("VEdit::get_nested_asset %d %lld %lld %lld\n", 
-// __LINE__, 
-// *source_position, 
-// position,
-// startproject,
-// startsource);
+if(debug) printf("VEdit::get_nested_asset %d %lld %lld %lld\n", 
+__LINE__, 
+*source_position, 
+position,
+startproject,
+startsource);
 
 
 // Descend into nested EDLs
 	if(nested_edl)
 	{
 // Convert position to nested EDL rate
+if(debug) printf("VEdit::get_nested_asset %d\n", 
+__LINE__);
 		if(direction == PLAY_REVERSE) (*source_position)--;
 		*source_position = Units::to_int64(*source_position *
 			nested_edl->session->frame_rate /
@@ -105,16 +108,18 @@ Asset* VEdit::get_nested_asset(int64_t *source_position,
 		}
 
 		delete playable_tracks;
+if(debug) printf("VEdit::get_nested_asset %d\n", 
+__LINE__);
 		return result;
 	}
 	else
 	{
 // Convert position to asset rate
-// printf("VEdit::get_nested_asset %d %lld %f %f\n", 
-// __LINE__, 
-// *source_position, 
-// asset->frame_rate,
-// edl->session->frame_rate);
+if(debug) printf("VEdit::get_nested_asset %d %lld %f %f\n", 
+__LINE__, 
+*source_position, 
+asset->frame_rate,
+edl->session->frame_rate);
 		if(direction == PLAY_REVERSE) (*source_position)--;
 
 		(*source_position) = Units::to_int64((double)(*source_position) * 

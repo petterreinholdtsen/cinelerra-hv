@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,7 +109,12 @@ public:
 
 // Temporary buffer for rendering transitions
 	Samples *transition_temp;
-	int transition_temp_alloc;
+// Temporary buffer for rendering speed curve
+	Samples *speed_temp;
+// Previous buffers for rendering speed curve
+#define SPEED_OVERLAP 4
+	double prev_head[SPEED_OVERLAP];
+	double prev_tail[SPEED_OVERLAP];
 
 // Pointer to an asset for the resampler
 	Asset *asset;

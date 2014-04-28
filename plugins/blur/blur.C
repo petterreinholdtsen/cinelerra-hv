@@ -367,7 +367,7 @@ void BlurMain::read_data(KeyFrame *keyframe)
 
 
 BlurEngine::BlurEngine(BlurMain *plugin)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->plugin = plugin;
 	last_frame = 0;

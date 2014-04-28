@@ -186,6 +186,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	sprintf(current_folder, MEDIA_FOLDER);
 	defaults->get("CURRENT_FOLDER", current_folder);
 	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", 0);
+	typeless_keyframes = defaults->get("TYPELESS_KEYFRAMES", 0);
 	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
 	cwindow_mask = defaults->get("CWINDOW_MASK", 0);
 	cwindow_meter = defaults->get("CWINDOW_METER", 1);
@@ -314,6 +315,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RULER_Y2", ruler_y2);
 	defaults->update("CURRENT_FOLDER", current_folder);
 	defaults->update("CURSOR_ON_FRAMES", cursor_on_frames);
+	defaults->update("TYPELESS_KEYFRAMES", typeless_keyframes);
 	defaults->update("CWINDOW_DEST", cwindow_dest);
 	defaults->update("CWINDOW_MASK", cwindow_mask);
 	defaults->update("CWINDOW_METER", cwindow_meter);
@@ -522,6 +524,7 @@ int EDLSession::load_xml(FileXML *file,
 		ruler_y2 = file->tag.get_property("RULER_Y2", ruler_y2);
 		file->tag.get_property("CURRENT_FOLDER", current_folder);
 		cursor_on_frames = file->tag.get_property("CURSOR_ON_FRAMES", cursor_on_frames);
+		typeless_keyframes = file->tag.get_property("TYPELESS_KEYFRAMES", typeless_keyframes);
 		cwindow_dest = file->tag.get_property("CWINDOW_DEST", cwindow_dest);
 		cwindow_mask = file->tag.get_property("CWINDOW_MASK", cwindow_mask);
 		cwindow_meter = file->tag.get_property("CWINDOW_METER", cwindow_meter);
@@ -582,6 +585,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("RULER_Y2", ruler_y2);
 	file->tag.set_property("CURRENT_FOLDER", current_folder);
 	file->tag.set_property("CURSOR_ON_FRAMES", cursor_on_frames);
+	file->tag.set_property("TYPELESS_KEYFRAMES", typeless_keyframes);
 	file->tag.set_property("CWINDOW_DEST", cwindow_dest);
 	file->tag.set_property("CWINDOW_MASK", cwindow_mask);
 	file->tag.set_property("CWINDOW_METER", cwindow_meter);
@@ -703,6 +707,7 @@ int EDLSession::copy(EDLSession *session)
 	ruler_y2 = session->ruler_y2;
 	strcpy(current_folder, session->current_folder);
 	cursor_on_frames = session->cursor_on_frames;
+	typeless_keyframes = session->typeless_keyframes;
 	cwindow_dest = session->cwindow_dest;
 	cwindow_mask = session->cwindow_mask;
 	cwindow_meter = session->cwindow_meter;

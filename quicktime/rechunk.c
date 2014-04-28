@@ -1,5 +1,7 @@
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
+
 
 int usage(void)
 {

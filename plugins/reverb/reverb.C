@@ -429,7 +429,7 @@ int Reverb::save_to_file(char *path)
 }
 
 ReverbEngine::ReverbEngine(Reverb *plugin)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->plugin = plugin;
 	completed = 0;

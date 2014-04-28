@@ -443,6 +443,9 @@ void AutoZoomPopup::create_objects()
 {
 	char string[BCTEXTLEN];
 
+	sprintf(string, "-1 - 1");
+	add_item(new BC_MenuItem(string));
+
 	sprintf(string, "0 - %d", MAX_VIDEO_FADE);
 	add_item(new BC_MenuItem(string));
 
@@ -453,9 +456,12 @@ void AutoZoomPopup::create_objects()
 int AutoZoomPopup::handle_event()
 {
 	if(!strcmp(get_text(), get_item(0)->get_text()))
-		mwindow->zoom_autos(0, MAX_VIDEO_FADE);
+		mwindow->zoom_autos(-1, 1);
 	else
 	if(!strcmp(get_text(), get_item(1)->get_text()))
+		mwindow->zoom_autos(0, MAX_VIDEO_FADE);
+	else
+	if(!strcmp(get_text(), get_item(2)->get_text()))
 		mwindow->zoom_autos(INFINITYGAIN, MAX_AUDIO_FADE);
 	return 1;
 }

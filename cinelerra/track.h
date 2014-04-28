@@ -80,6 +80,8 @@ public:
 	int64_t horizontal_span();
 	void resample(double old_rate, double new_rate);
 
+// Speed curve in use
+	int has_speed();
 // Get length of track in seconds
 	double get_length();
 // Get dimensions of source for convenience functions
@@ -100,13 +102,15 @@ public:
 		int plugin_type);
 	void insert_plugin_set(Track *track, 
 		int64_t position,
-		int64_t min_length);
+		int64_t min_length,
+		int edit_autos);
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
 	void insert_track(Track *track, 
 		double position, 
 		int replace_default,
 		int edit_plugins,
+		int edit_autos,
 // Pad pasted sections to a minimum of this length.
 		double edl_length);
 	void shuffle_edits(double start, double end, int first_track);
@@ -172,7 +176,7 @@ public:
 
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(int64_t position, int64_t length);
-	void shift_effects(int64_t position, int64_t length);
+	void shift_effects(int64_t position, int64_t length, int edit_autos);
 	void change_plugins(SharedLocation &old_location, 
 		SharedLocation &new_location, 
 		int do_swap);
@@ -247,6 +251,7 @@ public:
 		int edit_edits,
 		int edit_labels,
 		int clear_plugins, 
+		int edit_autos,
 		int convert_units,
 		Edits *trim_edits);
 // Returns the point to restart background rendering at.
@@ -297,8 +302,9 @@ public:
 		double end, 
 		int clear_labels,
 		int clear_plugins, 
+		int edit_autos,
 		double &distance);
-	int paste_silence(double start, double end, int edit_plugins);
+	int paste_silence(double start, double end, int edit_plugins, int edit_autos);
 	virtual int select_translation(int cursor_x, int cursor_y) { return 0; };  // select video coordinates for frame
 	virtual int update_translation(int cursor_x, int cursor_y, int shift_down) { return 0; };  // move video coordinates
 	int select_auto(AutoConf *auto_conf, int cursor_x, int cursor_y);
@@ -319,12 +325,14 @@ public:
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		int edit_autos);
 	int modify_pluginhandles(double oldposition, 
 		double newposition, 
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
+		int edit_autos,
 		Edits *trim_edits);
 	int select_edit(int cursor_x, 
 		int cursor_y, 

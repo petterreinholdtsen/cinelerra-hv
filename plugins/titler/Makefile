@@ -1,4 +1,4 @@
-FREETYPE_DIR = $(shell expr ../../freetype* )
+FREETYPE_DIR = ../../freetype-2.1.4
 CFLAGS += -I$(FREETYPE_DIR)/include -I../../
 
 include ../../global_config
@@ -6,15 +6,22 @@ include ../../global_config
 OBJS = $(OBJDIR)/title.o  \
 	$(OBJDIR)/titlewindow.o \
 	../colors/$(OBJDIR)/colorpicker.o \
-	../colors/$(OBJDIR)/plugincolors.o \
-	$(FREETYPE_DIR)/objs/.libs/libfreetype.a
+	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/titler.plugin
+
+
+OUTPUT_PLUGIN = ../$(OBJDIR)/titler.plugin
+
+$(OUTPUT_PLUGIN): $(OBJS)
+	$(LDLINKER) -o $(OUTPUT_PLUGIN) \
+		$(OBJS) \
+		$(FREETYPE_DIR)/$(OBJDIR)/libfreetype.a
+	strip $(OUTPUT_PLUGIN)
 
 include ../../plugin_config
 
 inst:
-	cp $(OUTPUT) /usr/lib/cinelerra
+	cp $(OUTPUT_PLUGIN) /usr/lib/cinelerra
 	cp -a fonts /usr/lib/cinelerra
 
 

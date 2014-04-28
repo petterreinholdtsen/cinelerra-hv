@@ -1,14 +1,27 @@
 OBJDIR := $(shell uname --machine)
 USE_MMX = 0
 CC = gcc
-HAVE_CFLAGS := $(shell if [ -n "$CFLAGS" ]; then echo y; fi )
+
+HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
+                                                                                
+ifeq ($(HAVE_NASM), n)
+$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
+endif
+
+
+ifeq ($(origin CFLAGS), environment)
+HAVE_CFLAGS := y
+else
+HAVE_CFLAGS := n
+endif
+
 #ENCORE_DIR := encore2/src
 #DECORE_DIR := decore2/src
 ENCORE_DIR := encore50
 DECORE_DIR := decore50
 ENCORE_INCLUDE := $(ENCORE_DIR)/encore.h
 DECORE_INCLUDE := $(DECORE_DIR)/decore.h
-MPEG3_DIR := ../libmpeg3
+MPEG3_DIR := $(shell expr ../libmpeg3* )
 OBJS := 
 
 
@@ -19,20 +32,22 @@ ifneq ($(HAVE_CFLAGS), y)
 
 
 ifeq ($(OBJDIR), alpha)
-  CFLAGS = -O4 -arch ev67 -ieee -accept c99_keywords -gcc_messages
+  CFLAGS := -O4 -arch ev67 -ieee -accept c99_keywords -gcc_messages
 endif
 
 ifeq ($(OBJDIR), i686)
-  CFLAGS = -O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+  CFLAGS := -O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2 -I/usr/local/include
+endif
+
+
+ifeq ($(OBJDIR), x86_64)
+  CFLAGS := -O2 -funroll-all-loops -fomit-frame-pointer  -I/usr/local/include
 endif
 
 
 
 
-
 endif
-
-$(shell if ! test -d $(OBJDIR) \; then mkdir -p $(OBJDIR) \; fi )
 
 DIRS = $(OBJDIR)
 
@@ -40,7 +55,6 @@ DIRS = $(OBJDIR)
 
 
 include Makefile.jpeg
-include Makefile.libraw
 include Makefile.vorbis
 include Makefile.ffmpeg
 include Makefile.lame
@@ -62,6 +76,8 @@ CFLAGS += -I. \
 	$(shell glib-config --cflags)
 
 
+#	$(OBJDIR)/div3.o \
+#	$(OBJDIR)/divx.o \
 
 
 
@@ -71,9 +87,13 @@ CFLAGS += -I. \
 OBJS += \
 	$(OBJDIR)/atom.o \
 	$(OBJDIR)/avi_hdrl.o \
+	$(OBJDIR)/avi_ix.o \
 	$(OBJDIR)/avi_idx1.o \
+	$(OBJDIR)/avi_indx.o \
 	$(OBJDIR)/avi_movi.o \
-	$(OBJDIR)/avi_strh.o \
+	$(OBJDIR)/avi_odml.o \
+	$(OBJDIR)/avi_riff.o \
+	$(OBJDIR)/avi_strl.o \
 	$(OBJDIR)/cmodel_default.o \
 	$(OBJDIR)/cmodel_yuv420p.o \
 	$(OBJDIR)/cmodel_yuv422.o \
@@ -81,8 +101,6 @@ OBJS += \
 	$(OBJDIR)/colormodels.o \
 	$(OBJDIR)/ctab.o \
 	$(OBJDIR)/dinf.o \
-	$(OBJDIR)/div3.o \
-	$(OBJDIR)/divx.o \
 	$(OBJDIR)/dref.o \
 	$(OBJDIR)/dv.o \
 	$(OBJDIR)/edts.o \
@@ -100,6 +118,7 @@ OBJS += \
 	$(OBJDIR)/mdia.o \
 	$(OBJDIR)/minf.o \
 	$(OBJDIR)/moov.o \
+	$(OBJDIR)/mpeg4.o \
 	$(OBJDIR)/mvhd.o \
 	$(OBJDIR)/plugin.o \
 	$(OBJDIR)/qtpng.o \
@@ -127,6 +146,7 @@ OBJS += \
 	$(OBJDIR)/v410.o \
 	$(OBJDIR)/vmhd.o \
 	$(OBJDIR)/vorbis.o \
+	$(OBJDIR)/wma.o \
 	$(OBJDIR)/wmx2.o \
 	$(OBJDIR)/workarounds.o \
 	$(OBJDIR)/yuv2.o \
@@ -139,8 +159,8 @@ UTILS := \
 	$(OBJDIR)/qtinfo \
 	$(OBJDIR)/dechunk \
 	$(OBJDIR)/yuv4toyuv \
-	$(OBJDIR)/recover \
 	$(OBJDIR)/rechunk
+#	$(OBJDIR)/recover \
 
 
 
@@ -209,17 +229,18 @@ DIRS += \
 
 LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -lglib -ldl -lm
 
+
+$(shell if ! test -d $(OBJDIR) \; then mkdir -p $(DIRS) \; fi )
 $(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
-$(shell echo  $(LIBRAW_CFLAGS) > $(OBJDIR)/libraw_cflags)
-$(shell echo  $(OBJS) $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
+$(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_flags)
+$(shell echo  $(LAME_CFLAGS) > $(OBJDIR)/lame_flags)
+$(shell echo  $(OBJS) $(DV_OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
 
-all: $(DIRS) $(OUTPUT)
+all: $(OBJDIR) $(OUTPUT)
 
-$(DIRS):
-	if ! test -d $@ ; then mkdir -p $@ ; fi
-
-$(OUTPUT): $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
+$(OUTPUT): $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
+
 
 $(OBJDIR)/qtdump: $(OBJDIR)/dump.o $(OUTPUT)
 	$(CC) -o $(OBJDIR)/qtdump $(OBJDIR)/dump.o $(LIBS)
@@ -247,7 +268,7 @@ util:  $(UTILS)
 
 clean:
 	rm -rf $(OBJDIR)
-	rm -rf .deps
+	rm -f $(DVMMXOBJ)
 
 wc:
 	cat *.c *.h | wc
@@ -275,15 +296,12 @@ $(JPEG_FAIL):
 $(DV_OBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
-$(LIBRAW_OBJS):
-	$(CC) -c `cat $(OBJDIR)/libraw_cflags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
-
 $(DVMMXOBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
 
-$(DVMMXOBJ):
+$(DVMMXOBJ): $(DV_DIR)/libdv/gasmoff.c
 	$(CC) `cat $(OBJDIR)/c_flags` $(DV_DIR)/libdv/gasmoff.c -o $(OBJDIR)/$(DV_DIR)/libdv/gasmoff -lm
-	$(OBJDIR)/$(DV_DIR)/libdv/gasmoff > $(DV_DIR)/libdv/asmoff.h
+	$(OBJDIR)/$(DV_DIR)/libdv/gasmoff > $(DVMMXOBJ)
 
 $(JPEG_NASM):
 	nasm -f elf $(subst $(OBJDIR)/,, $*.s) -o $*.o
@@ -295,25 +313,31 @@ $(DECOREMMX_OBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
 
 
-$(FFMPEG_OBJS):
+$(FFMPEG_OBJS) $(FFMPEGIA32_OBJS):
 	$(CC) `cat $(OBJDIR)/ffmpeg_flags` -c $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 $(LAME_OBJS):
 	$(CC) `cat $(OBJDIR)/lame_flags` -c $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
-$(FFMPEGIA32_OBJS):
-	nasm -f elf $(subst $(OBJDIR)/,, $*.s) -o $*.o
+#$(FFMPEGIA32_OBJS):
+#	nasm -f elf $(subst $(OBJDIR)/,, $*.s) -o $*.o
 
 
 
 
+#$(OBJDIR)/div3.o:                         div3.c
+#$(OBJDIR)/divx.o:			  divx.c
 
 
 $(OBJDIR)/atom.o:			  atom.c
 $(OBJDIR)/avi_hdrl.o:                     avi_hdrl.c
+$(OBJDIR)/avi_ix.o:                       avi_ix.c
 $(OBJDIR)/avi_idx1.o:                     avi_idx1.c
+$(OBJDIR)/avi_indx.o:                     avi_indx.c
 $(OBJDIR)/avi_movi.o:                     avi_movi.c
-$(OBJDIR)/avi_strh.o:                     avi_strh.c
+$(OBJDIR)/avi_odml.o:                     avi_odml.c
+$(OBJDIR)/avi_riff.o:                     avi_riff.c
+$(OBJDIR)/avi_strl.o:                     avi_strl.c
 $(OBJDIR)/cmodel_default.o:		  cmodel_default.c cmodel_permutation.h
 $(OBJDIR)/cmodel_yuv420p.o:		  cmodel_yuv420p.c cmodel_permutation.h
 $(OBJDIR)/cmodel_yuv422.o:		  cmodel_yuv422.c cmodel_permutation.h
@@ -322,8 +346,6 @@ $(OBJDIR)/colormodels.o:		  colormodels.c
 $(OBJDIR)/ctab.o:			  ctab.c
 $(OBJDIR)/dechunk.o:			  dechunk.c
 $(OBJDIR)/dinf.o:			  dinf.c
-$(OBJDIR)/div3.o:                         div3.c
-$(OBJDIR)/divx.o:			  divx.c
 $(OBJDIR)/dref.o:			  dref.c
 $(OBJDIR)/dump.o:			  dump.c
 $(OBJDIR)/dv.o:			  	  dv.c
@@ -343,6 +365,7 @@ $(OBJDIR)/mdhd.o:			  mdhd.c
 $(OBJDIR)/mdia.o:			  mdia.c
 $(OBJDIR)/minf.o:			  minf.c
 $(OBJDIR)/moov.o:			  moov.c
+$(OBJDIR)/mpeg4.o:			  mpeg4.c
 $(OBJDIR)/mvhd.o:			  mvhd.c
 $(OBJDIR)/plugin.o:			  plugin.c
 $(OBJDIR)/qtinfo.o:			  qtinfo.c
@@ -356,6 +379,7 @@ $(OBJDIR)/recover.o:			  recover.c
 $(OBJDIR)/smhd.o:			  smhd.c
 $(OBJDIR)/stbl.o:			  stbl.c
 $(OBJDIR)/stco.o:			  stco.c
+$(OBJDIR)/strl.o:			  strl.c
 $(OBJDIR)/stsc.o:			  stsc.c
 $(OBJDIR)/stsd.o:			  stsd.c
 $(OBJDIR)/stsdtable.o: 		  	  stsdtable.c
@@ -373,6 +397,7 @@ $(OBJDIR)/v408.o:                         v408.c
 $(OBJDIR)/v410.o:                         v410.c
 $(OBJDIR)/vmhd.o:			  vmhd.c
 $(OBJDIR)/vorbis.o:                       vorbis.c
+$(OBJDIR)/wma.o:		          wma.c
 $(OBJDIR)/wmx2.o:		          wmx2.c
 $(OBJDIR)/workarounds.o:		  workarounds.c
 $(OBJDIR)/yuv2.o:			  yuv2.c
@@ -425,6 +450,5 @@ include depend.ffmpeg
 include depend.jpeg
 include depend.lame
 include depend.dv
-include depend.libraw
 include depend.encore50
 

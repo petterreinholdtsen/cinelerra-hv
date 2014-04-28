@@ -5,6 +5,8 @@ include ../global_config
 # parametric must come before fourier plugins
 
 DIRS = \
+	1080to480 \
+	720to480 \
 	colors \
 	bandslide \
 	bandwipe \
@@ -45,10 +47,8 @@ DIRS = \
 	invertvideo \
 	irissquare \
 	ivtc \
-	lame \
 	level \
 	linearblur \
-	mpeg2enc \
 	normalize \
 	oilpainting \
 	perspective \
@@ -72,7 +72,6 @@ DIRS = \
 	timeavg \
 	timestretch \
 	titler \
-	toolame \
 	translate \
 	videoscope \
 	wave \

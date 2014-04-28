@@ -4,7 +4,7 @@ OBJS = $(OBJDIR)/defaulttheme.o
 
 OUTPUT_THEME = ../$(OBJDIR)/defaulttheme.plugin
 
-OUTPUT_THEME: $(OBJS)
+$(OUTPUT_THEME): $(OBJS)
 	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS)
 	strip $(OUTPUT_THEME)
 	../../guicast/$(OBJDIR)/bootstrap $(OUTPUT_THEME) data/*.png

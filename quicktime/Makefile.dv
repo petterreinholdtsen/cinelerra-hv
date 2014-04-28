@@ -1,4 +1,4 @@
-DV_DIR := $(shell expr libdv-0.98 )
+DV_DIR := libdv-0.99
 
 DV_OBJS := \
 	$(OBJDIR)/$(DV_DIR)/libdv/audio.o \
@@ -22,14 +22,17 @@ DV_OBJS := \
 	$(OBJDIR)/$(DV_DIR)/libdv/YV12.o
 
 
+CFLAGS += -I$(DV_DIR) \
+	-I$(DV_DIR)/libdv
 
 
 ifeq ($(USE_MMX), 1)
 
 
-CFLAGS += -DARCH_X86 -I$(DV_DIR) -I$(DV_DIR)/libdv
+CFLAGS += -DARCH_X86
 
-DVMMXOBJ = $(OBJDIR)/$(DV_DIR)/libdv/asmoff.h
+
+DVMMXHEADER = $(DV_DIR)/libdv/asmoff.h
 
 DVMMXOBJS = \
   $(OBJDIR)/$(DV_DIR)/libdv/dct_block_mmx.o \

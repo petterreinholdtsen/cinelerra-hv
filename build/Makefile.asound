@@ -122,8 +122,8 @@ clean:
 		-o -name '*.al' \
 		-o -name '*.a' \
 		-o -name '*.plugin' \
-		-o -name '*.so' \) -exec rm -f {} \;
-	rm -rf $(ALSA_DIR)/$(OBJDIR)
+		-o -name '*.so' \) -exec rm -f {} \; -prune
+	rm -rf $(ALSA_DIR)/$(OBJDIR) -prune
 
 
 

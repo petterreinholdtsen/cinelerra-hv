@@ -157,9 +157,9 @@ int InterfacePrefs::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, "Format for meter:"));
 	add_subwindow(vu_db = new MeterVUDB(pwindow, "DB", y));
-	add_subwindow(vu_int = new MeterVUInt(pwindow, "Percent of maximum", y));
-	vu_db->vu_int = vu_int;
-	vu_int->vu_db = vu_db;
+//	add_subwindow(vu_int = new MeterVUInt(pwindow, "Percent of maximum", y));
+//	vu_db->vu_int = vu_int;
+//	vu_int->vu_db = vu_db;
 	
 	y += 30;
 	ViewTheme *theme;
@@ -214,7 +214,7 @@ InterfacePrefs::~InterfacePrefs()
 	delete feet;
 	delete min_db;
 	delete vu_db;
-	delete vu_int;
+//	delete vu_int;
 	delete thumbnails;
 }
 
@@ -450,7 +450,7 @@ MeterVUDB::MeterVUDB(PreferencesWindow *pwindow, char *text, int y)
 int MeterVUDB::handle_event() 
 { 
 	pwindow->thread->redraw_meters = 1;
-	vu_int->update(0); 
+//	vu_int->update(0); 
 	pwindow->thread->edl->session->meter_format = METER_DB; 
 	return 1;
 }

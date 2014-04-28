@@ -10,7 +10,9 @@ FREEVERBOBJS := \
 
 OUTPUT := ../$(OBJDIR)/freeverb.plugin
 
-CFLAGS += -I../ -I../../cinelerra \
+CFLAGS += -fPIC \
+	-I../ \
+	-I../../cinelerra \
 	-I../../guicast \
 	-I../../quicktime \
 	-I../colors \

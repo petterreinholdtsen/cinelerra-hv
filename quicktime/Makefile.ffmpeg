@@ -16,13 +16,6 @@ FFMPEG_OBJS := \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/h263dec.o \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/h263.o \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/huffyuv.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/cputest.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/dsputil_mmx.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/fdct_mmx.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/idct_mmx.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/motion_est_mmx.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/mpegvideo_mmx.o \
-	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/simple_idct_mmx.o \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/imgconvert.o \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/imgresample.o \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/jfdctfst.o \
@@ -87,21 +80,36 @@ FFMPEG_OBJS := \
 
 
 
-
-FFMPEGIA32_OBJS :=
-
+ifeq ($(OBJDIR), i686)
 
 
+FFMPEGIA32_OBJS := \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/cputest.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/dsputil_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/fdct_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/idct_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/motion_est_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/mpegvideo_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/simple_idct_mmx.o 
 
 
 
 
+endif
 
 
 
 
-FFMPEG_CFLAGS := \
-	-O2 \
+ifeq ($(OBJDIR), x86_64)
+FFMPEG_CFLAGS := 
+endif
+ 
+ifeq ($(OBJDIR), i686)
+FFMPEG_CFLAGS := -O2 -fomit-frame-pointer -funroll-all-loops
+endif
+ 
+ 
+FFMPEG_CFLAGS += \
 	-I$(FFMPEG_DIR)/ \
 	-I$(FFMPEG_DIR)/libavcodec \
 	-I$(FFMPEG_DIR)/libavcodec/i386 \
@@ -119,8 +127,6 @@ FFMPEG_DIRS := \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mpglib \
 	$(OBJDIR)/$(FFMPEG_DIR)/libavformat
 
-
-$(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_flags)
 
 DIRS += $(FFMPEG_DIRS)
 

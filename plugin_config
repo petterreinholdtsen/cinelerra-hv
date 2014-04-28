@@ -1,7 +1,8 @@
 CFLAGS += -I../ -I../../cinelerra \
 	-I../../guicast \
 	-I../../quicktime \
-	-I../colors
+	-I../colors \
+	-fPIC
 
 $(shell echo $(CFLAGS) > ../$(OBJDIR)/c_flags)
 

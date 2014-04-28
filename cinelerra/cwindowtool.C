@@ -234,9 +234,9 @@ CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, float value)
 
 CWindowCoord::CWindowCoord(CWindowToolGUI *gui, int x, int y, int value)
  : BC_TumbleTextBox(gui, 
-		(long)value,
-		(long)-65536,
-		(long)65536,
+		(int64_t)value,
+		(int64_t)-65536,
+		(int64_t)65536,
 		x, 
 		y, 
 		100)
@@ -344,10 +344,10 @@ void CWindowCropGUI::handle_event()
 
 void CWindowCropGUI::update()
 {
-	x1->update((long)mwindow->edl->session->crop_x1);
-	y1->update((long)mwindow->edl->session->crop_y1);
-	x2->update((long)mwindow->edl->session->crop_x2);
-	y2->update((long)mwindow->edl->session->crop_y2);
+	x1->update((int64_t)mwindow->edl->session->crop_x1);
+	y1->update((int64_t)mwindow->edl->session->crop_y1);
+	x2->update((int64_t)mwindow->edl->session->crop_x2);
+	y2->update((int64_t)mwindow->edl->session->crop_y2);
 }
 
 
@@ -1354,9 +1354,9 @@ CWindowMaskNumber::CWindowMaskNumber(MWindow *mwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(gui, 
-		(long)mwindow->edl->session->cwindow_mask,
-		0,
-		SUBMASKS - 1,
+		(int64_t)mwindow->edl->session->cwindow_mask,
+		(int64_t)0,
+		(int64_t)SUBMASKS - 1,
 		x, 
 		y, 
 		100)
@@ -1383,9 +1383,9 @@ int CWindowMaskNumber::handle_event()
 
 CWindowMaskFeather::CWindowMaskFeather(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
  : BC_TumbleTextBox(gui, 
-		(long)0,
-		(long)0,
-		(long)0xff,
+		(int64_t)0,
+		(int64_t)0,
+		(int64_t)0xff,
 		x, 
 		y, 
 		100)
@@ -1593,12 +1593,12 @@ void CWindowMaskGUI::update()
 
 	if(mask)
 	{
-		feather->update((long)keyframe->feather);
-		value->update((long)keyframe->value);
+		feather->update((int64_t)keyframe->feather);
+		value->update((int64_t)keyframe->value);
 	}
 //printf("CWindowMaskGUI::update 1\n");
 
-	number->update((long)mwindow->edl->session->cwindow_mask);
+	number->update((int64_t)mwindow->edl->session->cwindow_mask);
 
 //printf("CWindowMaskGUI::update 1\n");
 	if(track)

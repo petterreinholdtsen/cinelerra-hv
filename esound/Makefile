@@ -23,7 +23,7 @@ SHARED_OUTPUT = $(OBJDIR)/libesound.so
 CC = gcc
 CFLAGS += -I. -I../audiofile -DSYSCONFDIR=\"/usr/local/etc\"
 
-all: $(OUTPUT) $(SHARED_OUTPUT)
+all: $(OUTPUT)
 
 $(OUTPUT): $(OBJS)
 	ar rc $(OUTPUT) $(OBJS)
@@ -32,37 +32,23 @@ $(SHARED_OUTPUT): $(OBJS)
 	gcc -shared -o $(SHARED_OUTPUT) $(OBJS)
 
 clean:
-	find \( -name core \
-		-o -name '*.o' \
-		-o -name '*.a' \
-		-o -name '*.so' \) -exec rm -f {} \;
+	rm -rf $(OBJDIR)
 
-COMPILE = $(GCC) -c $(CFLAGS) $? -o $*.o
+$(OBJS):
+	$(GCC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(OBJDIR)/audio.o:	 audio.c
-	$(COMPILE)
 $(OBJDIR)/clients.o:	 clients.c
-	$(COMPILE)
 $(OBJDIR)/esd_config.o:  esd_config.c
-	$(COMPILE)
 $(OBJDIR)/esdfile.o:	 esdfile.c
-	$(COMPILE)
 $(OBJDIR)/esdlib.o:	 esdlib.c
-	$(COMPILE)
 $(OBJDIR)/esdmgr.o:	 esdmgr.c
-	$(COMPILE)
 $(OBJDIR)/genrand.o:	 genrand.c
-	$(COMPILE)
 $(OBJDIR)/filter.o:	 filter.c
-	$(COMPILE)
 $(OBJDIR)/mix.o:	 mix.c
-	$(COMPILE)
 $(OBJDIR)/players.o:	 players.c
-	$(COMPILE)
 $(OBJDIR)/proto.o:	 proto.c
-	$(COMPILE)
 $(OBJDIR)/samples.o:	 samples.c
-	$(COMPILE)
 
 
 

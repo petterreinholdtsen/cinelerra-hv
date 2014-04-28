@@ -5,7 +5,6 @@ $(OBJDIR)/$(LAME_DIR)/libmp3lame/bitstream.o: 		 $(LAME_DIR)/libmp3lame/bitstrea
 $(OBJDIR)/$(LAME_DIR)/libmp3lame/id3tag.o:  		 $(LAME_DIR)/libmp3lame/id3tag.c
 $(OBJDIR)/$(LAME_DIR)/libmp3lame/lame.o: 			 $(LAME_DIR)/libmp3lame/lame.c
 $(OBJDIR)/$(LAME_DIR)/libmp3lame/newmdct.o: 		 $(LAME_DIR)/libmp3lame/newmdct.c
-$(OBJDIR)/$(LAME_DIR)/libmp3lame/pcm.o: 			 $(LAME_DIR)/libmp3lame/pcm.c
 $(OBJDIR)/$(LAME_DIR)/libmp3lame/presets.o: 		 $(LAME_DIR)/libmp3lame/presets.c
 $(OBJDIR)/$(LAME_DIR)/libmp3lame/quantize_pvt.o: 	 $(LAME_DIR)/libmp3lame/quantize_pvt.c
 $(OBJDIR)/$(LAME_DIR)/libmp3lame/quantize.o: 		 $(LAME_DIR)/libmp3lame/quantize.c

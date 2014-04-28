@@ -1,0 +1,1 @@
+-O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2 -I/usr/local/include -Ilibogg-1.0/include -Ilibvorbis-1.0/include -Ilibvorbis-1.0/lib -Ilame-3.93.1/ -Ilame-3.93.1/include -Ilame-3.93.1/libmp3lame -Ilame-3.93.1/mpglib -DHAVE_CONFIG_H

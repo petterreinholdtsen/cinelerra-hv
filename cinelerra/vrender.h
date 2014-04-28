@@ -40,7 +40,7 @@ public:
 	int get_datatype();
 
 // process frames to put in buffer_out
-	int process_buffer(VFrame **video_out, 
+	int process_buffer(VFrame *video_out, 
 		int64_t input_position, 
 		int last_buffer);
 // load an array of buffers for each track to send to the thread
@@ -48,10 +48,12 @@ public:
 // Flash the output on the display
 	int flash_output();
 // Determine if data can be copied directly from the file to the output device.
-	void VRender::get_render_strategy(Edit* &playable_edit, 
+	void get_render_strategy(Edit* &playable_edit, 
 		int &colormodel, 
 		int &use_vconsole,
 		int64_t position);
+
+
 	int get_use_vconsole(Edit* &playable_edit, 
 		int64_t position,
 		int &get_use_vconsole);
@@ -74,7 +76,7 @@ public:
 // frames to send to video device (1)
 	int64_t playback_buffer;            
 // Output frame
-	VFrame *video_out[MAX_CHANNELS];
+	VFrame *video_out;
 // Byte offset of video_out
 	int64_t output_offset;
 

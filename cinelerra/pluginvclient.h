@@ -6,7 +6,6 @@
 #include "pluginclient.h"
 #include "vframe.inc"
 
-
 // Maximum dimensions for a temporary frame a plugin should retain between 
 // process_buffer calls.  This allows memory conservation.
 #define PLUGIN_MAX_W 2000
@@ -51,6 +50,7 @@ public:
 		int64_t start_position,
 		double frame_rate);
 
+
 // Called by plugin server to render the GUI with rendered data.
 	void plugin_render_gui(void *data);
 	virtual void render_gui(void *data) { };
@@ -87,7 +87,28 @@ public:
 	int read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position,
-		double frame_rate);
+		double frame_rate,
+		int use_opengl = 0);
+
+
+// User calls this to request an opengl routine to be run synchronously.
+	int run_opengl();
+
+// Called by Playback3D to run opengl commands synchronously.
+// Overridden by the user with the commands to run synchronously.
+	virtual int handle_opengl();
+
+// Used by the opengl handlers to get the 
+// arguments to process_buffer.
+// For realtime plugins, they're identical for input and output.
+	VFrame* get_input(int channel = 0);
+	VFrame* get_output(int channel = 0);
+
+// For aggregation, this does case sensitive compares with the
+// the stack in the frame object.
+// Only possible for video because VFrame stores the effect stacks.
+	int next_effect_is(char *title);
+	int prev_effect_is(char *title);
 
 // Called by user to allocate the temporary for the current process_buffer.  
 // It may be deleted after the process_buffer to conserve memory.
@@ -95,6 +116,7 @@ public:
 // Called by PluginServer after process_buffer to delete the temp if it's too
 // large.
 	void age_temp();
+	VFrame* get_temp();
 
 // Frame rate relative to EDL
 	double get_project_framerate();
@@ -104,7 +126,7 @@ public:
 	int64_t local_to_edl(int64_t position);
 	int64_t edl_to_local(int64_t position);
 
-// Non realtime buffer pointers
+// ======================== Non realtime buffer pointers =======================
 // Channels of arrays of frames that the client uses.
 	VFrame ***video_in, ***video_out;
 
@@ -116,6 +138,12 @@ public:
 	VFrame ***input_ptr_render;
 	VFrame ***output_ptr_render;
 
+// ======================== Realtime buffer pointers ===========================
+// These are provided by the plugin server for the opengl handler.
+	VFrame **input;
+	VFrame **output;
+
+
 // Frame rate of EDL
 	double project_frame_rate;
 // Local parameters set by non realtime plugin about the file to be generated.
@@ -124,10 +152,15 @@ public:
 // requested rates.
 	double frame_rate;
 	int project_color_model;
-	int use_float;   // Whether user wants floating point calculations.
-	int use_alpha;   // Whether user wants alpha calculations.
-	int use_interpolation;   // Whether user wants pixel interpolation.
-	float aspect_w, aspect_h;  // Aspect ratio
+// Whether user wants floating point calculations.
+	int use_float;   
+// Whether user wants alpha calculations.
+	int use_alpha;   
+// Whether user wants pixel interpolation.
+	int use_interpolation;   
+// Aspect ratio
+	float aspect_w;
+	float aspect_h;  
 
 // Tempo
 	VFrame *temp;

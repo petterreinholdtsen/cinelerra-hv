@@ -3,8 +3,7 @@
 
 #include "audiodevice.inc"
 #include "bcwindowbase.inc"
-#include "defaults.inc"
-#include "maxchannels.h"
+#include "bchash.inc"
 #include "playbackconfig.inc"
 
 // This structure is passed to the driver for configuration during playback
@@ -18,18 +17,11 @@ public:
 	int operator==(AudioOutConfig &that);
 	AudioOutConfig& operator=(AudioOutConfig &that);
 	void copy_from(AudioOutConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
-// Total channels in do_channels
-	int total_playable_channels();
-	int playable_channel_number(int number);
-// Total channels device can handle
-	int total_output_channels();
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 	int fragment_size;
 
-// Which channels to send output to
-	int do_channel[MAXCHANNELS];
 
 // Offset for synchronization in seconds
 	float audio_offset;
@@ -39,7 +31,6 @@ public:
 	int driver;
 	int oss_enable[MAXDEVICES];
 	char oss_out_device[MAXDEVICES][BCTEXTLEN];
-	int oss_out_channels[MAXDEVICES];
 	int oss_out_bits;
 
 
@@ -49,12 +40,10 @@ public:
 
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
-	int alsa_out_channels;
 	int alsa_out_bits;
 	int interrupt_workaround;
 
 // Firewire options
-	int firewire_channels;
 	int firewire_channel;
 	int firewire_port;
 	int firewire_frames;
@@ -63,7 +52,6 @@ public:
 
 
 // DV1394 options
-	int dv1394_channels;
 	int dv1394_channel;
 	int dv1394_port;
 	int dv1394_frames;
@@ -82,9 +70,8 @@ public:
 	int operator==(VideoOutConfig &that);
 	VideoOutConfig& operator=(VideoOutConfig &that);
 	void copy_from(VideoOutConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
-	int total_playable_channels();
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 	char* get_path();
 
 	int driver;
@@ -106,8 +93,6 @@ public:
 	};
 
 
-// Which channels to send output to
-	int do_channel[MAXCHANNELS];
 
 // Picture quality
 	int brightness;
@@ -137,8 +122,8 @@ public:
 
 	PlaybackConfig& operator=(PlaybackConfig &that);
 	void copy_from(PlaybackConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 	char hostname[BCTEXTLEN];
 	int port;

@@ -1,6 +1,7 @@
 #include "bcclipboard.h"
 #include "bclistboxitem.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bctextbox.h"
 #include "clip.h"
 #include "colors.h"
@@ -52,12 +53,14 @@ BC_TextBox::BC_TextBox(int x,
 	int rows, 
 	float text, 
 	int has_border, 
-	int font)
+	int font,
+	int precision)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
+	this->precision = precision;
 	reset_parameters(rows, has_border, font);
-	sprintf(this->text, "%0.4f", text);
+	sprintf(this->text, "%0.*f", precision, text);
 }
 
 BC_TextBox::BC_TextBox(int x, 
@@ -163,6 +166,14 @@ void BC_TextBox::set_precision(int precision)
 	this->precision = precision;
 }
 
+void BC_TextBox::set_selection(int char1, int char2, int ibeam)
+{
+	highlight_letter1 = char1;
+	highlight_letter2 = char2;
+	ibeam_letter = ibeam;
+	draw();
+}
+
 int BC_TextBox::update(char *text)
 {
 //printf("BC_TextBox::update 1 %d %s %s\n", strcmp(text, this->text), text, this->text);
@@ -192,10 +203,7 @@ int BC_TextBox::update(int64_t value)
 int BC_TextBox::update(float value)
 {
 	char string[BCTEXTLEN];
-	sprintf(string, "%f", value);
-	char *ptr = strchr(string, '.');
-
-	if(ptr) ptr[precision + 1] = 0;
+	sprintf(string, "%0.*f", precision, value);
 
 	update(string);
 	return 0;
@@ -1707,8 +1715,12 @@ BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
 }
 int BC_PopupTextBoxList::handle_event()
 {
-	popup->textbox->update(get_selection(0, 0)->get_text());
-	popup->handle_event();
+	BC_ListBoxItem *item = get_selection(0, 0);
+	if(item)
+	{
+		popup->textbox->update(item->get_text());
+		popup->handle_event();
+	}
 	return 1;
 }
 

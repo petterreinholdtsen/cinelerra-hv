@@ -2,11 +2,14 @@
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "builddate.h"
+#include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "garbage.h"
 #include "language.h"
 #include "loadfile.inc"
 #include "mainmenu.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "pluginserver.h"
@@ -49,8 +52,8 @@ int main(int argc, char *argv[])
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
-
-
+	Garbage::garbage = new Garbage;
+	EDL::id_lock = new Mutex("EDL::id_lock");
 
 // detect an UTF-8 locale and try to use a non-Unicode locale instead
 // <---Beginning of dirty hack
@@ -175,7 +178,7 @@ int main(int argc, char *argv[])
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
 		BUILDDATE 
-		" (C)2005 Heroine Virtual Ltd.\n\n"
+		" (C)2006 Heroine Virtual Ltd.\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
@@ -254,7 +257,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{
-				mwindow.gui->lock_window();
+				mwindow.gui->lock_window("main");
 				mwindow.load_filenames(&filenames, LOAD_REPLACE);
 				if(filenames.total == 1)
 					mwindow.gui->mainmenu->add_load(filenames.values[0]);

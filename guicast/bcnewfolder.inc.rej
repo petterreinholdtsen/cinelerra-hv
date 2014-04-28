@@ -1,0 +1,16 @@
+***************
+*** 3,8 ****
+  
+  
+  class BC_NewFolder;
+  
+  
+  #endif
+--- 3,9 ----
+  
+  
+  class BC_NewFolder;
++ class BC_NewFolderThread;
+  
+  
+  #endif

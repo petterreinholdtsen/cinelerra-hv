@@ -3,7 +3,7 @@
 #include "awindowgui.inc"
 #include "batch.h"
 #include "cache.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "file.h"
 #include "filexml.h"
@@ -46,11 +46,12 @@ int Assets::load(ArrayList<PluginServer*> *plugindb,
 //printf("Assets::load 2\n");
 				char *path = file->tag.get_property("SRC");
 //printf("Assets::load 3\n");
-				Asset new_asset(path ? path : SILENCE);
+				Asset *new_asset = new Asset(path ? path : SILENCE);
 //printf("Assets::load 4\n");
-				new_asset.read(file);
+				new_asset->read(file);
 //printf("Assets::load 5\n");
-				update(&new_asset);
+				update(new_asset);
+				Garbage::delete_object(new_asset);
 //printf("Assets::load 6\n");
 			}
 		}
@@ -81,7 +82,7 @@ int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
 
 void Assets::copy_from(Assets *assets)
 {
-	while(last) delete last;
+	delete_all();
 
 	for(Asset *current = assets->first; current; current = NEXT)
 	{
@@ -131,9 +132,9 @@ Asset* Assets::update(Asset *asset)
 
 int Assets::delete_all()
 {
-	while(last)
+	while(first) 
 	{
-		remove(last);
+		remove_asset(first);
 	}
 	return 0;
 }
@@ -175,7 +176,8 @@ Asset* Assets::get_asset(const char *filename)
 
 Asset* Assets::remove_asset(Asset *asset)
 {
-	delete asset;
+	remove_pointer(asset);
+	Garbage::delete_object(asset);
 }
 
 

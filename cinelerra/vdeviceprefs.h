@@ -19,6 +19,7 @@
 class VDeviceCheckBox;
 class VDeviceTextBox;
 class VDeviceIntBox;
+class VDeviceTumbleBox;
 class VDriverMenu;
 
 class VDevicePrefs
@@ -33,7 +34,9 @@ public:
 		int mode);
 	~VDevicePrefs();
 
-	int initialize();
+// creation - set if this is the first initialize of the object
+//            to prevent file format from being overwritten
+	int initialize(int creation = 0);
 	int delete_objects();
 	void reset_objects();
 
@@ -53,11 +56,19 @@ private:
 	int create_screencap_objs();
 	int create_buz_objs();
 	int create_x11_objs();
+	int create_dvb_objs();
 
 	VDriverMenu *menu;
 
-	BC_Title *device_title, *port_title, *channel_title, *output_title, *syt_title;
+	BC_Title *device_title;
+	BC_Title *port_title;
+	BC_Title *number_title;
+	BC_Title *channel_title;
+	BC_Title *output_title;
+	BC_Title *syt_title;
 	VDeviceTextBox *device_text;
+	VDeviceTumbleBox *device_port;
+	VDeviceTumbleBox *device_number;
 	VDeviceIntBox *firewire_port;
 	VDeviceIntBox *firewire_channel;
 	VDeviceIntBox *firewire_channels;
@@ -83,6 +94,20 @@ class VDeviceIntBox : public BC_TextBox
 {
 public:
 	VDeviceIntBox(int x, int y, int *output);
+
+	int handle_event();
+	int *output;
+};
+
+class VDeviceTumbleBox : public BC_TumbleTextBox
+{
+public:
+	VDeviceTumbleBox(VDevicePrefs *prefs, 
+		int x, 
+		int y, 
+		int *output,
+		int min,
+		int max);
 
 	int handle_event();
 	int *output;

@@ -1,11 +1,12 @@
 #include "aboutprefs.h"
 #include "asset.h"
 #include "audiodevice.inc"
+#include "bcsignals.h"
 #include "cache.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
@@ -15,6 +16,7 @@
 #include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
+#include "mainerror.h"
 #include "meterpanel.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -36,7 +38,7 @@
 
 
 #define WIDTH 750
-#define HEIGHT 700
+#define HEIGHT 730
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
@@ -159,15 +161,9 @@ int PreferencesThread::apply_settings()
 	AudioOutConfig *aconfig = mwindow->edl->session->playback_config->aconfig;
 	VideoOutConfig *vconfig = mwindow->edl->session->playback_config->vconfig;
 
-
+	
 	rerender = 
-		(edl->session->playback_preload != mwindow->edl->session->playback_preload) ||
-		(edl->session->interpolation_type != mwindow->edl->session->interpolation_type) ||
-		(edl->session->video_every_frame != mwindow->edl->session->video_every_frame) ||
-		(edl->session->real_time_playback != mwindow->edl->session->real_time_playback) ||
-		(edl->session->playback_software_position != mwindow->edl->session->playback_software_position) ||
-		(edl->session->test_playback_edits != mwindow->edl->session->test_playback_edits) ||
-		(edl->session->playback_buffer != mwindow->edl->session->playback_buffer) ||
+		edl->session->need_rerender(mwindow->edl->session) ||
 		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
@@ -176,10 +172,19 @@ int PreferencesThread::apply_settings()
 
 
 
-// TODO: Need to copy just the parameters in PreferencesThread
-	mwindow->edl->copy_session(edl);
+	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
+
+	if(((mwindow->edl->session->output_w % 4) || 
+		(mwindow->edl->session->output_h % 4)) && 
+		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		MainError::show_error(
+			_("This project's dimensions are not multiples of 4 so\n"
+			"it can't be rendered by OpenGL."));
+	}
+
 
 	if(redraw_meters)
 	{
@@ -232,10 +237,14 @@ int PreferencesThread::apply_settings()
 
 	if(rerender)
 	{
+//printf("PreferencesThread::apply_settings 1\n");
+// This doesn't stop and restart, only reloads the assets before
+// the next play command.
 		mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
 			CHANGE_ALL,
 			mwindow->edl,
 			1);
+//printf("PreferencesThread::apply_settings 10\n");
 	}
 
 	if(redraw_times || redraw_overlays)
@@ -251,22 +260,19 @@ char* PreferencesThread::category_to_text(int category)
 {
 	switch(category)
 	{
-		case 0:
+		case PLAYBACK:
 			return _("Playback");
 			break;
-		case 1:
+		case RECORD:
 			return _("Recording");
 			break;
-		case 2:
+		case PERFORMANCE:
 			return _("Performance");
 			break;
-		case 3:
+		case INTERFACE:
 			return _("Interface");
 			break;
-// 		case 4:
-// 			return _("Plugin Set");
-// 			break;
-		case 4:
+		case ABOUT:
 			return _("About");
 			break;
 	}
@@ -275,6 +281,7 @@ char* PreferencesThread::category_to_text(int category)
 
 int PreferencesThread::text_to_category(char *category)
 {
+SET_TRACE
 	int min_result = -1, result, result_num = 0;
 	for(int i = 0; i < CATEGORIES; i++)
 	{
@@ -285,6 +292,7 @@ int PreferencesThread::text_to_category(char *category)
 			result_num = i;
 		}
 	}
+SET_TRACE
 	return result_num;
 }
 
@@ -313,6 +321,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	dialog = 0;
+	category = 0;
 }
 
 PreferencesWindow::~PreferencesWindow()
@@ -332,14 +341,31 @@ int PreferencesWindow::create_objects()
 	mwindow->theme->draw_preferences_bg(this);
 	flash();
 
-
+	int x = mwindow->theme->preferencescategory_x;
+	int y = mwindow->theme->preferencescategory_y;
 	for(int i = 0; i < CATEGORIES; i++)
-		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
-	category = new PreferencesCategory(mwindow, 
-		thread, 
-		mwindow->theme->preferencescategory_x, 
-		mwindow->theme->preferencescategory_y);
-	category->create_objects();
+	{
+		add_subwindow(category_button[i] = new PreferencesButton(mwindow,
+			thread,
+			x,
+			y,
+			i,
+			thread->category_to_text(i),
+			(i == thread->current_dialog) ?
+				mwindow->theme->get_image_set("category_button_checked") : 
+				mwindow->theme->get_image_set("category_button")));
+		x += category_button[i]->get_w() -
+			mwindow->theme->preferences_category_overlap;
+	}
+
+
+// 	for(int i = 0; i < CATEGORIES; i++)
+// 		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
+// 	category = new PreferencesCategory(mwindow, 
+// 		thread, 
+// 		mwindow->theme->preferencescategory_x, 
+// 		mwindow->theme->preferencescategory_y);
+// 	category->create_objects();
 
 
 	add_subwindow(button = new PreferencesOK(mwindow, thread));
@@ -371,32 +397,48 @@ int PreferencesWindow::set_current_dialog(int number)
 	if(dialog) delete dialog;
 	dialog = 0;
 
+// Redraw category buttons
+	for(int i = 0; i < CATEGORIES; i++)
+	{
+		if(i == number)
+		{
+			category_button[i]->set_images(
+				mwindow->theme->get_image_set("category_button_checked"));
+		}
+		else
+		{
+			category_button[i]->set_images(
+				mwindow->theme->get_image_set("category_button"));
+		}
+		category_button[i]->draw_face();
+
+// Copy face to background for next button's overlap.
+// Still can't to state changes right.
+	}
+
 	switch(number)
 	{
-		case 0:
+		case PreferencesThread::PLAYBACK:
 			add_subwindow(dialog = new PlaybackPrefs(mwindow, this));
 			break;
 	
-		case 1:
+		case PreferencesThread::RECORD:
 			add_subwindow(dialog = new RecordPrefs(mwindow, this));
 			break;
 	
-		case 2:
+		case PreferencesThread::PERFORMANCE:
 			add_subwindow(dialog = new PerformancePrefs(mwindow, this));
 			break;
 	
-		case 3:
+		case PreferencesThread::INTERFACE:
 			add_subwindow(dialog = new InterfacePrefs(mwindow, this));
 			break;
 	
-// 		case 4:
-// 			add_subwindow(dialog = new PluginPrefs(mwindow, this));
-// 			break;
-	
-		case 4:
+		case PreferencesThread::ABOUT:
 			add_subwindow(dialog = new AboutPrefs(mwindow, this));
 			break;
 	}
+
 	if(dialog)
 	{
 		dialog->draw_top_background(this, 0, 0, dialog->get_w(), dialog->get_h());
@@ -406,7 +448,41 @@ int PreferencesWindow::set_current_dialog(int number)
 	return 0;
 }
 
-// ================================== save values
+
+
+
+
+
+
+
+
+
+
+PreferencesButton::PreferencesButton(MWindow *mwindow, 
+	PreferencesThread *thread, 
+	int x, 
+	int y,
+	int category,
+	char *text,
+	VFrame **images)
+ : BC_GenericButton(x, y, text, images)
+{
+	this->mwindow = mwindow;
+	this->thread = thread;
+	this->category = category;
+}
+
+int PreferencesButton::handle_event()
+{
+	thread->window->set_current_dialog(category);
+	return 1;
+}
+
+
+
+
+
+
 
 
 
@@ -526,6 +602,8 @@ PreferencesCategory::~PreferencesCategory()
 
 int PreferencesCategory::handle_event()
 {
+SET_TRACE
 	thread->window->set_current_dialog(thread->text_to_category(get_text()));
+SET_TRACE
 	return 1;
 }

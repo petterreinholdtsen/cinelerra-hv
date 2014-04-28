@@ -9,6 +9,7 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "file.h"
+#include "filempeg.h"
 #include "filesystem.h"
 #include "indexfile.h"
 #include "language.h"
@@ -65,6 +66,7 @@ void AssetEdit::run()
 
 		window = new AssetEditWindow(mwindow, this);
 		window->create_objects();
+		window->raise_window();
 		result = window->run_window();
 
  		if(!result)
@@ -72,6 +74,7 @@ void AssetEdit::run()
  			if(!asset->equivalent(*new_asset, 1, 1))
  			{
 				mwindow->gui->lock_window();
+				mwindow->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
 				asset->copy_from(new_asset, 0);
@@ -110,7 +113,7 @@ void AssetEdit::run()
  			}
  		}
 
-		delete new_asset;
+		Garbage::delete_object(new_asset);
 		delete window;
 		window = 0;
 	}
@@ -160,10 +163,11 @@ AssetEditWindow::~AssetEditWindow()
 int AssetEditWindow::create_objects()
 {
 	int y = 10, x = 10, x1 = 10, x2 = 150;
-	char string[1024];
+	char string[BCTEXTLEN];
 	int vmargin;
 	int hmargin1 = 180, hmargin2 = 290;
 	FileSystem fs;
+	BC_Title *title;
 
 	if(allow_edits) 
 		vmargin = 30;
@@ -185,7 +189,18 @@ int AssetEditWindow::create_objects()
 	x = x1;
 	y += 20;
 
-	int64_t bytes = fs.get_size(asset->path);
+	int64_t bytes = 1;
+	int subtitle_tracks = 0;
+	if(asset->format == FILE_MPEG &&
+		asset->video_data)
+	{
+// Get length from TOC
+		FileMPEG::get_info(asset, &bytes, &subtitle_tracks);
+	}
+	else
+	{
+		bytes = fs.get_size(asset->path);
+	}
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
 	sprintf(string, "%lld", bytes);
 	Units::punctuate(string);
@@ -395,8 +410,18 @@ int AssetEditWindow::create_objects()
 		add_subwindow(new BC_Title(x, y, _("Height:")));
 		x = x2;
 		sprintf(string, "%d", asset->height);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
-		y += 30;
+		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+		y += title->get_h() + 5;
+
+		if(asset->format == FILE_MPEG)
+		{
+			x = x1;
+			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
+			x = x2;
+			sprintf(string, "%d", subtitle_tracks);
+			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			y += title->get_h() + 5;
+		}
 	}
 
 	add_subwindow(new BC_OKButton(this));

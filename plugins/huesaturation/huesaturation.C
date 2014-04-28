@@ -1,12 +1,13 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "../colors/plugincolors.h"
+#include "playback3d.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -56,7 +57,9 @@ class SaturationSlider : public BC_FSlider
 public:
 	SaturationSlider(HueEffect *plugin, int x, int y, int w);
 	int handle_event();
+	char* get_caption();
 	HueEffect *plugin;
+	char string[BCTEXTLEN];
 };
 
 class ValueSlider : public BC_FSlider
@@ -64,7 +67,9 @@ class ValueSlider : public BC_FSlider
 public:
 	ValueSlider(HueEffect *plugin, int x, int y, int w);
 	int handle_event();
+	char* get_caption();
 	HueEffect *plugin;
+	char string[BCTEXTLEN];
 };
 
 class HueWindow : public BC_Window
@@ -113,7 +118,9 @@ public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
 	
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -126,10 +133,11 @@ public:
 	int set_string();
 	void raise_window();
 	void update_gui();
-	
+	int handle_opengl();
+
 	HueConfig config;
 	VFrame *input, *output;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	HueThread *thread;
 	HueEngine *engine;
 };
@@ -235,6 +243,14 @@ int SaturationSlider::handle_event()
 	return 1;
 }
 
+char* SaturationSlider::get_caption()
+{
+	float fraction = ((float)plugin->config.saturation - MINSATURATION) / 
+		MAXSATURATION;;
+	sprintf(string, "%0.4f", fraction);
+	return string;
+}
+
 
 
 
@@ -260,6 +276,12 @@ int ValueSlider::handle_event()
 	return 1;
 }
 
+char* ValueSlider::get_caption()
+{
+	float fraction = ((float)plugin->config.value - MINVALUE) / MAXVALUE;
+	sprintf(string, "%0.4f", fraction);
+	return string;
+}
 
 
 
@@ -315,11 +337,11 @@ HueEngine::HueEngine(HueEffect *plugin, int cpus)
 }
 void HueEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		HuePackage *pkg = (HuePackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		HuePackage *pkg = (HuePackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 LoadClient* HueEngine::new_client()
@@ -513,18 +535,33 @@ HueEffect::~HueEffect()
 	if(engine) delete engine;
 }
 
-int HueEffect::process_realtime(VFrame *input, VFrame *output)
+int HueEffect::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
-	this->input = input;
-	this->output = output;
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
+	
+
+	this->input = frame;
+	this->output = frame;
 	if(EQUIV(config.hue, 0) && EQUIV(config.saturation, 0) && EQUIV(config.value, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
+		return 0;
 	}
 	else
 	{
+		if(get_use_opengl())
+		{
+			run_opengl();
+			return 0;
+		}
+
 		if(!engine) engine = new HueEngine(this, PluginClient::smp + 1);
 		
 		engine->process_packages();
@@ -545,7 +582,7 @@ int HueEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%shuesaturation.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.hue = defaults->get("HUE", config.hue);
 	config.saturation = defaults->get("SATURATION", config.saturation);
@@ -597,6 +634,111 @@ void HueEffect::update_gui()
 		thread->window->unlock_window();
 	}
 }
+
+int HueEffect::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *yuv_saturation_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float s_offset;\n"
+		"uniform float v_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	pixel.r *= v_offset;\n"
+		"	pixel.gb -= vec2(0.5, 0.5);\n"
+		"	pixel.g *= s_offset;\n"
+		"	pixel.b *= s_offset;\n"
+		"	pixel.gb += vec2(0.5, 0.5);\n"
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+
+	static char *yuv_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float h_offset;\n"
+		"uniform float s_offset;\n"
+		"uniform float v_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+			YUV_TO_RGB_FRAG("pixel")
+			RGB_TO_HSV_FRAG("pixel")
+		"	pixel.r += h_offset;\n"
+		"	pixel.g *= s_offset;\n"
+		"	pixel.b *= v_offset;\n"
+		"	if(pixel.r >= 360.0) pixel.r -= 360.0;\n"
+		"	if(pixel.r < 0.0) pixel.r += 360.0;\n"
+			HSV_TO_RGB_FRAG("pixel")
+			RGB_TO_YUV_FRAG("pixel")
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+	static char *rgb_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float h_offset;\n"
+		"uniform float s_offset;\n"
+		"uniform float v_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+			RGB_TO_HSV_FRAG("pixel")
+		"	pixel.r += h_offset;\n"
+		"	pixel.g *= s_offset;\n"
+		"	pixel.b *= v_offset;\n"
+		"	if(pixel.r >= 360.0) pixel.r -= 360.0;\n"
+		"	if(pixel.r < 0.0) pixel.r += 360.0;\n"
+			HSV_TO_RGB_FRAG("pixel")
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int frag_shader = 0;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+// This is a lousy approximation but good enough for the masker.
+			if(EQUIV(config.hue, 0))
+				frag_shader = VFrame::make_shader(0,
+					yuv_saturation_frag,
+					0);
+			else
+				frag_shader = VFrame::make_shader(0,
+					yuv_frag,
+					0);
+			break;
+		default:
+			frag_shader = VFrame::make_shader(0,
+				rgb_frag,
+				0);
+			break;
+	}
+
+
+	if(frag_shader > 0) 
+	{
+		glUseProgram(frag_shader);
+		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(frag_shader, "h_offset"), config.hue);
+		glUniform1f(glGetUniformLocation(frag_shader, "s_offset"), 
+			((float)config.saturation - MINSATURATION) / MAXSATURATION);
+		glUniform1f(glGetUniformLocation(frag_shader, "v_offset"), 
+			((float)config.value - MINVALUE) / MAXVALUE);
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
+
 
 
 

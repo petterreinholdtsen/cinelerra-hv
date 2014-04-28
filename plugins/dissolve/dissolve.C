@@ -5,6 +5,8 @@
 #include "picon_png.h"
 #include "vframe.h"
 
+#include <string.h>
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new DissolveMain(server);
@@ -35,9 +37,17 @@ NEW_PICON_MACRO(DissolveMain)
 
 int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	float fade = (float)PluginClient::get_source_position() / 
+	fade = (float)PluginClient::get_source_position() / 
 			PluginClient::get_total_len();
 
+// Use hardware
+	if(get_use_opengl())
+	{
+		run_opengl();
+		return 0;
+	}
+
+// Use software
 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
 
 
@@ -114,4 +124,39 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		NEAREST_NEIGHBOR);
 
 	return 0;
+}
+
+int DissolveMain::handle_opengl()
+{
+#ifdef HAVE_GL
+
+// Read images from RAM
+	get_input()->to_texture();
+	get_output()->to_texture();
+
+// Create output pbuffer
+	get_output()->enable_opengl();
+
+	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+
+// Enable output texture
+	get_output()->bind_texture(0);
+// Draw output texture
+	glDisable(GL_BLEND);
+	glColor4f(1, 1, 1, 1);
+	get_output()->draw_texture();
+
+// Draw input texture
+	get_input()->bind_texture(0);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1, 1, 1, fade);
+	get_input()->draw_texture();
+
+
+	glDisable(GL_BLEND);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+
+
+#endif
 }

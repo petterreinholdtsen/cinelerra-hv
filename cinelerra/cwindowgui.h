@@ -40,6 +40,17 @@ public:
 
     int create_objects();
 	int resize_event(int w, int h);
+
+// Events for the fullscreen canvas fall through to here.
+	int button_press_event();
+	int cursor_leave_event();
+	int cursor_enter_event();
+	int button_release_event();
+	int cursor_motion_event();
+
+
+	void zoom_canvas(int do_auto, double value, int update_menu);
+
 	int close_event();
 	int keypress_event();
 	int translation_event();
@@ -225,6 +236,8 @@ public:
 	int cursor_motion_event();
 	int button_press_event();
 	int button_release_event();
+	int get_fullscreen();
+	void set_fullscreen(int value);
 	int test_crop(int button_press, int &redraw);
 	int test_bezier(int button_press, 
 		int &redraw, 
@@ -236,6 +249,7 @@ public:
 	void reset_projector();
 	void reset_keyframe(int do_camera);
 	void draw_crophandle(int x, int y);
+	void zoom_auto();
 
 // Draw the projector overlay in different colors.
 	void draw_bezier(int do_camera);

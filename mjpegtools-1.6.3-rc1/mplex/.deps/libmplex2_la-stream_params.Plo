@@ -1,1 +1,8 @@
-# dummy
+libmplex2_la-stream_params.lo libmplex2_la-stream_params.o:  \
+ stream_params.cpp ../config.h stream_params.hpp ../utils/format_codes.h
+
+../config.h:
+
+stream_params.hpp:
+
+../utils/format_codes.h:

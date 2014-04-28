@@ -3,6 +3,7 @@
 #include "bclistbox.inc"
 #include "bcresources.h"
 #include "bcsignals.h"
+#include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 #include "colormodels.h"
@@ -50,9 +51,12 @@ char* BC_Resources::small_fontset = "6x12,*";
 char* BC_Resources::medium_fontset = "7x14,*";
 char* BC_Resources::large_fontset = "8x16,*";
 
-char* BC_Resources::small_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-char* BC_Resources::medium_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-char* BC_Resources::large_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::small_font_xft = N_("-*-luxi sans-*-r-*-*-12-*-*-*-*-*-*-*");
+char* BC_Resources::small_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::medium_font_xft = N_("-*-luxi sans-*-r-*-*-16-*-*-*-*-*-*-*");
+char* BC_Resources::medium_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::large_font_xft = N_("-*-luxi sans-bold-r-*-*-20-*-*-*-*-*-*-*");
+char* BC_Resources::large_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 
 suffix_to_type_t BC_Resources::suffix_to_type[] = 
 {
@@ -67,12 +71,22 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 
 BC_Signals* BC_Resources::signal_handler = 0;
 
+
 int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 {
-	char string[1024];
-	XGetErrorText(event->display, event->error_code, string, 1024);
-//	printf("BC_Resources::x_error_handler: %s\n", string);
+// 	char string[1024];
+// 	XGetErrorText(event->display, event->error_code, string, 1024);
+// 	printf("BC_Resources::x_error_handler: error_code=%d opcode=%d,%d %s\n", 
+// 		event->error_code, 
+// 		event->request_code,
+// 		event->minor_code,
+// 		string);
+
+
 	BC_Resources::error = 1;
+// This bug only happens in 32 bit mode.
+	if(sizeof(long) == 4)
+		BC_WindowBase::get_resources()->use_xft = 0;
 	return 0;
 }
 
@@ -80,7 +94,11 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 
 BC_Resources::BC_Resources()
 {
+	synchronous = 0;
 	display_info = new BC_DisplayInfo("", 0);
+	id_lock = new Mutex("BC_Resources::id_lock");
+	create_window_lock = new Mutex("BC_Resources::create_window_lock", 1);
+	id = 0;
 
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 		filebox_history[i][0] = 0;
@@ -652,6 +670,7 @@ BC_Resources::BC_Resources()
 
 // Xft has priority over font set
 #ifdef HAVE_XFT
+// But Xft dies in 32 bit mode after some amount of drawing.
 	use_xft = 1;
 #else
 	use_xft = 0;
@@ -671,7 +690,7 @@ BC_Resources::~BC_Resources()
 int BC_Resources::initialize_display(BC_WindowBase *window)
 {
 // Set up IPC cleanup handlers
-	bc_init_ipc();
+//	bc_init_ipc();
 
 // Test for shm.  Must come before yuv test
 	init_shm(window);
@@ -707,6 +726,25 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 	return 0;
 }
 
+
+
+
+BC_Synchronous* BC_Resources::get_synchronous()
+{
+	return synchronous;
+}
+
+void BC_Resources::set_synchronous(BC_Synchronous *synchronous)
+{
+	this->synchronous = synchronous;
+}
+
+
+
+
+
+
+
 int BC_Resources::get_top_border()
 {
 	return display_info->get_top_border();
@@ -738,3 +776,22 @@ int BC_Resources::get_bg_light1() { return bg_light1; }
 
 int BC_Resources::get_bg_light2() { return bg_light2; }
 
+
+int BC_Resources::get_id()
+{
+	id_lock->lock("BC_Resources::get_id");
+	int result = id++;
+	id_lock->unlock();
+	return result;
+}
+
+
+void BC_Resources::set_signals(BC_Signals *signal_handler)
+{
+	BC_Resources::signal_handler = signal_handler;
+}
+
+BC_Signals* BC_Resources::get_signals()
+{
+	return BC_Resources::signal_handler;
+}

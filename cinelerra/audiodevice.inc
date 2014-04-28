@@ -5,6 +5,7 @@ class AudioDevice;
 class AudioLowLevel;
 
 #define TOTAL_BUFFERS 2
+#define INPUT_BUFFER_BYTES 0x400000
 
 // Supported devices
 enum
@@ -16,7 +17,9 @@ enum
 	AUDIO_ALSA,
 	AUDIO_1394,
 	AUDIO_DV1394,
-	AUDIO_IEC61883
+	AUDIO_IEC61883,
+	AUDIO_DVB,
+	AUDIO_CINE
 };
 
 #define AUDIO_OSS_TITLE "OSS"
@@ -27,5 +30,7 @@ enum
 #define AUDIO_1394_TITLE "RAW 1394"
 #define AUDIO_DV1394_TITLE "DV 1394"
 #define AUDIO_IEC61883_TITLE "IEC 61883"
+#define AUDIO_DVB_TITLE "DVB"
+#define AUDIO_CINE_TITLE "Render Node"
 
 #endif

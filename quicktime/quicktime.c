@@ -1,8 +1,9 @@
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "quicktime.h"
-#include "workarounds.h"
+#include <string.h>
 #include <sys/stat.h>
+#include "workarounds.h"
 
 int quicktime_make_streamable(char *in_path, char *out_path)
 {
@@ -950,6 +951,7 @@ int quicktime_init_video_map(quicktime_video_map_t *vtrack, quicktime_trak_t *tr
 	vtrack->current_position = 0;
 	vtrack->current_chunk = 1;
 	quicktime_init_vcodec(vtrack);
+	vtrack->frame_cache = quicktime_new_cache();
 	return 0;
 }
 
@@ -957,8 +959,23 @@ int quicktime_delete_video_map(quicktime_video_map_t *vtrack)
 {
 	int i;
 	quicktime_delete_vcodec(vtrack);
+	if(vtrack->frame_cache) quicktime_delete_cache(vtrack->frame_cache);
+	vtrack->frame_cache = 0;
 	return 0;
 }
+
+int64_t quicktime_memory_usage(quicktime_t *file)
+{
+	int i;
+	int64_t result = 0;
+//printf("quicktime_memory_usage %d\n", file->total_vtracks);
+	for(i = 0; i < file->total_vtracks; i++)
+	{
+		result += quicktime_cache_usage(file->vtracks[i].frame_cache);
+	}
+	return result;
+}
+
 
 int quicktime_init_audio_map(quicktime_audio_map_t *atrack, quicktime_trak_t *trak)
 {
@@ -1152,7 +1169,6 @@ int quicktime_dump(quicktime_t *file)
 
 
 
-// ================================== Entry points =============================
 
 int quicktime_check_sig(char *path)
 {
@@ -1283,11 +1299,11 @@ int quicktime_close(quicktime_t *file)
 		{
 			quicktime_atom_t junk_atom;
 			int i;
-			int64_t position = quicktime_position(file);
 
 // Finalize last header
 			quicktime_finalize_riff(file, file->riff[file->total_riffs - 1]);
 
+			int64_t position = quicktime_position(file);
 
 // Finalize the odml header
 			quicktime_finalize_odml(file, &file->riff[0]->hdrl);

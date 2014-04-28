@@ -80,7 +80,7 @@ int Track::get_id()
 }
 
 
-int Track::load_defaults(Defaults *defaults)
+int Track::load_defaults(BC_Hash *defaults)
 {
 	return 0;
 }
@@ -155,9 +155,13 @@ int Track::is_synthesis(RenderEngine *renderengine,
 			0);
 		if(plugin)
 		{
-			is_synthesis = plugin->is_synthesis(renderengine, 
-				position, 
-				direction);
+// Assume data from a shared track is synthesized
+			if(plugin->plugin_type == PLUGIN_SHAREDMODULE) 
+				is_synthesis = 1;
+			else
+				is_synthesis = plugin->is_synthesis(renderengine, 
+					position, 
+					direction);
 			if(is_synthesis) break;
 		}
 	}
@@ -195,12 +199,12 @@ int Track::vertical_span(Theme *theme)
 	if(expand_view)
 		result = edl->local_session->zoom_track + 
 			plugin_set.total * 
-			theme->plugin_bg_data->get_h();
+			theme->get_image("plugin_bg_data")->get_h();
 	else
 		result = edl->local_session->zoom_track;
 
 	if(edl->session->show_titles)
-		result += theme->title_bg_data->get_h();
+		result += theme->get_image("title_bg_data")->get_h();
 
 	return result;
 }
@@ -369,7 +373,7 @@ void Track::insert_track(Track *track,
 	int replace_default,
 	int edit_plugins)
 {
-SET_TRACE
+
 // Decide whether to copy settings based on load_mode
 	if(replace_default) copy_settings(track);
 
@@ -384,7 +388,7 @@ SET_TRACE
 		replace_default);
 
 	optimize();
-SET_TRACE
+
 }
 
 // Called by insert_track
@@ -883,14 +887,21 @@ int Track::copy_automation(double selectionstart,
 
 	if(edl->session->auto_conf->plugins)
 	{
+		file->tag.set_title("PLUGINSETS");
+		file->append_tag();
+		file->append_newline();
 		for(int i = 0; i < plugin_set.total; i++)
 		{
+		
 			plugin_set.values[i]->copy_keyframes(start, 
 				end, 
 				file, 
 				default_only,
 				autos_only);
 		}
+		file->tag.set_title("/PLUGINSETS");
+		file->append_tag();
+		file->append_newline();
 	}
 
 	file->tag.set_title("/TRACK");
@@ -914,7 +925,6 @@ int Track::paste_automation(double selectionstart,
 	int64_t start;
 	int64_t length;
 	int result;
-	int current_pluginset;
 	double scale;
 
 	if(data_type == TRACK_AUDIO)
@@ -926,7 +936,6 @@ int Track::paste_automation(double selectionstart,
 	start = to_units(selectionstart, 0);
 	length = to_units(total_length, 0);
 	result = 0;
-	current_pluginset = 0;
 //printf("Track::paste_automation 1\n");
 
 	while(!result)
@@ -949,17 +958,14 @@ int Track::paste_automation(double selectionstart,
 				;
 			}
 			else
-			if(file->tag.title_is("PLUGINSET"))
+			if(file->tag.title_is("PLUGINSETS"))
 			{
-				if(current_pluginset < plugin_set.total)
-				{
 //printf("Track::paste_automation 2 %d\n", current_pluginset);
-					plugin_set.values[current_pluginset]->paste_keyframes(start, 
-						length, 
-						file,
-						default_only);
-					current_pluginset++;
-				}
+				PluginSet::paste_keyframes(start, 
+					length, 
+					file,
+					default_only,
+					this);
 			}
 		}
 	}
@@ -988,6 +994,17 @@ void Track::clear_automation(double selectionstart,
 	}
 
 }
+
+void Track::straighten_automation(double selectionstart, 
+	double selectionend)
+{
+	int64_t start = to_units(selectionstart, 0);
+	int64_t end = to_units(selectionend, 0);
+
+	automation->straighten(start, end, edl->session->auto_conf);
+}
+
+
 
 
 int Track::copy(double start, 
@@ -1035,7 +1052,7 @@ int Track::copy(double start,
 	edits->copy(start_unit, end_unit, file, output_path);
 
 	AutoConf auto_conf;
-	auto_conf.set_all();
+	auto_conf.set_all(1);
 	automation->copy(start_unit, end_unit, file, 0, 0);
 
 
@@ -1429,7 +1446,7 @@ int Track::asset_used(Asset *asset)
 	return result;
 }
 
-int Track::channel_is_playable(int64_t position, int direction, int *do_channel)
+int Track::is_playable(int64_t position, int direction)
 {
 	return 1;
 }

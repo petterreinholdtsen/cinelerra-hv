@@ -2,13 +2,14 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "datatype.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
 #include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -108,9 +109,14 @@ void SetFormatThread::apply_changes()
 	double new_framerate = new_settings->session->frame_rate;
 	double old_framerate = mwindow->edl->session->frame_rate;
 	int new_channels = new_settings->session->audio_channels;
+	CLAMP(new_channels, 1, MAXCHANNELS);
+
+	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+		new_settings->session->achannel_positions,
+		sizeof(int) * MAXCHANNELS);
 
 
-	mwindow->edl->copy_session(new_settings);
+	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];
 	mwindow->edl->session->output_h = dimension[1];
 	mwindow->edl->rechannel();
@@ -150,6 +156,17 @@ void SetFormatThread::apply_changes()
 	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
 	mwindow->lwindow->gui->flush();
 	mwindow->lwindow->gui->unlock_window();
+
+// Warn user
+	if(((mwindow->edl->session->output_w % 4) ||
+		(mwindow->edl->session->output_h % 4)) &&
+		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		MainError::show_error(
+			_("This project's dimensions are not multiples of 4 so\n"
+			"it can't be rendered by OpenGL."));
+	}
+
 
 // Flash frame
 	mwindow->sync_parameters(CHANGE_ALL);
@@ -284,6 +301,7 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow,
 void SetFormatWindow::create_objects()
 {
 	int x = 10, y = mwindow->theme->setformat_y1;
+	BC_Title *title;
 
 	mwindow->theme->draw_setformat_bg(this);
 
@@ -378,7 +396,7 @@ void SetFormatWindow::create_objects()
 		_("Canvas size:")));
 
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
+	add_subwindow(title = new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
 	add_subwindow(dimension[0] = new ScaleSizeText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
@@ -390,12 +408,21 @@ void SetFormatWindow::create_objects()
 		y, 
 		thread, 
 		&(thread->dimension[1])));
-	add_subwindow(new FrameSizePulldown(mwindow, 
+
+	x = mwindow->theme->setformat_x4 + dimension[0]->get_w();
+	FrameSizePulldown *pulldown;
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
 		dimension[0], 
 		dimension[1], 
-		mwindow->theme->setformat_x4 + dimension[0]->get_w(), 
+		x, 
 		y - mwindow->theme->setformat_margin));
 
+	add_subwindow(new FormatSwapExtents(mwindow, 
+		thread, 
+		this, 
+		x + pulldown->get_w() + 5,
+		y - mwindow->theme->setformat_margin));
+		
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
@@ -545,7 +572,19 @@ SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
 }
 int SetChannelsTextBox::handle_event()
 {
-	thread->new_settings->session->audio_channels = CLIP(atol(get_text()), 1, MAXCHANNELS - 1);
+	int new_channels = CLIP(atoi(get_text()), 1, MAXCHANNELS);
+	
+	thread->new_settings->session->audio_channels = new_channels;
+
+
+	if(new_channels > 0)
+	{
+		memcpy(thread->new_settings->session->achannel_positions,
+			&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+			sizeof(int) * MAXCHANNELS);
+	}
+
+
 	thread->window->canvas->draw();
 	return 1;
 }
@@ -706,6 +745,10 @@ int SetChannelsCanvas::cursor_motion_event()
 		if(thread->new_settings->session->achannel_positions[active_channel] != new_d)
 		{
 			thread->new_settings->session->achannel_positions[active_channel] = new_d;
+			int new_channels = thread->new_settings->session->audio_channels;
+			memcpy(&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+				thread->new_settings->session->achannel_positions,
+				sizeof(int) * MAXCHANNELS);
 			draw(thread->new_settings->session->achannel_positions[active_channel]);
 		}
 		return 1;
@@ -831,6 +874,8 @@ int ScaleAspectText::handle_event()
 
 
 
+
+
 SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
  : BC_GenericButton(x, y, _("Apply"))
 {
@@ -842,3 +887,45 @@ int SetFormatApply::handle_event()
 	thread->apply_changes();
 	return 1;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+FormatSwapExtents::FormatSwapExtents(MWindow *mwindow, 
+	SetFormatThread *thread,
+	SetFormatWindow *gui, 
+	int x, 
+	int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
+{
+	this->mwindow = mwindow;
+	this->thread = thread;
+	this->gui = gui;
+	set_tooltip("Swap dimensions");
+}
+
+int FormatSwapExtents::handle_event()
+{
+	int w = thread->dimension[0];
+	int h = thread->dimension[1];
+	thread->dimension[0] = -h;
+	gui->dimension[0]->update((int64_t)h);
+	gui->dimension[1]->update((int64_t)w);
+	thread->update_window();
+	thread->dimension[1] = -w;
+	thread->update_window();
+	return 1;
+}
+
+
+
+

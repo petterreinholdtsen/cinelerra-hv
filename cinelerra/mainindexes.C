@@ -1,5 +1,6 @@
 #include "asset.h"
-#include "defaults.h"
+#include "bcsignals.h"
+#include "bchash.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"
@@ -10,6 +11,7 @@
 #include "guicast.h"
 #include "mainindexes.h"
 #include "mainprogress.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
@@ -106,7 +108,9 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 
 void MainIndexes::delete_current_assets()
 {
-	current_assets.remove_all_objects();
+	for(int i = 0; i < current_assets.total; i++)
+		Garbage::delete_object(current_assets.values[i]);
+	current_assets.remove_all();
 }
 
 void MainIndexes::start_loop()

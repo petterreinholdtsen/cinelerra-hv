@@ -45,7 +45,7 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options,
-		int lock_compressor);
+		char *locked_compressor);
 	static int check_sig(Asset *asset);
 
 	int open_file(int rd, int wr);
@@ -68,6 +68,7 @@ public:
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
+	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
 	int can_copy_from(Edit *edit, int64_t position); // This file can copy frames directly from the asset
 	static char *strtocompression(char *string);
@@ -223,7 +224,7 @@ class MOVConfigVideo : public BC_Window
 public:
 	MOVConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
-		int lock_compressor);
+		char *locked_compressor);
 	~MOVConfigVideo();
 
 	int create_objects();
@@ -237,7 +238,7 @@ public:
 	BC_WindowBase *parent_window;
 	Asset *asset;
 	int param_x, param_y;
-	int lock_compressor;
+	char *locked_compressor;
 	
 	BC_ISlider *jpeg_quality;
 	BC_Title *jpeg_quality_title;

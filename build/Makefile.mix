@@ -2,7 +2,6 @@ include global_config
 
 
 all:
-	$(MAKE) -f build/Makefile.asound
 	make -C libmpeg3
 	make -C quicktime
 	make -C guicast
@@ -19,6 +18,6 @@ clean:
 	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \; -prune
 
 install:
-	rm /usr/bin/mix2005
-	strip mix/$(OBJDIR)/mix2005
-	cp mix/$(OBJDIR)/mix2005 /usr/bin
+	rm -f /usr/bin/mix2005
+	strip mix2005/$(OBJDIR)/mix2005
+	cp mix2005/$(OBJDIR)/mix2005 /usr/bin

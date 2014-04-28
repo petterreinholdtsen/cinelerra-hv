@@ -1,0 +1,26 @@
+***************
+*** 3715,3724 ****
+  		case DRAG_MASK:
+  		case DRAG_MODE:
+  		case DRAG_PROJECTOR:
+- 		case DRAG_PLUGINKEY:
+  			rerender = update_overlay = 
+  				update_drag_auto(get_cursor_x(), get_cursor_y());
+  			break;
+  
+  		case SELECT_REGION:
+  		{
+--- 3800,3812 ----
+  		case DRAG_MASK:
+  		case DRAG_MODE:
+  		case DRAG_PROJECTOR:
+  			rerender = update_overlay = 
+  				update_drag_auto(get_cursor_x(), get_cursor_y());
+  			break;
++ 		case DRAG_PLUGINKEY:
++ 			rerender = update_overlay = 
++ 				update_drag_pluginauto(get_cursor_x(), get_cursor_y());
++ 			break;
+  
+  		case SELECT_REGION:
+  		{

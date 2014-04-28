@@ -1,1 +1,3 @@
-# dummy
+version.lo version.o: version.c ../config.h
+
+../config.h:

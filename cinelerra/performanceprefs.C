@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -38,15 +39,17 @@ int PerformancePrefs::create_objects()
 	node_list = 0;
 	generate_node_list();
 
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("Performance"), 
-		LARGEFONT, 
-		resources->text_default));
-
 	xmargin1 = x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 	
+// 	add_subwindow(new BC_Title(x, 
+// 		y, 
+// 		_("Time Format"), 
+// 		LARGEFONT, 
+// 		resources->text_default));
+// 
+// 	y += get_text_height(LARGEFONT) + 5;
+
 	add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	cache_size = new CICacheSize(x + 230, 
 		y, 
@@ -105,15 +108,15 @@ int PerformancePrefs::create_objects()
 			pwindow->thread->preferences->brender_asset);
 	brender_tools->create_objects(x, 
 		y, 
-		0,    // Include tools for audio
-		1,   // Include tools for video
+		0,  // Include tools for audio
+		1,  // Include tools for video
 		0,  // Include checkbox for audio
 		0,  // Include checkbox for video
 		0,
 		1,
 		0,  // Select compressors to be offered
-		0, // Change captions for recording
-		0, // If nonzero, prompt for insertion strategy
+		0,  // Prompt for recording options
+		0,  // If nonzero, prompt for insertion strategy
 		1); // Supply file formats for background rendering
 	x = xmargin1;
 
@@ -362,6 +365,7 @@ PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow,
 	100)
 {
 	this->pwindow = pwindow;
+	set_increment(0.1);
 }
 PrefsRenderPreroll::~PrefsRenderPreroll()
 {
@@ -522,6 +526,7 @@ int PrefsRenderFarmNodes::column_resize_event()
 
 int PrefsRenderFarmNodes::handle_event()
 {
+SET_TRACE
 	if(get_selection_number(0, 0) >= 0)
 	{
 		subwindow->hot_node = get_selection_number(1, 0);
@@ -540,6 +545,7 @@ int PrefsRenderFarmNodes::handle_event()
 		subwindow->hot_node = -1;
 		subwindow->edit_node->update("");
 	}
+SET_TRACE
 	return 1;
 }	
 int PrefsRenderFarmNodes::selection_changed()

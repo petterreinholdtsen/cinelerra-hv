@@ -43,7 +43,7 @@ Batch::Batch(MWindow *mwindow, Record *record)
 Batch::~Batch()
 {
 	for(int i = 0; i < assets.total; i++)
-		delete assets.values[i];
+		Garbage::delete_object(assets.values[i]);
 	assets.remove_all();
 	delete labels;
 	if(edl) delete edl;
@@ -186,7 +186,7 @@ char* Batch::get_source_text()
 
 	if(channel)
 	{
-printf("Batch::get_source_text 1 %s\n", channel->title);
+//printf("Batch::get_source_text 1 %s\n", channel->title);
 		return channel->title;
 	}
 	else

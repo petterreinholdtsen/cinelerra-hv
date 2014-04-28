@@ -27,7 +27,7 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 
-// -100 - 100
+// -1000 - 1000
 	float cyan;
 	float magenta;
     float yellow;
@@ -61,7 +61,9 @@ public:
 	~ColorBalanceMain();
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	int show_gui();
@@ -74,6 +76,11 @@ public:
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
+	int handle_opengl();
+
+	void get_aggregation(int *aggregate_interpolate,
+		int *aggregate_gamma);
+
 
 	int64_t calculate_slider(float in);
 	float calculate_transfer(float in);
@@ -90,7 +97,7 @@ public:
 	int total_engines;
 
 
-	Defaults *defaults;
+	BC_Hash *defaults;
     int r_lookup_8[0x100];
     int g_lookup_8[0x100];
     int b_lookup_8[0x100];

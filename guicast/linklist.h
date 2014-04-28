@@ -10,9 +10,10 @@ class List                        // inherited by lists
 public:
 	List();
 	virtual ~List();
-
-	void remove(TYPE *item);   // delete the item and the pointers to it
-	void remove_pointer(ListItem<TYPE> *item);  // remove the pointers to the item only
+// delete the item and the pointers to it
+	void remove(TYPE *item);   
+// remove the pointers to the item only
+	void remove_pointer(ListItem<TYPE> *item);  
 
 // these must be used to add an item to a list
 	TYPE *append();  // create new node and return pointer of it
@@ -279,6 +280,8 @@ void List<TYPE>::remove_pointer(ListItem<TYPE> *item)
 {
 //printf("List<TYPE>::remove_pointer %x %x %x\n", item, last, first);
 	if(!item) return;
+
+	item->owner = 0;
 
 	if(item == last && item == first)
 	{

@@ -1,6 +1,7 @@
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "language.h"
 #include "parametric.h"
@@ -353,7 +354,7 @@ ParametricWindow::~ParametricWindow()
 void ParametricWindow::create_objects()
 {
 	int y = 35;
-	
+SET_TRACE	
 	
 	add_subwindow(new BC_Title(X1, 10, _("Freq")));
 	add_subwindow(new BC_Title(X2, 10, _("Qual")));
@@ -366,6 +367,7 @@ void ParametricWindow::create_objects()
 		y += 50;
 	}
 
+SET_TRACE	
 	add_subwindow(new BC_Title(10, y + 10, _("Wetness:")));
 	add_subwindow(wetness = new ParametricWetness(plugin, 80, y));
 	y += 50;
@@ -379,6 +381,7 @@ void ParametricWindow::create_objects()
 		canvas_h, 
 		WHITE));
 
+SET_TRACE	
 // Draw canvas titles
 	set_font(SMALLFONT);
 #define MAJOR_DIVISIONS 4
@@ -418,6 +421,7 @@ void ParametricWindow::create_objects()
 		}
 	}
 
+SET_TRACE	
 #undef MAJOR_DIVISIONS
 #define MAJOR_DIVISIONS 5
 	for(int i = 0; i <= MAJOR_DIVISIONS; i++)
@@ -457,9 +461,10 @@ void ParametricWindow::create_objects()
 		}
 	}
 
+SET_TRACE	
 	update_canvas();
 	show_window();
-	flush();
+SET_TRACE	
 }
 
 int ParametricWindow::close_event()
@@ -503,27 +508,30 @@ void ParametricWindow::update_canvas()
 	{
 		int freq = Freq::tofreq(i * TOTALFREQS / canvas->get_w());
 		int index = freq * WINDOW_SIZE / 2 / niquist;
-		double magnitude = plugin->envelope[index];
-		int y2 = canvas->get_h() * 3 / 4;
-
-		if(magnitude > 1)
+		if(freq < niquist)
 		{
-			y2 -= (int)(DB::todb(magnitude) * 
-				canvas->get_h() * 
-				3 / 
-				4 / 
-				15);
+			double magnitude = plugin->envelope[index];
+				int y2 = canvas->get_h() * 3 / 4;
+
+				if(magnitude > 1)
+			{
+					y2 -= (int)(DB::todb(magnitude) * 
+					canvas->get_h() * 
+					3 / 
+					4 / 
+					15);
+				}
+			else
+			{
+					y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
+				}
+				if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
+				y1 = y2;
 		}
 		else
 		{
-			y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
-// 			y2 += (int)(DB::todb(magnitude) / 
-// 				INFINITYGAIN * 
-// 				canvas->get_h() / 
-// 				4);
+			canvas->draw_line(i - 1, y1, i, y1);
 		}
-		if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
-		y1 = y2;
 	}
 
 
@@ -539,7 +547,6 @@ void ParametricWindow::update_canvas()
 // 	}
 
 	canvas->flash();
-	flush();
 }
 
 
@@ -811,7 +818,7 @@ int ParametricEQ::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sparametriceq.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	
 	config.wetness = defaults->get("WETNESS", config.wetness);

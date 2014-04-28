@@ -54,7 +54,7 @@ public:
 	
 	FreezeFrameMain *client;
 	FreezeFrameToggle *enabled;
-	FreezeFrameToggle *line_double;
+//	FreezeFrameToggle *line_double;
 };
 
 PLUGIN_THREAD_HEADER(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
@@ -77,6 +77,8 @@ public:
 	int load_defaults();
 	int save_defaults();
 	int is_synthesis();
+	int handle_opengl();
+
 
 // Frame to replicate
 	VFrame *first_frame;

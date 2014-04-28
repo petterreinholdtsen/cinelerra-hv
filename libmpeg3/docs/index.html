@@ -9,7 +9,7 @@ decoding</B></FONT><P>
 <TR>
 <TD>
 <CODE>
-Author: Heroine Virtual Ltd. (Motion picture solutions for Linux without a warranty)
+Author: Heroine Virtual Ltd. (Motion picture solutions for Linux without a warranty)<BR>
 Harassment: broadcast@earthling.net<BR>
 Homepage: heroinewarrior.com<P>
 
@@ -22,13 +22,7 @@ libmpeg3 is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.<P>
- 
- 
-In addition to the GPL's warranty stipulation, libmpeg3 is distributed
-WITHOUT GUARANTEED SUPPORT.  Support that is not guaranteed includes
-technical support, compiler troubleshooting, debugging, version
-matching, updating, among other additional labor which may or may not
-be required to meet a user's requirements.<P>
+
 
 </CODE> </TD> </TR> </TABLE> </CENTER>
 
@@ -38,6 +32,8 @@ be required to meet a user's requirements.<P>
 <A HREF="#BUILDING">Building the library</A><BR>
 <A HREF="#USAGE">Usage</A><BR>
 <A HREF="#TOC">Using tables of contents for editing</A><BR>
+<A HREF="#SUBTITLES">Decoding subtitles</A><BR>
+<A HREF="#UTILITIES">Using the utilities</A><BR>
 
 
 
@@ -482,8 +478,9 @@ when you're done with it.
 
 
 
+<P>
 <A NAME=TOC>
-<H1>Using tables of contents for editing</H1><P>
+<FONT FACE=HELVETICA SIZE=+4><B>Using tables of contents for editing</B></FONT><P>
 
 In 1985 everyone watched Smurfs but one guy watched Robotech.  In 1990
 everyone watched Teenage Mutant Ninja Turtles but one guy watched
@@ -506,6 +503,31 @@ every 65536th sample and every keyframe so it can be pretty slow.<P>
 The resulting table of contents file should be passed to mpeg3_open
 and mpeg3_open_copy just like a normal file.  The only difference is
 frame seeking of video is available.<P>
+
+
+
+
+
+
+
+
+
+
+<A NAME=SUBTITLES
+<FONT FACE=HELVETICA SIZE=+4><B>Decoding subtitles</B></FONT><P>
+
+Subtitles are encoded in DVD Program streams as 4 color bitmaps.  They
+require invoking mpeg3_open with the IFO file corresponding to the VOB
+files in order to play the VOB files.  The IFO file contains the color
+palette.
+
+
+
+
+<A NAME=UTILITIES
+<FONT FACE=HELVETICA SIZE=+4><B>USING THE UTILITIES</B></FONT><P>
+
+
 
 
 

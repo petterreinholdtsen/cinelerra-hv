@@ -2,9 +2,11 @@
 #include <stdint.h>
 #include <string.h>
 
+
+#include "../motion/affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -98,18 +100,23 @@ public:
 	RadialBlurMain(PluginServer *server);
 	~RadialBlurMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(RadialBlurConfig, RadialBlurThread)
 
 	VFrame *input, *output, *temp;
 	RadialBlurEngine *engine;
+// Rotate engine only used for OpenGL
+	AffineEngine *rotate;
 };
 
 class RadialBlurPackage : public LoadPackage
@@ -348,6 +355,7 @@ RadialBlurMain::RadialBlurMain(PluginServer *server)
 	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	temp = 0;
+	rotate = 0;
 }
 
 RadialBlurMain::~RadialBlurMain()
@@ -355,6 +363,7 @@ RadialBlurMain::~RadialBlurMain()
 	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
 	if(temp) delete temp;
+	delete rotate;
 }
 
 char* RadialBlurMain::plugin_title() { return N_("Radial Blur"); }
@@ -371,27 +380,36 @@ RAISE_WINDOW_MACRO(RadialBlurMain)
 
 LOAD_CONFIGURATION_MACRO(RadialBlurMain, RadialBlurConfig)
 
-int RadialBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int RadialBlurMain::process_buffer(VFrame *frame,
+							int64_t start_position,
+							double frame_rate)
 {
 	load_configuration();
+
+
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate(),
+//		0);
+		get_use_opengl());
+
+	if(get_use_opengl()) return run_opengl();
 
 	if(!engine) engine = new RadialBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
 
-	this->input = input_ptr;
-	this->output = output_ptr;
+	this->input = frame;
+	this->output = frame;
 
 
-	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
-	{
-		if(!temp) temp = new VFrame(0,
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
-		temp->copy_from(input_ptr);
-		this->input = temp;
-	}
+	if(!temp) temp = new VFrame(0,
+		frame->get_w(),
+		frame->get_h(),
+		frame->get_color_model());
+	temp->copy_from(frame);
+	this->input = temp;
 
 	engine->process_packages();
 	return 0;
@@ -424,7 +442,7 @@ int RadialBlurMain::load_defaults()
 	sprintf(directory, "%sradialblur.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.x = defaults->get("X", config.x);
@@ -503,6 +521,88 @@ void RadialBlurMain::read_data(KeyFrame *keyframe)
 		}
 	}
 }
+
+int RadialBlurMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+
+	int is_yuv = cmodel_is_yuv(get_output()->get_color_model());
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+// Draw unselected channels
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+	glDrawBuffer(GL_BACK);
+	if(!config.r || !config.g || !config.b || !config.a)
+	{
+		glColor4f(config.r ? 0 : 1, 
+			config.g ? 0 : 1, 
+			config.b ? 0 : 1, 
+			config.a ? 0 : 1);
+		get_output()->draw_texture();
+	}
+	glAccum(GL_LOAD, 1.0);
+
+
+// Blur selected channels
+	float fraction = 1.0 / config.steps;
+	for(int i = 0; i < config.steps; i++)
+	{
+		get_output()->set_opengl_state(VFrame::TEXTURE);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glColor4f(config.r ? 1 : 0, 
+			config.g ? 1 : 0, 
+			config.b ? 1 : 0, 
+			config.a ? 1 : 0);
+
+		float w = get_output()->get_w();
+		float h = get_output()->get_h();
+
+
+
+		double current_angle = (double)config.angle *
+			i / 
+			config.steps - 
+			(double)config.angle / 2;
+
+		if(!rotate) rotate = new AffineEngine(PluginClient::smp + 1, 
+			PluginClient::smp + 1);
+		rotate->set_pivot((int)(config.x * w / 100),
+			(int)(config.y * h / 100));
+		rotate->set_opengl(1);
+		rotate->rotate(get_output(),
+			get_output(),
+			current_angle);
+
+		glAccum(GL_ACCUM, fraction);
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(config.r ? 1 : 0, 
+			config.g ? 1 : 0, 
+			config.b ? 1 : 0, 
+			config.a ? 1 : 0);
+	}
+
+
+	glDisable(GL_BLEND);
+	glReadBuffer(GL_BACK);
+	glDisable(GL_TEXTURE_2D);
+	glAccum(GL_RETURN, 1.0);
+
+	glColor4f(1, 1, 1, 1);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
+
+
+
+
 
 
 
@@ -711,11 +811,11 @@ RadialBlurEngine::RadialBlurEngine(RadialBlurMain *plugin,
 
 void RadialBlurEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		RadialBlurPackage *package = (RadialBlurPackage*)packages[i];
-		package->y1 = plugin->output->get_h() * i / total_packages;
-		package->y2 = plugin->output->get_h() * (i + 1) / total_packages;
+		RadialBlurPackage *package = (RadialBlurPackage*)get_package(i);
+		package->y1 = plugin->output->get_h() * i / get_total_packages();
+		package->y2 = plugin->output->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

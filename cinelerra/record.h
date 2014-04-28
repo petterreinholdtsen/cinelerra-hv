@@ -10,7 +10,7 @@
 #include "bitspopup.h"
 #include "browsebutton.h"
 #include "channel.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "file.inc"
 #include "filexml.inc"
@@ -65,7 +65,9 @@ public:
 	void get_audio_write_length(int &buffer_size, 
 		int &fragment_size);
 	int open_input_devices(int duplex, int context);
-	int close_input_devices();
+// is_monitor - set by caller to make sure the caller is the same one
+// that opened the device.
+	int close_input_devices(int is_monitor);
 	void start_file_threads();
 	int start_recording(int duplex, 
 		int context /* = CONTEXT_INTERACTIVE */);
@@ -101,8 +103,6 @@ public:
 	void rewind_file();
 // Get the inputs supported by the device
 	ArrayList<Channel*>* get_video_inputs();
-// Don't write to the returned string.
-	char* get_channeldb_prefix();
 
 // Copied to each batch for the files
 	Asset *default_asset;
@@ -182,7 +182,8 @@ public:
 	int video_x;
 	int video_y;
 	float video_zoom;
-	int reverse_interlace;     // Reverse the interlace in the video window display only
+// Reverse the interlace in the video window display only
+	int reverse_interlace;
 // Color model for uncompressed device interface
 	int color_model;
 // Picture quality and parameters the device supports

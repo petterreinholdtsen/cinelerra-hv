@@ -7,13 +7,14 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "labels.h"
 #include "localsession.h"
+#include "mutex.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "playbackconfig.h"
@@ -27,6 +28,13 @@
 #include "transportque.inc"
 #include "vtrack.h"
 
+
+
+
+Mutex* EDL::id_lock = 0;
+
+
+
 EDL::EDL(EDL *parent_edl)
 {
 	this->parent_edl = parent_edl;
@@ -34,10 +42,15 @@ EDL::EDL(EDL *parent_edl)
 	labels = 0;
 	local_session = 0;
 	vwindow_edl = 0;
+	vwindow_edl_shared = 0;
+
 
 	folders.set_array_delete();
+
 	new_folder(CLIP_FOLDER);
+
 	new_folder(MEDIA_FOLDER);
+
 	id = next_id();
 	project_path[0] = 0;
 }
@@ -45,7 +58,7 @@ EDL::EDL(EDL *parent_edl)
 
 EDL::~EDL()
 {
-//printf("EDL::~EDL 1\n");
+
 	if(tracks)
 	{
 		delete tracks;
@@ -60,7 +73,7 @@ EDL::~EDL()
 		delete local_session;
 	}
 
-	if(vwindow_edl)
+	if(vwindow_edl && !vwindow_edl_shared)
 		delete vwindow_edl;
 
 	if(!parent_edl)
@@ -72,7 +85,6 @@ EDL::~EDL()
 
 	folders.remove_all_objects();
 	clips.remove_all_objects();
-//printf("EDL::~EDL 2\n");
 }
 
 
@@ -103,7 +115,7 @@ printf("EDL::operator= 1\n");
 	return *this;
 }
 
-int EDL::load_defaults(Defaults *defaults)
+int EDL::load_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->load_defaults(defaults);
@@ -112,7 +124,7 @@ int EDL::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int EDL::save_defaults(Defaults *defaults)
+int EDL::save_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->save_defaults(defaults);
@@ -148,6 +160,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	int result = 0;
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
+
 
 	folders.remove_all_objects();
 
@@ -286,8 +299,9 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
-						if(vwindow_edl) delete vwindow_edl;
+						if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
 						vwindow_edl = new_edl;
+						vwindow_edl_shared = 0;
 					}
 					else
 					{
@@ -297,10 +311,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				}
 			}
 		}while(!result);
-//printf("EDL::load_xml 4\n");
 	}
 	boundaries();
-//printf("EDL::load_xml 6 %p\n", parent_edl);
 //dump();
 
 	return 0;
@@ -340,8 +352,9 @@ int EDL::copy_all(EDL *edl)
 
 void EDL::copy_clips(EDL *edl)
 {
-	if(vwindow_edl) delete vwindow_edl;
+	if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
 	vwindow_edl = 0;
+	vwindow_edl_shared = 0;
 	if(edl->vwindow_edl)
 	{
 		vwindow_edl = new EDL(this);
@@ -363,24 +376,30 @@ void EDL::copy_assets(EDL *edl)
 	}
 }
 
-void EDL::copy_session(EDL *edl)
+void EDL::copy_session(EDL *edl, int session_only)
 {
-	strcpy(this->project_path, edl->project_path);
-
-	folders.remove_all_objects();
-	for(int i = 0; i < edl->folders.total; i++)
+	if(!session_only)
 	{
-		char *new_folder;
-		folders.append(new_folder = new char[strlen(edl->folders.values[i]) + 1]);
-		strcpy(new_folder, edl->folders.values[i]);
+		strcpy(this->project_path, edl->project_path);
+
+		folders.remove_all_objects();
+		for(int i = 0; i < edl->folders.total; i++)
+		{
+			char *new_folder;
+			folders.append(new_folder = new char[strlen(edl->folders.values[i]) + 1]);
+			strcpy(new_folder, edl->folders.values[i]);
+		}
 	}
 
 	if(!parent_edl)
 	{
 		session->copy(edl->session);
 	}
-	
-	local_session->copy_from(edl->local_session);
+
+	if(!session_only)
+	{
+		local_session->copy_from(edl->local_session);
+	}
 }
 
 int EDL::copy_assets(double start, 
@@ -506,12 +525,15 @@ int EDL::copy(double start,
 		}
 
 // Media
-		copy_assets(start, 
-			end, 
-			file, 
-			all, 
-			plugindb,
-			output_path);
+// Don't replicate all assets for every clip.
+// The assets for the clips are probably in the mane EDL.
+		if(!is_clip)
+			copy_assets(start, 
+				end, 
+				file, 
+				all, 
+				plugindb,
+				output_path);
 
 // Clips
 // Don't want this if using clipboard
@@ -1063,7 +1085,10 @@ void EDL::optimize()
 
 int EDL::next_id()
 {
-	return EDLSession::current_id++;
+	id_lock->lock("EDL::next_id");
+	int result = EDLSession::current_id++;
+	id_lock->unlock();
+	return result;
 }
 
 void EDL::get_shared_plugins(Track *source, 

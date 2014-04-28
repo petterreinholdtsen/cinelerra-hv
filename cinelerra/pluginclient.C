@@ -46,23 +46,23 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	int total_in_buffers,
 	int buffer_size)
 {
-SET_TRACE
+
 // Get parameters for all
 	master_gui_on = get_gui_status();
 
-SET_TRACE
+
 
 // get parameters depending on video or audio
 	init_realtime_parameters();
-SET_TRACE
+
 	smp = server->preferences->processors - 1;
-SET_TRACE
+
 	this->realtime_priority = realtime_priority;
-SET_TRACE
+
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
-SET_TRACE
+
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
-SET_TRACE
+
 	return 0;
 }
 
@@ -291,6 +291,11 @@ int64_t PluginClient::edl_to_local(int64_t position)
 	return position;
 }
 
+int PluginClient::get_use_opengl()
+{
+	return server->get_use_opengl();
+}
+
 int PluginClient::get_total_buffers()
 {
 	return total_in_buffers;
@@ -342,3 +347,25 @@ KeyFrame* PluginClient::get_next_keyframe(int64_t position, int is_local)
 	return server->get_next_keyframe(position);
 }
 
+void PluginClient::get_camera(float *x, float *y, float *z, int64_t position)
+{
+	server->get_camera(x, y, z, position, direction);
+}
+
+void PluginClient::get_projector(float *x, float *y, float *z, int64_t position)
+{
+	server->get_projector(x, y, z, position, direction);
+}
+
+
+EDLSession* PluginClient::get_edlsession()
+{
+	if(server->edl) 
+		return server->edl->session;
+	return 0;
+}
+
+int PluginClient::gui_open()
+{
+	return server->gui_open();
+}

@@ -151,7 +151,10 @@ public:
 	ChromaKey(PluginServer *server);
 	~ChromaKey();
 	
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
+	int handle_opengl();
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -169,7 +172,7 @@ public:
 	VFrame *input, *output;
 	ChromaKeyServer *engine;
 	ChromaKeyThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 

@@ -4,16 +4,7 @@
 class IVTCMain;
 class IVTCEngine;
 
-#define TOTAL_PATTERNS 3
-
-static char *pattern_text[] = 
-{
-	"A  B  BC  CD  D",
-	"AB  BC  CD  DE  EF",
-	"Automatic"
-};
-
-#include "defaults.h"
+#include "bchash.h"
 #include "loadbalance.h"
 #include "mutex.h"
 #include "pluginvclient.h"
@@ -53,6 +44,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	PLUGIN_CLASS_MEMBERS(IVTCConfig, IVTCThread)
 	void update_gui();
+	void render_stop();
 
 	int load_defaults();
 	int save_defaults();
@@ -71,10 +63,22 @@ public:
 
 	VFrame *temp_frame[2];
 	VFrame *input, *output;
+
+// Automatic IVTC variables
+// Difference between averaged current even lines and original even lines
 	int64_t even_vs_current;
+// Difference between averaged current even lines and previous even lines
 	int64_t even_vs_prev;
+// Difference between averaged current odd lines and original odd lines
 	int64_t odd_vs_current;
+// Difference between averaged current odd lines and previous odd lines
 	int64_t odd_vs_prev;
+
+// Closest combination of fields in previous calculation.
+// If the lowest current combination is too big and the previous strategy
+// was direct copy, copy the previous frame.
+	int64_t previous_min;
+	int previous_strategy;
 	IVTCEngine *engine;
 };
 

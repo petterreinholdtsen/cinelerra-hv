@@ -8,6 +8,7 @@
 #include "filemov.h"
 #include "guicast.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
@@ -27,7 +28,8 @@ N_("PNG with Alpha")
 N_("Uncompressed RGB")
 N_("Uncompressed RGBA")
 N_("YUV 4:2:0 Planar")
-N_("Component Video")
+N_("Component Y'CbCr 8-bit 4:2:2 (yuv2)")
+N_("Component Y'CbCr 8-bit 4:2:2 (2vuy)")
 N_("YUV 4:1:1 Packed")
 N_("Component Y'CbCr 8-bit 4:4:4")
 N_("Component Y'CbCrA 8-bit 4:4:4:4")
@@ -58,7 +60,8 @@ N_("MPEG-4 Audio")
 #define RGB_NAME "Uncompressed RGB"
 #define RGBA_NAME "Uncompressed RGBA"
 #define YUV420_NAME "YUV 4:2:0 Planar"
-#define YUV422_NAME "Component Video"
+#define YUV422_NAME "Component Y'CbCr 8-bit 4:2:2 (yuv2)"
+#define TWOVUY_NAME "Component Y'CbCr 8-bit 4:2:2 (2vuy)"
 #define YUV411_NAME "YUV 4:1:1 Packed"
 #define YUV444_NAME "Component Y'CbCr 8-bit 4:4:4"
 #define YUVA4444_NAME "Component Y'CbCrA 8-bit 4:4:4:4"
@@ -92,8 +95,11 @@ FileMOV::FileMOV(Asset *asset, File *file)
 
 FileMOV::~FileMOV()
 {
+SET_TRACE
 	close_file();
+SET_TRACE
 	delete threadframe_lock;
+SET_TRACE
 }
 
 void FileMOV::get_parameters(BC_WindowBase *parent_window, 
@@ -101,7 +107,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int audio_options,
 	int video_options,
-	int lock_compressor)
+	char *locked_compressor)
 {
 	fix_codecs(asset);
 	if(audio_options)
@@ -117,7 +123,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	{
 		MOVConfigVideo *window = new MOVConfigVideo(parent_window, 
 			asset, 
-			lock_compressor);
+			locked_compressor);
 		format_window = window;
 		window->create_objects();
 		window->run_window();
@@ -127,19 +133,18 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 
 void FileMOV::fix_codecs(Asset *asset)
 {
-// 	if(asset->format == FILE_MOV)
-// 	{
-// 		if(!strcasecmp(asset->acodec, QUICKTIME_MP3))
-// 			strcpy(asset->acodec, QUICKTIME_TWOS);
-// 	}
-// 	else
-// 	{
-// 		if(strcasecmp(asset->vcodec, QUICKTIME_DIV3))
-// 		{
-// 			strcpy(asset->vcodec, QUICKTIME_DIV3);
-// 		}
-// 		strcpy(asset->acodec, QUICKTIME_MP3);
-// 	}
+	if(!strcasecmp(asset->vcodec, QUICKTIME_DV) ||
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVSD) ||
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVCP))
+	{
+//        printf("AF: %i, AH: %i, VC: %s\n", asset->format, asset->height, asset->vcodec);
+        if (asset->format == FILE_AVI)
+                strcpy (asset->vcodec, QUICKTIME_DVSD);
+        else if (asset->format == FILE_MOV && asset->height == 576)
+                strcpy (asset->vcodec, QUICKTIME_DVCP);
+        else if (asset->format == FILE_MOV && asset->height == 480)
+                strcpy (asset->vcodec, QUICKTIME_DV);
+	}
 }
 
 int FileMOV::check_sig(Asset *asset)
@@ -283,6 +288,7 @@ void FileMOV::asset_to_format()
 			depth = 24;
 		}
 
+
 		quicktime_vtracks = quicktime_set_video(fd, 
 					asset->layers, 
 					asset->width, 
@@ -322,10 +328,6 @@ void FileMOV::asset_to_format()
 
 
 	}
-//printf("FileMOV::asset_to_format 3.4\n");
-
-//printf("FileMOV::asset_to_format 4 %d %d\n", wr, 
-//				asset->format);
 
 	if(wr && asset->format == FILE_AVI)
 	{
@@ -373,6 +375,17 @@ void FileMOV::format_to_asset()
 	}
 }
 
+int64_t FileMOV::get_memory_usage()
+{
+	if(rd && fd)
+	{
+		int64_t result = quicktime_memory_usage(fd);
+//printf("FileMOV::get_memory_usage 1 %d\n", result);
+		return result;
+	}
+	return 0;
+}
+
 int FileMOV::colormodel_supported(int colormodel)
 {
 	return colormodel;
@@ -386,25 +399,49 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			return BC_RGB888;
 			break;
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_ASYNCHRONOUS:
 			if(match4(asset->vcodec, QUICKTIME_YUV420)) return BC_YUV420P;
-			if(match4(asset->vcodec, QUICKTIME_YUV422)) return BC_YUV422P;
+			if(match4(asset->vcodec, QUICKTIME_YUV422)) return BC_YUV422;
+			if(match4(asset->vcodec, QUICKTIME_2VUY)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_DVCP)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H264)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_HV64)) return BC_YUV420P;
-			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_DIV3) ||
+				match4(asset->vcodec, QUICKTIME_SVQ3)) return BC_YUV420P;
+			break;
+		case PLAYBACK_X11_GL:
+			if(match4(asset->vcodec, QUICKTIME_YUV420) ||
+				match4(asset->vcodec, QUICKTIME_YUV422) ||
+				match4(asset->vcodec, QUICKTIME_2VUY) ||
+				match4(asset->vcodec, QUICKTIME_JPEG) ||
+				match4(asset->vcodec, QUICKTIME_MJPA) ||
+				match4(asset->vcodec, QUICKTIME_DV) ||
+				match4(asset->vcodec, QUICKTIME_DVCP) ||
+				match4(asset->vcodec, QUICKTIME_DVSD) ||
+				match4(asset->vcodec, QUICKTIME_HV60) ||
+				match4(asset->vcodec, QUICKTIME_DIVX) ||
+				match4(asset->vcodec, QUICKTIME_DVSD) ||
+				match4(asset->vcodec, QUICKTIME_MP4V) ||
+				match4(asset->vcodec, QUICKTIME_H263) ||
+				match4(asset->vcodec, QUICKTIME_H264) ||
+				match4(asset->vcodec, QUICKTIME_HV64) ||
+				match4(asset->vcodec, QUICKTIME_DIV3) || 
+				match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV888;
 			break;
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			if(match4(asset->vcodec, QUICKTIME_DV) || 
-				match4(asset->vcodec, QUICKTIME_DVSD)) return BC_COMPRESSED;
+				match4(asset->vcodec, QUICKTIME_DVSD) || 
+				match4(asset->vcodec, QUICKTIME_DVCP)) return BC_COMPRESSED;
 			return BC_YUV422P;
 			break;
 		case PLAYBACK_LML:
@@ -445,7 +482,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 		case CAPTURE_FIREWIRE:
 		case CAPTURE_IEC61883:
 			if(!strncasecmp(asset->vcodec, QUICKTIME_DV, 4) ||
-				!strncasecmp(asset->vcodec, QUICKTIME_DVSD, 4)) 
+				!strncasecmp(asset->vcodec, QUICKTIME_DVSD, 4) ||
+				!strncasecmp(asset->vcodec, QUICKTIME_DVCP, 4)) 
 				return BC_COMPRESSED;
 			else
 				return BC_YUV422;
@@ -466,6 +504,7 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 	if((edit->asset->format == FILE_MOV || 
 		edit->asset->format == FILE_AVI))
 	{
+//printf("FileMOV::can_copy_from %s %s\n", edit->asset->vcodec, this->asset->vcodec);
 		if(match4(edit->asset->vcodec, this->asset->vcodec))
 			return 1;
 // there are combinations where the same codec has multiple fourcc codes
@@ -473,10 +512,12 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 		int is_edit_dv = 0;
 		int is_this_dv = 0;
 		if (match4(edit->asset->vcodec, QUICKTIME_DV) || 
-			match4(edit->asset->vcodec, QUICKTIME_DVSD))
+			match4(edit->asset->vcodec, QUICKTIME_DVSD) || 
+			match4(edit->asset->vcodec, QUICKTIME_DVCP))
 			is_edit_dv = 1;
 		if (match4(this->asset->vcodec, QUICKTIME_DV) || 
-			match4(this->asset->vcodec, QUICKTIME_DVSD))
+			match4(this->asset->vcodec, QUICKTIME_DVSD) || 
+			match4(this->asset->vcodec, QUICKTIME_DVCP))
 			is_this_dv = 1;
 		if (is_this_dv && is_edit_dv)
 			return 1;
@@ -736,6 +777,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 		}
 		else
 		if(match4(asset->vcodec, QUICKTIME_YUV420) ||
+			match4(asset->vcodec, QUICKTIME_2VUY) ||
 			match4(asset->vcodec, QUICKTIME_YUV422) ||
 			match4(asset->vcodec, QUICKTIME_RAW))
 		{
@@ -851,7 +893,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	}
 
 
-//printf("FileMOV::write_frames 100\n");
+//printf("FileMOV::write_frames 100 %d\n", result);
 	return result;
 }
 
@@ -1026,8 +1068,10 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, _(H263_NAME))) return QUICKTIME_H263;
 	if(!strcasecmp(string, _(HV60_NAME))) return QUICKTIME_HV60;
 	if(!strcasecmp(string, _(DIV3_NAME))) return QUICKTIME_DIV3;
-	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DVSD;
-//	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
+// Students say QUICKTIME_DV is required for compression even though
+// QUICKTIME_DVSD is produced by other software
+//	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DVSD;
+	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
 	if(!strcasecmp(string, _(PNG_NAME))) return QUICKTIME_PNG;
 	if(!strcasecmp(string, _(PNGA_NAME))) return MOV_PNGA;
 	if(!strcasecmp(string, _(RGB_NAME))) return QUICKTIME_RAW;
@@ -1037,6 +1081,7 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, _(YUV420_NAME))) return QUICKTIME_YUV420;
 	if(!strcasecmp(string, _(YUV411_NAME))) return QUICKTIME_YUV411;
 	if(!strcasecmp(string, _(YUV422_NAME))) return QUICKTIME_YUV422;
+	if(!strcasecmp(string, _(TWOVUY_NAME))) return QUICKTIME_2VUY;
 	if(!strcasecmp(string, _(YUV444_NAME))) return QUICKTIME_YUV444;
 	if(!strcasecmp(string, _(YUVA4444_NAME))) return QUICKTIME_YUVA4444;
 	if(!strcasecmp(string, _(YUV444_10BIT_NAME))) return QUICKTIME_YUV444_10bit;
@@ -1064,6 +1109,7 @@ char* FileMOV::compressiontostr(char *string)
 	if(match4(string, QUICKTIME_HV60)) return _(HV60_NAME);
 	if(match4(string, QUICKTIME_DIV3)) return _(DIV3_NAME);
 	if(match4(string, QUICKTIME_DV)) return _(DV_NAME);
+	if(match4(string, QUICKTIME_DVCP)) return _(DV_NAME);
 	if(match4(string, QUICKTIME_DVSD)) return _(DV_NAME);
 	if(match4(string, MOV_PNGA)) return _(PNGA_NAME);
 	if(match4(string, QUICKTIME_RAW)) return _(RGB_NAME);
@@ -1073,6 +1119,7 @@ char* FileMOV::compressiontostr(char *string)
 	if(match4(string, QUICKTIME_YUV420)) return _(YUV420_NAME);
 	if(match4(string, QUICKTIME_YUV411)) return _(YUV411_NAME);
 	if(match4(string, QUICKTIME_YUV422)) return _(YUV422_NAME);
+	if(match4(string, QUICKTIME_2VUY)) return _(TWOVUY_NAME);
 	if(match4(string, QUICKTIME_YUV444)) return _(YUV444_NAME);
 	if(match4(string, QUICKTIME_YUVA4444)) return _(YUVA4444_NAME);
 	if(match4(string, QUICKTIME_YUV444_10bit)) return _(YUV444_10BIT_NAME);
@@ -1525,7 +1572,7 @@ int MOVConfigAudioPopup::handle_event()
 
 MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window, 
 	Asset *asset, 
-	int lock_compressor)
+	char *locked_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
@@ -1534,7 +1581,7 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
-	this->lock_compressor = lock_compressor;
+	this->locked_compressor = locked_compressor;
 	compression_popup = 0;
 
 	reset();
@@ -1567,6 +1614,7 @@ int MOVConfigVideo::create_objects()
 		compression_items.append(new BC_ListBoxItem(_(RGBA_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV420_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV422_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(TWOVUY_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV444_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUVA4444_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV444_10BIT_NAME)));
@@ -1588,7 +1636,7 @@ int MOVConfigVideo::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	y += 25;
 
-	if(!lock_compressor)
+	if(!locked_compressor)
 	{
 		compression_popup = new MOVConfigVideoPopup(this, x, y);
 		compression_popup->create_objects();
@@ -1597,7 +1645,7 @@ int MOVConfigVideo::create_objects()
 	{
 		add_subwindow(new BC_Title(x, 
 			y, 
-			FileMOV::compressiontostr(asset->vcodec),
+			FileMOV::compressiontostr(locked_compressor),
 			MEDIUMFONT,
 			RED,
 			0));
@@ -1686,9 +1734,13 @@ void MOVConfigVideo::update_parameters()
 	reset();
 
 
+	char *vcodec = asset->vcodec;
+	if(locked_compressor) vcodec = locked_compressor;
+
+
 // H264 parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_H264) ||
-		!strcmp(asset->vcodec, QUICKTIME_HV64))
+	if(!strcmp(vcodec, QUICKTIME_H264) ||
+		!strcmp(vcodec, QUICKTIME_HV64))
 	{
 		int x = param_x, y = param_y;
 		h264_bitrate = new MOVConfigVideoNum(this, 
@@ -1720,8 +1772,8 @@ void MOVConfigVideo::update_parameters()
 	}
 	else
 // ffmpeg parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_MP4V) ||
-		!strcmp(asset->vcodec, QUICKTIME_DIV3))
+	if(!strcmp(vcodec, QUICKTIME_MP4V) ||
+		!strcmp(vcodec, QUICKTIME_DIV3))
 	{
 		int x = param_x, y = param_y;
 		ms_bitrate = new MOVConfigVideoNum(this, 
@@ -1773,9 +1825,9 @@ void MOVConfigVideo::update_parameters()
 	}
 	else
 // OpenDivx parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
-		!strcmp(asset->vcodec, QUICKTIME_H263) ||
-		!strcmp(asset->vcodec, QUICKTIME_HV60))
+	if(!strcmp(vcodec, QUICKTIME_DIVX) ||
+		!strcmp(vcodec, QUICKTIME_H263) ||
+		!strcmp(vcodec, QUICKTIME_HV60))
 	{
 		int x = param_x, y = param_y;
 		divx_bitrate = new MOVConfigVideoNum(this, 
@@ -1855,8 +1907,8 @@ void MOVConfigVideo::update_parameters()
 		divx_quality->create_objects();
 	}
 	else
-	if(!strcmp(asset->vcodec, QUICKTIME_JPEG) ||
-		!strcmp(asset->vcodec, QUICKTIME_MJPA))
+	if(!strcmp(vcodec, QUICKTIME_JPEG) ||
+		!strcmp(vcodec, QUICKTIME_MJPA))
 	{
 		add_subwindow(jpeg_quality_title = new BC_Title(param_x, param_y, _("Quality:")));
 		add_subwindow(jpeg_quality = new BC_ISlider(param_x + 80, 

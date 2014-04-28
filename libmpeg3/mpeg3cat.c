@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 				
 				if(argv[i][2] != 0)
 				{
-					stream = argv[i][2] - 48;
+					stream = argv[i][2] - '0';
 				}
 			}
 		}
@@ -106,7 +106,8 @@ int main(int argc, char *argv[])
 	{
 		strcpy(inpath, inpaths[current_file]);
 
-		if(!(in = mpeg3_open(inpath)))
+		int error = 0;
+		if(!(in = mpeg3_open(inpath, &error)))
 		{
 			fprintf(stderr, "Skipping %s\n", inpath);
 			continue;
@@ -116,12 +117,18 @@ int main(int argc, char *argv[])
 
 
 
-//fprintf(stderr, "%d %d %d %d\n", in->is_transport_stream, in->is_program_stream, in->is_audio_stream, in->is_video_stream);
+/* output elementary audio stream */
 		if((mpeg3_has_audio(in) && in->is_audio_stream) || 
 			(do_audio && !in->is_audio_stream && !in->is_video_stream))
 		{
 			do_audio = 1;
 /* Add audio stream to end */
+			if(stream >= in->total_astreams)
+			{
+				fprintf(stderr, "No audio stream %d\n", stream);
+				exit(1);
+			}
+
 			mpeg3demux_seek_byte(in->atrack[stream]->demuxer, 0);
 //			mpeg3bits_refill(in->atrack[stream]->audio->astream);
 //printf("mpeg3cat 1\n");
@@ -131,7 +138,7 @@ int main(int argc, char *argv[])
 				BUFFER_SIZE,
 				stream))
 			{
-//printf("mpeg3cat 2\n");
+//printf("mpeg3cat 2 0x%x\n", output_size);
 				result = !fwrite(buffer, output_size, 1, out);
 				if(result)
 				{
@@ -142,6 +149,7 @@ int main(int argc, char *argv[])
 //printf("mpeg3cat 3\n");
 		}
 		else
+/* Output elementary video stream */
 		if((mpeg3_has_video(in) && in->is_video_stream) ||
 			(do_video && !in->is_video_stream && !in->is_audio_stream))
 		{
@@ -152,6 +160,12 @@ int main(int argc, char *argv[])
 			float carry;
 			int i, offset;
 			
+			if(stream >= in->total_vstreams)
+			{
+				fprintf(stderr, "No audio stream %d\n", stream);
+				exit(1);
+			}
+
 			mpeg3demux_seek_byte(in->vtrack[stream]->demuxer, 0);
 			mpeg3bits_refill(in->vtrack[stream]->video->vstream);
 			do_video = 1;
@@ -280,6 +294,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		else
+/* Output program stream */
 		if(in->is_program_stream)
 		{
 			mpeg3_demuxer_t *demuxer = in->vtrack[0]->demuxer;
@@ -288,6 +303,7 @@ int main(int argc, char *argv[])
 /* Append program stream with no changes */
 			demuxer->read_all = 1;
 			mpeg3demux_seek_byte(demuxer, 0);
+//			mpeg3demux_seek_byte(demuxer, 83886080);
 
 
 			while(!result)
@@ -351,6 +367,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		else
+/* No transport stream support, yet */
 		{
 			fprintf(stderr, "Unsupported stream type.\n");
 			mpeg3_close(in);

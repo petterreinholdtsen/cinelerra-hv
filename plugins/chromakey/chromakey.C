@@ -1,13 +1,15 @@
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "chromakey.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
+#include "playback3d.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -348,18 +350,24 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 
 #define SQR(x) ((x) * (x))
 
-	float value = RGB_TO_VALUE(plugin->config.red,
-		plugin->config.green,
-		plugin->config.blue);
-	float min_v = value - plugin->config.threshold / 100;
-	float max_v = value + plugin->config.threshold / 100;
-	float threshold = plugin->config.threshold / 100;
-	float red = plugin->config.red;
-	float green = plugin->config.green;
-	float blue = plugin->config.blue;
-
-	float run = plugin->config.slope / 100;
+#define OUTER_VARIABLES(plugin) \
+	YUV yuv; \
+	float value = RGB_TO_VALUE(plugin->config.red, \
+		plugin->config.green, \
+		plugin->config.blue); \
+	float threshold = plugin->config.threshold / 100; \
+	float min_v = value - threshold; \
+	float max_v = value + threshold; \
+	float r_key = plugin->config.red; \
+	float g_key = plugin->config.green; \
+	float b_key = plugin->config.blue; \
+	int y_key, u_key, v_key; \
+	yuv.rgb_to_yuv_8((int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), y_key, u_key, v_key); \
+	float run = plugin->config.slope / 100; \
 	float threshold_run = threshold + run;
+
+	OUTER_VARIABLES(plugin)
+
 
 
 #define CHROMAKEY(type, components, max, use_yuv) \
@@ -408,22 +416,25 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 			else \
 /* Use color cube */ \
 			{ \
-				float r = (float)row[0] / max; \
-				float g = (float)row[1] / max; \
-				float b = (float)row[2] / max; \
+				float difference; \
 				if(use_yuv) \
 				{ \
-/* Convert pixel to RGB float */ \
-					float y = r; \
-					float u = g; \
-					float v = b; \
-					YUV::yuv_to_rgb_f(r, g, b, y, u - 0.5, v - 0.5); \
+					type y = row[0]; \
+					type u = row[1]; \
+					type v = row[2]; \
+					difference = sqrt(SQR(y - y_key) + \
+						SQR(u - u_key) + \
+						SQR(v - v_key)) / max; \
 				} \
- \
-				float difference = sqrt(SQR(r - red) +  \
-					SQR(g - green) + \
-					SQR(b - blue)); \
- \
+				else \
+				{ \
+					float r = (float)row[0] / max; \
+					float g = (float)row[1] / max; \
+					float b = (float)row[2] / max; \
+					difference = sqrt(SQR(r - r_key) +  \
+						SQR(g - g_key) + \
+						SQR(b - b_key)); \
+				} \
 				if(difference < threshold) \
 				{ \
 					a = 0; \
@@ -511,28 +522,40 @@ ChromaKey::ChromaKey(PluginServer *server)
 ChromaKey::~ChromaKey()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	if(engine) delete engine;
+	delete engine;
 }
 
 
-int ChromaKey::process_realtime(VFrame *input, VFrame *output)
+int ChromaKey::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
+SET_TRACE
+
 	load_configuration();
-	this->input = input;
-	this->output = output;
+	this->input = frame;
+	this->output = frame;
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
 
 	if(EQUIV(config.threshold, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
+		return 1;
 	}
 	else
 	{
+		if(get_use_opengl()) return run_opengl();
+
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
 	}
+SET_TRACE
 
-	return 0;
+	return 1;
 }
 
 char* ChromaKey::plugin_title() { return N_("Chroma key"); }
@@ -544,12 +567,13 @@ LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
 
 int ChromaKey::load_defaults()
 {
+SET_TRACE
 	char directory[BCTEXTLEN];
 // set the default directory
 	sprintf(directory, "%schromakey.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.red = defaults->get("RED", config.red);
@@ -558,11 +582,13 @@ int ChromaKey::load_defaults()
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	config.slope = defaults->get("SLOPE", config.slope);
 	config.use_value = defaults->get("USE_VALUE", config.use_value);
+SET_TRACE
 	return 0;
 }
 
 int ChromaKey::save_defaults()
 {
+SET_TRACE
 	defaults->update("RED", config.red);
 	defaults->update("GREEN", config.green);
 	defaults->update("BLUE", config.blue);
@@ -570,6 +596,7 @@ int ChromaKey::save_defaults()
     defaults->update("SLOPE", config.slope);
     defaults->update("USE_VALUE", config.use_value);
 	defaults->save();
+SET_TRACE
 	return 0;
 }
 
@@ -630,7 +657,155 @@ void ChromaKey::update_gui()
 	}
 }
 
+int ChromaKey::handle_opengl()
+{
+#ifdef HAVE_GL
+	OUTER_VARIABLES(this)
+	
 
+
+	static char *uniform_frag =
+		"uniform sampler2D tex;\n"
+		"uniform float min_v;\n"
+		"uniform float max_v;\n"
+		"uniform float run;\n"
+		"uniform float threshold;\n"
+		"uniform float threshold_run;\n"
+		"uniform vec3 key;\n";
+
+	static char *get_yuvvalue_frag =
+		"float get_value(vec4 color)\n"
+		"{\n"
+		"	return abs(color.r);\n"
+		"}\n";
+		
+	static char *get_rgbvalue_frag = 
+		"float get_value(vec4 color)\n"
+		"{\n"
+		"	return dot(color.rgb, vec3(0.29900, 0.58700, 0.11400));\n"
+		"}\n";
+
+	static char *value_frag =
+		"void main()\n"
+		"{\n"
+		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	float value = get_value(color);\n"
+		"	float alpha = 1.0;\n"
+		"\n"
+		"	if(value >= min_v && value < max_v)\n"
+		"		alpha = 0.0;\n"
+		"	else\n"
+		"	if(value < min_v)\n"
+		"	{\n"
+		"		if(min_v - value < run)\n"
+		"			alpha = (min_v - value) / run;\n"
+		"	}\n"
+		"	else\n"
+		"	if(value - max_v < run)\n"
+		"		alpha = (value - max_v) / run;\n"
+		"\n"
+		"	gl_FragColor = vec4(color.rgb, alpha);\n"
+		"}\n";
+
+	static char *cube_frag = 
+		"void main()\n"
+		"{\n"
+		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	float difference = length(color.rgb - key);\n"
+		"	float alpha = 1.0;\n"
+		"	if(difference < threshold)\n"
+		"		alpha = 0.0;\n"
+		"	else\n"
+		"	if(difference < threshold_run)\n"
+		"		alpha = (difference - threshold) / run;\n"
+		"	gl_FragColor = vec4(color.rgb, min(color.a, alpha));\n"
+		"}\n";
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+	int current_shader = 0;
+
+	shader_stack[current_shader++] = uniform_frag;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			if(config.use_value)
+			{
+				shader_stack[current_shader++] = get_yuvvalue_frag;
+				shader_stack[current_shader++] = value_frag;
+			}
+			else
+			{
+				shader_stack[current_shader++] = cube_frag;
+			}
+			break;
+
+		default:
+			if(config.use_value)
+			{
+				shader_stack[current_shader++] = get_rgbvalue_frag;
+				shader_stack[current_shader++] = value_frag;
+			}
+			else
+			{
+				shader_stack[current_shader++] = cube_frag;
+			}
+			break;
+	}
+SET_TRACE
+
+	unsigned int frag = VFrame::make_shader(0, 
+		shader_stack[0], 
+		shader_stack[1], 
+		shader_stack[2], 
+		shader_stack[3], 
+		0);
+	get_output()->bind_texture(0);
+
+	if(frag)
+	{
+		glUseProgram(frag);
+		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
+		glUniform1f(glGetUniformLocation(frag, "min_v"), min_v);
+		glUniform1f(glGetUniformLocation(frag, "max_v"), max_v);
+		glUniform1f(glGetUniformLocation(frag, "run"), run);
+		glUniform1f(glGetUniformLocation(frag, "threshold"), threshold);
+		glUniform1f(glGetUniformLocation(frag, "threshold_run"), threshold_run);
+		if(get_output()->get_color_model() != BC_YUV888 &&
+			get_output()->get_color_model() != BC_YUVA8888)
+			glUniform3f(glGetUniformLocation(frag, "key"), 
+				r_key, g_key, b_key);
+		else
+			glUniform3f(glGetUniformLocation(frag, "key"), 
+				(float)y_key / 0xff, (float)u_key / 0xff, (float)v_key / 0xff);
+		
+	}
+SET_TRACE
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	if(cmodel_components(get_output()->get_color_model()) == 3)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		get_output()->clear_pbuffer();
+	}
+SET_TRACE
+
+	get_output()->draw_texture();
+
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glDisable(GL_BLEND);
+SET_TRACE
+#endif
+}
 
 
 

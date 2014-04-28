@@ -10,7 +10,7 @@ class SampleZoomPanel;
 class AmpZoomPanel;
 class TrackZoomPanel;
 class AutoZoom;
-
+class AutoZoomPopup;
 
 #include "guicast.h"
 #include "mwindow.inc"
@@ -24,7 +24,7 @@ public:
 	~ZoomBar();
 
 	int create_objects();
-	void ZoomBar::resize_event();
+	void resize_event();
 	int draw();
 	int resize_event(int w, int h);
 	void redraw_time_dependancies();
@@ -41,7 +41,8 @@ public:
 	AmpZoomPanel *amp_zoom;
 	TrackZoomPanel *track_zoom;
 	AutoZoom *auto_zoom;
-	BC_Title *auto_zoom_text;
+//	BC_Title *auto_zoom_text;
+	AutoZoomPopup *auto_zoom_popup;
 
 	BC_Title *zoom_value, *playback_value;
 	LengthTextBox *length_value;
@@ -88,6 +89,15 @@ public:
 	ZoomBar *zoombar;
 };
 
+class AutoZoomPopup : public BC_PopupMenu
+{
+public:
+	AutoZoomPopup(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int w);
+	void create_objects();
+	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
 
 
 

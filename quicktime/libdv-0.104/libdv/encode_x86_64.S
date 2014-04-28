@@ -27,6 +27,8 @@
 ALLONE:		.word 1,1,1,1
 VLCADDMASK:	.byte 255,0,0,0,255,0,0,0
 		
+.section .note.GNU-stack, "", @progbits
+
 .text
 
 .global _dv_vlc_encode_block_mmx_x86_64
@@ -47,7 +49,8 @@ _dv_vlc_encode_block_mmx_x86_64:
 
 	mov	$63, %rcx                        # loop counter
 
-	mov	vlc_encode_lookup(%rip), %r11
+	mov	vlc_encode_lookup@GOTPCREL(%rip), %r11
+	mov	(%r11),%r11
 
 	pxor	%mm0, %mm0
 	pxor	%mm2, %mm2
@@ -129,7 +132,8 @@ _dv_vlc_num_bits_block_x86_64:
 	add	$2, %rdi           /* skip the DC coefficient */
 	mov	$63, %rcx
 
-	mov	vlc_num_bits_lookup(%rip), %r11
+	mov	vlc_num_bits_lookup@GOTPCREL(%rip), %r11
+	mov	(%r11),%r11
 	
 vlc_num_bits_block_x86_loop:
 	movw	(%rdi), %ax        /* get the next coeffiecient */

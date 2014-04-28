@@ -7,6 +7,7 @@
 #include "vframe.h"
 
 #include <string.h>
+#include <unistd.h>
 #include <X11/extensions/Xvlib.h>
 
 
@@ -583,7 +584,8 @@ int BC_Bitmap::read_frame(VFrame *frame,
 // 				out_y, 
 // 				out_w, 
 // 				out_h);
-// printf("BC_Bitmap::read_frame 1 %d %p\n", bits_per_pixel, frame->get_rows());
+//if(color_model == 6 && frame->get_color_model() == 19)
+//printf("BC_Bitmap::read_frame 1 %d %d %d %d\n", frame->get_w(), frame->get_h(), get_w(), get_h());
 			cmodel_transfer(row_data[current_ringbuffer], 
 				frame->get_rows(),
 				get_y_plane(),
@@ -605,7 +607,8 @@ int BC_Bitmap::read_frame(VFrame *frame,
 				bg_color,
 				frame->get_w(),
 				w);
-// printf("BC_Bitmap::read_frame 2\n");
+//if(color_model == 6 && frame->get_color_model() == 19)
+//printf("BC_Bitmap::read_frame 2\n");
 			break;
 	}
 

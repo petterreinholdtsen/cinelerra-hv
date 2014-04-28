@@ -1,9 +1,11 @@
+#include "bcsignals.h"
 #include "condition.h"
 #include "clip.h"
 #include "maskauto.h"
 #include "maskautos.h"
 #include "maskengine.h"
 #include "mutex.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 #include <math.h>
@@ -368,6 +370,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		else
 			mask = engine->mask;
 
+SET_TRACE
 // Generated oversampling frame
 		int mask_w = mask->get_w();
 		int mask_h = mask->get_h();
@@ -375,6 +378,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		int oversampled_package_h = (ptr->row2 - ptr->row1) * OVERSAMPLE;
 //printf("MaskUnit::process_package 1\n");
 
+SET_TRACE
 		if(temp && 
 			(temp->get_w() != oversampled_package_w ||
 			temp->get_h() != oversampled_package_h))
@@ -384,6 +388,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		}
 //printf("MaskUnit::process_package 1\n");
 
+SET_TRACE
 		if(!temp)
 		{
 			temp = new VFrame(0, 
@@ -392,9 +397,11 @@ void MaskUnit::process_package(LoadPackage *package)
 				BC_A8);
 		}
 
+SET_TRACE
 		temp->clear_frame();
 //printf("MaskUnit::process_package 1 %d\n", engine->point_sets.total);
 
+SET_TRACE
 
 // Draw oversampled region of polygons on temp
 		for(int k = 0; k < engine->point_sets.total; k++)
@@ -414,6 +421,11 @@ void MaskUnit::process_package(LoadPackage *package)
 
 				float x, y;
 				int segments = (int)(sqrt(SQR(point1->x - point2->x) + SQR(point1->y - point2->y)));
+				if(point1->control_x2 == 0 &&
+					point1->control_y2 == 0 &&
+					point2->control_x1 == 0 &&
+					point2->control_y1 == 0)
+					segments = 1;
 				float x0 = point1->x;
 				float y0 = point1->y;
 				float x1 = point1->x + point1->control_x2;
@@ -455,6 +467,7 @@ void MaskUnit::process_package(LoadPackage *package)
 				}
 			}
 
+SET_TRACE
 //printf("MaskUnit::process_package 1\n");
 
 
@@ -494,6 +507,7 @@ void MaskUnit::process_package(LoadPackage *package)
 		}
 
 
+SET_TRACE
 
 
 
@@ -527,6 +541,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 	} \
 }
 
+SET_TRACE
 
 // Downsample polygon
 		switch(mask->get_color_model())
@@ -557,6 +572,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 		}
 	}
 
+SET_TRACE
 
 	if(ptr->part == RECALCULATE_PART)
 	{
@@ -575,6 +591,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 
 	}
 
+SET_TRACE
 
 	if(ptr->part == APPLY_PART)
 	{
@@ -747,8 +764,8 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 
 
 MaskEngine::MaskEngine(int cpus)
- : LoadServer(cpus, cpus * OVERSAMPLE * 2)
-// : LoadServer(1, OVERSAMPLE * 2)
+// : LoadServer(cpus, cpus * OVERSAMPLE * 2)
+ : LoadServer(1, OVERSAMPLE * 2)
 {
 	mask = 0;
 }
@@ -759,6 +776,12 @@ MaskEngine::~MaskEngine()
 	{
 		delete mask;
 		delete temp_mask;
+	}
+
+	for(int i = 0; i < point_sets.total; i++)
+	{
+		ArrayList<MaskPoint*> *points = point_sets.values[i];
+		points->remove_all_objects();
 	}
 	point_sets.remove_all_objects();
 }
@@ -778,49 +801,14 @@ int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 }
 
 void MaskEngine::do_mask(VFrame *output, 
-	int64_t start_position,
-	double frame_rate,
-	double project_frame_rate,
+	int64_t start_position_project,
 	MaskAutos *keyframe_set, 
-	int direction)
+	MaskAuto *keyframe,
+	MaskAuto *default_auto)
 {
-	int64_t start_position_project = (int64_t)(start_position *
-		project_frame_rate / 
-		frame_rate);
-	Auto *current = 0;
-	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position_project, 
-		direction,
-		current);
-
-
-	int total_points = 0;
-	for(int i = 0; i < keyframe->masks.total; i++)
-	{
-		SubMask *mask = keyframe->get_submask(i);
-		int submask_points = mask->points.total;
-		if(submask_points > 1) total_points += submask_points;
-	}
-
-//printf("MaskEngine::do_mask 1 %d %d\n", total_points, keyframe->value);
-// Ignore certain masks
-	if(total_points < 2 || 
-		(keyframe->value == 0 && default_auto->mode == MASK_SUBTRACT_ALPHA))
-	{
-		return;
-	}
-
-// Fake certain masks
-	if(keyframe->value == 0 && default_auto->mode == MASK_MULTIPLY_ALPHA)
-	{
-		output->clear_frame();
-		return;
-	}
-
-//printf("MaskEngine::do_mask 1\n");
-
 	int new_color_model = 0;
 	recalculate = 0;
+
 	switch(output->get_color_model())
 	{
 		case BC_RGB_FLOAT:
@@ -844,6 +832,7 @@ void MaskEngine::do_mask(VFrame *output,
 	}
 
 // Determine if recalculation is needed
+SET_TRACE
 
 	if(mask && 
 		(mask->get_w() != output->get_w() ||
@@ -859,7 +848,7 @@ void MaskEngine::do_mask(VFrame *output,
 	if(!recalculate)
 	{
 		if(point_sets.total != keyframe_set->total_submasks(start_position_project, 
-			direction))
+			PLAY_FORWARD))
 			recalculate = 1;
 	}
 
@@ -867,16 +856,17 @@ void MaskEngine::do_mask(VFrame *output,
 	{
 		for(int i = 0; 
 			i < keyframe_set->total_submasks(start_position_project, 
-				direction) && !recalculate; 
+				PLAY_FORWARD) && !recalculate; 
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points, 
 				i, 
 				start_position_project, 
-				direction);
+				PLAY_FORWARD);
 			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
 			new_points->remove_all_objects();
+			delete new_points;
 		}
 	}
 
@@ -900,18 +890,24 @@ void MaskEngine::do_mask(VFrame *output,
 			temp_mask->clear_frame();
 		else
 			mask->clear_frame();
+
+		for(int i = 0; i < point_sets.total; i++)
+		{
+			ArrayList<MaskPoint*> *points = point_sets.values[i];
+			points->remove_all_objects();
+		}
 		point_sets.remove_all_objects();
 
 		for(int i = 0; 
 			i < keyframe_set->total_submasks(start_position_project, 
-				direction); 
+				PLAY_FORWARD); 
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
 			keyframe_set->get_points(new_points, 
 				i, 
 				start_position_project, 
-				direction);
+				PLAY_FORWARD);
 			point_sets.append(new_points);
 		}
 	}
@@ -925,28 +921,32 @@ void MaskEngine::do_mask(VFrame *output,
 
 
 // Run units
+SET_TRACE
 	process_packages();
+SET_TRACE
 
 
 }
 
 void MaskEngine::init_packages()
 {
+SET_TRACE
 //printf("MaskEngine::init_packages 1\n");
-	int division = (int)((float)output->get_h() / (total_packages / 2) + 0.5);
+	int division = (int)((float)output->get_h() / (get_total_packages() / 2) + 0.5);
 	if(division < 1) division = 1;
 
+SET_TRACE
 // Always a multiple of 2 packages exist
 	for(int i = 0; i < get_total_packages() / 2; i++)
 	{
-		MaskPackage *part1 = (MaskPackage*)packages[i];
-		MaskPackage *part2 = (MaskPackage*)packages[i + total_packages / 2];
+		MaskPackage *part1 = (MaskPackage*)get_package(i);
+		MaskPackage *part2 = (MaskPackage*)get_package(i + get_total_packages() / 2);
 		part2->row1 = part1->row1 = division * i;
 		part2->row2 = part1->row2 = division * i + division;
 		part2->row1 = part1->row1 = MIN(output->get_h(), part1->row1);
 		part2->row2 = part1->row2 = MIN(output->get_h(), part1->row2);
 		
-		if(i >= (total_packages / 2) - 1) 
+		if(i >= (get_total_packages() / 2) - 1) 
 		{
 			part2->row2 = part1->row2 = output->get_h();
 		}
@@ -956,6 +956,7 @@ void MaskEngine::init_packages()
 		part1->part = RECALCULATE_PART;
 		part2->part = APPLY_PART;
 	}
+SET_TRACE
 //printf("MaskEngine::init_packages 2\n");
 }
 

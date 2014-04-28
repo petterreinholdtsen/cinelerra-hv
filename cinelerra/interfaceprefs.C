@@ -30,15 +30,17 @@ int InterfacePrefs::create_objects()
 	int y, x, value;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	char string[1024];
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("Interface"), 
+	x = mwindow->theme->preferencesoptions_x;
+	y = mwindow->theme->preferencesoptions_y;
+
+	add_subwindow(new BC_Title(x, 
+		y, 
+		_("Time Format"), 
 		LARGEFONT, 
 		resources->text_default));
 
+	y += get_text_height(LARGEFONT) + 5;
 
-	x = mwindow->theme->preferencesoptions_x;
-	y = mwindow->theme->preferencesoptions_y;
 
 	add_subwindow(hms = new TimeFormatHMS(pwindow, 
 		this, 
@@ -602,7 +604,7 @@ UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->preferences->use_tipwindow, 
-	"Show tip of the day")
+	_("Show tip of the day"))
 {
 	this->pwindow = pwindow;
 }

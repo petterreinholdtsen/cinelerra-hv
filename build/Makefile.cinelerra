@@ -38,9 +38,6 @@ endif
 	$(MAKE) -C libsndfile*
 	$(MAKE) -C quicktime
 	$(MAKE) -C libtheora*
-ifeq ($(HAVE_ALSA), y)
-	$(MAKE) -f build/Makefile.asound
-endif
 	$(MAKE) -f build/Makefile.exr
 	@ for i in $(DIRS) ; \
 	do \
@@ -74,7 +71,6 @@ clean:
 	$(MAKE) -i -C libsndfile* clean
 	$(MAKE) -i -C quicktime clean
 	$(MAKE) -i -C libtheora* clean
-
 
 wc:
 	cat *.C *.h | wc

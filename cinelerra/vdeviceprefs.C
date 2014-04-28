@@ -1,6 +1,9 @@
+#include "bcsignals.h"
+#include "channeldb.h"
 #include "channelpicker.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "formattools.h"
 #include "../hvirtual_config.h"
 #include "language.h"
 #include "mwindow.h"
@@ -11,6 +14,7 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "recordconfig.h"
+#include "recordprefs.h"
 #include <string.h>
 
 
@@ -39,16 +43,23 @@ VDevicePrefs::~VDevicePrefs()
 {
 	delete_objects();
 	if(menu) delete menu;
+	pwindow->mwindow->channeldb_buz->save("channeldb_buz");
 }
 
 
 void VDevicePrefs::reset_objects()
 {
+	device_title = 0;
 	device_text = 0;
 
 	port_title = 0;
+	device_port = 0;
+
+	number_title = 0;
+	device_number = 0;
+	
+
 	channel_title = 0;
-	device_title = 0;
 	syt_title = 0;
 
 	firewire_port = 0;
@@ -56,9 +67,13 @@ void VDevicePrefs::reset_objects()
 	firewire_channels = 0;
 	firewire_syt = 0;
 	firewire_path = 0;
+
+	buz_swap_channels = 0;
+	output_title = 0;
+	channel_picker = 0;
 }
 
-int VDevicePrefs::initialize()
+int VDevicePrefs::initialize(int creation)
 {
 	int *driver = 0;
 	delete_objects();
@@ -108,6 +123,7 @@ int VDevicePrefs::initialize()
 			break;
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_X11_GL:
 			create_x11_objs();
 			break;
 		case PLAYBACK_DV1394:
@@ -117,38 +133,75 @@ int VDevicePrefs::initialize()
 		case CAPTURE_IEC61883:
 			create_firewire_objs();
 			break;
+		case CAPTURE_DVB:
+			create_dvb_objs();
+			break;
 	}
+
+
+
+// Update driver dependancies in file format
+	if(mode == MODERECORD && dialog && !creation)
+	{
+		RecordPrefs *record_prefs = (RecordPrefs*)dialog;
+		record_prefs->recording_format->update_driver(this->driver);
+	}
+
 	return 0;
 }
 
 int VDevicePrefs::delete_objects()
 {
-	switch(driver)
-	{
-		case PLAYBACK_LML:
-		case PLAYBACK_BUZ:
-			delete output_title;
-			delete channel_picker;
-			delete buz_swap_channels;
-			break;
-	}
+SET_TRACE
+	delete output_title;
+SET_TRACE
+	delete channel_picker;
+SET_TRACE
+	delete buz_swap_channels;
+SET_TRACE
+	delete device_title;
+	delete device_text;
 
+	delete port_title;
+	delete device_port;
 
-	
-	if(device_text) delete device_text;
+	delete number_title;
+	delete device_number;
 
-	if(port_title) delete port_title;
+SET_TRACE
+SET_TRACE
 	if(firewire_port) delete firewire_port;
+SET_TRACE
 	if(channel_title) delete channel_title;
+SET_TRACE
 	if(firewire_channel) delete firewire_channel;
-	if(device_title) delete device_title;
+SET_TRACE
+SET_TRACE
 	if(firewire_path) delete firewire_path;
+SET_TRACE
 	if(syt_title) delete syt_title;
+SET_TRACE
 	if(firewire_syt) delete firewire_syt;
 
+SET_TRACE
 	reset_objects();
 	driver = -1;
 	return 0;
+}
+
+int VDevicePrefs::create_dvb_objs()
+{
+	int x1 = x + menu->get_w() + 5;
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Host:")));
+	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, in_config->dvb_in_host));
+	x1 += device_text->get_w() + 10;
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:")));
+	device_port = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_port, 1, 65536);
+	device_port->create_objects();
+	x1 += device_port->get_w() + 10;
+	dialog->add_subwindow(number_title = new BC_Title(x1, y, _("Adaptor:")));
+	device_number = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_number, 0, 16);
+	device_number->create_objects();
 }
 
 int VDevicePrefs::create_lml_objs()
@@ -167,6 +220,7 @@ int VDevicePrefs::create_lml_objs()
 			break;
 	}
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
+	x1 += device_title->get_w() + 10;
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -323,6 +377,7 @@ int VDevicePrefs::create_v4l2_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+
 	return 0;
 }
 
@@ -334,6 +389,7 @@ int VDevicePrefs::create_v4l2jpeg_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+
 	return 0;
 }
 
@@ -408,11 +464,17 @@ char* VDriverMenu::driver_to_string(int driver)
 		case CAPTURE_IEC61883:
 			sprintf(string, CAPTURE_IEC61883_TITLE);
 			break;
+		case CAPTURE_DVB:
+			sprintf(string, CAPTURE_DVB_TITLE);
+			break;
 		case PLAYBACK_X11:
 			sprintf(string, PLAYBACK_X11_TITLE);
 			break;
 		case PLAYBACK_X11_XV:
 			sprintf(string, PLAYBACK_X11_XV_TITLE);
+			break;
+		case PLAYBACK_X11_GL:
+			sprintf(string, PLAYBACK_X11_GL_TITLE);
 			break;
 		case PLAYBACK_LML:
 			sprintf(string, PLAYBACK_LML_TITLE);
@@ -448,11 +510,15 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));
 		add_item(new VDriverItem(this, CAPTURE_IEC61883_TITLE, CAPTURE_IEC61883));
+		add_item(new VDriverItem(this, CAPTURE_DVB_TITLE, CAPTURE_DVB));
 	}
 	else
 	{
 		add_item(new VDriverItem(this, PLAYBACK_X11_TITLE, PLAYBACK_X11));
 		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
+#ifdef HAVE_GL
+		add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
+#endif
 		add_item(new VDriverItem(this, PLAYBACK_BUZ_TITLE, PLAYBACK_BUZ));
 		add_item(new VDriverItem(this, PLAYBACK_FIREWIRE_TITLE, PLAYBACK_FIREWIRE));
 		add_item(new VDriverItem(this, PLAYBACK_DV1394_TITLE, PLAYBACK_DV1394));
@@ -495,6 +561,34 @@ int VDeviceTextBox::handle_event()
 	strcpy(output, get_text()); 
 }
 
+VDeviceTumbleBox::VDeviceTumbleBox(VDevicePrefs *prefs, 
+	int x, 
+	int y, 
+	int *output,
+	int min,
+	int max)
+ : BC_TumbleTextBox(prefs->dialog,
+	*output,
+	min,
+	max,
+ 	x, 
+	y, 
+	60)
+{ 
+	this->output = output; 
+}
+
+int VDeviceTumbleBox::handle_event() 
+{
+	*output = atol(get_text()); 
+	return 1;
+}
+
+
+
+
+
+
 VDeviceIntBox::VDeviceIntBox(int x, int y, int *output)
  : BC_TextBox(x, y, 60, 1, *output)
 { 
@@ -506,6 +600,8 @@ int VDeviceIntBox::handle_event()
 	*output = atol(get_text()); 
 	return 1;
 }
+
+
 
 
 

@@ -6,7 +6,7 @@
 #include "cropvideo.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "featheredits.h"
@@ -116,6 +116,7 @@ SET_TRACE
 	keyframemenu->add_item(new CopyKeyframes(mwindow));
 	keyframemenu->add_item(new PasteKeyframes(mwindow));
 	keyframemenu->add_item(new ClearKeyframes(mwindow));
+	keyframemenu->add_item(new StraightenKeyframes(mwindow));
 	keyframemenu->add_item(new BC_MenuItem("-"));
 	keyframemenu->add_item(new CopyDefaultKeyframe(mwindow));
 	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
@@ -126,6 +127,8 @@ SET_TRACE
 	add_menu(audiomenu = new BC_Menu(_("Audio")));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
 	audiomenu->add_item(new DefaultATransition(mwindow));
+	audiomenu->add_item(new MapAudio1(mwindow));
+	audiomenu->add_item(new MapAudio2(mwindow));
 	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
 
 	add_menu(videomenu = new BC_Menu(_("Video")));
@@ -192,7 +195,7 @@ SET_TRACE
 	return 0;
 }
 
-int MainMenu::load_defaults(Defaults *defaults)
+int MainMenu::load_defaults(BC_Hash *defaults)
 {
 	init_loads(defaults);
 	init_aeffects(defaults);
@@ -224,7 +227,7 @@ void MainMenu::update_toggles(int use_lock)
 	if(use_lock) mwindow->gui->unlock_window();
 }
 
-int MainMenu::save_defaults(Defaults *defaults)
+int MainMenu::save_defaults(BC_Hash *defaults)
 {
 	save_loads(defaults);
 	save_aeffects(defaults);
@@ -248,7 +251,7 @@ int MainMenu::quit()
 
 // ================================== load most recent
 
-int MainMenu::init_aeffects(Defaults *defaults)
+int MainMenu::init_aeffects(BC_Hash *defaults)
 {
 	total_aeffects = defaults->get("TOTAL_AEFFECTS", 0);
 	
@@ -264,7 +267,7 @@ int MainMenu::init_aeffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::init_veffects(Defaults *defaults)
+int MainMenu::init_veffects(BC_Hash *defaults)
 {
 	total_veffects = defaults->get("TOTAL_VEFFECTS", 0);
 	
@@ -280,7 +283,7 @@ int MainMenu::init_veffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::init_loads(Defaults *defaults)
+int MainMenu::init_loads(BC_Hash *defaults)
 {
 //printf("MainMenu::init_loads 1\n");
 	total_loads = defaults->get("TOTAL_LOADS", 0);
@@ -313,7 +316,7 @@ int MainMenu::init_loads(Defaults *defaults)
 
 // ============================ save most recent
 
-int MainMenu::save_aeffects(Defaults *defaults)
+int MainMenu::save_aeffects(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_AEFFECTS", total_aeffects);
 	char string[1024];
@@ -325,7 +328,7 @@ int MainMenu::save_aeffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::save_veffects(Defaults *defaults)
+int MainMenu::save_veffects(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_VEFFECTS", total_veffects);
 	char string[1024];
@@ -337,7 +340,7 @@ int MainMenu::save_veffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::save_loads(Defaults *defaults)
+int MainMenu::save_loads(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_LOADS", total_loads);
 	char string[1024];
@@ -630,6 +633,22 @@ int ClearKeyframes::handle_event()
 }
 
 
+StraightenKeyframes::StraightenKeyframes(MWindow *mwindow)
+ : BC_MenuItem(_("Straighten curves"))
+{
+	this->mwindow = mwindow; 
+}
+
+int StraightenKeyframes::handle_event()
+{
+	mwindow->straighten_automation();
+	return 1;
+}
+
+
+
+
+
 
 
 
@@ -841,6 +860,31 @@ DefaultATransition::DefaultATransition(MWindow *mwindow)
 int DefaultATransition::handle_event()
 {
 	mwindow->paste_audio_transition();
+	return 1;
+}
+
+
+MapAudio1::MapAudio1(MWindow *mwindow)
+ : BC_MenuItem(_("Map 1:1"))
+{
+	this->mwindow = mwindow;
+}
+
+int MapAudio1::handle_event()
+{
+	mwindow->map_audio(MWindow::AUDIO_1_TO_1);
+	return 1;
+}
+
+MapAudio2::MapAudio2(MWindow *mwindow)
+ : BC_MenuItem(_("Map 5.1:2"))
+{
+	this->mwindow = mwindow;
+}
+
+int MapAudio2::handle_event()
+{
+	mwindow->map_audio(MWindow::AUDIO_5_1_TO_2);
 	return 1;
 }
 

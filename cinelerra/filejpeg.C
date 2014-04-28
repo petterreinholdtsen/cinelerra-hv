@@ -105,7 +105,11 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_X11_XV:
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
+		case PLAYBACK_ASYNCHRONOUS:
 			return BC_YUV420P;
+			break;
+		case PLAYBACK_X11_GL:
+			return BC_YUV888;
 			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
@@ -206,11 +210,9 @@ int FileJPEG::read_frame_header(char *path)
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
-SET_TRACE
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
-SET_TRACE
 	mjpeg_decompress((mjpeg_t*)decompressor, 
 		input->get_data(), 
 		input->get_compressed_size(),
@@ -221,7 +223,6 @@ SET_TRACE
 		output->get_v(),
 		output->get_color_model(),
 		1);
-SET_TRACE
 
 
 	return 0;

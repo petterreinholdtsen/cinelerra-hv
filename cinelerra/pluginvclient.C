@@ -66,6 +66,11 @@ void PluginVClient::age_temp()
 	}
 }
 
+VFrame* PluginVClient::get_temp()
+{
+	return temp;
+}
+
 // Run before every realtime buffer is to be rendered.
 int PluginVClient::get_render_ptrs()
 {
@@ -231,6 +236,39 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int64_t &write_length)
 }
 
 
+int PluginVClient::run_opengl()
+{
+	server->run_opengl(this);
+	return 0;
+}
+
+int PluginVClient::handle_opengl()
+{
+	return 0;
+}
+
+VFrame* PluginVClient::get_input(int channel)
+{
+	return input[channel];
+}
+
+VFrame* PluginVClient::get_output(int channel)
+{
+	return output[channel];
+}
+
+int PluginVClient::next_effect_is(char *title)
+{
+	return !strcmp(title, output[0]->get_next_effect());
+}
+
+int PluginVClient::prev_effect_is(char *title)
+{
+	return !strcmp(title, output[0]->get_prev_effect());
+}
+
+
+
 int PluginVClient::read_frame(VFrame *buffer, 
 	int channel, 
 	int64_t start_position)
@@ -251,12 +289,14 @@ int PluginVClient::read_frame(VFrame *buffer,
 int PluginVClient::read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position,
-		double frame_rate)
+		double frame_rate,
+		int use_opengl)
 {
 	return server->read_frame(buffer,
 		channel,
 		start_position,
-		frame_rate);
+		frame_rate,
+		use_opengl);
 }
 
 

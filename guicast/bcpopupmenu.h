@@ -3,6 +3,7 @@
 
 #include "bcmenubar.inc"
 #include "bcmenuitem.inc"
+#include "bcmenupopup.inc"
 #include "bcsubwindow.h"
 
 

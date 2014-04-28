@@ -2,11 +2,13 @@
 #include "mbuttons.h"
 #include "confirmquit.h"
 #include "errorbox.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "playback3d.h"
 #include "quit.h"
 #include "record.h"
 #include "render.h"
@@ -15,11 +17,6 @@
 #include "videowindow.h"
 #include "videowindowgui.h"
 
-#include <unistd.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 Quit::Quit(MWindow *mwindow)
  : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 
@@ -46,7 +43,9 @@ int Quit::handle_event()
 	{        // quit
 		mwindow->gui->unlock_window();
 		mwindow->interrupt_indexes();
-		mwindow->gui->set_done(0);
+//		mwindow->gui->set_done(0);
+//		BC_WindowBase::get_resources()->synchronous->quit();
+		mwindow->playback_3d->quit();
 		mwindow->gui->lock_window();
 	}
 	return 0;
@@ -98,7 +97,9 @@ void Quit::run()
 			{
 				mwindow->interrupt_indexes();
 // Last command in program
-				mwindow->gui->set_done(0);
+//				mwindow->gui->set_done(0);
+//				BC_WindowBase::get_resources()->synchronous->quit();
+				mwindow->playback_3d->quit();
 			}
 			break;
 

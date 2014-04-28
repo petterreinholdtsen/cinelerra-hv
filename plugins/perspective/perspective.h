@@ -4,7 +4,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "loadbalance.h"
@@ -47,7 +47,7 @@ public:
 		int x, 
 		int y, 
 		int w,
-		int w);
+		int h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
@@ -159,13 +159,16 @@ public:
 	PerspectiveMain(PluginServer *server);
 	~PerspectiveMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(PerspectiveConfig, PerspectiveThread)
 

@@ -3,17 +3,17 @@
 
 #include "arraylist.h"
 #include "asset.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
+#include "mutex.inc"
 #include "packagerenderer.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
+#include "renderfarm.inc"
 #include "renderfarmclient.inc"
 //#include "renderfarmfsclient.inc"
 #include "thread.h"
 
-// The render client waits for connections from the server.
-// Then it starts a thread for each connection.
 class RenderFarmClient
 {
 public:
@@ -24,32 +24,26 @@ public:
 	~RenderFarmClient();
 	
 	void main_loop();
-	
+
+
+
 
 // After a socket times out, kill the render node.
 	void kill_client();
 	
-	RenderFarmClientThread *thread;
+//	RenderFarmClientThread *thread;
 	
 	int port;
 	char *deamon_path;
 // PID to be returned to background render object
 	int this_pid;
 // The plugin paths must be known before any threads are started
-	Defaults *boot_defaults;
+	BC_Hash *boot_defaults;
 	Preferences *boot_preferences;
 	ArrayList<PluginServer*> *plugindb;
 };
 
-// When a connection is opened, the thread forks to handle the rendering session.
-// A fork instead of a thread is used to avoid reentrancy problems with the
-// codecs, but we still need a thread to join the process.
-//
-// The fork requests jobs from the server until the job table is empty
-// or the server reports an error.  This fork must poll the server
-// after every frame for the error status.
-// Detaches when finished.
-class RenderFarmClientThread : Thread
+class RenderFarmClientThread : public Thread
 {
 public:
 	RenderFarmClientThread(RenderFarmClient *client);
@@ -59,18 +53,27 @@ public:
 // The ID of the request followed by the size of the data that follows is sent.
 	int send_request_header(int request, 
 		int len);
-	int write_socket(char *data, int len, int timeout);
-	int read_socket(char *data, int len, int timeout);
+// These are local functions to handle errors the right way for a client.
+// They simply call the RenderFarmServerThread functions and abort if error.
+	int write_socket(char *data, int len);
+	int read_socket(char *data, int len);
+// Return 1 if error
+	int write_int64(int64_t number);
+	int64_t read_int64(int *error = 0);
+	void read_string(char* &string);
 	void abort();
-	void read_string(int socket_fd, char* &string);
+// Lock access to the socket during complete transactions
 	void lock(char *location);
 	void unlock();
 
 
 
+	void do_tuner(int socket_fd);
+	void do_packages(int socket_fd);
 
 
-	void RenderFarmClientThread::read_preferences(int socket_fd, 
+	void get_command(int socket_fd, int *command);
+	void read_preferences(int socket_fd, 
 		Preferences *preferences);
 	void read_asset(int socket_fd, Asset *asset);
 	void read_edl(int socket_fd, 
@@ -78,6 +81,8 @@ public:
 		Preferences *preferences);
 	int read_package(int socket_fd, RenderPackage *package);
 	int send_completion(int socket_fd);
+	void ping_server();
+	void init_client_keepalive();
 
 	void main_loop(int socket_fd);
 	void run();
@@ -89,12 +94,11 @@ public:
 //	RenderFarmFSClient *fs_client;
 	double frames_per_second;
 	Mutex *mutex_lock;
+	RenderFarmWatchdog *watchdog;
+	RenderFarmKeepalive *keep_alive;
+// pid of forked process
+	int pid;
 };
-
-
-
-
-
 
 
 
@@ -121,6 +125,23 @@ public:
 };
 
 
+
+
+
+
+
+
+class RenderFarmKeepalive : public Thread
+{
+public:
+	RenderFarmKeepalive(RenderFarmClientThread *client_thread);
+	~RenderFarmKeepalive();
+
+	void run();
+
+	RenderFarmClientThread *client_thread;
+	int done;
+};
 
 
 

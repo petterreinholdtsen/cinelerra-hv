@@ -1,6 +1,6 @@
 #include "clip.h"
 #include "colormodels.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "diffkey.h"
 #include "diffkeywindow.h"
@@ -678,7 +678,7 @@ int DiffKeyMain::load_defaults()
 	sprintf(directory, "%sdiffkey.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.hue_imp = defaults->get("HUE_IMPORTANCE", config.hue_imp);

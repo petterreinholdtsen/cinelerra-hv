@@ -1,8 +1,11 @@
 #include "audio1394.h"
 #include "audioalsa.h"
+#include "audiocine.h"
 #include "audiodevice.h"
+#include "audiodvb.h"
 #include "audioesound.h"
 #include "audiooss.h"
+#include "bctimer.h"
 #include "condition.h"
 #include "dcoffset.h"
 #include "mutex.h"
@@ -10,7 +13,6 @@
 #include "preferences.h"
 #include "recordconfig.h"
 #include "sema.h"
-
 
 
 AudioLowLevel::AudioLowLevel(AudioDevice *device)
@@ -27,16 +29,21 @@ AudioLowLevel::~AudioLowLevel()
 
 
 
-AudioDevice::AudioDevice()
+AudioDevice::AudioDevice(MWindow *mwindow)
  : Thread(1, 0, 0)
 {
 	initialize();
+	this->mwindow = mwindow;
 	this->out_config = new AudioOutConfig(0);
 	this->in_config = new AudioInConfig;
 	this->vconfig = new VideoInConfig;
 	startup_lock = new Condition(0, "AudioDevice::startup_lock");
 	duplex_lock = new Condition(0, "AudioDevice::duplex_lock");
 	timer_lock = new Mutex("AudioDevice::timer_lock");
+	buffer_lock = new Mutex("AudioDevice::buffer_lock");
+	polling_lock = new Condition(0, "AudioDevice::polling_lock");
+	playback_timer = new Timer;
+	record_timer = new Timer;
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
 		play_lock[i] = new Sema(0, "AudioDevice::play_lock");
@@ -57,6 +64,10 @@ AudioDevice::~AudioDevice()
 		delete play_lock[i];
 		delete arm_lock[i];
 	}
+	delete playback_timer;
+	delete record_timer;
+	delete buffer_lock;
+	delete polling_lock;
 }
 
 int AudioDevice::initialize()
@@ -66,21 +77,22 @@ int AudioDevice::initialize()
 
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-		buffer[i] = 0;
+		output_buffer[i] = 0;
+		input_buffer[i] = 0;
 		buffer_size[i] = 0;
 		last_buffer[i] = 0;
 	}
 
-	input_buffer = 0;
 	duplex_init = 0;
 	rec_dither = play_dither = 0;
 	software_position_info = 0;
 	arm_buffer_num = 0;
 	is_playing_back = 0;
 	is_recording = 0;
-	last_buffer_size = total_samples = position_correction = 0;
+	last_buffer_size = 0;
+	total_samples = 0;
+	position_correction = 0;
 	last_position = 0;
-	dc_offset_thread = new DC_Offset;
 	interrupt = 0;
 	lowlevel_in = lowlevel_out = lowlevel_duplex = 0;
 	vdevice = 0;
@@ -88,6 +100,8 @@ int AudioDevice::initialize()
 	total_samples_read = 0;
 	out_realtime = 0;
 	duplex_realtime = 0;
+	in_realtime = 0;
+	read_waiting = 0; 
 	return 0;
 }
 
@@ -128,6 +142,18 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 				lowlevel = new Audio1394(this);
 				break;
 #endif
+
+
+
+			case AUDIO_DVB:
+				lowlevel = new AudioDVB(this);
+				break;
+
+
+
+			case AUDIO_CINE:
+				lowlevel = new AudioCine(this);
+				break;
 		}
 	}
 	return 0;
@@ -136,24 +162,28 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 int AudioDevice::open_input(AudioInConfig *config, 
 	VideoInConfig *vconfig, 
 	int rate, 
-	int samples)
+	int samples,
+	int channels,
+	int realtime)
 {
 	r = 1;
 	duplex_init = 0;
 	this->in_config->copy_from(config);
 	this->vconfig->copy_from(vconfig);
-//printf("AudioDevice::open_input %s\n", this->in_config->oss_in_device[0]);
 	in_samplerate = rate;
 	in_samples = samples;
+	in_realtime = realtime;
+	in_channels = channels;
 	create_lowlevel(lowlevel_in, config->driver);
 	lowlevel_in->open_input();
-	record_timer.update();
+	record_timer->update();
 	return 0;
 }
 
 int AudioDevice::open_output(AudioOutConfig *config, 
 	int rate, 
 	int samples, 
+	int channels,
 	int realtime)
 {
 	w = 1;
@@ -161,30 +191,10 @@ int AudioDevice::open_output(AudioOutConfig *config,
 	*this->out_config = *config;
 	out_samplerate = rate;
 	out_samples = samples;
+	out_channels = channels;
 	out_realtime = realtime;
 	create_lowlevel(lowlevel_out, config->driver);
-	lowlevel_out->open_output();
-	return 0;
-}
-
-int AudioDevice::open_duplex(AudioOutConfig *out_config, int rate, int samples, int realtime)
-{
-	d = 1;
-	duplex_init = 1;        // notify playback routines to test the duplex lock
-	*this->out_config = *out_config;
-	duplex_samplerate = rate;
-	duplex_samples = samples;
-	duplex_channels = 0;
-	duplex_realtime = realtime;
-	for(int i = 0; i < MAXDEVICES; i++)
-	{
-		duplex_channels += out_config->oss_out_channels[i];
-	}
-	create_lowlevel(lowlevel_duplex, out_config->driver);
-	lowlevel_duplex->open_duplex();
-	playback_timer.update();
-	record_timer.update();
-	return 0;
+	return lowlevel_out ? lowlevel_out->open_output() : 0;
 }
 
 
@@ -197,15 +207,23 @@ int AudioDevice::interrupt_crash()
 
 int AudioDevice::close_all()
 {
+	if(is_recording)
+	{
+		is_recording = 0;
+		read_waiting = 1;
+		Thread::join();
+	}
+	
+
 	if(lowlevel_in) lowlevel_in->close_all();
 	if(lowlevel_out) lowlevel_out->close_all();
 	if(lowlevel_duplex) lowlevel_duplex->close_all();
 
 	reset_output();
-	if(input_buffer) 
+	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-		delete [] input_buffer; 
-		input_buffer = 0; 
+		delete [] input_buffer[i]; 
+		input_buffer[i] = 0;
 	}
 	
 	is_recording = 0;
@@ -221,16 +239,19 @@ int AudioDevice::close_all()
 		delete lowlevel_in;
 		lowlevel_in = 0;
 	}
+
 	if(lowlevel_out)
 	{
 		delete lowlevel_out;
 		lowlevel_out = 0;
 	}
+
 	if(lowlevel_duplex)
 	{
 		delete lowlevel_duplex;
 		lowlevel_duplex = 0;
 	}
+
 	return 0;
 }
 
@@ -294,7 +315,16 @@ int AudioDevice::get_irate()
 int AudioDevice::get_orealtime()
 {
 	if(w) return out_realtime;
-	else if(d) return duplex_realtime;
+	else 
+	if(d) return duplex_realtime;
+	return 0;
+}
+
+int AudioDevice::get_irealtime()
+{
+	if(r) return in_realtime;
+	else 
+	if(d) return duplex_realtime;
 	return 0;
 }
 
@@ -317,4 +347,21 @@ int AudioDevice::get_device_buffer()
 }
 
 
+
+
+
+
+
+
+
+
+
+void AudioDevice::run()
+{
+	if(w)
+		run_output();
+	else
+	if(r)
+		run_input();
+}
 

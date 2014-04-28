@@ -9,6 +9,7 @@
 #include "bctimer.h"
 #include "canvas.inc"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "device1394output.inc"
 #include "edl.inc"
 #include "guicast.h"
@@ -74,9 +75,15 @@ public:
 		int input_x, 
 		int input_y, 
 		float input_z,
-		float frame_rate);
+		double frame_rate);
+
+// Call the constructor of the desired device.
+// Used by fix_asset and open_input
+	VDeviceBase* new_device_base();
 
 
+// Used for calling OpenGL functions
+	VDeviceBase* get_output_base();
 
 // Return 1 if the data is compressed.
 // Called by Record::run to determine if compression option is fixed.
@@ -85,13 +92,16 @@ public:
 	static int is_compressed(int driver, int use_file, int use_fixed);
 	int is_compressed(int use_file, int use_fixed);
 
+// Load the specific channeldb for the device type
+	static void load_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in);
+	static void save_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in);
 
 
 // Return codec to store on disk if compressed
-	static char* get_vcodec(int driver);
+	void fix_asset(Asset *asset, int driver);
 	static char* drivertostr(int driver);
-// Get the best colormodel for recording given the file format
-// Must be called between open_input and read_buffer
+// Get the best colormodel for recording given the file format.
+// Must be called between open_input and read_buffer.
 	int get_best_colormodel(Asset *asset);
 
 // Specify the audio device opened concurrently with this video device
@@ -139,7 +149,7 @@ public:
 	int interrupt_playback();
 // Get output buffer for playback using colormodel.
 // colormodel argument should be as close to best_colormodel as possible
-	void new_output_buffers(VFrame **outputs, int colormodel);
+	void new_output_buffer(VFrame **output, int colormodel);
 	int wait_for_startup();
 	int wait_for_completion();
 	int output_visible();     // Whether the output is visible or not.
@@ -148,7 +158,7 @@ public:
 	long current_position();     // last frame rendered
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.
-	int write_buffer(VFrame **outputs, EDL *edl);   
+	int write_buffer(VFrame *output, EDL *edl);   
 
 
 
@@ -186,7 +196,7 @@ public:
 
 
 	int is_recording; // status of thread
-	float frame_rate; // Frame rate to set in device
+	double frame_rate; // Frame rate to set in device
 // Location of input frame in captured frame
 	int frame_in_capture_x1, frame_in_capture_x2, frame_in_capture_y1, frame_in_capture_y2;
 	int capture_in_frame_x1, capture_in_frame_x2, capture_in_frame_y1, capture_in_frame_y2;

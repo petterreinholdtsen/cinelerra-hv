@@ -1,7 +1,7 @@
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -9,17 +9,20 @@
 #include "levelwindow.h"
 #include "mainundo.h"
 #include "mainmenu.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
 #include "newpresets.h"
 #include "mainsession.h"
 #include "patchbay.h"
+#include "preferences.h"
 #include "theme.h"
 #include "transportque.h"
 #include "videowindow.h"
 #include "vplayback.h"
 #include "vwindow.h"
+
 
 #include <string.h>
 
@@ -84,7 +87,12 @@ int New::create_new_project()
 	mwindow->vwindow->playback_engine->interrupt_playback(0);
 
 	mwindow->gui->lock_window();
+	mwindow->reset_caches();
 
+	memcpy(new_edl->session->achannel_positions,
+		&mwindow->preferences->channel_positions[
+			MAXCHANNELS * (new_edl->session->audio_channels - 1)],
+		sizeof(int) * MAXCHANNELS);
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
 
@@ -147,9 +155,7 @@ void NewThread::run()
 	}
 	else
 	{
-//printf("NewThread::run 4\n");
 		new_project->create_new_project();
-//printf("NewThread::run 5\n");
 	}
 }
 
@@ -314,11 +320,14 @@ int NewWindow::create_objects()
 	x1 += 10;
 	add_subwindow(output_h_text = new NewOutputH(this, x1, y));
 	x1 += output_h_text->get_w();
-	add_subwindow(new FrameSizePulldown(mwindow, 
+	FrameSizePulldown *pulldown;
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
 		output_w_text, 
 		output_h_text, 
 		x1, 
 		y));
+	x1 += pulldown->get_w() + 5;
+	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
 	y += output_h_text->get_h() + 5;
 
 	x1 = x;
@@ -828,30 +837,32 @@ int NewAspectAuto::handle_event()
 }
 
 
-#if 0
 
-NewCloneToggle::NewCloneToggle(MWindow *mwindow, NewWindow *nwindow, int x, int y)
- : BC_Toggle(x, 
- 	y, 
-	mwindow->theme->chain_data, 
-	nwindow->new_thread->auto_sizes,
-	"",
-	0, 
-	0, 
-	0)
+
+
+
+
+
+NewSwapExtents::NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
 {
 	this->mwindow = mwindow;
-	this->nwindow = nwindow;
+	this->gui = gui;
+	set_tooltip("Swap dimensions");
 }
 
-int NewCloneToggle::handle_event()
+int NewSwapExtents::handle_event()
 {
-	nwindow->canvas_w_text->update((int64_t)nwindow->new_edl->session->track_w);
-	nwindow->canvas_h_text->update((int64_t)nwindow->new_edl->session->track_h);
-	nwindow->new_edl->session->output_w = nwindow->new_edl->session->track_w;
-	nwindow->new_edl->session->output_h = nwindow->new_edl->session->track_h;
-	nwindow->new_thread->update_aspect();
+	int w = gui->new_edl->session->output_w;
+	int h = gui->new_edl->session->output_h;
+	gui->new_edl->session->output_w = h;
+	gui->new_edl->session->output_h = w;
+	gui->output_w_text->update((int64_t)h);
+	gui->output_h_text->update((int64_t)w);
+	gui->new_thread->update_aspect();
 	return 1;
 }
 
-#endif
+
+
+

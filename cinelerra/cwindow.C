@@ -6,9 +6,10 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "cwindowtool.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindowgui.h"
@@ -105,9 +106,13 @@ Track* CWindow::calculate_affected_track()
 	return affected_track;
 }
 
-Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
+Auto* CWindow::calculate_affected_auto(Autos *autos, 
+	int create,
+	int *created,
+	int redraw)
 {
 	Auto* affected_auto = 0;
+	if(created) *created = 0;
 
 	if(create)
 	{
@@ -117,10 +122,14 @@ Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
 // Got created
 		if(total != autos->total())
 		{
-			mwindow->gui->lock_window("CWindow::calculate_affected_auto");
-			mwindow->gui->canvas->draw_overlays();
-			mwindow->gui->canvas->flash();
-			mwindow->gui->unlock_window();
+			if(created) *created = 1;
+			if(redraw)
+			{
+				mwindow->gui->lock_window("CWindow::calculate_affected_auto");
+				mwindow->gui->canvas->draw_overlays();
+				mwindow->gui->canvas->flash();
+				mwindow->gui->unlock_window();
+			}
 		}
 	}
 	else
@@ -183,22 +192,18 @@ void CWindow::update(int position,
 	int operation,
 	int timebar)
 {
-//TRACE("CWindow::update 1");
 
 	if(position)
 	{
-//printf("CWindow::update 2\n");
 		gui->lock_window("CWindow::update 1");
 		gui->slider->set_position();
 		gui->unlock_window();
-//printf("CWindow::update 2\n");
+
 		playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,
 			mwindow->edl,
 			1);
-//printf("CWindow::update 3\n");
 	}
-//TRACE("CWindow::update 4");
 
 	gui->lock_window("CWindow::update 2");
 
@@ -209,7 +214,6 @@ void CWindow::update(int position,
 		gui->set_operation(mwindow->edl->session->cwindow_operation);
 	}
 
-//TRACE("CWindow::update 5");
 
 // Updated by video device.
 	if(overlays && !position)
@@ -217,7 +221,6 @@ void CWindow::update(int position,
 		gui->canvas->draw_refresh();
 	}
 
-//TRACE("CWindow::update 5");
 // Update tool parameters
 // Never updated by someone else
 	if(tool_window || position)
@@ -230,24 +233,20 @@ void CWindow::update(int position,
 		gui->timebar->update(1, 1);
 	}
 
-//TRACE("CWindow::update 6");
 	if(!mwindow->edl->session->cwindow_scrollbars)
 		gui->zoom_panel->update(AUTO_ZOOM);
 	else
 		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
-//printf("CWindow::update 6\n");
 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
 			mwindow->edl->session->cwindow_yscroll, 
 			mwindow->edl->session->cwindow_zoom);
-//printf("CWindow::update 6\n");
 	gui->canvas->reposition_window(mwindow->edl, 
 			mwindow->theme->ccanvas_x,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
 
-//printf("CWindow::update 6\n");
 
 
 
@@ -256,7 +255,6 @@ void CWindow::update(int position,
 
 
 
-//printf("CWindow::update 7\n");
 }
 
 

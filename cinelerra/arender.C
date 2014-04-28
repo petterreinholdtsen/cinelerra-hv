@@ -91,10 +91,12 @@ int ARender::init_meters()
 	if(level_samples) delete [] level_samples;
 	calculate_history_size();
 	level_samples = new int64_t[total_peaks];
+
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
 		current_level[i] = 0;
-		if(audio_out[i] && !level_history[i]) level_history[i] = new double[total_peaks];
+		if(audio_out[i] && !level_history[i]) 
+			level_history[i] = new double[total_peaks];
 	}
 
 	for(int i = 0; i < total_peaks; i++)
@@ -118,13 +120,10 @@ void ARender::init_output_buffers()
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 // Reset the output buffers in case speed changed
-			if(audio_out[i])
-			{
-				delete [] audio_out[i];
-				audio_out[i] = 0;
-			}
+			delete [] audio_out[i];
+			audio_out[i] = 0;
 
-			if(renderengine->config->aconfig->do_channel[i])
+			if(i < renderengine->edl->session->audio_channels)
 			{
 				audio_out[i] = new double[renderengine->adjusted_fragment_len];
 			}
@@ -316,6 +315,7 @@ void ARender::run()
 	if(!interrupt) send_last_buffer();
 	if(renderengine->command->realtime) wait_device_completion();
 	vconsole->stop_rendering(0);
+	stop_plugins();
 }
 
 

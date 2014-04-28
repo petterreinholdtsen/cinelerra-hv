@@ -13,6 +13,7 @@
 /* If we're using MMX assembler, fold weights into the iDCT
    prescale here instead of  _dv_weight_init */
 
+.section .note.GNU-stack, "", @progbits
 
 .text
 	.align 4
@@ -22,7 +23,7 @@ _dv_idct_block_mmx_x86_64:
 /* void _dv_idct_88(dv_coeff_t *block) */
 	/* argument block=rdi */
 	
-	lea	 preSC(%rip), %r11
+	mov	 preSC@GOTPCREL(%rip), %r11
 
 /* 
  *	column 0: even part

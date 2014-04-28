@@ -1,6 +1,6 @@
 #include "clip.h"
 #include "colormodels.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "flip.h"
 #include "flipwindow.h"
@@ -95,8 +95,8 @@ int FlipMain::is_realtime() { return 1; }
 { \
 	type **input_rows, **output_rows; \
 	type *input_row, *output_row; \
-	input_rows = ((type**)input_ptr->get_rows()); \
-	output_rows = ((type**)output_ptr->get_rows()); \
+	input_rows = ((type**)frame->get_rows()); \
+	output_rows = ((type**)frame->get_rows()); \
  \
 	if(config.flip_vertical) \
 	{ \
@@ -129,14 +129,33 @@ int FlipMain::is_realtime() { return 1; }
 	} \
 }
 
-int FlipMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int FlipMain::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
 	int i, j, k, l;
-	int w = input_ptr->get_w();
-	int h = input_ptr->get_h();
-	int colormodel = input_ptr->get_color_model();
+	int w = frame->get_w();
+	int h = frame->get_h();
+	int colormodel = frame->get_color_model();
 
 	load_configuration();
+
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate(),
+		get_use_opengl());
+
+
+
+	if(get_use_opengl()) 
+	{
+		if(config.flip_vertical || config.flip_horizontal)
+			return run_opengl();
+		else
+			return 0;
+	}
+
 	switch(colormodel)
 	{
 		case BC_RGB888:
@@ -246,7 +265,7 @@ int FlipMain::load_defaults()
 	sprintf(directory, "%sflip.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.flip_horizontal = defaults->get("FLIP_HORIZONTAL", config.flip_horizontal);
@@ -261,3 +280,54 @@ int FlipMain::save_defaults()
 	defaults->save();
 	return 0;
 }
+
+int FlipMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	if(config.flip_vertical && !config.flip_horizontal)
+	{
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			0,
+			get_output()->get_h(),
+			get_output()->get_w(),
+			0);
+	}
+
+	if(config.flip_horizontal && !config.flip_vertical)
+	{
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			get_output()->get_w(),
+			0,
+			0,
+			get_output()->get_h());
+	}
+
+	if(config.flip_vertical && config.flip_horizontal)
+	{
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			get_output()->get_w(),
+			get_output()->get_h(),
+			0,
+			0);
+	}
+
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
+
+

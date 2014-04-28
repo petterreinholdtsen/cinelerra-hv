@@ -10,7 +10,7 @@
 #include "ctimebar.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -23,6 +23,7 @@
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
+#include "mainerror.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -31,6 +32,7 @@
 #include "mtimebar.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
+#include "panauto.h"
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "pluginset.h"
@@ -67,7 +69,7 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	gui->get_scrollbars();
 	gui->canvas->draw();
 	gui->patchbay->update();
-	gui->cursor->draw();
+	gui->cursor->draw(1);
 	gui->canvas->flash();
 	gui->canvas->activate();
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
@@ -85,7 +87,7 @@ void MWindow::add_video_track_entry(Track *dst)
 	gui->get_scrollbars();
 	gui->canvas->draw();
 	gui->patchbay->update();
-	gui->cursor->draw();
+	gui->cursor->draw(1);
 	gui->canvas->flash();
 	gui->canvas->activate();
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
@@ -131,6 +133,16 @@ void MWindow::asset_to_size()
 		edl->session->output_w = w;
 		edl->session->output_h = h;
 
+		if(((edl->session->output_w % 4) || 
+			(edl->session->output_h % 4)) && 
+			edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+		{
+			MainError::show_error(
+				_("This project's dimensions are not multiples of 4 so\n"
+				"it can't be rendered by OpenGL."));
+		}
+
+
 // Get aspect ratio
 		if(defaults->get("AUTOASPECT", 0))
 		{
@@ -144,6 +156,33 @@ void MWindow::asset_to_size()
 
 		undo->update_undo(_("asset to size"), LOAD_ALL);
 		restart_brender();
+		sync_parameters(CHANGE_ALL);
+	}
+}
+
+
+void MWindow::asset_to_rate()
+{
+	if(session->drag_assets->total &&
+		session->drag_assets->values[0]->video_data)
+	{
+		double new_framerate = session->drag_assets->values[0]->frame_rate;
+		double old_framerate = edl->session->frame_rate;
+
+		edl->session->frame_rate = new_framerate;
+		edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
+
+		save_backup();
+
+		undo->update_undo(_("asset to rate"), LOAD_ALL);
+		restart_brender();
+		gui->update(1,
+			2,
+			1,
+			1,
+			1, 
+			1,
+			0);
 		sync_parameters(CHANGE_ALL);
 	}
 }
@@ -179,6 +218,23 @@ void MWindow::clear(int clear_handle)
 			edl->session->labels_follow_edits, 
 			edl->session->plugins_follow_edits);
 	}
+}
+
+void MWindow::straighten_automation()
+{
+	edl->tracks->straighten_automation(
+		edl->local_session->get_selectionstart(), 
+		edl->local_session->get_selectionend()); 
+	save_backup();
+	undo->update_undo(_("straighten curves"), LOAD_AUTOMATION); 
+
+	restart_brender();
+	update_plugin_guis();
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+	sync_parameters(CHANGE_PARAMS);
+	gui->patchbay->update();
+	cwindow->update(1, 0, 0);
 }
 
 void MWindow::clear_automation()
@@ -508,21 +564,21 @@ void MWindow::insert(double position,
 	EDL edl(parent_edl);
 	ArrayList<EDL*> new_edls;
 	uint32_t load_flags = LOAD_ALL;
-SET_TRACE
+
 
 	new_edls.append(&edl);
 	edl.create_objects();
-SET_TRACE
+
 
 
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
 	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
 	if(!edl.session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
-SET_TRACE
+
 	edl.load_xml(plugindb, file, load_flags);
 
-SET_TRACE
+
 
 
 
@@ -985,7 +1041,7 @@ int MWindow::paste(double start,
 // For editing use insertion point position
 void MWindow::paste()
 {
-SET_TRACE
+
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
 	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
@@ -994,7 +1050,7 @@ SET_TRACE
 	{
 		char *string = new char[len + 1];
 
-SET_TRACE
+
 
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
@@ -1002,22 +1058,22 @@ SET_TRACE
 		FileXML file;
 		file.read_from_string(string);
 
-SET_TRACE
+
 
 
 		clear(0);
-SET_TRACE
+
 		insert(start, 
 			&file, 
 			edl->session->labels_follow_edits, 
 			edl->session->plugins_follow_edits);
-SET_TRACE
+
 		edl->optimize();
-SET_TRACE
+
 
 		delete [] string;
 
-SET_TRACE
+
 
 		save_backup();
 
@@ -1029,7 +1085,7 @@ SET_TRACE
 		awindow->gui->update_assets();
 		sync_parameters(CHANGE_EDL);
 	}
-SET_TRACE
+
 }
 
 int MWindow::paste_assets(double position, Track *dest_track)
@@ -1093,6 +1149,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	ArrayList<EDL*> new_edls;
 	for(int i = 0; i < new_assets->total; i++)
 	{
+		remove_asset_from_caches(new_assets->values[i]);
 		EDL *new_edl = new EDL;
 		new_edl->create_objects();
 		new_edl->copy_session(edl);
@@ -1199,74 +1256,65 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	int edit_labels,
 	int edit_plugins)
 {
-SET_TRACE
+
 	ArrayList<Track*> destination_tracks;
 	int need_new_tracks = 0;
 
 	if(!new_edls->total) return 0;
+
+
 SET_TRACE
-//printf("MWindow::paste_edls 1\n");
+	double original_length = edl->tracks->total_playable_length();
+SET_TRACE
+	double original_preview_end = edl->local_session->preview_end;
+SET_TRACE
 
 // Delete current project
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
 	{
-SET_TRACE
+		reset_caches();
+
 		edl->save_defaults(defaults);
-SET_TRACE
+
 		hide_plugins();
-SET_TRACE
+
 		delete edl;
-SET_TRACE
+
 		edl = new EDL;
-SET_TRACE
+
 		edl->create_objects();
-SET_TRACE
+
 		edl->copy_session(new_edls->values[0]);
-SET_TRACE
+
 		gui->mainmenu->update_toggles(0);
-SET_TRACE
+
 
 		gui->unlock_window();
-SET_TRACE
+
 		gwindow->gui->update_toggles(1);
-SET_TRACE
+
 		gui->lock_window("MWindow::paste_edls");
-SET_TRACE
+
 
 // Insert labels for certain modes constitutively
 		edit_labels = 1;
 		edit_plugins = 1;
+// Force reset of preview
+		original_length = 0;
+		original_preview_end = -1;
 	}
+
 SET_TRACE
 
-// Assume any paste operation from the same EDL won't contain any clips.
-// If it did it would duplicate every clip here.
-	for(int i = 0; i < new_edls->total; i++)
-	{
-		EDL *new_edl = new_edls->values[i];
 
-		for(int j = 0; j < new_edl->clips.total; j++)
-		{
-			edl->add_clip(new_edl->clips.values[j]);
-		}
-
-		if(new_edl->vwindow_edl)
-		{
-			if(edl->vwindow_edl) delete edl->vwindow_edl;
-			edl->vwindow_edl = new EDL(edl);
-			edl->vwindow_edl->create_objects();
-			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
-		}
-	}
 SET_TRACE
-
 // Create new tracks in master EDL
 	if(load_mode == LOAD_REPLACE || 
 		load_mode == LOAD_REPLACE_CONCATENATE ||
 		load_mode == LOAD_NEW_TRACKS)
 	{
-SET_TRACE
+
 		need_new_tracks = 1;
 		for(int i = 0; i < new_edls->total; i++)
 		{
@@ -1293,13 +1341,13 @@ SET_TRACE
 // Base track count on first EDL only for concatenation
 			if(load_mode == LOAD_REPLACE_CONCATENATE) break;
 		}
-SET_TRACE
+
 	}
 	else
 // Recycle existing tracks of master EDL
 	if(load_mode == LOAD_CONCATENATE || load_mode == LOAD_PASTE)
 	{
-SET_TRACE
+
 // The point of this is to shift forward labels after the selection so they can
 // then be shifted back to their original locations without recursively
 // shifting back every paste.
@@ -1325,32 +1373,35 @@ SET_TRACE
 // 						1);
 			}
 		}
-SET_TRACE
+
 	}
 
 
-SET_TRACE
+
 
 	int destination_track = 0;
 	double *paste_position = new double[destination_tracks.total];
 
-SET_TRACE
 
+
+SET_TRACE
 
 
 // Iterate through the edls
 	for(int i = 0; i < new_edls->total; i++)
 	{
-SET_TRACE
+
 		EDL *new_edl = new_edls->values[i];
+SET_TRACE
 		double edl_length = new_edl->local_session->clipboard_length ?
 			new_edl->local_session->clipboard_length :
 			new_edl->tracks->total_length();
 // printf("MWindow::paste_edls 2\n");
 // new_edl->dump();
 
-
 SET_TRACE
+
+
 
 // Resample EDL to master rates
 		new_edl->resample(new_edl->session->sample_rate, 
@@ -1363,6 +1414,7 @@ SET_TRACE
 SET_TRACE
 
 
+
 // Add assets and prepare index files
 		for(Asset *new_asset = new_edl->assets->first;
 			new_asset;
@@ -1370,10 +1422,12 @@ SET_TRACE
 		{
 			mainindexes->add_next_asset(0, new_asset);
 		}
+SET_TRACE
 // Capture index file status from mainindex test
 		edl->update_assets(new_edl);
 
 SET_TRACE
+
 
 // Get starting point of insertion.  Need this to paste labels.
 		switch(load_mode)
@@ -1411,8 +1465,9 @@ SET_TRACE
 		}
 
 
-SET_TRACE
 
+
+SET_TRACE
 
 // Insert edl
 		if(load_mode != LOAD_RESOURCESONLY)
@@ -1485,28 +1540,59 @@ SET_TRACE
 			}
 		}
 
+SET_TRACE
 		if(load_mode == LOAD_PASTE)
 			current_position += edl_length;
 	}
 
 
+// Move loading of clips and vwindow to the end - this fixes some
+// strange issue, for index not being shown
+// Assume any paste operation from the same EDL won't contain any clips.
+// If it did it would duplicate every clip here.
+	for(int i = 0; i < new_edls->total; i++)
+	{
+		EDL *new_edl = new_edls->values[i];
+
+		for(int j = 0; j < new_edl->clips.total; j++)
+		{
+			edl->add_clip(new_edl->clips.values[j]);
+		}
+
+		if(new_edl->vwindow_edl)
+		{
+			if(edl->vwindow_edl) delete edl->vwindow_edl;
+			edl->vwindow_edl = new EDL(edl);
+			edl->vwindow_edl->create_objects();
+			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
+		}
+	}
+
 
 SET_TRACE
 	if(paste_position) delete [] paste_position;
+
 
 SET_TRACE
 // This is already done in load_filenames and everything else that uses paste_edls
 //	update_project(load_mode);
 
-SET_TRACE
+// Fix preview range
+	if(EQUIV(original_length, original_preview_end))
+	{
+		edl->local_session->preview_end = edl->tracks->total_playable_length();
+	}
 
+
+SET_TRACE
 // Start examining next batch of index files
 	mainindexes->start_build();
 SET_TRACE
 
+
 // Don't save a backup after loading since the loaded file is on disk already.
 
-SET_TRACE
+
 	return 0;
 }
 
@@ -1957,8 +2043,8 @@ void MWindow::select_point(double position)
 	cwindow->update(1, 0, 0, 0, 1);
 	update_plugin_guis();
 	gui->patchbay->update();
-	gui->cursor->hide();
-	gui->cursor->draw();
+	gui->cursor->hide(0);
+	gui->cursor->draw(1);
 	gui->mainclock->update(edl->local_session->get_selectionstart(1));
 	gui->zoombar->update();
 	gui->canvas->flash();
@@ -1966,4 +2052,79 @@ void MWindow::select_point(double position)
 }
 
 
+
+
+void MWindow::map_audio(int pattern)
+{
+	int current_channel = 0;
+	int current_track = 0;
+	for(Track *current = edl->tracks->first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_AUDIO && 
+			current->record)
+		{
+			Autos *pan_autos = current->automation->autos[AUTOMATION_PAN];
+			PanAuto *pan_auto = (PanAuto*)pan_autos->get_auto_for_editing(-1);
+
+			for(int i = 0; i < MAXCHANNELS; i++)
+			{
+				pan_auto->values[i] = 0.0;
+			}
+
+			if(pattern == MWindow::AUDIO_1_TO_1)
+			{
+				pan_auto->values[current_channel] = 1.0;
+			}
+			else
+			if(pattern == MWindow::AUDIO_5_1_TO_2)
+			{
+				switch(current_track)
+				{
+					case 0:
+						pan_auto->values[0] = 0.5;
+						pan_auto->values[1] = 0.5;
+						break;
+					case 1:
+						pan_auto->values[0] = 1;
+						break;
+					case 2:
+						pan_auto->values[1] = 1;
+						break;
+					case 3:
+						pan_auto->values[0] = 1;
+						break;
+					case 4:
+						pan_auto->values[1] = 1;
+						break;
+					case 5:
+						pan_auto->values[0] = 0.5;
+						pan_auto->values[1] = 0.5;
+						break;
+				}
+			}
+			
+			BC_Pan::calculate_stick_position(edl->session->audio_channels, 
+				edl->session->achannel_positions, 
+				pan_auto->values, 
+				MAX_PAN, 
+				PAN_RADIUS,
+				pan_auto->handle_x,
+				pan_auto->handle_y);
+		
+			current_channel++;
+			current_track++;
+			if(current_channel >= edl->session->audio_channels)
+				current_channel = 0;
+		}
+	}
+	undo->update_undo(_("map 1:1"), LOAD_AUTOMATION, 0);
+	sync_parameters(CHANGE_PARAMS);
+	gui->update(0,
+		1,
+		0,
+		0,
+		1,
+		0,
+		0);
+}
 

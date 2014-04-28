@@ -6,7 +6,7 @@
 #include "file.inc"
 #include "filexml.inc"
 #include "guicast.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"
 #include "thread.h"
@@ -85,6 +85,15 @@ public:
 	EDL* get_edl();
 };
 
+
+class NewSwapExtents : public BC_Button
+{
+public:
+	NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	NewWindow *gui;
+};
 
 
 
@@ -307,13 +316,5 @@ public:
 
 
 
-class NewCloneToggle : public BC_Toggle
-{
-public:
-	NewCloneToggle(MWindow *mwindow, NewWindow *nwindow, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	NewWindow *nwindow;
-};
 
 #endif

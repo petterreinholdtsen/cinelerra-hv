@@ -1,23 +1,20 @@
 #include "confirmsave.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "errorbox.h"
 #include "file.h"
 #include "filexml.h"
 #include "fileformat.h"
 #include "indexfile.h"
+#include "language.h"
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "playback3d.h"
 #include "savefile.h"
 #include "mainsession.h"
 
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -87,6 +84,7 @@ int Save::handle_event()
 				mwindow->gui->get_abs_cursor_x(1),
 				mwindow->gui->get_abs_cursor_y(1));
 			error.create_objects(string2);
+			error.raise_window();
 			error.run_window();
 			return 1;		
 		}
@@ -97,7 +95,9 @@ int Save::handle_event()
 			mwindow->gui->show_message(string);
 		}
 		mwindow->session->changes_made = 0;
-		if(saveas->quit_now) mwindow->gui->set_done(0);
+// Last command in program
+//		if(saveas->quit_now) mwindow->gui->set_done(0);
+		if(saveas->quit_now) mwindow->playback_3d->quit();
 	}
 	return 1;
 }
@@ -186,6 +186,7 @@ void SaveAs::run()
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(string2);
+		error.raise_window();
 		error.run_window();
 		return;		
 	}
@@ -201,7 +202,9 @@ void SaveAs::run()
 
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
-	if(quit_now) mwindow->gui->set_done(0);
+// Last command in program
+//	if(quit_now) mwindow->gui->set_done(0);
+	if(quit_now) mwindow->playback_3d->quit();
 	return;
 }
 

@@ -104,7 +104,7 @@ void jcquant_sse( INT16 *psrc, INT16 *pdst, FLOAT32 *piqf )
 
 	/* Initialise zero block flags */
 	/* Set up SSE rounding mode */
-	__asm__ ( "ldmxcsr %0\n" : : "X" (trunc_mxcsr) );
+	__asm__ ( "ldmxcsr %0\n" : : "m" (trunc_mxcsr) );
 
 	for (i=0; i < 64 ; i+=4)
 	{

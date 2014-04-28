@@ -2,16 +2,15 @@
 #include "guicast.h"
 #include "file.h"
 #include "formattools.h"
+#include "language.h"
 #include "maxchannels.h"
 #include "mwindow.h"
 #include "preferences.h"
+#include "quicktime.h"
 #include "theme.h"
+#include "videodevice.inc"
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 FormatTools::FormatTools(MWindow *mwindow,
 				BC_WindowBase *window, 
@@ -27,6 +26,8 @@ FormatTools::FormatTools(MWindow *mwindow,
 	aparams_thread = 0;
 	vparams_thread = 0;
 	channels_tumbler = 0;
+	path_textbox = 0;
+	path_button = 0;
 	w = 0;
 }
 
@@ -51,7 +52,7 @@ int FormatTools::create_objects(int &init_x,
 						int prompt_video,
 						int prompt_audio_channels,
 						int prompt_video_compression,
-						int lock_compressor,
+						char *locked_compressor,
 						int recording,
 						int *strategy,
 						int brender)
@@ -59,7 +60,7 @@ int FormatTools::create_objects(int &init_x,
 	int x = init_x;
 	int y = init_y;
 
-	this->lock_compressor = lock_compressor;
+	this->locked_compressor = locked_compressor;
 	this->recording = recording;
 	this->use_brender = brender;
 	this->do_audio = do_audio;
@@ -94,39 +95,42 @@ int FormatTools::create_objects(int &init_x,
 	}
 
 //printf("FormatTools::create_objects 1\n");
-	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
-	x += 305;
-	window->add_subwindow(path_button = new BrowseButton(
-		mwindow,
-		window,
-		path_textbox, 
-		x, 
-		y, 
-		asset->path,
-		_("Output to file"),
-		_("Select a file to write to:"),
-		0));
+	if(!recording)
+	{
+		window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
+		x += 305;
+		window->add_subwindow(path_button = new BrowseButton(
+			mwindow,
+			window,
+			path_textbox, 
+			x, 
+			y, 
+			asset->path,
+			_("Output to file"),
+			_("Select a file to write to:"),
+			0));
 
-	w = x + path_button->get_w() + 5;
-//printf("FormatTools::create_objects 2\n");
-	x -= 305;
-	y += 35;
+// Set w for user.
+		w = x + path_button->get_w() + 5;
+		x -= 305;
+		y += 35;
+	}
+	else
+		w = x + 305;
 
-//printf("FormatTools::create_objects 3\n");
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
 	window->add_subwindow(format_text = new BC_TextBox(x, 
 		y, 
 		200, 
 		1, 
-		File::formattostr(plugindb, asset->format)));
+		File::formattostr(asset->format)));
 	x += format_text->get_w();
 	window->add_subwindow(format_button = new FormatFormat(x, 
 		y, 
 		this));
 	format_button->create_objects();
 
-//printf("FormatTools::create_objects 4\n");
 	x = init_x;
 	y += format_button->get_h() + 10;
 	if(do_audio)
@@ -142,18 +146,17 @@ int FormatTools::create_objects(int &init_x,
 		x = init_x;
 		y += aparams_button->get_h() + 20;
 
-//printf("FormatTools::create_objects 5\n");
 // Audio channels only used for recording.
-		if(prompt_audio_channels)
-		{
-			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
-			x += 260;
-			window->add_subwindow(channels_button = new FormatChannels(x, y, this));
-			x += channels_button->get_w() + 5;
-			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
-			y += channels_button->get_h() + 20;
-			x = init_x;
-		}
+// 		if(prompt_audio_channels)
+// 		{
+// 			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
+// 			x += 260;
+// 			window->add_subwindow(channels_button = new FormatChannels(x, y, this));
+// 			x += channels_button->get_w() + 5;
+// 			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
+// 			y += channels_button->get_h() + 20;
+// 			x = init_x;
+// 		}
 
 //printf("FormatTools::create_objects 6\n");
 		aparams_thread = new FormatAThread(this);
@@ -185,7 +188,7 @@ int FormatTools::create_objects(int &init_x,
 
 //printf("FormatTools::create_objects 10\n");
 		y += 10;
-		vparams_thread = new FormatVThread(this, lock_compressor);
+		vparams_thread = new FormatVThread(this);
 	}
 
 //printf("FormatTools::create_objects 11\n");
@@ -203,6 +206,69 @@ int FormatTools::create_objects(int &init_x,
 	return 0;
 }
 
+void FormatTools::update_driver(int driver)
+{
+	this->video_driver = driver;
+
+	switch(driver)
+	{
+		case CAPTURE_DVB:
+// Just give the user information about how the stream is going to be
+// stored but don't change the asset.
+// Want to be able to revert to user settings.
+			if(asset->format != FILE_MPEG)
+			{
+				format_text->update(_("MPEG transport stream"));
+				asset->format = FILE_MPEG;
+			}
+			locked_compressor = 0;
+			audio_switch->update(1);
+			video_switch->update(1);
+			break;
+
+		case CAPTURE_IEC61883:
+		case CAPTURE_FIREWIRE:
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+			{
+				format_text->update(MOV_NAME);
+				asset->format = FILE_MOV;
+			}
+			else
+				format_text->update(File::formattostr(asset->format));
+			locked_compressor = QUICKTIME_DVSD;
+			strcpy(asset->vcodec, QUICKTIME_DVSD);
+			audio_switch->update(asset->audio_data);
+			video_switch->update(asset->video_data);
+			break;
+
+		case CAPTURE_BUZ:
+		case VIDEO4LINUX2JPEG:
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+			{
+				format_text->update(MOV_NAME);
+				asset->format = FILE_MOV;
+			}
+			else
+				format_text->update(File::formattostr(asset->format));
+			locked_compressor = QUICKTIME_MJPA;
+			audio_switch->update(asset->audio_data);
+			video_switch->update(asset->video_data);
+			break;
+
+		default:
+			format_text->update(File::formattostr(asset->format));
+			locked_compressor = 0;
+			audio_switch->update(asset->audio_data);
+			video_switch->update(asset->video_data);
+			break;
+	}
+	close_format_windows();
+}
+
+
+
 int FormatTools::handle_event()
 {
 	return 0;
@@ -213,12 +279,38 @@ Asset* FormatTools::get_asset()
 	return asset;
 }
 
+void FormatTools::update_extension()
+{
+	char *extension = File::get_tag(asset->format);
+	if(extension)
+	{
+		char *ptr = strrchr(asset->path, '.');
+		if(!ptr)
+		{
+			ptr = asset->path + strlen(asset->path);
+			*ptr = '.';
+		}
+		ptr++;
+		sprintf(ptr, extension);
+
+		int character1 = ptr - asset->path;
+		int character2 = ptr - asset->path + strlen(extension);
+		*(asset->path + character2) = 0;
+		if(path_textbox) 
+		{
+			path_textbox->update(asset->path);
+			path_textbox->set_selection(character1, character2, character2);
+		}
+	}
+}
+
 void FormatTools::update(Asset *asset, int *strategy)
 {
 	this->asset = asset;
 	this->strategy = strategy;
 
-	path_textbox->update(asset->path);
+	if(path_textbox) 
+		path_textbox->update(asset->path);
 	format_text->update(File::formattostr(plugindb, asset->format));
 	if(do_audio && audio_switch) audio_switch->update(asset->audio_data);
 	if(do_video && video_switch) video_switch->update(asset->video_data);
@@ -245,12 +337,15 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	int x = init_x;
 	int y = init_y;
 
-	path_textbox->reposition_window(x, y);
-	x += 305;
-	path_button->reposition_window(x, y);
+	if(path_textbox) 
+	{
+		path_textbox->reposition_window(x, y);
+		x += 305;
+		path_button->reposition_window(x, y);
+		x -= 305;
+		y += 35;
+	}
 
-	x -= 305;
-	y += 35;
 	format_title->reposition_window(x, y);
 	x += 90;
 	format_text->reposition_window(x, y);
@@ -319,6 +414,11 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 
 int FormatTools::set_audio_options()
 {
+//	if(video_driver == CAPTURE_DVB)
+//	{
+//		return 0;
+//	}
+
 	if(!aparams_thread->running())
 	{
 		aparams_thread->start();
@@ -327,12 +427,16 @@ int FormatTools::set_audio_options()
 	{
 		aparams_thread->file->raise_window();
 	}
-
 	return 0;
 }
 
 int FormatTools::set_video_options()
 {
+//	if(video_driver == CAPTURE_DVB)
+//	{
+//		return 0;
+//	}
+
 	if(!vparams_thread->running())
 	{
 		vparams_thread->start();
@@ -341,6 +445,7 @@ int FormatTools::set_video_options()
 	{
 		vparams_thread->file->raise_window();
 	}
+
 	return 0;
 }
 
@@ -402,11 +507,9 @@ void FormatAThread::run()
 
 
 
-FormatVThread::FormatVThread(FormatTools *format, 
-	int lock_compressor)
+FormatVThread::FormatVThread(FormatTools *format)
  : Thread()
 {
-	this->lock_compressor = lock_compressor;
 	this->format = format;
 	file = new File;
 }
@@ -423,7 +526,7 @@ void FormatVThread::run()
 		format->asset, 
 		0, 
 		1, 
-		lock_compressor);
+		format->locked_compressor);
 }
 
 FormatPathText::FormatPathText(int x, int y, FormatTools *format)
@@ -497,6 +600,7 @@ int FormatFormat::handle_event()
 		{
 			format->asset->format = new_format;
 			format->format_text->update(get_selection(0, 0)->get_text());
+			format->update_extension();
 			format->close_format_windows();
 		}
 	}

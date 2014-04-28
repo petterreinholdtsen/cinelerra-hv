@@ -76,8 +76,8 @@ ColorBalanceSlider::ColorBalanceSlider(ColorBalanceMain *client,
 	0, 
 	200, 
 	200,
-	-100, 
-	100, 
+	-1000, 
+	1000, 
 	(int)*output)
 {
 	this->client = client;
@@ -97,6 +97,16 @@ int ColorBalanceSlider::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
+char* ColorBalanceSlider::get_caption()
+{
+	float fraction = client->calculate_transfer(*output);
+	sprintf(string, "%0.4f", fraction);
+	return string;
+}
+
+
+
 
 ColorBalancePreserve::ColorBalancePreserve(ColorBalanceMain *client, int x, int y)
  : BC_CheckBox(x, 
@@ -141,7 +151,7 @@ ColorBalanceWhite::ColorBalanceWhite(ColorBalanceMain *plugin,
 	ColorBalanceWindow *gui,
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "White balance")
+ : BC_GenericButton(x, y, _("White balance"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -167,6 +177,11 @@ int ColorBalanceWhite::handle_event()
 	float r_factor = min / red;
 	float g_factor = min / green;
 	float b_factor = min / blue;
+
+// Try normalizing to green like others do it
+	r_factor = green / red;
+	g_factor = 1.0;
+	b_factor = green / blue;
 // Convert factors to slider values
 	plugin->config.cyan = plugin->calculate_slider(r_factor);
 	plugin->config.magenta = plugin->calculate_slider(g_factor);
@@ -182,7 +197,7 @@ ColorBalanceReset::ColorBalanceReset(ColorBalanceMain *plugin,
 	ColorBalanceWindow *gui, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Reset")
+ : BC_GenericButton(x, y, _("Reset"))
 {
 	this->plugin = plugin;
 	this->gui = gui;

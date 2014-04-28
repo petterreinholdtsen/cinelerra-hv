@@ -1,6 +1,7 @@
 #ifndef VDEVICEBASE_H
 #define VDEVICEBASE_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "channel.inc"
 #include "edl.inc"
@@ -18,8 +19,8 @@ public:
 	virtual int close_all() { return 1; };
 	virtual int has_signal() { return 0; };
 	virtual int read_buffer(VFrame *frame) { return 1; };
-	virtual int write_buffer(VFrame **outputs, EDL *edl) { return 1; };
-	virtual void new_output_buffer(VFrame **outputs, int colormodel) {};
+	virtual int write_buffer(VFrame *output, EDL *edl) { return 1; };
+	virtual void new_output_buffer(VFrame **output, int colormodel) {};
 	virtual ArrayList<int>* get_render_strategies() { return 0; };
 	virtual int get_shared_data(unsigned char *data, long size) { return 0; };
 	virtual int stop_sharing() { return 0; };
@@ -38,6 +39,10 @@ public:
 // Called by KeepaliveThread when the device appears to be stuck.
 // Should restart the device if that's what it takes to get it to work.
 	virtual void goose_input() {};
+
+// Called by Record::run to fix compression for certain devices.
+// Not saved as default asset.
+	virtual void fix_asset(Asset *asset) {};
 
 	VideoDevice *device;
 };

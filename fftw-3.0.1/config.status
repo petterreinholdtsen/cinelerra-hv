@@ -516,13 +516,13 @@ s,@INSTALL_DATA@,${INSTALL} -m 644,;t t
 s,@CYGPATH_W@,echo,;t t
 s,@PACKAGE@,fftw,;t t
 s,@VERSION@,3.0.1,;t t
-s,@ACLOCAL@,${SHELL} /usr/src/redhat/cinelerra-2.0/fftw-3.0.1/missing --run aclocal-1.7,;t t
-s,@AUTOCONF@,${SHELL} /usr/src/redhat/cinelerra-2.0/fftw-3.0.1/missing --run autoconf,;t t
-s,@AUTOMAKE@,${SHELL} /usr/src/redhat/cinelerra-2.0/fftw-3.0.1/missing --run automake-1.7,;t t
-s,@AUTOHEADER@,${SHELL} /usr/src/redhat/cinelerra-2.0/fftw-3.0.1/missing --run autoheader,;t t
-s,@MAKEINFO@,${SHELL} /usr/src/redhat/cinelerra-2.0/fftw-3.0.1/missing --run makeinfo,;t t
-s,@AMTAR@,${SHELL} /usr/src/redhat/cinelerra-2.0/fftw-3.0.1/missing --run tar,;t t
-s,@install_sh@,/usr/src/redhat/cinelerra-2.0/fftw-3.0.1/install-sh,;t t
+s,@ACLOCAL@,${SHELL} /root/hvirtual/fftw-3.0.1/missing --run aclocal-1.7,;t t
+s,@AUTOCONF@,${SHELL} /root/hvirtual/fftw-3.0.1/missing --run autoconf,;t t
+s,@AUTOMAKE@,${SHELL} /root/hvirtual/fftw-3.0.1/missing --run automake-1.7,;t t
+s,@AUTOHEADER@,${SHELL} /root/hvirtual/fftw-3.0.1/missing --run autoheader,;t t
+s,@MAKEINFO@,${SHELL} /root/hvirtual/fftw-3.0.1/missing --run makeinfo,;t t
+s,@AMTAR@,${SHELL} /root/hvirtual/fftw-3.0.1/missing --run tar,;t t
+s,@install_sh@,/root/hvirtual/fftw-3.0.1/install-sh,;t t
 s,@STRIP@,strip,;t t
 s,@ac_ct_STRIP@,strip,;t t
 s,@INSTALL_STRIP_PROGRAM@,${SHELL} $(install_sh) -c -s,;t t
@@ -938,7 +938,7 @@ ${ac_dA}HAVE_POSIX_MEMALIGN${ac_dB}HAVE_POSIX_MEMALIGN${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_MEMALIGN${ac_dB}HAVE_MEMALIGN${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_DECL_DRAND48${ac_dB}HAVE_DECL_DRAND48${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_DECL_MEMALIGN${ac_dB}HAVE_DECL_MEMALIGN${ac_dC}0${ac_dD}
-${ac_dA}HAVE_DECL_POSIX_MEMALIGN${ac_dB}HAVE_DECL_POSIX_MEMALIGN${ac_dC}0${ac_dD}
+${ac_dA}HAVE_DECL_POSIX_MEMALIGN${ac_dB}HAVE_DECL_POSIX_MEMALIGN${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_ISNAN${ac_dB}HAVE_ISNAN${ac_dC}1${ac_dD}
 ${ac_dA}F77_FUNC${ac_dB}F77_FUNC(name\\,NAME)${ac_dC}name ## _${ac_dD}
 ${ac_dA}F77_FUNC_${ac_dB}F77_FUNC_(name\\,NAME)${ac_dC}name ## __${ac_dD}
@@ -1013,7 +1013,7 @@ ${ac_uA}HAVE_POSIX_MEMALIGN${ac_uB}HAVE_POSIX_MEMALIGN${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_MEMALIGN${ac_uB}HAVE_MEMALIGN${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_DECL_DRAND48${ac_uB}HAVE_DECL_DRAND48${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_DECL_MEMALIGN${ac_uB}HAVE_DECL_MEMALIGN${ac_uC}0${ac_uD}
-${ac_uA}HAVE_DECL_POSIX_MEMALIGN${ac_uB}HAVE_DECL_POSIX_MEMALIGN${ac_uC}0${ac_uD}
+${ac_uA}HAVE_DECL_POSIX_MEMALIGN${ac_uB}HAVE_DECL_POSIX_MEMALIGN${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_ISNAN${ac_uB}HAVE_ISNAN${ac_uC}1${ac_uD}
 ${ac_uA}F77_FUNC${ac_uB}F77_FUNC(name\\,NAME)${ac_uC}name ## _${ac_uD}
 ${ac_uA}F77_FUNC_${ac_uB}F77_FUNC_(name\\,NAME)${ac_uC}name ## __${ac_uD}

@@ -1,16 +1,13 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "edit.h"
 #include "filetga.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "vframe.h"
 
 #include <string.h>
 #include <unistd.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 /* Known image types. */
 #define TGA_TYPE_MAPPED      1
@@ -35,14 +32,19 @@ FileTGA::~FileTGA()
 
 int FileTGA::check_sig(Asset *asset)
 {
-//printf("FileTGA::check_sig 1\n");
+
+
 // Test file extension
 	int result = 0;
 	char *ext = strrchr(asset->path, '.');
+
 	if(ext)
 	{
+
 		if(!strncasecmp(ext, ".tga", 4)) result = 1;
+
 	}
+
 
 
 // Test for list
@@ -68,7 +70,7 @@ int FileTGA::check_sig(Asset *asset)
 			
 		}
 	}
-//printf("FileTGA::check_sig 2\n");
+
 
 	return result;
 }
@@ -167,9 +169,9 @@ FrameWriterUnit* FileTGA::new_writer_unit(FrameWriter *writer)
 	return new TGAUnit(this, writer);
 }
 
-int FileTGA::get_memory_usage()
+int64_t FileTGA::get_memory_usage()
 {
-	int result = FileList::get_memory_usage();
+	int64_t result = FileList::get_memory_usage();
 	if(temp) result += temp->get_data_size();
 	return result;
 }

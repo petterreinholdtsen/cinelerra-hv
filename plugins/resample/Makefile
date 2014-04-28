@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/resample.o
 
-OUTPUT = ../$(OBJDIR)/resample.plugin
+OUTPUT = $(PLUGIN_DIR)/resample.plugin
 
 include ../../plugin_config
 

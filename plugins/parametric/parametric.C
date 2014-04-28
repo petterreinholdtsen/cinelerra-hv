@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -141,7 +162,7 @@ int ParametricFreq::handle_event()
 {
 	plugin->config.band[band].freq = get_value();
 	plugin->send_configure_change();
-	plugin->thread->window->update_canvas();
+	((ParametricWindow*)plugin->thread->window)->update_canvas();
 	return 1;
 }
 
@@ -164,7 +185,7 @@ int ParametricQuality::handle_event()
 {
 	plugin->config.band[band].quality = get_value();
 	plugin->send_configure_change();
-	plugin->thread->window->update_canvas();
+	((ParametricWindow*)plugin->thread->window)->update_canvas();
 	return 1;
 }
 
@@ -189,7 +210,7 @@ int ParametricMagnitude::handle_event()
 {
 	plugin->config.band[band].magnitude = get_value();
 	plugin->send_configure_change();
-	plugin->thread->window->update_canvas();
+	((ParametricWindow*)plugin->thread->window)->update_canvas();
 	return 1;
 }
 
@@ -225,7 +246,7 @@ int ParametricMode::handle_event()
 {
 	plugin->config.band[band].mode = text_to_mode(get_text());
 	plugin->send_configure_change();
-	plugin->thread->window->update_canvas();
+	((ParametricWindow*)plugin->thread->window)->update_canvas();
 	return 1;
 }
 
@@ -240,7 +261,7 @@ int ParametricMode::text_to_mode(char *text)
 
 
 
-char* ParametricMode::mode_to_text(int mode)
+const char* ParametricMode::mode_to_text(int mode)
 {
 	switch(mode)
 	{
@@ -304,6 +325,7 @@ void ParametricBandGUI::update_gui()
 	freq->update(plugin->config.band[band].freq);
 	quality->update(plugin->config.band[band].quality);
 	magnitude->update(plugin->config.band[band].magnitude);
+	mode->set_text(ParametricMode::mode_to_text(plugin->config.band[band].mode));
 }
 
 
@@ -321,7 +343,7 @@ int ParametricWetness::handle_event()
 {
 	plugin->config.wetness = get_value();
 	plugin->send_configure_change();
-	plugin->thread->window->update_canvas();
+	((ParametricWindow*)plugin->thread->window)->update_canvas();
 	return 1;
 }
 
@@ -330,17 +352,13 @@ int ParametricWetness::handle_event()
 
 
 
-ParametricWindow::ParametricWindow(ParametricEQ *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+ParametricWindow::ParametricWindow(ParametricEQ *plugin)
+ : PluginClientWindow(plugin, 
 	320, 
 	400, 
 	320, 
 	400,
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -467,12 +485,7 @@ SET_TRACE
 SET_TRACE	
 }
 
-int ParametricWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+
 
 void ParametricWindow::update_gui()
 {
@@ -511,22 +524,22 @@ void ParametricWindow::update_canvas()
 		if(freq < niquist)
 		{
 			double magnitude = plugin->envelope[index];
-				int y2 = canvas->get_h() * 3 / 4;
+			int y2 = canvas->get_h() * 3 / 4;
 
-				if(magnitude > 1)
+			if(magnitude > 1)
 			{
-					y2 -= (int)(DB::todb(magnitude) * 
+				y2 -= (int)(DB::todb(magnitude) * 
 					canvas->get_h() * 
 					3 / 
 					4 / 
 					15);
-				}
+			}
 			else
 			{
-					y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
-				}
-				if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
-				y1 = y2;
+				y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
+			}
+			if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
+			y1 = y2;
 		}
 		else
 		{
@@ -555,7 +568,6 @@ void ParametricWindow::update_canvas()
 
 
 
-PLUGIN_THREAD_OBJECT(ParametricEQ, ParametricThread, ParametricWindow)
 
 
 
@@ -609,36 +621,31 @@ int ParametricFFT::read_samples(int64_t output_sample,
 ParametricEQ::ParametricEQ(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	fft = 0;
 	need_reconfigure = 1;
 }
 
 ParametricEQ::~ParametricEQ()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(fft) delete fft;
 }
 
+NEW_WINDOW_MACRO(ParametricEQ, ParametricWindow)
 NEW_PICON_MACRO(ParametricEQ)
-
-SHOW_GUI_MACRO(ParametricEQ, ParametricThread)
-
-RAISE_WINDOW_MACRO(ParametricEQ)
-
-SET_STRING_MACRO(ParametricEQ)
 
 LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
 
 
-char* ParametricEQ::plugin_title() { return N_("EQ Parametric"); }
+const char* ParametricEQ::plugin_title() { return N_("EQ Parametric"); }
 int ParametricEQ::is_realtime() { return 1; }
 
 void ParametricEQ::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	while(!result)
@@ -667,7 +674,7 @@ void ParametricEQ::read_data(KeyFrame *keyframe)
 void ParametricEQ::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("PARAMETRICEQ");
 	output.tag.set_property("WETNESS", config.wetness);
@@ -764,15 +771,24 @@ double ParametricEQ::calculate_envelope()
 							(1.0 - config.band[band].quality) :
 							0.01;
 						sigma /= 4;
-						double a = (double)config.band[band].freq / niquist;
+						double center = (double)Freq::fromfreq(config.band[band].freq) / 
+							TOTALFREQS;
 						double normalize = gauss(sigma, 0, 0);
 						if(config.band[band].magnitude <= -MAXMAGNITUDE) 
 							magnitude = -1;
 
 						for(int i = 0; i < WINDOW_SIZE / 2; i++)
+						{
+							int freq = i * niquist / (WINDOW_SIZE / 2);
+							int current_slot = Freq::fromfreq(freq);
 							envelope[i] += magnitude * 
-								gauss(sigma, a, (double)i / (WINDOW_SIZE / 2)) / 
+								gauss(sigma, center, (double)current_slot / TOTALFREQS) / 
 								normalize;
+// printf("freq=%d magnitude=%f envelope[i]=%f\n",
+// freq,
+// magnitude,
+// envelope[i]);
+						}
 					}
 					break;
 			}
@@ -781,13 +797,13 @@ double ParametricEQ::calculate_envelope()
 	return 0;
 }
 
-double ParametricEQ::gauss(double sigma, double a, double x)
+double ParametricEQ::gauss(double sigma, double center, double x)
 {
 	if(EQUIV(sigma, 0)) sigma = 0.01;
 
 	return 1.0 / 
 		sqrt(2 * M_PI * sigma * sigma) * 
-		exp(-(x - a) * (x - a) / 
+		exp(-(x - center) * (x - center) / 
 			(2 * sigma * sigma));
 }
 
@@ -803,6 +819,9 @@ int ParametricEQ::process_buffer(int64_t size,
 	
 	
 	fft->process_buffer(start_position, size, buffer, get_direction());
+
+
+
 	return 0;
 }
 
@@ -873,10 +892,12 @@ void ParametricEQ::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window("ParametricEQ::update_gui");
-		thread->window->update_gui();
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			((ParametricWindow*)thread->window)->lock_window("ParametricEQ::update_gui");
+			((ParametricWindow*)thread->window)->update_gui();
+			((ParametricWindow*)thread->window)->unlock_window();
+		}
 	}
 }
 

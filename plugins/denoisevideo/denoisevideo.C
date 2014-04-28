@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "bchash.h"
 #include "denoisevideo.h"
@@ -29,6 +50,7 @@ DenoiseVideoConfig::DenoiseVideoConfig()
 {
 	frames = 2;
 	threshold = 0.1;
+	count_changed = 0;
 	do_r = 1;
 	do_g = 1;
 	do_b = 1;
@@ -42,13 +64,15 @@ int DenoiseVideoConfig::equivalent(DenoiseVideoConfig &that)
 		do_r == that.do_r &&
 		do_g == that.do_g &&
 		do_b == that.do_b &&
-		do_a == that.do_a;
+		do_a == that.do_a &&
+		count_changed == that.count_changed;
 }
 
 void DenoiseVideoConfig::copy_from(DenoiseVideoConfig &that)
 {
 	frames = that.frames;
 	threshold = that.threshold;
+	count_changed = that.count_changed;
 	do_r = that.do_r;
 	do_g = that.do_g;
 	do_b = that.do_b;
@@ -70,6 +94,7 @@ void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev,
 	do_g = prev.do_g;
 	do_b = prev.do_b;
 	do_a = prev.do_a;
+	count_changed = prev.count_changed;
 }
 
 
@@ -105,10 +130,21 @@ int DenoiseVideoFrames::handle_event()
 
 
 
-DenoiseVideoThreshold::DenoiseVideoThreshold(DenoiseVideo *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, plugin->config.threshold)
+DenoiseVideoThreshold::DenoiseVideoThreshold(DenoiseVideo *plugin,
+	DenoiseVideoWindow *gui,
+	int x, 
+	int y)
+ : BC_TumbleTextBox(gui,
+ 	plugin->config.threshold,
+	(float)0,
+	(float)1,
+ 	x, 
+ 	y, 
+	100)
 {
 	this->plugin = plugin;
+	set_precision(3);
+	set_increment(0.1);
 }
 
 int DenoiseVideoThreshold::handle_event()
@@ -141,25 +177,68 @@ int DenoiseVideoToggle::handle_event()
 }
 
 
-
-
-
-
-
-
-
-
-DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
+DenoiseVideoCountChanged::DenoiseVideoCountChanged(DenoiseVideo *plugin, 
+	DenoiseVideoWindow *gui, 
+	int x, 
+	int y)
+ : BC_Radial(x, 
 	y, 
-	210, 
-	240, 
-	200, 
-	240, 
-	0, 
-	0,
-	1)
+	plugin->config.count_changed, 
+	_("Average changing pixels"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int DenoiseVideoCountChanged::handle_event()
+{
+	plugin->config.count_changed = 1;
+	gui->count_same->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+DenoiseVideoCountSame::DenoiseVideoCountSame(DenoiseVideo *plugin, 
+	DenoiseVideoWindow *gui, 
+	int x, 
+	int y)
+ : BC_Radial(x, 
+	y, 
+	!plugin->config.count_changed, 
+	_("Average similar pixels"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int DenoiseVideoCountSame::handle_event()
+{
+	plugin->config.count_changed = 0;
+	gui->count_changed->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin)
+ : PluginClientWindow(plugin, 
+	250, 
+	300, 
+	250, 
+	300, 
+	0)
 {
 	this->plugin = plugin;
 }
@@ -168,14 +247,31 @@ DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
 void DenoiseVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
+	BC_Title *title;
+	BC_Bar *bar;
 	add_subwindow(new BC_Title(x, y, _("Frames to accumulate:")));
 	y += 20;
 	add_subwindow(frames = new DenoiseVideoFrames(plugin, x, y));
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Threshold:")));
-	y += 20;
-	add_subwindow(threshold = new DenoiseVideoThreshold(plugin, x, y));
-	y += 40;
+	y += frames->get_h() + 5;
+	add_subwindow(title = new BC_Title(x, y, _("Threshold:")));
+	y += title->get_h() + 5;
+	threshold = new DenoiseVideoThreshold(plugin, this, x, y);
+	threshold->create_objects();
+	y += threshold->get_h() + 5;
+	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * 2));
+	y += bar->get_h() + 5;
+	add_subwindow(count_changed = new DenoiseVideoCountChanged(plugin, 
+		this, 
+		x, 
+		y));
+	y += count_changed->get_h() + 5;
+	add_subwindow(count_same = new DenoiseVideoCountSame(plugin, 
+		this, 
+		x, 
+		y));
+	y += count_same->get_h() + 5;
+	add_subwindow(bar = new BC_Bar(x, y, get_w() - x * 2));
+	y += bar->get_h() + 5;
 	add_subwindow(do_r = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_r, _("Red")));
 	y += 30;
 	add_subwindow(do_g = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_g, _("Green")));
@@ -187,18 +283,9 @@ void DenoiseVideoWindow::create_objects()
 	flush();
 }
 
-int DenoiseVideoWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
 
 
 
-
-
-
-PLUGIN_THREAD_OBJECT(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)
 
 
 
@@ -213,14 +300,14 @@ PLUGIN_THREAD_OBJECT(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)
 DenoiseVideo::DenoiseVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	accumulation = 0;
 }
 
 
 DenoiseVideo::~DenoiseVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(accumulation) delete [] accumulation;
 }
@@ -262,7 +349,9 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 					transparency * (*accumulation_ptr) + \
 					opacity * input_pixel; \
  \
- 				if(fabs((*accumulation_ptr) - input_pixel) > threshold) \
+ 				float difference = fabs((*accumulation_ptr) - input_pixel); \
+ 				if(!config.count_changed && difference > threshold || \
+					config.count_changed && difference < threshold) \
 				{ \
 					(*accumulation_ptr) = input_pixel; \
 					*output_row = (type)(*accumulation_ptr); \
@@ -321,17 +410,12 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 }
 
 
-char* DenoiseVideo::plugin_title() { return N_("Denoise video"); }
+const char* DenoiseVideo::plugin_title() { return N_("Denoise video"); }
 int DenoiseVideo::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(DenoiseVideo)
-
-SHOW_GUI_MACRO(DenoiseVideo, DenoiseVideoThread)
-
-RAISE_WINDOW_MACRO(DenoiseVideo)
-
-SET_STRING_MACRO(DenoiseVideo);
+NEW_WINDOW_MACRO(DenoiseVideo, DenoiseVideoWindow)
 
 LOAD_CONFIGURATION_MACRO(DenoiseVideo, DenoiseVideoConfig)
 
@@ -340,10 +424,12 @@ void DenoiseVideo::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->frames->update(config.frames);
-		thread->window->threshold->update(config.threshold);
-		thread->window->unlock_window();
+		((DenoiseVideoWindow*)thread->window)->lock_window();
+		((DenoiseVideoWindow*)thread->window)->frames->update(config.frames);
+		((DenoiseVideoWindow*)thread->window)->threshold->update(config.threshold);
+		((DenoiseVideoWindow*)thread->window)->count_changed->update(config.count_changed);
+		((DenoiseVideoWindow*)thread->window)->count_same->update(!config.count_changed);
+		((DenoiseVideoWindow*)thread->window)->unlock_window();
 	}
 }
 
@@ -365,6 +451,7 @@ int DenoiseVideo::load_defaults()
 	config.do_g = defaults->get("DO_G", config.do_g);
 	config.do_b = defaults->get("DO_B", config.do_b);
 	config.do_a = defaults->get("DO_A", config.do_a);
+	config.count_changed = defaults->get("COUNT_CHANGED", config.count_changed);
 	return 0;
 }
 
@@ -376,6 +463,7 @@ int DenoiseVideo::save_defaults()
 	defaults->update("DO_G", config.do_g);
 	defaults->update("DO_B", config.do_b);
 	defaults->update("DO_A", config.do_a);
+	defaults->update("COUNT_CHANGED", config.count_changed);
 	defaults->save();
 	return 0;
 }
@@ -385,7 +473,7 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("DENOISE_VIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.tag.set_property("THRESHOLD", config.threshold);
@@ -393,6 +481,7 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DO_G", config.do_g);
 	output.tag.set_property("DO_B", config.do_b);
 	output.tag.set_property("DO_A", config.do_a);
+	output.tag.set_property("COUNT_CHANGED", config.count_changed);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -401,7 +490,7 @@ void DenoiseVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -415,6 +504,7 @@ void DenoiseVideo::read_data(KeyFrame *keyframe)
 			config.do_g = input.tag.get_property("DO_G", config.do_g);
 			config.do_b = input.tag.get_property("DO_B", config.do_b);
 			config.do_a = input.tag.get_property("DO_A", config.do_a);
+			config.count_changed = input.tag.get_property("COUNT_CHANGED", config.count_changed);
 		}
 	}
 }

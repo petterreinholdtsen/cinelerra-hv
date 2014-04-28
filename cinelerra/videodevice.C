@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assets.h"
 #include "bccapture.h"
@@ -257,23 +278,23 @@ VDeviceBase* VideoDevice::new_device_base()
 
 static char* get_channeldb_path(VideoInConfig *vconfig_in)
 {
-	char *path = "";
+	char *path = (char*)"";
 	switch(vconfig_in->driver)
 	{
 		case VIDEO4LINUX:
-			path = "channels_v4l";
+			path = (char*)"channels_v4l";
 			break;
 		case VIDEO4LINUX2:
-			path = "channels_v4l2";
+			path = (char*)"channels_v4l2";
 			break;
 		case VIDEO4LINUX2JPEG:
-			path = "channels_v4l2jpeg";
+			path = (char*)"channels_v4l2jpeg";
 			break;
 		case CAPTURE_BUZ:
-			path = "channels_buz";
+			path = (char*)"channels_buz";
 			break;
 		case CAPTURE_DVB:
-			path = "channels_dvb";
+			path = (char*)"channels_dvb";
 			break;
 	}
 	return path;
@@ -343,7 +364,7 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 }
 
 
-char* VideoDevice::drivertostr(int driver)
+const char* VideoDevice::drivertostr(int driver)
 {
 	switch(driver)
 	{
@@ -706,7 +727,7 @@ int VideoDevice::interrupt_playback()
 
 int VideoDevice::write_buffer(VFrame *output, EDL *edl)
 {
-//printf("VideoDevice::write_buffer 1 %p\n", output_base);
+
 	if(output_base) return output_base->write_buffer(output, edl);
 	return 1;
 }

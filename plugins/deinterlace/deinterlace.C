@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "bchash.h"
 #include "deinterlace.h"
@@ -62,17 +83,17 @@ void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev,
 DeInterlaceMain::DeInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 //	temp = 0;
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 //	if(temp) delete temp;
 }
 
-char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
+const char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
 int DeInterlaceMain::is_realtime() { return 1; }
 
 
@@ -515,18 +536,16 @@ void DeInterlaceMain::render_gui(void *data)
 {
 	if(thread)
 	{
-		thread->window->lock_window();
+		((DeInterlaceWindow*)thread->window)->lock_window();
 		char string[BCTEXTLEN];
-		thread->window->get_status_string(string, *(int*)data);
-//		thread->window->status->update(string);
-		thread->window->flush();
-		thread->window->unlock_window();
+		((DeInterlaceWindow*)thread->window)->get_status_string(string, *(int*)data);
+//		((DeInterlaceWindow*)thread->window)->status->update(string);
+		((DeInterlaceWindow*)thread->window)->flush();
+		((DeInterlaceWindow*)thread->window)->unlock_window();
 	}
 }
 
-SHOW_GUI_MACRO(DeInterlaceMain, DeInterlaceThread)
-RAISE_WINDOW_MACRO(DeInterlaceMain)
-SET_STRING_MACRO(DeInterlaceMain)
+NEW_WINDOW_MACRO(DeInterlaceMain, DeInterlaceWindow)
 NEW_PICON_MACRO(DeInterlaceMain)
 LOAD_CONFIGURATION_MACRO(DeInterlaceMain, DeInterlaceConfig)
 
@@ -557,7 +576,7 @@ int DeInterlaceMain::save_defaults()
 void DeInterlaceMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("DEINTERLACE");
 	output.tag.set_property("MODE", config.mode);
 //	output.tag.set_property("ADAPTIVE", config.adaptive);
@@ -569,7 +588,7 @@ void DeInterlaceMain::save_data(KeyFrame *keyframe)
 void DeInterlaceMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while(!input.read_tag())
 	{
@@ -588,11 +607,11 @@ void DeInterlaceMain::update_gui()
 	if(thread) 
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->set_mode(config.mode, 1);
-//		thread->window->adaptive->update(config.adaptive);
-//		thread->window->threshold->update(config.threshold);
-		thread->window->unlock_window();
+		((DeInterlaceWindow*)thread->window)->lock_window();
+		((DeInterlaceWindow*)thread->window)->set_mode(config.mode, 1);
+//		((DeInterlaceWindow*)thread->window)->adaptive->update(config.adaptive);
+//		((DeInterlaceWindow*)thread->window)->threshold->update(config.threshold);
+		((DeInterlaceWindow*)thread->window)->unlock_window();
 	}
 }
 

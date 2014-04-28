@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/bandwipe.o
 
-OUTPUT = ../$(OBJDIR)/bandwipe.plugin
+OUTPUT = $(PLUGIN_DIR)/bandwipe.plugin
 
 include ../../plugin_config
 

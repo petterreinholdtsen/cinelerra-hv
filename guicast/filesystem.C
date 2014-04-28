@@ -1,3 +1,25 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+#include "bcsignals.h"
 #include <dirent.h>
 #include <errno.h>
 #include <pwd.h>
@@ -75,6 +97,23 @@ int FileItem::set_name(char *name)
 	strcpy(this->name, name);
 	return 0;
 }
+
+const char* FileItem::get_path()
+{
+	return path;
+}
+
+const char* FileItem::get_name()
+{
+	return name;
+}
+
+
+int FileItem::get_is_dir()
+{
+	return is_dir;
+}
+
 
 
 FileSystem::FileSystem()
@@ -156,29 +195,101 @@ int FileSystem::compare_items(ArrayList<FileItem*> *dir_list,
 	return result;
 }
 
+static int path_ascending(const void *ptr1, const void *ptr2)
+{
+	FileItem *item1 = *(FileItem**)ptr1;
+	FileItem *item2 = *(FileItem**)ptr2;
+//printf("path_ascending %p %p\n", ptr1, ptr2);
+	return strcasecmp(item1->name, item2->name);
+}
+
+static int path_descending(const void *ptr1, const void *ptr2)
+{
+	FileItem *item1 = *(FileItem**)ptr1;
+	FileItem *item2 = *(FileItem**)ptr2;
+	return strcasecmp(item2->name, item1->name);
+}
+
+
+static int size_ascending(const void *ptr1, const void *ptr2)
+{
+	FileItem *item1 = *(FileItem**)ptr1;
+	FileItem *item2 = *(FileItem**)ptr2;
+	return item1->size >= item2->size;
+}
+
+static int size_descending(const void *ptr1, const void *ptr2)
+{
+	FileItem *item1 = *(FileItem**)ptr1;
+	FileItem *item2 = *(FileItem**)ptr2;
+	return item1->size <= item2->size;
+}
+
+
+static int date_ascending(const void *ptr1, const void *ptr2)
+{
+	FileItem *item1 = *(FileItem**)ptr1;
+	FileItem *item2 = *(FileItem**)ptr2;
+	return item1->calendar_time >= item2->calendar_time;
+}
+
+static int date_descending(const void *ptr1, const void *ptr2)
+{
+	FileItem *item1 = *(FileItem**)ptr1;
+	FileItem *item2 = *(FileItem**)ptr2;
+	return item1->calendar_time <= item2->calendar_time;
+}
 
 int FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
 {
-	int changed;
-	FileItem *temp;
-	int i;
-	
-	changed = 1;
-	while(changed)
+#define SORT_MACRO(compare) \
+	qsort(dir_list->values, dir_list->size(), sizeof(FileItem*), compare);
+
+	if(!dir_list || !dir_list->size()) return 0;
+
+//printf("FileSystem::sort_table %p\n", dir_list->values);
+	switch(sort_field)
 	{
-		changed = 0;
-		for(i = 0; i < dir_list->total - 1; i++)
-		{
-			if(compare_items(dir_list, i, i + 1) > 0)
-//			if(strcasecmp(dir_list->values[i]->name, dir_list->values[i + 1]->name) > 0)
-			{
-				temp = dir_list->values[i];
-				dir_list->values[i] = dir_list->values[i+1];
-				dir_list->values[i+1] = temp;
-				changed = 1;
-			}
-		}
+		case SORT_PATH:
+			if(sort_order == SORT_ASCENDING)
+				SORT_MACRO(path_ascending)
+			else
+				SORT_MACRO(path_descending)
+			break;
+		case SORT_SIZE:
+			if(sort_order == SORT_ASCENDING)
+				SORT_MACRO(size_ascending)
+			else
+				SORT_MACRO(size_descending)
+			break;
+		case SORT_DATE:
+			if(sort_order == SORT_ASCENDING)
+				SORT_MACRO(date_ascending)
+			else
+				SORT_MACRO(date_descending)
+			break;
 	}
+
+
+// 	int changed;
+// 	FileItem *temp;
+// 	int i;
+// 
+// 	changed = 1;
+// 	while(changed)
+// 	{
+// 		changed = 0;
+// 		for(i = 0; i < dir_list->total - 1; i++)
+// 		{
+// 			if(compare_items(dir_list, i, i + 1) > 0)
+// 			{
+// 				temp = dir_list->values[i];
+// 				dir_list->values[i] = dir_list->values[i+1];
+// 				dir_list->values[i+1] = temp;
+// 				changed = 1;
+// 			}
+// 		}
+// 	}
 	return 0;
 }
 
@@ -186,7 +297,7 @@ int FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *fi
 {
 	int i;
 	FileItem *new_entry, *entry;
-	
+
 	sort_table(dir_list);
 	for(i = 0; i < dir_list->total; i++)
 	{
@@ -333,7 +444,7 @@ int FileSystem::test_filter(FileItem *file)
 }
 
 
-int FileSystem::update(char *new_dir)
+int FileSystem::update(const char *new_dir)
 {
 	DIR *dirstream;
 	struct dirent64 *new_filename;
@@ -360,7 +471,9 @@ int FileSystem::update(char *new_dir)
 			!strcmp(new_filename->d_name, "..")) include_this = 0;
 
 // File is hidden and we don't want all files
-		if(include_this && !show_all_files && new_filename->d_name[0] == '.') include_this = 0;
+		if(include_this && 
+			!show_all_files && 
+			new_filename->d_name[0] == '.') include_this = 0;
 
 // file not hidden
   		if(include_this)
@@ -416,6 +529,7 @@ int FileSystem::update(char *new_dir)
 				delete new_file;
 		}
 	}
+//printf("FileSystem::update %d\n", __LINE__);
 
 	closedir(dirstream);
 // combine the directories and files in the master list
@@ -423,12 +537,13 @@ int FileSystem::update(char *new_dir)
 // remove pointers
 	directories.remove_all();
 	files.remove_all();
+//printf("FileSystem::update %d\n", __LINE__);
 
 	return result;
 // success
 }
 
-int FileSystem::set_filter(char *new_filter)
+int FileSystem::set_filter(const char *new_filter)
 {
 	strcpy(filter, new_filter);
 	return 0;
@@ -461,7 +576,7 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 		return 0;
 }
 
-int FileSystem::create_dir(char *new_dir_)
+int FileSystem::create_dir(const char *new_dir_)
 {
 	char new_dir[BCTEXTLEN];
 	strcpy(new_dir, new_dir_);
@@ -660,7 +775,7 @@ int FileSystem::extract_name(char *out, const char *in, int test_dir)
 	return 0;
 }
 
-int FileSystem::join_names(char *out, char *dir_in, char *name_in)
+int FileSystem::join_names(char *out, const char *dir_in, const char *name_in)
 {
 	strcpy(out, dir_in);
 	int len = strlen(out);
@@ -694,7 +809,7 @@ int64_t FileSystem::get_size(char *filename)
 	return file_status.st_size;
 }
 
-int FileSystem::change_dir(char *new_dir)
+int FileSystem::change_dir(char *new_dir, int update)
 {
 	char new_dir_full[BCTEXTLEN];
 	
@@ -705,11 +820,17 @@ int FileSystem::change_dir(char *new_dir)
 	if(strcmp(new_dir_full, "/") && 
 		new_dir_full[strlen(new_dir_full) - 1] == '/') 
 		new_dir_full[strlen(new_dir_full) - 1] = 0;
-	update(new_dir_full);
+
+	if(update) 
+		this->update(new_dir_full);
+	else
+	{
+		strcpy(current_dir, new_dir_full);
+	}
 	return 0;
 }
 
-int FileSystem::set_current_dir(char *new_dir)
+int FileSystem::set_current_dir(const char *new_dir)
 {
 	strcpy(current_dir, new_dir);
 	return 0;

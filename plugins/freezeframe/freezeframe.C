@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -53,17 +74,13 @@ void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
 
 
 
-FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client, int x, int y)
- : BC_Window(client->get_gui_string(),
- 	x,
-	y,
+FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client)
+ : PluginClientWindow(client,
 	200,
 	100,
 	200,
 	100,
-	0,
-	0,
-	1)
+	0)
 {
 	this->client = client; 
 }
@@ -72,7 +89,7 @@ FreezeFrameWindow::~FreezeFrameWindow()
 {
 }
 
-int FreezeFrameWindow::create_objects()
+void FreezeFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_tool(enabled = new FreezeFrameToggle(client, 
@@ -90,15 +107,8 @@ int FreezeFrameWindow::create_objects()
 // 		_("Line double")));
 	show_window();
 	flush();
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(FreezeFrameWindow)
-
-
-
-
-PLUGIN_THREAD_OBJECT(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
 
 
 
@@ -138,28 +148,23 @@ int FreezeFrameToggle::handle_event()
 FreezeFrameMain::FreezeFrameMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	first_frame = 0;
 	first_frame_position = -1;
 }
 
 FreezeFrameMain::~FreezeFrameMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(first_frame) delete first_frame;
 }
 
-char* FreezeFrameMain::plugin_title() { return N_("Freeze Frame"); }
+const char* FreezeFrameMain::plugin_title() { return N_("Freeze Frame"); }
 int FreezeFrameMain::is_synthesis() { return 1; }
 int FreezeFrameMain::is_realtime() { return 1; }
 
 
-SHOW_GUI_MACRO(FreezeFrameMain, FreezeFrameThread)
-
-RAISE_WINDOW_MACRO(FreezeFrameMain)
-
-SET_STRING_MACRO(FreezeFrameMain)
-
+NEW_WINDOW_MACRO(FreezeFrameMain, FreezeFrameWindow)
 NEW_PICON_MACRO(FreezeFrameMain)
 
 int FreezeFrameMain::load_configuration()
@@ -178,8 +183,8 @@ void FreezeFrameMain::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->enabled->update(config.enabled);
+		((FreezeFrameWindow*)thread->window)->lock_window();
+		((FreezeFrameWindow*)thread->window)->enabled->update(config.enabled);
 //		thread->window->line_double->update(config.line_double);
 		thread->window->unlock_window();
 	}
@@ -190,7 +195,7 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("FREEZEFRAME");
 	output.append_tag();
 	if(config.enabled)
@@ -211,7 +216,7 @@ void FreezeFrameMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	config.enabled = 0;

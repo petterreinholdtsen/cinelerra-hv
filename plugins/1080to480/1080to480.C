@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "1080to540.h"
 #include "clip.h"
 #include "bchash.h"
@@ -127,7 +148,6 @@ int _1080to540Option::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(_1080to540Main, _1080to540Thread, _1080to540Window)
 
 
 
@@ -138,22 +158,20 @@ PLUGIN_THREAD_OBJECT(_1080to540Main, _1080to540Thread, _1080to540Window)
 _1080to540Main::_1080to540Main(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	temp = 0;
 }
 
 _1080to540Main::~_1080to540Main()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(temp) delete temp;
 }
 
 char* _1080to540Main::plugin_title() { return N_("1080 to 540"); }
 int _1080to540Main::is_realtime() { return 1; }
 
-SHOW_GUI_MACRO(_1080to540Main, _1080to540Thread)
-RAISE_WINDOW_MACRO(_1080to540Main)
-SET_STRING_MACRO(_1080to540Main)
+NEW_WINDOW_MACRO(_1080to540Main, _1080to540Window)
 NEW_PICON_MACRO(_1080to540Main)
 LOAD_CONFIGURATION_MACRO(_1080to540Main, _1080to540Config)
 
@@ -271,7 +289,7 @@ int _1080to540Main::save_defaults()
 void _1080to540Main::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("1080TO540");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.append_tag();
@@ -281,7 +299,7 @@ void _1080to540Main::save_data(KeyFrame *keyframe)
 void _1080to540Main::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while(!input.read_tag())
 	{

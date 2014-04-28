@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include <stdlib.h>
-
+#include <string.h>
 
 
 
@@ -37,11 +37,13 @@ static int read_header(mpeg3audio_t *audio)
 	int got_it = 0;
 	int result = 0;
 	mpeg3_atrack_t *track = audio->track;
-
+	mpeg3_t *file = audio->file;
 
 	switch(track->format)
 	{
 		case AUDIO_AC3:
+//printf("read_header %d audio->packet_position=%d\n", __LINE__, audio->packet_position);
+#if 1
 			audio->packet_position = 8;
 			result = mpeg3demux_read_data(track->demuxer, 
 				audio->packet_buffer + 1, 
@@ -88,49 +90,132 @@ static int read_header(mpeg3audio_t *audio)
 //printf("read_header %d %d %d\n", track->channels, track->sample_rate, audio->framesize);
 			}
 			if(track->sample_rate <= 0) track->sample_rate = 48000;
+#endif
+
+#if 0
+// Load starting bytes + 1 for the first shift
+			if(audio->packet_position < 9)
+			{
+				result = mpeg3demux_read_data(track->demuxer, 
+					audio->packet_buffer + 1, 
+					8);
+				audio->packet_position = 9;
+			}
+
+
+			do
+			{
+				try++;
+
+// Shift out byte
+				for(i = 0; i < 7; i++)
+					audio->packet_buffer[i] = audio->packet_buffer[i + 1];
+				audio->packet_position--;
+
+				if(!result && audio->packet_position < 8)
+				{
+					audio->packet_buffer[7] = 
+						mpeg3demux_read_char(track->demuxer);
+					result = mpeg3demux_eof(track->demuxer);
+					audio->packet_position = 8;
+				}
+
+				if(!result)
+				{
+					got_it = (mpeg3_ac3_header(audio->ac3_decoder, 
+						audio->packet_buffer) != 0);
+				}
+				else
+					break;
+
+/*
+ * printf("read_header 100 offset=%llx got_it=%d\n", 
+ * mpeg3demux_tell_byte(track->demuxer),
+ * got_it);
+ */
+			}while(!result && !got_it && try < 0x10000);
+
+
+			if(!result)
+			{
+				if(audio->ac3_decoder->channels > track->channels)
+					track->channels = audio->ac3_decoder->channels;
+				track->sample_rate = audio->ac3_decoder->samplerate;
+				audio->framesize = audio->ac3_decoder->framesize;
+				if(track->sample_rate <= 0) track->sample_rate = 48000;
+//printf("read_header %d %d %d\n", track->channels, track->sample_rate, audio->framesize);
+			}
+			if(track->sample_rate <= 0) track->sample_rate = 48000;
+#endif
+
 			break;
 
 
 
 		case AUDIO_MPEG:
-			audio->packet_position = 4;
 /* Layer 1 not supported */
 			if(audio->layer_decoder->layer == 1)
 			{
 				result = 1;
 			}
 
-			result = mpeg3demux_read_data(track->demuxer, 
-				audio->packet_buffer + 1, 
-				3);
+// Load starting bytes + 1 for the first shift
+			if(audio->packet_position == 0)
+			{
+				result = mpeg3demux_read_data(track->demuxer, 
+					audio->packet_buffer + 1, 
+					4);
+				audio->packet_position = 5;
+			}
 
 			do
 			{
 				try++;
 
-				for(i = 0; i < 3; i++)
-					audio->packet_buffer[i] = audio->packet_buffer[i + 1];
-
-				if(!result)
+// Shift packet out 1 byte
+				for(i = 0; i < audio->packet_position - 1; i++)
 				{
-					audio->packet_buffer[3] = 
+					audio->packet_buffer[i] = audio->packet_buffer[i + 1];
+				}
+				audio->packet_position--;
+
+//printf("%c", audio->packet_buffer[0]);
+// Abort if end of data buffer & mpeg3audio_decode is required for more data.
+				if(!file->seekable && 
+					audio->packet_position < 4 && 
+					track->demuxer->data_position >= track->demuxer->data_size)
+					result = 1;
+//printf("read_header %d data_position=%d data_size=%d\n", 
+//__LINE__, track->demuxer->data_position, track->demuxer->data_size);
+
+// Read new byte
+				if(!result && audio->packet_position < 4)
+				{
+					audio->packet_buffer[audio->packet_position] = 
 							mpeg3demux_read_char(track->demuxer);
+					audio->packet_position++;
 					result = mpeg3demux_eof(track->demuxer);
 				}
 
-				if(!result)
+
+//				if(!result)
 				{
+// printf("read_header %d got_it=%d packet=%02x%02x%02x%02x\n",
+// __LINE__,
+// got_it,
+// (unsigned char)audio->packet_buffer[0],
+// (unsigned char)audio->packet_buffer[1],
+// (unsigned char)audio->packet_buffer[2],
+// (unsigned char)audio->packet_buffer[3]);
 					got_it = (mpeg3_layer_header(audio->layer_decoder,
 						audio->packet_buffer) != 0);
-/*
- * printf(__FUNCTION__ " got_it=%d packet=%02x%02x%02x%02x\n",
- * got_it,
- * (unsigned char)audio->packet_buffer[0],
- * (unsigned char)audio->packet_buffer[1],
- * (unsigned char)audio->packet_buffer[2],
- * (unsigned char)audio->packet_buffer[3]);
- */
+
+
 				}
+
+// ID3 tags need the try counts to skip the tags
+				if(!got_it && audio->layer_decoder->id3_state != MPEG3_ID3_IDLE)
+					try = 0;
 			}while(!result && !got_it && try < 0x10000);
 
 			if(!result)
@@ -140,14 +225,17 @@ static int read_header(mpeg3audio_t *audio)
 				track->sample_rate = audio->layer_decoder->samplerate;
 				audio->framesize = audio->layer_decoder->framesize;
 			}
-
 			break;
 
 		case AUDIO_PCM:
-			audio->packet_position = PCM_HEADERSIZE;
-			result = mpeg3demux_read_data(track->demuxer,
-				audio->packet_buffer + 1,
-				PCM_HEADERSIZE - 1);
+// Load starting bytes + 1 for the first shift
+			if(audio->packet_position < PCM_HEADERSIZE)
+			{
+				result = mpeg3demux_read_data(track->demuxer,
+					audio->packet_buffer + 1,
+					PCM_HEADERSIZE);
+				audio->packet_position = PCM_HEADERSIZE + 1;
+			}
 
 			do
 			{
@@ -155,12 +243,14 @@ static int read_header(mpeg3audio_t *audio)
 
 				for(i = 0; i < PCM_HEADERSIZE - 1; i++)
 					audio->packet_buffer[i] = audio->packet_buffer[i + 1];
+				audio->packet_position--;
 
-				if(!result)
+				if(!result && audio->packet_position < PCM_HEADERSIZE)
 				{
 					audio->packet_buffer[PCM_HEADERSIZE - 1] = 
 							mpeg3demux_read_char(track->demuxer);
 					result = mpeg3demux_eof(track->demuxer);
+					audio->packet_position = PCM_HEADERSIZE;
 				}
 
 				if(!result)
@@ -410,12 +500,14 @@ static int get_length(mpeg3audio_t *audio)
 int calculate_format(mpeg3_t *file, mpeg3_atrack_t *track)
 {
 	int result = 0;
+	mpeg3audio_t *audio = track->audio;
 
 /* Determine the format of the stream.  */
 /* If it isn't in the first 8 bytes give up and go to a movie. */
 	if(track->format == AUDIO_UNKNOWN)
 	{
 		unsigned char header[8];
+// Need these 8 bytes later on for header parsing
 		if(!mpeg3demux_read_data(track->demuxer, 
 			header, 
 			8))
@@ -428,6 +520,13 @@ int calculate_format(mpeg3_t *file, mpeg3_atrack_t *track)
 		}
 		else
 			result = 1;
+
+		if(audio)
+		{
+			
+			memcpy(audio->packet_buffer + 1, header, 8);
+			audio->packet_position = 9;
+		}
 	}
 
 	return result;
@@ -442,6 +541,7 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 	int format)
 {
 	mpeg3audio_t *audio = calloc(1, sizeof(mpeg3audio_t));
+	mpeg3_demuxer_t *demuxer = track->demuxer;
 	int result = 0;
 	int i;
 
@@ -488,7 +588,14 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 
 
 		result = read_header(audio);
-//printf("mpeg3audio_new 1 %d\n", result);
+		if(file->is_audio_stream)
+			audio->start_byte = mpeg3demux_tell_byte(demuxer) - 
+				file->packet_size;
+// printf("mpeg3audio_new 1 %d %d %d start_byte=0x%llx\n", 
+// track->format, 
+// audio->layer_decoder->layer, 
+// result,
+// audio->start_byte);
 	}
 
 
@@ -549,13 +656,16 @@ static int seek(mpeg3audio_t *audio)
 	if(audio->sample_seek >= 0)
 	{
 
+/* Doesn't work with VBR streams + ID3 tags */
 /*
- * printf(__FUNCTION__ " 1 %d %d %d %d\n", 
+ * printf("seek %d %d %d %d %d\n", 
+ * __LINE__,
  * audio->sample_seek, 
  * track->current_position,
  * audio->output_position, 
  * audio->output_position + audio->output_size);
  */
+
 
 /* Don't do anything if the destination is inside the sample buffer */
 		if(audio->sample_seek >= audio->output_position &&
@@ -594,12 +704,15 @@ static int seek(mpeg3audio_t *audio)
 			seeked = 1;
 		}
 		else
-/* Use bitrate */
+/* Use bitrate for elementary stream */
 		{
+			int64_t total_bytes = mpeg3demux_movie_size(demuxer) -
+				audio->start_byte;
 			int64_t byte = (int64_t)((double)audio->sample_seek / 
 				track->total_samples * 
-				mpeg3demux_movie_size(demuxer));
-//printf(__FUNCTION__ " 5\n");
+				total_bytes + 
+				audio->start_byte);
+//printf("seek %d byte=%lld\n", __LINE__, byte);
 
 			mpeg3demux_seek_byte(demuxer, byte);
 	   		audio->output_position = audio->sample_seek;
@@ -850,6 +963,8 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	}
 
 
+
+
 /* Decode frames until the output is ready */
 	while(1)
 	{
@@ -871,8 +986,6 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 		else
 			try = 0;
 	}
-
-
 
 
 /* Copy the buffer to the output */
@@ -920,7 +1033,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 		int diff = audio->output_size - MPEG3_AUDIO_HISTORY;
 		mpeg3_shift_audio(audio, diff);
 	}
-
+//printf("mpeg3audio_decode_audio %d %d\n", __LINE__, audio->output_size);
 
 
 	if(audio->output_size > 0)

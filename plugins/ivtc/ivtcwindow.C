@@ -1,9 +1,30 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "ivtcwindow.h"
 #include "language.h"
 
 
-static char *pattern_text[] =
+static const char *pattern_text[] =
 {
 	"A  B  BC  CD  D",
 	"AB  BC  CD  DE  EF",
@@ -14,24 +35,18 @@ static char *pattern_text[] =
 };
 
 
-PLUGIN_THREAD_OBJECT(IVTCMain, IVTCThread, IVTCWindow)
 
 
 
 
 
-
-IVTCWindow::IVTCWindow(IVTCMain *client, int x, int y)
- : BC_Window(client->gui_string, 
-	x,
-	y,
+IVTCWindow::IVTCWindow(IVTCMain *client)
+ : PluginClientWindow(client,
 	210, 
 	230, 
 	210, 
 	230, 
-	0, 
-	0,
-	1)
+	0)
 { 
 	this->client = client; 
 }
@@ -40,7 +55,7 @@ IVTCWindow::~IVTCWindow()
 {
 }
 
-int IVTCWindow::create_objects()
+void IVTCWindow::create_objects()
 {
 	int x = 10, y = 10;
 	
@@ -76,10 +91,9 @@ int IVTCWindow::create_objects()
 //	add_tool(threshold = new IVTCAutoThreshold(client, x, y));
 	show_window();
 	flush();
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(IVTCWindow)
+
 
 IVTCOffset::IVTCOffset(IVTCMain *client, int x, int y)
  : BC_TextBox(x, 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -28,18 +49,17 @@ public:
 	ReverseVideo *plugin;
 };
 
-class ReverseVideoWindow : public BC_Window
+class ReverseVideoWindow : public PluginClientWindow
 {
 public:
-	ReverseVideoWindow(ReverseVideo *plugin, int x, int y);
+	ReverseVideoWindow(ReverseVideo *plugin);
 	~ReverseVideoWindow();
 	void create_objects();
-	int close_event();
+
 	ReverseVideo *plugin;
 	ReverseVideoEnabled *enabled;
 };
 
-PLUGIN_THREAD_HEADER(ReverseVideo, ReverseVideoThread, ReverseVideoWindow)
 
 class ReverseVideo : public PluginVClient
 {
@@ -47,7 +67,7 @@ public:
 	ReverseVideo(PluginServer *server);
 	~ReverseVideo();
 
-	PLUGIN_CLASS_MEMBERS(ReverseVideoConfig, ReverseVideoThread)
+	PLUGIN_CLASS_MEMBERS(ReverseVideoConfig)
 
 	int load_defaults();
 	int save_defaults();
@@ -81,17 +101,13 @@ ReverseVideoConfig::ReverseVideoConfig()
 
 
 
-ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+ReverseVideoWindow::ReverseVideoWindow(ReverseVideo *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -111,10 +127,11 @@ void ReverseVideoWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(ReverseVideoWindow)
 
 
-PLUGIN_THREAD_OBJECT(ReverseVideo, ReverseVideoThread, ReverseVideoWindow)
+
+
+
 
 
 
@@ -150,26 +167,22 @@ int ReverseVideoEnabled::handle_event()
 ReverseVideo::ReverseVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 
 ReverseVideo::~ReverseVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* ReverseVideo::plugin_title() { return N_("Reverse video"); }
+const char* ReverseVideo::plugin_title() { return N_("Reverse video"); }
 int ReverseVideo::is_realtime() { return 1; }
 
 #include "picon_png.h"
 NEW_PICON_MACRO(ReverseVideo)
 
-SHOW_GUI_MACRO(ReverseVideo, ReverseVideoThread)
-
-RAISE_WINDOW_MACRO(ReverseVideo)
-
-SET_STRING_MACRO(ReverseVideo);
+NEW_WINDOW_MACRO(ReverseVideo, ReverseVideoWindow)
 
 
 int ReverseVideo::process_buffer(VFrame *frame,
@@ -284,7 +297,7 @@ void ReverseVideo::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("REVERSEVIDEO");
 	output.tag.set_property("ENABLED", config.enabled);
 	output.append_tag();
@@ -295,7 +308,7 @@ void ReverseVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -314,7 +327,7 @@ void ReverseVideo::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->enabled->update(config.enabled);
+		((ReverseVideoWindow*)thread->window)->enabled->update(config.enabled);
 		thread->window->unlock_window();
 	}
 }

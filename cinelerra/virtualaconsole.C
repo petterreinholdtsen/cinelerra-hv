@@ -1,9 +1,31 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "aedit.h"
 #include "amodule.h"
 #include "arender.h"
 #include "assets.h"
 #include "atrack.h"
 #include "audiodevice.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "edit.h"
 #include "edits.h"
@@ -106,14 +128,11 @@ int VirtualAConsole::process_buffer(int64_t len,
 		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
 		Track *track = node->track;
 
-//printf("VirtualAConsole::process_buffer 2 %d %p\n", i, output_temp);
 		result |= node->render(output_temp, 
 			start_position + track->nudge,
 			len,
 			renderengine->edl->session->sample_rate);
-//printf("VirtualAConsole::process_buffer 3 %p\n", output_temp);
 	}
-//printf("VirtualAConsole::process_buffer 4\n");
 
 
 // get peaks and limit volume in the fragment
@@ -167,7 +186,6 @@ int VirtualAConsole::process_buffer(int64_t len,
 
 
 
-//printf("VirtualAConsole::process_buffer 5\n");
 
 
 // Pack channels, fix speed and send to device.
@@ -253,7 +271,6 @@ int VirtualAConsole::process_buffer(int64_t len,
 
 
 
-//printf("VirtualAConsole::process_buffer 100\n");
 
 
 

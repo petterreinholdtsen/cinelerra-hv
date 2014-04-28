@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -49,17 +70,13 @@ void DelayVideoConfig::interpolate(DelayVideoConfig &prev,
 
 
 
-DelayVideoWindow::DelayVideoWindow(DelayVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
-	x,
-	y,
+DelayVideoWindow::DelayVideoWindow(DelayVideo *pluginy)
+ : PluginClientWindow(plugin, 
 	210, 
 	120, 
 	210, 
 	120, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -81,7 +98,6 @@ void DelayVideoWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(DelayVideoWindow)
 
 void DelayVideoWindow::update_gui()
 {
@@ -124,8 +140,6 @@ int DelayVideoSlider::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(DelayVideo, DelayVideoThread, DelayVideoWindow)
-
 
 
 
@@ -141,8 +155,6 @@ DelayVideo::DelayVideo(PluginServer *server)
 
 DelayVideo::~DelayVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
-
 	if(buffer)
 	{
 //printf("DelayVideo::~DelayVideo 1\n");
@@ -230,23 +242,17 @@ int DelayVideo::is_realtime()
 	return 1;
 }
 
-char* DelayVideo::plugin_title() { return N_("Delay Video"); }
-
-SET_STRING_MACRO(DelayVideo)
+const char* DelayVideo::plugin_title() { return N_("Delay Video"); }
 
 NEW_PICON_MACRO(DelayVideo)
-
 LOAD_CONFIGURATION_MACRO(DelayVideo, DelayVideoConfig)
-
-SHOW_GUI_MACRO(DelayVideo, DelayVideoThread)
-
-RAISE_WINDOW_MACRO(DelayVideo)
+NEW_WINDOW_MACRO(DelayVideo, DelayVideoWindow)
 
 
 void DelayVideo::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("DELAYVIDEO");
 	output.tag.set_property("LENGTH", (double)config.length);
@@ -258,7 +264,7 @@ void DelayVideo::save_data(KeyFrame *keyframe)
 void DelayVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	while(!result)
@@ -280,9 +286,9 @@ void DelayVideo::update_gui()
 	if(thread) 
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->slider->update(config.length);
-		thread->window->unlock_window();
+		((DelayVideoWindow*)thread->window)->lock_window();
+		((DelayVideoWindow*)thread->window)->slider->update(config.length);
+		((DelayVideoWindow*)thread->window)->unlock_window();
 	}
 }
 

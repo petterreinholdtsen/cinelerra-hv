@@ -1,4 +1,27 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
+#include "bcsignals.h"
+#include "clip.h"
 #include "guicast.h"
 #include "file.h"
 #include "formattools.h"
@@ -28,7 +51,7 @@ FormatTools::FormatTools(MWindow *mwindow,
 	channels_tumbler = 0;
 	path_textbox = 0;
 	path_button = 0;
-	w = 0;
+	w = window->get_w();
 }
 
 FormatTools::~FormatTools()
@@ -44,7 +67,7 @@ FormatTools::~FormatTools()
 	if(channels_tumbler) delete channels_tumbler;
 }
 
-int FormatTools::create_objects(int &init_x, 
+void FormatTools::create_objects(int &init_x, 
 						int &init_y, 
 						int do_audio,    // Include support for audio
 						int do_video,   // Include support for video
@@ -94,11 +117,10 @@ int FormatTools::create_objects(int &init_x,
 		}
 	}
 
-//printf("FormatTools::create_objects 1\n");
 	if(!recording)
 	{
 		window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
-		x += 305;
+		x += path_textbox->get_w() + 5;
 		window->add_subwindow(path_button = new BrowseButton(
 			mwindow,
 			window,
@@ -111,12 +133,16 @@ int FormatTools::create_objects(int &init_x,
 			0));
 
 // Set w for user.
-		w = x + path_button->get_w() + 5;
-		x -= 305;
+		w = MAX(w, 305);
+//		w = x + path_button->get_w() + 5;
+		x -= path_textbox->get_w() + 5;
 		y += 35;
 	}
 	else
-		w = x + 305;
+	{
+//		w = x + 305;
+		w = 305;
+	}
 
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
@@ -203,7 +229,6 @@ int FormatTools::create_objects(int &init_x,
 //printf("FormatTools::create_objects 12\n");
 
 	init_y = y;
-	return 0;
 }
 
 void FormatTools::update_driver(int driver)
@@ -236,7 +261,7 @@ void FormatTools::update_driver(int driver)
 			}
 			else
 				format_text->update(File::formattostr(asset->format));
-			locked_compressor = QUICKTIME_DVSD;
+			locked_compressor = (char*)QUICKTIME_DVSD;
 			strcpy(asset->vcodec, QUICKTIME_DVSD);
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
@@ -252,7 +277,7 @@ void FormatTools::update_driver(int driver)
 			}
 			else
 				format_text->update(File::formattostr(asset->format));
-			locked_compressor = QUICKTIME_MJPA;
+			locked_compressor = (char*)QUICKTIME_MJPA;
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
 			break;
@@ -281,7 +306,7 @@ Asset* FormatTools::get_asset()
 
 void FormatTools::update_extension()
 {
-	char *extension = File::get_tag(asset->format);
+	const char *extension = File::get_tag(asset->format);
 	if(extension)
 	{
 		char *ptr = strrchr(asset->path, '.');
@@ -323,13 +348,27 @@ void FormatTools::update(Asset *asset, int *strategy)
 
 void FormatTools::close_format_windows()
 {
-	if(aparams_thread) aparams_thread->file->close_window();
-	if(vparams_thread) vparams_thread->file->close_window();
+// This is done in ~file
+	if(aparams_thread && aparams_thread->running())
+	{
+		aparams_thread->file->close_window();
+		aparams_thread->join();
+	}
+	if(vparams_thread && vparams_thread->running())
+	{
+		vparams_thread->file->close_window();
+		vparams_thread->join();
+	}
 }
 
 int FormatTools::get_w()
 {
 	return w;
+}
+
+void FormatTools::set_w(int w)
+{
+	this->w = w;
 }
 
 void FormatTools::reposition_window(int &init_x, int &init_y)
@@ -340,9 +379,9 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	if(path_textbox) 
 	{
 		path_textbox->reposition_window(x, y);
-		x += 305;
+		x += path_textbox->get_w() + 5;
 		path_button->reposition_window(x, y);
-		x -= 305;
+		x -= path_textbox->get_w() + 5;
 		y += 35;
 	}
 
@@ -467,6 +506,10 @@ int FormatAParams::handle_event()
 	format->set_audio_options(); 
 }
 
+
+
+
+
 FormatVParams::FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y)
  : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
 { 
@@ -482,17 +525,41 @@ int FormatVParams::handle_event()
 }
 
 
+
+
+
 FormatAThread::FormatAThread(FormatTools *format)
  : Thread()
 { 
 	this->format = format; 
 	file = new File;
+	joined = 1;
 }
 
 FormatAThread::~FormatAThread() 
 {
-	delete file;
+	if(!joined)
+	{
+		delete file;
+		join();
+	}
+	else
+	{
+		delete file;
+	}
 }
+
+void FormatAThread::start()
+{
+	if(!joined)
+	{
+		join();
+	}
+
+	joined = 0;
+	Thread::start();
+}
+
 
 void FormatAThread::run()
 {
@@ -512,11 +579,31 @@ FormatVThread::FormatVThread(FormatTools *format)
 {
 	this->format = format;
 	file = new File;
+	joined = 1;
 }
 
 FormatVThread::~FormatVThread() 
 {
-	delete file;
+	if(!joined)
+	{
+		delete file;
+		join();
+	}
+	else
+	{
+		delete file;
+	}
+}
+
+void FormatVThread::start()
+{
+	if(!joined)
+	{
+		join();
+	}
+
+	joined = 0;
+	Thread::start();
 }
 
 void FormatVThread::run()
@@ -529,11 +616,22 @@ void FormatVThread::run()
 		format->locked_compressor);
 }
 
+
+
+
+
 FormatPathText::FormatPathText(int x, int y, FormatTools *format)
- : BC_TextBox(x, y, 300, 1, format->asset->path) 
+ : BC_TextBox(x, 
+ 	y, 
+	format->w - 
+		format->mwindow->theme->get_image_set("wrench")[0]->get_w() - 
+		x - 10, 
+	1, 
+	format->asset->path) 
 {
 	this->format = format; 
 }
+
 FormatPathText::~FormatPathText() 
 {
 }
@@ -596,7 +694,7 @@ int FormatFormat::handle_event()
 	if(get_selection(0, 0) >= 0)
 	{
 		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
-		if(new_format != format->asset->format)
+//		if(new_format != format->asset->format)
 		{
 			format->asset->format = new_format;
 			format->format_text->update(get_selection(0, 0)->get_text());

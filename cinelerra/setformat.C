@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -111,6 +132,10 @@ void SetFormatThread::apply_changes()
 	int new_channels = new_settings->session->audio_channels;
 	CLAMP(new_channels, 1, MAXCHANNELS);
 
+
+
+	mwindow->undo->update_undo_before();
+
 	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
 		new_settings->session->achannel_positions,
 		sizeof(int) * MAXCHANNELS);
@@ -123,7 +148,7 @@ void SetFormatThread::apply_changes()
 	mwindow->edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
 	mwindow->edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
 	mwindow->save_backup();
-	mwindow->undo->update_undo(_("set format"), LOAD_ALL);
+	mwindow->undo->update_undo_after(_("set format"), LOAD_ALL);
 
 // Update GUIs
 	mwindow->restart_brender();
@@ -303,6 +328,7 @@ void SetFormatWindow::create_objects()
 	int x = 10, y = mwindow->theme->setformat_y1;
 	BC_Title *title;
 
+	lock_window("SetFormatWindow::create_objects");
 	mwindow->theme->draw_setformat_bg(this);
 
 
@@ -495,9 +521,10 @@ void SetFormatWindow::create_objects()
 		thread));
 	flash();
 	show_window();
+	unlock_window();
 }
 
-char* SetFormatWindow::get_preset_text()
+const char* SetFormatWindow::get_preset_text()
 {
 	return "";
 }

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef VFRAME_H
 #define VFRAME_H
 
@@ -74,6 +95,8 @@ public:
 	int equals(VFrame *frame);
 // Test if frame already matches parameters
 	int params_match(int w, int h, int color_model);
+// Test if data values in the frame match
+	int data_matches(VFrame *frame);
 
 	long set_shm_offset(long offset);
 	long get_shm_offset();
@@ -252,16 +275,16 @@ public:
 // Push and pop are only called from Cinelerra internals, so
 // if an object calls read_frame with a temporary, the stack before and after
 // the temporary is lost.
-	void push_prev_effect(char *name);
+	void push_prev_effect(const char *name);
 	void pop_prev_effect();
-	void push_next_effect(char *name);
+	void push_next_effect(const char *name);
 	void pop_next_effect();
 // These are called by plugins to determine aggregation.
 // They access any member of the stack based on the number argument.
 // next effect 0 is the one that called read_frame most recently.
 // prev effect 0 is the one that filled our call to read_frame.
-	char* get_next_effect(int number = 0);
-	char* get_prev_effect(int number = 0);
+	const char* get_next_effect(int number = 0);
+	const char* get_prev_effect(int number = 0);
 
 // It isn't enough to know the name of the neighboring effects.
 // Relevant configuration parameters must be passed on.

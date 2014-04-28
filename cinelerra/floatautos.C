@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "automation.inc"
 #include "clip.h"
 #include "edl.h"
@@ -22,7 +43,7 @@ FloatAutos::~FloatAutos()
 {
 }
 
-void FloatAutos::straighten(int64_t start, int64_t end)
+void FloatAutos::set_automation_mode(int64_t start, int64_t end, int mode)
 {
 	FloatAuto *current = (FloatAuto*)first;
 	while(current)
@@ -33,25 +54,22 @@ void FloatAutos::straighten(int64_t start, int64_t end)
 // Is current auto in range?		
 		if(current->position >= start && current->position < end)
 		{
-			float current_value = current->value;
-
-// Determine whether to set the control in point.
-			if(previous_auto && previous_auto->position >= start)
-			{
-				float previous_value = previous_auto->value;
-				current->control_in_value = (previous_value - current_value) / 6.0;
-				if(!current->control_in_position)
-					current->control_in_position = -track->to_units(1.0, 0);
-			}
-
-// Determine whether to set the control out point
-			if(next_auto && next_auto->position < end)
-			{
-				float next_value = next_auto->value;
-				current->control_out_value = (next_value - current_value) / 6.0;
-				if(!current->control_out_position)
-					current->control_out_position = track->to_units(1.0, 0);
-			}
+			current->mode = mode;
+// 			float current_value = current->value;
+// 
+// // Determine whether to set the control in point.
+// 			if(previous_auto && previous_auto->position >= start)
+// 			{
+// 				float previous_value = previous_auto->value;
+// 				current->control_in_value = (previous_value - current_value) / 6.0;
+// 			}
+// 
+// // Determine whether to set the control out point
+// 			if(next_auto && next_auto->position < end)
+// 			{
+// 				float next_value = next_auto->value;
+// 				current->control_out_value = (next_value - current_value) / 6.0;
+// 			}
 		}
 		current = (FloatAuto*)NEXT;
 	}
@@ -65,18 +83,6 @@ int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center
 		canvas->draw_line(x1, center_pixel + y1, x2, center_pixel + y2);
 }
 
-Auto* FloatAutos::add_auto(int64_t position, float value)
-{
-	FloatAuto* current = (FloatAuto*)autoof(position);
-	FloatAuto* result;
-	
-	insert_before(current, result = (FloatAuto*)new_auto());
-
-	result->position = position;
-	result->value = value;
-	
-	return result;
-}
 
 Auto* FloatAutos::new_auto()
 {
@@ -182,11 +188,15 @@ int FloatAutos::automation_is_constant(int64_t start,
 			FloatAuto *float_next = (FloatAuto*)current->next;
 
 // Change occurs between keyframes
-			if(!EQUIV(float_current->value, float_next->value) ||
-				!EQUIV(float_current->control_out_value, 0) ||
-				!EQUIV(float_next->control_in_value, 0))
+			if(!EQUIV(float_current->value, float_next->value))
 			{
-				return 0;
+				if((float_current->mode != Auto::LINEAR ||
+					float_next->mode != Auto::LINEAR) &&
+					(!EQUIV(float_current->control_out_value, 0) ||
+						!EQUIV(float_next->control_in_value, 0)))
+				{
+					return 0;
+				}
 			}
 		}
 
@@ -195,10 +205,13 @@ int FloatAutos::automation_is_constant(int64_t start,
 			FloatAuto *float_previous = (FloatAuto*)current->previous;
 
 // Change occurs between keyframes
-			if(!EQUIV(float_current->value, float_previous->value) ||
-				!EQUIV(float_current->control_in_value, 0) ||
-				!EQUIV(float_previous->control_out_value, 0))
+			if(!EQUIV(float_current->value, float_previous->value))
 			{
+				if((float_current->mode != Auto::LINEAR ||
+					float_previous->mode != Auto::LINEAR) &&
+					(!EQUIV(float_current->control_out_value, 0) ||
+						!EQUIV(float_previous->control_in_value, 0)))
+				{
 // printf("FloatAutos::automation_is_constant %d %d %d %f %f %f %f\n", 
 // start, 
 // float_previous->position, 
@@ -207,7 +220,8 @@ int FloatAutos::automation_is_constant(int64_t start,
 // float_current->value, 
 // float_previous->control_out_value, 
 // float_current->control_in_value);
-				return 0;
+					return 0;
+				}
 			}
 		}
 	}
@@ -273,20 +287,32 @@ float FloatAutos::get_value(int64_t position,
 	}
 	else
 	{
-		if(direction == PLAY_FORWARD &&
-			EQUIV(previous->value, next->value) &&
-			EQUIV(previous->control_out_value, 0) &&
-			EQUIV(next->control_in_value, 0))
+		if(direction == PLAY_FORWARD)
 		{
-			return previous->value;
+			if(EQUIV(previous->value, next->value))
+			{
+				if((previous->mode == Auto::LINEAR &&
+					next->mode == Auto::LINEAR) ||
+					(EQUIV(previous->control_out_value, 0) &&
+					EQUIV(next->control_in_value, 0)))
+				{
+					return previous->value;
+				}
+			}
 		}
 		else
-		if(direction == PLAY_REVERSE &&
-			EQUIV(previous->value, next->value) &&
-			EQUIV(previous->control_in_value, 0) &&
-			EQUIV(next->control_out_value, 0))
+		if(direction == PLAY_REVERSE)
 		{
-			return previous->value;
+			if(EQUIV(previous->value, next->value))
+			{
+				if((previous->mode == Auto::LINEAR &&
+					next->mode == Auto::LINEAR) ||
+					(EQUIV(previous->control_in_value, 0) &&
+					EQUIV(next->control_out_value, 0)))
+				{
+					return previous->value;
+				}
+			}
 		}
 	}
 
@@ -297,108 +323,48 @@ float FloatAutos::get_value(int64_t position,
 
 	if(direction == PLAY_FORWARD)
 	{
+// division by 0
+		if(next->position - previous->position == 0) return previous->value;
 		y1 = previous->value + previous->control_out_value * 2;
 		y2 = next->value + next->control_in_value * 2;
 		t = (double)(position - previous->position) / 
 			(next->position - previous->position);
-// division by 0
-		if(next->position - previous->position == 0) return previous->value;
 	}
 	else
 	{
+// division by 0
+		if(previous->position - next->position == 0) return previous->value;
 		y1 = previous->value + previous->control_in_value * 2;
 		y2 = next->value + next->control_out_value * 2;
 		t = (double)(previous->position - position) / 
 			(previous->position - next->position);
-// division by 0
-		if(previous->position - next->position == 0) return previous->value;
 	}
 
- 	float tpow2 = t * t;
-	float tpow3 = t * t * t;
-	float invt = 1 - t;
-	float invtpow2 = invt * invt;
-	float invtpow3 = invt * invt * invt;
-	
-	float result = (  invtpow3 * y0
-		+ 3 * t     * invtpow2 * y1
-		+ 3 * tpow2 * invt     * y2 
-		+     tpow3            * y3);
-//printf("FloatAutos::get_value %f %f %d %d %d %d\n", result, t, direction, position, previous->position, next->position);
-
-	return result;
-
-
-
-// 	get_fade_automation(slope,
-// 		intercept,
-// 		position,
-// 		slope_len,
-// 		PLAY_FORWARD);
-// 
-// 	return (float)intercept;
-}
-
-
-void FloatAutos::get_fade_automation(double &slope,
-	double &intercept,
-	int64_t input_position,
-	int64_t &slope_len,
-	int direction)
-{
-	Auto *current = 0;
-	FloatAuto *prev_keyframe = 
-		(FloatAuto*)get_prev_auto(input_position, direction, current);
-	FloatAuto *next_keyframe = 
-		(FloatAuto*)get_next_auto(input_position, direction, current);
-	int64_t new_slope_len;
-
-	if(direction == PLAY_FORWARD)
+	float result = 0;
+	if(previous->mode == Auto::LINEAR &&
+		next->mode == Auto::LINEAR)
 	{
-		new_slope_len = next_keyframe->position - prev_keyframe->position;
-
-//printf("FloatAutos::get_fade_automation %d %d %d\n", 
-//	prev_keyframe->position, input_position, next_keyframe->position);
-
-// Two distinct automation points within range
-		if(next_keyframe->position > prev_keyframe->position)
-		{
-			slope = ((double)next_keyframe->value - prev_keyframe->value) / 
-				new_slope_len;
-			intercept = ((double)input_position - prev_keyframe->position) * slope + prev_keyframe->value;
-
-			if(next_keyframe->position < input_position + new_slope_len)
-				new_slope_len = next_keyframe->position - input_position;
-			slope_len = MIN(slope_len, new_slope_len);
-		}
-		else
-// One automation point within range
-		{
-			slope = 0;
-			intercept = prev_keyframe->value;
-		}
+		result = previous->value + t * (next->value - previous->value);
 	}
 	else
 	{
-		new_slope_len = prev_keyframe->position - next_keyframe->position;
-// Two distinct automation points within range
-		if(next_keyframe->position < prev_keyframe->position)
-		{
-			slope = ((double)next_keyframe->value - prev_keyframe->value) / new_slope_len;
-			intercept = ((double)prev_keyframe->position - input_position) * slope + prev_keyframe->value;
+ 		float tpow2 = t * t;
+		float tpow3 = t * t * t;
+		float invt = 1 - t;
+		float invtpow2 = invt * invt;
+		float invtpow3 = invt * invt * invt;
 
-			if(prev_keyframe->position > input_position - new_slope_len)
-				new_slope_len = input_position - prev_keyframe->position;
-			slope_len = MIN(slope_len, new_slope_len);
-		}
-		else
-// One automation point within range
-		{
-			slope = 0;
-			intercept = next_keyframe->value;
-		}
+		result = (  invtpow3 * y0
+			+ 3 * t     * invtpow2 * y1
+			+ 3 * tpow2 * invt     * y2 
+			+     tpow3            * y3);
+//printf("FloatAutos::get_value %f %f %d %d %d %d\n", result, t, direction, position, previous->position, next->position);
 	}
+
+	return result;
 }
+
+
 
 void FloatAutos::get_extents(float *min, 
 	float *max,
@@ -491,12 +457,13 @@ void FloatAutos::dump()
 		((FloatAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %lld value=%f invalue=%f outvalue=%f inposition=%lld outposition=%lld\n", 
+		printf("	position %lld mode=%d value=%f invalue=%f outvalue=%f inposition=%lld outposition=%lld\n", 
 			current->position, 
+			((FloatAuto*)current)->mode,
 			((FloatAuto*)current)->value,
 			((FloatAuto*)current)->control_in_value,
-			((FloatAuto*)current)->control_out_value,
-			((FloatAuto*)current)->control_in_position,
-			((FloatAuto*)current)->control_out_position);
+			((FloatAuto*)current)->control_out_value);
+//			((FloatAuto*)current)->control_in_position,
+//			((FloatAuto*)current)->control_out_position);
 	}
 }

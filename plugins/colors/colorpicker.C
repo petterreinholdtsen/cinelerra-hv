@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "colorpicker.h"
 #include "condition.h"
@@ -124,6 +145,8 @@ ColorWindow::ColorWindow(ColorThread *thread, int x, int y, char *title)
 void ColorWindow::create_objects()
 {
 	int x = 10, init_x = 10, y = 10, init_y = 10;
+	
+	lock_window("ColorWindow::create_objects");
 	change_values();
 	
 	
@@ -192,8 +215,10 @@ void ColorWindow::create_objects()
 		add_tool(alpha = new PaletteAlpha(this, x, y));
 	}
 
+	update_display();
 	show_window();
 	flush();
+	unlock_window();
 	return;
 }
 
@@ -333,7 +358,7 @@ int PaletteWheel::button_release_event()
 	return 0;
 }
 
-int PaletteWheel::create_objects()
+void PaletteWheel::create_objects()
 {
 // Upper right
 //printf("PaletteWheel::create_objects 1\n");
@@ -397,7 +422,6 @@ int PaletteWheel::create_objects()
 //printf("PaletteWheel::create_objects 1\n");
 	flash();
 //printf("PaletteWheel::create_objects 2\n");
-	return 0;
 }
 
 float PaletteWheel::torads(float angle)
@@ -486,12 +510,11 @@ PaletteWheelValue::~PaletteWheelValue()
 	delete frame;
 }
 
-int PaletteWheelValue::create_objects()
+void PaletteWheelValue::create_objects()
 {
 	frame = new VFrame(0, get_w(), get_h(), BC_RGB888);
 	draw(window->h, window->s, window->v);
 	flash();
-	return 0;
 }
 
 int PaletteWheelValue::button_press_event()
@@ -579,11 +602,10 @@ PaletteOutput::~PaletteOutput()
 }
 
 
-int PaletteOutput::create_objects()
+void PaletteOutput::create_objects()
 {
 	draw();
 	flash();
-	return 0;
 }
 
 int PaletteOutput::handle_event()

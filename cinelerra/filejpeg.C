@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "edit.h"
@@ -224,7 +245,6 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		output->get_color_model(),
 		1);
 
-
 	return 0;
 }
 
@@ -270,10 +290,10 @@ JPEGConfigVideo::~JPEGConfigVideo()
 {
 }
 
-int JPEGConfigVideo::create_objects()
+void JPEGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
-
+	lock_window("JPEGConfigVideo::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Quality:")));
 	add_subwindow(new BC_ISlider(x + 80, 
 		y,
@@ -288,7 +308,7 @@ int JPEGConfigVideo::create_objects()
 		&asset->jpeg_quality));
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
+	unlock_window();
 }
 
 int JPEGConfigVideo::close_event()

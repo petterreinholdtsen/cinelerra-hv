@@ -3,7 +3,7 @@ include ../../global_config
 OBJS = $(OBJDIR)/sharpen.o  \
 	$(OBJDIR)/sharpenwindow.o
 
-OUTPUT = ../$(OBJDIR)/sharpen.plugin
+OUTPUT = $(PLUGIN_DIR)/sharpen.plugin
 
 include ../../plugin_config
 

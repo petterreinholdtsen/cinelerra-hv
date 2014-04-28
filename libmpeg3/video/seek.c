@@ -215,6 +215,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 	int64_t byte;
 	long frame_number;
 	int match_refframes = 1;
+	const int debug = 0;
 
 
 
@@ -301,7 +302,9 @@ int mpeg3video_seek(mpeg3video_t *video)
 	if(video->frame_seek >= 0)
 	{
 // Clear subtitles
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 		mpeg3_reset_subtitles(file);
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 
 
 		frame_number = video->frame_seek;
@@ -309,14 +312,16 @@ int mpeg3video_seek(mpeg3video_t *video)
 		if(frame_number < 0) frame_number = 0;
 		if(frame_number > video->maxframe) frame_number = video->maxframe;
 
-//printf("mpeg3video_seek 1 %ld %ld\n", frame_number, video->framenum);
+if(debug) printf("mpeg3video_seek %d %ld %ld\n", __LINE__, frame_number, video->framenum);
 
 /* Seek to I frame in table of contents. */
 /* Determine time between seek position and previous subtitle. */
 /* Subtract time difference from subtitle display time. */
 		if(track->frame_offsets)
 		{
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 			mpeg3_reset_cache(track->frame_cache);
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 
 			if((frame_number < video->framenum || 
 				frame_number - video->framenum > MPEG3_SEEK_THRESHOLD))
@@ -338,9 +343,11 @@ int mpeg3video_seek(mpeg3video_t *video)
 						else
 							byte = track->frame_offsets[frame];
 						video->framenum = track->keyframe_numbers[i];
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 
 						mpeg3bits_seek_byte(vstream, byte);
 
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 
 // Get first 2 I-frames
 						if(byte == 0)
@@ -354,7 +361,9 @@ int mpeg3video_seek(mpeg3video_t *video)
 						video->repeat_count = 0;
 
 // Read up to current frame
+if(debug) printf("mpeg3video_seek %d %ld %ld\n", __LINE__, frame_number, video->framenum);
 						mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 						break;
 					}
 				}
@@ -362,7 +371,9 @@ int mpeg3video_seek(mpeg3video_t *video)
 			else
 			{
 				video->repeat_count = 0;
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 				mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 			}
 		}
 		else
@@ -373,7 +384,9 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 
 
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 		mpeg3demux_reset_pts(demuxer);
+if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 	}
 
 	return result;

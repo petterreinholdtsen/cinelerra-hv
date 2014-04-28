@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/reverseaudio.o
 
-OUTPUT = ../$(OBJDIR)/reverseaudio.plugin
+OUTPUT = $(PLUGIN_DIR)/reverseaudio.plugin
 
 include ../../plugin_config
 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -29,18 +50,17 @@ public:
 	LoopAudio *plugin;
 };
 
-class LoopAudioWindow : public BC_Window
+class LoopAudioWindow : public PluginClientWindow
 {
 public:
-	LoopAudioWindow(LoopAudio *plugin, int x, int y);
+	LoopAudioWindow(LoopAudio *plugin);
 	~LoopAudioWindow();
 	void create_objects();
-	int close_event();
 	LoopAudio *plugin;
 	LoopAudioSamples *samples;
 };
 
-PLUGIN_THREAD_HEADER(LoopAudio, LoopAudioThread, LoopAudioWindow)
+
 
 class LoopAudio : public PluginAClient
 {
@@ -48,7 +68,7 @@ public:
 	LoopAudio(PluginServer *server);
 	~LoopAudio();
 
-	PLUGIN_CLASS_MEMBERS(LoopAudioConfig, LoopAudioThread)
+	PLUGIN_CLASS_MEMBERS(LoopAudioConfig)
 
 	int load_defaults();
 	int save_defaults();
@@ -82,17 +102,13 @@ LoopAudioConfig::LoopAudioConfig()
 
 
 
-LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+LoopAudioWindow::LoopAudioWindow(LoopAudio *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -114,10 +130,8 @@ void LoopAudioWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(LoopAudioWindow)
 
 
-PLUGIN_THREAD_OBJECT(LoopAudio, LoopAudioThread, LoopAudioWindow)
 
 
 
@@ -156,16 +170,16 @@ int LoopAudioSamples::handle_event()
 LoopAudio::LoopAudio(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 
 LoopAudio::~LoopAudio()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* LoopAudio::plugin_title() { return N_("Loop audio"); }
+const char* LoopAudio::plugin_title() { return N_("Loop audio"); }
 int LoopAudio::is_realtime() { return 1; } 
 int LoopAudio::is_synthesis() { return 1; }
 
@@ -173,11 +187,7 @@ int LoopAudio::is_synthesis() { return 1; }
 #include "picon_png.h"
 NEW_PICON_MACRO(LoopAudio)
 
-SHOW_GUI_MACRO(LoopAudio, LoopAudioThread)
-
-RAISE_WINDOW_MACRO(LoopAudio)
-
-SET_STRING_MACRO(LoopAudio);
+NEW_WINDOW_MACRO(LoopAudio, LoopAudioWindow)
 
 
 int LoopAudio::process_buffer(int64_t size, 
@@ -314,7 +324,7 @@ void LoopAudio::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("LOOPAUDIO");
 	output.tag.set_property("SAMPLES", config.samples);
 	output.append_tag();
@@ -325,7 +335,7 @@ void LoopAudio::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -344,7 +354,7 @@ void LoopAudio::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->samples->update(config.samples);
+		((LoopAudioWindow*)thread->window)->samples->update(config.samples);
 		thread->window->unlock_window();
 	}
 }

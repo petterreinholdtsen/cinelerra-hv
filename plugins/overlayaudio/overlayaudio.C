@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -21,7 +42,7 @@ public:
 		int64_t prev_frame, 
 		int64_t next_frame, 
 		int64_t current_frame);
-	static char* output_to_text(int output_layer);
+	static const char* output_to_text(int output_layer);
 	int output_track;
 	enum
 	{
@@ -40,19 +61,19 @@ public:
 	OverlayAudio *plugin;
 };
 
-class OverlayAudioWindow : public BC_Window
+class OverlayAudioWindow : public PluginClientWindow
 {
 public:
-	OverlayAudioWindow(OverlayAudio *plugin, int x, int y);
+	OverlayAudioWindow(OverlayAudio *plugin);
 
-	int create_objects();
-	int close_event();
+	void create_objects();
+
 
 	OverlayAudio *plugin;
 	OutputTrack *output;
 };
 
-PLUGIN_THREAD_HEADER(OverlayAudio, OverlayAudioThread, OverlayAudioWindow)
+
 
 class OverlayAudio : public PluginAClient
 {
@@ -73,7 +94,7 @@ public:
 	void update_gui();
 
 
-	PLUGIN_CLASS_MEMBERS(OverlayAudioConfig, OverlayAudioThread)
+	PLUGIN_CLASS_MEMBERS(OverlayAudioConfig)
 };
 
 
@@ -107,7 +128,7 @@ void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev,
 	output_track = prev.output_track;
 }
 
-char* OverlayAudioConfig::output_to_text(int output_layer)
+const char* OverlayAudioConfig::output_to_text(int output_layer)
 {
 	switch(output_layer)
 	{
@@ -123,22 +144,18 @@ char* OverlayAudioConfig::output_to_text(int output_layer)
 
 
 
-OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin)
+ : PluginClientWindow(plugin, 
 	400, 
 	100, 
 	400, 
 	100, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
 
-int OverlayAudioWindow::create_objects()
+void OverlayAudioWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -147,10 +164,9 @@ int OverlayAudioWindow::create_objects()
 	add_subwindow(output = new OutputTrack(plugin, x, y));
 	output->create_objects();
 	show_window();
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(OverlayAudioWindow)
+
 
 
 
@@ -194,7 +210,7 @@ int OutputTrack::handle_event()
 }
 
 
-PLUGIN_THREAD_OBJECT(OverlayAudio, OverlayAudioThread, OverlayAudioWindow)
+
 
 
 
@@ -207,15 +223,15 @@ REGISTER_PLUGIN(OverlayAudio)
 OverlayAudio::OverlayAudio(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 OverlayAudio::~OverlayAudio()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* OverlayAudio::plugin_title() { return N_("Overlay"); }
+const char* OverlayAudio::plugin_title() { return N_("Overlay"); }
 int OverlayAudio::is_realtime() { return 1; }
 int OverlayAudio::is_multichannel() { return 1; }
 
@@ -224,7 +240,7 @@ int OverlayAudio::is_multichannel() { return 1; }
 void OverlayAudio::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	while(!result)
@@ -244,7 +260,7 @@ void OverlayAudio::read_data(KeyFrame *keyframe)
 void OverlayAudio::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("OUTPUT", config.output_track);
@@ -280,7 +296,7 @@ void OverlayAudio::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("OverlayAudio::update_gui");
-			thread->window->output->set_text(
+			((OverlayAudioWindow*)thread->window)->output->set_text(
 				OverlayAudioConfig::output_to_text(config.output_track));
 			thread->window->unlock_window();
 		}
@@ -288,9 +304,7 @@ void OverlayAudio::update_gui()
 }
 
 NEW_PICON_MACRO(OverlayAudio)
-SHOW_GUI_MACRO(OverlayAudio, OverlayAudioThread)
-RAISE_WINDOW_MACRO(OverlayAudio)
-SET_STRING_MACRO(OverlayAudio)
+NEW_WINDOW_MACRO(OverlayAudio, OverlayAudioWindow)
 LOAD_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
 

@@ -1,4 +1,28 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+#include "bcdisplayinfo.h"
+#include "bchash.h"
 #include "bcsignals.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -12,14 +36,135 @@
 
 #include <string.h>
 
+
+
+
+
+PluginClientThread::PluginClientThread(PluginClient *client)
+ : Thread(1, 0, 0)
+{
+	this->client = client;
+	window = 0;
+	init_complete = new Condition(0, "PluginClientThread::init_complete");
+}
+
+PluginClientThread::~PluginClientThread()
+{
+//printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
+	delete window;
+//printf("PluginClientThread::~PluginClientThread %p %d\n", this, __LINE__);
+	window = 0;
+	delete init_complete;
+}
+
+void PluginClientThread::run()
+{
+	BC_DisplayInfo info;
+	int result = 0;
+	client->window_x = info.get_abs_cursor_x();
+	client->window_y = info.get_abs_cursor_y();
+	window = client->new_window();
+
+	if(window)
+	{
+		window->lock_window("PluginClientThread::run");
+		window->create_objects();
+		window->unlock_window();
+
+/* Only set it here so tracking doesn't update it until everything is created. */
+ 		client->thread = this;
+		init_complete->unlock();
+
+//printf("PluginClientThread::run %p %d\n", this, __LINE__);
+		result = window->run_window();
+		window->lock_window("PluginClientThread::run");
+//printf("PluginClientThread::run %p %d\n", this, __LINE__);
+		window->hide_window(1);
+		window->unlock_window();
+// Can't save defaults in the destructor because it's not called immediately
+// after closing.
+		if(client->defaults) client->save_defaults();
+/* This is needed when the GUI is closed from itself */
+		if(result) client->client_side_close();
+	}
+	else
+// No window
+	{
+ 		client->thread = this;
+		init_complete->unlock();
+	}
+}
+
+BC_WindowBase* PluginClientThread::get_window()
+{
+	return window;
+}
+
+PluginClient* PluginClientThread::get_client()
+{
+	return client;
+}
+
+
+
+
+PluginClientWindow::PluginClientWindow(PluginClient *client, 
+	int w,
+	int h,
+	int min_w,
+	int min_h,
+	int allow_resize)
+ : BC_Window(client->gui_string, 
+	client->window_x - w / 2, 
+	client->window_y - h / 2, 
+//	0,
+//	0,
+	w, 
+	h, 
+	min_w, 
+	min_h,
+	allow_resize, 
+	0,
+	1)
+{
+	this->client = client;
+}
+
+PluginClientWindow::~PluginClientWindow()
+{
+}
+
+
+int PluginClientWindow::close_event()
+{
+/* Set result to 1 to indicate a client side close */
+	set_done(1);
+	return 1;
+}
+
+
+
+
+
 PluginClient::PluginClient(PluginServer *server)
 {
 	reset();
 	this->server = server;
+	defaults = 0;
+// Virtual functions don't work here.
 }
 
 PluginClient::~PluginClient()
 {
+// Delete the GUI thread.  The GUI must be hidden with hide_gui first.
+	if(thread) 
+	{
+		thread->join();
+		delete thread;
+	}
+
+// Virtual functions don't work here.
+	if(defaults) delete defaults;
 }
 
 int PluginClient::reset()
@@ -37,9 +182,25 @@ int PluginClient::reset()
 	source_start = 0;
 	total_len = 0;
 	direction = PLAY_FORWARD;
+	thread = 0;
 }
 
 
+void PluginClient::hide_gui()
+{
+	if(thread && thread->window)
+	{
+//printf("PluginClient::delete_thread %d\n", __LINE__);
+/* This is needed when the GUI is closed from elsewhere than itself */
+/* Since we now use autodelete, this is all that has to be done, thread will take care of itself ... */
+/* Thread join will wait if this was not called from the thread itself or go on if it was */
+		thread->window->lock_window("PluginClient::hide_gui");
+		thread->window->set_done(0);
+//printf("PluginClient::hide_gui %d thread->window=%p\n", __LINE__, thread->window);
+		thread->window->unlock_window();
+//printf("PluginClient::delete_thread %d\n", __LINE__);
+	}
+}
 
 // For realtime plugins initialize buffers
 int PluginClient::plugin_init_realtime(int realtime_priority, 
@@ -111,29 +272,93 @@ int PluginClient::is_synthesis() { return 0; }
 int PluginClient::is_realtime() { return 0; }
 int PluginClient::is_fileio() { return 0; }
 int PluginClient::delete_buffer_ptrs() { return 0; }
-char* PluginClient::plugin_title() { return _("Untitled"); }
-VFrame* PluginClient::new_picon() { return 0; }
+const char* PluginClient::plugin_title() { return _("Untitled"); }
+VFrame* PluginClient::new_picon() 
+{ 
+	printf("PluginClient::new_picon not defined in %s\n", plugin_title());
+	return 0; 
+}
 Theme* PluginClient::new_theme() { return 0; }
 
-
-
+int PluginClient::load_configuration()
+{
+	return 0;
+}
 
 Theme* PluginClient::get_theme()
 {
 	return server->get_theme();
 }
 
+int PluginClient::show_gui()
+{
+	load_configuration();
+	thread = new PluginClientThread(this);
+	thread->start();
+	thread->init_complete->lock("PluginClient::show_gui");
+// Must wait before sending any hide_gui
+	if(thread->window)
+	{
+		thread->window->init_wait();
+	}
+	else
+	{
+		return 1;
+	}
+	return 0;
+}
 
+void PluginClient::raise_window()
+{
+	if(thread)
+	{
+		thread->window->lock_window("PluginClient::raise_window");
+		thread->window->raise_window();
+		thread->window->flush();
+		thread->window->unlock_window();
+	}
+}
+
+int PluginClient::set_string()
+{
+	if(thread)
+	{
+		thread->window->lock_window("PluginClient::set_string");
+		thread->window->set_title(gui_string);
+		thread->window->unlock_window();
+	}
+	return 0;
+}
 
 int PluginClient::is_audio() { return 0; }
 int PluginClient::is_video() { return 0; }
 int PluginClient::is_theme() { return 0; }
 int PluginClient::uses_gui() { return 1; }
 int PluginClient::is_transition() { return 0; }
-int PluginClient::load_defaults() { return 0; }
-int PluginClient::save_defaults() { return 0; }
-int PluginClient::show_gui() { return 0; }
-int PluginClient::set_string() { return 0; }
+int PluginClient::load_defaults() 
+{ 
+//	printf("PluginClient::load_defaults undefined in %s.\n", plugin_title());
+	return 0; 
+}
+int PluginClient::save_defaults() 
+{ 
+//	printf("PluginClient::save_defaults undefined in %s.\n", plugin_title());
+	return 0; 
+}
+BC_Hash* PluginClient::get_defaults()
+{
+	return defaults;
+}
+PluginClientThread* PluginClient::get_thread()
+{
+	return thread;
+}
+
+BC_WindowBase* PluginClient::new_window() 
+{ 
+	printf("PluginClient::new_window undefined in %s.\n", plugin_title());
+	return 0; 
+}
 int PluginClient::get_parameters() { return 0; }
 int PluginClient::get_samplerate() { return get_project_samplerate(); }
 double PluginClient::get_framerate() { return get_project_framerate(); }
@@ -209,6 +434,11 @@ char* PluginClient::get_gui_string()
 char* PluginClient::get_path()
 {
 	return server->path;
+}
+
+char* PluginClient::get_plugin_dir()
+{
+	return server->preferences->plugin_dir;
 }
 
 int PluginClient::set_string_client(char *string)
@@ -311,7 +541,7 @@ int PluginClient::get_project_smp()
 	return smp;
 }
 
-char* PluginClient::get_defaultdir()
+const char* PluginClient::get_defaultdir()
 {
 	return BCASTDIR;
 }
@@ -326,10 +556,27 @@ int PluginClient::send_hide_gui()
 
 int PluginClient::send_configure_change()
 {
-	KeyFrame* keyframe = server->get_keyframe();
-	save_data(keyframe);
+#ifdef USE_KEYFRAME_SPANNING
+	KeyFrame keyframe;
 	if(server->mwindow)
-		server->mwindow->undo->update_undo("tweek", LOAD_AUTOMATION, this);
+		server->mwindow->undo->update_undo_before("tweek", this);
+
+	save_data(&keyframe);
+	server->apply_keyframe(&keyframe);
+
+#else
+	KeyFrame* keyframe = server->get_keyframe();
+	if(server->mwindow)
+		server->mwindow->undo->update_undo_before("tweek", this);
+
+// Call save routine in plugin
+	save_data(keyframe);
+
+#endif
+
+
+	if(server->mwindow)
+		server->mwindow->undo->update_undo_after("tweek", LOAD_AUTOMATION);
 	server->sync_parameters();
 	return 0;
 }

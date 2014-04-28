@@ -48,12 +48,19 @@ static void read_wave(quicktime_t *file,
 	quicktime_atom_t *parent_atom)
 {
 	quicktime_atom_t leaf_atom;
+//printf("read_wave 1 start=0x%llx\n", quicktime_position(file));
 	while(quicktime_position(file) < parent_atom->end)
 	{
 		quicktime_atom_read_header(file, &leaf_atom);
 		if(quicktime_atom_is(&leaf_atom, "esds"))
 		{
 			quicktime_read_esds(file, &leaf_atom, &table->esds);
+		}
+		else
+		if(quicktime_atom_is(&leaf_atom, "frma"))
+		{
+// Extra data for QDM2
+			quicktime_read_frma(file, parent_atom, &leaf_atom, &table->frma);
 		}
 		else
 			quicktime_atom_skip(file, &leaf_atom);
@@ -342,6 +349,7 @@ void quicktime_stsd_table_delete(quicktime_stsd_table_t *table)
 	quicktime_mjht_delete(&(table->mjht));
 	quicktime_delete_avcc(&(table->avcc));
 	quicktime_delete_esds(&(table->esds));
+	quicktime_delete_frma(&(table->frma));
 	
 }
 
@@ -372,6 +380,7 @@ void quicktime_stsd_video_dump(quicktime_stsd_table_t *table)
 	quicktime_mjht_dump(&(table->mjht));
 	quicktime_esds_dump(&table->esds);
 	quicktime_avcc_dump(&table->avcc);
+	quicktime_frma_dump(&table->frma);
 }
 
 void quicktime_stsd_audio_dump(quicktime_stsd_table_t *table)
@@ -381,7 +390,7 @@ void quicktime_stsd_audio_dump(quicktime_stsd_table_t *table)
 	printf("       vendor %c%c%c%c\n", table->vendor[0], table->vendor[1], table->vendor[2], table->vendor[3]);
 	printf("       channels %d\n", table->channels);
 	printf("       sample_size %d\n", table->sample_size);
-	printf("       compression_id %d\n", table->compression_id);
+	printf("       compression_id 0x%x\n", table->compression_id);
 	printf("       packet_size %d\n", table->packet_size);
 	printf("       sample_rate %f\n", table->sample_rate);
 	if(table->version > 0)
@@ -393,6 +402,7 @@ void quicktime_stsd_audio_dump(quicktime_stsd_table_t *table)
 	}
 	quicktime_esds_dump(&table->esds);
 	quicktime_avcc_dump(&table->avcc);
+	quicktime_frma_dump(&table->frma);
 }
 
 void quicktime_stsd_table_dump(void *minf_ptr, quicktime_stsd_table_t *table)

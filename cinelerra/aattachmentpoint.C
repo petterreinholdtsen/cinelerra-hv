@@ -1,4 +1,26 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "aattachmentpoint.h"
+#include "bcsignals.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -119,7 +141,6 @@ void AAttachmentPoint::render(double *output,
 // Process plugin
 		double *output_temp[1];
 		output_temp[0] = output;
-//printf("AAttachmentPoint::render 1\n");
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			len,
@@ -128,7 +149,6 @@ void AAttachmentPoint::render(double *output,
 				sample_rate /
 				renderengine->edl->session->sample_rate,
 			renderengine->command->get_direction());
-//printf("AAttachmentPoint::render 10\n");
 	}
 }
 

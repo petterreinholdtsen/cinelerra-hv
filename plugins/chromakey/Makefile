@@ -4,7 +4,7 @@ OBJS = $(OBJDIR)/chromakey.o  \
 	../colors/$(OBJDIR)/colorpicker.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/chromakey.plugin
+OUTPUT = $(PLUGIN_DIR)/chromakey.plugin
 
 include ../../plugin_config
 

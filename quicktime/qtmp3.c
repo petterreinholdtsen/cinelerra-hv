@@ -168,7 +168,6 @@ static int decode(quicktime_t *file,
 		printf("decode: can't read more than %d samples at a time.\n", OUTPUT_ALLOCATION);
 
 
-//printf("decode 1\n");
 	if(output_i) bzero(output_i, sizeof(int16_t) * samples);
 	if(output_f) bzero(output_f, sizeof(float) * samples);
 

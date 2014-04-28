@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -69,13 +90,13 @@ int FileXML::append_tag()
 	return 0;
 }
 
-int FileXML::append_text(char *text)
+int FileXML::append_text(const char *text)
 {
 	append_text(text, strlen(text));
 	return 0;
 }
 
-int FileXML::append_text(char *text, long len)
+int FileXML::append_text(const char *text, long len)
 {
 	while(position + len > available)
 	{
@@ -89,7 +110,7 @@ int FileXML::append_text(char *text, long len)
 	return 0;
 }
 
-int FileXML::encode_text(char *text)
+int FileXML::encode_text(const char *text)
 {
 // We have to encode at least the '<' char
 // We encode three things:
@@ -135,6 +156,11 @@ int FileXML::reallocate_string(long new_available)
 		string = new_string;
 	}
 	return 0;
+}
+
+char* FileXML::get_ptr()
+{
+	return string + position;
 }
 
 char* FileXML::read_text()
@@ -210,7 +236,7 @@ int FileXML::read_tag()
 	return tag.read_tag(string, position, length);
 }
 
-int FileXML::read_text_until(char *tag_end, char *output, int max_len)
+int FileXML::read_text_until(const char *tag_end, char *output, int max_len)
 {
 // read to next tag
 	int out_position = 0;
@@ -255,7 +281,7 @@ int FileXML::read_text_until(char *tag_end, char *output, int max_len)
 }
 
 
-int FileXML::write_to_file(char *filename)
+int FileXML::write_to_file(const char *filename)
 {
 	FILE *out;
 	strcpy(this->filename, filename);
@@ -305,7 +331,7 @@ int FileXML::write_to_file(FILE *file)
 	return 0;
 }
 
-int FileXML::read_from_file(char *filename, int ignore_error)
+int FileXML::read_from_file(const char *filename, int ignore_error)
 {
 	FILE *in;
 	
@@ -569,7 +595,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 	return 0;
 }
 
-int XMLTag::title_is(char *title)
+int XMLTag::title_is(const char *title)
 {
 	if(!strcasecmp(title, tag_title)) return 1;
 	else return 0;
@@ -599,7 +625,7 @@ int XMLTag::test_property(char *property, char *value)
 	return 0;
 }
 
-char* XMLTag::get_property(char *property, char *value)
+const char* XMLTag::get_property(const char *property, char *value)
 {
 	int i, result;
 	for(i = 0, result = 0; i < total_properties && !result; i++)
@@ -607,14 +633,14 @@ char* XMLTag::get_property(char *property, char *value)
 		if(!strcasecmp(tag_properties[i], property))
 		{
 //printf("XMLTag::get_property %s %s\n", tag_properties[i], tag_property_values[i]);
-			strcpy(value, tag_property_values[i]);
+			strcpy((char*)value, tag_property_values[i]);
 			result = 1;
 		}
 	}
 	return value;
 }
 
-char* XMLTag::get_property_text(int number)
+const char* XMLTag::get_property_text(int number)
 {
 	if(number < total_properties) 
 		return tag_properties[number];
@@ -638,7 +664,7 @@ float XMLTag::get_property_float(int number)
 		return 0;
 }
 
-char* XMLTag::get_property(char *property)
+char* XMLTag::get_property(const char *property)
 {
 	int i, result;
 	for(i = 0, result = 0; i < total_properties && !result; i++)
@@ -652,7 +678,7 @@ char* XMLTag::get_property(char *property)
 }
 
 
-int32_t XMLTag::get_property(char *property, int32_t default_)
+int32_t XMLTag::get_property(const char *property, int32_t default_)
 {
 	temp_string[0] = 0;
 	get_property(property, temp_string);
@@ -662,7 +688,7 @@ int32_t XMLTag::get_property(char *property, int32_t default_)
 		return atol(temp_string);
 }
 
-int64_t XMLTag::get_property(char *property, int64_t default_)
+int64_t XMLTag::get_property(const char *property, int64_t default_)
 {
 	int64_t result;
 	temp_string[0] = 0;
@@ -684,7 +710,7 @@ int64_t XMLTag::get_property(char *property, int64_t default_)
 // 	else return atol(temp_string);
 // }
 // 
-float XMLTag::get_property(char *property, float default_)
+float XMLTag::get_property(const char *property, float default_)
 {
 	temp_string[0] = 0;
 	get_property(property, temp_string);
@@ -694,7 +720,7 @@ float XMLTag::get_property(char *property, float default_)
 		return atof(temp_string);
 }
 
-double XMLTag::get_property(char *property, double default_)
+double XMLTag::get_property(const char *property, double default_)
 {
 	temp_string[0] = 0;
 	get_property(property, temp_string);
@@ -704,27 +730,27 @@ double XMLTag::get_property(char *property, double default_)
 		return atof(temp_string);
 }
 
-int XMLTag::set_title(char *text)       // set the title field
+int XMLTag::set_title(const char *text)       // set the title field
 {
 	strcpy(tag_title, text);
 	return 0;
 }
 
-int XMLTag::set_property(char *text, int32_t value)
+int XMLTag::set_property(const char *text, int32_t value)
 {
 	sprintf(temp_string, "%ld", value);
 	set_property(text, temp_string);
 	return 0;
 }
 
-int XMLTag::set_property(char *text, int64_t value)
+int XMLTag::set_property(const char *text, int64_t value)
 {
 	sprintf(temp_string, "%lld", value);
 	set_property(text, temp_string);
 	return 0;
 }
 
-int XMLTag::set_property(char *text, float value)
+int XMLTag::set_property(const char *text, float value)
 {
 	if (value - (float)((int64_t)value) == 0)
 		sprintf(temp_string, "%lld", (int64_t)value);
@@ -734,7 +760,7 @@ int XMLTag::set_property(char *text, float value)
 	return 0;
 }
 
-int XMLTag::set_property(char *text, double value)
+int XMLTag::set_property(const char *text, double value)
 {
 	if (value - (double)((int64_t)value) == 0)
 		sprintf(temp_string, "%lld", (int64_t)value);
@@ -744,7 +770,7 @@ int XMLTag::set_property(char *text, double value)
 	return 0;
 }
 
-int XMLTag::set_property(char *text, char *value)
+int XMLTag::set_property(const char *text, const char *value)
 {
 	tag_properties[total_properties] = new char[strlen(text) + 1];
 	strcpy(tag_properties[total_properties], text);

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCLISTBOXITEM_H
 #define BCLISTBOXITEM_H
 
@@ -14,9 +35,9 @@ class BC_ListBoxItem
 public:
 	BC_ListBoxItem();
 // New items
-	BC_ListBoxItem(char *text, 
+	BC_ListBoxItem(const char *text, 
 		int color = -1);
-	BC_ListBoxItem(char *text, 
+	BC_ListBoxItem(const char *text, 
 		BC_Pixmap *icon, 
 		int color = -1);
 	
@@ -32,7 +53,7 @@ public:
 
 	BC_ListBoxItem& operator=(BC_ListBoxItem& item);
 	void copy_from(BC_ListBoxItem *item);
-	void set_text(char *new_text);
+	void set_text(const char *new_text);
 	char* get_text();
 	void set_icon(BC_Pixmap *icon);
 	void set_icon_vframe(VFrame *icon_vframe);
@@ -48,6 +69,7 @@ public:
 	void set_searchable(int value);
 	int get_color();
 	void set_selected(int value);
+	int get_selected();
 	int set_autoplace_icon(int value);
 	int set_autoplace_text(int value);
 	void set_selectable(int value);

@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/synthesizer.o
 
-OUTPUT = ../$(OBJDIR)/synthesizer.plugin
+OUTPUT = $(PLUGIN_DIR)/synthesizer.plugin
 
 include ../../plugin_config
 

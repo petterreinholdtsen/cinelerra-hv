@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "audioconfig.h"
 #include "audiodevice.inc"
@@ -13,7 +34,10 @@
 #include "theme.h"
 #include "videoconfig.h"
 #include "videodevice.inc"
+
 #include <string.h>
+#include <unistd.h>
+
 
 //#define CLAMP(x, y, z) (x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
 
@@ -22,7 +46,7 @@
 
 
 
-
+extern void get_exe_path(char *result);
 
 
 
@@ -34,6 +58,11 @@ Preferences::Preferences()
 	FileSystem fs;
 
 	preferences_lock = new Mutex("Preferences::preferences_lock");
+
+
+
+	get_exe_path(plugin_dir);
+
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
@@ -129,7 +158,6 @@ void Preferences::copy_from(Preferences *that)
 	index_size = that->index_size;
 	index_count = that->index_count;
 	use_thumbnails = that->use_thumbnails;
-	strcpy(global_plugin_dir, that->global_plugin_dir);
 	strcpy(theme, that->theme);
 
 	use_tipwindow = that->use_tipwindow;
@@ -171,12 +199,12 @@ void Preferences::copy_from(Preferences *that)
 		fs.add_end_slash(index_directory);
 	}
 	
-	if(strlen(global_plugin_dir))
-	{
-		fs.complete_path(global_plugin_dir);
-		fs.add_end_slash(global_plugin_dir);
-	}
-
+// 	if(strlen(global_plugin_dir))
+// 	{
+// 		fs.complete_path(global_plugin_dir);
+// 		fs.add_end_slash(global_plugin_dir);
+// 	}
+// 
 	boundaries();
 }
 
@@ -242,7 +270,7 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	sprintf(global_plugin_dir, PLUGIN_DIR);
+//	sprintf(global_plugin_dir, PLUGIN_DIR);
 //	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 //	if(getenv("GLOBAL_PLUGIN_DIR"))
 //	{
@@ -551,7 +579,7 @@ int Preferences::get_enabled_nodes()
 	return result;
 }
 
-char* Preferences::get_node_hostname(int number)
+const char* Preferences::get_node_hostname(int number)
 {
 	int total = 0;
 	for(int i = 0; i < renderfarm_nodes.total; i++)

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "aedit.h"
 #include "aedits.h"
 #include "amodule.h"
@@ -77,13 +98,12 @@ int ATrack::load_derived(FileXML *file, uint32_t load_flags)
 	return 0;
 }
 
-int ATrack::create_objects()
+void ATrack::create_objects()
 {
 	Track::create_objects();
 	automation = new AAutomation(edl, this);
 	automation->create_objects();
 	edits = new AEdits(edl, this);
-	return 0;
 }
 
 int ATrack::vertical_span(Theme *theme)

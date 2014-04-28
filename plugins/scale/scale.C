@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "filexml.h"
 #include "language.h"
@@ -57,18 +78,18 @@ ScaleMain::ScaleMain(PluginServer *server)
  : PluginVClient(server)
 {
 	overlayer = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 ScaleMain::~ScaleMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(overlayer) delete overlayer;
 	overlayer = 0;
 }
 
-char* ScaleMain::plugin_title() { return N_("Scale"); }
+const char* ScaleMain::plugin_title() { return N_("Scale"); }
 int ScaleMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ScaleMain)
@@ -105,7 +126,7 @@ void ScaleMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 // Store data
 	output.tag.set_title("SCALE");
@@ -126,7 +147,7 @@ void ScaleMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	config.constrain = 0;
@@ -319,9 +340,7 @@ int ScaleMain::handle_opengl()
 
 
 
-SHOW_GUI_MACRO(ScaleMain, ScaleThread)
-RAISE_WINDOW_MACRO(ScaleMain)
-SET_STRING_MACRO(ScaleMain)
+NEW_WINDOW_MACRO(ScaleMain, ScaleWin)
 
 void ScaleMain::update_gui()
 {
@@ -329,9 +348,9 @@ void ScaleMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->width->update(config.w);
-		thread->window->height->update(config.h);
-		thread->window->constrain->update(config.constrain);
+		((ScaleWin*)thread->window)->width->update(config.w);
+		((ScaleWin*)thread->window)->height->update(config.h);
+		((ScaleWin*)thread->window)->constrain->update(config.constrain);
 		thread->window->unlock_window();
 	}
 }

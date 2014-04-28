@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/denoise.o
 
-OUTPUT = ../$(OBJDIR)/denoise.plugin
+OUTPUT = $(PLUGIN_DIR)/denoise.plugin
 
 include ../../plugin_config
 

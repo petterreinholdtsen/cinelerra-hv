@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef FILE_INC
 #define FILE_INC
 
@@ -9,6 +30,7 @@
 #define FILE_UNRECOGNIZED_CODEC 2
 #define FILE_IS_XML 3
 
+// Numeric codes for each file format
 #define FILE_UNKNOWN    		0
 #define FILE_AIFF       		10
 #define FILE_AMPEG      	  	16    // For encoding only
@@ -19,6 +41,7 @@
 #define FILE_AVI_ARNE2          19    // DV type 2
 #define FILE_AVI_AVIFILE        21
 #define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
+#define FILE_FLAC               32
 #define FILE_GIF  	    		7
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
@@ -41,6 +64,7 @@
 #define FILE_EXR_LIST           27
 #define FILE_CR2                28
 #define FILE_VORBIS             31
+#define FILE_FFMPEG             33
 
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
@@ -56,6 +80,8 @@ N_("AVI Arne Type 1")
 N_("AVI DV Type 2")
 N_("AVI Avifile")
 N_("AVI Lavtools")
+N_("FLAC")
+N_("FFMPEG")
 N_("JPEG Sequence")
 N_("JPEG")
 N_("Quicktime for Linux")
@@ -100,9 +126,11 @@ N_("EXR Sequence")
 #define TIFF_NAME "TIFF"
 #define TIFF_LIST_NAME "TIFF Sequence"
 #define VMPEG_NAME "MPEG Video"    // For encoding only
-#define EXR_NAME "EXR"
 #define CR2_NAME "Raw Camera"
+#define EXR_NAME "EXR"
 #define EXR_LIST_NAME "EXR Sequence"
+#define FLAC_NAME "FLAC"
+#define FFMPEG_NAME "FFMPEG"
 
 #define BITSLINEAR8    8
 #define BITSLINEAR16   16

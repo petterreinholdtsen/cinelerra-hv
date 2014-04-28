@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcbitmap.h"
 #include "bcpixmap.h"
 #include "bcpopup.h"
@@ -81,7 +102,7 @@ void BC_WindowBase::clear_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 
 void BC_WindowBase::draw_text(int x, 
 	int y, 
-	char *text, 
+	const char *text, 
 	int length, 
 	BC_Pixmap *pixmap)
 {
@@ -334,6 +355,28 @@ void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap
     	top_level->gc,
     	points,
     	npoints,
+    	CoordModeOrigin);
+
+	delete [] points;
+}
+
+void BC_WindowBase::fill_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap)
+{
+	int npoints = MIN(x->total, y->total);
+	XPoint *points = new XPoint[npoints];
+
+	for(int i = 0; i < npoints; i++)
+	{
+		points[i].x = x->values[i];
+		points[i].y = y->values[i];
+	}
+
+	XFillPolygon(top_level->display,
+    	pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
+    	top_level->gc,
+    	points,
+    	npoints,
+		Nonconvex, 
     	CoordModeOrigin);
 
 	delete [] points;

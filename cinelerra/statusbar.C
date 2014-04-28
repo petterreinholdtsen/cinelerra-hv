@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "mainprogress.h"
 #include "mwindow.h"
 #include "statusbar.h"
@@ -27,7 +48,7 @@ StatusBar::~StatusBar()
 
 
 
-int StatusBar::create_objects()
+void StatusBar::create_objects()
 {
 //printf("StatusBar::create_objects 1\n");
 	int x = 10, y = 5;
@@ -39,7 +60,8 @@ int StatusBar::create_objects()
 		MEDIUMFONT,
 		mwindow->theme->message_normal));
 	x = get_w() - 290;
-//printf("StatusBar::create_objects 1\n");
+// printf("StatusBar::create_objects %d: 0x%08x\n", 
+// __LINE__, mwindow->theme->message_normal);
 	add_subwindow(main_progress = 
 		new BC_ProgressBar(mwindow->theme->mstatus_progress_x, 
 			mwindow->theme->mstatus_progress_y, 
@@ -54,8 +76,6 @@ int StatusBar::create_objects()
 //printf("StatusBar::create_objects 1\n");
 	default_message();
 	flash();
-//printf("StatusBar::create_objects 2\n");
-	return 0;
 }
 
 void StatusBar::resize_event()

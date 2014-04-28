@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bclistboxitem.h"
 #include "bcpixmap.h"
 #include "bcresources.h"
@@ -18,7 +39,7 @@ BC_ListBoxItem::BC_ListBoxItem()
 	selectable = 1;
 }
 
-BC_ListBoxItem::BC_ListBoxItem(char *text, 
+BC_ListBoxItem::BC_ListBoxItem(const char *text, 
 	BC_Pixmap *icon, 
 	int color)
 {
@@ -33,7 +54,7 @@ BC_ListBoxItem::BC_ListBoxItem(char *text,
 	selectable = 1;
 }
 
-BC_ListBoxItem::BC_ListBoxItem(char *text, int color)
+BC_ListBoxItem::BC_ListBoxItem(const char *text, int color)
 {
 	initialize();
 
@@ -124,6 +145,11 @@ void BC_ListBoxItem::set_selected(int value)
 	this->selected = value;
 }
 
+int BC_ListBoxItem::get_selected()
+{
+	return selected;
+}
+
 void BC_ListBoxItem::set_searchable(int value)
 {
 	this->searchable = value;
@@ -162,7 +188,7 @@ int BC_ListBoxItem::get_icon_h()
 	return icon->get_h();
 }
 
-void BC_ListBoxItem::set_text(char *new_text)
+void BC_ListBoxItem::set_text(const char *new_text)
 {
 	if(this->text) delete [] this->text;
 	this->text = 0;

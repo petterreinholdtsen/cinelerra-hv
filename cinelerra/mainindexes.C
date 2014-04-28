@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "bchash.h"
@@ -46,11 +67,14 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 {
 	next_lock->lock("MainIndexes::add_next_asset");
 
+SET_TRACE
 // Test current asset
 	IndexFile indexfile(mwindow);
 
+SET_TRACE
 	int got_it = 0;
 
+SET_TRACE
 	if(!indexfile.open_index(asset))
 	{
 		asset->index_status = INDEX_READY;
@@ -58,10 +82,12 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 		got_it = 1;
 	}
 
+SET_TRACE
 	if(!got_it)
 	{
 		File *this_file = file;
 
+SET_TRACE
 		if(!file)
 		{
 			this_file = new File;
@@ -73,35 +99,52 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 				0);
 		}
 
+
+SET_TRACE
 		char index_filename[BCTEXTLEN];
 		char source_filename[BCTEXTLEN];
+SET_TRACE
 		IndexFile::get_index_filename(source_filename, 
 			mwindow->preferences->index_directory, 
 			index_filename, 
 			asset->path);
+SET_TRACE
 		if(!this_file->get_index(index_filename))
 		{
+SET_TRACE
 			if(!indexfile.open_index(asset))
 			{
+SET_TRACE
 				indexfile.close_index();
+SET_TRACE
 				asset->index_status = INDEX_READY;
 				got_it = 1;
 			}
+SET_TRACE
 		}
+SET_TRACE
 		if(!file) delete this_file;
+SET_TRACE
 	}
+SET_TRACE
 
 
 // Put copy of asset in stack, not the real thing.
 	if(!got_it)
 	{
 //printf("MainIndexes::add_next_asset 3\n");
+SET_TRACE
 		Asset *new_asset = new Asset;
+SET_TRACE
 		*new_asset = *asset;
 // If the asset existed and was overwritten, the status will be READY.
+//printf("MainIndexes::add_next_asset 1\n");
 		new_asset->index_status = INDEX_NOTTESTED;
+SET_TRACE
 		next_assets.append(new_asset);
+SET_TRACE
 	}
+SET_TRACE
 
 	next_lock->unlock();
 }

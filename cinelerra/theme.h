@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef THEME_H
 #define THEME_H
 
@@ -6,6 +27,7 @@
 #include "bctheme.h"
 #include "cwindowgui.inc"
 #include "guicast.h"
+#include "keyframegui.inc"
 #include "levelwindowgui.inc"
 #include "mbuttons.inc"
 #include "mwindow.inc"
@@ -14,6 +36,7 @@
 #include "overlayframe.inc"
 #include "patchbay.inc"
 #include "preferencesthread.inc"
+#include "presetsgui.inc"
 #include "recordgui.inc"
 #include "recordmonitor.inc"
 #include "resourcepixmap.inc"
@@ -60,6 +83,8 @@ public:
 		int w, 
 		int h);
 	virtual void get_plugindialog_sizes();
+//	virtual void get_presetdialog_sizes(PresetsWindow *gui);
+	virtual void get_keyframedialog_sizes(KeyFrameWindow *gui);
 	virtual void get_menueffect_sizes(int use_list);
 	virtual void draw_rwindow_bg(RecordGUI *gui);
 	virtual void draw_rmonitor_bg(RecordMonitorGUI *gui);
@@ -93,7 +118,7 @@ public:
 	ArrayList<BC_ListBoxItem*> frame_sizes;
 	ArrayList<BC_ListBoxItem*> sample_rates;
 	ArrayList<BC_ListBoxItem*> zoom_values;
-	char *theme_title;
+	const char *theme_title;
 
 // Tools for building widgets
 	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);
@@ -175,6 +200,8 @@ public:
 	int patchbay_x, patchbay_y, patchbay_w, patchbay_h;
 // pixels between toggles and buttons in edit panel
 	int toggle_margin;
+// Distance to left and right of automation point for control points
+	int control_pixels;
 
 	int plugindialog_new_x, plugindialog_new_y, plugindialog_new_w, plugindialog_new_h;
 	int plugindialog_shared_x, plugindialog_shared_y, plugindialog_shared_w, plugindialog_shared_h;
@@ -182,6 +209,22 @@ public:
 	int plugindialog_newattach_x, plugindialog_newattach_y;
 	int plugindialog_sharedattach_x, plugindialog_sharedattach_y;
 	int plugindialog_moduleattach_x, plugindialog_moduleattach_y;
+
+
+
+
+
+	int presets_list_x, presets_list_y, presets_list_w, presets_list_h;
+	int presets_text_x, presets_text_y, presets_text_w;
+	int presets_delete_x, presets_delete_y;
+	int presets_save_x, presets_save_y;
+	int presets_apply_x, presets_apply_y;   
+
+
+	int keyframe_list_x, keyframe_list_y, keyframe_list_w, keyframe_list_h;
+	int keyframe_text_x, keyframe_text_y, keyframe_text_w, keyframe_text_h;
+	int keyframe_value_x, keyframe_value_y, keyframe_value_w, keyframe_value_h;
+	int keyframe_all_x, keyframe_all_y;
 
 	int menueffect_list_x, menueffect_list_y, menueffect_list_w, menueffect_list_h;
 	int menueffect_file_x, menueffect_file_y;
@@ -223,7 +266,8 @@ public:
 	int vtime_x, vtime_y, vtime_w;
 	int vtransport_x, vtransport_y;
 	int vzoom_x, vzoom_y;
-
+	int window_border;
+	int widget_border;
 
 
 // Bitmaps

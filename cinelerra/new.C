@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -36,40 +57,31 @@ New::New(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	script = 0;
+	new_edl = 0;
 }
 
-int New::create_objects()
+void New::create_objects()
 {
 	thread = new NewThread(mwindow, this);
-	return 0;
 }
 
 int New::handle_event() 
 {
-	if(thread->running())
-	{
-		thread->window_lock->lock("New::handle_event");
-		if(thread->nwindow)
-		{
-			thread->nwindow->lock_window("New::handle_event");
-			thread->nwindow->raise_window();
-			thread->nwindow->unlock_window();
-		}
-		thread->window_lock->unlock();
-		return 1;
-	}
-	mwindow->edl->save_defaults(mwindow->defaults);
-	create_new_edl();
-	thread->start(); 
+	mwindow->gui->unlock_window();
+	thread->start();
+	mwindow->gui->lock_window("New::handle_event");
 
 	return 1;
 }
 
 void New::create_new_edl()
 {
-	new_edl = new EDL;
-	new_edl->create_objects();
-	new_edl->load_defaults(mwindow->defaults);
+	if(!new_edl)
+	{
+		new_edl = new EDL;
+		new_edl->create_objects();
+		new_edl->load_defaults(mwindow->defaults);
+	}
 }
 
 
@@ -89,6 +101,8 @@ int New::create_new_project()
 	mwindow->gui->lock_window();
 	mwindow->reset_caches();
 
+
+
 	memcpy(new_edl->session->achannel_positions,
 		&mwindow->preferences->channel_positions[
 			MAXCHANNELS * (new_edl->session->audio_channels - 1)],
@@ -96,54 +110,58 @@ int New::create_new_project()
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
 
+	mwindow->undo->update_undo_before();
 	mwindow->set_filename("");
-	mwindow->undo->update_undo(_("New"), LOAD_ALL);
 
 	mwindow->hide_plugins();
 	delete mwindow->edl;
 	mwindow->edl = new_edl;
+	new_edl = 0;
 	mwindow->save_defaults();
 
 // Load file sequence
 	mwindow->update_project(LOAD_REPLACE);
 	mwindow->session->changes_made = 0;
+	mwindow->undo->update_undo_after(_("New"), LOAD_ALL);
 	mwindow->gui->unlock_window();
 	return 0;
 }
 
 NewThread::NewThread(MWindow *mwindow, New *new_project)
- : Thread()
+ : BC_DialogThread()
 {
 	this->mwindow = mwindow;
 	this->new_project = new_project;
-	window_lock = new Mutex("NewThread::window_lock");
 }
 
 NewThread::~NewThread()
 {
-	delete window_lock;
 }
 
 
-void NewThread::run()
+
+BC_Window* NewThread::new_gui()
 {
 	int result = 0;
+	
+	mwindow->edl->save_defaults(mwindow->defaults);
+	new_project->create_new_edl();
 	load_defaults();
 
-	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
-	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
+	mwindow->gui->lock_window("NewThread::new_gui");
+	int x = mwindow->gui->get_abs_cursor_x(0) - WIDTH / 2;
+	int y = mwindow->gui->get_abs_cursor_y(0) - HEIGHT / 2;
 
-	window_lock->lock("NewThread::run 1\n");
 	nwindow = new NewWindow(mwindow, this, x, y);
 	nwindow->create_objects();
-	window_lock->unlock();
+	mwindow->gui->unlock_window();
+	return nwindow;
+}
 
-	result = nwindow->run_window();
 
-	window_lock->lock("NewThread::run 2\n");
-	delete nwindow;	
-	nwindow = 0;
-	window_lock->unlock();
+
+void NewThread::handle_close_event(int result)
+{
 
 	new_project->new_edl->save_defaults(mwindow->defaults);
 	mwindow->defaults->save();
@@ -152,12 +170,15 @@ void NewThread::run()
 	{
 // Aborted
 		delete new_project->new_edl;
+		new_project->new_edl = 0;
 	}
 	else
 	{
 		new_project->create_new_project();
 	}
 }
+
+
 
 int NewThread::load_defaults()
 {
@@ -215,14 +236,17 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
 
 NewWindow::~NewWindow()
 {
+	lock_window("NewWindow::~NewWindow");
 	if(format_presets) delete format_presets;
+	unlock_window();
 }
 
-int NewWindow::create_objects()
+void NewWindow::create_objects()
 {
 	int x = 10, y = 10, x1, y1;
 	BC_TextBox *textbox;
 
+	lock_window("NewWindow::create_objects");
 	mwindow->theme->draw_new_bg(this);
 
 	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));
@@ -366,7 +390,7 @@ int NewWindow::create_objects()
 	flash();
 	update();
 	show_window();
-	return 0;
+	unlock_window();
 }
 
 int NewWindow::update()
@@ -412,7 +436,7 @@ EDL* NewPresets::get_edl()
 
 
 
-NewATracks::NewATracks(NewWindow *nwindow, char *text, int x, int y)
+NewATracks::NewATracks(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
 	this->nwindow = nwindow;
@@ -444,7 +468,7 @@ int NewATracksTumbler::handle_down_event()
 	return 1;
 }
 
-NewAChannels::NewAChannels(NewWindow *nwindow, char *text, int x, int y)
+NewAChannels::NewAChannels(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
 	this->nwindow = nwindow;
@@ -477,7 +501,7 @@ int NewAChannelsTumbler::handle_down_event()
 }
 
 
-NewSampleRate::NewSampleRate(NewWindow *nwindow, char *text, int x, int y)
+NewSampleRate::NewSampleRate(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
 	this->nwindow = nwindow;
@@ -527,7 +551,7 @@ int SampleRatePulldown::handle_event()
 
 
 
-NewVTracks::NewVTracks(NewWindow *nwindow, char *text, int x, int y)
+NewVTracks::NewVTracks(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
 	this->nwindow = nwindow;
@@ -559,7 +583,7 @@ int NewVTracksTumbler::handle_down_event()
 	return 1;
 }
 
-NewVChannels::NewVChannels(NewWindow *nwindow, char *text, int x, int y)
+NewVChannels::NewVChannels(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
 	this->nwindow = nwindow;
@@ -591,7 +615,7 @@ int NewVChannelsTumbler::handle_down_event()
 	return 1;
 }
 
-NewFrameRate::NewFrameRate(NewWindow *nwindow, char *text, int x, int y)
+NewFrameRate::NewFrameRate(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 90, 1, text)
 {
 	this->nwindow = nwindow;
@@ -699,7 +723,7 @@ int NewOutputH::handle_event()
 	return 1;
 }
 
-NewAspectW::NewAspectW(NewWindow *nwindow, char *text, int x, int y)
+NewAspectW::NewAspectW(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 70, 1, text)
 {
 	this->nwindow = nwindow;
@@ -711,7 +735,7 @@ int NewAspectW::handle_event()
 	return 1;
 }
 
-NewAspectH::NewAspectH(NewWindow *nwindow, char *text, int x, int y)
+NewAspectH::NewAspectH(NewWindow *nwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 70, 1, text)
 {
 	this->nwindow = nwindow;
@@ -768,7 +792,7 @@ int AspectPulldown::handle_event()
 	return 1;
 }
 
-ColormodelItem::ColormodelItem(char *text, int value)
+ColormodelItem::ColormodelItem(const char *text, int value)
  : BC_ListBoxItem(text)
 {
 	this->value = value;
@@ -804,7 +828,7 @@ int ColormodelPulldown::handle_event()
 	return 1;
 }
 
-char* ColormodelPulldown::colormodel_to_text()
+const char* ColormodelPulldown::colormodel_to_text()
 {
 	for(int i = 0; i < mwindow->colormodels.total; i++)
 		if(mwindow->colormodels.values[i]->value == *output_value) 

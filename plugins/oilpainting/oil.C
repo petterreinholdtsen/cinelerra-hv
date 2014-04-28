@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -59,19 +80,19 @@ public:
 	OilEffect *plugin;
 };
 
-class OilWindow : public BC_Window
+class OilWindow : public PluginClientWindow
 {
 public:
-	OilWindow(OilEffect *plugin, int x, int y);
+	OilWindow(OilEffect *plugin);
 	~OilWindow();
 	void create_objects();
-	int close_event();
+
 	OilEffect *plugin;
 	OilRadius *radius;
 	OilIntensity *intensity;
 };
 
-PLUGIN_THREAD_HEADER(OilEffect, OilThread, OilWindow)
+
 
 
 
@@ -115,26 +136,18 @@ class OilEffect : public PluginVClient
 public:
 	OilEffect(PluginServer *server);
 	~OilEffect();
-
+	
+	PLUGIN_CLASS_MEMBERS(OilConfig);
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 
-	OilConfig config;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	BC_Hash *defaults;
-	OilThread *thread;
 	OilServer *engine;
 	int need_reconfigure;
 };
@@ -237,17 +250,13 @@ int OilIntensity::handle_event()
 
 
 
-OilWindow::OilWindow(OilEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+OilWindow::OilWindow(OilEffect *plugin)
+ : PluginClientWindow(plugin, 
 	300, 
 	160, 
 	300, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -268,11 +277,11 @@ void OilWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(OilWindow)
 
 
 
-PLUGIN_THREAD_OBJECT(OilEffect, OilThread, OilWindow)
+
+
 
 
 
@@ -288,29 +297,25 @@ OilEffect::OilEffect(PluginServer *server)
 	temp_frame = 0;
 	need_reconfigure = 1;
 	engine = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 OilEffect::~OilEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
 }
 
 
-char* OilEffect::plugin_title() { return N_("Oil painting"); }
+const char* OilEffect::plugin_title() { return N_("Oil painting"); }
 int OilEffect::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(OilEffect)
 
-SHOW_GUI_MACRO(OilEffect, OilThread)
-
-RAISE_WINDOW_MACRO(OilEffect)
-
-SET_STRING_MACRO(OilEffect)
+NEW_WINDOW_MACRO(OilEffect, OilWindow)
 
 void OilEffect::update_gui()
 {
@@ -320,8 +325,8 @@ void OilEffect::update_gui()
 		load_configuration();
 //printf("OilEffect::update_gui 1 %ld %f\n", get_source_position(), config.radius);
 
-		thread->window->radius->update(config.radius);
-		thread->window->intensity->update(config.use_intensity);
+		((OilWindow*)thread->window)->radius->update(config.radius);
+		((OilWindow*)thread->window)->intensity->update(config.use_intensity);
 		thread->window->unlock_window();
 	}
 }
@@ -357,7 +362,7 @@ void OilEffect::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("OIL_PAINTING");
 	output.tag.set_property("RADIUS", config.radius);
 	output.tag.set_property("USE_INTENSITY", config.use_intensity);
@@ -369,7 +374,7 @@ void OilEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

@@ -19,7 +19,7 @@ install:
 	do \
 		BASENAME=`echo $$i | sed 's/\.mo//'` ; \
 		DST=cinelerra.mo ; \
-		DIR=/usr/share/locale/$$BASENAME/LC_MESSAGES ; \
+		DIR=../bin/locale/$$BASENAME/LC_MESSAGES ; \
 		echo mkdir -p $$DIR ; \
 		mkdir -p $$DIR ; \
 		echo cp $$i $$DIR/$$DST ; \

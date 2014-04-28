@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef MAINERROR_H
 #define MAINERROR_H
 
@@ -42,14 +63,14 @@ public:
 
 
 // Display error message to command line or GUI, depending on what exists.
-	static void show_error(char *string);
+	static void show_error(const char *string);
 
 
 private:
-	void show_error_local(char *string);
+	void show_error_local(const char *string);
 
 // Split errors into multiple lines based on carriage returns.
-	void append_error(char *string);
+	void append_error(const char *string);
 
 
 	MWindow *mwindow;

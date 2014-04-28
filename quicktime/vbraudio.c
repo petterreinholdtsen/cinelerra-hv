@@ -158,6 +158,28 @@ void quicktime_store_vbr_float(quicktime_audio_map_t *atrack,
 	if(vbr->buffer_size > MAX_VBR_BUFFER) vbr->buffer_size = MAX_VBR_BUFFER;
 }
 
+void quicktime_store_vbr_int16(quicktime_audio_map_t *atrack,
+	int16_t *samples,
+	int sample_count)
+{
+	int i, j;
+	quicktime_vbr_t *vbr = &atrack->vbr;
+	for(i = 0; i < sample_count; i++)
+	{
+		for(j = 0; j < vbr->channels; j++)
+		{
+			vbr->output_buffer[j][vbr->buffer_ptr] = 
+				(float)samples[i * vbr->channels + j] / 32768.0;
+		}
+		vbr->buffer_ptr++;
+		if(vbr->buffer_ptr >= MAX_VBR_BUFFER)
+			vbr->buffer_ptr = 0;
+	}
+	vbr->buffer_end += sample_count;
+	vbr->buffer_size += sample_count;
+	if(vbr->buffer_size > MAX_VBR_BUFFER) vbr->buffer_size = MAX_VBR_BUFFER;
+}
+
 void quicktime_copy_vbr_float(quicktime_vbr_t *vbr,
 	int64_t start_position, 
 	int samples,
@@ -188,7 +210,6 @@ void quicktime_copy_vbr_int16(quicktime_vbr_t *vbr,
 	int input_ptr = vbr->buffer_ptr - 
 		(vbr->buffer_end - start_position);
 	while(input_ptr < 0) input_ptr += MAX_VBR_BUFFER;
-
 	for(i = 0; i < samples; i++)
 	{
 		output[i] = (int)(vbr->output_buffer[channel][input_ptr++] * 32767);

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -25,7 +46,7 @@ InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 {
 }
 
-int InterfacePrefs::create_objects()
+void InterfacePrefs::create_objects()
 {
 	int y, x, value;
 	BC_Resources *resources = BC_WindowBase::get_resources();
@@ -148,7 +169,7 @@ int InterfacePrefs::create_objects()
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
 
 	y += 35;
-	add_subwindow(new BC_Title(x, y, _("Clicking on in/out points does what:")));
+	add_subwindow(new BC_Title(x, y, _("Clicking on edit boundaries does what:")));
 	y += 25;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
 	
@@ -198,10 +219,9 @@ int InterfacePrefs::create_objects()
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
 	theme->create_objects();
 
-	return 0;
 }
 
-char* InterfacePrefs::behavior_to_text(int mode)
+const char* InterfacePrefs::behavior_to_text(int mode)
 {
 	switch(mode)
 	{
@@ -423,7 +443,7 @@ int TimeFormatFeetSetting::handle_event()
 
 ViewBehaviourText::ViewBehaviourText(int x, 
 	int y, 
-	char *text, 
+	const char *text, 
 	PreferencesWindow *pwindow, 
 	int *output)
  : BC_PopupMenu(x, y, 200, text)
@@ -439,14 +459,13 @@ int ViewBehaviourText::handle_event()
 {
 }
 
-int ViewBehaviourText::create_objects()
+void ViewBehaviourText::create_objects()
 {
 // Video4linux versions are automatically detected
 	add_item(new ViewBehaviourItem(this, _(MOVE_ALL_EDITS_TITLE), MOVE_ALL_EDITS));
 	add_item(new ViewBehaviourItem(this, _(MOVE_ONE_EDIT_TITLE), MOVE_ONE_EDIT));
 	add_item(new ViewBehaviourItem(this, _(MOVE_NO_EDITS_TITLE), MOVE_NO_EDITS));
 	add_item(new ViewBehaviourItem(this, _(MOVE_EDITS_DISABLED_TITLE), MOVE_EDITS_DISABLED));
-	return 0;
 }
 
 

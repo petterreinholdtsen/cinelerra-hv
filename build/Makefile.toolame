@@ -1,6 +1,6 @@
 include global_config
 
-DIR := toolame-02l
+DIR := $(shell expr thirdparty/toolame* )
 
 OBJS := \
 	$(DIR)/$(OBJDIR)/ath.o \

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "automation.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -343,7 +364,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 
 	Auto *current = 0;
-	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
+//	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position_project, 
 		PLAY_FORWARD,
 		current);
@@ -359,13 +380,13 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 //printf("VirtualVNode::render_mask 1 %d %d\n", total_points, keyframe->value);
 // Ignore certain masks
 	if(total_points <= 2 || 
-		(keyframe->value == 0 && default_auto->mode == MASK_SUBTRACT_ALPHA))
+		(keyframe->value == 0 && keyframe->mode == MASK_SUBTRACT_ALPHA))
 	{
 		return;
 	}
 
 // Fake certain masks
-	if(keyframe->value == 0 && default_auto->mode == MASK_MULTIPLY_ALPHA)
+	if(keyframe->value == 0 && keyframe->mode == MASK_MULTIPLY_ALPHA)
 	{
 		output_temp->clear_frame();
 		return;
@@ -378,7 +399,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 			start_position_project,
 			keyframe_set, 
 			keyframe,
-			default_auto);
+			keyframe);
 	}
 	else
 	{
@@ -387,7 +408,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 			start_position_project,
 			keyframe_set, 
 			keyframe,
-			default_auto);
+			keyframe);
 	}
 }
 
@@ -406,8 +427,8 @@ int VirtualVNode::render_projector(VFrame *input,
 		frame_rate);
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_projector input=%p output=%p title=%s\n", 
-			input, output, track->title);
+		printf("  VirtualVNode::render_projector input=%p output=%p cmodel=%d title=%s\n", 
+			input, output, output->get_color_model(), track->title);
 
 	if(output)
 	{

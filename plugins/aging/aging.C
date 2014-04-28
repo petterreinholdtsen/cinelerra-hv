@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
@@ -5,16 +26,13 @@
 #include "aging.h"
 #include "agingwindow.h"
 #include "effecttv.h"
+#include "language.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -46,26 +64,21 @@ AgingConfig::AgingConfig()
 AgingMain::AgingMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	aging_server = 0;
 }
 
 AgingMain::~AgingMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(aging_server) delete aging_server;
 }
 
-char* AgingMain::plugin_title() { return N_("AgingTV"); }
+const char* AgingMain::plugin_title() { return N_("AgingTV"); }
 int AgingMain::is_realtime() { return 1; }
 
+NEW_WINDOW_MACRO(AgingMain, AgingWindow)
 NEW_PICON_MACRO(AgingMain)
-
-SHOW_GUI_MACRO(AgingMain, AgingThread)
-
-SET_STRING_MACRO(AgingMain)
-
-RAISE_WINDOW_MACRO(AgingMain)
 
 int AgingMain::load_defaults()
 {
@@ -77,8 +90,9 @@ int AgingMain::save_defaults()
 	return 0;
 }
 
-void AgingMain::load_configuration()
+int AgingMain::load_configuration()
 {
+	return 0;
 }
 
 

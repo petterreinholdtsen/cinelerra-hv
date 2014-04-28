@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCRESOURCES_H
 #define BCRESOURCES_H
 
@@ -20,11 +41,15 @@
 
 typedef struct
 {
-	char *suffix;
+	const char *suffix;
 	int icon_type;
 } suffix_to_type_t;
 
-
+typedef struct
+{
+	char path[BCTEXTLEN];
+	int id;
+} filebox_history_t;
 
 class BC_Resources
 {
@@ -32,10 +57,14 @@ public:
 	BC_Resources(); // The window parameter is used to get the display information initially
 	~BC_Resources();
 
+	friend class BC_WindowBase;
+
 	int initialize_display(BC_WindowBase *window);
 
 // Get unique ID
 	int get_id();
+// Get ID for filebox history.  Persistent.
+	int get_filebox_id();
 	int get_bg_color();          // window backgrounds
 	int get_bg_shadow1();        // border for windows
 	int get_bg_shadow2();
@@ -239,7 +268,7 @@ public:
 // Filter currently used in filebox
 	char filebox_filter[BCTEXTLEN];
 // History of submitted files
-	char filebox_history[FILEBOX_HISTORY_SIZE][BCTEXTLEN];
+	filebox_history_t filebox_history[FILEBOX_HISTORY_SIZE];
 // filebox size
 	int filebox_w;
 	int filebox_h;
@@ -261,26 +290,26 @@ public:
 
 
 // fonts
-	static char *large_font;
-	static char *medium_font;
-	static char *small_font;
+	static const char *large_font;
+	static const char *medium_font;
+	static const char *small_font;
 // Backup of fonts in case the first choices don't exist
-	static char *large_font2;
-	static char *medium_font2;
-	static char *small_font2;
+	static const char *large_font2;
+	static const char *medium_font2;
+	static const char *small_font2;
 
-	static char *large_fontset;
-	static char *medium_fontset;
-	static char *small_fontset;
+	static const char *large_fontset;
+	static const char *medium_fontset;
+	static const char *small_fontset;
 
-	static char *large_font_xft;
-	static char *medium_font_xft;
-	static char *small_font_xft;
+	static const char *large_font_xft;
+	static const char *medium_font_xft;
+	static const char *small_font_xft;
 
 // Backup of fonts in case the first choices don't exist
-	static char *large_font_xft2;
-	static char *medium_font_xft2;
-	static char *small_font_xft2;
+	static const char *large_font_xft2;
+	static const char *medium_font_xft2;
+	static const char *small_font_xft2;
 
 	VFrame **medium_7segment;
 
@@ -318,6 +347,7 @@ private:
 	BC_Synchronous *synchronous;
 
 	int id;
+	int filebox_id;
 };
 
 

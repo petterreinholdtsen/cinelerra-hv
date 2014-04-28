@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef FILEMOV_H
 #define FILEMOV_H
 
@@ -71,8 +92,8 @@ public:
 	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
 	int can_copy_from(Edit *edit, int64_t position); // This file can copy frames directly from the asset
-	static char *strtocompression(char *string);
-	static char *compressiontostr(char *string);
+	static const char *strtocompression(char *string);
+	static const char *compressiontostr(char *string);
 
 // Fix codec to what AVI or MOV support
 	static void fix_codecs(Asset *asset);
@@ -89,7 +110,6 @@ private:
 	int reset_parameters_derived();
 	int quicktime_atracks;
 	int quicktime_vtracks;
-// current positions for when the file descriptor doesn't have the right position
 	quicktime_t *fd;
 	int depth;        // Depth in bits per pixel
 	int64_t frames_correction;  // Correction after 32bit overflow
@@ -145,7 +165,7 @@ public:
 	MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset);
 	~MOVConfigAudio();
 
-	int create_objects();
+	void create_objects();
 	int close_event();
 	void update_parameters();
 	void reset();
@@ -227,7 +247,7 @@ public:
 		char *locked_compressor);
 	~MOVConfigVideo();
 
-	int create_objects();
+	void create_objects();
 	int close_event();
 	void reset();
 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -74,12 +95,11 @@ public:
 	WhirlEffect *plugin;
 };
 
-class WhirlWindow : public BC_Window
+class WhirlWindow : public PluginClientWindow
 {
 public:
-	WhirlWindow(WhirlEffect *plugin, int x, int y);
+	WhirlWindow(WhirlEffect *plugin);
 	void create_objects();
-	int close_event();
 	WhirlEffect *plugin;
 	WhirlRadius *radius;
 	WhirlPinch *pinch;
@@ -87,7 +107,7 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(WhirlEffect, WhirlThread, WhirlWindow)
+
 
 
 class WhirlPackage : public LoadPackage
@@ -126,15 +146,10 @@ public:
 	WhirlEffect(PluginServer *server);
 	~WhirlEffect();
 
+	PLUGIN_CLASS_MEMBERS(WhirlConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -143,16 +158,12 @@ public:
 	WhirlEngine *engine;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	WhirlConfig config;
-	BC_Hash *defaults;
-	WhirlThread *thread;
 	int need_reconfigure;
 };
 
 
 
 
-PLUGIN_THREAD_OBJECT(WhirlEffect, WhirlThread, WhirlWindow)
 
 
 REGISTER_PLUGIN(WhirlEffect)
@@ -216,17 +227,13 @@ void WhirlConfig::interpolate(WhirlConfig &prev,
 
 
 
-WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+WhirlWindow::WhirlWindow(WhirlEffect *plugin)
+ : PluginClientWindow(plugin, 
 	220, 
 	200, 
 	220, 
 	200, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -252,11 +259,6 @@ void WhirlWindow::create_objects()
 	flush();
 }
 
-int WhirlWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
 
 
 
@@ -349,12 +351,12 @@ WhirlEffect::WhirlEffect(PluginServer *server)
 	need_reconfigure = 1;
 	engine = 0;
 	temp_frame = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 WhirlEffect::~WhirlEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(engine) delete engine;
 	if(temp_frame) delete temp_frame;
 }
@@ -364,16 +366,14 @@ WhirlEffect::~WhirlEffect()
 
 
 
-char* WhirlEffect::plugin_title() { return N_("Whirl"); }
+const char* WhirlEffect::plugin_title() { return N_("Whirl"); }
 int WhirlEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(WhirlEffect)
 
-SHOW_GUI_MACRO(WhirlEffect, WhirlThread)
 
-RAISE_WINDOW_MACRO(WhirlEffect)
+NEW_WINDOW_MACRO(WhirlEffect, WhirlWindow)
 
-SET_STRING_MACRO(WhirlEffect)
 
 void WhirlEffect::update_gui()
 {
@@ -381,9 +381,9 @@ void WhirlEffect::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->angle->update(config.angle);
-		thread->window->pinch->update(config.pinch);
-		thread->window->radius->update(config.radius);
+		((WhirlWindow*)thread->window)->angle->update(config.angle);
+		((WhirlWindow*)thread->window)->pinch->update(config.pinch);
+		((WhirlWindow*)thread->window)->radius->update(config.radius);
 		thread->window->unlock_window();
 	}
 }
@@ -421,7 +421,7 @@ void WhirlEffect::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("WHIRL");
 	output.tag.set_property("ANGLE", config.angle);
@@ -436,7 +436,7 @@ void WhirlEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -478,11 +478,10 @@ int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 				input->get_color_model());
 			temp_frame->copy_from(input);
 			this->input = temp_frame;
-//printf("WhirlEffect::process_realtime 1\n");
 		}
 
 		if(!engine) engine = new WhirlEngine(this, PluginClient::smp + 1);
-		
+
 		engine->process_packages();
 	}
 }
@@ -602,14 +601,20 @@ static float bilinear(double x, double y, double *values)
 #define WHIRL_MACRO(type, max, components) \
 { \
 	type **input_rows = (type**)plugin->input->get_rows(); \
-	double values[components]; \
-	for(int row = pkg->row1; row <= (pkg->row2 + pkg->row1) / 2; row++) \
+/* Compiler error requires separate arrays */ \
+	double top_values[components]; \
+	double bot_values[components]; \
+	for(int row = pkg->row1 / 2; row <= (pkg->row2 + pkg->row1) / 2; row++) \
 	{ \
 		type *top_row = (type*)plugin->output->get_rows()[row]; \
 		type *bot_row = (type*)plugin->output->get_rows()[h - row - 1]; \
 		type *top_p = top_row; \
 		type *bot_p = bot_row + components * w - components; \
-		 \
+		type *pixel1; \
+		type *pixel2; \
+		type *pixel3; \
+		type *pixel4; \
+ \
 		for(int col = 0; col < w; col++) \
 		{ \
 			if(calc_undistorted_coords(cen_x, \
@@ -638,36 +643,36 @@ static float bilinear(double x, double y, double *values)
 				else \
 					iy = -((int)-cy + 1); \
  \
-				type *pixel1 = GET_PIXEL(components, ix,     iy,     input_rows); \
-				type *pixel2 = GET_PIXEL(components, ix + 1, iy,     input_rows); \
-				type *pixel3 = GET_PIXEL(components, ix,     iy + 1, input_rows); \
-				type *pixel4 = GET_PIXEL(components, ix + 1, iy + 1, input_rows); \
+				pixel1 = GET_PIXEL(components, ix,     iy,     input_rows); \
+				pixel2 = GET_PIXEL(components, ix + 1, iy,     input_rows); \
+				pixel3 = GET_PIXEL(components, ix,     iy + 1, input_rows); \
+				pixel4 = GET_PIXEL(components, ix + 1, iy + 1, input_rows); \
  \
-				values[0] = pixel1[0]; \
-				values[1] = pixel2[0]; \
-				values[2] = pixel3[0]; \
-				values[3] = pixel4[0]; \
-				top_p[0] = (type)bilinear(cx, cy, values); \
+				top_values[0] = pixel1[0]; \
+				top_values[1] = pixel2[0]; \
+				top_values[2] = pixel3[0]; \
+				top_values[3] = pixel4[0]; \
+				top_p[0] = (type)bilinear(cx, cy, top_values); \
  \
-				values[0] = pixel1[1]; \
-				values[1] = pixel2[1]; \
-				values[2] = pixel3[1]; \
-				values[3] = pixel4[1]; \
-				top_p[1] = (type)bilinear(cx, cy, values); \
+				top_values[0] = pixel1[1]; \
+				top_values[1] = pixel2[1]; \
+				top_values[2] = pixel3[1]; \
+				top_values[3] = pixel4[1]; \
+				top_p[1] = (type)bilinear(cx, cy, top_values); \
  \
-				values[0] = pixel1[2]; \
-				values[1] = pixel2[2]; \
-				values[2] = pixel3[2]; \
-				values[3] = pixel4[2]; \
-				top_p[2] = (type)bilinear(cx, cy, values); \
+				top_values[0] = pixel1[2]; \
+				top_values[1] = pixel2[2]; \
+				top_values[2] = pixel3[2]; \
+				top_values[3] = pixel4[2]; \
+				top_p[2] = (type)bilinear(cx, cy, top_values); \
  \
 				if(components == 4) \
 				{ \
-					values[0] = pixel1[3]; \
-					values[1] = pixel2[3]; \
-					values[2] = pixel3[3]; \
-					values[3] = pixel4[3]; \
-					top_p[3] = (type)bilinear(cx, cy, values); \
+					top_values[0] = pixel1[3]; \
+					top_values[1] = pixel2[3]; \
+					top_values[2] = pixel3[3]; \
+					top_values[3] = pixel4[3]; \
+					top_p[3] = (type)bilinear(cx, cy, top_values); \
 				} \
  \
 				top_p += components; \
@@ -693,31 +698,31 @@ static float bilinear(double x, double y, double *values)
  \
  \
  \
-				values[0] = pixel1[0]; \
-				values[1] = pixel2[0]; \
-				values[2] = pixel3[0]; \
-				values[3] = pixel4[0]; \
-				bot_p[0] = (type)bilinear(cx, cy, values); \
+				bot_values[0] = pixel1[0]; \
+				bot_values[1] = pixel2[0]; \
+				bot_values[2] = pixel3[0]; \
+				bot_values[3] = pixel4[0]; \
+				bot_p[0] = (type)bilinear(cx, cy, bot_values); \
  \
-				values[0] = pixel1[1]; \
-				values[1] = pixel2[1]; \
-				values[2] = pixel3[1]; \
-				values[3] = pixel4[1]; \
-				bot_p[1] = (type)bilinear(cx, cy, values); \
+				bot_values[0] = pixel1[1]; \
+				bot_values[1] = pixel2[1]; \
+				bot_values[2] = pixel3[1]; \
+				bot_values[3] = pixel4[1]; \
+				bot_p[1] = (type)bilinear(cx, cy, bot_values); \
  \
-				values[0] = pixel1[2]; \
-				values[1] = pixel2[2]; \
-				values[2] = pixel3[2]; \
-				values[3] = pixel4[2]; \
-				bot_p[2] = (type)bilinear(cx, cy, values); \
+				bot_values[0] = pixel1[2]; \
+				bot_values[1] = pixel2[2]; \
+				bot_values[2] = pixel3[2]; \
+				bot_values[3] = pixel4[2]; \
+				bot_p[2] = (type)bilinear(cx, cy, bot_values); \
  \
 				if(components == 4) \
 				{ \
-					values[0] = pixel1[3]; \
-					values[1] = pixel2[3]; \
-					values[2] = pixel3[3]; \
-					values[3] = pixel4[3]; \
-					bot_p[3] = (type)bilinear(cx, cy, values); \
+					bot_values[0] = pixel1[3]; \
+					bot_values[1] = pixel2[3]; \
+					bot_values[2] = pixel3[3]; \
+					bot_values[3] = pixel4[3]; \
+					bot_p[3] = (type)bilinear(cx, cy, bot_values); \
 				} \
  \
 				bot_p -= components; \
@@ -823,6 +828,7 @@ void WhirlUnit::process_package(LoadPackage *package)
 
 
 WhirlEngine::WhirlEngine(WhirlEffect *plugin, int cpus)
+// : LoadServer(1, 1)
  : LoadServer(cpus, cpus)
 {
 	this->plugin = plugin;

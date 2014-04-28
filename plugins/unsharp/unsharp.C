@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -71,26 +92,22 @@ void UnsharpConfig::interpolate(UnsharpConfig &prev,
 UnsharpMain::UnsharpMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 }
 
 UnsharpMain::~UnsharpMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	delete engine;
 }
 
-char* UnsharpMain::plugin_title() { return N_("Unsharp"); }
+const char* UnsharpMain::plugin_title() { return N_("Unsharp"); }
 int UnsharpMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(UnsharpMain)
 
-SHOW_GUI_MACRO(UnsharpMain, UnsharpThread)
-
-SET_STRING_MACRO(UnsharpMain)
-
-RAISE_WINDOW_MACRO(UnsharpMain)
+NEW_WINDOW_MACRO(UnsharpMain, UnsharpWindow)
 
 LOAD_CONFIGURATION_MACRO(UnsharpMain, UnsharpConfig)
 
@@ -103,7 +120,7 @@ void UnsharpMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("UnsharpMain::update_gui");
-			thread->window->update();
+			((UnsharpWindow*)thread->window)->update();
 			thread->window->unlock_window();
 		}
 	}
@@ -143,7 +160,7 @@ void UnsharpMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("UNSHARP");
 
 	output.tag.set_property("RADIUS", config.radius);
@@ -157,7 +174,7 @@ void UnsharpMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

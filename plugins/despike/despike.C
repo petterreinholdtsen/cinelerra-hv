@@ -1,8 +1,30 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "confirmsave.h"
 #include "bchash.h"
 #include "errorbox.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "despike.h"
 #include "despikewindow.h"
@@ -11,10 +33,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 REGISTER_PLUGIN(Despike)
@@ -24,24 +42,20 @@ REGISTER_PLUGIN(Despike)
 Despike::Despike(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	last_sample = 0;
 }
 
 Despike::~Despike()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* Despike::plugin_title() { return N_("Despike"); }
+const char* Despike::plugin_title() { return N_("Despike"); }
 int Despike::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(Despike)
-
-
-SHOW_GUI_MACRO(Despike, DespikeThread)
-SET_STRING_MACRO(Despike)
-RAISE_WINDOW_MACRO(Despike)
+NEW_WINDOW_MACRO(Despike, DespikeWindow)
 
 LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
@@ -106,7 +120,7 @@ void Despike::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause xml file to store data directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("DESPIKE");
 	output.tag.set_property("LEVEL", config.level);
@@ -120,7 +134,7 @@ void Despike::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 // cause xml file to read directly from text
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 	int result = 0;
 
 	result = input.read_tag();
@@ -140,10 +154,10 @@ void Despike::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->level->update(config.level);
-		thread->window->slope->update(config.slope);
-		thread->window->unlock_window();
+		((DespikeWindow*)thread->window)->lock_window();
+		((DespikeWindow*)thread->window)->level->update(config.level);
+		((DespikeWindow*)thread->window)->slope->update(config.slope);
+		((DespikeWindow*)thread->window)->unlock_window();
 	}
 }
 

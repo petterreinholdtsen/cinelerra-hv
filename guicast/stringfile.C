@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "stringfile.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,7 +39,7 @@ StringFile::StringFile(long length)
 	available = this->length;
 }
 
-StringFile::StringFile(char *filename)
+StringFile::StringFile(const char *filename)
 {
 	FILE *in;
 	if(in = fopen(filename, "rb"))
@@ -50,7 +71,7 @@ StringFile::~StringFile()
 	delete [] string;
 }
 
-int StringFile::write_to_file(char *filename)
+int StringFile::write_to_file(const char *filename)
 {
 	FILE *out;
 	if(out = fopen(filename, "wb"))
@@ -66,7 +87,7 @@ int StringFile::write_to_file(char *filename)
 	return 0;
 }
 
-int StringFile::read_from_string(char *string)
+int StringFile::read_from_string(const char *string)
 {
 	int i;
 	
@@ -131,7 +152,8 @@ int StringFile::readline(char *arg1, char *arg2)
 	len = 0; max = 1024;
 	
 	while(string[pointer] == ' ') pointer++; // skip indent
-	arg1[0] = 0;    arg2[0] = 0;
+	arg1[0] = 0;
+	arg2[0] = 0;
 	
 	for(i = 0; string[pointer] != ' ' && string[pointer] != '\n' && len < max; i++, pointer++)
 	{     // get title

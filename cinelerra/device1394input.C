@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "condition.h"
 #include "device1394input.h"
 #include "ieee1394-ioctl.h"
@@ -104,7 +125,7 @@ int Device1394Input::open(int port,
 // Initialize grabbing
 	if(fd < 0)
 	{
-#define PATH "/dev/dv1394"
+#define PATH "/dev/dv1394/0"
 		if((fd = ::open(PATH, O_RDWR)) < 0)
 		{
 			printf("Device1394Input::open %s: %s\n", PATH, strerror(errno));
@@ -157,7 +178,6 @@ int Device1394Input::open(int port,
 
 
 		audio_buffer = new char[INPUT_SAMPLES * 2 * channels];
-
 		audio_lock = new Condition(0, "Device1394Input::audio_lock");
 		video_lock = new Condition(0, "Device1394Input::video_lock");
 		buffer_lock = new Mutex("Device1394Input::buffer_lock");
@@ -175,6 +195,7 @@ void Device1394Input::run()
 	{
 // Wait for frame to arrive
 		struct dv1394_status status;
+printf("Device1394Input::run %d done=%d\n", __LINE__, done);
 
 		Thread::enable_cancel();
 		if(ioctl(fd, DV1394_IOC_WAIT_FRAMES, 1))

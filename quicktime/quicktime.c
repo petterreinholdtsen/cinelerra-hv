@@ -1,5 +1,6 @@
 #include "colormodels.h"
 #include "funcprotos.h"
+#include "qtasf_codes.h"
 #include "quicktime.h"
 #include <string.h>
 #include <sys/stat.h>
@@ -11,7 +12,10 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 	int moov_exists = 0, mdat_exists = 0, result, atoms = 1;
 	int64_t mdat_start, mdat_size;
 	quicktime_atom_t leaf_atom;
-	int64_t moov_length;
+	int64_t moov_start, moov_end;
+	int ftyp_exists = 0;
+	int ftyp_size = 0;
+	unsigned char *ftyp_data = 0;
 	
 	quicktime_init(&file);
 
@@ -28,15 +32,24 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 /* get the locations of moov and mdat atoms */
 	do
 	{
-/*printf("%x\n", quicktime_position(&file)); */
 		result = quicktime_atom_read_header(&file, &leaf_atom);
+//printf("0x%llx %s\n", quicktime_position(&file), leaf_atom.type);
 
 		if(!result)
 		{
+			if(quicktime_atom_is(&leaf_atom, "ftyp"))
+			{
+				ftyp_exists = 1;
+				ftyp_data = calloc(1, leaf_atom.size);
+				ftyp_size = leaf_atom.size;
+				quicktime_set_position(&file, 
+					quicktime_position(&file) - HEADER_LENGTH);
+				quicktime_read_data(&file, ftyp_data, ftyp_size);
+			}
+			else
 			if(quicktime_atom_is(&leaf_atom, "moov"))
 			{
 				moov_exists = atoms;
-				moov_length = leaf_atom.size;
 			}
 			else
 			if(quicktime_atom_is(&leaf_atom, "mdat"))
@@ -57,12 +70,14 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 	if(!moov_exists)
 	{
 		printf("quicktime_make_streamable: no moov atom\n");
+		if(ftyp_data) free(ftyp_data);
 		return 1;
 	}
 
 	if(!mdat_exists)
 	{
 		printf("quicktime_make_streamable: no mdat atom\n");
+		if(ftyp_data) free(ftyp_data);
 		return 1;
 	}
 
@@ -80,10 +95,10 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 /* read the header proper */
 			if(!(old_file = quicktime_open(in_path, 1, 0)))
 			{
+				if(ftyp_data) free(ftyp_data);
 				return 1;
 			}
 
-			quicktime_shift_offsets(&(old_file->moov), moov_length);
 
 /* open the output file */
 			if(!(new_file.stream = fopen(out_path, "wb")))
@@ -96,7 +111,22 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 /* set up some flags */
 				new_file.wr = 1;
 				new_file.rd = 0;
-				quicktime_write_moov(&new_file, &(old_file->moov));
+				
+/* Write ftyp header */
+				if(ftyp_exists) quicktime_write_data(&new_file, ftyp_data, ftyp_size);
+				
+/* Write moov once to get final size with our substituted headers */
+				moov_start = quicktime_position(&new_file);
+				quicktime_write_moov(&new_file, &(old_file->moov), 0);
+				moov_end = quicktime_position(&new_file);
+
+printf("make_streamable 0x%llx 0x%llx\n", moov_end - moov_start, mdat_start);
+				quicktime_shift_offsets(&(old_file->moov), 
+					moov_end - moov_start - mdat_start + ftyp_size);
+
+/* Write again with shifted offsets */
+				quicktime_set_position(&new_file, moov_start);
+				quicktime_write_moov(&new_file, &(old_file->moov), 0);
 				quicktime_set_position(old_file, mdat_start);
 
 				if(!(buffer = calloc(1, buf_size)))
@@ -126,26 +156,28 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 		else
 		{
 			printf("quicktime_make_streamable: header already at 0 offset\n");
+			if(ftyp_data) free(ftyp_data);
 			return 0;
 		}
 	}
-	
+
+	if(ftyp_data) free(ftyp_data);
 	return 0;
 }
 
 
 
-void quicktime_set_copyright(quicktime_t *file, char *string)
+void quicktime_set_copyright(quicktime_t *file, const char *string)
 {
 	quicktime_set_udta_string(&(file->moov.udta.copyright), &(file->moov.udta.copyright_len), string);
 }
 
-void quicktime_set_name(quicktime_t *file, char *string)
+void quicktime_set_name(quicktime_t *file, const char *string)
 {
 	quicktime_set_udta_string(&(file->moov.udta.name), &(file->moov.udta.name_len), string);
 }
 
-void quicktime_set_info(quicktime_t *file, char *string)
+void quicktime_set_info(quicktime_t *file, const char *string)
 {
 	quicktime_set_udta_string(&(file->moov.udta.info), &(file->moov.udta.info_len), string);
 }
@@ -344,6 +376,7 @@ int quicktime_delete(quicktime_t *file)
 
 	quicktime_moov_delete(&(file->moov));
 	quicktime_mdat_delete(&(file->mdat));
+	quicktime_delete_asf(file->asf);
 	return 0;
 }
 
@@ -1027,49 +1060,68 @@ int quicktime_read_info(quicktime_t *file)
 	int i, channel, trak_channel, track;
 	int64_t start_position = quicktime_position(file);
 	quicktime_atom_t leaf_atom;
+	quicktime_guid_t guid;
 	quicktime_trak_t *trak;
 	char avi_avi[4];
 	int got_avi = 0;
 	int got_asf = 0;
+	file->use_avi = 0;
+	file->use_asf = 0;
 
 	quicktime_set_position(file, 0LL);
 
-/* Test file format */
-	do
+/* Test for ASF */
+	quicktime_read_guid(file, &guid);
+	quicktime_set_position(file, 0LL);
+	if(!memcmp(&guid, &asf_header, sizeof(guid)))
 	{
-		file->use_avi = 1;
-		file->use_asf = 1;
-		result = quicktime_atom_read_header(file, &leaf_atom);
+		printf("quicktime_read_info: Got ASF\n");
+		got_asf = 1;
+		got_header = 1;
+	}
 
-		if(!result && quicktime_atom_is(&leaf_atom, "RIFF"))
+/* Test file format */
+	if(!got_asf)
+	{
+		quicktime_set_position(file, 0LL);
+		do
 		{
-			quicktime_read_data(file, avi_avi, 4);
-			if(quicktime_match_32(avi_avi, "AVI "))
+			file->use_avi = 1;
+			result = quicktime_atom_read_header(file, &leaf_atom);
+
+			if(!result && quicktime_atom_is(&leaf_atom, "RIFF"))
 			{
-				got_avi = 1;
+				quicktime_read_data(file, avi_avi, 4);
+				if(quicktime_match_32(avi_avi, "AVI "))
+				{
+					got_avi = 1;
+				}
+				else
+				{
+					file->use_avi = 0;
+					result = 0;
+					break;
+				}
 			}
 			else
 			{
+				file->use_avi = 0;
 				result = 0;
 				break;
 			}
-		}
-		else
-		{
-			result = 0;
-			break;
-		}
-	}while(1);
+		}while(1);
+	}
 
-	if(!got_avi) file->use_avi = 0;
-	if(!got_asf) file->use_asf = 0;
+	if(got_avi) file->use_avi = 1;
+	else
+	if(got_asf) file->use_asf = 1;
 
 	quicktime_set_position(file, 0LL);
+
 
 /* McRoweSoft AVI section */
 	if(file->use_avi)
 	{
-//printf("quicktime_read_info 1\n");
 /* Import first RIFF */
 		do
 		{
@@ -1087,12 +1139,18 @@ int quicktime_read_info(quicktime_t *file)
 			!got_header &&
 			quicktime_position(file) < file->total_length);
 
-//printf("quicktime_read_info 10\n");
 /* Construct indexes. */
 		quicktime_import_avi(file);
-//printf("quicktime_read_info 20\n");
 	}
 /* Quicktime section */
+	else
+	if(file->use_asf)
+	{
+		result = quicktime_read_asf(file);
+		if(result) got_header = 0;
+		else
+		quicktime_dump_asf(file->asf);
+	}
 	else
 	if(!file->use_avi)
 	{
@@ -1151,7 +1209,6 @@ int quicktime_read_info(quicktime_t *file)
 /* Shut down preload in case of an obsurdly high temp_size */
 	quicktime_set_preload(file, 0);
 
-//printf("quicktime_read_info 100\n");
 	return !got_header;
 }
 
@@ -1190,7 +1247,23 @@ int quicktime_check_sig(char *path)
 		{
 			result2 = 1;
 		}
-		else
+		
+/*
+ * 		if(!result2)
+ * // Check for Microsoft ASF
+ * 		{
+ * 			quicktime_guid_t guid;
+ * 			quicktime_read_guid(&file, &guid);
+ * 			quicktime_set_position(&file, 0);
+ * 			if(!memcmp(&guid, &asf_header, sizeof(guid)))
+ * 			{
+ * 				printf("quicktime_check_sig: Got ASF\n");
+ * 				result2 = 1;
+ * 			}
+ * 		}
+ */
+
+		if(!result2)
 		{
 			do
 			{
@@ -1323,7 +1396,7 @@ int quicktime_close(quicktime_t *file)
 // Atoms are only written here
 			if(file->stream)
 			{
-				quicktime_write_moov(file, &(file->moov));
+				quicktime_write_moov(file, &(file->moov), 1);
 				quicktime_atom_write_footer(file, &file->mdat.atom);
 			}
 		}

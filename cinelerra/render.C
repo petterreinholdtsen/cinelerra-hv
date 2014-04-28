@@ -1,8 +1,30 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "arender.h"
 #include "asset.h"
 #include "auto.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "compresspopup.h"
@@ -303,61 +325,66 @@ void Render::stop_operation()
 void Render::run()
 {
 	int format_error;
-
+	const int debug = 0;
 
 	result = 0;
 
 	if(mode == Render::INTERACTIVE)
 	{
 // Fix the asset for rendering
-printf("Render::run 1\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 		Asset *asset = new Asset;
 		load_defaults(asset);
-printf("Render::run 2\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 		check_asset(mwindow->edl, *asset);
-printf("Render::run 3\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 
 // Get format from user
 		if(!result)
 		{
-printf("Render::run 4\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 			do
 			{
 				format_error = 0;
 				result = 0;
 
 				{
-printf("Render::run 5\n");
-					RenderWindow window(mwindow, this, asset);
-printf("Render::run 6\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
+					RenderWindow window(mwindow, 
+						this, 
+						asset,
+						mwindow->gui->get_abs_cursor_x(1),
+						mwindow->gui->get_abs_cursor_y(1));
+if(debug) printf("Render::run %d\n%", __LINE__);
 					window.create_objects();
-printf("Render::run 7\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 					result = window.run_window();
-printf("Render::run 8\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 				}
+
 
 				if(!result)
 				{
-printf("Render::run 8.1\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 // Check the asset format for errors.
 					FormatCheck format_check(asset);
-printf("Render::run 8.2\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 					format_error = format_check.check_format();
-printf("Render::run 8.3\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 				}
 			}while(format_error && !result);
 		}
-printf("Render::run 9\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 
 		save_defaults(asset);
 		mwindow->save_defaults();
-printf("Render::run 10\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 
 		if(!result) render(1, asset, mwindow->edl, strategy);
-printf("Render::run 11\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 
 		Garbage::delete_object(asset);
-printf("Render::run 12\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 	}
 	else
 	if(mode == Render::BATCH)
@@ -420,7 +447,7 @@ printf("Render::run 12\n");
 			mwindow->batch_render->update_done(-1, 0, 0);
 		}
 	}
-printf("Render::run 100\n");
+if(debug) printf("Render::run %d\n%", __LINE__);
 }
 
 
@@ -793,11 +820,12 @@ printf("Render::render 90\n");
 				printf("Render::render: Error rendering data\n");
 			}
 		}
+printf("Render::render 91\n");
 
 // Delete the progress box
 		stop_progress();
 
-//printf("Render::render 100\n");
+printf("Render::render 100\n");
 
 
 
@@ -814,6 +842,7 @@ printf("Render::render 90\n");
 	{
 		mwindow->gui->lock_window("Render::render 3");
 
+		mwindow->undo->update_undo_before();
 
 
 
@@ -831,7 +860,7 @@ printf("Render::render 90\n");
 
 
 		mwindow->save_backup();
-		mwindow->undo->update_undo(_("render"), LOAD_ALL);
+		mwindow->undo->update_undo_after(_("render"), LOAD_ALL);
 		mwindow->update_plugin_guis();
 		mwindow->gui->update(1, 
 			2,
@@ -844,6 +873,7 @@ printf("Render::render 90\n");
 		mwindow->gui->unlock_window();
 	}
 
+printf("Render::render 110\n");
 
 // Disable hourglass
 	if(mwindow)
@@ -866,7 +896,7 @@ printf("Render::render 90\n");
 	delete packages;
 	in_progress = 0;
 	completion->unlock();
-//printf("Render::render 120\n");
+printf("Render::render 120\n");
 
 	return result;
 }
@@ -998,10 +1028,14 @@ int Render::save_defaults(Asset *asset)
 #define HEIGHT 360
 
 
-RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
+RenderWindow::RenderWindow(MWindow *mwindow, 
+	Render *render, 
+	Asset *asset,
+	int x, 
+	int y)
  : BC_Window(PROGRAM_NAME ": Render", 
- 	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
-	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
+ 	x - WIDTH / 2,
+	y - HEIGHT / 2,
  	WIDTH, 
 	HEIGHT,
 	(int)BC_INFINITY,
@@ -1017,15 +1051,19 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 
 RenderWindow::~RenderWindow()
 {
+	lock_window("RenderWindow::~RenderWindow");
 	delete format_tools;
+//printf("RenderWindow::~RenderWindow %d\n", __LINE__);
 	delete loadmode;
+	unlock_window();
 }
 
 
 
-int RenderWindow::create_objects()
+void RenderWindow::create_objects()
 {
-	int x = 5, y = 5;
+	int x = 10, y = 5;
+	lock_window("RenderWindow::create_objects");
 	add_subwindow(new BC_Title(x, 
 		y, 
 		(char*)((render->strategy == FILE_PER_LABEL || 
@@ -1056,5 +1094,5 @@ int RenderWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	return 0;
+	unlock_window();
 }

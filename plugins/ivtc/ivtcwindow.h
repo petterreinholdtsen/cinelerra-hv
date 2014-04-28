@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef IVTCWINDOW_H
 #define IVTCWINDOW_H
 
@@ -12,7 +33,6 @@ class IVTCWindow;
 
 #define TOTAL_PATTERNS 3
 
-PLUGIN_THREAD_HEADER(IVTCMain, IVTCThread, IVTCWindow)
 
 
 class IVTCOffset;
@@ -21,15 +41,14 @@ class IVTCAuto;
 class IVTCAutoThreshold;
 class IVTCPattern;
 
-class IVTCWindow : public BC_Window
+class IVTCWindow : public PluginClientWindow
 {
 public:
-	IVTCWindow(IVTCMain *client, int x, int y);
+	IVTCWindow(IVTCMain *client);
 	~IVTCWindow();
 	
-	int create_objects();
-	int close_event();
-	
+	void create_objects();
+
 	IVTCMain *client;
 	IVTCOffset *frame_offset;
 	IVTCFieldOrder *first_field;

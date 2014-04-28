@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "cpanel.h"
 #include "cwindowgui.h"
 #include "cwindowtool.h"
@@ -30,7 +51,7 @@ CPanel::~CPanel()
 {
 }
 
-int CPanel::create_objects()
+void CPanel::create_objects()
 {
 	int x = this->x, y = this->y;
 	subwindow->add_subwindow(operation[CWINDOW_PROTECT] = new CPanelProtect(mwindow, this, x, y));
@@ -39,6 +60,8 @@ int CPanel::create_objects()
 	y += operation[CWINDOW_ZOOM]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_MASK] = new CPanelMask(mwindow, this, x, y));
 	y += operation[CWINDOW_MASK]->get_h();
+	subwindow->add_subwindow(operation[CWINDOW_RULER] = new CPanelRuler(mwindow, this, x, y));
+	y += operation[CWINDOW_RULER]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_CAMERA] = new CPanelCamera(mwindow, this, x, y));
 	y += operation[CWINDOW_CAMERA]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_PROJECTOR] = new CPanelProj(mwindow, this, x, y));
@@ -50,7 +73,6 @@ int CPanel::create_objects()
 	subwindow->add_subwindow(operation[CWINDOW_TOOL_WINDOW] = new CPanelToolWindow(mwindow, this, x, y));
 	y += operation[CWINDOW_TOOL_WINDOW]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] = new CPanelTitleSafe(mwindow, this, x, y));
-	return 0;
 }
 
 void CPanel::reposition_buttons(int x, int y)
@@ -140,6 +162,30 @@ int CPanelMask::handle_event()
 	gui->subwindow->set_operation(CWINDOW_MASK);
 	return 1;
 }
+
+
+
+
+CPanelRuler::CPanelRuler(MWindow *mwindow, CPanel *gui, int x, int y)
+ : BC_Toggle(x, 
+ 	y, 
+	mwindow->theme->get_image_set("ruler"), 
+	mwindow->edl->session->cwindow_operation == CWINDOW_RULER)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Ruler"));
+}
+CPanelRuler::~CPanelRuler()
+{
+}
+int CPanelRuler::handle_event()
+{
+	gui->subwindow->set_operation(CWINDOW_RULER);
+	return 1;
+}
+
+
 
 
 CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
@@ -267,8 +313,10 @@ CPanelToolWindow::~CPanelToolWindow()
 
 int CPanelToolWindow::handle_event()
 {
+	unlock_window();
 	mwindow->edl->session->tool_window = get_value();
 	gui->subwindow->tool_panel->update_show_window();
+	lock_window("CPanelToolWindow::handle_event");
 	return 1;
 }
 

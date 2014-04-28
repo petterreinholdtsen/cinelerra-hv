@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -63,19 +84,18 @@ public:
 	PolarEffect *plugin;
 };
 
-class PolarWindow : public BC_Window
+class PolarWindow : public PluginClientWindow
 {
 public:
-	PolarWindow(PolarEffect *plugin, int x, int y);
+	PolarWindow(PolarEffect *plugin);
 	void create_objects();
-	int close_event();
 	PolarEffect *plugin;
 	PolarDepth *depth;
 	PolarAngle *angle;
 };
 
 
-PLUGIN_THREAD_HEADER(PolarEffect, PolarThread, PolarWindow)
+
 
 
 class PolarPackage : public LoadPackage
@@ -109,23 +129,15 @@ public:
 	PolarEffect(PluginServer *server);
 	~PolarEffect();
 
+	PLUGIN_CLASS_MEMBERS(PolarConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 
-	PolarConfig config;
-	BC_Hash *defaults;
-	PolarThread *thread;
 	PolarEngine *engine;
 	VFrame *temp_frame;
 	VFrame *input, *output;
@@ -180,17 +192,13 @@ void PolarConfig::interpolate(PolarConfig &prev,
 
 
 
-PolarWindow::PolarWindow(PolarEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+PolarWindow::PolarWindow(PolarEffect *plugin)
+ : PluginClientWindow(plugin, 
 	270, 
 	100, 
 	270, 
 	100, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -208,9 +216,10 @@ void PolarWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(PolarWindow)
 
-PLUGIN_THREAD_OBJECT(PolarEffect, PolarThread, PolarWindow)
+
+
+
 
 
 PolarDepth::PolarDepth(PolarEffect *plugin, int x, int y)
@@ -265,30 +274,26 @@ PolarEffect::PolarEffect(PluginServer *server)
 	need_reconfigure = 1;
 	temp_frame = 0;
 	engine = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 PolarEffect::~PolarEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(temp_frame) delete temp_frame;
 	if(engine) delete engine;
 }
 
 
 
-char* PolarEffect::plugin_title() { return N_("Polar"); }
+const char* PolarEffect::plugin_title() { return N_("Polar"); }
 int PolarEffect::is_realtime() { return 1; }
 
 
 
 NEW_PICON_MACRO(PolarEffect)
 
-SHOW_GUI_MACRO(PolarEffect, PolarThread)
-
-RAISE_WINDOW_MACRO(PolarEffect)
-
-SET_STRING_MACRO(PolarEffect)
+NEW_WINDOW_MACRO(PolarEffect, PolarWindow)
 
 void PolarEffect::update_gui()
 {
@@ -296,8 +301,8 @@ void PolarEffect::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->angle->update(config.angle);
-		thread->window->depth->update(config.depth);
+		((PolarWindow*)thread->window)->angle->update(config.angle);
+		((PolarWindow*)thread->window)->depth->update(config.depth);
 		thread->window->unlock_window();
 	}
 }
@@ -333,7 +338,7 @@ void PolarEffect::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("POLAR");
 	output.tag.set_property("DEPTH", config.depth);
 	output.tag.set_property("ANGLE", config.angle);
@@ -345,7 +350,7 @@ void PolarEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

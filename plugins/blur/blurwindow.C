@@ -1,29 +1,41 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "blur.h"
 #include "blurwindow.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-PLUGIN_THREAD_OBJECT(BlurMain, BlurThread, BlurWindow)
+#include "language.h"
 
 
 
 
 
-BlurWindow::BlurWindow(BlurMain *client, int x, int y)
- : BC_Window(client->gui_string, 
- 	x,
-	y,
+
+BlurWindow::BlurWindow(BlurMain *client)
+ : PluginClientWindow(client, 
 	150, 
-	270, 
+	300, 
 	150, 
-	270, 
-	0, 
-	1)
+	300, 
+	0)
 { 
 	this->client = client; 
 }
@@ -33,18 +45,22 @@ BlurWindow::~BlurWindow()
 //printf("BlurWindow::~BlurWindow 1\n");
 }
 
-int BlurWindow::create_objects()
+void BlurWindow::create_objects()
 {
 	int x = 10, y = 10;
+	BC_Title *title;
+
 	add_subwindow(new BC_Title(x, y, _("Blur")));
 	y += 20;
 	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
 	y += 30;
 	add_subwindow(vertical = new BlurVertical(client, this, x, y));
 	y += 35;
-	add_subwindow(radius = new BlurRadius(client, x, y));
-	add_subwindow(new BC_Title(x + 50, y, _("Radius")));
-	y += 50;
+	add_subwindow(title = new BC_Title(x, y, _("Radius:")));
+	y += title->get_h() + 10;
+	add_subwindow(radius = new BlurRadius(client, this, x, y));
+	add_subwindow(radius_text = new BlurRadiusText(client, this, x + radius->get_w() + 10, y, 100));
+	y += radius->get_h() + 10;
 	add_subwindow(a = new BlurA(client, x, y));
 	y += 30;
 	add_subwindow(r = new BlurR(client, x, y));
@@ -55,17 +71,9 @@ int BlurWindow::create_objects()
 	
 	show_window();
 	flush();
-	return 0;
 }
 
-int BlurWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
-
-BlurRadius::BlurRadius(BlurMain *client, int x, int y)
+BlurRadius::BlurRadius(BlurMain *client, BlurWindow *gui, int x, int y)
  : BC_IPot(x, 
  	y, 
 	client->config.radius, 
@@ -73,6 +81,7 @@ BlurRadius::BlurRadius(BlurMain *client, int x, int y)
 	MAXRADIUS)
 {
 	this->client = client;
+	this->gui = gui;
 }
 BlurRadius::~BlurRadius()
 {
@@ -80,9 +89,35 @@ BlurRadius::~BlurRadius()
 int BlurRadius::handle_event()
 {
 	client->config.radius = get_value();
+	gui->radius_text->update((int64_t)client->config.radius);
 	client->send_configure_change();
 	return 1;
 }
+
+
+
+
+BlurRadiusText::BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y, int w)
+ : BC_TextBox(x, 
+	y, 
+	w, 
+	1, 
+	client->config.radius)
+{
+	this->client = client;
+	this->gui = gui;
+}
+
+int BlurRadiusText::handle_event()
+{
+	client->config.radius = atoi(get_text());
+	gui->radius->update((int64_t)client->config.radius);
+	client->send_configure_change();
+	return 1;
+}
+
+
+
 
 BlurVertical::BlurVertical(BlurMain *client, BlurWindow *window, int x, int y)
  : BC_CheckBox(x, 

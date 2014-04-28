@@ -1,0 +1,69 @@
+ImfRational.lo ImfRational.o: ImfRational.cpp ImfRational.h \
+  /usr/include/c++/4.2/cmath \
+  /usr/include/c++/4.2/x86_64-linux-gnu/bits/c++config.h \
+  /usr/include/c++/4.2/x86_64-linux-gnu/bits/os_defines.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+  /usr/include/gnu/stubs-64.h \
+  /usr/include/c++/4.2/x86_64-linux-gnu/bits/cpu_defines.h \
+  /usr/include/c++/4.2/bits/cpp_type_traits.h \
+  /usr/include/c++/4.2/ext/type_traits.h /usr/include/c++/4.2/cstddef \
+  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
+  /usr/include/c++/4.2/utility /usr/include/c++/4.2/bits/stl_relops.h \
+  /usr/include/c++/4.2/bits/stl_pair.h /usr/include/math.h \
+  /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
+  /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
+  /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
+  /usr/include/bits/mathcalls.h /usr/include/c++/4.2/bits/cmath.tcc
+
+ImfRational.h:
+
+/usr/include/c++/4.2/cmath:
+
+/usr/include/c++/4.2/x86_64-linux-gnu/bits/c++config.h:
+
+/usr/include/c++/4.2/x86_64-linux-gnu/bits/os_defines.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/include/c++/4.2/x86_64-linux-gnu/bits/cpu_defines.h:
+
+/usr/include/c++/4.2/bits/cpp_type_traits.h:
+
+/usr/include/c++/4.2/ext/type_traits.h:
+
+/usr/include/c++/4.2/cstddef:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+
+/usr/include/c++/4.2/utility:
+
+/usr/include/c++/4.2/bits/stl_relops.h:
+
+/usr/include/c++/4.2/bits/stl_pair.h:
+
+/usr/include/math.h:
+
+/usr/include/bits/huge_val.h:
+
+/usr/include/bits/huge_valf.h:
+
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
+
+/usr/include/bits/mathdef.h:
+
+/usr/include/bits/mathcalls.h:
+
+/usr/include/c++/4.2/bits/cmath.tcc:

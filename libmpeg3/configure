@@ -9,12 +9,12 @@ ERROR=0
 
 # test for nasm
 
-if [ `arch` == i686 ];
+if [ `uname -m` = i686 ];
 then
 
 	if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then HAVE_NASM=y; else HAVE_NASM=n; fi
 
-	if [ $HAVE_NASM == n ]; 
+	if [ $HAVE_NASM = n ]; 
 	then echo " *** Nasm is required.  Download it from nasm.sourceforge.net"; 
 	ERROR=1
 	fi
@@ -24,7 +24,7 @@ fi
 
 
 # success
-if [ $ERROR == 0 ];
+if [ $ERROR = 0 ];
 then echo "Configured successfully.  Type 'make' to build it.";
 fi
 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef ASSET_H
 #define ASSET_H
 
@@ -43,20 +64,20 @@ public:
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
 	void load_defaults(BC_Hash *defaults, 
-		char *prefix /* = 0 */, 
+		const char *prefix /* = 0 */, 
 		int do_format /* = 0 */,
 		int do_compression,
 		int do_path,
 		int do_data_types,
 		int do_bits);
 	void save_defaults(BC_Hash *defaults, 
-		char *prefix /* = 0 */,
+		const char *prefix /* = 0 */,
 		int do_format,     /* Don't save format which is autodetected by file loader */
 		int do_compression,    /* Don't save compression which is fixed by driver */
 		int do_path,
 		int do_data_types,
 		int do_bits);
-	char* construct_param(char *param, char *prefix, char *return_value);
+	const char* construct_param(const char *param, const char *prefix, char *return_value);
 
 
 
@@ -80,9 +101,9 @@ public:
 // It is a "" if; complete names should be used.
 	int write(FileXML *file, 
 		int include_index, 
-		char *output_path);
+		const char *output_path);
 // Write the index data and asset info.  Used by IndexThread.
-	int write_index(char *path, int data_bytes);
+	int write_index(const char *path, int data_bytes);
 
 
 // Necessary for renderfarm to get encoding parameters

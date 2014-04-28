@@ -3,7 +3,7 @@ include ../../global_config
 OBJS = $(OBJDIR)/defaulttheme.o
 THEME_DATA := $(OBJDIR)/defaulttheme_data.o
 
-OUTPUT_THEME := ../$(OBJDIR)/defaulttheme.plugin
+OUTPUT_THEME := $(PLUGIN_DIR)/defaulttheme.plugin
 
 CFLAGS += -I../../$(AVC_DIR) -I../../$(LIBRAW_DIR)
 

@@ -1,0 +1,12 @@
+prefix=
+exec_prefix=
+libdir=${pcfiledir}/libavcodec
+includedir=${pcfiledir}
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 51.57.0
+Requires:  libavutil = 49.6.0
+Conflicts:
+Libs: ${libdir}/libavcodec.a  -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/  -lz -lbz2 -pthread -lm   -ldl
+Cflags: -I${includedir}

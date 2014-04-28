@@ -3,7 +3,7 @@ include ../../global_config
 OBJS = ../colors/$(OBJDIR)/plugincolors.o \
 	$(OBJDIR)/videoscope.o
 
-OUTPUT = ../$(OBJDIR)/videoscope.plugin
+OUTPUT = $(PLUGIN_DIR)/videoscope.plugin
 
 include ../../plugin_config
 

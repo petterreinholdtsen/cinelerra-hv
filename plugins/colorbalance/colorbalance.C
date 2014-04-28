@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "filexml.h"
 #include "colorbalance.h"
 #include "bchash.h"
@@ -332,12 +353,12 @@ ColorBalanceMain::ColorBalanceMain(PluginServer *server)
 {
 	need_reconfigure = 1;
 	engine = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 ColorBalanceMain::~ColorBalanceMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 
 	if(engine)
@@ -350,7 +371,7 @@ ColorBalanceMain::~ColorBalanceMain()
 	}
 }
 
-char* ColorBalanceMain::plugin_title() { return N_("Color Balance"); }
+const char* ColorBalanceMain::plugin_title() { return N_("Color Balance"); }
 int ColorBalanceMain::is_realtime() { return 1; }
 
 
@@ -422,23 +443,23 @@ int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diffe
 {
 	if(thread && config.lock_params)
     {
-	    if(slider != thread->window->cyan)
+	    if(slider != ((ColorBalanceWindow*)thread->window)->cyan)
         {
         	config.cyan += difference;
             test_boundary(config.cyan);
-        	thread->window->cyan->update((int64_t)config.cyan);
+        	((ColorBalanceWindow*)thread->window)->cyan->update((int64_t)config.cyan);
         }
-	    if(slider != thread->window->magenta)
+	    if(slider != ((ColorBalanceWindow*)thread->window)->magenta)
         {
         	config.magenta += difference;
             test_boundary(config.magenta);
-        	thread->window->magenta->update((int64_t)config.magenta);
+        	((ColorBalanceWindow*)thread->window)->magenta->update((int64_t)config.magenta);
         }
-	    if(slider != thread->window->yellow)
+	    if(slider != ((ColorBalanceWindow*)thread->window)->yellow)
         {
         	config.yellow += difference;
             test_boundary(config.yellow);
-        	thread->window->yellow->update((int64_t)config.yellow);
+        	((ColorBalanceWindow*)thread->window)->yellow->update((int64_t)config.yellow);
         }
     }
 	return 0;
@@ -451,9 +472,7 @@ int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diffe
 
 NEW_PICON_MACRO(ColorBalanceMain)
 LOAD_CONFIGURATION_MACRO(ColorBalanceMain, ColorBalanceConfig)
-SHOW_GUI_MACRO(ColorBalanceMain, ColorBalanceThread)
-RAISE_WINDOW_MACRO(ColorBalanceMain)
-SET_STRING_MACRO(ColorBalanceMain)
+NEW_WINDOW_MACRO(ColorBalanceMain, ColorBalanceWindow)
 
 
 
@@ -541,13 +560,13 @@ void ColorBalanceMain::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window("ColorBalanceMain::update_gui");
-		thread->window->cyan->update((int64_t)config.cyan);
-		thread->window->magenta->update((int64_t)config.magenta);
-		thread->window->yellow->update((int64_t)config.yellow);
-		thread->window->preserve->update(config.preserve);
-		thread->window->lock_params->update(config.lock_params);
-		thread->window->unlock_window();
+		((ColorBalanceWindow*)thread->window)->lock_window("ColorBalanceMain::update_gui");
+		((ColorBalanceWindow*)thread->window)->cyan->update((int64_t)config.cyan);
+		((ColorBalanceWindow*)thread->window)->magenta->update((int64_t)config.magenta);
+		((ColorBalanceWindow*)thread->window)->yellow->update((int64_t)config.yellow);
+		((ColorBalanceWindow*)thread->window)->preserve->update(config.preserve);
+		((ColorBalanceWindow*)thread->window)->lock_params->update(config.lock_params);
+		((ColorBalanceWindow*)thread->window)->unlock_window();
 	}
 }
 
@@ -587,7 +606,7 @@ void ColorBalanceMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("COLORBALANCE");
 	output.tag.set_property("CYAN", config.cyan);
 	output.tag.set_property("MAGENTA",  config.magenta);
@@ -602,7 +621,7 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -653,7 +672,7 @@ int ColorBalanceMain::handle_opengl()
 	get_output()->enable_opengl();
 
 	unsigned int shader = 0;
-	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 	int aggregate_interpolate = 0;
 	int aggregate_gamma = 0;

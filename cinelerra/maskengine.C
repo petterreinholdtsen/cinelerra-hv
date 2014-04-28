@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "condition.h"
 #include "clip.h"
@@ -870,9 +891,14 @@ SET_TRACE
 		}
 	}
 
+	int new_value = keyframe_set->get_value(start_position_project, 
+		PLAY_FORWARD);
+	float new_feather = keyframe_set->get_feather(start_position_project, 
+		PLAY_FORWARD);
+
 	if(recalculate ||
-		!EQUIV(keyframe->feather, feather) ||
-		!EQUIV(keyframe->value, value))
+		!EQUIV(new_feather, feather) ||
+		!EQUIV(new_value, value))
 	{
 		recalculate = 1;
 		if(!mask) 
@@ -886,7 +912,7 @@ SET_TRACE
 					output->get_h(),
 					new_color_model);
 		}
-		if(keyframe->feather > 0)
+		if(new_feather > 0)
 			temp_mask->clear_frame();
 		else
 			mask->clear_frame();
@@ -916,8 +942,8 @@ SET_TRACE
 
 	this->output = output;
 	this->mode = default_auto->mode;
-	this->feather = keyframe->feather;
-	this->value = keyframe->value;
+	this->feather = new_feather;
+	this->value = new_value;
 
 
 // Run units

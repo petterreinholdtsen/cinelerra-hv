@@ -4,7 +4,7 @@ OBJS = \
 	../motion/$(OBJDIR)/affine.o \
 	$(OBJDIR)/rotate.o
 
-OUTPUT = ../$(OBJDIR)/rotate.plugin
+OUTPUT = $(PLUGIN_DIR)/rotate.plugin
 
 include ../../plugin_config
 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -25,10 +46,10 @@ public:
 
 
 
-	static char* mode_to_text(int mode);
+	static const char* mode_to_text(int mode);
 	int mode;
 
-	static char* direction_to_text(int direction);
+	static const char* direction_to_text(int direction);
 	int direction;
 	enum
 	{
@@ -36,7 +57,7 @@ public:
 		TOP_FIRST
 	};
 
-	static char* output_to_text(int output_layer);
+	static const char* output_to_text(int output_layer);
 	int output_layer;
 	enum
 	{
@@ -83,14 +104,14 @@ public:
 };
 
 
-class OverlayWindow : public BC_Window
+class OverlayWindow : public PluginClientWindow
 {
 public:
-	OverlayWindow(Overlay *plugin, int x, int y);
+	OverlayWindow(Overlay *plugin);
 	~OverlayWindow();
 
 	void create_objects();
-	int close_event();
+
 
 	Overlay *plugin;
 	OverlayMode *mode;
@@ -99,7 +120,7 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(Overlay, OverlayThread, OverlayWindow)
+
 
 
 
@@ -110,7 +131,7 @@ public:
 	~Overlay();
 
 
-	PLUGIN_CLASS_MEMBERS(OverlayConfig, OverlayThread);
+	PLUGIN_CLASS_MEMBERS(OverlayConfig);
 
 	int process_buffer(VFrame **frame,
 		int64_t start_position,
@@ -152,7 +173,7 @@ OverlayConfig::OverlayConfig()
 	output_layer = OverlayConfig::TOP;
 }
 
-char* OverlayConfig::mode_to_text(int mode)
+const char* OverlayConfig::mode_to_text(int mode)
 {
 	switch(mode)
 	{
@@ -191,7 +212,7 @@ char* OverlayConfig::mode_to_text(int mode)
 	return "";
 }
 
-char* OverlayConfig::direction_to_text(int direction)
+const char* OverlayConfig::direction_to_text(int direction)
 {
 	switch(direction)
 	{
@@ -201,7 +222,7 @@ char* OverlayConfig::direction_to_text(int direction)
 	return "";
 }
 
-char* OverlayConfig::output_to_text(int output_layer)
+const char* OverlayConfig::output_to_text(int output_layer)
 {
 	switch(output_layer)
 	{
@@ -219,17 +240,13 @@ char* OverlayConfig::output_to_text(int output_layer)
 
 
 
-OverlayWindow::OverlayWindow(Overlay *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+OverlayWindow::OverlayWindow(Overlay *plugin)
+ : PluginClientWindow(plugin, 
 	300, 
 	160, 
 	300, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -267,7 +284,7 @@ void OverlayWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(OverlayWindow)
+
 
 
 
@@ -398,7 +415,7 @@ int OverlayOutput::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(Overlay, OverlayThread, OverlayWindow)
+
 
 
 
@@ -419,7 +436,7 @@ REGISTER_PLUGIN(Overlay)
 Overlay::Overlay(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	overlayer = 0;
 	temp = 0;
 }
@@ -427,7 +444,7 @@ Overlay::Overlay(PluginServer *server)
 
 Overlay::~Overlay()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(overlayer) delete overlayer;
 	if(temp) delete temp;
 }
@@ -440,6 +457,8 @@ int Overlay::process_buffer(VFrame **frame,
 {
 	load_configuration();
 
+
+printf("Overlay::process_buffer mode=%d\n", config.mode);
 	if(!temp) temp = new VFrame(0,
 		frame[0]->get_w(),
 		frame[0]->get_h(),
@@ -500,13 +519,14 @@ int Overlay::process_buffer(VFrame **frame,
 			frame_rate,
 			get_use_opengl());
 
+// Call the opengl handler once for each layer
 		if(get_use_opengl()) 
 		{
 			current_layer = i;
 			run_opengl();
 		}
 		else
-// Call the opengl handler once for each layer
+		{
 			overlayer->overlay(output,
 				temp,
 				0,
@@ -520,6 +540,7 @@ int Overlay::process_buffer(VFrame **frame,
 				1,
 				config.mode,
 				NEAREST_NEIGHBOR);
+		}
 	}
 
 
@@ -690,7 +711,7 @@ int Overlay::handle_opengl()
 }
 
 
-char* Overlay::plugin_title() { return N_("Overlay"); }
+const char* Overlay::plugin_title() { return N_("Overlay"); }
 int Overlay::is_realtime() { return 1; }
 int Overlay::is_multichannel() { return 1; }
 int Overlay::is_synthesis() { return 1; }
@@ -698,11 +719,9 @@ int Overlay::is_synthesis() { return 1; }
 
 NEW_PICON_MACRO(Overlay) 
 
-SHOW_GUI_MACRO(Overlay, OverlayThread)
+NEW_WINDOW_MACRO(Overlay, OverlayWindow)
 
-RAISE_WINDOW_MACRO(Overlay)
 
-SET_STRING_MACRO(Overlay);
 
 int Overlay::load_configuration()
 {
@@ -742,7 +761,7 @@ void Overlay::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("MODE", config.mode);
 	output.tag.set_property("DIRECTION", config.direction);
@@ -755,7 +774,7 @@ void Overlay::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -775,9 +794,9 @@ void Overlay::update_gui()
 	if(thread)
 	{
 		thread->window->lock_window("Overlay::update_gui");
-		thread->window->mode->set_text(OverlayConfig::mode_to_text(config.mode));
-		thread->window->direction->set_text(OverlayConfig::direction_to_text(config.direction));
-		thread->window->output->set_text(OverlayConfig::output_to_text(config.output_layer));
+		((OverlayWindow*)thread->window)->mode->set_text(OverlayConfig::mode_to_text(config.mode));
+		((OverlayWindow*)thread->window)->direction->set_text(OverlayConfig::direction_to_text(config.direction));
+		((OverlayWindow*)thread->window)->output->set_text(OverlayConfig::output_to_text(config.output_layer));
 		thread->window->unlock_window();
 	}
 }

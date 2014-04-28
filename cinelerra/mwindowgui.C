@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "awindowgui.h"
 #include "awindow.h"
 #include "bcsignals.h"
@@ -166,7 +187,7 @@ void MWindowGUI::get_scrollbars()
 //printf("get_scrollbars 2 %d %d\n", need_xscroll, w_needed);
 }
 
-int MWindowGUI::create_objects()
+void MWindowGUI::create_objects()
 {
 SET_TRACE
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
@@ -176,7 +197,6 @@ SET_TRACE
 	cursor = 0;
 	add_subwindow(mainmenu = new MainMenu(mwindow, this));
 SET_TRACE
-
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 SET_TRACE
 	mwindow->theme->draw_mwindow_bg(this);
@@ -245,7 +265,6 @@ SET_TRACE
 
 	canvas->activate();
 SET_TRACE
-	return 0;
 }
 
 void MWindowGUI::update_title(char *path)
@@ -339,7 +358,8 @@ int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2
 
 int MWindowGUI::show_message(char *message, int color)
 {
-//printf("MWindowGUI::show_message %s %d\n", message, color);
+// printf("MWindowGUI::show_message %d: %s 0x%08x 0x%08x\n", 
+// __LINE__, message, color, mwindow->theme->message_normal);
 	if(color < 0) color = mwindow->theme->message_normal;
 	statusbar->status_text->set_color(color);
 	statusbar->status_text->update(message);

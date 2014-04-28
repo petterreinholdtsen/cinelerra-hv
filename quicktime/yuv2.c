@@ -136,13 +136,13 @@ static void initialize(quicktime_video_map_t *vtrack, quicktime_yuv2_codec_t *co
 	{
 /* Init private items */
 		codec->coded_w = (int)((float)width / 4 + 0.5) * 4;
-                //		codec->coded_h = (int)((float)vtrack->track->tkhd.track_height / 4 + 0.5) * 4;
+//		codec->coded_h = (int)((float)vtrack->track->tkhd.track_height / 4 + 0.5) * 4;
                 codec->coded_h = height;
 		codec->bytes_per_line = codec->coded_w * 2;
 		codec->work_buffer = malloc(codec->bytes_per_line *
 								codec->coded_h);
 		codec->initialized = 1;
-         }
+    }
 }
 
 static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
@@ -172,9 +172,9 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	}
 	else
 	{
-                if(!codec->rows)
-                  codec->rows = malloc(height * sizeof(*(codec->rows)));
-                result = !quicktime_read_data(file, codec->work_buffer, bytes);
+        if(!codec->rows)
+            codec->rows = malloc(height * sizeof(*(codec->rows)));
+        result = !quicktime_read_data(file, codec->work_buffer, bytes);
 		for(y = 0; y < height; y++)
 			codec->rows[y] = &codec->work_buffer[y * codec->bytes_per_line];
                 if(codec->is_2vuy)
@@ -238,6 +238,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	}
 	else
 	{
+        if(!codec->rows)
+            codec->rows = malloc(height * sizeof(*(codec->rows)));
 		for(i = 0; i < height; i++)
 			codec->rows[i] = buffer + i * codec->bytes_per_line;
 
@@ -276,6 +278,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		vtrack->current_chunk,
 		&chunk_atom, 
 		1);
+printf("10\n");
 
 	vtrack->current_chunk++;
 	return result;

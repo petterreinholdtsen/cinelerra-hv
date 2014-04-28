@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "autos.h"
 #include "bcsignals.h"
 #include "cplayback.h"
@@ -42,21 +63,28 @@ CWindow::~CWindow()
 	delete playback_cursor;
 }
 
-int CWindow::create_objects()
+void CWindow::create_objects()
 {
 	destination = mwindow->defaults->get("CWINDOW_DESTINATION", 0);
 
+
 	gui = new CWindowGUI(mwindow, this);
+
     gui->create_objects();
+
 
 	playback_engine = new CPlayback(mwindow, this, gui->canvas);
 
+
 // Start command loop
 	playback_engine->create_objects();
+
 	gui->transport->set_engine(playback_engine);
+
 	playback_cursor = new CTracking(mwindow, this);
+
 	playback_cursor->create_objects();
-    return 0;
+
 }
 
 
@@ -125,6 +153,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 			if(created) *created = 1;
 			if(redraw)
 			{
+// May have to unlock CWindowGUI here.
 				mwindow->gui->lock_window("CWindow::calculate_affected_auto");
 				mwindow->gui->canvas->draw_overlays();
 				mwindow->gui->canvas->flash();

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef SYNTHESIZER_H
 #define SYNTHESIZER_H
 
@@ -13,8 +34,86 @@
 class Synth;
 class SynthWindow;
 
+// Frequency table for piano
+float keyboard_freqs[] =
+{
+	65.4064,
+	69.2957,
+	73.4162,
+	77.7817,
+	82.4069,
+	87.3071,
+	92.4986,
+	97.9989,
+	103.826,
+	110.000,
+	116.541,
+	123.471,
+
+	130.81,
+	138.59,
+	146.83,
+	155.56,
+	164.81,
+	174.61,
+	185.00,
+	196.00,
+	207.65,
+	220.00,
+	233.08,
+	246.94,
+
+	261.63,
+	277.18,
+	293.66,
+	311.13,
+	329.63,
+	349.23,
+	369.99,
+	392.00,
+	415.30,
+	440.00,
+	466.16,
+	493.88,
+
+
+
+	523.251,
+	554.365,
+	587.330,
+	622.254,
+	659.255,
+	698.456,
+	739.989,
+	783.991,
+	830.609,
+	880.000,
+	932.328,
+	987.767,
+
+	1046.50,
+	1108.73,
+	1174.66,
+	1244.51,
+	1318.51,
+	1396.91,
+	1479.98,
+	1567.98,
+	1661.22,
+	1760.00,
+	1864.66,
+	1975.53,
+
+	2093.00
+};
+
 #define TOTALOSCILLATORS 1
 #define OSCILLATORHEIGHT 40
+#define TOTALNOTES (sizeof(keyboard_freqs) / sizeof(float))
+#define MIDDLE_C 24
+#define FIRST_TITLE (MIDDLE_C - 12)
+#define LAST_TITLE (MIDDLE_C + 12)
+#define MARGIN 10
 
 #define SINE 0
 #define SAWTOOTH 1
@@ -30,23 +129,29 @@ class SynthWaveForm;
 class SynthBaseFreq;
 class SynthFreqPot;
 class SynthOscGUI;
-class SynthScroll;
-class SynthSubWindow;
+class OscScroll;
+class NoteScroll;
 class SynthWetness;
+class SynthNote;
+class SynthMomentary;
 
-class SynthWindow : public BC_Window
+class SynthWindow : public PluginClientWindow
 {
 public:
-	SynthWindow(Synth *synth, int x, int y);
+	SynthWindow(Synth *synth);
 	~SynthWindow();
 
-	int create_objects();
-	int close_event();
+	void create_objects();
 	int resize_event(int w, int h);
 	void update_gui();
 	int waveform_to_text(char *text, int waveform);
 	void update_scrollbar();
 	void update_oscillators();
+	void update_notes();
+	void update_note_selection();
+	int keypress_event();
+	void update_blackkey(int number, int *current_title, int x, int y);
+	void update_whitekey(int number, int *current_title, int x, int y);
 
 
 	Synth *synth;
@@ -55,9 +160,47 @@ public:
 	SynthWaveForm *waveform;
 	SynthBaseFreq *base_freq;
 	SynthFreqPot *freqpot;
-	SynthSubWindow *subwindow;
-	SynthScroll *scroll;
+	BC_SubWindow *osc_subwindow;
+	OscScroll *osc_scroll;
+	BC_SubWindow *note_subwindow;
+	NoteScroll *note_scroll;
 	ArrayList<SynthOscGUI*> oscillators;
+	SynthNote *notes[TOTALNOTES];
+	BC_Title *note_titles[TOTALNOTES];
+	SynthMomentary *momentary;
+	VFrame *white_key[5];
+	VFrame *black_key[5];
+	int y1;
+	int y2;
+	int y3;
+	int text_white_margin;
+	int text_black_margin;
+// Button press currently happening if > -1
+	int current_note;
+};
+
+class SynthMomentary : public BC_CheckBox
+{
+public:
+	SynthMomentary(SynthWindow *window, int x, int y, char *text);
+	int handle_event();
+	SynthWindow *window;
+};
+
+class SynthNote : public BC_Toggle
+{
+public:
+	SynthNote(SynthWindow *window, VFrame **images, int number, int x, int y);
+	void start_note();
+	void stop_note();
+	int keypress_event();
+	int keyrelease_event();
+	int button_press_event();
+	int button_release_event();
+	int cursor_motion_event();
+	int number;
+	int note_on;
+	SynthWindow *window;
 };
 
 
@@ -71,7 +214,7 @@ public:
 	SynthOscGUI(SynthWindow *window, int number);
 	~SynthOscGUI();
 
-	int create_objects(int view_y);
+	void create_objects(int view_y);
 
 	SynthOscGUILevel *level;
 	SynthOscGUIPhase *phase;
@@ -118,11 +261,23 @@ public:
 	SynthOscGUI *gui;
 };
 
-class SynthScroll : public BC_ScrollBar
+class OscScroll : public BC_ScrollBar
 {
 public:
-	SynthScroll(Synth *synth, SynthWindow *window, int x, int y, int h);
-	~SynthScroll();
+	OscScroll(Synth *synth, SynthWindow *window, int x, int y, int h);
+	~OscScroll();
+	
+	int handle_event();
+	
+	Synth *synth;
+	SynthWindow *window;
+};
+
+class NoteScroll : public BC_ScrollBar
+{
+public:
+	NoteScroll(Synth *synth, SynthWindow *window, int x, int y, int w);
+	~NoteScroll();
 	
 	int handle_event();
 	
@@ -155,15 +310,6 @@ public:
 	SynthWindow *window;
 };
 
-class SynthSubWindow : public BC_SubWindow
-{
-public:
-	SynthSubWindow(Synth *synth, int x, int y, int w, int h);
-	~SynthSubWindow();
-
-	Synth *synth;
-};
-
 class SynthClear : public BC_GenericButton
 {
 public:
@@ -179,7 +325,7 @@ public:
 	SynthWaveForm(Synth *synth, int x, int y, char *text);
 	~SynthWaveForm();
 
-	int create_objects();
+	void create_objects();
 	Synth *synth;
 };
 
@@ -198,11 +344,12 @@ public:
 class SynthBaseFreq : public BC_TextBox
 {
 public:
-	SynthBaseFreq(Synth *synth, int x, int y);
+	SynthBaseFreq(Synth *synth, SynthWindow *window, int x, int y);
 	~SynthBaseFreq();
 	int handle_event();
 	Synth *synth;
 	SynthFreqPot *freq_pot;
+	SynthWindow *window;
 };
 
 class SynthFreqPot : public BC_QPot
@@ -403,18 +550,6 @@ private:
 };
 
 
-class SynthThread : public Thread
-{
-public:
-	SynthThread(Synth *synth);
-	~SynthThread();
-
-	void run();
-
-	Mutex completion;
-	Synth *synth;
-	SynthWindow *window;
-};
 
 class SynthOscillatorConfig
 {
@@ -468,19 +603,13 @@ public:
 	~Synth();
 
 
-
+	PLUGIN_CLASS_MEMBERS(SynthConfig)
 	int is_realtime();
 	int is_synthesis();
-	int load_configuration();
 	int load_defaults();
-	VFrame* new_picon();
-	char* plugin_title();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int save_defaults();
-	int show_gui();
-	void raise_window();
-	int set_string();
 	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 
 
@@ -515,15 +644,13 @@ public:
 
 	double *dsp_buffer;
 	int need_reconfigure;
-	BC_Hash *defaults;
-	SynthThread *thread;
-	SynthConfig config;
 	int w, h;
 	DB db;
 	int64_t waveform_length;           // length of loop buffer
 	int64_t waveform_sample;           // current sample in waveform of loop
 	int64_t samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
 	float period;            // number of samples in a period for this frequency
+	int momentary_notes;
 };
 
 

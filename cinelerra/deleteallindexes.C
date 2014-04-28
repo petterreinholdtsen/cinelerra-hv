@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "deleteallindexes.h"
 #include "filesystem.h"
 #include "mwindow.h"
@@ -29,7 +50,7 @@ int DeleteAllIndexes::handle_event()
 	start(); 
 }
 
-static int test_filter(char *string, char *filter)
+static int test_filter(char *string, const char *filter)
 {
 	return (strlen(string) > strlen(filter) &&
 			!strcmp(string + strlen(string) - strlen(filter), filter));
@@ -44,8 +65,8 @@ void DeleteAllIndexes::run()
 	dir.update(pwindow->thread->preferences->index_directory);
 	dir.complete_path(string1);
 // prepare filter
-	char *filter1 = ".idx";
-	char *filter2 = ".toc";
+	const char *filter1 = ".idx";
+	const char *filter2 = ".toc";
 
 //	pwindow->disable_window();
 	sprintf(string, _("Delete all indexes in %s?"), string1);
@@ -92,7 +113,7 @@ ConfirmDeleteAllIndexes::~ConfirmDeleteAllIndexes()
 {
 }
 	
-int ConfirmDeleteAllIndexes::create_objects()
+void ConfirmDeleteAllIndexes::create_objects()
 { 
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, string));
@@ -101,5 +122,4 @@ int ConfirmDeleteAllIndexes::create_objects()
 	add_subwindow(new BC_OKButton(x, y));
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(x, y));
-	return 0;
 }

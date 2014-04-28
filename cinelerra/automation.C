@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "autoconf.h"
 #include "automation.h"
 #include "autos.h"
@@ -27,11 +48,10 @@ Automation::~Automation()
 	}
 }
 
-int Automation::create_objects()
+void Automation::create_objects()
 {
 	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
 	autos[AUTOMATION_MUTE]->create_objects();
-	return 0;
 }
 
 Automation& Automation::operator=(Automation& automation)
@@ -60,7 +80,7 @@ void Automation::copy_from(Automation *automation)
 }
 
 // These must match the enumerations
-static char *xml_titles[] = 
+static const char *xml_titles[] = 
 {
 	"MUTEAUTOS",
 	"CAMERA_X",
@@ -94,6 +114,7 @@ int Automation::paste(int64_t start,
 	double scale,
 	FileXML *file, 
 	int default_only,
+	int active_only,
 	AutoConf *autoconf)
 {
 	if(!autoconf) autoconf = edl->session->auto_conf;
@@ -102,7 +123,12 @@ int Automation::paste(int64_t start,
 	{
 		if(file->tag.title_is(xml_titles[i]) && autos[i] && autoconf->autos[i])
 		{
-			autos[i]->paste(start, length, scale, file, default_only);
+			autos[i]->paste(start, 
+				length, 
+				scale, 
+				file, 
+				default_only,
+				active_only);
 			return 1;
 		}
 	}
@@ -113,7 +139,7 @@ int Automation::copy(int64_t start,
 	int64_t end, 
 	FileXML *file, 
 	int default_only,
-	int autos_only)
+	int active_only)
 {
 // Copy regardless of what's visible.
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
@@ -127,7 +153,7 @@ int Automation::copy(int64_t start,
 							end, 
 							file, 
 							default_only,
-							autos_only);
+							active_only);
 			char string[BCTEXTLEN];
 			sprintf(string, "/%s", xml_titles[i]);
 			file->tag.set_title(string);
@@ -165,8 +191,9 @@ void Automation::clear(int64_t start,
 	if(temp_autoconf) delete temp_autoconf;
 }
 
-void Automation::straighten(int64_t start, 
+void Automation::set_automation_mode(int64_t start, 
 	int64_t end, 
+	int mode,
 	AutoConf *autoconf)
 {
 	AutoConf *temp_autoconf = 0;
@@ -182,7 +209,7 @@ void Automation::straighten(int64_t start,
 	{
 		if(autos[i] && autoconf->autos[i])
 		{
-			autos[i]->straighten(start, end);
+			autos[i]->set_automation_mode(start, end, mode);
 		}
 	}
 

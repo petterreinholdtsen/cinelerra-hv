@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef TITLE_H
 #define TITLE_H
 
@@ -26,6 +47,7 @@
 
 class TitleMain;
 class TitleEngine;
+class TitleOutlineEngine;
 class GlyphEngine;
 class TitleTranslate;
 
@@ -84,6 +106,9 @@ public:
 	long style;
 	int size;
 	int color;
+	int outline_color;
+	int alpha;
+	int outline_alpha;
 // Motion of title across frame
 	int motion_strategy;
 // Loop motion path
@@ -98,6 +123,7 @@ public:
 	float x, y;
 // Pixels down and right of dropshadow
 	int dropshadow;
+	int outline_size;
 // Calculated during every frame for motion strategy
 	long prev_keyframe_position;
 	long next_keyframe_position;
@@ -211,6 +237,7 @@ public:
 	void process_package(LoadPackage *package);
 	void draw_glyph(VFrame *output, TitleGlyph *glyph, int x, int y);
 	TitleMain *plugin;
+	TitleEngine *engine;
 };
 
 class TitleEngine : public LoadServer
@@ -221,8 +248,42 @@ public:
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	TitleMain *plugin;
+	int do_dropshadow;
 };
 
+
+
+
+
+// Create outline
+class TitleOutlinePackage : public LoadPackage
+{
+public:
+	TitleOutlinePackage();
+	int y1, y2;
+};
+
+
+class TitleOutlineUnit : public LoadClient
+{
+public:
+	TitleOutlineUnit(TitleMain *plugin, TitleOutlineEngine *server);
+	void process_package(LoadPackage *package);
+	TitleMain *plugin;
+	TitleOutlineEngine *engine;
+};
+
+class TitleOutlineEngine : public LoadServer
+{
+public:
+	TitleOutlineEngine(TitleMain *plugin, int cpus);
+	void init_packages();
+	void do_outline();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	TitleMain *plugin;
+	int pass;
+};
 
 
 
@@ -304,20 +365,15 @@ public:
 	~TitleMain();
 
 // required for all realtime plugins
+	PLUGIN_CLASS_MEMBERS(TitleConfig)
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
-	char* plugin_title();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int load_defaults();
 	int save_defaults();
-	VFrame* new_picon();
 
 
 
@@ -336,31 +392,29 @@ public:
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
 		char *path);
+	void get_color_components(int *r, int *g, int *b, int *a, int is_outline);
 
 
 
 
 
-	static char* motion_to_text(int motion);
+	static const char* motion_to_text(int motion);
 	static int text_to_motion(char *text);
-// a thread for the GUI
-	TitleThread *thread;
-// Current configuration
-	TitleConfig config;
 // Size of window
 	int window_w, window_h;
 
 	static ArrayList<FontEntry*> *fonts;
 
-	BC_Hash *defaults;
 	ArrayList<TitleGlyph*> glyphs;
 	Mutex glyph_lock;
 
 // Stage 1 parameters must be compared to redraw the text mask
 	VFrame *text_mask;
+	VFrame *outline_mask;
 	GlyphEngine *glyph_engine;
 	TitleEngine *title_engine;
 	TitleTranslate *translate;
+	TitleOutlineEngine *outline_engine;
 
 // Necessary to get character width
 	FT_Library freetype_library;      	// Freetype library
@@ -377,7 +431,6 @@ public:
 	float text_y1;
 	float text_y2;
 	float text_x1;
-	float text_x2;
 // relative position of visible part of text to output
 	float mask_y1;
 	float mask_y2;

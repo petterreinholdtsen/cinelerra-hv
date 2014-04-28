@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "edl.h"
 #include "edlsession.h"
 #include "formatpresets.h"
@@ -136,6 +157,19 @@ void FormatPresets::create_objects()
 	item->edl->session->aspect_h = 3;
 	preset_items.append(item);
 
+	item = new FormatPresetItem(mwindow, this, _("YouTube"));
+	item->edl->session->audio_channels = 1;
+	item->edl->session->audio_tracks = 1;
+	item->edl->session->sample_rate = 48000;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 1;
+	item->edl->session->frame_rate = (double)30000.0 / 1001;
+	item->edl->session->output_w = 424;
+	item->edl->session->output_h = 318;
+	item->edl->session->aspect_w = 4;
+	item->edl->session->aspect_h = 3;
+	preset_items.append(item);
+
 	item = new FormatPresetItem(mwindow, this, _("Half D-1 PAL"));
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
@@ -241,7 +275,7 @@ FormatPresetItem* FormatPresets::find_preset(EDL *edl)
 	return 0;
 }
 
-char* FormatPresets::get_preset_text(EDL *edl)
+const char* FormatPresets::get_preset_text(EDL *edl)
 {
 	FormatPresetItem *item = find_preset(edl);
 	if(item) 

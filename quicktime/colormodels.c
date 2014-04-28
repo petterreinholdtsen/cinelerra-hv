@@ -475,7 +475,7 @@ void cmodel_to_text(char *string, int cmodel)
 	}
 }
 
-int cmodel_from_text(char *text)
+int cmodel_from_text(const char *text)
 {
 	if(!strcasecmp(text, "RGB-8 Bit"))   return BC_RGB888;
 	if(!strcasecmp(text, "RGBA-8 Bit"))  return BC_RGBA8888;

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "autoconf.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -14,7 +35,7 @@
 
 
 
-ShowAssets::ShowAssets(MWindow *mwindow, char *hotkey)
+ShowAssets::ShowAssets(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show assets"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
@@ -41,7 +62,7 @@ int ShowAssets::handle_event()
 
 
 
-ShowTitles::ShowTitles(MWindow *mwindow, char *hotkey)
+ShowTitles::ShowTitles(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show titles"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
@@ -67,7 +88,7 @@ int ShowTitles::handle_event()
 
 
 
-ShowTransitions::ShowTransitions(MWindow *mwindow, char *hotkey)
+ShowTransitions::ShowTransitions(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
@@ -91,8 +112,8 @@ int ShowTransitions::handle_event()
 
 
 ShowAutomation::ShowAutomation(MWindow *mwindow, 
-	char *text,
-	char *hotkey,
+	const char *text,
+	const char *hotkey,
 	int subscript)
  : BC_MenuItem(text, hotkey, hotkey[0])
 {
@@ -121,7 +142,7 @@ void ShowAutomation::update_toggle()
 
 
 
-PluginAutomation::PluginAutomation(MWindow *mwindow, char *hotkey)
+PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Plugin keyframes"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow; 
@@ -133,7 +154,6 @@ int PluginAutomation::handle_event()
 	mwindow->edl->session->auto_conf->plugins = get_checked();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-//	mwindow->gui->mainmenu->draw_items();
 	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
 	mwindow->gui->lock_window("PluginAutomation::handle_event");

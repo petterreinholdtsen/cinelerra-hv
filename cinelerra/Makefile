@@ -1,27 +1,33 @@
 include ../global_config
 
-AVC_DIR := $(shell expr ../libavc1394* )
-DV_DIR := ../quicktime/libdv-0.104
-EXR_DIR := ../OpenEXR-1.2.1/
-FFMPEG_DIR := $(shell expr ../quicktime/ffmpeg* )
-JPEG_DIR := $(shell expr ../quicktime/jpeg-mmx* )
-LAME_DIR := ../quicktime/lame-3.93.1/include
-LIBIEC_DIR := $(shell expr ../libiec61883* )
-LIBRAW_DIR := $(shell expr ../libraw1394* )
-OGG_DIR := $(shell expr ../quicktime/libogg* )
-SNDFILE_DIR := $(shell expr ../libsndfile* )
-THEORA_DIR := $(shell expr ../libtheora* )
-TIFF_DIR := ../tiff-v3.5.7
-TOOLAME_DIR := ../toolame-02l
-UUID_DIR := ../uuid
-VORBIS_DIR := $(shell expr ../quicktime/libvorbis* )
+AVC_DIR := $(shell expr ../thirdparty/libavc1394* )
+DV_DIR := $(shell expr ../quicktime/thirdparty/libdv-*/ )
+FLAC_DIR := $(shell expr ../thirdparty/flac*/ )
+FFMPEG_DIR := $(shell expr ../quicktime/thirdparty/ffmpeg* )
+JPEG_DIR := $(shell expr ../quicktime/thirdparty/jpeg-mmx* )
+LAME_DIR := ../quicktime/thirdparty/lame-3.93.1/include
+LIBIEC_DIR := $(shell expr ../thirdparty/libiec61883* )
+LIBRAW_DIR := $(shell expr ../thirdparty/libraw1394* )
+OGG_DIR := $(shell expr ../quicktime/thirdparty/libogg* )
+SNDFILE_DIR := $(shell expr ../thirdparty/libsndfile* )
+THEORA_DIR := $(shell expr ../thirdparty/libtheora* )
+TIFF_DIR := ../thirdparty/tiff-v3.5.7
+TOOLAME_DIR := ../thirdparty/toolame-02l
+UUID_DIR := ../thirdparty/uuid
+VORBIS_DIR := $(shell expr ../quicktime/thirdparty/libvorbis* )
 
 AVC_LIB := $(AVC_DIR)/libavc1394/.libs/libavc1394.a $(AVC_DIR)/librom1394/.libs/librom1394.a
 RAW_LIB := $(LIBRAW_DIR)/src/.libs/libraw1394.a
 IEC_LIB := $(LIBIEC_DIR)/src/.libs/libiec61883.a
 SNDFILE_LIB := $(SNDFILE_DIR)/src/.libs/libsndfile.a
 THEORA_LIB := $(THEORA_DIR)/lib/.libs/libtheora.a
-
+EXR_LIBS :=  \
+	../thirdparty/lib/libIlmImf.a \
+	../thirdparty/lib/libIlmThread.a \
+	../thirdparty/lib/libImath.a \
+	../thirdparty/lib/libHalf.a \
+	../thirdparty/lib/libIex.a
+EXR_INCLUDES := -I../thirdparty/include/OpenEXR
 OBJS = \
 	$(OBJDIR)/aattachmentpoint.o \
 	$(OBJDIR)/aautomation.o \
@@ -103,7 +109,6 @@ OBJS = \
 	$(OBJDIR)/edlsession.o \
 	$(OBJDIR)/fadeengine.o \
 	$(OBJDIR)/file.o \
-	$(OBJDIR)/fileac3.o \
 	$(OBJDIR)/fileavi.o \
 	$(OBJDIR)/filebase.o \
 	$(OBJDIR)/filebaseaudio.o \
@@ -141,6 +146,7 @@ OBJS = \
 	$(OBJDIR)/intautos.o \
 	$(OBJDIR)/interfaceprefs.o \
 	$(OBJDIR)/keyframe.o \
+	$(OBJDIR)/keyframegui.o \
 	$(OBJDIR)/keyframepopup.o \
 	$(OBJDIR)/keyframes.o \
 	$(OBJDIR)/keyframehandles.o \
@@ -166,7 +172,10 @@ OBJS = \
 	$(OBJDIR)/maskengine.o \
 	$(OBJDIR)/mbuttons.o \
 	$(OBJDIR)/menuaeffects.o \
+	$(OBJDIR)/menuattacheffect.o \
+	$(OBJDIR)/menuattachtransition.o \
 	$(OBJDIR)/menueffects.o \
+	$(OBJDIR)/menutransitionlength.o \
 	$(OBJDIR)/menuveffects.o \
 	$(OBJDIR)/meterpanel.o \
 	$(OBJDIR)/module.o \
@@ -196,7 +205,6 @@ OBJS = \
 	$(OBJDIR)/pluginaclient.o \
 	$(OBJDIR)/pluginaclientlad.o \
 	$(OBJDIR)/pluginarray.o \
-	$(OBJDIR)/pluginautos.o \
 	$(OBJDIR)/pluginclient.o \
 	$(OBJDIR)/plugindialog.o \
 	$(OBJDIR)/pluginpopup.o \
@@ -207,6 +215,8 @@ OBJS = \
 	$(OBJDIR)/pluginvclient.o \
 	$(OBJDIR)/preferences.o \
 	$(OBJDIR)/preferencesthread.o \
+	$(OBJDIR)/presets.o \
+	$(OBJDIR)/presetsgui.o \
 	$(OBJDIR)/question.o \
 	$(OBJDIR)/quit.o \
 	$(OBJDIR)/recconfirmdelete.o \
@@ -303,12 +313,15 @@ OBJS = \
 
 # some files need different compilation options
 FILEEXR := $(OBJDIR)/fileexr.o
+FILEFLAC := $(OBJDIR)/fileflac.o
+FFMPEG_OBJS := $(OBJDIR)/fileffmpeg.o \
+	$(OBJDIR)/fileac3.o
 DCRAW := $(OBJDIR)/dcraw.o
 
 THEME_DATA := $(OBJDIR)/theme_data.o
 
 
-OUTPUT = $(OBJDIR)/cinelerra
+OUTPUT = ../bin/cinelerra
 
 
 #ifeq ($(HAVE_AVIFILE), y)
@@ -323,7 +336,8 @@ STATICLIBS = \
 	$(IEC_LIB) \
 	../quicktime/$(OBJDIR)/libquicktime.a \
         $(ESOUNDLIBS) \
-	$(EXR_DIR)/$(OBJDIR)/libexr.a \
+	$(EXR_LIBS) \
+	$(FLAC_DIR)/src/libFLAC/.libs/libFLAC.a \
 	$(TIFF_DIR)/$(OBJDIR)/libtiff.a \
 	../guicast/$(OBJDIR)/libguicast.a \
 	../libmpeg3/$(OBJDIR)/libmpeg3.a \
@@ -363,10 +377,12 @@ LIBS += \
 	-lXv \
 	-lpthread \
 	-lm \
-	-lXxf86vm \
 	-lpng \
 	-lz \
 	-ldl \
+	-lbz2
+
+#	-lXxf86vm \
 
 ifeq ($(HAVE_XFT), y)
 LIBS += -lXft
@@ -386,11 +402,9 @@ CFLAGS += \
 	-I$(UUID_DIR) \
 	-I$(TOOLAME_DIR) \
 	-I$(LAME_DIR) \
-	-I../audiofile \
 	-I../libmpeg3 \
 	-I$(SNDFILE_DIR)/src \
 	$(ESOUNDCFLAGS) \
-	-I$(FFMPEG_DIR)/libavcodec -I$(FFMPEG_DIR)/libavutil \
 	-I$(THEORA_DIR)/include
 
 
@@ -445,12 +459,17 @@ LIBS += \
 endif
 
 
+FFMPEG_CFLAGS := \
+	$(CFLAGS) \
+	-I$(FFMPEG_DIR)/libavcodec \
+	-I$(FFMPEG_DIR)/libavformat \
+	-I$(FFMPEG_DIR)/libavutil \
+	-I$(FFMPEG_DIR)
 
 
-
-$(shell echo "\#define BUILDDATE \"`date`\"" > builddate.h )
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
-$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(AVIOBJS) $(CXXREPOSITORY) $(STATICLIBS) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
+$(shell echo $(CFLAGS) $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
+$(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(FFMPEG_OBJS) $(AVIOBJS) $(CXXREPOSITORY) $(STATICLIBS) $(LIBS) $(LDFLAGS2) > $(OBJDIR)/objs)
 
 
 
@@ -459,11 +478,9 @@ $(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(AVIOBJS) $(CXXREPOSITORY)
 # Static linking is not possible because the plugins depend on symbols
 # in the main executable.
 # Also VFS only overrides the C library when dynamic linking is used.
-$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(THEME_DATA) $(SNDFILE_LIB)
-	@echo LD $(OUTPUT)
-	@$(LINKER) `cat $(OBJDIR)/objs`
-	@echo STRIP $(OUTPUT)
-	@strip $(OUTPUT)
+$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(THEME_DATA) $(SNDFILE_LIB)
+	$(LINKER) `cat $(OBJDIR)/objs`
+	strip $(OUTPUT)
 
 $(OBJDIR)/test: 
 	$(CC) -shared -o $(OBJDIR)/test.so \
@@ -490,22 +507,25 @@ clean:
 wc:
 	cat *.C *.h | wc
 
-install:
-	rm -f /usr/bin/cinelerra
-	cp $(OUTPUT) /usr/bin
+#install:
+#	rm -f /usr/bin/cinelerra
+#	cp $(OUTPUT) ../bin
 
 
 $(LIBOBJS) $(OBJS):
-	@echo C++ $*.o
-	@$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(FILEEXR): fileexr.C
-	@echo C++ $*.o
-	@$(CC) -c `cat $(OBJDIR)/c_flags` -I$(EXR_DIR)IlmImf -I$(EXR_DIR)Imath -I$(EXR_DIR)Iex -I$(EXR_DIR)Half $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(EXR_INCLUDES) $(subst $(OBJDIR)/,, $*.C) -o $*.o
+
+$(FILEFLAC): fileflac.C
+	$(CC) -c `cat $(OBJDIR)/c_flags` -I$(FLAC_DIR)/include $(subst $(OBJDIR)/,, $*.C) -o $*.o
+
+$(FFMPEG_OBJS):
+	$(CC) -c `cat $(OBJDIR)/ffmpeg_cflags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(DCRAW): dcraw.c
-	@echo CC $*.o
-	@$(GCC) -c `cat $(OBJDIR)/c_flags` dcraw.c -o $*.o
+	$(GCC) -c `cat $(OBJDIR)/c_flags` dcraw.c -o $*.o
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \
@@ -608,6 +628,7 @@ $(OBJDIR)/filebaseima4.o: 			  filebaseima4.C
 $(OBJDIR)/filebaseulaw.o: 			  filebaseulaw.C
 $(OBJDIR)/filebasevideo.o: 			  filebasevideo.C
 $(OBJDIR)/filecr2.o:                              filecr2.C
+$(OBJDIR)/fileffmpeg.o:                           fileffmpeg.C
 $(OBJDIR)/fileformat.o: 			  fileformat.C
 $(OBJDIR)/filejpeg.o: 				  filejpeg.C
 $(OBJDIR)/filelist.o: 				  filelist.C
@@ -619,6 +640,7 @@ $(OBJDIR)/filesndfile.o: 			  filesndfile.C
 $(OBJDIR)/filetga.o: 			  	  filetga.C
 $(OBJDIR)/filethread.o: 			  filethread.C
 $(OBJDIR)/filetiff.o: 				  filetiff.C
+$(OBJDIR)/filevorbis.o:                           filevorbis.C
 $(OBJDIR)/filexml.o: 				  filexml.C
 $(OBJDIR)/floatauto.o:  			  floatauto.C
 $(OBJDIR)/floatautos.o: 			  floatautos.C
@@ -638,6 +660,7 @@ $(OBJDIR)/intauto.o:                              intauto.C
 $(OBJDIR)/intautos.o:                             intautos.C
 $(OBJDIR)/interfaceprefs.o: 			  interfaceprefs.C
 $(OBJDIR)/keyframe.o: 				  keyframe.C
+$(OBJDIR)/keyframegui.o: 			  keyframegui.C
 $(OBJDIR)/keyframepopup.o:                        keyframepopup.C
 $(OBJDIR)/keyframes.o:  			  keyframes.C
 $(OBJDIR)/keyframehandles.o: 			  keyframehandles.C
@@ -662,8 +685,11 @@ $(OBJDIR)/maskauto.o:                             maskauto.C
 $(OBJDIR)/maskautos.o:                            maskautos.C
 $(OBJDIR)/maskengine.o:                           maskengine.C
 $(OBJDIR)/mbuttons.o: 				  mbuttons.C
+$(OBJDIR)/menuattacheffect.o:                     menuattacheffect.C
+$(OBJDIR)/menuattachtransition.o:                 menuattachtransition.C
 $(OBJDIR)/menuaeffects.o: 			  menuaeffects.C
 $(OBJDIR)/menueffects.o: 			  menueffects.C
+$(OBJDIR)/menutransitionlength.o:                 menutransitionlength.C
 $(OBJDIR)/menuveffects.o: 			  menuveffects.C
 $(OBJDIR)/messages.o: 				  messages.C
 $(OBJDIR)/meterpanel.o: 			  meterpanel.C
@@ -695,7 +721,6 @@ $(OBJDIR)/plugin.o: 				  plugin.C
 $(OBJDIR)/pluginaclient.o: 			  pluginaclient.C
 $(OBJDIR)/pluginaclientlad.o: 			  pluginaclientlad.C
 $(OBJDIR)/pluginarray.o: 			  pluginarray.C
-$(OBJDIR)/pluginautos.o: 			  pluginautos.C
 $(OBJDIR)/pluginclient.o: 			  pluginclient.C
 $(OBJDIR)/plugindialog.o: 			  plugindialog.C
 $(OBJDIR)/pluginpopup.o: 			  pluginpopup.C
@@ -707,6 +732,8 @@ $(OBJDIR)/plugintoggles.o:                        plugintoggles.C
 $(OBJDIR)/pluginvclient.o: 			  pluginvclient.C
 $(OBJDIR)/preferences.o: 			  preferences.C
 $(OBJDIR)/preferencesthread.o:  		  preferencesthread.C
+$(OBJDIR)/presets.o:                              presets.C
+$(OBJDIR)/presetsgui.o:                           presetsgui.C
 $(OBJDIR)/previewaudio.o: 			  previewaudio.C
 $(OBJDIR)/previewvideo.o: 			  previewvideo.C
 $(OBJDIR)/question.o: 				  question.C

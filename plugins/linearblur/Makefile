@@ -3,7 +3,7 @@ include ../../global_config
 OBJS = \
 	$(OBJDIR)/linearblur.o
 
-OUTPUT = ../$(OBJDIR)/linearblur.plugin
+OUTPUT = $(PLUGIN_DIR)/linearblur.plugin
 
 include ../../plugin_config
 

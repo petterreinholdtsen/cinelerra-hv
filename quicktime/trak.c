@@ -313,7 +313,7 @@ int quicktime_avg_chunk_samples(quicktime_t *file, quicktime_trak_t *trak)
 int quicktime_chunk_of_sample(int64_t *chunk_sample, 
 	int64_t *chunk, 
 	quicktime_trak_t *trak, 
-	long sample)
+	int64_t sample)
 {
 	quicktime_stsc_table_t *table = trak->mdia.minf.stbl.stsc.table;
 	long total_entries = trak->mdia.minf.stbl.stsc.total_entries;
@@ -340,6 +340,7 @@ int quicktime_chunk_of_sample(int64_t *chunk_sample,
 		if(sample < total + range_samples) break;
 
 		chunk1samples = table[chunk2entry].samples;
+//printf("quicktime_chunk_of_sample chunk1samples=%lld\n", chunk1samples);
 		chunk1 = chunk2;
 
 		if(chunk2entry < total_entries)
@@ -348,6 +349,8 @@ int quicktime_chunk_of_sample(int64_t *chunk_sample,
 			total += range_samples;
 		}
 	}while(chunk2entry < total_entries);
+//printf("quicktime_chunk_of_sample chunk1samples=%lld sample=%lld total=%lld chunk1=%lld\n",
+//chunk1samples, sample, total, chunk1);
 
 	if(chunk1samples)
 		*chunk = (sample - total) / chunk1samples + chunk1;
@@ -616,32 +619,6 @@ int quicktime_write_vbr_frame(quicktime_t *file,
 	return result;
 }
 
-
-/*
- * int quicktime_update_tables(quicktime_t *file, 
- * 							quicktime_trak_t *trak, 
- * 							int64_t offset, 
- * 							int64_t chunk, 
- * 							int64_t sample, 
- * 							int64_t samples, 
- * 							int64_t sample_size)
- * {
- * //if(file->use_avi)
- * printf("quicktime_update_tables: replaced by quicktime_write_chunk_header and quicktime_write_chunk_footer\n");
- * 
- * 	if(offset + sample_size > file->mdat.atom.size) 
- * 		file->mdat.atom.size = offset + sample_size;
- * 
- * 	quicktime_update_stco(&(trak->mdia.minf.stbl.stco), chunk, offset);
- * 
- * 	if(trak->mdia.minf.is_video)
- * 		quicktime_update_stsz(&(trak->mdia.minf.stbl.stsz), sample, sample_size);
- * 
- * 
- * 	quicktime_update_stsc(&(trak->mdia.minf.stbl.stsc), chunk, samples);
- * 	return 0;
- * }
- */
 
 
 /**

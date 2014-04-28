@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "automation.h"
 #include "clip.h"
 #include "condition.h"
@@ -14,6 +35,7 @@
 #include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
+#include "mainundo.h"
 #include "maskauto.h"
 #include "maskautos.h"
 #include "mutex.h"
@@ -24,6 +46,7 @@
 #include "trackcanvas.h"
 #include "transportque.h"
 
+#define SQR(x) ((x) * (x))
 
 CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
  : Thread()
@@ -76,6 +99,9 @@ void CWindowTool::start_tool(int operation)
 			case CWINDOW_MASK:
 				new_gui = new CWindowMaskGUI(mwindow, this);
 				break;
+			case CWINDOW_RULER:
+				new_gui = new CWindowRulerGUI(mwindow, this);
+				break;
 			default:
 				result = 1;
 				stop_tool();
@@ -95,7 +121,9 @@ void CWindowTool::start_tool(int operation)
 			
 			if(mwindow->edl->session->tool_window &&
 				mwindow->session->show_cwindow) tool_gui->show_window();
+			tool_gui->lock_window("CWindowTool::start_tool 1");
 			tool_gui->flush();
+			tool_gui->unlock_window();
 			
 			
 // Signal thread to run next tool GUI
@@ -183,6 +211,18 @@ void CWindowTool::update_show_window()
 	}
 }
 
+void CWindowTool::raise_window()
+{
+	if(tool_gui)
+	{
+		gui->unlock_window();
+		tool_gui->lock_window("CWindowTool::raise_window");
+		tool_gui->raise_window();
+		tool_gui->unlock_window();
+		gui->lock_window("CWindowTool::raise_window");
+	}
+}
+
 void CWindowTool::update_values()
 {
 	tool_gui_lock->lock("CWindowTool::update_values");
@@ -204,7 +244,7 @@ void CWindowTool::update_values()
 
 CWindowToolGUI::CWindowToolGUI(MWindow *mwindow, 
 	CWindowTool *thread, 
-	char *title,
+	const char *title,
 	int w, 
 	int h)
  : BC_Window(title,
@@ -243,7 +283,7 @@ int CWindowToolGUI::close_event()
 
 	lock_window("CWindowToolGUI::close_event");
 	return 1;
-}
+;}
 
 int CWindowToolGUI::keypress_event()
 {
@@ -344,6 +384,7 @@ void CWindowCropGUI::create_objects()
 	BC_TumbleTextBox *textbox;
 	BC_Title *title;
 
+	lock_window("CWindowCropGUI::create_objects");
 	int column1 = 0;
 	int pad = MAX(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1), 
 		BC_Title::calculate_h(this, "X")) + 5;
@@ -389,6 +430,7 @@ void CWindowCropGUI::create_objects()
 		mwindow->edl->session->crop_y2 - 
 			mwindow->edl->session->crop_y1);
 	height->create_objects();
+	unlock_window();
 }
 
 void CWindowCropGUI::handle_event()
@@ -453,6 +495,7 @@ void CWindowEyedropGUI::create_objects()
 	int x = 10;
 	int y = 10;
 	int x2 = 70;
+	lock_window("CWindowEyedropGUI::create_objects");
 	BC_Title *title1, *title2, *title3;
 	add_subwindow(title1 = new BC_Title(x, y, "Red:"));
 	y += title1->get_h() + 5;
@@ -467,7 +510,8 @@ void CWindowEyedropGUI::create_objects()
 
 	y = blue->get_y() + blue->get_h() + 5;
 	add_subwindow(sample = new BC_SubWindow(x, y, 50, 50));
-	update();	
+	update();
+	unlock_window();
 }
 
 void CWindowEyedropGUI::update()
@@ -516,6 +560,7 @@ void CWindowCameraGUI::create_objects()
 	BC_Title *title;
 	BC_Button *button;
 
+	lock_window("CWindowCameraGUI::create_objects");
 	if(track)
 	{
 		mwindow->cwindow->calculate_affected_autos(&x_auto,
@@ -569,7 +614,7 @@ void CWindowCameraGUI::create_objects()
 	add_subwindow(button = new CWindowCameraMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
-
+	unlock_window();
 }
 
 void CWindowCameraGUI::update_preview()
@@ -595,6 +640,7 @@ void CWindowCameraGUI::handle_event()
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
+		mwindow->undo->update_undo_before(_("camera"), this);
 		if(event_caller == x)
 		{
 			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
@@ -642,6 +688,8 @@ void CWindowCameraGUI::handle_event()
 				update_preview();
 			}
 		}
+
+		mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 	}
 }
 
@@ -718,9 +766,11 @@ int CWindowCameraLeft::handle_event()
 
 		if(w && h)
 		{
+			mwindow->undo->update_undo_before(_("camera"), 0);
 			x_auto->value = 
 				(double)track->track_w / z_auto->value / 2 - 
 				(double)w / 2;
+			mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 			gui->update();
 			gui->update_preview();
 		}
@@ -748,9 +798,11 @@ int CWindowCameraCenter::handle_event()
 
 	if(x_auto)
 	{
+		mwindow->undo->update_undo_before(_("camera"), 0);
 		x_auto->value = 0;
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 	}
 
 	return 1;
@@ -791,10 +843,12 @@ int CWindowCameraRight::handle_event()
 
 		if(w && h)
 		{
+			mwindow->undo->update_undo_before(_("camera"), 0);
 			x_auto->value = -((double)track->track_w / z_auto->value / 2 - 
 				(double)w / 2);
 			gui->update();
 			gui->update_preview();
+			mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 		}
 	}
 
@@ -836,10 +890,12 @@ int CWindowCameraTop::handle_event()
 
 		if(w && h)
 		{
+			mwindow->undo->update_undo_before(_("camera"), 0);
 			y_auto->value = (double)track->track_h / z_auto->value / 2 - 
 				(double)h / 2;
 			gui->update();
 			gui->update_preview();
+			mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 		}
 	}
 
@@ -864,9 +920,11 @@ int CWindowCameraMiddle::handle_event()
 
 	if(y_auto)
 	{
+		mwindow->undo->update_undo_before(_("camera"), 0);
 		y_auto->value = 0;
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 	}
 
 	return 1;
@@ -907,10 +965,12 @@ int CWindowCameraBottom::handle_event()
 
 		if(w && h)
 		{
+			mwindow->undo->update_undo_before(_("camera"), 0);
 			y_auto->value = -((double)track->track_h / z_auto->value / 2 - 
 				(double)h / 2);
 			gui->update();
 			gui->update_preview();
+			mwindow->undo->update_undo_after(_("camera"), LOAD_ALL);
 		}
 	}
 
@@ -954,6 +1014,7 @@ void CWindowProjectorGUI::create_objects()
 	BC_Title *title;
 	BC_Button *button;
 
+	lock_window("CWindowProjectorGUI::create_objects");
 	if(track)
 	{
 		mwindow->cwindow->calculate_affected_autos(&x_auto,
@@ -1007,7 +1068,7 @@ void CWindowProjectorGUI::create_objects()
 	add_subwindow(button = new CWindowProjectorMiddle(mwindow, this, x1, y));
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
-
+	unlock_window();
 }
 
 void CWindowProjectorGUI::update_preview()
@@ -1032,6 +1093,7 @@ void CWindowProjectorGUI::handle_event()
 
 	if(track)
 	{
+		mwindow->undo->update_undo_before(_("projector"), this);
 		if(event_caller == x)
 		{
 			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
@@ -1079,6 +1141,7 @@ void CWindowProjectorGUI::handle_event()
 				update_preview();
 			}
 		}
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 }
 
@@ -1181,10 +1244,12 @@ int CWindowProjectorLeft::handle_event()
 	}
 	if(x_auto && z_auto)
 	{
+		mwindow->undo->update_undo_before(_("projector"), 0);
 		x_auto->value = (double)track->track_w * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_w / 2;
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 
 	return 1;
@@ -1209,9 +1274,11 @@ int CWindowProjectorCenter::handle_event()
 
 	if(x_auto)
 	{
+		mwindow->undo->update_undo_before(_("projector"), 0);
 		x_auto->value = 0;
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 
 	return 1;
@@ -1244,10 +1311,12 @@ int CWindowProjectorRight::handle_event()
 
 	if(x_auto && z_auto)
 	{
+		mwindow->undo->update_undo_before(_("projector"), 0);
 		x_auto->value = -((double)track->track_w * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_w / 2);
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 
 	return 1;
@@ -1280,10 +1349,12 @@ int CWindowProjectorTop::handle_event()
 
 	if(y_auto && z_auto)
 	{
+		mwindow->undo->update_undo_before(_("projector"), 0);
 		y_auto->value = (double)track->track_h * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_h / 2;
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 
 	return 1;
@@ -1307,9 +1378,11 @@ int CWindowProjectorMiddle::handle_event()
 
 	if(y_auto)
 	{
+		mwindow->undo->update_undo_before(_("projector"), 0);
 		y_auto->value = 0;
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 
 	return 1;
@@ -1342,10 +1415,12 @@ int CWindowProjectorBottom::handle_event()
 
 	if(y_auto && z_auto)
 	{
+		mwindow->undo->update_undo_before(_("projector"), 0);
 		y_auto->value = -((double)track->track_h * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_h / 2);
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("projector"), LOAD_ALL);
 	}
 
 	return 1;
@@ -1362,7 +1437,7 @@ CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
 	CWindowToolGUI *gui, 
 	int x, 
 	int y,
-	char *text)
+	const char *text)
  : BC_PopupMenu(x,
  	y,
 	200,
@@ -1408,20 +1483,34 @@ int CWindowMaskMode::text_to_mode(char *text)
 
 int CWindowMaskMode::handle_event()
 {
+	MaskAutos *autos;
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
+// Get existing keyframe
 	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+		autos,
 		keyframe, 
 		mask,
 		point,
 		0);
-
 	if(track)
 	{
-		((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->default_auto)->mode = 
+		mwindow->undo->update_undo_before(_("mask mode"), 0);
+#ifdef USE_KEYFRAME_SPANNING
+// Create temp keyframe
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+// Update parameter
+		temp_keyframe.mode = text_to_mode(get_text());
+// Commit change to span of keyframes
+		autos->update_parameter(&temp_keyframe);
+#else
+		((MaskAuto*)autos->default_auto)->mode = 
 			text_to_mode(get_text());
+#endif
+		mwindow->undo->update_undo_after(_("mask mode"), LOAD_AUTOMATION);
 	}
 
 //printf("CWindowMaskMode::handle_event 1\n");
@@ -1448,16 +1537,46 @@ CWindowMaskDelete::CWindowMaskDelete(MWindow *mwindow,
 
 int CWindowMaskDelete::handle_event()
 {
+	MaskAutos *autos;
 	MaskAuto *keyframe;
-	Track *track = mwindow->cwindow->calculate_affected_track();
+	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
 
+// Get existing keyframe
+	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+		autos,
+		keyframe, 
+		mask,
+		point,
+		0);
 
 	if(track)
 	{
-		MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
-		for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
+		mwindow->undo->update_undo_before(_("mask delete"), 0);
+
+#ifdef USE_KEYFRAME_SPANNING
+// Create temp keyframe
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+// Update parameter
+		SubMask *submask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
+		for(int i = mwindow->cwindow->gui->affected_point;
+			i < submask->points.total - 1;
+			i++)
+		{
+			*submask->points.values[i] = *submask->points.values[i + 1];
+		}
+
+		if(submask->points.total)
+		{
+			submask->points.remove_object(
+				submask->points.values[submask->points.total - 1]);
+		}
+// Commit change to span of keyframes
+		((MaskAutos*)track->automation->autos[AUTOMATION_MASK])->update_parameter(&temp_keyframe);
+#else
+		for(MaskAuto *current = (MaskAuto*)autos->default_auto;
 			current; )
 		{
 			SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
@@ -1478,41 +1597,18 @@ int CWindowMaskDelete::handle_event()
 			}
 
 
-			if(current == (MaskAuto*)mask_autos->default_auto)
-				current = (MaskAuto*)mask_autos->first;
+			if(current == (MaskAuto*)autos->default_auto)
+				current = (MaskAuto*)autos->first;
 			else
 				current = (MaskAuto*)NEXT;
 		}
+#endif
+
 		gui->update();
 		gui->update_preview();
+		mwindow->undo->update_undo_after(_("mask delete"), LOAD_AUTOMATION);
 	}
 
-
-// 	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-// 		keyframe, 
-// 		mask, 
-// 		point,
-// 		0);
-
-// Need to apply to every keyframe
-	
-// 	if(keyframe)
-// 	{
-// 		for(int i = mwindow->cwindow->gui->affected_point;
-// 			i < mask->points.total - 1;
-// 			i++)
-// 		{
-// 			*mask->points.values[i] = *mask->points.values[i + 1];
-// 		}
-// 		
-// 		if(mask->points.total)
-// 		{
-// 			mask->points.remove_object(mask->points.values[mask->points.total - 1]);
-// 		}
-// 
-// 		gui->update();
-// 		gui->update_preview();
-// 	}
 
 	return 1;
 }
@@ -1526,87 +1622,87 @@ int CWindowMaskDelete::keypress_event()
 }
 
 
-CWindowMaskCycleNext::CWindowMaskCycleNext(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
- : BC_GenericButton(x, y, _("Cycle next"))
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-}
-int CWindowMaskCycleNext::handle_event()
-{
-	MaskAuto *keyframe;
-	Track *track;
-	MaskPoint *point;
-	SubMask *mask;
-	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-		keyframe,
-		mask,  
-		point,
-		0);
-
-	MaskPoint *temp;
-
-// Should apply to all keyframes
-	if(keyframe && mask->points.total)
-	{
-		temp = mask->points.values[0];
-
-		for(int i = 0; i < mask->points.total - 1; i++)
-		{
-			mask->points.values[i] = mask->points.values[i + 1];
-		}
-		mask->points.values[mask->points.total - 1] = temp;
-
-		mwindow->cwindow->gui->affected_point--;
-		if(mwindow->cwindow->gui->affected_point < 0)
-			mwindow->cwindow->gui->affected_point = mask->points.total - 1;
-
-		gui->update();
-		gui->update_preview();
-	}
-	
-	return 1;
-}
-
-CWindowMaskCyclePrev::CWindowMaskCyclePrev(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
- : BC_GenericButton(x, y, _("Cycle prev"))
-{
-	this->mwindow = mwindow;
-	this->gui = gui;
-}
-int CWindowMaskCyclePrev::handle_event()
-{
-	MaskAuto *keyframe;
-	Track *track;
-	MaskPoint *point;
-	SubMask *mask;
-	((CWindowMaskGUI*)gui)->get_keyframe(track, 
-		keyframe,
-		mask, 
-		point,
-		0);
-
-// Should apply to all keyframes
-	MaskPoint *temp;
-	if(keyframe && mask->points.total)
-	{
-		temp = mask->points.values[mask->points.total - 1];
-
-		for(int i = mask->points.total - 1; i > 0; i--)
-		{
-			mask->points.values[i] = mask->points.values[i - 1];
-		}
-		mask->points.values[0] = temp;
-
-		mwindow->cwindow->gui->affected_point++;
-		if(mwindow->cwindow->gui->affected_point >= mask->points.total)
-			mwindow->cwindow->gui->affected_point = 0;
-
-		gui->update();
-		gui->update_preview();
-	}
-	return 1;
-}
+// CWindowMaskCycleNext::CWindowMaskCycleNext(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+//  : BC_GenericButton(x, y, _("Cycle next"))
+// {
+// 	this->mwindow = mwindow;
+// 	this->gui = gui;
+// }
+// int CWindowMaskCycleNext::handle_event()
+// {
+// 	MaskAuto *keyframe;
+// 	Track *track;
+// 	MaskPoint *point;
+// 	SubMask *mask;
+// 	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+// 		keyframe,
+// 		mask,  
+// 		point,
+// 		0);
+// 
+// 	MaskPoint *temp;
+// 
+// // Should apply to all keyframes
+// 	if(keyframe && mask->points.total)
+// 	{
+// 		temp = mask->points.values[0];
+// 
+// 		for(int i = 0; i < mask->points.total - 1; i++)
+// 		{
+// 			mask->points.values[i] = mask->points.values[i + 1];
+// 		}
+// 		mask->points.values[mask->points.total - 1] = temp;
+// 
+// 		mwindow->cwindow->gui->affected_point--;
+// 		if(mwindow->cwindow->gui->affected_point < 0)
+// 			mwindow->cwindow->gui->affected_point = mask->points.total - 1;
+// 
+// 		gui->update();
+// 		gui->update_preview();
+// 	}
+// 	
+// 	return 1;
+// }
+// 
+// CWindowMaskCyclePrev::CWindowMaskCyclePrev(MWindow *mwindow, CWindowToolGUI *gui, int x, int y)
+//  : BC_GenericButton(x, y, _("Cycle prev"))
+// {
+// 	this->mwindow = mwindow;
+// 	this->gui = gui;
+// }
+// int CWindowMaskCyclePrev::handle_event()
+// {
+// 	MaskAuto *keyframe;
+// 	Track *track;
+// 	MaskPoint *point;
+// 	SubMask *mask;
+// 	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+// 		keyframe,
+// 		mask, 
+// 		point,
+// 		0);
+// 
+// // Should apply to all keyframes
+// 	MaskPoint *temp;
+// 	if(keyframe && mask->points.total)
+// 	{
+// 		temp = mask->points.values[mask->points.total - 1];
+// 
+// 		for(int i = mask->points.total - 1; i > 0; i--)
+// 		{
+// 			mask->points.values[i] = mask->points.values[i - 1];
+// 		}
+// 		mask->points.values[0] = temp;
+// 
+// 		mwindow->cwindow->gui->affected_point++;
+// 		if(mwindow->cwindow->gui->affected_point >= mask->points.total)
+// 			mwindow->cwindow->gui->affected_point = 0;
+// 
+// 		gui->update();
+// 		gui->update_preview();
+// 	}
+// 	return 1;
+// }
 
 
 CWindowMaskNumber::CWindowMaskNumber(MWindow *mwindow, 
@@ -1658,18 +1754,44 @@ CWindowMaskFeather::~CWindowMaskFeather()
 }
 int CWindowMaskFeather::handle_event()
 {
+	MaskAutos *autos;
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
+
+	mwindow->undo->update_undo_before(_("mask feather"), this);
+
+// Get existing keyframe
 	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+		autos,
 		keyframe,
 		mask, 
 		point,
+#ifdef USE_KEYFRAME_SPANNING
+		0);
+#else
 		1);
+#endif
 
-	keyframe->feather = atof(get_text());
-	gui->update_preview();
+	if(track)
+	{	
+#ifdef USE_KEYFRAME_SPANNING
+// Create temp keyframe
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+// Update parameter
+		temp_keyframe.feather = atof(get_text());
+// Commit change to span of keyframes
+		autos->update_parameter(&temp_keyframe);
+#else
+		keyframe->feather = atof(get_text());
+#endif
+
+		gui->update_preview();
+	}
+
+	mwindow->undo->update_undo_after(_("mask feather"), LOAD_AUTOMATION);
 	return 1;
 }
 
@@ -1693,18 +1815,41 @@ CWindowMaskValue::~CWindowMaskValue()
 
 int CWindowMaskValue::handle_event()
 {
+	MaskAutos *autos;
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
+	
+	mwindow->undo->update_undo_before(_("mask value"), this);
 	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+		autos,
 		keyframe,
 		mask, 
 		point,
+#ifdef USE_KEYFRAME_SPANNING
+		0);
+#else
 		1);
+#endif
 
-	keyframe->value = get_value();
+	if(track)
+	{
+#ifdef USE_KEYFRAME_SPANNING
+// Create temp keyframe
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+// Update parameter
+		temp_keyframe.value = get_value();
+// Commit change to span of keyframes
+		autos->update_parameter(&temp_keyframe);
+#else
+		keyframe->value = get_value();
+#endif
+	}
+
 	gui->update_preview();
+	mwindow->undo->update_undo_after(_("mask value"), LOAD_AUTOMATION);
 	return 1;
 }
 
@@ -1730,8 +1875,10 @@ CWindowMaskGUI::CWindowMaskGUI(MWindow *mwindow, CWindowTool *thread)
 }
 CWindowMaskGUI::~CWindowMaskGUI()
 {
+	lock_window("CWindowMaskGUI::~CWindowMaskGUI");
 	delete number;
 	delete feather;
+	unlock_window();
 }
 
 void CWindowMaskGUI::create_objects()
@@ -1742,6 +1889,7 @@ void CWindowMaskGUI::create_objects()
 	if(track)
 		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], 0);
 
+	lock_window("CWindowMaskGUI::create_objects");
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new CWindowMaskMode(mwindow, 
@@ -1787,20 +1935,27 @@ void CWindowMaskGUI::create_objects()
 	this->y->create_objects();
 
 	update();
+	unlock_window();
 }
 
 void CWindowMaskGUI::get_keyframe(Track* &track, 
+	MaskAutos* &autos,
 	MaskAuto* &keyframe, 
 	SubMask* &mask, 
 	MaskPoint* &point,
 	int create_it)
 {
+	autos = 0;
 	keyframe = 0;
+
 	track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], create_it);
-	else
-		keyframe = 0;
+	{
+		autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(
+			autos, 
+			create_it);
+	}
 
 	if(keyframe)
 		mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
@@ -1813,36 +1968,43 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 		if(mwindow->cwindow->gui->affected_point < mask->points.total &&
 			mwindow->cwindow->gui->affected_point >= 0)
 		{
-			point =  mask->points.values[mwindow->cwindow->gui->affected_point];
+			point = mask->points.values[mwindow->cwindow->gui->affected_point];
 		}
 	}
 }
 
 void CWindowMaskGUI::update()
 {
+	MaskAutos *autos;
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
 //printf("CWindowMaskGUI::update 1\n");
 	get_keyframe(track, 
+		autos,
 		keyframe, 
 		mask,
 		point,
 		0);
 
-//printf("CWindowMaskGUI::update 1\n");
-	if(point)
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	position = mwindow->edl->align_to_frame(position, 0);
+	if(track)
 	{
-		x->update(point->x);
-		y->update(point->y);
-	}
-//printf("CWindowMaskGUI::update 1\n");
+		int64_t position_i = track->to_units(position, 0);
 
-	if(mask)
-	{
-		feather->update((int64_t)keyframe->feather);
-		value->update((int64_t)keyframe->value);
+		if(point)
+		{
+			x->update(point->x);
+			y->update(point->y);
+		}
+
+		if(mask)
+		{
+			feather->update((int64_t)autos->get_feather(position_i, PLAY_FORWARD));
+			value->update((int64_t)autos->get_value(position_i, PLAY_FORWARD));
+		}
 	}
 //printf("CWindowMaskGUI::update 1\n");
 
@@ -1851,31 +2013,62 @@ void CWindowMaskGUI::update()
 //printf("CWindowMaskGUI::update 1\n");
 	if(track)
 	{
+#ifdef USE_KEYFRAME_SPANNING
 		mode->set_text(
-			CWindowMaskMode::mode_to_text(((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->default_auto)->mode));
+			CWindowMaskMode::mode_to_text(keyframe->mode));
+#else
+		mode->set_text(
+			CWindowMaskMode::mode_to_text(((MaskAuto*)autos->default_auto)->mode));
+#endif
 	}
 //printf("CWindowMaskGUI::update 2\n");
 }
 
 void CWindowMaskGUI::handle_event()
 {
+	MaskAutos *autos;
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;
 	SubMask *mask;
 	get_keyframe(track, 
+		autos,
 		keyframe, 
 		mask,
 		point,
 		0);
 
+	mwindow->undo->update_undo_before(_("mask point"), this);
+
 	if(point)
 	{
+#ifdef USE_KEYFRAME_SPANNING
+// Create temp keyframe
+		MaskAuto temp_keyframe(mwindow->edl, autos);
+		temp_keyframe.copy_data(keyframe);
+// Get affected point in temp keyframe
+		mask = temp_keyframe.get_submask(mwindow->edl->session->cwindow_mask);
+		if(mwindow->cwindow->gui->affected_point < mask->points.total &&
+			mwindow->cwindow->gui->affected_point >= 0)
+		{
+			point = mask->points.values[mwindow->cwindow->gui->affected_point];
+		}
+
+		if(point)
+		{
+			point->x = atof(x->get_text());
+			point->y = atof(y->get_text());
+// Commit to spanned keyframes
+			autos->update_parameter(&temp_keyframe);
+		}
+#else
 		point->x = atof(x->get_text());
 		point->y = atof(y->get_text());
+#endif
 	}
 
 	update_preview();
+	mwindow->undo->update_undo_after(_("mask point"), LOAD_AUTOMATION);
 }
 
 void CWindowMaskGUI::update_preview()
@@ -1896,6 +2089,103 @@ void CWindowMaskGUI::update_preview()
 
 
 
+
+
+CWindowRulerGUI::CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread)
+ : CWindowToolGUI(mwindow, 
+ 	thread,
+	PROGRAM_NAME ": Ruler",
+	320,
+	240)
+{
+}
+
+CWindowRulerGUI::~CWindowRulerGUI()
+{
+}
+
+void CWindowRulerGUI::create_objects()
+{
+	int x = 10, y = 10;
+	BC_Title *title;
+
+	lock_window("CWindowRulerGUI::create_objects");
+	add_subwindow(title = new BC_Title(x, y, "Current:"));
+	add_subwindow(current = new BC_Title(x + title->get_w() + 10, y, ""));
+	y += title->get_h() + 5;
+	
+	add_subwindow(title = new BC_Title(x, y, "Point 1:"));
+	add_subwindow(point1 = new BC_Title(x + title->get_w() + 10, y, ""));
+	y += title->get_h() + 5;
+
+	add_subwindow(title = new BC_Title(x, y, "Point 2:"));
+	add_subwindow(point2 = new BC_Title(x + title->get_w() + 10, y, ""));
+	y += title->get_h() + 5;
+
+	add_subwindow(title = new BC_Title(x, y, "Distance:"));
+	add_subwindow(distance = new BC_Title(x + title->get_w() + 10, y, ""));
+	y += title->get_h() + 5;
+	add_subwindow(title = new BC_Title(x, y, "Angle:"));
+	add_subwindow(angle = new BC_Title(x + title->get_w() + 10, y, ""));
+	y += title->get_h() + 10;
+	char string[BCTEXTLEN];
+	sprintf(string, _("Press Ctrl to lock ruler to the\nnearest 45%c angle."), 0xb0);
+	add_subwindow(title = new BC_Title(x, 
+		y, 
+		string));
+	y += title->get_h() + 10;
+	sprintf(string, _("Press Alt to translate the ruler."));
+	add_subwindow(title = new BC_Title(x, 
+		y, 
+		string));
+	update();
+	unlock_window();
+}
+
+void CWindowRulerGUI::update()
+{
+	double distance_value = 
+		sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
+		SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
+	double angle_value = atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
+		(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) * 
+		360 /
+		2 / 
+		M_PI;
+
+	if(EQUIV(distance_value, 0.0)) 
+	{
+		angle_value = 0.0;
+	}
+	else
+	if(angle_value < 0)
+	{
+		angle_value *= -1;
+	}
+
+	char string[BCTEXTLEN];
+	sprintf(string, "%d, %d", 
+		mwindow->session->cwindow_output_x,
+		mwindow->session->cwindow_output_y);
+	current->update(string);
+	sprintf(string, "%.0f, %.0f", 
+		mwindow->edl->session->ruler_x1,
+		mwindow->edl->session->ruler_y1);
+	point1->update(string);
+	sprintf(string, "%.0f, %.0f", 
+		mwindow->edl->session->ruler_x2,
+		mwindow->edl->session->ruler_y2);
+	point2->update(string);
+
+	sprintf(string, "%0.01f pixels", distance_value);
+	distance->update(string);
+	sprintf(string, "%0.02f %c", angle_value, 0xb0);
+	angle->update(string);
+}
+
+void CWindowRulerGUI::handle_event()
+{
+}
 
 
 

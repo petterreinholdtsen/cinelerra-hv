@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifdef HAVE_GL
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -456,6 +477,9 @@ void AffineUnit::process_package(LoadPackage *package)
 //printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
 //printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
 //printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
+
+
+
 
 
 		if(server->use_opengl)

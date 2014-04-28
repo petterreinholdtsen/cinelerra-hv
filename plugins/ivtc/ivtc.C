@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
@@ -9,7 +30,7 @@
 #include <string.h>
 
 
-static char *pattern_text[] = 
+static const char *pattern_text[] = 
 {
 	N_("A  B  BC  CD  D"),
 	N_("AB  BC  CD  DE  EF"),
@@ -31,7 +52,7 @@ IVTCConfig::IVTCConfig()
 IVTCMain::IVTCMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 	previous_min = 0x4000000000000000LL;
 	previous_strategy = 0;
@@ -39,7 +60,7 @@ IVTCMain::IVTCMain(PluginServer *server)
 
 IVTCMain::~IVTCMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(engine)
 	{
@@ -51,7 +72,7 @@ IVTCMain::~IVTCMain()
 	}
 }
 
-char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
+const char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
 int IVTCMain::is_realtime() { return 1; }
 
 
@@ -86,9 +107,7 @@ int IVTCMain::save_defaults()
 
 #include "picon_png.h"
 NEW_PICON_MACRO(IVTCMain)
-SHOW_GUI_MACRO(IVTCMain, IVTCThread)
-SET_STRING_MACRO(IVTCMain)
-RAISE_WINDOW_MACRO(IVTCMain)
+NEW_WINDOW_MACRO(IVTCMain, IVTCWindow)
 
 
 
@@ -108,7 +127,7 @@ void IVTCMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("IVTC");
 	output.tag.set_property("FRAME_OFFSET", config.frame_offset);
 	output.tag.set_property("FIRST_FIELD", config.first_field);
@@ -123,7 +142,7 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	float new_threshold;
@@ -408,25 +427,25 @@ void IVTCMain::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
+		((IVTCWindow*)thread->window)->lock_window();
 		if(config.pattern == IVTCConfig::AUTOMATIC)
 		{
-			thread->window->frame_offset->disable();
-			thread->window->first_field->disable();
+			((IVTCWindow*)thread->window)->frame_offset->disable();
+			((IVTCWindow*)thread->window)->first_field->disable();
 		}
 		else
 		{
-			thread->window->frame_offset->enable();
-			thread->window->first_field->enable();
+			((IVTCWindow*)thread->window)->frame_offset->enable();
+			((IVTCWindow*)thread->window)->first_field->enable();
 		}
-		thread->window->frame_offset->update((int64_t)config.frame_offset);
-		thread->window->first_field->update(config.first_field);
-//		thread->window->automatic->update(config.automatic);
+		((IVTCWindow*)thread->window)->frame_offset->update((int64_t)config.frame_offset);
+		((IVTCWindow*)thread->window)->first_field->update(config.first_field);
+//		((IVTCWindow*)thread->window)->automatic->update(config.automatic);
 		for(int i = 0; i < TOTAL_PATTERNS; i++)
 		{
-			thread->window->pattern[i]->update(config.pattern == i);
+			((IVTCWindow*)thread->window)->pattern[i]->update(config.pattern == i);
 		}
-		thread->window->unlock_window();
+		((IVTCWindow*)thread->window)->unlock_window();
 	}
 }
 

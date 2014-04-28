@@ -4,7 +4,7 @@ OBJS = ../parametric/$(OBJDIR)/fourier.o \
 	$(OBJDIR)/timestretch.o \
 	$(OBJDIR)/timestretchengine.o
 
-OUTPUT = ../$(OBJDIR)/timestretch.plugin
+OUTPUT = $(PLUGIN_DIR)/timestretch.plugin
 
 include ../../plugin_config
 

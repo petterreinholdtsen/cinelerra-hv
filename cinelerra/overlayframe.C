@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -210,7 +231,7 @@ OverlayFrame::~OverlayFrame()
 	temp_type output4 = output[3]; \
  \
 	pixel_opacity = opacity * input4; \
-	pixel_transparency = (temp_type)max * max - pixel_opacity; \
+	pixel_transparency = output4 * ((temp_type)max * max - pixel_opacity) / max; \
  \
 	switch(mode) \
 	{ \
@@ -364,7 +385,6 @@ int OverlayFrame::overlay(VFrame *output,
 {
 	float w_scale = (out_x2 - out_x1) / (in_x2 - in_x1);
 	float h_scale = (out_y2 - out_y1) / (in_y2 - in_y1);
-
 
 
 
@@ -2550,7 +2570,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 		{ \
 			temp_type pixel_opacity, pixel_transparency; \
 			pixel_opacity = opacity * in_row[3]; \
-			pixel_transparency = (temp_type)max_squared - pixel_opacity; \
+			pixel_transparency = output[3] * ((temp_type)max_squared - pixel_opacity) / max; \
 		 \
 		 \
 		 	temp_type r,g,b; \
@@ -2699,9 +2719,9 @@ void BlendUnit::process_package(LoadPackage *package)
 					{
 						float pixel_opacity, pixel_transparency;
 						pixel_opacity = opacity * in_row[3];
-						pixel_transparency = 1.0 - pixel_opacity;
-					
-					
+						pixel_transparency = output[3] * (1.0 - pixel_opacity);
+
+
 						output[0] = in_row[0] * pixel_opacity +
 							output[0] * pixel_transparency;
 						output[1] = in_row[1] * pixel_opacity +

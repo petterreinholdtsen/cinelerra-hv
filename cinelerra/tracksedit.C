@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "assets.h"
 #include "atrack.h"
 #include "automation.h"
@@ -15,6 +36,7 @@
 #include "mainsession.h"
 #include "pluginserver.h"
 #include "pluginset.h"
+#include "plugin.h"
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "tracks.h"
@@ -62,7 +84,114 @@ void Tracks::clear_automation(double selectionstart, double selectionend)
 	}
 }
 
-void Tracks::straighten_automation(double selectionstart, double selectionend)
+void Tracks::clear_transitions(double start, double end)
+{
+	for(Track *current_track = first; 
+		current_track; 
+		current_track = current_track->next)
+	{
+		if(current_track->record)
+		{
+			int64_t start_units = current_track->to_units(start, 0);
+			int64_t end_units = current_track->to_units(end, 0);
+
+			for(Edit *current_edit = current_track->edits->first;
+				current_edit;
+				current_edit = current_edit->next)
+			{
+				if(current_edit->startproject >= start_units &&
+					current_edit->startproject < end_units &&
+					current_edit->transition)
+				{
+					current_edit->detach_transition();
+				}
+			}
+		}
+	}
+}
+
+void Tracks::set_transition_length(double start, double end, double length)
+{
+	for(Track *current_track = first; 
+		current_track; 
+		current_track = current_track->next)
+	{
+		if(current_track->record)
+		{
+			int64_t start_units = current_track->to_units(start, 0);
+			int64_t end_units = current_track->to_units(end, 0);
+
+			for(Edit *current_edit = current_track->edits->first;
+				current_edit;
+				current_edit = current_edit->next)
+			{
+				if(current_edit->startproject >= start_units &&
+					current_edit->startproject < end_units &&
+					current_edit->transition)
+				{
+					current_edit->transition->length = 
+						current_track->to_units(length, 1);
+				}
+			}
+		}
+	}
+}
+
+void Tracks::set_transition_length(Transition *transition, double length)
+{
+// Must verify existence of transition
+	int done = 0;
+	if(!transition) return;
+	for(Track *current_track = first; 
+		current_track && !done; 
+		current_track = current_track->next)
+	{
+		for(Edit *current_edit = current_track->edits->first;
+			current_edit && !done;
+			current_edit = current_edit->next)
+		{
+			if(current_edit->transition == transition)
+			{
+				transition->length = current_track->to_units(length, 1);
+				done = 1;
+			}
+		}
+	}
+}
+
+void Tracks::paste_transitions(double start, double end, int track_type, char* title)
+{
+	for(Track *current_track = first; 
+		current_track; 
+		current_track = current_track->next)
+	{
+		if(current_track->record && current_track->data_type == track_type)
+		{
+			int64_t start_units = current_track->to_units(start, 0);
+			int64_t end_units = current_track->to_units(end, 0);
+
+			for(Edit *current_edit = current_track->edits->first;
+				current_edit;
+				current_edit = current_edit->next)
+			{
+				if(current_edit->startproject > 0 &&
+					((end_units > start_units &&
+					current_edit->startproject >= start_units &&
+					current_edit->startproject < end_units) ||
+					(end_units == start_units &&
+					current_edit->startproject <= start_units &&
+					current_edit->startproject + current_edit->length > start_units)))
+				{
+					current_edit->insert_transition(title);
+				}
+			}
+		}
+	}
+}
+
+void Tracks::set_automation_mode(double selectionstart, 
+	double selectionend,
+	int mode)
 {
 	Track* current_track;
 
@@ -70,8 +199,9 @@ void Tracks::straighten_automation(double selectionstart, double selectionend)
 	{
 		if(current_track->record)
 		{
-			current_track->straighten_automation(selectionstart, 
-				selectionend); 
+			current_track->set_automation_mode(selectionstart, 
+				selectionend,
+				mode); 
 		}
 	}
 }
@@ -149,11 +279,11 @@ int Tracks::copy_automation(double selectionstart,
 	return 0;
 }
 
-int Tracks::copy_default_keyframe(FileXML *file)
-{
-	copy_automation(0, 0, file, 1, 0);
-	return 0;
-}
+// int Tracks::copy_default_keyframe(FileXML *file)
+// {
+// 	copy_automation(0, 0, file, 1, 0);
+// 	return 0;
+// }
 
 int Tracks::delete_tracks()
 {
@@ -243,7 +373,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					source_edit->startproject + source_edit->length, 
 					&temp, 
 					0,
-					0);
+					1);
 				temp.terminate_string();
 				temp.rewind();
 // Insert new keyframes
@@ -267,6 +397,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 						1.0, 
 						&temp, 
 						0,
+						1,
 						&temp_autoconf);
 
 
@@ -363,7 +494,6 @@ void Tracks::move_effect(Plugin *plugin,
 }
 
 
-
 int Tracks::concatenate_tracks(int edit_plugins)
 {
 	Track *output_track, *first_output_track, *input_track;
@@ -405,7 +535,8 @@ int Tracks::concatenate_tracks(int edit_plugins)
 				output_track->insert_track(input_track, 
 					output_start, 
 					0,
-					edit_plugins);
+					edit_plugins,
+					0);
 
 // Get next source and destination
 				for(input_track = input_track->next; 
@@ -472,7 +603,7 @@ int Tracks::copy(double start,
 	double end, 
 	int all, 
 	FileXML *file, 
-	char *output_path)
+	const char *output_path)
 {
 // nothing selected
 	if(start == end && !all) return 1;
@@ -604,7 +735,8 @@ void Tracks::paste_audio_transition(PluginServer *server)
 
 void Tracks::paste_automation(double selectionstart, 
 	FileXML *file,
-	int default_only)
+	int default_only,
+	int active_only)
 {
 	Track* current_atrack = 0;
 	Track* current_vtrack = 0;
@@ -664,7 +796,8 @@ void Tracks::paste_automation(double selectionstart,
 								frame_rate,
 								sample_rate,
 								file,
-								default_only);
+								default_only,
+								active_only);
 						}
 					}
 					else
@@ -689,7 +822,8 @@ void Tracks::paste_automation(double selectionstart,
 								frame_rate,
 								sample_rate,
 								file,
-								default_only);
+								default_only,
+								active_only);
 						}
 					}
 				}
@@ -698,11 +832,11 @@ void Tracks::paste_automation(double selectionstart,
 	}
 }
 
-int Tracks::paste_default_keyframe(FileXML *file)
-{
-	paste_automation(0, file, 1);
-	return 0;
-}
+// int Tracks::paste_default_keyframe(FileXML *file)
+// {
+// 	paste_automation(0, file, 1, 0);
+// 	return 0;
+// }
 
 void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {

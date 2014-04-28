@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/shapewipe.o
 
-OUTPUT = ../$(OBJDIR)/shapewipe.plugin
+OUTPUT = $(PLUGIN_DIR)/shapewipe.plugin
 
 include ../../plugin_config
 

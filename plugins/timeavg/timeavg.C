@@ -1,9 +1,31 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"
+#include "plugincolors.h"
 #include "timeavg.h"
 #include "timeavgwindow.h"
 #include "vframe.h"
@@ -29,6 +51,8 @@ TimeAvgConfig::TimeAvgConfig()
 	mode = TimeAvgConfig::AVERAGE;
 	paranoid = 0;
 	nosubtract = 0;
+	threshold = 1;
+	border = 2;
 }
 
 void TimeAvgConfig::copy_from(TimeAvgConfig *src)
@@ -37,6 +61,8 @@ void TimeAvgConfig::copy_from(TimeAvgConfig *src)
 	this->mode = src->mode;
 	this->paranoid = src->paranoid;
 	this->nosubtract = src->nosubtract;
+	this->threshold = src->threshold;
+	this->border = src->border;
 }
 
 int TimeAvgConfig::equivalent(TimeAvgConfig *src)
@@ -44,7 +70,9 @@ int TimeAvgConfig::equivalent(TimeAvgConfig *src)
 	return frames == src->frames &&
 		mode == src->mode &&
 		paranoid == src->paranoid &&
-		nosubtract == src->nosubtract;
+		nosubtract == src->nosubtract &&
+		threshold == src->threshold &&
+		border == src->border;
 }
 
 
@@ -62,7 +90,7 @@ int TimeAvgConfig::equivalent(TimeAvgConfig *src)
 TimeAvgMain::TimeAvgMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	accumulation = 0;
 	history = 0;
 	history_size = 0;
@@ -74,7 +102,7 @@ TimeAvgMain::TimeAvgMain(PluginServer *server)
 
 TimeAvgMain::~TimeAvgMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(accumulation) delete [] accumulation;
 	if(history)
@@ -87,17 +115,13 @@ TimeAvgMain::~TimeAvgMain()
 	if(history_valid) delete [] history_valid;
 }
 
-char* TimeAvgMain::plugin_title() { return N_("Time Average"); }
+const char* TimeAvgMain::plugin_title() { return N_("Time Average"); }
 int TimeAvgMain::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(TimeAvgMain)
 
-SHOW_GUI_MACRO(TimeAvgMain, TimeAvgThread)
-
-SET_STRING_MACRO(TimeAvgMain)
-
-RAISE_WINDOW_MACRO(TimeAvgMain);
+NEW_WINDOW_MACRO(TimeAvgMain, TimeAvgWindow);
 
 
 
@@ -109,7 +133,8 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 	int w = frame->get_w();
 	int color_model = frame->get_color_model();
 
-	load_configuration();
+	int reset = load_configuration();
+
 
 // Allocate accumulation
 	if(!accumulation)
@@ -118,10 +143,12 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			h * 
 			cmodel_components(color_model) *
 			MAX(sizeof(float), sizeof(int))];
-		clear_accum(w, h, color_model);
+		reset_accum(w, h, color_model);
 	}
 
-	if(!config.nosubtract)
+	if(!config.nosubtract &&
+		(config.mode == TimeAvgConfig::AVERAGE ||
+		config.mode == TimeAvgConfig::ACCUMULATE))
 	{
 // Reallocate history
 		if(history)
@@ -229,7 +256,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			{
 				history_valid[i] = 0;
 			}
-			clear_accum(w, h, color_model);
+			reset_accum(w, h, color_model);
 		}
 
 // Add new history frames which are not in the old vector
@@ -270,15 +297,33 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 		delete [] new_history_frames;
 	}
 	else
-// No subtraction
+// No history subtraction
 	{
+		if(history)
+		{
+			for(int i = 0; i < config.frames; i++)
+				delete history[i];
+			delete [] history;
+			history = 0;
+		}
+
+		if(history_frame) delete [] history_frame;
+		if(history_valid) delete [] history_valid;
+		history_frame = 0;
+		history_valid = 0;
+		history_size = 0;
+
+// Clamp prev_frame to history size
+		prev_frame = MAX(start_position - config.frames + 1, prev_frame);
+
 // Force reload if not repositioned or just started
 		if(config.paranoid && prev_frame == start_position ||
 			prev_frame < 0)
 		{
+printf("TimeAvgMain::process_buffer %d\n", __LINE__);
 			prev_frame = start_position - config.frames + 1;
 			prev_frame = MAX(0, prev_frame);
-			clear_accum(w, h, color_model);
+			reset_accum(w, h, color_model);
 		}
 
 		for(int64_t i = prev_frame; i <= start_position; i++)
@@ -288,10 +333,15 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 				i,
 				frame_rate);
 			add_accum(frame);
-printf("TimeAvgMain::process_buffer 1 %lld %lld %lld\n", prev_frame, start_position, i);
+printf("TimeAvgMain::process_buffer %d %lld %lld %lld\n", 
+__LINE__, 
+prev_frame, 
+start_position, 
+i);
 		}
 
-		prev_frame = start_position;
+// If we don't add 1, it rereads the frame again
+		prev_frame = start_position + 1;
 	}
 
 
@@ -303,7 +353,7 @@ printf("TimeAvgMain::process_buffer 1 %lld %lld %lld\n", prev_frame, start_posit
 // Transfer accumulation to output with division if average is desired.
 	transfer_accum(frame);
 
-printf("TimeAvgMain::process_buffer 2\n");
+printf("TimeAvgMain::process_buffer %d\n", __LINE__);
 
 
 	return 0;
@@ -319,17 +369,17 @@ printf("TimeAvgMain::process_buffer 2\n");
 
 
 // Reset accumulation
-#define CLEAR_ACCUM(type, components, chroma) \
+#define SET_ACCUM(type, components, luma, chroma) \
 { \
 	type *row = (type*)accumulation; \
 	if(chroma) \
 	{ \
 		for(int i = 0; i < w * h; i++) \
 		{ \
-			*row++ = 0x0; \
+			*row++ = luma; \
 			*row++ = chroma; \
 			*row++ = chroma; \
-			if(components == 4) *row++ = 0x0; \
+			if(components == 4) *row++ = luma; \
 		} \
 	} \
 	else \
@@ -339,91 +389,90 @@ printf("TimeAvgMain::process_buffer 2\n");
 }
 
 
-void TimeAvgMain::clear_accum(int w, int h, int color_model)
+void TimeAvgMain::reset_accum(int w, int h, int color_model)
 {
-	switch(color_model)
+	if(config.mode == TimeAvgConfig::LESS)
 	{
-		case BC_RGB888:
-			CLEAR_ACCUM(int, 3, 0x0)
-			break;
-		case BC_RGB_FLOAT:
-			CLEAR_ACCUM(float, 3, 0x0)
-			break;
-		case BC_RGBA8888:
-			CLEAR_ACCUM(int, 4, 0x0)
-			break;
-		case BC_RGBA_FLOAT:
-			CLEAR_ACCUM(float, 4, 0x0)
-			break;
-		case BC_YUV888:
-			CLEAR_ACCUM(int, 3, 0x80)
-			break;
-		case BC_YUVA8888:
-			CLEAR_ACCUM(int, 4, 0x80)
-			break;
-		case BC_YUV161616:
-			CLEAR_ACCUM(int, 3, 0x8000)
-			break;
-		case BC_YUVA16161616:
-			CLEAR_ACCUM(int, 4, 0x8000)
-			break;
+		switch(color_model)
+		{
+			case BC_RGB888:
+				SET_ACCUM(int, 3, 0xff, 0xff)
+				break;
+			case BC_RGB_FLOAT:
+				SET_ACCUM(float, 3, 1.0, 1.0)
+				break;
+			case BC_RGBA8888:
+				SET_ACCUM(int, 4, 0xff, 0xff)
+				break;
+			case BC_RGBA_FLOAT:
+				SET_ACCUM(float, 4, 1.0, 1.0)
+				break;
+			case BC_YUV888:
+				SET_ACCUM(int, 3, 0xff, 0x80)
+				break;
+			case BC_YUVA8888:
+				SET_ACCUM(int, 4, 0xff, 0x80)
+				break;
+			case BC_YUV161616:
+				SET_ACCUM(int, 3, 0xffff, 0x8000)
+				break;
+			case BC_YUVA16161616:
+				SET_ACCUM(int, 4, 0xffff, 0x8000)
+				break;
+		}
+	}
+	else
+	{
+		switch(color_model)
+		{
+			case BC_RGB888:
+				SET_ACCUM(int, 3, 0x0, 0x0)
+				break;
+			case BC_RGB_FLOAT:
+				SET_ACCUM(float, 3, 0x0, 0x0)
+				break;
+			case BC_RGBA8888:
+				SET_ACCUM(int, 4, 0x0, 0x0)
+				break;
+			case BC_RGBA_FLOAT:
+				SET_ACCUM(float, 4, 0x0, 0x0)
+				break;
+			case BC_YUV888:
+				SET_ACCUM(int, 3, 0x0, 0x80)
+				break;
+			case BC_YUVA8888:
+				SET_ACCUM(int, 4, 0x0, 0x80)
+				break;
+			case BC_YUV161616:
+				SET_ACCUM(int, 3, 0x0, 0x8000)
+				break;
+			case BC_YUVA16161616:
+				SET_ACCUM(int, 4, 0x0, 0x8000)
+				break;
+		}
 	}
 }
 
+#define RGB_TO_VALUE(r, g, b) \
+((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
 
+// Only AVERAGE and ACCUMULATE use this
 #define SUBTRACT_ACCUM(type, \
 	accum_type, \
 	components, \
 	chroma) \
 { \
-	if(config.mode == TimeAvgConfig::OR) \
+	for(int i = 0; i < h; i++) \
 	{ \
-		for(int i = 0; i < h; i++) \
+		accum_type *accum_row = (accum_type*)accumulation + \
+			i * w * components; \
+		type *frame_row = (type*)frame->get_rows()[i]; \
+		for(int j = 0; j < w; j++) \
 		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
-			for(int j = 0; j < w; j++) \
-			{ \
-				if(components == 4) \
-				{ \
-					frame_row += 3; \
-					if(*frame_row++) \
-					{ \
-						*accum_row++ = 0; \
-						*accum_row++ = chroma; \
-						*accum_row++ = chroma; \
-						*accum_row++ = 0; \
-					} \
-				} \
-				else \
-				{ \
-					if(*frame_row++ != 0 || \
-						*frame_row++ != chroma || \
-						*frame_row++ != chroma) \
-					{ \
-						*accum_row++ = 0; \
-						*accum_row++ = chroma; \
-						*accum_row++ = chroma; \
-					} \
-				} \
-			} \
-		} \
-	} \
-	else \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
-			for(int j = 0; j < w; j++) \
-			{ \
-				*accum_row++ -= *frame_row++; \
-				*accum_row++ -= (accum_type)*frame_row++ - chroma; \
-				*accum_row++ -= (accum_type)*frame_row++ - chroma; \
-				if(components == 4) *accum_row++ -= *frame_row++; \
-			} \
+			*accum_row++ -= *frame_row++; \
+			*accum_row++ -= (accum_type)*frame_row++ - chroma; \
+			*accum_row++ -= (accum_type)*frame_row++ - chroma; \
+			if(components == 4) *accum_row++ -= *frame_row++; \
 		} \
 	} \
 }
@@ -470,7 +519,134 @@ void TimeAvgMain::subtract_accum(VFrame *frame)
 // the value of full black to determine what pixel to show.
 #define ADD_ACCUM(type, accum_type, components, chroma, max) \
 { \
-	if(config.mode == TimeAvgConfig::OR) \
+	if(config.mode == TimeAvgConfig::REPLACE) \
+	{ \
+		type threshold = config.threshold; \
+		if(sizeof(type) == 4) \
+			threshold /= 256; \
+/* Compare all pixels if border */ \
+		if(config.border > 0) \
+		{ \
+			int border = config.border; \
+			int h_border = h - border - 1; \
+			int w_border = w - border - 1; \
+			int kernel_size = (border * 2 + 1) * (border * 2 + 1); \
+			for(int i = border; i < h_border; i++) \
+			{ \
+				for(int j = border; j < w_border; j++) \
+				{ \
+					int copy_it = 0; \
+					for(int k = -border; k <= border; k++) \
+					{ \
+						type *frame_row = (type*)frame->get_rows()[i + k]; \
+						for(int l = -border; l <= border; l++) \
+						{ \
+							type *frame_pixel = frame_row + (j + l) * components; \
+/* Compare alpha if 4 channel */ \
+							if(components == 4) \
+							{ \
+								if(frame_pixel[3] > threshold) \
+									copy_it++; \
+							} \
+							else \
+							if(sizeof(type) == 4) \
+							{ \
+/* Compare luma if 3 channel */ \
+								if(RGB_TO_VALUE(frame_pixel[0], frame_pixel[1], frame_pixel[2]) >= \
+									threshold) \
+								{ \
+									copy_it++; \
+								} \
+							} \
+							else \
+							if(chroma) \
+							{ \
+								if(frame_pixel[0] >= threshold) \
+								{ \
+									copy_it++; \
+								} \
+							} \
+							else \
+							if(RGB_TO_VALUE(frame_pixel[0], frame_pixel[1], frame_pixel[2]) >= threshold) \
+							{ \
+								copy_it++; \
+							} \
+						} \
+					} \
+ \
+					if(copy_it == kernel_size) \
+					{ \
+						accum_type *accum_row = (accum_type*)accumulation + \
+							i * w * components + j * components; \
+						type *frame_row = (type*)frame->get_rows()[i] + j * components; \
+						*accum_row++ = *frame_row++; \
+						*accum_row++ = *frame_row++; \
+						*accum_row++ = *frame_row++; \
+						if(components == 4) *accum_row++ = *frame_row++; \
+					} \
+ \
+				} \
+			} \
+		} \
+		else \
+/* Compare only relevant pixel if no border */ \
+		{ \
+			for(int i = 0; i < h; i++) \
+			{ \
+				accum_type *accum_row = (accum_type*)accumulation + \
+					i * w * components; \
+				type *frame_row = (type*)frame->get_rows()[i]; \
+				for(int j = 0; j < w; j++) \
+				{ \
+					int copy_it = 0; \
+/* Compare alpha if 4 channel */ \
+					if(components == 4) \
+					{ \
+						if(frame_row[3] > threshold) \
+							copy_it = 1; \
+					} \
+					else \
+					if(sizeof(type) == 4) \
+					{ \
+/* Compare luma if 3 channel */ \
+						if(RGB_TO_VALUE(frame_row[0], frame_row[1], frame_row[2]) >= \
+							threshold) \
+						{ \
+							copy_it = 1; \
+						} \
+					} \
+					else \
+					if(chroma) \
+					{ \
+						if(frame_row[0] >= threshold) \
+						{ \
+							copy_it = 1; \
+						} \
+					} \
+					else \
+					if(RGB_TO_VALUE(frame_row[0], frame_row[1], frame_row[2]) >= threshold) \
+					{ \
+						copy_it = 1; \
+					} \
+ \
+					if(copy_it) \
+					{ \
+						*accum_row++ = *frame_row++; \
+						*accum_row++ = *frame_row++; \
+						*accum_row++ = *frame_row++; \
+						if(components == 4) *accum_row++ = *frame_row++; \
+					} \
+					else \
+					{ \
+						frame_row += components; \
+						accum_row += components; \
+					} \
+				} \
+			} \
+		} \
+	} \
+	else \
+	if(config.mode == TimeAvgConfig::GREATER) \
 	{ \
 		for(int i = 0; i < h; i++) \
 		{ \
@@ -479,70 +655,82 @@ void TimeAvgMain::subtract_accum(VFrame *frame)
 			type *frame_row = (type*)frame->get_rows()[i]; \
 			for(int j = 0; j < w; j++) \
 			{ \
+				int copy_it = 0; \
+/* Compare alpha if 4 channel */ \
 				if(components == 4) \
 				{ \
-					accum_type opacity = frame_row[3]; \
-					accum_type transparency = max - opacity; \
-					*accum_row = (opacity * *frame_row + transparency * *accum_row) / max; \
-					accum_row++; \
-					frame_row++; \
-					*accum_row = chroma + (opacity * (*frame_row - chroma) + transparency * (*accum_row - chroma)) / max; \
-					accum_row++; \
-					frame_row++; \
-					*accum_row = chroma + (opacity * (*frame_row - chroma) + transparency * (*accum_row - chroma)) / max; \
-					accum_row++; \
-					frame_row++; \
-					*accum_row = MAX(*frame_row, *accum_row); \
-					accum_row++; \
-					frame_row++; \
-				} \
-				else \
-				if(sizeof(type) == 4) \
-				{ \
-					if(frame_row[0] > 0.001 || \
-						frame_row[1] > 0.001 || \
-						frame_row[2] > 0.001) \
-					{ \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-					} \
-					else \
-					{ \
-						frame_row += 3; \
-						accum_row += 3; \
-					} \
+					if(frame_row[3] > accum_row[3]) copy_it = 1; \
 				} \
 				else \
 				if(chroma) \
 				{ \
-					if(frame_row[0]) \
-					{ \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-					} \
-					else \
-					{ \
-						frame_row += 3; \
-						accum_row += 3; \
-					} \
+/* Compare YUV luma if 3 channel */ \
+					if(frame_row[0] > accum_row[0]) copy_it = 1; \
 				} \
 				else \
 				{ \
-					if(frame_row[0] || \
-						frame_row[1] || \
-						frame_row[2]) \
-					{ \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-						*accum_row++ = *frame_row++; \
-					} \
-					else \
-					{ \
-						frame_row += 3; \
-						accum_row += 3; \
-					} \
+/* Compare RGB luma if 3 channel */ \
+					if(RGB_TO_VALUE(frame_row[0], frame_row[1], frame_row[2]) > \
+						RGB_TO_VALUE(accum_row[0], accum_row[1], accum_row[2])) \
+						copy_it = 1; \
+				} \
+ \
+ 				if(copy_it) \
+				{ \
+					*accum_row++ = *frame_row++; \
+					*accum_row++ = *frame_row++; \
+					*accum_row++ = *frame_row++; \
+					if(components == 4) *accum_row++ = *frame_row++; \
+				} \
+				else \
+				{ \
+					accum_row += components; \
+					frame_row += components; \
+				} \
+			} \
+		} \
+	} \
+	else \
+	if(config.mode == TimeAvgConfig::LESS) \
+	{ \
+		for(int i = 0; i < h; i++) \
+		{ \
+			accum_type *accum_row = (accum_type*)accumulation + \
+				i * w * components; \
+			type *frame_row = (type*)frame->get_rows()[i]; \
+			for(int j = 0; j < w; j++) \
+			{ \
+				int copy_it = 0; \
+/* Compare alpha if 4 channel */ \
+				if(components == 4) \
+				{ \
+					if(frame_row[3] < accum_row[3]) copy_it = 1; \
+				} \
+				else \
+				if(chroma) \
+				{ \
+/* Compare YUV luma if 3 channel */ \
+					if(frame_row[0] < accum_row[0]) copy_it = 1; \
+				} \
+				else \
+				{ \
+/* Compare RGB luma if 3 channel */ \
+					if(RGB_TO_VALUE(frame_row[0], frame_row[1], frame_row[2]) < \
+						RGB_TO_VALUE(accum_row[0], accum_row[1], accum_row[2])) \
+						copy_it = 1; \
+				} \
+ \
+ 				if(copy_it) \
+				{ \
+					*accum_row++ = *frame_row++; \
+					*accum_row++ = *frame_row++; \
+					*accum_row++ = *frame_row++; \
+					if(components == 4) *accum_row++ = *frame_row++; \
+				} \
+				else \
+				{ \
+					accum_row += components; \
+					frame_row += components; \
 				} \
 			} \
 		} \
@@ -620,43 +808,6 @@ void TimeAvgMain::add_accum(VFrame *frame)
 		} \
 	} \
 	else \
-	if(config.mode == TimeAvgConfig::ACCUMULATE) \
-	{ \
-		for(int i = 0; i < h; i++) \
-		{ \
-			accum_type *accum_row = (accum_type*)accumulation + \
-				i * w * components; \
-			type *frame_row = (type*)frame->get_rows()[i]; \
-			for(int j = 0; j < w; j++) \
-			{ \
-				if(sizeof(type) < 4) \
-				{ \
-					accum_type r = *accum_row++; \
-					accum_type g = *accum_row++ + chroma; \
-					accum_type b = *accum_row++ + chroma; \
-					*frame_row++ = CLIP(r, 0, max); \
-					*frame_row++ = CLIP(g, 0, max); \
-					*frame_row++ = CLIP(b, 0, max); \
-					if(components == 4) \
-					{ \
-						accum_type a = *accum_row++; \
-						*frame_row++ = CLIP(a, 0, max); \
-					} \
-				} \
-				else \
-				{ \
-					*frame_row++ = *accum_row++; \
-					*frame_row++ = *accum_row++ + chroma; \
-					*frame_row++ = *accum_row++ + chroma; \
-					if(components == 4) \
-					{ \
-						*frame_row++ = *accum_row++; \
-					} \
-				} \
-			} \
-		} \
-	} \
-	else \
 	{ \
 		for(int i = 0; i < h; i++) \
 		{ \
@@ -724,6 +875,8 @@ int TimeAvgMain::load_defaults()
 	config.mode = defaults->get("MODE", config.mode);
 	config.paranoid = defaults->get("PARANOID", config.paranoid);
 	config.nosubtract = defaults->get("NOSUBTRACT", config.nosubtract);
+	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.border = defaults->get("BORDER", config.border);
 	return 0;
 }
 
@@ -733,6 +886,8 @@ int TimeAvgMain::save_defaults()
 	defaults->update("MODE", config.mode);
 	defaults->update("PARANOID", config.paranoid);
 	defaults->update("NOSUBTRACT", config.nosubtract);
+	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("BORDER", config.border);
 	defaults->save();
 	return 0;
 }
@@ -753,12 +908,14 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("TIME_AVERAGE");
 	output.tag.set_property("FRAMES", config.frames);
 	output.tag.set_property("MODE", config.mode);
 	output.tag.set_property("PARANOID", config.paranoid);
 	output.tag.set_property("NOSUBTRACT", config.nosubtract);
+	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("BORDER", config.border);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -767,7 +924,7 @@ void TimeAvgMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -779,6 +936,8 @@ void TimeAvgMain::read_data(KeyFrame *keyframe)
 			config.mode = input.tag.get_property("MODE", config.mode);
 			config.paranoid = input.tag.get_property("PARANOID", config.paranoid);
 			config.nosubtract = input.tag.get_property("NOSUBTRACT", config.nosubtract);
+			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
+			config.border = input.tag.get_property("BORDER", config.border);
 		}
 	}
 }
@@ -791,12 +950,13 @@ void TimeAvgMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("TimeAvgMain::update_gui");
-			thread->window->total_frames->update(config.frames);
-			thread->window->accum->update(config.mode == TimeAvgConfig::ACCUMULATE);
-			thread->window->avg->update(config.mode == TimeAvgConfig::AVERAGE);
-			thread->window->inclusive_or->update(config.mode == TimeAvgConfig::OR);
-			thread->window->paranoid->update(config.paranoid);
-			thread->window->no_subtract->update(config.nosubtract);
+			((TimeAvgWindow*)thread->window)->total_frames->update(config.frames);
+			((TimeAvgWindow*)thread->window)->threshold->update(config.threshold);
+			((TimeAvgWindow*)thread->window)->update_toggles();
+			((TimeAvgWindow*)thread->window)->paranoid->update(config.paranoid);
+			((TimeAvgWindow*)thread->window)->no_subtract->update(config.nosubtract);
+			((TimeAvgWindow*)thread->window)->threshold->update(config.threshold);
+			((TimeAvgWindow*)thread->window)->border->update(config.border);
 			thread->window->unlock_window();
 		}
 	}

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "filexml.h"
 #include "gamma.h"
@@ -172,7 +193,7 @@ void GammaUnit::process_package(LoadPackage *package)
 	}
 	else
 	{
-		float max = plugin->config.max;
+		float max = plugin->config.max * plugin->config.gamma;
 		float scale = 1.0 / max;
 		float gamma = plugin->config.gamma - 1.0;
 
@@ -365,17 +386,17 @@ GammaMain::GammaMain(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 GammaMain::~GammaMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	delete engine;
 }
 
-char* GammaMain::plugin_title() { return N_("Gamma"); }
+const char* GammaMain::plugin_title() { return N_("Gamma"); }
 int GammaMain::is_realtime() { return 1; }
 
 
@@ -383,10 +404,8 @@ int GammaMain::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(GammaMain)
+NEW_WINDOW_MACRO(GammaMain, GammaWindow)
 LOAD_CONFIGURATION_MACRO(GammaMain, GammaConfig)
-SHOW_GUI_MACRO(GammaMain, GammaThread)
-RAISE_WINDOW_MACRO(GammaMain)
-SET_STRING_MACRO(GammaMain)
 
 
 
@@ -468,7 +487,7 @@ void GammaMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("GammaMain::update_gui");
-			thread->window->update();
+			((GammaWindow*)thread->window)->update();
 			thread->window->unlock_window();
 		}
 	}
@@ -486,7 +505,7 @@ void GammaMain::render_gui(void *data)
 			ptr->engine->accum, 
 			sizeof(int) * HISTOGRAM_SIZE);
 		thread->window->lock_window("GammaMain::render_gui");
-		thread->window->update();
+		((GammaWindow*)thread->window)->update();
 		thread->window->unlock_window();
 	}
 	else
@@ -494,7 +513,7 @@ void GammaMain::render_gui(void *data)
 		engine->process_packages(GammaEngine::HISTOGRAM, 
 			ptr->frame);
 		thread->window->lock_window("GammaMain::render_gui");
-		thread->window->update_histogram();
+		((GammaWindow*)thread->window)->update_histogram();
 		thread->window->unlock_window();
 	}
 
@@ -533,7 +552,7 @@ void GammaMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("GAMMA");
 	output.tag.set_property("MAX", config.max);
 	output.tag.set_property("GAMMA", config.gamma);
@@ -547,7 +566,7 @@ void GammaMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -578,7 +597,7 @@ int GammaMain::handle_opengl()
 	get_output()->enable_opengl();
 
 
-	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 
 

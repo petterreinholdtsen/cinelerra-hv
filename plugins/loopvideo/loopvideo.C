@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -29,18 +50,16 @@ public:
 	LoopVideo *plugin;
 };
 
-class LoopVideoWindow : public BC_Window
+class LoopVideoWindow : public PluginClientWindow
 {
 public:
-	LoopVideoWindow(LoopVideo *plugin, int x, int y);
+	LoopVideoWindow(LoopVideo *plugin);
 	~LoopVideoWindow();
 	void create_objects();
-	int close_event();
 	LoopVideo *plugin;
 	LoopVideoFrames *frames;
 };
 
-PLUGIN_THREAD_HEADER(LoopVideo, LoopVideoThread, LoopVideoWindow)
 
 class LoopVideo : public PluginVClient
 {
@@ -48,7 +67,7 @@ public:
 	LoopVideo(PluginServer *server);
 	~LoopVideo();
 
-	PLUGIN_CLASS_MEMBERS(LoopVideoConfig, LoopVideoThread)
+	PLUGIN_CLASS_MEMBERS(LoopVideoConfig)
 
 	int load_defaults();
 	int save_defaults();
@@ -81,17 +100,13 @@ LoopVideoConfig::LoopVideoConfig()
 
 
 
-LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+LoopVideoWindow::LoopVideoWindow(LoopVideo *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -113,10 +128,10 @@ void LoopVideoWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(LoopVideoWindow)
 
 
-PLUGIN_THREAD_OBJECT(LoopVideo, LoopVideoThread, LoopVideoWindow)
+
+
 
 
 
@@ -154,27 +169,24 @@ int LoopVideoFrames::handle_event()
 LoopVideo::LoopVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 
 LoopVideo::~LoopVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* LoopVideo::plugin_title() { return N_("Loop video"); }
+const char* LoopVideo::plugin_title() { return N_("Loop video"); }
 int LoopVideo::is_realtime() { return 1; }
 int LoopVideo::is_synthesis() { return 1; }
 
 #include "picon_png.h"
 NEW_PICON_MACRO(LoopVideo)
 
-SHOW_GUI_MACRO(LoopVideo, LoopVideoThread)
+NEW_WINDOW_MACRO(LoopVideo, LoopVideoWindow)
 
-RAISE_WINDOW_MACRO(LoopVideo)
-
-SET_STRING_MACRO(LoopVideo);
 
 
 int LoopVideo::process_buffer(VFrame *frame,
@@ -265,7 +277,7 @@ void LoopVideo::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("LOOPVIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.append_tag();
@@ -276,7 +288,7 @@ void LoopVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -295,7 +307,7 @@ void LoopVideo::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->frames->update(config.frames);
+		((LoopVideoWindow*)thread->window)->frames->update(config.frames);
 		thread->window->unlock_window();
 	}
 }

@@ -4,7 +4,7 @@ OBJS = \
 	../motion/$(OBJDIR)/affine.o \
 	$(OBJDIR)/radialblur.o
 
-OUTPUT = ../$(OBJDIR)/radialblur.plugin
+OUTPUT = $(PLUGIN_DIR)/radialblur.plugin
 
 include ../../plugin_config
 

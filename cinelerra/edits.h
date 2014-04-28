@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef EDITS_H
 #define EDITS_H
 
@@ -24,8 +45,13 @@ public:
 	virtual void copy_from(Edits *edits);
 	virtual Edits& operator=(Edits& edits);
 // Editing
-	void insert_edits(Edits *edits, int64_t position);
-	void insert_asset(Asset *asset, int64_t length, int64_t sample, int track_number);
+	void insert_edits(Edits *edits, 
+		int64_t position,
+		int64_t min_length);
+	void insert_asset(Asset *asset, 
+		int64_t length, 
+		int64_t sample, 
+		int track_number);
 // Split edit containing position.
 // Return the second edit in the split.
 	Edit* split_edit(int64_t position);
@@ -37,8 +63,8 @@ public:
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
 	Edit* insert_new_edit(int64_t sample);
-	int save(FileXML *xml, char *output_path);
-	int copy(int64_t start, int64_t end, FileXML *xml, char *output_path);
+	int save(FileXML *xml, const char *output_path);
+	int copy(int64_t start, int64_t end, FileXML *xml, const char *output_path);
 // Clear region of edits
 	virtual void clear(int64_t start, int64_t end);
 // Clear edits and plugins for a handle modification

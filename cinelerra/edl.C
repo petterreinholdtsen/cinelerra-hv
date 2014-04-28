@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assets.h"
 #include "atrack.h"
@@ -88,7 +109,7 @@ EDL::~EDL()
 }
 
 
-int EDL::create_objects()
+void EDL::create_objects()
 {
 	tracks = new Tracks(this);
 	if(!parent_edl)
@@ -105,7 +126,6 @@ int EDL::create_objects()
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
 //	last_playback_position = 0;
-	return 0;
 }
 
 EDL& EDL::operator=(EDL &edl)
@@ -206,6 +226,12 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 			local_session->unset_outpoint();
 		}
 
+// This was originally in LocalSession::load_xml
+		if(load_flags & LOAD_SESSION)
+		{
+			local_session->clipboard_length = 0;
+		}
+
 		do{
 			result = file->read_tag();
 
@@ -221,7 +247,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				else
 				if(file->tag.title_is("CLIPBOARD"))
 				{
-					local_session->clipboard_length = file->tag.get_property("LENGTH", 0);
+					local_session->clipboard_length = 
+						file->tag.get_property("LENGTH", (double)0);
 				}
 				else
 				if(file->tag.title_is("VIDEO"))
@@ -324,7 +351,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // The string is not terminated in this call.
 int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 	FileXML *file, 
-	char *output_path,
+	const char *output_path,
 	int is_clip,
 	int is_vwindow)
 {
@@ -407,7 +434,7 @@ int EDL::copy_assets(double start,
 	FileXML *file, 
 	int all, 
 	ArrayList<PluginServer*> *plugindb,
-	char *output_path)
+	const char *output_path)
 {
 	ArrayList<Asset*> asset_list;
 	Track* current;
@@ -464,7 +491,7 @@ int EDL::copy(double start,
 	int is_vwindow,
 	FileXML *file, 
 	ArrayList<PluginServer*> *plugindb, 
-	char *output_path,
+	const char *output_path,
 	int rewind_it)
 {
 //printf("EDL::copy 1\n");
@@ -1092,38 +1119,49 @@ int EDL::next_id()
 }
 
 void EDL::get_shared_plugins(Track *source, 
-	ArrayList<SharedLocation*> *plugin_locations)
+	ArrayList<SharedLocation*> *plugin_locations,
+	int omit_recordable,
+	int data_type)
 {
 	for(Track *track = tracks->first; track; track = track->next)
 	{
-		if(track != source && 
-			track->data_type == source->data_type)
+		if(!track->record || !omit_recordable)
 		{
-			for(int i = 0; i < track->plugin_set.total; i++)
+			if(track != source && 
+				track->data_type == data_type)
 			{
-				Plugin *plugin = track->get_current_plugin(
-					local_session->get_selectionstart(1), 
-					i, 
-					PLAY_FORWARD, 
-					1,
-					0);
-				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
+				for(int i = 0; i < track->plugin_set.total; i++)
 				{
-					plugin_locations->append(new SharedLocation(tracks->number_of(track), i));
+					Plugin *plugin = track->get_current_plugin(
+						local_session->get_selectionstart(1), 
+						i, 
+						PLAY_FORWARD, 
+						1,
+						0);
+					if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
+					{
+						plugin_locations->append(new SharedLocation(tracks->number_of(track), i));
+					}
 				}
 			}
 		}
 	}
 }
 
-void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations)
+void EDL::get_shared_tracks(Track *track, 
+	ArrayList<SharedLocation*> *module_locations,
+	int omit_recordable,
+	int data_type)
 {
 	for(Track *current = tracks->first; current; current = NEXT)
 	{
-		if(current != track && 
-			current->data_type == track->data_type)
+		if(!omit_recordable || !current->record)
 		{
-			module_locations->append(new SharedLocation(tracks->number_of(current), 0));
+			if(current != track && 
+				current->data_type == data_type)
+			{
+				module_locations->append(new SharedLocation(tracks->number_of(current), 0));
+			}
 		}
 	}
 }
@@ -1177,7 +1215,7 @@ double EDL::align_to_frame(double position, int round)
 }
 
 
-void EDL::new_folder(char *folder)
+void EDL::new_folder(const char *folder)
 {
 	for(int i = 0; i < folders.total; i++)
 	{

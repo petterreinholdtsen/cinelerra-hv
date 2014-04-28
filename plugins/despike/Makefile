@@ -3,7 +3,7 @@ include ../../global_config
 OBJS = $(OBJDIR)/despike.o  \
 	$(OBJDIR)/despikewindow.o
 
-OUTPUT = ../$(OBJDIR)/despike.plugin
+OUTPUT = $(PLUGIN_DIR)/despike.plugin
 
 include ../../plugin_config
 

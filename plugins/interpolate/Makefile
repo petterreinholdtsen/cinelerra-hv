@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/interpolate.o
 
-OUTPUT = ../$(OBJDIR)/interpolatepixels.plugin
+OUTPUT = $(PLUGIN_DIR)/interpolatepixels.plugin
 
 include ../../plugin_config
 

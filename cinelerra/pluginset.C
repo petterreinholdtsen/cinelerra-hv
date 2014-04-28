@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -115,7 +136,7 @@ void PluginSet::synchronize_params(PluginSet *plugin_set)
 	}
 }
 
-Plugin* PluginSet::insert_plugin(char *title, 
+Plugin* PluginSet::insert_plugin(const char *title, 
 	int64_t unit_position, 
 	int64_t unit_length,
 	int plugin_type,
@@ -205,7 +226,7 @@ void PluginSet::copy_keyframes(int64_t start,
 	int64_t end, 
 	FileXML *file, 
 	int default_only,
-	int autos_only)
+	int active_only)
 {
 	file->tag.set_title("PLUGINSET");	
 	file->append_tag();
@@ -215,7 +236,7 @@ void PluginSet::copy_keyframes(int64_t start,
 		current; 
 		current = (Plugin*)NEXT)
 	{
-		current->copy_keyframes(start, end, file, default_only, autos_only);
+		current->copy_keyframes(start, end, file, default_only, active_only);
 	}
 
 	file->tag.set_title("/PLUGINSET");	
@@ -228,138 +249,35 @@ void PluginSet::paste_keyframes(int64_t start,
 	int64_t length, 
 	FileXML *file, 
 	int default_only,
-	Track *track)
+	int active_only)
 {
 	int result = 0;
+	int first_keyframe = 1;
 	Plugin *current;
-	
-	PluginSet *target_pluginset;
-	Plugin *first_target_plugin = 0;
 
-	ArrayList<PluginSet*> unused_pluginsets;
-	
-// get all available target pluginsets, we will be removing them one by one when we will paste into them
-	for (int i = 0; i < track->plugin_set.total; i++)
-	{
-		unused_pluginsets.append(track->plugin_set.values[i]);
-	}
-	
-	char data[MESSAGESIZE];
-	char data_default_keyframe[MESSAGESIZE];
-	int default_keyframe;
-	int do_default_keyframe = 0;
-	
+
 	while(!result)
 	{
 		result = file->read_tag();
 
 		if(!result)
 		{
-			if(file->tag.title_is("/PLUGINSETS"))
+			if(file->tag.title_is("/PLUGINSET"))
 				result = 1;
-			else
-			if(file->tag.title_is("PLUGINSET"))
-			{
-				target_pluginset = 0;
-				first_target_plugin = 0;
-			}
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
 				int64_t position = file->tag.get_property("POSITION", 0);
-				position += start;
-				if(file->tag.get_property("DEFAULT", 0))
+				if(first_keyframe && default_only)
 				{
-// remember the default keyframe, we'll use it later
-					default_keyframe = 1; 
-					do_default_keyframe = 1;
-					file->read_text_until("/KEYFRAME", data_default_keyframe, MESSAGESIZE);
+					position = start;
 				}
 				else
 				{
-					default_keyframe = 0;
-					file->read_text_until("/KEYFRAME", data, MESSAGESIZE);				
-				
+					position += start;
 				}
 
-//				printf("d: a%sb\n", data);
-				Plugin *picked_first_target = 0;
-				if (!target_pluginset && default_keyframe && default_only && strlen(data_default_keyframe) > 0)
-				{
-					strcpy(data, data_default_keyframe);
-				} 
-				if ((!target_pluginset && !default_keyframe && strlen(data) > 0) ||	
-				    (!target_pluginset && default_keyframe && default_only && strlen(data_default_keyframe) > 0))	 
-				{
-// now try to find the target		
-					int name_len = strchr(data, ' ') - data + 1;
-
-					PluginSet *second_choice = 0;
-					Plugin *second_choice_first_target_plugin = 0;
-					for (int i = 0; i < unused_pluginsets.total && !target_pluginset; i++)
-					{
-						PluginSet *pluginset = unused_pluginsets.values[i];
-						Plugin *current;
-						for(current = (Plugin*)(pluginset->last); 
-							current;
-							current = (Plugin*)PREVIOUS)
-						{
-							if(position >= current->startproject 
-							&& position <= current->length + current->startproject 
-							&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
-							{
-								target_pluginset = pluginset;
-								first_target_plugin = current;
-								break;
-							}
-							if(position >= current->startproject 
-							&& !strncmp(((KeyFrame *)current->keyframes->default_auto)->data, data, name_len))
-							{
-								second_choice = pluginset;
-								second_choice_first_target_plugin = current;
-								break;
-							}
-												
-						}
-					}
-					if (!target_pluginset) 
-					{
-						target_pluginset = second_choice;
-						first_target_plugin = second_choice_first_target_plugin;
-					}
-				}
-//				printf(" Target: %p\n", target_pluginset);
-				if (target_pluginset) 
-				{
-					unused_pluginsets.remove(target_pluginset);
-					if (do_default_keyframe)
-					{
-// default plugin is always delayed
-						KeyFrame *keyframe = (KeyFrame*)first_target_plugin->keyframes->default_auto;
-						strcpy(keyframe->data, data_default_keyframe);
-						keyframe->position = position;
-						do_default_keyframe = 0;
-					}
-					if (!default_only && !default_keyframe)
-					{
-						for(current = (Plugin*)target_pluginset->last; 
-							current;
-							current = (Plugin*)PREVIOUS)
-						{
-							if(position >= current->startproject)
-							{
-								KeyFrame *keyframe;
-								keyframe = (KeyFrame*)current->keyframes->insert_auto(position);
-								strcpy(keyframe->data, data);
-								keyframe->position = position;
-								break;
-							}
-						}
-					}
-				}
-				
 // Get plugin owning keyframe
-/*
 				for(current = (Plugin*)last; 
 					current;
 					current = (Plugin*)PREVIOUS)
@@ -369,22 +287,28 @@ void PluginSet::paste_keyframes(int64_t start,
 // paste keyframes from one plugin into an incompatible plugin.
 					if(position >= current->startproject)
 					{
-						KeyFrame *keyframe;
+						KeyFrame *keyframe = 0;
 						if(file->tag.get_property("DEFAULT", 0) || default_only)
 						{
 							keyframe = (KeyFrame*)current->keyframes->default_auto;
 						}
 						else
+						if(!default_only)
 						{
 							keyframe = 
 								(KeyFrame*)current->keyframes->insert_auto(position);
 						}
-						keyframe->load(file);
-						keyframe->position = position;
+
+						if(keyframe)
+						{
+							keyframe->load(file);
+							keyframe->position = position;
+						}
 						break;
 					}
 				}
-*/
+
+				first_keyframe = 0;
 			}
 		}
 	}

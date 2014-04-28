@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef ARRAYLIST_H
 #define ARRAYLIST_H
 
@@ -41,6 +62,8 @@ public:
 // Call this if the TYPE is a pointer to an array which must be
 // deleted by delete [].
 	void set_array_delete();
+	int size();
+	TYPE get(int number);
 
 	void sort();
 
@@ -274,6 +297,23 @@ int ArrayList<TYPE>::number_of(TYPE object)
 	}
 	return 0;
 }
+
+template<class TYPE>
+int ArrayList<TYPE>::size()
+{
+	return total;
+}
+
+template<class TYPE>
+TYPE ArrayList<TYPE>::get(int number)
+{
+	if(number < total) return values[number];
+	printf("ArrayList<TYPE>::get number=%d total=%d\n",
+		number,
+		total);
+	return 0;
+}
+
 
 
 #endif

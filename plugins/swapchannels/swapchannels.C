@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -58,17 +79,13 @@ void SwapConfig::copy_from(SwapConfig &that)
 
 
 
-SwapWindow::SwapWindow(SwapMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
-	x,
-	y,
+SwapWindow::SwapWindow(SwapMain *plugin)
+ : PluginClientWindow(plugin,
 	250, 
 	170, 
 	250, 
 	170, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -105,7 +122,7 @@ void SwapWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(SwapWindow)
+
 
 
 
@@ -126,7 +143,7 @@ int SwapMenu::handle_event()
 	return 1;
 }
 
-int SwapMenu::create_objects()
+void SwapMenu::create_objects()
 {
 	add_item(new SwapItem(this, client->output_to_text(RED_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(GREEN_SRC)));
@@ -134,13 +151,12 @@ int SwapMenu::create_objects()
 	add_item(new SwapItem(this, client->output_to_text(ALPHA_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(NO_SRC)));
 	add_item(new SwapItem(this, client->output_to_text(MAX_SRC)));
-	return 0;
 }
 
 
 
 
-SwapItem::SwapItem(SwapMenu *menu, char *title)
+SwapItem::SwapItem(SwapMenu *menu, const char *title)
  : BC_MenuItem(title)
 {
 	this->menu = menu;
@@ -162,7 +178,7 @@ int SwapItem::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(SwapMain, SwapThread, SwapWindow)
+
 
 
 
@@ -177,14 +193,14 @@ SwapMain::SwapMain(PluginServer *server)
  : PluginVClient(server)
 {
 	reset();
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 SwapMain::~SwapMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	
-	if(temp) delete temp;
+	
+//	if(temp) delete temp;
 }
 
 void SwapMain::reset()
@@ -193,15 +209,12 @@ void SwapMain::reset()
 }
 
 
-char* SwapMain::plugin_title()  { return N_("Swap channels"); }
+const char* SwapMain::plugin_title()  { return N_("Swap channels"); }
 int SwapMain::is_synthesis() { return 1; }
 int SwapMain::is_realtime()  { return 1; }
 
-
-SHOW_GUI_MACRO(SwapMain, SwapThread)
 NEW_PICON_MACRO(SwapMain)
-SET_STRING_MACRO(SwapMain)
-RAISE_WINDOW_MACRO(SwapMain)
+NEW_WINDOW_MACRO(SwapMain, SwapWindow)
 
 int SwapMain::load_defaults()
 {
@@ -235,7 +248,7 @@ void SwapMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("SWAPCHANNELS");
 	output.tag.set_property("RED", config.red);
 	output.tag.set_property("GREEN", config.green);
@@ -251,7 +264,7 @@ void SwapMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -278,21 +291,22 @@ void SwapMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->red->set_text(output_to_text(config.red));
-		thread->window->green->set_text(output_to_text(config.green));
-		thread->window->blue->set_text(output_to_text(config.blue));
-		thread->window->alpha->set_text(output_to_text(config.alpha));
+		((SwapWindow*)thread->window)->red->set_text(output_to_text(config.red));
+		((SwapWindow*)thread->window)->green->set_text(output_to_text(config.green));
+		((SwapWindow*)thread->window)->blue->set_text(output_to_text(config.blue));
+		((SwapWindow*)thread->window)->alpha->set_text(output_to_text(config.alpha));
 		thread->window->unlock_window();
 	}
 }
 
 
-void SwapMain::load_configuration()
+int SwapMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	
  	read_data(prev_keyframe);
+	return 1;
 }
 
 
@@ -318,13 +332,13 @@ void SwapMain::load_configuration()
 
 
 
-#define MAXMINSRC(src, max) \
-	(src == MAX_SRC ? max : 0)
+#define MAXMINSRC(src, min, max) \
+	(src == MAX_SRC ? max : min)
 
-#define SWAP_CHANNELS(type, max, components) \
+#define SWAP_CHANNELS(type, min, max, components) \
 { \
-	int h = input_ptr->get_h(); \
-	int w = input_ptr->get_w(); \
+	int h = frame->get_h(); \
+	int w = frame->get_w(); \
 	int red = config.red; \
 	int green = config.green; \
 	int blue = config.blue; \
@@ -340,7 +354,7 @@ void SwapMain::load_configuration()
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *inrow = (type*)input_ptr->get_rows()[i]; \
+		type *inrow = (type*)frame->get_rows()[i]; \
 		type *outrow = (type*)temp->get_rows()[i]; \
  \
 		for(int j = 0; j < w; j++) \
@@ -348,69 +362,79 @@ void SwapMain::load_configuration()
 			if(red < 4) \
 				*outrow++ = *(inrow + red); \
 			else \
-				*outrow++ = MAXMINSRC(red, max); \
+				*outrow++ = MAXMINSRC(red, 0, max); \
  \
 			if(green < 4) \
 				*outrow++ = *(inrow + green); \
 			else \
-				*outrow++ = MAXMINSRC(green, max); \
+				*outrow++ = MAXMINSRC(green, min, max); \
  \
 			if(blue < 4) \
 				*outrow++ = *(inrow + blue); \
 			else \
-				*outrow++ = MAXMINSRC(blue, max); \
+				*outrow++ = MAXMINSRC(blue, min, max); \
  \
 			if(components == 4) \
 			{ \
 				if(alpha < 4) \
 					*outrow++ = *(inrow + alpha); \
 				else \
-					*outrow++ = MAXMINSRC(alpha, max); \
+					*outrow++ = MAXMINSRC(alpha, 0, max); \
 			} \
  \
 			inrow += components; \
 		} \
 	} \
  \
- 	output_ptr->copy_from(temp); \
+ 	frame->copy_from(temp); \
 }
 
 
 
-int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int SwapMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
 
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
 
-	if(!temp) 
-		temp = new VFrame(0, 
-			input_ptr->get_w(), 
-			input_ptr->get_h(), 
-			input_ptr->get_color_model());
 
-	switch(input_ptr->get_color_model())
+// Use hardware
+	if(get_use_opengl())
+	{
+		run_opengl();
+		return 0;
+	}
+
+
+	temp = new_temp(frame->get_w(), 
+		frame->get_h(), 
+		frame->get_color_model());
+
+	switch(frame->get_color_model())
 	{
 		case BC_RGB_FLOAT:
-			SWAP_CHANNELS(float, 1, 3);
+			SWAP_CHANNELS(float, 0, 1, 3);
 			break;
 		case BC_RGBA_FLOAT:
-			SWAP_CHANNELS(float, 1, 4);
+			SWAP_CHANNELS(float, 0, 1, 4);
 			break;
 		case BC_RGB888:
+			SWAP_CHANNELS(unsigned char, 0, 0xff, 3);
+			break;
 		case BC_YUV888:
-			SWAP_CHANNELS(unsigned char, 0xff, 3);
+			SWAP_CHANNELS(unsigned char, 0x80, 0xff, 3);
 			break;
 		case BC_RGBA8888:
+			SWAP_CHANNELS(unsigned char, 0, 0xff, 4);
+			break;
 		case BC_YUVA8888:
-			SWAP_CHANNELS(unsigned char, 0xff, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			SWAP_CHANNELS(uint16_t, 0xffff, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			SWAP_CHANNELS(uint16_t, 0xffff, 4);
+			SWAP_CHANNELS(unsigned char, 0x80, 0xff, 4);
 			break;
 	}
 	
@@ -419,7 +443,7 @@ int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-char* SwapMain::output_to_text(int value)
+const char* SwapMain::output_to_text(int value)
 {
 	switch(value)
 	{
@@ -447,7 +471,7 @@ char* SwapMain::output_to_text(int value)
 	}
 }
 
-int SwapMain::text_to_output(char *text)
+int SwapMain::text_to_output(const char *text)
 {
 	if(!strcmp(text, _("Red"))) return RED_SRC;
 	if(!strcmp(text, _("Green"))) return GREEN_SRC;
@@ -457,5 +481,61 @@ int SwapMain::text_to_output(char *text)
 	if(!strcmp(text, _("100%"))) return MAX_SRC;
 	return 0;
 }
+
+int SwapMain::handle_opengl()
+{
+#ifdef HAVE_GL
+
+	char output_frag[BCTEXTLEN];
+	sprintf(output_frag, 
+		"uniform sampler2D tex;\n"
+		"uniform float chroma_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 in_color = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	vec4 out_color;\n");
+
+#define COLOR_SWITCH(config, variable) \
+	strcat(output_frag, "	out_color." variable " = "); \
+	switch(config) \
+	{ \
+		case RED_SRC: strcat(output_frag, "in_color.r;\n"); break; \
+		case GREEN_SRC: strcat(output_frag, "in_color.g;\n"); break; \
+		case BLUE_SRC: strcat(output_frag, "in_color.b;\n"); break; \
+		case ALPHA_SRC: strcat(output_frag, "in_color.a;\n"); break; \
+		case NO_SRC: strcat(output_frag, "chroma_offset;\n"); break; \
+		case MAX_SRC: strcat(output_frag, "1.0;\n"); break; \
+	}
+
+
+	COLOR_SWITCH(config.red, "r");
+	COLOR_SWITCH(config.green, "g");
+	COLOR_SWITCH(config.blue, "b");
+	COLOR_SWITCH(config.alpha, "a");
+
+	strcat(output_frag, 
+		"	gl_FragColor = out_color;\n"
+		"}\n");
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->clear_pbuffer();
+	get_output()->bind_texture(0);
+
+	unsigned int shader_id = VFrame::make_shader(0,
+		output_frag,
+		0);
+	glUseProgram(shader_id);
+	glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
+	glUniform1f(glGetUniformLocation(shader_id, "chroma_offset"), 
+		cmodel_is_yuv(get_output()->get_color_model()) ? 0.5 : 0.0);
+
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
 
 

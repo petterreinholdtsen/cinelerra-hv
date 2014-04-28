@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "language.h"
@@ -43,6 +64,7 @@ MainErrorGUI::~MainErrorGUI()
 
 void MainErrorGUI::create_objects()
 {
+	lock_window("MainErrorGUI::create_objects");
 SET_TRACE
 
 	BC_Button *button;
@@ -69,6 +91,7 @@ SET_TRACE
 SET_TRACE
 	show_window();
 SET_TRACE
+	unlock_window();
 }
 
 int MainErrorGUI::resize_event(int w, int h)
@@ -118,9 +141,9 @@ BC_Window* MainError::new_gui()
 	return gui;
 }
 
-void MainError::append_error(char *string)
+void MainError::append_error(const char *string)
 {
-	char *in_ptr = string;
+	char *in_ptr = (char*)string;
 	char string2[BCTEXTLEN];
 	int first_line = 1;
 	while(*in_ptr)
@@ -150,7 +173,7 @@ void MainError::append_error(char *string)
 	}
 }
 
-void MainError::show_error_local(char *string)
+void MainError::show_error_local(const char *string)
 {
 SET_TRACE
 // assume user won't get to closing the GUI here
@@ -194,7 +217,7 @@ SET_TRACE
 }
 
 
-void MainError::show_error(char *string)
+void MainError::show_error(const char *string)
 {
 	if(main_error)
 		main_error->show_error_local(string);

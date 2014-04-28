@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BLURWINDOW_H
 #define BLURWINDOW_H
 
@@ -11,29 +32,29 @@ class BlurWindow;
 #include "mutex.h"
 #include "thread.h"
 
-PLUGIN_THREAD_HEADER(BlurMain, BlurThread, BlurWindow)
 
 class BlurVertical;
 class BlurHorizontal;
 class BlurRadius;
+class BlurRadiusText;
 class BlurA;
 class BlurR;
 class BlurG;
 class BlurB;
 
-class BlurWindow : public BC_Window
+class BlurWindow : public PluginClientWindow
 {
 public:
-	BlurWindow(BlurMain *client, int x, int y);
+	BlurWindow(BlurMain *client);
 	~BlurWindow();
 	
-	int create_objects();
-	int close_event();
-	
+	void create_objects();
+
 	BlurMain *client;
 	BlurVertical *vertical;
 	BlurHorizontal *horizontal;
 	BlurRadius *radius;
+	BlurRadiusText *radius_text;
 	BlurA *a;
 	BlurR *r;
 	BlurG *g;
@@ -73,11 +94,20 @@ public:
 class BlurRadius : public BC_IPot
 {
 public:
-	BlurRadius(BlurMain *client, int x, int y);
+	BlurRadius(BlurMain *client, BlurWindow *gui, int x, int y);
 	~BlurRadius();
 	int handle_event();
-
 	BlurMain *client;
+	BlurWindow *gui;
+};
+
+class BlurRadiusText : public BC_TextBox
+{
+public:
+	BlurRadiusText(BlurMain *client, BlurWindow *gui, int x, int y, int w);
+	int handle_event();
+	BlurMain *client;
+	BlurWindow *gui;
 };
 
 class BlurVertical : public BC_CheckBox

@@ -1081,7 +1081,7 @@ int mpeg3audio_dolayer3(mpeg3_layer_t *audio,
 	int i;
 	int output_offset = 0;
 
-//printf("1\n");
+//printf("mpeg3audio_dolayer3 1\n");
 // Skip header
 	frame += 4;
 	frame_size -= 4;
@@ -1367,6 +1367,7 @@ int mpeg3_layer_check(unsigned char *data)
 		((uint32_t)(data[2] << 8)) | 
 		((uint32_t)data[3]);
 
+
     if((head & 0xffe00000) != 0xffe00000) return 1;
 
     if(!((head >> 17) & 3)) return 1;
@@ -1389,7 +1390,7 @@ int mpeg3_layer_check(unsigned char *data)
 
 
 /* Decode layer header */
-int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
+int mpeg3_layer_header(mpeg3_layer_t *layer_data, unsigned char *data)
 {
 	uint32_t header;
 	int sampling_frequency_code;
@@ -1399,10 +1400,84 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
 	int channels;
 	int mode;
 
+
+// ID3 tag
+	switch(layer_data->id3_state)
+	{
+		case MPEG3_ID3_IDLE:
+			if(data[0] == 0x49 &&
+				data[1] == 0x44 &&
+				data[2] == 0x33)
+			{
+// Read header
+				layer_data->id3_state = MPEG3_ID3_HEADER;
+				layer_data->id3_current_byte = 0;
+				return 0;
+			}
+			break;
+
+		case MPEG3_ID3_HEADER:
+			layer_data->id3_current_byte++;
+			if(layer_data->id3_current_byte >= 6)
+			{
+				layer_data->id3_size = (data[0] << 21) |
+					(data[1] << 14) |
+					(data[2] << 7) |
+					(data[3]);
+				layer_data->id3_current_byte = 0;
+				layer_data->id3_state = MPEG3_ID3_SKIP;
+
+/*
+ * printf("mpeg3_layer_header %d %02x%02x%02x%02x size=0x%x layer_data->layer=%d\n", 
+ * __LINE__,
+ * data[0],
+ * data[1],
+ * data[2],
+ * data[3],
+ * layer_data->id3_size,
+ * layer_data->layer);
+ */
+
+			}
+			return 0;
+			break;
+
+		case MPEG3_ID3_SKIP:
+
+
+/*
+ * printf("mpeg3_layer_header %d layer_data->id3_current_byte=0x%x %02x%02x%02x%02x\n", 
+ * __LINE__,
+ * layer_data->id3_current_byte,
+ * data[0],
+ * data[1],
+ * data[2],
+ * data[3]);
+ */
+
+
+			layer_data->id3_current_byte++;
+			if(layer_data->id3_current_byte >= layer_data->id3_size)
+				layer_data->id3_state = MPEG3_ID3_IDLE;
+			return 0;
+			break;
+	}
+
 	if(mpeg3_layer_check(data))
 	{
 		return 0;
 	}
+
+
+
+// printf("mpeg3_layer_header %d layer_data->id3_state=%d %02x%02x%02x%02x\n",
+// __LINE__,
+// layer_data->id3_state,
+// data[0],
+// data[1],
+// data[2],
+// data[3]);
+
 
 	header = (data[0] << 24) | 
 		(data[1] << 16) | 
@@ -1421,9 +1496,9 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
 
     layer = 4 - ((header >> 17) & 3);
 
-//printf("mpeg3_layer_header 1 %08x %d\n", header, layer);
-	if(audio->layer != 0 &&
-		layer != audio->layer)
+//printf("mpeg3_layer_header 1 %d header=%08x layer=%d layer_data->layer=%d\n", __LINE__, header, layer, layer_data->layer);
+	if(layer_data->layer != 0 &&
+		layer != layer_data->layer)
 	{
 		return 0;
 	}
@@ -1434,8 +1509,8 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
         sampling_frequency_code = ((header >> 10) & 0x3) + (lsf * 3);
 
 
-	if(audio->samplerate != 0 &&
-		sampling_frequency_code != audio->sampling_frequency_code)
+	if(layer_data->samplerate != 0 &&
+		sampling_frequency_code != layer_data->sampling_frequency_code)
 	{
 		return 0;
 	}
@@ -1443,62 +1518,62 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
     mode = ((header >> 6) & 0x3);
 	channels = (mode == MPG_MD_MONO) ? 1 : 2;
 /*
- *     if(audio->channels < 0) 
+ *     if(layer_data->channels < 0) 
  * 	else
- * 	if(audio->channels != channels)
+ * 	if(layer_data->channels != channels)
  * 		return 0;
  */
 
 
-//	if(channels > audio->channels)
-//		audio->channels = channels;
-	audio->channels = channels;
-	audio->layer = layer;
-	audio->lsf = lsf;
-	audio->mpeg35 = mpeg35;
-	audio->mode = mode;
-	audio->sampling_frequency_code = sampling_frequency_code;
-	audio->samplerate = mpeg3_freqs[audio->sampling_frequency_code];
-    audio->error_protection = ((header >> 16) & 0x1) ^ 0x1;
+//	if(channels > layer_data->channels)
+//		layer_data->channels = channels;
+	layer_data->channels = channels;
+	layer_data->layer = layer;
+	layer_data->lsf = lsf;
+	layer_data->mpeg35 = mpeg35;
+	layer_data->mode = mode;
+	layer_data->sampling_frequency_code = sampling_frequency_code;
+	layer_data->samplerate = mpeg3_freqs[layer_data->sampling_frequency_code];
+    layer_data->error_protection = ((header >> 16) & 0x1) ^ 0x1;
 
-    audio->bitrate_index = ((header >> 12) & 0xf);
-    audio->padding   = ((header >> 9) & 0x1);
-    audio->extension = ((header >> 8) & 0x1);
-    audio->mode_ext  = ((header >> 4) & 0x3);
-    audio->copyright = ((header >> 3) & 0x1);
-    audio->original  = ((header >> 2) & 0x1);
-    audio->emphasis  = header & 0x3;
-	if(audio->channels > 1) 
-		audio->single = -1;
+    layer_data->bitrate_index = ((header >> 12) & 0xf);
+    layer_data->padding   = ((header >> 9) & 0x1);
+    layer_data->extension = ((header >> 8) & 0x1);
+    layer_data->mode_ext  = ((header >> 4) & 0x3);
+    layer_data->copyright = ((header >> 3) & 0x1);
+    layer_data->original  = ((header >> 2) & 0x1);
+    layer_data->emphasis  = header & 0x3;
+	if(layer_data->channels > 1) 
+		layer_data->single = -1;
 	else
-		audio->single = 3;
+		layer_data->single = 3;
 
-    if(!audio->bitrate_index) return 0;
-	audio->bitrate = 1000 * mpeg3_tabsel_123[audio->lsf][audio->layer - 1][audio->bitrate_index];
+    if(!layer_data->bitrate_index) return 0;
+	layer_data->bitrate = 1000 * mpeg3_tabsel_123[layer_data->lsf][layer_data->layer - 1][layer_data->bitrate_index];
 
-	audio->prev_framesize = audio->framesize - 4;
-    switch(audio->layer) 
+	layer_data->prev_framesize = layer_data->framesize - 4;
+    switch(layer_data->layer) 
 	{
       	case 1:
-        	audio->framesize  = (long)mpeg3_tabsel_123[audio->lsf][0][audio->bitrate_index] * 12000;
-        	audio->framesize /= mpeg3_freqs[audio->sampling_frequency_code];
-        	audio->framesize  = ((audio->framesize + audio->padding) << 2);
+        	layer_data->framesize  = (long)mpeg3_tabsel_123[layer_data->lsf][0][layer_data->bitrate_index] * 12000;
+        	layer_data->framesize /= mpeg3_freqs[layer_data->sampling_frequency_code];
+        	layer_data->framesize  = ((layer_data->framesize + layer_data->padding) << 2);
         	break;
       	case 2:
-        	audio->framesize = (long)mpeg3_tabsel_123[audio->lsf][1][audio->bitrate_index] * 144000;
-        	audio->framesize /= mpeg3_freqs[audio->sampling_frequency_code];
-        	audio->framesize += audio->padding;
+        	layer_data->framesize = (long)mpeg3_tabsel_123[layer_data->lsf][1][layer_data->bitrate_index] * 144000;
+        	layer_data->framesize /= mpeg3_freqs[layer_data->sampling_frequency_code];
+        	layer_data->framesize += layer_data->padding;
         	break;
       	case 3:
-        	if(audio->lsf)
-        	  	audio->ssize = (audio->channels == 1) ? 9 : 17;
+        	if(layer_data->lsf)
+        	  	layer_data->ssize = (layer_data->channels == 1) ? 9 : 17;
         	else
-        	  	audio->ssize = (audio->channels == 1) ? 17 : 32;
-        	if(audio->error_protection)
-        	  	audio->ssize += 2;
-        	audio->framesize  = (long)mpeg3_tabsel_123[audio->lsf][2][audio->bitrate_index] * 144000;
-        	audio->framesize /= mpeg3_freqs[audio->sampling_frequency_code] << (audio->lsf);
-        	audio->framesize = audio->framesize + audio->padding;
+        	  	layer_data->ssize = (layer_data->channels == 1) ? 17 : 32;
+        	if(layer_data->error_protection)
+        	  	layer_data->ssize += 2;
+        	layer_data->framesize  = (long)mpeg3_tabsel_123[layer_data->lsf][2][layer_data->bitrate_index] * 144000;
+        	layer_data->framesize /= mpeg3_freqs[layer_data->sampling_frequency_code] << (layer_data->lsf);
+        	layer_data->framesize = layer_data->framesize + layer_data->padding;
         	break; 
       	default:
         	return 0;
@@ -1506,21 +1581,24 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
 
 
 
+
 /*
- * printf(__FUNCTION__ " bitrate=%d framesize=%d samplerate=%d channels=%d layer=%d\n", 
- * audio->bitrate, 
- * audio->framesize, 
- * audio->samplerate, 
- * audio->channels,
- * audio->layer);
+ * printf("mpeg3_layer_header %d bitrate=%d framesize=%d samplerate=%d channels=%d layer=%d\n", 
+ * __LINE__,
+ * layer_data->bitrate, 
+ * layer_data->framesize, 
+ * layer_data->samplerate, 
+ * layer_data->channels,
+ * layer_data->layer);
  */
 
 
-	if(audio->bitrate < 64000 && audio->layer != 3) return 0;
-	if(audio->framesize > MAXFRAMESIZE) return 0;
+
+	if(layer_data->bitrate < 64000 && layer_data->layer != 3) return 0;
+	if(layer_data->framesize > MAXFRAMESIZE) return 0;
 //printf("mpeg3_layer_header 10 %d\n", layer);
 
-	return audio->framesize;
+	return layer_data->framesize;
 }
 
 

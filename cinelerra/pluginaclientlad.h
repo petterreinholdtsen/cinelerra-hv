@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef PLUGINACLIENTLAD_H
 #define PLUGINACLIENTLAD_H
 
@@ -96,16 +117,14 @@ public:
 };
 
 
-class PluginAClientWindow : public BC_Window
+class PluginAClientWindow : public PluginClientWindow
 {
 public:
-	PluginAClientWindow(PluginAClientLAD *plugin, 
-		int x, 
-		int y);
+	PluginAClientWindow(PluginAClientLAD *plugin);
 	~PluginAClientWindow();
 	
-	int create_objects();
-	int close_event();
+	void create_objects();
+
 
 
 
@@ -117,7 +136,6 @@ public:
 	PluginAClientLAD *plugin;
 };
 
-PLUGIN_THREAD_HEADER(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
 
 class PluginAClientLAD : public PluginAClient
 {
@@ -142,11 +160,11 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	PLUGIN_CLASS_MEMBERS(PluginAClientConfig, PluginAClientThread)
+	PLUGIN_CLASS_MEMBERS(PluginAClientConfig)
 
 
-	static char* lad_to_string(char *string, char *input);
-	static char* lad_to_upper(char *string, char *input);
+	static char* lad_to_string(char *string, const char *input);
+	static char* lad_to_upper(char *string, const char *input);
 	int get_inchannels();
 	int get_outchannels();
 	void delete_buffers();

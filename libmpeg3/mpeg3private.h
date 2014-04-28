@@ -13,7 +13,7 @@
 /* Constants */
 
 #define MPEG3_MAJOR   1
-#define MPEG3_MINOR   7
+#define MPEG3_MINOR   8
 #define MPEG3_RELEASE 0
 
 #define RENDERFARM_FS_PREFIX "vfs://"
@@ -26,6 +26,8 @@
 #define MPEG3_TOC_VERSION                0x000000fa
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
+// First byte to read when opening a file
+#define MPEG3_START_BYTE                 0x0
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
 //#define MPEG3_IO_SIZE                    0x800          /* Bytes read by mpeg3io at a time */
 #define MPEG3_RIFF_CODE                  0x52494646
@@ -59,7 +61,7 @@
 #define MPEG3_MAX_PACKSIZE               262144
 /* Maximum number of complete subtitles to buffer in a subtitle track */
 /* or number of incomplete subtitles to buffer in demuxer. */
-#define MPEG3_MAX_SUBTITLES              5
+#define MPEG3_MAX_SUBTITLES              256
 /* Positive difference before declaring timecodes discontinuous */
 #define MPEG3_CONTIGUOUS_THRESHOLD       10  
 /* Minimum number of seconds before interleaving programs */
@@ -269,6 +271,8 @@ typedef struct
 	unsigned char *data;
 /* number of bytes of data */
 	int size;
+/* number of bytes of data read so far */
+	int bytes_read;
 /* Number of stream starting at 0x20 */
 	int id;
 	int done;
@@ -354,7 +358,9 @@ typedef struct
 	int video_allocated;
 	int video_size;
 	int video_start;
-
+	unsigned char *subtitle_buffer;
+	int subtitle_size;
+	int subtitle_allocated;
 
 /* Subtitle objects */
 	mpeg3_subtitle_t **subtitles;
@@ -572,12 +578,21 @@ typedef struct
 	int bo;                      
 /* Ignore first frame after a seek */
 	int first_frame;
-
 	float synth_stereo_buffs[2][2][0x110];
 	float synth_mono_buff[64];
 	float mp3_block[2][2][SBLIMIT * SSLIMIT];
 	int mp3_blc[2];
 
+/* State of ID3 parsing */
+	int id3_state;
+/* No ID3 tag found */
+#define MPEG3_ID3_IDLE 0
+/* Reading header */
+#define MPEG3_ID3_HEADER 1
+/* Skipping ID3 tag */
+#define MPEG3_ID3_SKIP 2
+	int id3_current_byte;
+	int id3_size;
 
 
 // Layer 2
@@ -655,6 +670,8 @@ typedef struct
 	
 /* Size of frame including header */
 	int framesize;
+/* First byte of audio data in the file */
+	int64_t start_byte;
 /* Output from synthesizer in linear floats */
 	float **output;           
 /* Number of pcm samples in the buffer */
@@ -1016,7 +1033,8 @@ typedef struct
 	int64_t prev_frame_offset;
 /* End of stream in table of contents construction */
 	int64_t video_eof;
-
+	int got_top;
+	int got_keyframe;
 
 	mpeg3_cache_t *frame_cache;
 
@@ -1102,7 +1120,7 @@ typedef struct
 	int is_ifo_file;
 	int is_audio_stream;         /* Elemental stream */
 	int is_video_stream;         /* Elemental stream */
-// Special kind of transport stream
+// Special kind of transport stream for BD or AVC-HD
 	int is_bd;
 /* > 0 if known otherwise determine empirically for every packet */
 	int packet_size;

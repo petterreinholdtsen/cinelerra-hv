@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "colormodels.h"
 #include "effecttv.h"
@@ -43,12 +64,12 @@ BurnMain::BurnMain(PluginServer *server)
 	buffer = 0;
 	effecttv = 0;
 	yuv = new YUV;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 BurnMain::~BurnMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(buffer) delete [] buffer;
 	if(burn_server) delete burn_server;
@@ -56,14 +77,12 @@ BurnMain::~BurnMain()
 	if(yuv) delete yuv;
 }
 
-char* BurnMain::plugin_title() { return N_("BurningTV"); }
+const char* BurnMain::plugin_title() { return N_("BurningTV"); }
 int BurnMain::is_realtime() { return 1; }
 
 
+NEW_WINDOW_MACRO(BurnMain, BurnWindow)
 NEW_PICON_MACRO(BurnMain)
-SHOW_GUI_MACRO(BurnMain, BurnThread)
-SET_STRING_MACRO(BurnMain)
-RAISE_WINDOW_MACRO(BurnMain)
 
 int BurnMain::load_defaults()
 {
@@ -75,8 +94,9 @@ int BurnMain::save_defaults()
 	return 0;
 }
 
-void BurnMain::load_configuration()
+int BurnMain::load_configuration()
 {
+	return 0;
 //printf("BurnMain::load_configuration %d\n", source_position);
 }
 

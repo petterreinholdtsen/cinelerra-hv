@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "cursors.h"
@@ -10,21 +31,16 @@
 
 #include <unistd.h>
 
-PLUGIN_THREAD_OBJECT(HistogramMain, HistogramThread, HistogramWindow)
 
 
 
-HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
+HistogramWindow::HistogramWindow(HistogramMain *plugin)
+ : PluginClientWindow(plugin, 
 	440, 
 	500, 
 	440, 
 	500, 
-	0, 
-	1,
-	1)
+	0)
 {
 	this->plugin = plugin; 
 }
@@ -40,7 +56,7 @@ static VFrame max_picon_image(max_picon_png);
 static VFrame mid_picon_image(mid_picon_png);
 static VFrame min_picon_image(min_picon_png);
 
-int HistogramWindow::create_objects()
+void HistogramWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 10;
 	BC_Title *title = 0;
@@ -197,11 +213,8 @@ int HistogramWindow::create_objects()
 
 
 	show_window();
-
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(HistogramWindow)
 
 int HistogramWindow::keypress_event()
 {
@@ -501,6 +514,8 @@ int HistogramCanvas::cursor_motion_event()
 	{
 		HistogramPoint *current = plugin->config.points[plugin->mode].first;
 		int done = 0;
+// Only change cursor in the points so the user doesn't miss and create
+// new points.
 		while(current && !done)
 		{
 			int x1;
@@ -568,6 +583,13 @@ int HistogramCanvas::button_release_event()
 
 
 
+
+
+
+
+
+
+
 HistogramReset::HistogramReset(HistogramMain *plugin, 
 	int x,
 	int y)
@@ -578,8 +600,8 @@ HistogramReset::HistogramReset(HistogramMain *plugin,
 int HistogramReset::handle_event()
 {
 	plugin->config.reset(0);
-	plugin->thread->window->update(1);
-	plugin->thread->window->update_canvas();
+	((HistogramWindow*)plugin->thread->window)->update(1);
+	((HistogramWindow*)plugin->thread->window)->update_canvas();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -817,12 +839,12 @@ int HistogramMode::handle_event()
 {
 	plugin->mode = value;
 	plugin->current_point= -1;
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_mode();
-	plugin->thread->window->update_input();
-	plugin->thread->window->update_canvas();
-	plugin->thread->window->update_output();
-	plugin->thread->window->output->update();
+	((HistogramWindow*)plugin->thread->window)->update_canvas();
+	((HistogramWindow*)plugin->thread->window)->update_mode();
+	((HistogramWindow*)plugin->thread->window)->update_input();
+	((HistogramWindow*)plugin->thread->window)->update_canvas();
+	((HistogramWindow*)plugin->thread->window)->update_output();
+	((HistogramWindow*)plugin->thread->window)->output->update();
 //	plugin->send_configure_change();
 	return 1;
 }
@@ -862,7 +884,7 @@ int HistogramOutputText::handle_event()
 		*output = atof(get_text());
 	}
 
-	plugin->thread->window->output->update();
+	((HistogramWindow*)plugin->thread->window)->output->update();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -914,7 +936,7 @@ int HistogramInputText::handle_event()
 			plugin->config.boundaries();
 			gui->update_canvas();
 
-			plugin->thread->window->output->update();
+			((HistogramWindow*)plugin->thread->window)->output->update();
 			plugin->send_configure_change();
 		}
 	}

@@ -1,6 +1,6 @@
 include global_config
 
-DIR := freetype-2.1.4
+DIR := $(shell expr thirdparty/freetype* )
 
 OBJS := \
 	$(DIR)/$(OBJDIR)/src/base/ftsystem.o \

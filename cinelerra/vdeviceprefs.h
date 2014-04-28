@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef VDEVICEPREFS_H
 #define VDEVICEPREFS_H
 
@@ -134,7 +155,7 @@ public:
 	~VDriverMenu();
 	
 	char* driver_to_string(int driver);
-	int create_objects();
+	void create_objects();
 	
 	VDevicePrefs *device_prefs;
 	int do_input;
@@ -146,7 +167,7 @@ public:
 class VDriverItem : public BC_MenuItem
 {
 public:
-	VDriverItem(VDriverMenu *popup, char *text, int driver);
+	VDriverItem(VDriverMenu *popup, const char *text, int driver);
 	~VDriverItem();
 	
 	int handle_event();

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "bchash.h"
@@ -14,7 +35,7 @@ BC_Hash::BC_Hash()
 	values = 0;
 }
 
-BC_Hash::BC_Hash(char *filename)
+BC_Hash::BC_Hash(const char *filename)
 {
 	strcpy(this->filename, filename);
 	total = 0;
@@ -71,7 +92,7 @@ int BC_Hash::load()
 
 void BC_Hash::load_stringfile(StringFile *file)
 {
-	char arg1[1024], arg2[1024];
+	char arg1[BCTEXTLEN], arg2[BCTEXTLEN];
 	total = 0;
 	while(file->get_pointer() < file->get_length())
 	{
@@ -101,7 +122,7 @@ int BC_Hash::save()
 	return 0;
 }
 
-int BC_Hash::load_string(char *string)
+int BC_Hash::load_string(const char *string)
 {
 	StringFile stringfile;
 	stringfile.read_from_string(string);
@@ -120,7 +141,7 @@ int BC_Hash::save_string(char* &string)
 
 
 
-int32_t BC_Hash::get(char *name, int32_t default_)
+int32_t BC_Hash::get(const char *name, int32_t default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -132,7 +153,7 @@ int32_t BC_Hash::get(char *name, int32_t default_)
 	return default_;  // failed
 }
 
-int64_t BC_Hash::get(char *name, int64_t default_)
+int64_t BC_Hash::get(const char *name, int64_t default_)
 {
 	int64_t result = default_;
 	for(int i = 0; i < total; i++)
@@ -146,7 +167,7 @@ int64_t BC_Hash::get(char *name, int64_t default_)
 	return result;
 }
 
-double BC_Hash::get(char *name, double default_)
+double BC_Hash::get(const char *name, double default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -158,7 +179,7 @@ double BC_Hash::get(char *name, double default_)
 	return default_;  // failed
 }
 
-float BC_Hash::get(char *name, float default_)
+float BC_Hash::get(const char *name, float default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -170,7 +191,7 @@ float BC_Hash::get(char *name, float default_)
 	return default_;  // failed
 }
 
-char* BC_Hash::get(char *name, char *default_)
+char* BC_Hash::get(const char *name, char *default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -183,35 +204,35 @@ char* BC_Hash::get(char *name, char *default_)
 	return default_;  // failed
 }
 
-int BC_Hash::update(char *name, double value) // update a value if it exists
+int BC_Hash::update(const char *name, double value) // update a value if it exists
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	sprintf(string, "%.16e", value);
 	return update(name, string);
 }
 
-int BC_Hash::update(char *name, float value) // update a value if it exists
+int BC_Hash::update(const char *name, float value) // update a value if it exists
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	sprintf(string, "%.6e", value);
 	return update(name, string);
 }
 
-int32_t BC_Hash::update(char *name, int32_t value) // update a value if it exists
+int32_t BC_Hash::update(const char *name, int32_t value) // update a value if it exists
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	sprintf(string, "%d", value);
 	return update(name, string);
 }
 
-int BC_Hash::update(char *name, int64_t value) // update a value if it exists
+int BC_Hash::update(const char *name, int64_t value) // update a value if it exists
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	sprintf(string, "%lld", value);
 	return update(name, string);
 }
 
-int BC_Hash::update(char *name, char *value)
+int BC_Hash::update(const char *name, const char *value)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -252,10 +273,8 @@ void BC_Hash::copy_from(BC_Hash *src)
 // 	values = 0;
 // 	total = 0;
 
-SET_TRACE
 	reallocate_table(src->total);
 //	total = src->total;
-SET_TRACE
 	for(int i = 0; i < src->total; i++)
 	{
 		update(src->names[i], src->values[i]);
@@ -264,7 +283,6 @@ SET_TRACE
 // 		strcpy(names[i], src->names[i]);
 // 		strcpy(values[i], src->values[i]);
 	}
-SET_TRACE
 }
 
 int BC_Hash::equivalent(BC_Hash *src)
@@ -276,6 +294,24 @@ int BC_Hash::equivalent(BC_Hash *src)
 	}
 	return 1;
 }
+
+int BC_Hash::size()
+{
+	return total;
+}
+
+char* BC_Hash::get_key(int number)
+{
+	return names[number];
+}
+
+char* BC_Hash::get_value(int number)
+{
+	return values[number];
+}
+
+
+
 
 void BC_Hash::dump()
 {

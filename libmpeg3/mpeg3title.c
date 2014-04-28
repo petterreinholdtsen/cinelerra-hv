@@ -35,7 +35,7 @@ int mpeg3_copy_title(mpeg3_title_t *dst, mpeg3_title_t *src)
 	dst->start_byte = src->start_byte;
 	dst->end_byte = src->end_byte;
 
-	if(src->cell_table_size)
+	if(src->cell_table_size && src->cell_table)
 	{
 		dst->cell_table_allocation = src->cell_table_allocation;
 		dst->cell_table_size = src->cell_table_size;
@@ -93,6 +93,7 @@ static void extend_cell_table(mpeg3_title_t *title)
 				sizeof(mpeg3_cell_t) * title->cell_table_allocation);
 			free(title->cell_table);
 		}
+
 		title->cell_table = new_table;
 		title->cell_table_allocation = new_allocation;
 	}
@@ -129,6 +130,7 @@ int mpeg3_create_title(mpeg3_demuxer_t *demuxer,
 	long i;
 	mpeg3_title_t *title;
 	u_int32_t test_header = 0;
+	const int debug = 0;
 
 	demuxer->error_flag = 0;
 	demuxer->read_all = 1;
@@ -145,6 +147,9 @@ int mpeg3_create_title(mpeg3_demuxer_t *demuxer,
 	title->total_bytes = mpeg3io_total_bytes(title->fs);
 	title->start_byte = 0;
 	title->end_byte = title->total_bytes;
+if(debug) fprintf(stderr, "mpeg3_create_title %d path=%s total_bytes=%lld\n",
+__LINE__, file->fs->path, title->total_bytes);
+
 
 // Create default cell
 	mpeg3_new_cell(title, 
@@ -158,18 +163,18 @@ int mpeg3_create_title(mpeg3_demuxer_t *demuxer,
 /* Get PID's and tracks */
 	if(file->is_transport_stream || file->is_program_stream)
 	{
-		mpeg3io_seek(title->fs, 0);
+		mpeg3io_seek(title->fs, MPEG3_START_BYTE);
 		while(!done && !result && !mpeg3io_eof(title->fs))
 		{
 			next_byte = mpeg3io_tell(title->fs);
 			result = mpeg3_read_next_packet(demuxer);
 
 /* Just get the first bytes if not building a toc to get the stream ID's. */
-			if(next_byte > 0x1000000 && !toc) done = 1;
+			if(next_byte > MPEG3_START_BYTE + 0x1000000 && !toc) done = 1;
 		}
 	}
 
-	mpeg3io_seek(title->fs, 0);
+	mpeg3io_seek(title->fs, MPEG3_START_BYTE);
 	demuxer->read_all = 0;
 	return 0;
 }

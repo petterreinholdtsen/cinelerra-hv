@@ -1,6 +1,28 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+#include "bchash.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "condition.h"
-#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
@@ -32,6 +54,7 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	video_cache = 0;
 	last_command = STOP;
 	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
+	renderengine_lock = new Mutex("PlaybackEngine::renderengine_lock");
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
@@ -59,9 +82,10 @@ PlaybackEngine::~PlaybackEngine()
 	delete tracking_done;
 	delete pause_lock;
 	delete start_lock;
+	delete renderengine_lock;
 }
 
-int PlaybackEngine::create_objects()
+void PlaybackEngine::create_objects()
 {
 	int result = 0;
 	preferences = new Preferences;
@@ -75,7 +99,6 @@ int PlaybackEngine::create_objects()
 	done = 0;
 	Thread::start();
 	start_lock->lock("PlaybackEngine::create_objects");
-	return result;
 }
 
 ChannelDB* PlaybackEngine::get_channeldb()
@@ -113,8 +136,10 @@ int PlaybackEngine::create_render_engine()
 
 void PlaybackEngine::delete_render_engine()
 {
+	renderengine_lock->lock("PlaybackEngine::delete_render_engine");
 	delete render_engine;
 	render_engine = 0;
+	renderengine_lock->unlock();
 }
 
 void PlaybackEngine::arm_render_engine()
@@ -179,8 +204,10 @@ void PlaybackEngine::sync_parameters(EDL *edl)
 
 void PlaybackEngine::interrupt_playback(int wait_tracking)
 {
+	renderengine_lock->lock("PlaybackEngine::interrupt_playback");
 	if(render_engine)
 		render_engine->interrupt_playback();
+	renderengine_lock->unlock();
 
 // Stop pausing
 	pause_lock->unlock();

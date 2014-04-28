@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "audiodevice.h"
 #include "batch.h"
@@ -56,7 +77,7 @@ SET_TRACE
 SET_TRACE
 }
 
-int RecordThread::create_objects()
+void RecordThread::create_objects()
 {
 	if(record->default_asset->audio_data) 
 		record_audio = new RecordAudio(mwindow, 
@@ -68,7 +89,6 @@ int RecordThread::create_objects()
 			record, 
 			this);
 	engine_done = 0;
-	return 0;
 }
 
 int RecordThread::start_recording(int monitor, int context)
@@ -90,7 +110,7 @@ int RecordThread::start_recording(int monitor, int context)
 
 int RecordThread::stop_recording(int resume_monitor)
 {
-SET_TRACE
+PRINT_TRACE
 // Stop RecordThread while waiting for batch
 	state_lock->lock("RecordThread::stop_recording");
 
@@ -100,13 +120,13 @@ SET_TRACE
 		pause_lock->unlock();
 	}
 
-SET_TRACE
+PRINT_TRACE
 	this->resume_monitor = resume_monitor;
 // In the monitor engine, stops the engine.
 // In the recording engine, causes the monitor engine not to be restarted.
 // Video thread stops the audio thread itself
 // printf("RecordThread::stop_recording 1\n");
-SET_TRACE
+PRINT_TRACE
 	if(record_video)
 	{
 		record_video->batch_done = 1;
@@ -121,9 +141,9 @@ SET_TRACE
 		record_audio->stop_recording();
 	}
 
-SET_TRACE
+PRINT_TRACE
 	Thread::join();
-SET_TRACE
+PRINT_TRACE
 	return 0;
 }
 
@@ -323,37 +343,37 @@ TRACE("RecordThread::run 9");
 TRACE("RecordThread::run 10");
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
-TRACE("RecordThread::run 11");
+PRINT_TRACE
 			state_lock->unlock();
 
 // Trigger loops
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->start_recording();
-TRACE("RecordThread::run 12");
+PRINT_TRACE
 			if(record->default_asset->video_data)
 				record_video->start_recording();
-TRACE("RecordThread::run 13");
+PRINT_TRACE
 
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->Thread::join();
-TRACE("RecordThread::run 14");
+PRINT_TRACE
 			if(record->default_asset->video_data)
 				record_video->Thread::join();
-TRACE("RecordThread::run 15");
+PRINT_TRACE
 
 // Stop file threads here to keep loop synchronized
 			if(!monitor)
 			{
 				if(drivesync) drivesync->done = 1;
-TRACE("RecordThread::run 16");
+PRINT_TRACE
 				if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 					record->file->stop_audio_thread();
-TRACE("RecordThread::run 17");
+PRINT_TRACE
 				if(record->default_asset->video_data)
 					record->file->stop_video_thread();
-TRACE("RecordThread::run 18");
+PRINT_TRACE
 
 // Update asset info
 				record->get_current_batch()->get_current_asset()->audio_length = 
@@ -386,18 +406,18 @@ TRACE("RecordThread::run 18");
 						engine_done = 1;
 					}
 				}
-TRACE("RecordThread::run 20");
+PRINT_TRACE
 
 				if(drivesync) delete drivesync;
 			}
-SET_TRACE
+PRINT_TRACE
 		}
 		else
 		{
 			state_lock->unlock();
 		}
 
-SET_TRACE
+PRINT_TRACE
 // Wait for thread to stop before closing devices
 		loop_lock->unlock();
 		if(monitor)
@@ -406,12 +426,12 @@ SET_TRACE
 			pause_lock->lock("RecordThread::run");
 			pause_lock->unlock();
 		}
-SET_TRACE
+PRINT_TRACE
 	}while(!engine_done);
 
-SET_TRACE
+PRINT_TRACE
 	record->close_input_devices(monitor);
-SET_TRACE
+PRINT_TRACE
 
 // Resume monitoring only if not a monitor ourselves
 	if(!monitor)
@@ -423,6 +443,6 @@ SET_TRACE
 	{
 		record->capture_state = IS_DONE;
 	}
-SET_TRACE
+PRINT_TRACE
 }
 

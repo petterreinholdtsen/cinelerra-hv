@@ -126,6 +126,55 @@ if(debug) printf("mpeg3_delete 11\n");
 	return 0;
 }
 
+
+static int is_toc(uint32_t bits)
+{
+	return (bits == MPEG3_TOC_PREFIX);
+}
+
+
+static int is_ifo(uint32_t bits)
+{
+	return (bits == MPEG3_IFO_PREFIX);
+}
+
+static int is_transport(uint32_t bits)
+{
+	return (((bits >> 24) & 0xff) == MPEG3_SYNC_BYTE);
+}
+
+static int is_bd(uint32_t bits1, uint32_t bits2, char *ext)
+{
+	return (((bits2 >> 24) & 0xff) == MPEG3_SYNC_BYTE) && 
+		(!ext || ext && 
+			(!strncasecmp(ext, ".m2ts", 5) || 
+			!strncasecmp(ext, ".mts", 4)));
+}
+
+static int is_program(uint32_t bits)
+{
+	return (bits == MPEG3_PACK_START_CODE);
+}
+
+static int is_mpeg_audio(uint32_t bits)
+{
+	return (bits & 0xfff00000) == 0xfff00000 ||
+		(bits & 0xffff0000) == 0xffe30000 ||
+		((bits >> 8) == MPEG3_ID3_PREFIX) ||
+		(bits == MPEG3_RIFF_CODE);
+}
+
+static int is_mpeg_video(uint32_t bits)
+{
+	return (bits == MPEG3_SEQUENCE_START_CODE ||
+			bits == MPEG3_PICTURE_START_CODE);
+}
+
+static int is_ac3(uint32_t bits)
+{
+	return (((bits & 0xffff0000) >> 16) == MPEG3_AC3_START_CODE);
+}
+
 int mpeg3_check_sig(char *path)
 {
 	mpeg3_fs_t *fs;
@@ -149,9 +198,8 @@ int mpeg3_check_sig(char *path)
 		result = 1;
 	}
 	else
-	if(((bits2 >> 24) & 0xff) == MPEG3_SYNC_BYTE &&
-		ext &&
-		!strncasecmp(ext, ".m2ts", 5))
+/* Blu-Ray or AVC-HD*/
+	if(is_bd(bits, bits2, ext))
 	{
 		result = 1;
 	}
@@ -163,7 +211,7 @@ int mpeg3_check_sig(char *path)
 		(bits == MPEG3_SEQUENCE_START_CODE) ||
 		(bits == MPEG3_PICTURE_START_CODE) ||
 		(((bits & 0xffff0000) >> 16) == MPEG3_AC3_START_CODE) ||
-		((bits >> 8) == MPEG3_ID3_PREFIX) ||
+		((bits >> 8) == MPEG3_ID3_PREFIX) || 
 		(bits == MPEG3_RIFF_CODE) ||
         (bits == MPEG3_IFO_PREFIX))
 	{
@@ -198,52 +246,6 @@ int mpeg3_check_sig(char *path)
 
 
 
-
-
-static int is_toc(uint32_t bits)
-{
-	return (bits == MPEG3_TOC_PREFIX);
-}
-
-
-static int is_ifo(uint32_t bits)
-{
-	return (bits == MPEG3_IFO_PREFIX);
-}
-
-static int is_transport(uint32_t bits)
-{
-	return (((bits >> 24) & 0xff) == MPEG3_SYNC_BYTE);
-}
-
-static int is_bd(uint32_t bits1, uint32_t bits2)
-{
-	return (((bits2 >> 24) & 0xff) == MPEG3_SYNC_BYTE);
-}
-
-static int is_program(uint32_t bits)
-{
-	return (bits == MPEG3_PACK_START_CODE);
-}
-
-static int is_mpeg_audio(uint32_t bits)
-{
-	return (bits & 0xfff00000) == 0xfff00000 ||
-		(bits & 0xffff0000) == 0xffe30000 ||
-		((bits >> 8) == MPEG3_ID3_PREFIX) ||
-		(bits == MPEG3_RIFF_CODE);
-}
-
-static int is_mpeg_video(uint32_t bits)
-{
-	return (bits == MPEG3_SEQUENCE_START_CODE ||
-			bits == MPEG3_PICTURE_START_CODE);
-}
-
-static int is_ac3(uint32_t bits)
-{
-	return (((bits & 0xffff0000) >> 16) == MPEG3_AC3_START_CODE);
-}
 
 static int calculate_packet_size(int is_transport,
 	int is_program,
@@ -280,7 +282,10 @@ int mpeg3_get_file_type(mpeg3_t *file,
 	uint32_t bits2 = mpeg3io_read_int32(file->fs);
 	int result = 0;
 
-	if(old_file) file->is_bd = old_file->is_bd;
+	if(old_file)
+	{
+		file->is_bd = old_file->is_bd;
+	}
 
 /* TOC  */
 	if(is_toc(bits))   
@@ -321,7 +326,7 @@ int mpeg3_get_file_type(mpeg3_t *file,
 		mpeg3io_close_file(file->fs);
     }
     else
-	if(is_bd(bits, bits2))
+	if(is_bd(bits, bits2, 0))
 	{
 		file->is_bd = 1;
 		file->is_transport_stream = 1;
@@ -403,11 +408,13 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 	mpeg3_t *file = 0;
 	int i, done;
 	int result = 0;
+	int error_temp = 0;
 /* The table of contents may have fewer tracks than are in the demuxer */
 /* This limits the track count */
 	int toc_atracks = 0x7fffffff;
 	int toc_vtracks = 0x7fffffff;
 
+	if(!error_return) error_return = &error_temp;
 
 /* Initialize the file structure */
 	file = mpeg3_new(path);

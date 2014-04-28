@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
 #include "bcmenupopup.h"
@@ -20,7 +41,7 @@
 
 // ================================ Menu Item ==================================
 
-BC_MenuItem::BC_MenuItem(char *text, char *hotkey_text, int hotkey)
+BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 {
 	reset();
 
@@ -83,14 +104,14 @@ BC_Pixmap* BC_MenuItem::get_icon()
 	return icon;
 }
 
-void BC_MenuItem::set_text(char *text)
+void BC_MenuItem::set_text(const char *text)
 {
 	if(this->text) delete [] this->text;
 	this->text = new char[strlen(text) + 1];
 	strcpy(this->text, text);
 }
 
-void BC_MenuItem::set_hotkey_text(char *text)
+void BC_MenuItem::set_hotkey_text(const char *text)
 {
 	if(this->hotkey_text) delete [] this->hotkey_text;
 	this->hotkey_text = new char[strlen(text) + 1];

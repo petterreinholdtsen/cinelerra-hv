@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -74,12 +95,11 @@ public:
 // 	FieldFrameWindow *gui;
 // };
 
-class FieldFrameWindow : public BC_Window
+class FieldFrameWindow : public PluginClientWindow
 {
 public:
-	FieldFrameWindow(FieldFrame *plugin, int x, int y);
+	FieldFrameWindow(FieldFrame *plugin);
 	void create_objects();
-	int close_event();
 	FieldFrame *plugin;
 	FieldFrameTop *top;
 	FieldFrameBottom *bottom;
@@ -88,7 +108,8 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(FieldFrame, FieldFrameThread, FieldFrameWindow)
+
+
 
 
 class FieldFrame : public PluginVClient
@@ -97,7 +118,7 @@ public:
 	FieldFrame(PluginServer *server);
 	~FieldFrame();
 
-	PLUGIN_CLASS_MEMBERS(FieldFrameConfig, FieldFrameThread);
+	PLUGIN_CLASS_MEMBERS(FieldFrameConfig);
 
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
@@ -145,17 +166,13 @@ int FieldFrameConfig::equivalent(FieldFrameConfig &src)
 
 
 
-FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin)
+ : PluginClientWindow(plugin, 
 	230, 
 	100, 
 	230, 
 	100, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -174,8 +191,6 @@ void FieldFrameWindow::create_objects()
 	show_window();
 	flush();
 }
-
-WINDOW_CLOSE_EVENT(FieldFrameWindow)
 
 
 
@@ -299,7 +314,7 @@ int FieldFrameBottom::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(FieldFrame, FieldFrameThread, FieldFrameWindow)
+
 
 
 
@@ -308,29 +323,24 @@ PLUGIN_THREAD_OBJECT(FieldFrame, FieldFrameThread, FieldFrameWindow)
 FieldFrame::FieldFrame(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	input = 0;
 }
 
 
 FieldFrame::~FieldFrame()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(input) delete input;
 }
 
-char* FieldFrame::plugin_title() { return N_("Fields to frames"); }
+const char* FieldFrame::plugin_title() { return N_("Fields to frames"); }
 int FieldFrame::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(FieldFrame)
-
-SHOW_GUI_MACRO(FieldFrame, FieldFrameThread)
-
-RAISE_WINDOW_MACRO(FieldFrame)
-
-SET_STRING_MACRO(FieldFrame);
+NEW_WINDOW_MACRO(FieldFrame, FieldFrameWindow)
 
 int FieldFrame::load_configuration()
 {
@@ -372,7 +382,7 @@ void FieldFrame::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("FIELD_FRAME");
 	output.tag.set_property("DOMINANCE", config.field_dominance);
 	output.tag.set_property("FIRST_FRAME", config.first_frame);
@@ -384,7 +394,7 @@ void FieldFrame::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -406,8 +416,8 @@ void FieldFrame::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window();
-			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
-			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
+			((FieldFrameWindow*)thread->window)->top->update(config.field_dominance == TOP_FIELD_FIRST);
+			((FieldFrameWindow*)thread->window)->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
 //			thread->window->first->update(config.first_frame == 0);
 //			thread->window->second->update(config.first_frame == 1);
 			thread->window->unlock_window();

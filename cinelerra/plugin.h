@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
@@ -27,13 +48,13 @@ public:
 // Plugin which belongs to a transition.
 	Plugin(EDL *edl, 
 		Track *track, 
-		char *title);
+		const char *title);
 // Called by  PluginSet::create_edit, PluginSet::insert_edit_after.
 // Plugin can't take a track because it would get the edits pointer from 
 // the track instead of the plugin set.
 	Plugin(EDL *edl, 
 		PluginSet *plugin_set, 
-		char *title);
+		const char *title);
 	virtual ~Plugin();
 
 	virtual Plugin& operator=(Plugin& edit);
@@ -75,7 +96,7 @@ public:
 		int64_t end, 
 		FileXML *file, 
 		int default_only,
-		int autos_only);
+		int active_only);
 // For editing automation.  
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
@@ -86,8 +107,8 @@ public:
 // Shift in time
 	void shift(int64_t difference);
 	void dump();
-// Called by PluginClient sequence to get rendering parameters
-	KeyFrame* get_prev_keyframe(int64_t position, int direction);
+	KeyFrame* get_prev_keyframe(int64_t position,
+		int direction);
 	KeyFrame* get_next_keyframe(int64_t position, int direction);
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
@@ -95,12 +116,13 @@ public:
 // Get keyframes for editing with automatic creation if enabled.
 // The direction is always assumed to be forward.
 	virtual KeyFrame* get_keyframe();
+// Called by KeyFrameThread
+	int keyframe_exists(KeyFrame *ptr);
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
 	void calculate_title(char *string, int use_nudge);
 // Resolve objects pointed to by shared_location
 	Track* get_shared_track();
-//	Plugin* get_shared_plugin();
 
 // Need to resample keyframes
 	void resample(double old_rate, double new_rate);

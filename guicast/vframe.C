@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <png.h>
 #include <stdio.h>
 #include <string.h>
@@ -121,6 +142,24 @@ int VFrame::equivalent(VFrame *src, int test_stacks)
 		(!test_stacks || equal_stacks(src)));
 }
 
+int VFrame::data_matches(VFrame *frame)
+{
+	if(data && frame->get_data() &&
+		frame->params_match(get_w(), get_h(), get_color_model()) &&
+		get_data_size() == frame->get_data_size())
+	{
+		int data_size = get_data_size();
+		unsigned char *ptr1 = get_data();
+		unsigned char *ptr2 = frame->get_data();
+		for(int i = 0; i < data_size; i++)
+		{
+			if(*ptr1++ != *ptr2++) return 0;
+		}
+		return 1;
+	}
+	return 0;
+}
+
 long VFrame::set_shm_offset(long offset)
 {
 	shm_offset = offset;
@@ -195,9 +234,8 @@ int VFrame::clear_objects(int do_opengl)
 	{
 
 // Memory check
-//int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
-//if(size > 2560 * 1920)
-UNBUFFER(data);
+// if(this->w * this->h > 1500 * 1100)
+// printf("VFrame::clear_objects 2 this=%p data=%p\n", this, data);   
 		if(data) delete [] data;
 		data = 0;
 	}
@@ -342,11 +380,12 @@ int VFrame::allocate_data(unsigned char *data,
 		this->data = new unsigned char[size];
 
 // Memory check
-//if(size >= 720 * 480 * 3)
-//BUFFER2(this->data, "VFrame::allocate_data");
+// if(this->w * this->h > 1500 * 1100)
+// printf("VFrame::allocate_data 2 this=%p w=%d h=%d this->data=%p\n", 
+// this, this->w, this->h, this->data);   
 
-if(!this->data)
-printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
+		if(!this->data)
+		printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
 
 //printf("VFrame::allocate_data %p %d %d\n", this, this->w, this->h);
 //if(size > 1000000) printf("VFrame::allocate_data %d\n", size);
@@ -435,71 +474,135 @@ UNBUFFER(data);
 
 int VFrame::read_png(unsigned char *data)
 {
-	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-	png_infop info_ptr = png_create_info_struct(png_ptr);
-	int new_color_model;
-
-	image_offset = 0;
-	image = data + 4;
-	image_size = (((unsigned long)data[0]) << 24) | 
-		(((unsigned long)data[1]) << 16) | 
-		(((unsigned long)data[2]) << 8) | 
-		(unsigned char)data[3];
-	png_set_read_fn(png_ptr, this, PngReadFunction::png_read_function);
-	png_read_info(png_ptr, info_ptr);
-
-	w = png_get_image_width(png_ptr, info_ptr);
-	h = png_get_image_height(png_ptr, info_ptr);
-
-	int src_color_model = png_get_color_type(png_ptr, info_ptr);
-	switch(src_color_model)
+// Test for RAW format
+	if(data[4] == 'R' && 
+		data[5] == 'A' &&
+		data[6] == 'W' &&
+		data[7] == ' ')
 	{
-		case PNG_COLOR_TYPE_RGB:
-			new_color_model = BC_RGB888;
-			break;
-
-
-		case PNG_COLOR_TYPE_GRAY_ALPHA:
-		case PNG_COLOR_TYPE_RGB_ALPHA:
-		default:
-			new_color_model = BC_RGBA8888;
-			break;
-	}
-
-	reallocate(NULL, 
-		0, 
-		0, 
-		0, 
-		w, 
-		h, 
-		new_color_model,
-		-1);
-
-	png_read_image(png_ptr, get_rows());
-
-
-
-	if(src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
-	{
-		for(int i = 0; i < get_h(); i++)
+		int new_color_model;
+		w = (data[8]) |
+			(data[9] << 8) |
+			(data[10] << 16) |
+			(data[11] << 24);
+		h = (data[12]) |
+			(data[13] << 8) |
+			(data[14] << 16) |
+			(data[15] << 24);
+		int components = data[16];
+		if(components == 3)
 		{
-			unsigned char *row = get_rows()[i];
-			unsigned char *out_ptr = row + get_w() * 4 - 4;
-			unsigned char *in_ptr = row + get_w() * 2 - 2;
+			new_color_model = BC_RGB888;
+		}
+		else
+		if(components == 4)
+		{
+			new_color_model = BC_RGBA8888;
+		}
 
-			for(int j = get_w() - 1; j >= 0; j--)
+// This shares the data directly
+// 		reallocate(data + 20, 
+// 			0, 
+// 			0, 
+// 			0, 
+// 			w, 
+// 			h, 
+// 			new_color_model,
+// 			-1);
+
+// Can't use shared data for theme since button constructions overlay the
+// images directly.
+		reallocate(NULL, 
+			0, 
+			0, 
+			0, 
+			w, 
+			h, 
+			new_color_model,
+			-1);
+		memcpy(get_data(), data + 20, w * h * components);
+	}
+	else
+	if(data[4] == 0x89 &&
+		data[5] == 'P' &&
+		data[6] == 'N' &&
+		data[7] == 'G')
+	{
+		png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+		png_infop info_ptr = png_create_info_struct(png_ptr);
+		int new_color_model;
+
+		image_offset = 0;
+		image = data + 4;
+		image_size = (((unsigned long)data[0]) << 24) | 
+			(((unsigned long)data[1]) << 16) | 
+			(((unsigned long)data[2]) << 8) | 
+			(unsigned char)data[3];
+		png_set_read_fn(png_ptr, this, PngReadFunction::png_read_function);
+		png_read_info(png_ptr, info_ptr);
+
+		w = png_get_image_width(png_ptr, info_ptr);
+		h = png_get_image_height(png_ptr, info_ptr);
+
+		int src_color_model = png_get_color_type(png_ptr, info_ptr);
+		switch(src_color_model)
+		{
+			case PNG_COLOR_TYPE_RGB:
+				new_color_model = BC_RGB888;
+				break;
+
+
+			case PNG_COLOR_TYPE_GRAY_ALPHA:
+			case PNG_COLOR_TYPE_RGB_ALPHA:
+			default:
+				new_color_model = BC_RGBA8888;
+				break;
+		}
+
+		reallocate(NULL, 
+			0, 
+			0, 
+			0, 
+			w, 
+			h, 
+			new_color_model,
+			-1);
+
+		png_read_image(png_ptr, get_rows());
+
+
+
+		if(src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
+		{
+			for(int i = 0; i < get_h(); i++)
 			{
-				out_ptr[0] = in_ptr[0];
-				out_ptr[1] = in_ptr[0];
-				out_ptr[2] = in_ptr[0];
-				out_ptr[3] = in_ptr[1];
-				out_ptr -= 4;
-				in_ptr -= 2;
+				unsigned char *row = get_rows()[i];
+				unsigned char *out_ptr = row + get_w() * 4 - 4;
+				unsigned char *in_ptr = row + get_w() * 2 - 2;
+
+				for(int j = get_w() - 1; j >= 0; j--)
+				{
+					out_ptr[0] = in_ptr[0];
+					out_ptr[1] = in_ptr[0];
+					out_ptr[2] = in_ptr[0];
+					out_ptr[3] = in_ptr[1];
+					out_ptr -= 4;
+					in_ptr -= 2;
+				}
 			}
 		}
-	}
 
-	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+	}
+	else
+	{
+		printf("VFrame::read_png %d: unknown file format 0x%02x 0x%02x 0x%02x 0x%02x\n", 
+			__LINE__,
+			data[4],
+			data[5],
+			data[6],
+			data[7]);
+	}
 	return 0;
 }
 
@@ -726,7 +829,7 @@ int VFrame::copy_from(VFrame *frame)
 				if(j + out_x1 >= 0 && j + out_x1 < w) \
 				{ \
 					int opacity = src_row[3]; \
-					int transparency = max - src_row[3]; \
+					int transparency = dst_row[3] * (max - src_row[3]) / max; \
 					dst_row[0] = (transparency * dst_row[0] + opacity * src_row[0]) / max; \
 					dst_row[1] = (transparency * dst_row[1] + opacity * src_row[1]) / max; \
 					dst_row[2] = (transparency * dst_row[2] + opacity * src_row[2]) / max; \
@@ -839,7 +942,7 @@ long VFrame::get_number()
 	return sequence_number;
 }
 
-void VFrame::push_prev_effect(char *name)
+void VFrame::push_prev_effect(const char *name)
 {
 	char *ptr;
 	prev_effects.append(ptr = new char[strlen(name) + 1]);
@@ -853,7 +956,7 @@ void VFrame::pop_prev_effect()
 		prev_effects.remove_object(prev_effects.last());
 }
 
-void VFrame::push_next_effect(char *name)
+void VFrame::push_next_effect(const char *name)
 {
 	char *ptr;
 	next_effects.append(ptr = new char[strlen(name) + 1]);
@@ -867,7 +970,7 @@ void VFrame::pop_next_effect()
 		next_effects.remove_object(next_effects.last());
 }
 
-char* VFrame::get_next_effect(int number)
+const char* VFrame::get_next_effect(int number)
 {
 	if(!next_effects.total) return "";
 	else
@@ -876,7 +979,7 @@ char* VFrame::get_next_effect(int number)
 	return next_effects.values[next_effects.total - number - 1];
 }
 
-char* VFrame::get_prev_effect(int number)
+const char* VFrame::get_prev_effect(int number)
 {
 	if(!prev_effects.total) return "";
 	else
@@ -929,10 +1032,12 @@ int VFrame::equal_stacks(VFrame *src)
 	{
 		if(strcmp(src->next_effects.values[i], next_effects.values[i])) return 0;
 	}
+
 	for(int i = 0; i < src->prev_effects.total && i < prev_effects.total; i++)
 	{
 		if(strcmp(src->prev_effects.values[i], prev_effects.values[i])) return 0;
 	}
+
 	if(!params->equivalent(src->params)) return 0;
 	return 1;
 }

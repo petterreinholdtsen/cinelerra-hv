@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/whirl.o
 
-OUTPUT = ../$(OBJDIR)/whirl.plugin
+OUTPUT = $(PLUGIN_DIR)/whirl.plugin
 
 include ../../plugin_config
 

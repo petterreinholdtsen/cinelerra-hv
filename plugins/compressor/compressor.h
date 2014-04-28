@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef COMPRESSOR_H
 #define COMPRESSOR_H
 
@@ -101,24 +122,23 @@ public:
 	CompressorInput(CompressorEffect *plugin, int x, int y);
 	void create_objects();
 	int handle_event();
-	static char* value_to_text(int value);
+	static const char* value_to_text(int value);
 	static int text_to_value(char *text);
 	CompressorEffect *plugin;
 };
 
 
 
-class CompressorWindow : public BC_Window
+class CompressorWindow : public PluginClientWindow
 {
 public:
-	CompressorWindow(CompressorEffect *plugin, int x, int y);
+	CompressorWindow(CompressorEffect *plugin);
 	void create_objects();
 	void update();
 	void update_textboxes();
 	void update_canvas();
-	int close_event();
 	void draw_scales();
-	
+	int resize_event(int w, int h);	
 	
 	CompressorCanvas *canvas;
 	CompressorReaction *reaction;
@@ -132,7 +152,6 @@ public:
 	CompressorEffect *plugin;
 };
 
-PLUGIN_THREAD_HEADER(CompressorEffect, CompressorThread, CompressorWindow)
 
 
 typedef struct
@@ -208,7 +227,7 @@ public:
 	void update_gui();
 	void delete_dsp();
 
-	PLUGIN_CLASS_MEMBERS(CompressorConfig, CompressorThread)
+	PLUGIN_CLASS_MEMBERS(CompressorConfig)
 
 // The raw input data for each channel with readahead
 	double **input_buffer;

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "batch.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -199,7 +220,7 @@ ChannelEditWindow::~ChannelEditWindow()
 	delete scan_confirm_thread;
 }
 
-int ChannelEditWindow::create_objects()
+void ChannelEditWindow::create_objects()
 {
 	int x = 10, y = 10, i;
 	char string[1024];
@@ -248,7 +269,6 @@ int ChannelEditWindow::create_objects()
 		channel_picker);
 	picture_thread = new ChannelEditPictureThread(channel_picker, this);
 	show_window();
-	return 0;
 }
 
 int ChannelEditWindow::close_event()
@@ -481,6 +501,7 @@ int ChannelEditWindow::change_channel_from_list(int channel_number)
 ChannelEditSelect::ChannelEditSelect(ChannelEditWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Select"))
 {
+	this->window = window;
 }
 ChannelEditSelect::~ChannelEditSelect()
 {
@@ -987,7 +1008,7 @@ ChannelEditEditWindow::ChannelEditEditWindow(ChannelEditEditThread *thread,
 ChannelEditEditWindow::~ChannelEditEditWindow()
 {
 }
-int ChannelEditEditWindow::create_objects(Channel *channel)
+void ChannelEditEditWindow::create_objects(Channel *channel)
 {
 	this->new_channel = channel;
 	Channel *channel_usage = channel_picker->get_channel_usage();
@@ -1071,7 +1092,6 @@ SET_TRACE
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 SET_TRACE
-	return 0;
 }
 
 ChannelEditEditTitle::ChannelEditEditTitle(int x, 
@@ -1437,7 +1457,7 @@ int ChannelEditPictureWindow::calculate_h(ChannelPicker *channel_picker)
 	return result;
 }
 
-int ChannelEditPictureWindow::create_objects()
+void ChannelEditPictureWindow::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = 110, x2 = 145;
@@ -1524,7 +1544,6 @@ SET_TRACE
 
 	y += pad;
 	add_subwindow(new BC_OKButton(this));
-	return 0;
 }
 
 

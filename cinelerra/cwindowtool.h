@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef CWINDOWTOOL_H
 #define CWINDOWTOOL_H
 
@@ -5,6 +26,7 @@
 #include "cwindowgui.inc"
 #include "guicast.h"
 #include "maskauto.inc"
+#include "maskautos.inc"
 #include "mwindow.inc"
 
 
@@ -29,6 +51,7 @@ public:
 
 	void run();
 	void update_show_window();
+	void raise_window();
 	void update_values();
 
 	MWindow *mwindow;
@@ -47,7 +70,7 @@ class CWindowToolGUI : public BC_Window
 public:
 	CWindowToolGUI(MWindow *mwindow, 
 		CWindowTool *thread, 
-		char *title,
+		const char *title,
 		int w, 
 		int h);
 	~CWindowToolGUI();
@@ -107,7 +130,7 @@ public:
 class CWindowMaskMode : public BC_PopupMenu
 {
 public:
-	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, char *text);
+	CWindowMaskMode(MWindow *mwindow, CWindowToolGUI *gui, int x, int y, const char *text);
 	void create_objects();
 	int handle_event();
 	static char* mode_to_text(int mode);
@@ -184,6 +207,7 @@ public:
 	void update();
 	void handle_event();
 	void get_keyframe(Track* &track, 
+		MaskAutos* &autos,
 		MaskAuto* &keyframe, 
 		SubMask* &mask, 
 		MaskPoint* &point,
@@ -352,6 +376,26 @@ public:
 	int handle_event();
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
+};
+
+
+
+
+class CWindowRulerGUI : public CWindowToolGUI
+{
+public:
+	CWindowRulerGUI(MWindow *mwindow, CWindowTool *thread);
+	~CWindowRulerGUI();
+	void create_objects();
+	void update();
+// Update the gui
+	void handle_event();
+	
+	BC_Title *current;
+	BC_Title *point1;
+	BC_Title *point2;
+	BC_Title *distance;
+	BC_Title *angle;
 };
 
 

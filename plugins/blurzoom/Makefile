@@ -5,7 +5,7 @@ include ../../global_config
 OBJS = $(OBJDIR)/blurzoom.o  \
 	$(OBJDIR)/blurzoomwindow.o
 
-OUTPUT = ../$(OBJDIR)/blurzoom.plugin
+OUTPUT = $(PLUGIN_DIR)/blurzoom.plugin
 
 include ../../plugin_config
 

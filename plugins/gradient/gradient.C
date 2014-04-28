@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -127,22 +148,18 @@ int GradientConfig::get_out_color()
 
 
 
-PLUGIN_THREAD_OBJECT(GradientMain, GradientThread, GradientWindow)
 
 
 #define COLOR_W 100
 #define COLOR_H 30
 
-GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
+GradientWindow::GradientWindow(GradientMain *plugin)
+ : PluginClientWindow(plugin,
 	350, 
 	290, 
 	350, 
 	290, 
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin;
 	angle = 0;
@@ -159,7 +176,7 @@ GradientWindow::~GradientWindow()
 	delete out_color_thread;
 }
 
-int GradientWindow::create_objects()
+void GradientWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -201,7 +218,6 @@ int GradientWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
 void GradientWindow::update_shape()
@@ -246,12 +262,8 @@ void GradientWindow::update_shape()
 	}
 }
 
-int GradientWindow::close_event()
-{
-// Set result to 1 to indicate a plugin side close
-	set_done(1);
-	return 1;
-}
+
+
 
 void GradientWindow::update_in_color()
 {
@@ -497,8 +509,11 @@ int GradientInColorThread::handle_new_color(int output, int alpha)
 	plugin->config.in_g = (output & 0xff00) >> 8;
 	plugin->config.in_b = (output & 0xff);
 	plugin->config.in_a = alpha;
+	
+	window->lock_window("GradientInColorThread::handle_new_color");
 	window->update_in_color();
 	window->flush();
+	window->unlock_window();
 	plugin->send_configure_change();
 // printf("GradientInColorThread::handle_event 1 %d %d %d %d %d %d %d %d\n",
 // plugin->config.in_r,
@@ -529,8 +544,10 @@ int GradientOutColorThread::handle_new_color(int output, int alpha)
 	plugin->config.out_g = (output & 0xff00) >> 8;
 	plugin->config.out_b = (output & 0xff);
 	plugin->config.out_a = alpha;
+	window->lock_window("GradientOutColorThread::handle_new_color");
 	window->update_out_color();
 	window->flush();
+	window->unlock_window();
 	plugin->send_configure_change();
 // printf("GradientOutColorThread::handle_event 1 %d %d %d %d %d %d %d %d\n",
 // plugin->config.in_r,
@@ -558,7 +575,7 @@ int GradientOutColorThread::handle_new_color(int output, int alpha)
 GradientMain::GradientMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	need_reconfigure = 1;
 	gradient = 0;
 	engine = 0;
@@ -567,24 +584,19 @@ GradientMain::GradientMain(PluginServer *server)
 
 GradientMain::~GradientMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(gradient) delete gradient;
 	if(engine) delete engine;
 	if(overlayer) delete overlayer;
 }
 
-char* GradientMain::plugin_title() { return N_("Gradient"); }
+const char* GradientMain::plugin_title() { return N_("Gradient"); }
 int GradientMain::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(GradientMain)
-
-SHOW_GUI_MACRO(GradientMain, GradientThread)
-
-SET_STRING_MACRO(GradientMain)
-
-RAISE_WINDOW_MACRO(GradientMain)
+NEW_WINDOW_MACRO(GradientMain, GradientWindow)
 
 LOAD_CONFIGURATION_MACRO(GradientMain, GradientConfig)
 
@@ -674,23 +686,23 @@ void GradientMain::update_gui()
 	{
 		if(load_configuration())
 		{
-			thread->window->lock_window("GradientMain::update_gui");
-			thread->window->rate->set_text(GradientRate::to_text(config.rate));
-			thread->window->in_radius->update(config.in_radius);
-			thread->window->out_radius->update(config.out_radius);
-			thread->window->shape->set_text(GradientShape::to_text(config.shape));
-			if(thread->window->angle)
-				thread->window->angle->update(config.angle);
-			if(thread->window->center_x)
-				thread->window->center_x->update(config.center_x);
-			if(thread->window->center_y)
-				thread->window->center_y->update(config.center_y);
-			thread->window->update_in_color();
-			thread->window->update_out_color();
-			thread->window->update_shape();
-			thread->window->unlock_window();
-			thread->window->in_color_thread->update_gui(config.get_in_color(), config.in_a);
-			thread->window->out_color_thread->update_gui(config.get_out_color(), config.out_a);
+			((GradientWindow*)thread->window)->lock_window("GradientMain::update_gui");
+			((GradientWindow*)thread->window)->rate->set_text(GradientRate::to_text(config.rate));
+			((GradientWindow*)thread->window)->in_radius->update(config.in_radius);
+			((GradientWindow*)thread->window)->out_radius->update(config.out_radius);
+			((GradientWindow*)thread->window)->shape->set_text(GradientShape::to_text(config.shape));
+			if(((GradientWindow*)thread->window)->angle)
+				((GradientWindow*)thread->window)->angle->update(config.angle);
+			if(((GradientWindow*)thread->window)->center_x)
+				((GradientWindow*)thread->window)->center_x->update(config.center_x);
+			if(((GradientWindow*)thread->window)->center_y)
+				((GradientWindow*)thread->window)->center_y->update(config.center_y);
+			((GradientWindow*)thread->window)->update_in_color();
+			((GradientWindow*)thread->window)->update_out_color();
+			((GradientWindow*)thread->window)->update_shape();
+			((GradientWindow*)thread->window)->unlock_window();
+			((GradientWindow*)thread->window)->in_color_thread->update_gui(config.get_in_color(), config.in_a);
+			((GradientWindow*)thread->window)->out_color_thread->update_gui(config.get_out_color(), config.out_a);
 		}
 	}
 }
@@ -758,7 +770,7 @@ void GradientMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("GRADIENT");
 
 	output.tag.set_property("ANGLE", config.angle);
@@ -784,7 +796,7 @@ void GradientMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef EDITPANEL_H
 #define EDITPANEL_H
 
@@ -280,6 +301,42 @@ public:
 	int is_mwindow;
 };
 
+class EditPrevEdit : public BC_Button
+{
+public:
+	EditPrevEdit(MWindow *mwindow, 
+		EditPanel *panel, 
+		int x, 
+		int y,
+		int is_mwindow);
+	~EditPrevEdit();
+
+	int keypress_event();
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPanel *panel;
+	int is_mwindow;
+};
+
+class EditNextEdit : public BC_Button
+{
+public:
+	EditNextEdit(MWindow *mwindow, 
+		EditPanel *panel, 
+		int x, 
+		int y,
+		int is_mwindow);
+	~EditNextEdit();
+
+	int keypress_event();
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPanel *panel;
+	int is_mwindow;
+};
+
 
 class ArrowButton : public BC_Toggle
 {
@@ -338,7 +395,7 @@ public:
 	void delete_buttons();
 	void create_buttons();
 	void reposition_buttons(int x, int y);
-	int create_objects();
+	void create_objects();
 	int get_w();
 	virtual void copy_selection();
 	virtual void splice_selection();
@@ -351,6 +408,8 @@ public:
 	virtual void toggle_label();
 	virtual void prev_label();
 	virtual void next_label();
+	virtual void prev_edit();
+	virtual void next_edit();
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
@@ -391,6 +450,8 @@ public:
 	EditLabelbutton *labelbutton;
 	EditPrevLabel *prevlabel;
 	EditNextLabel *nextlabel;
+	EditPrevEdit *prevedit;
+	EditNextEdit *nextedit;
 	EditUndo *undo;
 	EditRedo *redo;
 	MeterShow *meters;

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #define GL_GLEXT_PROTOTYPES
 
 #include "bcpbuffer.h"
@@ -190,13 +211,10 @@ printf("VFrame::to_ram %d %d\n", get_w(), get_h());
 
 void VFrame::create_pbuffer()
 {
-SET_TRACE
 	if(pbuffer && 
 		pbuffer->window_id != BC_WindowBase::get_synchronous()->current_window->get_id())
 	{
-SET_TRACE
 		delete pbuffer;
-SET_TRACE
 		pbuffer = 0;
 	}
 
@@ -206,12 +224,10 @@ SET_TRACE
 		return;
 	}
 
-SET_TRACE
 	if(!pbuffer)
 	{
 		pbuffer = new BC_PBuffer(get_w(), get_h());
 	}
-SET_TRACE
 }
 
 void VFrame::enable_opengl()
@@ -420,17 +436,12 @@ unsigned int VFrame::make_shader(int x, ...)
 		char *text = va_arg(list, char*);
 		if(!text) break;
 
-SET_TRACE
 // Replace one occurrance in each source of main() with a unique id.
 		char main_replacement[BCTEXTLEN];
-SET_TRACE
 		sprintf(main_replacement, "main%03d()", current_shader);
 //printf("VFrame::make_shader %s %s\n", text, main_replacement);
-SET_TRACE
 		char *source_replacement = new char[strlen(text) + strlen(main_replacement) + 1];
-SET_TRACE
 		char *ptr = strstr(text, "main()");
-SET_TRACE
 
 		if(ptr)
 		{
@@ -446,7 +457,6 @@ SET_TRACE
 			memcpy(source_replacement, text, strlen(text));
 			source_replacement[strlen(text)] = 0;
 		}
-SET_TRACE
 
 		if(!complete_program)
 		{
@@ -462,7 +472,6 @@ SET_TRACE
 		}
 
 		delete [] source_replacement;
-SET_TRACE
 	}
 
 // Add main() function which calls all the unique main replacements in order

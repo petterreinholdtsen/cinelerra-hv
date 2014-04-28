@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "chromakey.h"
@@ -83,17 +104,13 @@ int ChromaKeyConfig::get_color()
 
 
 
-ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+ChromaKeyWindow::ChromaKeyWindow(ChromaKey *plugin)
+ : PluginClientWindow(plugin, 
 	320, 
 	220, 
 	320, 
 	220, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 	color_thread = 0;
@@ -155,7 +172,6 @@ void ChromaKeyWindow::update_sample()
 
 
 
-WINDOW_CLOSE_EVENT(ChromaKeyWindow)
 
 
 
@@ -287,7 +303,6 @@ int ChromaKeyColorThread::handle_new_color(int output, int alpha)
 
 
 
-PLUGIN_THREAD_OBJECT(ChromaKey, ChromaKeyThread, ChromaKeyWindow)
 
 
 ChromaKeyServer::ChromaKeyServer(ChromaKey *plugin)
@@ -515,13 +530,13 @@ REGISTER_PLUGIN(ChromaKey)
 ChromaKey::ChromaKey(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 }
 
 ChromaKey::~ChromaKey()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	delete engine;
 }
 
@@ -558,9 +573,10 @@ SET_TRACE
 	return 1;
 }
 
-char* ChromaKey::plugin_title() { return N_("Chroma key"); }
+const char* ChromaKey::plugin_title() { return N_("Chroma key"); }
 int ChromaKey::is_realtime() { return 1; }
 
+NEW_WINDOW_MACRO(ChromaKey, ChromaKeyWindow)
 NEW_PICON_MACRO(ChromaKey)
 
 LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
@@ -603,7 +619,7 @@ SET_TRACE
 void ChromaKey::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("CHROMAKEY");
 	output.tag.set_property("RED", config.red);
 	output.tag.set_property("GREEN", config.green);
@@ -619,7 +635,7 @@ void ChromaKey::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while(!input.read_tag())
 	{
@@ -636,11 +652,6 @@ void ChromaKey::read_data(KeyFrame *keyframe)
 }
 
 
-SHOW_GUI_MACRO(ChromaKey, ChromaKeyThread)
-
-SET_STRING_MACRO(ChromaKey)
-
-RAISE_WINDOW_MACRO(ChromaKey)
 
 void ChromaKey::update_gui()
 {
@@ -648,10 +659,10 @@ void ChromaKey::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->threshold->update(config.threshold);
-		thread->window->slope->update(config.slope);
-		thread->window->use_value->update(config.use_value);
-		thread->window->update_sample();
+		((ChromaKeyWindow*)thread->window)->threshold->update(config.threshold);
+		((ChromaKeyWindow*)thread->window)->slope->update(config.slope);
+		((ChromaKeyWindow*)thread->window)->use_value->update(config.use_value);
+		((ChromaKeyWindow*)thread->window)->update_sample();
 
 		thread->window->unlock_window();
 	}

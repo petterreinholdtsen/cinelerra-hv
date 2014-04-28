@@ -11,7 +11,86 @@
 #include <string.h>
 
 #define MPEG3_SEQUENCE_START_CODE        0x000001b3
-#define BUFFER_SIZE            1000000
+#define AC3_START_CODE 0x0b77
+#define BUFFER_SIZE            0x100000
+
+unsigned char *output_buffer = 0;
+int64_t output_buffer_size = 0;
+int64_t output_scan_offset = 0;
+FILE *out = 0;
+int got_start = 0;
+int do_audio = 0;
+int do_video = 0;
+
+// Check for first start code before writing out
+static int write_output(unsigned char *data, int size, mpeg3_t *fd)
+{
+// Already got start code so write data directly
+// Or user doesn't want to extract an elementary stream
+	if(got_start || (!do_audio && !do_video) || fd->is_bd)
+	{
+		return fwrite(data, size, 1, out);
+	}
+	else
+// Buffer until start code
+	{
+		uint32_t code = 0xffffffff;
+		output_buffer = realloc(output_buffer, output_buffer_size + size);
+		memcpy(output_buffer + output_buffer_size, data, size);
+		output_buffer_size += size;
+
+		if(output_buffer_size >= 4)
+		{
+			if(do_video)
+			{
+				while(output_scan_offset < output_buffer_size && !got_start)
+				{
+					code = (code << 8) | output_buffer[output_scan_offset++];
+					if(code == MPEG3_SEQUENCE_START_CODE)
+					{
+						got_start = 1;
+					}
+				}
+
+				output_scan_offset -= 4;
+			}
+			else
+// Only scan for AC3 start code since we can't scan for mp2 start codes.
+// It must occur in the first 2048 bytes or we give up.
+			{
+				while(output_scan_offset < output_buffer_size && 
+					output_scan_offset < 2048 &&
+					!got_start)
+				{
+					code = ((code & 0xff) << 8) | output_buffer[output_scan_offset++];
+					if(code == AC3_START_CODE)
+					{
+						got_start = 1;
+					}
+				}
+
+				if(got_start)
+					output_scan_offset -= 2;
+				else
+				if(output_scan_offset >= 2048)
+				{
+					output_scan_offset = 0;
+					got_start = 1;
+				}
+				else
+					output_scan_offset -= 2;
+			}
+
+			if(got_start)
+			{
+    		   return fwrite(output_buffer + output_scan_offset, 
+					output_buffer_size - output_scan_offset, 1, out);
+			}
+		}
+	}
+
+	return 1;
+}
 
 int main(int argc, char *argv[])
 {
@@ -19,17 +98,17 @@ int main(int argc, char *argv[])
 	char *inpaths[argc];
 	int total_infiles = 0;
 	mpeg3_t *in;
-	FILE *out;
 	int out_counter = 0;
 	int current_file, current_output_file = 0, i;
 	unsigned int bits;
-	unsigned char *buffer;
+	unsigned char *buffer = 0;
 	long output_size;
 	int result = 0;
-	long total_frames = 0;
-	int do_audio = 0, do_video = 0;
+	int64_t total_frames = 0;
 	int stream = 0;
 	int64_t total_written = 0;
+
+	buffer = malloc(BUFFER_SIZE);
 
 	if(argc < 2)
 	{
@@ -90,7 +169,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	buffer = malloc(BUFFER_SIZE);
 	if(outpath[0])
 	{
 		if(!(out = fopen(outpath, "wb")))
@@ -129,7 +207,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			mpeg3demux_seek_byte(in->atrack[stream]->demuxer, 0);
+			mpeg3demux_seek_byte(in->atrack[stream]->demuxer, MPEG3_START_BYTE);
 //			mpeg3bits_refill(in->atrack[stream]->audio->astream);
 //printf("mpeg3cat 1\n");
 			while(!mpeg3_read_audio_chunk(in, 
@@ -139,10 +217,10 @@ int main(int argc, char *argv[])
 				stream))
 			{
 //printf("mpeg3cat 2 0x%x\n", output_size);
-				result = !fwrite(buffer, output_size, 1, out);
+				result = !write_output(buffer, output_size, in);
 				if(result)
 				{
-					perror("fwrite audio chunk");
+					perror("write audio chunk");
 					break;
 				}
 			}
@@ -154,19 +232,19 @@ int main(int argc, char *argv[])
 			(do_video && !in->is_video_stream && !in->is_audio_stream))
 		{
 /* Add video stream to end */
-			int hour, minute, second, frame;
-			long gop_frame;
-			unsigned long code;
+			int64_t hour, minute, second, frame;
+			int64_t gop_frame;
+			uint32_t code;
 			float carry;
 			int i, offset;
 			
 			if(stream >= in->total_vstreams)
 			{
-				fprintf(stderr, "No audio stream %d\n", stream);
+				fprintf(stderr, "No video stream %d\n", stream);
 				exit(1);
 			}
 
-			mpeg3demux_seek_byte(in->vtrack[stream]->demuxer, 0);
+			mpeg3demux_seek_byte(in->vtrack[stream]->demuxer, MPEG3_START_BYTE);
 			mpeg3bits_refill(in->vtrack[stream]->video->vstream);
 			do_video = 1;
 			while(!mpeg3_read_video_chunk(in, 
@@ -176,10 +254,10 @@ int main(int argc, char *argv[])
 				stream) &&
 				output_size >= 4)
 			{
-				code = (unsigned long)buffer[output_size - 4] << 24; 
-				code |= (unsigned long)buffer[output_size - 3] << 16; 
-				code |= (unsigned long)buffer[output_size - 2] << 8; 
-				code |= (unsigned long)buffer[output_size - 1]; 
+				code = (uint32_t)buffer[output_size - 4] << 24; 
+				code |= (uint32_t)buffer[output_size - 3] << 16; 
+				code |= (uint32_t)buffer[output_size - 2] << 8; 
+				code |= (uint32_t)buffer[output_size - 1]; 
 
 /* Got a frame at the end of this buffer. */
 				if(code == MPEG3_PICTURE_START_CODE)
@@ -193,9 +271,9 @@ int main(int argc, char *argv[])
 					output_size -= 4;
 				}
 
-				code = (unsigned long)buffer[0] << 24;
-				code |= (unsigned long)buffer[1] << 16;
-				code |= (unsigned long)buffer[2] << 8;
+				code = (uint32_t)buffer[0] << 24;
+				code |= (uint32_t)buffer[1] << 16;
+				code |= (uint32_t)buffer[2] << 8;
 				code |= buffer[3];
 
 				i = 0;
@@ -215,9 +293,9 @@ int main(int argc, char *argv[])
 				}
 
 /* Search for GOP header to fix */
-				code = (unsigned long)buffer[i++] << 24;
-				code |= (unsigned long)buffer[i++] << 16;
-				code |= (unsigned long)buffer[i++] << 8;
+				code = (uint32_t)buffer[i++] << 24;
+				code |= (uint32_t)buffer[i++] << 16;
+				code |= (uint32_t)buffer[i++] << 8;
 				code |= buffer[i++];
 				while(i < output_size &&
 					code != MPEG3_GOP_START_CODE)
@@ -229,27 +307,27 @@ int main(int argc, char *argv[])
 				if(code == MPEG3_GOP_START_CODE)
 				{
 /* Get the time code */
-					code = (unsigned long)buffer[i] << 24;
-					code |= (unsigned long)buffer[i + 1] << 16;
-					code |= (unsigned long)buffer[i + 2] << 8;
-					code |= (unsigned long)buffer[i + 3];
+					code = (uint32_t)buffer[i] << 24;
+					code |= (uint32_t)buffer[i + 1] << 16;
+					code |= (uint32_t)buffer[i + 2] << 8;
+					code |= (uint32_t)buffer[i + 3];
 
 					hour = code >> 26 & 0x1f;
 					minute = code >> 20 & 0x3f;
 					second = code >> 13 & 0x3f;
 					frame = code >> 7 & 0x3f;
 
-					gop_frame = (long)(hour * 3600 * mpeg3_frame_rate(in, stream) +
+					gop_frame = (int64_t)(hour * 3600 * mpeg3_frame_rate(in, stream) +
 							minute * 60 * mpeg3_frame_rate(in, stream) +
 							second * mpeg3_frame_rate(in, stream) + 
 							frame);
 /* fprintf(stderr, "old: %02d:%02d:%02d:%02d ", hour, minute, second, frame); */
 /* Write a new time code */
-					hour = (long)((float)(total_frames - 1) / mpeg3_frame_rate(in, stream) / 3600);
+					hour = (int64_t)((float)(total_frames - 1) / mpeg3_frame_rate(in, stream) / 3600);
 					carry = hour * 3600 * mpeg3_frame_rate(in, stream);
-					minute = (long)((float)(total_frames - 1 - carry) / mpeg3_frame_rate(in, stream) / 60);
+					minute = (int64_t)((float)(total_frames - 1 - carry) / mpeg3_frame_rate(in, stream) / 60);
 					carry += minute * 60 * mpeg3_frame_rate(in, stream);
-					second = (long)((float)(total_frames - 1 - carry) / mpeg3_frame_rate(in, stream));
+					second = (int64_t)((float)(total_frames - 1 - carry) / mpeg3_frame_rate(in, stream));
 					carry += second * mpeg3_frame_rate(in, stream);
 					frame = (total_frames - 1 - carry);
 
@@ -285,16 +363,18 @@ int main(int argc, char *argv[])
  */
 
 /* Write the frame */
-				result = !fwrite(buffer + offset, output_size - offset, 1, out);
+				result = !write_output(buffer + offset, output_size - offset, in);
 				if(result)
 				{
-					perror("fwrite video chunk");
+					perror("write video chunk");
 					break;
 				}
 			}
 		}
 		else
 /* Output program stream */
+/* In real life, program streams ended up having discontinuities in time codes */
+/* so this isn't being maintained anymore. */
 		if(in->is_program_stream)
 		{
 			mpeg3_demuxer_t *demuxer = in->vtrack[0]->demuxer;
@@ -302,8 +382,7 @@ int main(int argc, char *argv[])
 
 /* Append program stream with no changes */
 			demuxer->read_all = 1;
-			mpeg3demux_seek_byte(demuxer, 0);
-//			mpeg3demux_seek_byte(demuxer, 83886080);
+			mpeg3demux_seek_byte(demuxer, MPEG3_START_BYTE);
 
 
 			while(!result)
@@ -355,21 +434,18 @@ int main(int argc, char *argv[])
 // Write it
 				if(!result)
 				{
-					result = !fwrite(raw_data, 
-							raw_size, 
-							1, 
-							out);
+					result = !write_output(raw_data, raw_size, in);
 					total_written += raw_size;
-					if(result) fprintf(stderr, "%s\n", strerror(errno));
+					if(result) fprintf(stderr, "write program stream: %s\n", strerror(errno));
 				}
 
 				free(raw_data);
 			}
 		}
 		else
-/* No transport stream support, yet */
+/* No transport stream support, since these can be catted */
 		{
-			fprintf(stderr, "Unsupported stream type.\n");
+			fprintf(stderr, "No catting of transport streams.\n");
 			mpeg3_close(in);
 			in = 0;
 			continue;
@@ -380,17 +456,21 @@ int main(int argc, char *argv[])
 		current_output_file++;
 	}
 
+#ifdef TODO
 /* Terminate output */
 	if(current_output_file > 0 && do_video)
 	{
-/*fprintf(stderr, "\n"); */
 /* Write new end of sequence */
+/* Not very useful */
 		buffer[0] = MPEG3_SEQUENCE_END_CODE >> 24;
 		buffer[1] = (MPEG3_SEQUENCE_END_CODE >> 16) & 0xff;
 		buffer[2] = (MPEG3_SEQUENCE_END_CODE >> 8) & 0xff;
 		buffer[3] = MPEG3_SEQUENCE_END_CODE & 0xff;
-		result = !fwrite(buffer, 4, 1, out);
+		result = !write_output(buffer, 4, in);
 	}
+#endif
+
+
 	if(outpath[0]) fclose(out);
 
 	exit(0);

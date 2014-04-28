@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "clip.h"
 #include "cwindowgui.h"
@@ -45,7 +66,7 @@ SUVMain::~SUVMain()
 {
 }
 
-char* SUVMain::plugin_title()
+const char* SUVMain::plugin_title()
 {
 	return "S.U.V.";
 }
@@ -124,7 +145,57 @@ void SUV::initialize()
 	resources->directory_color = 0xa0a0ff;
 
 
-	
+	new_toggle("loadmode_new.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_new");
+	new_toggle("loadmode_none.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_none");
+	new_toggle("loadmode_newcat.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_newcat");
+	new_toggle("loadmode_cat.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_cat");
+	new_toggle("loadmode_newtracks.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_newtracks");
+	new_toggle("loadmode_paste.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_paste");
+	new_toggle("loadmode_resource.png", 
+		"loadmode_up.png",
+		"loadmode_hi.png",
+		"loadmode_checked.png",
+		"loadmode_dn.png",
+		"loadmode_checkedhi.png",
+		"loadmode_resource");
+
+
 
 	resources->filebox_icons_images = new_button("icons.png",
 		"fileboxbutton_up.png",
@@ -306,6 +377,7 @@ void SUV::initialize()
 			"vscroll_right_up.png",
 			"vscroll_right_hi.png",
 			"vscroll_right_dn.png");
+	resources->scroll_minhandle = 20;
 
 
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
@@ -398,7 +470,7 @@ void SUV::initialize()
 	setformat_channels_w = 250;
 	setformat_channels_h = 250;
 
-	loadfile_pad = 50;
+	loadfile_pad = get_image_set("loadmode_new")[0]->get_h() + 10;
 	browse_pad = 20;
 
 
@@ -507,11 +579,13 @@ void SUV::initialize()
 	new_button("magnify.png", editpanel_up, editpanel_hi, editpanel_dn, "magnify_button");
 	new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "middle_justify");
 	new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "nextlabel");
+	new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "prevlabel");
+	new_button("nextedit.png", editpanel_up, editpanel_hi, editpanel_dn, "nextedit");
+	new_button("prevedit.png", editpanel_up, editpanel_hi, editpanel_dn, "prevedit");
 	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
 	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
 	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
 	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
-	new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "prevlabel");
 	new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn, "redo");
 	new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "right_justify");
 	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
@@ -596,6 +670,7 @@ void SUV::initialize()
 	new_toggle("eyedrop.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "eyedrop");
 	new_toggle("magnify.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "magnify");
 	new_toggle("mask.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "mask");
+	new_toggle("ruler.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "ruler");
 	new_toggle("projector.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "projector");
 	new_toggle("protect.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "protect");
 	new_toggle("titlesafe.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "titlesafe");

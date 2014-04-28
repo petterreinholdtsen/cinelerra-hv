@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "apatchgui.h"
 #include "apatchgui.inc"
 #include "atrack.h"
@@ -45,9 +66,9 @@ APatchGUI::~APatchGUI()
 	if(pan) delete pan;
 }
 
-int APatchGUI::create_objects()
+void APatchGUI::create_objects()
 {
-	return update(x, y);
+	update(x, y);
 }
 
 int APatchGUI::reposition(int x, int y)
@@ -218,14 +239,14 @@ float AFadePatch::update_edl()
 	Autos *fade_autos = patch->atrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
+	mwindow->undo->update_undo_before(_("fade"), need_undo ? 0 : this);
+
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
 	float result = get_value() - current->value;
 	current->value = get_value();
 
-	mwindow->undo->update_undo(_("fade"), 
-		LOAD_AUTOMATION, 
-		need_undo ? 0 : this);
+	mwindow->undo->update_undo_after(_("fade"), LOAD_AUTOMATION);
 
 	return result;
 }
@@ -241,7 +262,7 @@ int AFadePatch::handle_event()
 
 	patch->change_source = 1;
 	float change = update_edl();
-	if(patch->track->gang) 
+	if(patch->track->gang && patch->track->record) 
 		patch->patchbay->synchronize_faders(change, TRACK_AUDIO, patch->track);
 	patch->change_source = 0;
 
@@ -293,13 +314,15 @@ int APanPatch::handle_event()
 	Autos *pan_autos = patch->atrack->automation->autos[AUTOMATION_PAN];
 	int need_undo = !pan_autos->auto_exists_for_editing(position);
 
+	mwindow->undo->update_undo_before(_("pan"), need_undo ? 0 : this);
+	
 	current = (PanAuto*)pan_autos->get_auto_for_editing(position);
 
 	current->handle_x = get_stick_x();
 	current->handle_y = get_stick_y();
 	memcpy(current->values, get_values(), sizeof(float) * mwindow->edl->session->audio_channels);
 
-	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
+	mwindow->undo->update_undo_after(_("pan"), LOAD_AUTOMATION);
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 

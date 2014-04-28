@@ -26,7 +26,7 @@ LFLAGS += -L/usr/X11R6/lib64
 endif
 
 
-$(shell sh -c 'if ! test -d $(OBJDIR)\; then mkdir $(OBJDIR)\; fi' )
+$(shell mkdir -p $(OBJDIR) )
 
 OBJS = \
 	$(OBJDIR)/bcbar.o \
@@ -37,6 +37,7 @@ OBJS = \
 	$(OBJDIR)/bcclipboard.o \
 	$(OBJDIR)/bcdelete.o \
 	$(OBJDIR)/bcdialog.o \
+	$(OBJDIR)/bcdisplay.o \
 	$(OBJDIR)/bcdisplayinfo.o \
 	$(OBJDIR)/bcdragwindow.o \
 	$(OBJDIR)/bcfilebox.o \
@@ -103,8 +104,9 @@ TESTLIBS := \
 		-lXv \
 		-lpthread \
 		-lm \
-		-lXxf86vm \
 		-lpng
+
+#		-lXxf86vm \
 
 ifeq ($(HAVE_XFT), y)
 TESTLIBS += -lXft
@@ -114,7 +116,7 @@ ifeq ($(HAVE_GL), y)
 TESTLIBS += -lGL
 endif
 
-UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh
+UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh $(OBJDIR)/pngtoraw
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(OBJS) $(CXXREPOSITORY) > $(OBJDIR)/objs)
@@ -130,16 +132,22 @@ $(STATICOUTPUT): $(OBJS)
 $(OBJDIR)/bootstrap:
 	gcc -O2 $(BOOTSTRAPFLAGS) bootstrap.c -o $(OBJDIR)/bootstrap
 
-$(OBJDIR)/pngtoh:
+$(OBJDIR)/pngtoh: pngtoh.c
 	gcc -O2 pngtoh.c -o $(OBJDIR)/pngtoh
+
+$(OBJDIR)/pngtoraw: pngtoraw.c
+	gcc -O2 pngtoraw.c -o $(OBJDIR)/pngtoraw -lpng -lz
 
 replace:  replace.o $(STATICOUTPUT)
 	$(CC) -o replace replace.o $(STATICOUTPUT) \
 	../quicktime/i686/libquicktime.a \
 	$(LFLAGS) \
 	$(XLIBS) \
-	$(XXF86VM) \
 	-lpng
+
+#	$(XXF86VM) \
+
+
 
 test:	$(OBJDIR)/test.o $(STATICOUTPUT)
 	$(CC) -o $(OBJDIR)/test \
@@ -188,6 +196,7 @@ $(OBJDIR)/bccounter.o:                                        bccounter.C
 $(OBJDIR)/bcclipboard.o:   				      bcclipboard.C
 $(OBJDIR)/bcdelete.o:                                         bcdelete.C
 $(OBJDIR)/bcdialog.o:                                         bcdialog.C
+$(OBJDIR)/bcdisplay.o: 				      	      bcdisplay.C
 $(OBJDIR)/bcdisplayinfo.o: 				      bcdisplayinfo.C
 $(OBJDIR)/bcdragwindow.o:  				      bcdragwindow.C
 $(OBJDIR)/bcfilebox.o:     				      bcfilebox.C

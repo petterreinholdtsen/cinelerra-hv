@@ -1,5 +1,27 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "../../cinelerra/resample.h"
@@ -17,7 +39,7 @@ PluginClient* new_plugin(PluginServer *server)
 
 
 ResampleFraction::ResampleFraction(ResampleEffect *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)plugin->scale)
+ : BC_TextBox(x, y, 100, 1, (float)plugin->scale, 1, MEDIUMFONT, 6)
 {
 	this->plugin = plugin;
 }
@@ -73,16 +95,13 @@ ResampleEffect::ResampleEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	load_defaults();
 }
 
 ResampleEffect::~ResampleEffect()
 {
-	save_defaults();
-	delete defaults;
 }
 
-char* ResampleEffect::plugin_title() { return N_("Resample"); }
+const char* ResampleEffect::plugin_title() { return N_("Resample"); }
 
 VFrame* ResampleEffect::new_picon()
 {
@@ -160,30 +179,37 @@ int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
 	int result = 0;
 
 // Length to read based on desired output size
+SET_TRACE
 	int64_t size = (int64_t)((double)PluginAClient::in_buffer_size * scale);
+SET_TRACE
 	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
+SET_TRACE
 
 	double *input = new double[size];
-
+SET_TRACE
 	read_samples(input, 0, current_position, size);
 	current_position += size;
 
+SET_TRACE
 	resample->resample_chunk(input, 
 		size, 
 		1000000, 
 		(int)(1000000.0 / scale), 
 		0);
 
+SET_TRACE
 
 	if(resample->get_output_size(0))
 	{
 		int64_t output_size = resample->get_output_size(0);
 
+SET_TRACE
 		if(output_size)
 		{
 			total_written += output_size;
 		}
 
+SET_TRACE
 // Trim output to predicted length of stretched selection.
 		if(total_written > predicted_total)
 		{
@@ -191,16 +217,20 @@ int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
 			result = 1;
 		}
 
+SET_TRACE
 		resample->read_output(buffer, 0, output_size);
 
+SET_TRACE
 		write_length = output_size;
 	}
 
+SET_TRACE
 	if(PluginClient::interactive) result = progress->update(total_written);
 //printf("TimeStretch::process_loop 1\n");
 
+SET_TRACE
 	delete [] input;
-//printf("TimeStretch::process_loop 2\n");
+SET_TRACE
 	return result;
 }
 

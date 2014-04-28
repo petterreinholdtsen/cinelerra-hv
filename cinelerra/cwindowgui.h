@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef CWINDOWGUI_H
 #define CWINDOWGUI_H
 
@@ -38,7 +59,7 @@ public:
 	CWindowGUI(MWindow *mwindow, CWindow *cwindow);
 	~CWindowGUI();
 
-    int create_objects();
+    void create_objects();
 	int resize_event(int w, int h);
 
 // Events for the fullscreen canvas fall through to here.
@@ -95,8 +116,10 @@ public:
 	FloatAuto *affected_x;
 	FloatAuto *affected_y;
 	FloatAuto *affected_z;
-// Keyfrom not affecting transformation being affected
-	Auto *affected_keyframe;
+// Pointer to mask keyframe being modified in the EDL
+	MaskAuto *mask_keyframe;
+// Copy of original value of mask keyframe for keyframe spanning
+	MaskAuto *orig_mask_keyframe;
 // Mask point being modified
 	int affected_point;
 // Scrollbar offsets during last button press relative to output
@@ -113,6 +136,10 @@ public:
 // Origin of all 4 crop points during last button press
 	float crop_origin_x1, crop_origin_y1;
 	float crop_origin_x2, crop_origin_y2;
+
+	float ruler_origin_x, ruler_origin_y;
+	int ruler_handle;
+	int ruler_translate;
 
 // Origin for camera and projector operations during last button press
 	float center_x, center_y, center_z;
@@ -244,6 +271,7 @@ public:
 		int &redraw_canvas, 
 		int &rerender,
 		int do_camera);
+	int do_ruler(int draw, int motion, int button_press, int button_release);
 	int test_zoom(int &redraw);
 	void reset_camera();
 	void reset_projector();

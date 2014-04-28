@@ -1,6 +1,6 @@
 include global_config
 
-DIR := esound
+DIR := thirdparty/esound
 
 OBJS = \
 	$(DIR)/$(OBJDIR)/audio.o \
@@ -19,7 +19,7 @@ OBJS = \
 
 
 OUTPUT = $(DIR)/$(OBJDIR)/libesound.a
-CFLAGS += -Iesound -Iaudiofile -DSYSCONFDIR=\"/usr/local/etc\"
+CFLAGS += -Ithirdparty/esound -Ithirdparty/audiofile -DSYSCONFDIR=\"/usr/local/etc\"
 
 $(shell sh -c 'mkdir -p $(DIR)/$(OBJDIR)' )
 $(shell echo $(CFLAGS) > $(DIR)/$(OBJDIR)/c_flags)

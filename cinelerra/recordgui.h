@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef RECORDGUI_H
 #define RECORDGUI_H
 
@@ -62,7 +83,7 @@ public:
 
 	void load_defaults();
 	void save_defaults();
-	int create_objects();
+	void create_objects();
 	void flash_batch();
 	void update_batches();
 	void update_sources();
@@ -110,7 +131,7 @@ public:
 	RecordGUIMonitorAudio *monitor_audio;
 	RecordStartoverThread *startover_thread;
 	EndRecordThread *interrupt_thread;
-	static char *batch_titles[BATCH_COLUMNS];
+	static const char *batch_titles[BATCH_COLUMNS];
 	int column_widths[BATCH_COLUMNS];
 	LoadMode *load_mode;
 	int flash_color;

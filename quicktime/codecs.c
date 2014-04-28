@@ -265,7 +265,7 @@ long quicktime_decode_video(quicktime_t *file,
 	return result;
 }
 
-void quicktime_set_parameter(quicktime_t *file, char *key, void *value)
+void quicktime_set_parameter(quicktime_t *file, const char *key, void *value)
 {
 	int i;
 	for(i = 0; i < file->total_vtracks; i++)
@@ -367,6 +367,9 @@ int64_t quicktime_samples_to_bytes(quicktime_trak_t *track, long samples)
 {
 	char *compressor = track->mdia.minf.stbl.stsd.table[0].format;
 	int channels = track->mdia.minf.stbl.stsd.table[0].channels;
+
+	if(quicktime_match_32(compressor, QUICKTIME_DV))
+		return (int64_t)samples * track->mdia.minf.stbl.stsz.sample_size;
 
 	if(quicktime_match_32(compressor, QUICKTIME_IMA4)) 
 		return samples * channels;

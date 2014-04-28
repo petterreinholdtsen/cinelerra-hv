@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/dissolve.o
 
-OUTPUT = ../$(OBJDIR)/dissolve.plugin
+OUTPUT = $(PLUGIN_DIR)/dissolve.plugin
 
 include ../../plugin_config
 

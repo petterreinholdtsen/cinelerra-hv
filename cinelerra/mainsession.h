@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef MAINSESSION_H
 #define MAINSESSION_H
 
@@ -80,6 +101,8 @@ public:
 	long drag_start_position;
 // Records for redrawing brender position in timebar
 	double brender_end;
+// Position of cursor in CWindow output.  Used by ruler.
+	int cwindow_output_x, cwindow_output_y;
 
 // Show controls in CWindow
 	int cwindow_controls;
@@ -117,7 +140,13 @@ public:
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;
 	int plugindialog_w, plugindialog_h;
+	int presetdialog_w, presetdialog_h;
+	int keyframedialog_w, keyframedialog_h;
+	int keyframedialog_column1;
+	int keyframedialog_column2;
+	int keyframedialog_all;
 	int menueffect_w, menueffect_h;
+	int transitiondialog_w, transitiondialog_h;
 
 	int cwindow_fullscreen;
 	int rwindow_fullscreen;

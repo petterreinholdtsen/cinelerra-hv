@@ -77,6 +77,7 @@ int quicktime_atom_read_header(quicktime_t *file, quicktime_atom_t *atom)
 {
 	int result = 0;
 	char header[10];
+	int debug = 0;
 
 	if(file->use_avi)
 	{
@@ -107,13 +108,12 @@ int quicktime_atom_read_header(quicktime_t *file, quicktime_atom_t *atom)
 		result = read_type(header, atom->type);
 		atom->size = read_size(header);
 		atom->end = atom->start + atom->size;
-/*
- * printf("quicktime_atom_read_header 1 %c%c%c%c start %llx size %llx end %llx ftell %llx %llx\n", 
- * 	atom->type[0], atom->type[1], atom->type[2], atom->type[3],
- * 	atom->start, atom->size, atom->end,
- * 	file->file_position,
- * 	(int64_t)FTELL(file->stream));
- */
+		if(debug)
+			printf("quicktime_atom_read_header 1 %c%c%c%c start=0x%llx size=0x%llx end=0x%llx ftell %llx %llx\n", 
+				atom->type[0], atom->type[1], atom->type[2], atom->type[3],
+				atom->start, atom->size, atom->end,
+				file->file_position,
+				(int64_t)FTELL(file->stream));
 
 /* Skip placeholder atom */
 		if(quicktime_match_32(atom->type, "wide"))

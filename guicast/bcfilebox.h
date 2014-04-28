@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCFILEBOX_H
 #define BCFILEBOX_H
 
@@ -171,9 +192,9 @@ class BC_FileBox : public BC_Window
 public:
 	BC_FileBox(int x, 
 		int y,
-		char *init_path,
-		char *title,
-		char *caption,
+		const char *init_path,
+		const char *title,
+		const char *caption,
 // Set to 1 to get hidden files. 
 		int show_all_files = 0,
 // Want only directories
@@ -199,7 +220,7 @@ public:
 	friend class BC_FileBoxReload;
 	friend class BC_FileBoxRecent;
 
-	virtual int create_objects();
+	virtual void create_objects();
 	virtual int keypress_event();
 	virtual int close_event();
 // When file is submitted this is called for the user to retrieve it before the
@@ -245,7 +266,7 @@ private:
 	void create_listbox(int x, int y, int mode);
 // Get the icon number for a listbox
 	BC_Pixmap* get_icon(char *path, int is_dir);
-	static char* columntype_to_text(int type);
+	static const char* columntype_to_text(int type);
 // Get the column whose type matches type.
 	int column_of_type(int type);
 
@@ -272,7 +293,7 @@ private:
 	int sort_column;
 	int sort_order;
 
-	char *column_titles[FILEBOX_COLUMNS];
+	const char *column_titles[FILEBOX_COLUMNS];
 	ArrayList<BC_ListBoxItem*> filter_list;
 	ArrayList<BC_ListBoxItem*> *list_column;
 	int *column_type;

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef MAINMENU_H
 #define MAINMENU_H
 
@@ -14,6 +35,7 @@ class ShowGWindow;
 class ShowCWindow;
 class ShowLWindow;
 class Undo;
+class KeyframeType;
 
 #include "arraylist.h"
 #include "guicast.h"
@@ -41,7 +63,7 @@ class MainMenu : public BC_MenuBar
 public:
 	MainMenu(MWindow *mwindow, MWindowGUI *gui);
 	~MainMenu();
-	int create_objects();
+	void create_objects();
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
 
@@ -87,6 +109,7 @@ public:
 	int total_veffects;
 	BC_Menu *filemenu, *audiomenu, *videomenu;      // needed by most recents
 
+	KeyframeType *keyframe_type;
 	LabelsFollowEdits *labels_follow_edits;
 	PluginsFollowEdits *plugins_follow_edits;
 	CursorOnFrames *cursor_on_frames;
@@ -120,7 +143,7 @@ class Undo : public BC_MenuItem
 public:
 	Undo(MWindow *mwindow);
 	int handle_event();
-	int update_caption(char *new_caption = "");
+	int update_caption(const char *new_caption = "");
 	MWindow *mwindow;
 };
 
@@ -163,7 +186,7 @@ class Redo : public BC_MenuItem
 public:
 	Redo(MWindow *mwindow);
 	int handle_event();
-	int update_caption(char *new_caption = "");
+	int update_caption(const char *new_caption = "");
 	MWindow *mwindow;
 };
 
@@ -239,6 +262,23 @@ public:
 	MWindow *mwindow;
 };
 
+class BendKeyframes : public BC_MenuItem
+{
+public:
+	BendKeyframes(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class KeyframeType : public BC_MenuItem
+{
+public:
+	KeyframeType(MWindow *mwindow, int type);
+	int handle_event();
+	MWindow *mwindow;
+	int new_type;
+};
+
 class CutDefaultKeyframe : public BC_MenuItem
 {
 public:
@@ -291,6 +331,14 @@ class ClearLabels : public BC_MenuItem
 {
 public:
 	ClearLabels(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class DetachTransitions : public BC_MenuItem
+{
+public:
+	DetachTransitions(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

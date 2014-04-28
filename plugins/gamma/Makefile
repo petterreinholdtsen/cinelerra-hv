@@ -4,7 +4,7 @@ OBJS = $(OBJDIR)/gamma.o  \
 	$(OBJDIR)/gammawindow.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/gamma.plugin
+OUTPUT = $(PLUGIN_DIR)/gamma.plugin
 
 include ../../plugin_config
 

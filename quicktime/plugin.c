@@ -37,6 +37,7 @@ static int register_acodec(void (*init_acodec)(quicktime_audio_map_t *))
 
 #include "ima4.h"
 #include "mp4a.h"
+#include "qdm2.h"
 #include "qtvorbis.h"
 #include "qtmp3.h"
 #include "rawaudio.h"
@@ -51,6 +52,7 @@ static void register_acodecs()
 	register_acodec(quicktime_init_codec_rawaudio);
 	register_acodec(quicktime_init_codec_ima4);
 	register_acodec(quicktime_init_codec_mp4a);
+	register_acodec(quicktime_init_codec_qdm2);
 	register_acodec(quicktime_init_codec_ulaw);
 
 	register_acodec(quicktime_init_codec_vorbis);
@@ -165,7 +167,10 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack)
 // Sometimes the compression_id is the fourcc.
 		if((compressor[0] == 0 || compressor_int == codec_base->wav_id) && 
 			codec_base->wav_id == compression_id)
+		{
+			quicktime_copy_char32(compressor, codec_base->fourcc);
 			return 0;
+		}
 		else
 		{
 			codec_base->delete_acodec(atrack);

@@ -1,13 +1,48 @@
-#include "bcclipboard.h"
-#include "bcwindowbase.h"
-#include <string.h>
 
-BC_Clipboard::BC_Clipboard(char *display_name) : Thread()
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+#include "bcclipboard.h"
+#include "bcdisplay.h"
+#include "bcsignals.h"
+#include "bcwindowbase.h"
+#include "bcwindowbase.inc"
+#include <string.h>
+#include <unistd.h>
+
+BC_Clipboard::BC_Clipboard(const char *display_name) : Thread()
 {
 	Thread::set_synchronous(1);
 
+	if(display_name) 
+		strcpy(this->display_name, display_name);
+	else
+		this->display_name[0] = 0;
+
+#ifdef SINGLE_THREAD
+	in_display = out_display = BC_Display::get_display(display_name);
+#else
 	in_display = BC_WindowBase::init_display(display_name);
 	out_display = BC_WindowBase::init_display(display_name);
+#endif
+
 	completion_atom = XInternAtom(out_display, "BC_CLOSE_EVENT", False);
 	primary = XA_PRIMARY;
 	secondary = XInternAtom(out_display, "CLIPBOARD", False);
@@ -46,26 +81,36 @@ BC_Clipboard::~BC_Clipboard()
 
 int BC_Clipboard::start_clipboard()
 {
+#ifndef SINGLE_THREAD
 	Thread::start();
+#endif
 	return 0;
 }
 
 int BC_Clipboard::stop_clipboard()
 {
+// Must use a different display handle to send events.
+	Display *display = BC_WindowBase::init_display(display_name);
 	XEvent event;
 	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
 
 	event.type = ClientMessage;
 	ptr->message_type = completion_atom;
 	ptr->format = 32;
-	XSendEvent(out_display, out_win, 0, 0, &event);
-	XFlush(out_display);
+//printf("BC_Clipboard::stop_clipboard %d\n", __LINE__);
+	XSendEvent(display, out_win, 0, 0, &event);
+	XFlush(display);
+	XCloseDisplay(display);
+
+SET_TRACE
 	Thread::join();
+SET_TRACE
 	return 0;
 }
 
 void BC_Clipboard::run()
 {
+#ifndef SINGLE_THREAD
 	XEvent event;
 	XClientMessageEvent *ptr;
 	int done = 0;
@@ -76,7 +121,11 @@ void BC_Clipboard::run()
 		XNextEvent(out_display, &event);
 //printf("BC_Clipboard::run 2 %d\n", event.type);					
 
+#ifdef SINGLE_THREAD
+		BC_Display::lock_display("BC_Clipboard::run");
+#else
 		XLockDisplay(out_display);
+#endif
 		switch(event.type)
 		{
 // Termination signal
@@ -128,8 +177,15 @@ void BC_Clipboard::run()
 				if(data[1]) data[1][0] = 0;
 				break;
 		}
+
+#ifdef SINGLE_THREAD
+		BC_Display::unlock_display();
+#else
 		XUnlockDisplay(out_display);
+#endif
 	}
+#endif
+
 }
 
 int BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
@@ -139,7 +195,11 @@ int BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
 	XStoreBuffer(display, data, len, clipboard_num);
 #endif
 
+#ifdef SINGLE_THREAD
+	BC_Display::lock_display("BC_Clipboard::to_clipboard");
+#else
 	XLockDisplay(out_display);
+#endif
 
 // Store in local buffer
 	if(this->data[clipboard_num] && length[clipboard_num] != len + 1)
@@ -163,7 +223,12 @@ int BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
 
 	XFlush(out_display);
 
+
+#ifdef SINGLE_THREAD
+	BC_Display::unlock_display();
+#else
 	XUnlockDisplay(out_display);
+#endif
 	return 0;
 }
 
@@ -186,7 +251,12 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 #endif
 
 
+
+#ifdef SINGLE_THREAD
+	BC_Display::lock_display("BC_Clipboard::from_clipboard");
+#else
 	XLockDisplay(in_display);
+#endif
 
 	XEvent event;
     Atom type_return, pty;
@@ -257,7 +327,12 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 		if(temp_data) XFree(temp_data);
 	}
 
+
+#ifdef SINGLE_THREAD
+	BC_Display::unlock_display();
+#else
 	XUnlockDisplay(in_display);
+#endif
 
 	return 0;
 }
@@ -276,7 +351,12 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 
 
 
+
+#ifdef SINGLE_THREAD
+	BC_Display::lock_display("BC_Clipboard::clipboard_len");
+#else
 	XLockDisplay(in_display);
+#endif
 
 	XEvent event;
     Atom type_return, pty;
@@ -331,7 +411,12 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 
 	}
 
+
+#ifdef SINGLE_THREAD
+	BC_Display::unlock_display();
+#else
 	XUnlockDisplay(in_display);
+#endif
 
 	return result;
 }

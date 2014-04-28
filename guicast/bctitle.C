@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcresources.h"
 #include "bctitle.h"
 #include <string.h>
@@ -5,7 +26,7 @@
 
 BC_Title::BC_Title(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		int font, 
 		int color, 
 		int centered,
@@ -61,7 +82,7 @@ int BC_Title::reposition(int x, int y)
 }
 
 
-int BC_Title::update(char *text)
+int BC_Title::update(const char *text)
 {
 	int new_w, new_h;
 
@@ -135,14 +156,14 @@ int BC_Title::draw()
 	return 0;
 }
 
-int BC_Title::calculate_w(BC_WindowBase *gui, char *text, int font)
+int BC_Title::calculate_w(BC_WindowBase *gui, const char *text, int font)
 {
 	int temp_w, temp_h;
 	get_size(gui, font, text, 0, temp_w, temp_h);
 	return temp_w;
 }
 
-int BC_Title::calculate_h(BC_WindowBase *gui, char *text, int font)
+int BC_Title::calculate_h(BC_WindowBase *gui, const char *text, int font)
 {
 	int temp_w, temp_h;
 	get_size(gui, font, text, 0, temp_w, temp_h);
@@ -151,7 +172,7 @@ int BC_Title::calculate_h(BC_WindowBase *gui, char *text, int font)
 
 
 
-void BC_Title::get_size(BC_WindowBase *gui, int font, char *text, int fixed_w, int &w, int &h)
+void BC_Title::get_size(BC_WindowBase *gui, int font, const char *text, int fixed_w, int &w, int &h)
 {
 	int i, j, x, y, line_w = 0;
 	w = 0;

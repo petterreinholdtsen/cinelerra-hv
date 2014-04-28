@@ -12,6 +12,7 @@ class BC_Button : public BC_SubWindow
 {
 public:
 	BC_Button(int x, int y, VFrame **data);
+	BC_Button(int x, int y, int w, VFrame **data);
 	virtual ~BC_Button();
 
 	friend class BC_GenericButton;
@@ -35,6 +36,7 @@ private:
 	BC_Pixmap *images[3];
 	VFrame **data;
 	int status;
+	int w_argument;
 };
 
 
@@ -43,7 +45,8 @@ private:
 class BC_GenericButton : public BC_Button
 {
 public:
-	BC_GenericButton(int x, int y, char *text);
+	BC_GenericButton(int x, int y, char *text, VFrame **data = 0);
+	BC_GenericButton(int x, int y, int w, char *text, VFrame **data = 0);
 	int set_images(VFrame **data);
 	int draw_face();
 

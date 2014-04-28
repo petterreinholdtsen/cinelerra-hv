@@ -1,4 +1,5 @@
 #include "bcclipboard.h"
+#include "bclistboxitem.h"
 #include "bcresources.h"
 #include "bctextbox.h"
 #include "colors.h"
@@ -386,6 +387,8 @@ int BC_TextBox::cursor_leave_event()
 
 int BC_TextBox::button_press_event()
 {
+	if(get_buttonpress() != 1) return 0;
+
 	int cursor_letter = 0;
 	int text_len = strlen(text);
 

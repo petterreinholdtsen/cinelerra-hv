@@ -177,7 +177,7 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 			w, 
 			w, 
 			(float)INFINITYGAIN, 
-			(float)6, 
+			(float)MAX_AUDIO_FADE, 
 			get_keyframe(mwindow, patch)->value)
 {
 //printf("AFadePatch::AFadePatch 1 %p %f\n", patch->track, get_keyframe(mwindow, patch)->value);
@@ -284,7 +284,7 @@ int APanPatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(/* update_undo && */ mwindow->edl->session->auto_conf->pan)
+	if(update_undo && mwindow->edl->session->auto_conf->pan)
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -325,7 +325,7 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 
 int AMeterPatch::button_press_event()
 {
-	if(cursor_inside() && is_event_win())
+	if(cursor_inside() && is_event_win() && get_buttonpress() == 1)
 	{
 		mwindow->reset_meters();
 		return 1;

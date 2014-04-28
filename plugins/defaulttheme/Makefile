@@ -7,7 +7,7 @@ OUTPUT_THEME = ../$(OBJDIR)/defaulttheme.plugin
 OUTPUT_THEME: $(OBJS)
 	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS)
 	strip $(OUTPUT_THEME)
-	../../cinelerra/$(OBJDIR)/bootstrap $(OUTPUT_THEME) data/*.png
+	../../guicast/$(OBJDIR)/bootstrap $(OUTPUT_THEME) data/*.png
 
 
 

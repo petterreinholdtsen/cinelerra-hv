@@ -1,29 +1,28 @@
+/AUTHORS/1.1/Mon Jul 22 12:33:53 2002//
+/CHANGES/1.1/Mon Jul 22 12:33:53 2002//
+/COPYING/1.1/Mon Jul 22 12:33:53 2002//
+/Makefile/1.1/Mon Jul 22 12:33:53 2002//
+/Makefile.am/1.1/Mon Jul 22 12:33:53 2002//
+/Makefile.in/1.1/Mon Jul 22 12:33:53 2002//
+/README/1.1/Mon Jul 22 12:33:53 2002//
+/aclocal.m4/1.1/Mon Jul 22 12:33:53 2002//
+/config.cache/1.1/Mon Jul 22 12:33:53 2002//
+/config.guess/1.1/Mon Jul 22 12:33:53 2002//
+/config.log/1.1/Mon Jul 22 12:33:53 2002//
+/config.status/1.1/Mon Jul 22 12:33:53 2002//
+/config.sub/1.1/Mon Jul 22 12:33:53 2002//
+/configure/1.1/Mon Jul 22 12:33:53 2002//
+/configure.in/1.1/Mon Jul 22 12:33:53 2002//
+/install-sh/1.1/Mon Jul 22 12:33:53 2002//
+/libogg.spec/1.1/Mon Jul 22 12:33:53 2002//
+/libtool/1.1/Mon Jul 22 12:33:53 2002//
+/ltmain.sh/1.1/Mon Jul 22 12:33:53 2002//
+/missing/1.1/Mon Jul 22 12:33:53 2002//
+/mkinstalldirs/1.1/Mon Jul 22 12:33:53 2002//
+/ogg.m4/1.1/Mon Jul 22 12:33:53 2002//
+D/debian////
+D/doc////
+D/include////
 D/macos////
 D/src////
-D/include////
-D/doc////
 D/win32////
-D/debian////
-D/CVS////
-/AUTHORS/1.1/Thu Jul 11 09:09:06 2002//
-/CHANGES/1.1/Tue Sep  5 19:47:01 2000//
-/COPYING/1.1/Thu Jul 11 09:09:06 2002//
-/Makefile/1.1/Mon Jul 22 12:29:20 2002//
-/Makefile.am/1.1/Sat Jul 13 11:44:01 2002//
-/Makefile.in/1.1/Fri Jul 19 14:13:17 2002//
-/README/1.1/Mon Jul 22 12:33:53 2002//
-/aclocal.m4/1.1/Fri Jul 19 14:13:07 2002//
-/config.cache/1.1/Mon Jul 22 12:29:19 2002//
-/config.guess/1.1/Mon Jul  1 12:16:52 2002//
-/config.log/1.1/Mon Jul 22 12:29:19 2002//
-/config.status/1.1/Mon Jul 22 12:29:20 2002//
-/config.sub/1.1/Mon Jul  1 12:16:52 2002//
-/configure/1.1/Fri Jul 19 14:13:10 2002//
-/configure.in/1.1/Thu Jul 11 20:04:05 2002//
-/install-sh/1.1/Tue Jun 18 03:58:03 2002//
-/libogg.spec/1.1/Fri Jul 19 06:44:10 2002//
-/libtool/1.1/Mon Jul 22 12:29:18 2002//
-/ltmain.sh/1.1/Tue Jul  2 17:12:16 2002//
-/missing/1.1/Tue Jun 18 03:58:03 2002//
-/mkinstalldirs/1.1/Mon Jul 22 12:33:53 2002//
-/ogg.m4/1.1/Tue Jul  9 12:54:42 2002//

@@ -501,6 +501,14 @@ the amount of seeking.  For normal use this should be 0.
 
 @item
 
+MPEG-4 DEBLOCKING
+
+For assets which are compressed in OpenDivx and Quicktime, this enables
+deblocking.  This greatly improves the picture quality during decoding
+while slowing it down.
+
+@item
+
 VIDEO DRIVER
 
 Normally video on the timeline goes to the
@@ -754,9 +762,9 @@ Some effects need a certain amount of time to settle in.  This sets a
 number of seconds to render without writing to disk before the selected
 region is rendered.  When using the renderfarm you'll sometimes need to
 preroll to get seemless transitions between the jobs.  Every job in a
-renderfarm is prerolled by this value.  Background rendering is
-degraded when preroll is used.  When using background rendering, this
-number is ideally 0.
+renderfarm is prerolled by this value.  This does not affect background
+rendering, however.  Background rendering uses a different preroll
+value.
 
 @item
 
@@ -792,6 +800,10 @@ for realtime effects if enough network bandwidth and CPU nodes exist.
 
 @itemize
 
+
+
+
+
 @item
 FRAMES PER BACKGROUND RENDERING JOB
 
@@ -800,6 +812,20 @@ rendering creates a single job for the entire timeline.  The number of
 frames specified here is scaled to the relative CPU speed of rendering
 nodes and used in a single renderfarm job.  The optimum number is 10 -
 30 since network bandwidth is used to initialize each job.
+
+
+
+@item
+FRAMES TO PREROLL BACKGROUND
+
+This is the number of frames to render ahead of each background
+rendering job.  Background rendering is degraded when preroll is used
+since the jobs are small.  When using background rendering, this number
+is ideally 0.  Some effects may require 3 frames of preroll.
+
+
+
+
 
 @item
 OUTPUT FOR BACKGROUND RENDERING
@@ -2002,17 +2028,61 @@ the left, the most important of which is the @emph{arm track}
 attribute.
 
 @sp 1
-@image{track_attributes}@emph{Track attributes}
+@image{track_attributes}
+@emph{Track attributes}
 
 Only the @emph{armed tracks} are affected by editing operations.  Make
 sure you have enough armed destination tracks when you paste or splice
 material or some tracks in the material will get left out.
 
-In addition to editing operations, the armed tracks in combination with
-the active region determine where material is inserted when loading
-files.  If the files are loaded with one of the insertion strategies
-which doesn't delete the existing project, the armed tracks will be
-used as destination tracks.
+The other attributes affect the output of the track.
+
+@itemize
+
+@item
+
+@b{Play track} determines whether the track is rendered or not.  If
+it's off, the track is not rendered.  However, if the track is chained
+to any other tracks, the other tracks perform all the effects in the
+chained track, regardless of play status.
+
+@item
+
+@b{Gang fader} causes the fader to track the movement of whatever other
+fader you're adjusting.  A fader is only ganged if the @b{arm track} is
+also on.  This is normally used to adjust audio levels on all the
+tracks simultaneously.
+
+@item
+
+@b{Draw data} determines if picons or waveforms are drawn on the
+track.  By default, some file formats load with this off while other
+file formats load with it on.  This depends on whether the file format
+takes a long time to draw on the timeline.  Merely set it to on if you
+want to see picons for any file format.
+
+@item
+
+@b{Mute track} causes the output to be thrown away once the track is
+completely rendered.  This happens whether or not @b{play track} is
+on.  If the track is part of an effect chain, the output of the effect
+chain track is overlayed on the final output even though it's routed
+back to another track.  Mute track is used to keep the effect chain
+track from overlapping the output of the source track.
+
+@end itemize
+
+There are two ways to set the same attribute on multiple tracks very
+quickly.  Hold down @b{shift} while clicking a track's attribute to
+match the same attribute in all the other tracks.  If you don't want to
+affect all the other tracks, click on an attribute and drag across
+other tracks to have the same attribute set in them.
+
+In addition to restricting editing operations, the armed tracks in
+combination with the active region determine where material is inserted
+when loading files.  If the files are loaded with one of the insertion
+strategies which doesn't delete the existing project, the armed tracks
+will be used as destination tracks.
 
 The active region is the range of time in the edit decision on the
 timeline.  The active region is determined first by the presence of
@@ -3641,16 +3711,28 @@ are stored in the current batch.
 * DISABLING SWAP SPACE::
 * ENLARGING SOUND BUFFERS::
 * MAKING XFree86 FASTER::
-* FREEING MORE MEMORY::
+* FREEING MORE SHARED MEMORY::
+* SPEEDING UP THE HARD DRIVE::
+* DISABLING CRON::
+* REDUCING USB MOUSE SENSITIVITY::
+* ASSORTED X TWEEKS::
+* SPEEDING UP THE FILE SYSTEM::
 @end menu
 
 @node DISABLING SWAP SPACE
 @section DISABLING SWAP SPACE
 
-Cinelerra runs best without a swap space.  With memory sizes increasing
-and hard drives still spinning as fast as they were in 1997, swap
-spaces are pointless.  The question then is how to make Linux run
-without a swap space.  Theoretically it should be a matter of running
+On systems with lots of memory, Cinelerra sometimes runs better without
+a swap space.  If you have 4 GB of RAM, you're probably better off
+without a swap space.  If you have 512MB of RAM, you should keep the
+swap.  If you want to do recording, you should probably disable swap
+space in any case.  There's a reason for this.  Linux only allows half
+the available memory to be used.  Beyond that, it starts searching for
+free pages to swap, in order to cache more disk access.  In a 4 GB
+system, you start waiting for page swaps after using only 2 GB.  
+
+The question then is how to make Linux run without a swap space. 
+Theoretically it should be a matter of running
 
 @example
 swapoff -a
@@ -3738,8 +3820,8 @@ and restart the X server.
 
 
 
-@node FREEING MORE MEMORY
-@section FREEING MORE MEMORY
+@node FREEING MORE SHARED MEMORY
+@section FREEING MORE SHARED MEMORY
 
 The Linux kernel only allows 32MB of shared memory to be allocated by
 default.  This needs to be increased to do anything useful.  Run the
@@ -3747,6 +3829,211 @@ following command:
 
 @b{echo "0x7fffffff" > /proc/sys/kernel/shmmax}
 
+
+
+
+
+@node SPEEDING UP THE HARD DRIVE
+@section SPEEDING UP THE HARD DRIVE
+
+This is a very popular command sequence among Linux gurus, which is not
+done by default on Linux distributions.
+
+@b{hdparm -c3 -d1 -u1 -k1 /dev/hda}
+
+@b{-c3} puts the hard drive into 32 bit I/O with sync.  This normally
+doesn't work due to inept kernel support for most IDE controllers.  If
+you get lost interrupt or SeekComplete errors, quickly use @b{-c0}
+instead of @b{-c3} in your command.
+
+@b{-d1} enables DMA of course.  This frees up the CPU partially during
+data transfers.
+
+@b{-u1} allows multiple interrupts to be handled during hard drive
+transactions.  This frees up even more CPU time.
+
+@b{-k1} prevents Linux from resetting your settings in case of a
+glitch.
+
+
+
+
+
+@node DISABLING CRON
+@section DISABLING CRON
+
+Linux runs some daily operations like compressing man pages.  These may
+be acceptable background tasks while compiling or word processing but
+not while playing video.  Disable these operations by editing
+@b{/etc/rc.d/init.d/anacron}.
+
+Put @b{exit} before the first line not beginning in @b{#}.
+
+In @b{/etc/rc.d/init.d/crond} put @b{exit} before the first line not
+beginning in @b{#}.  Then make like Win 2000 and reboot.
+
+You can't use the @b{at} command anymore, but who uses that command
+anyways?
+
+
+
+
+
+
+
+
+
+@node REDUCING USB MOUSE SENSITIVITY
+@section REDUCING USB MOUSE SENSITIVITY
+
+Gamers like high resolution mice, but this can be painful for precisely
+positioning the mouse on a timeline or video screen.  XFree86 once
+allowed you to reduce PS/2 mouse sensitivity using commands like
+@b{xset m 1 1} but you're out of luck with USB mice or KVM's.
+
+We have a way to reduce USB mouse sensitivity.  Edit
+@b{/usr/src/linux/drivers/input/mousedev.c}.  
+
+After the line saying 
+
+@example
+struct mousedev_list @{
+@end example
+
+
+put
+
+@example
+#define DOWNSAMPLE 4
+int x_accum, y_accum;
+@end example
+
+Next, the section which says something like:
+
+@example
+case EV_REL:
+	switch (code) @{
+		case REL_X:	list->dx += value; break;
+		case REL_Y:	list->dy -= value; break;
+		case REL_WHEEL:	if (list->mode) list->dz -= value; break;
+	@}
+	break;
+@end example
+
+must be replaced by
+
+@example
+
+case EV_REL:
+	switch (code) @{
+		case REL_X:	
+			list->x_accum += value;
+			list->dx += list->x_accum / DOWNSAMPLE;
+			list->x_accum %= DOWNSAMPLE;
+			break;
+		case REL_Y:	
+			list->y_accum += value;
+			list->dy -= list->y_accum / DOWNSAMPLE;
+			list->y_accum %= DOWNSAMPLE;
+			break;
+		case REL_WHEEL:	if (list->mode) list->dz -= value; break;
+	@}
+	break;
+
+
+
+@end example
+
+Change the value of @b{DOWNSAMPLE} to change the mouse sensitivity.
+
+
+
+
+
+
+
+
+@node ASSORTED X TWEEKS
+@section ASSORTED X TWEEKS
+
+Screen blanking is really annoying, unless you're fabulously rich and
+can afford to leave your monitor on 24 hours a day without power saving
+mode.  In @b{/etc/X11/xinit/xinitrc} put 
+
+@example
+xset s off
+xset s noblank
+@end example
+
+before the first @b{if} statement.
+
+How about those windows keys which no Linux distribution even thinks to
+use.  You can make the window keys provide ALT functionality by editing
+@b{/etc/X11/Xmodmap}.  Append the following to it.
+
+@example
+keycode 115 = Hyper_L
+keycode 116 = Hyper_R
+add mod4 = Hyper_L
+add mod5 = Hyper_R
+@end example
+
+The actual changes to a window manager to make it recognize window keys
+for ALT are complex.  In @b{FVWM} at least, you can edit
+@b{/etc/X11/fvwm/system.fvwm2rc} and put
+
+@example
+Mouse 0 T A move-and-raise-or-raiselower
+#Mouse 0 W M move
+Mouse 0 W 4 move
+Mouse 0 W 5 move
+Mouse 0 F A resize-or-raiselower
+Mouse 0 S A resize-or-raiselower
+@end example
+
+in place of the default section for moving and resizing.  Your best
+performance is going to be on FVWM.  Other window managers seem to slow
+down video with extra event trapping and aren't as efficient in layout.
+
+
+
+
+
+
+
+
+
+
+
+@node SPEEDING UP THE FILE SYSTEM
+@section SPEEDING UP THE FILE SYSTEM
+
+You'll often store video on an expensive, gigantic disk array separate
+from your boot disk.  You'll thus have to manually install an EXT
+filesystem on this disk array, using the @b{mke2fs} command.  By far
+the fastest file system is 
+
+@example
+
+mke2fs -i 65536 -b 4096 my_device
+tune2fs -r0 -c10000 my_device
+
+@end example
+
+This has no journaling, reserves as few blocks as possible for
+filenames, and accesses the largest amount of data per block possible.
+A slightly slower file system, which is easier to recover after power
+failures is
+
+@example
+
+mke2fs -j -i 65536 -b 4096 my_device
+tune2fs -r0 -c10000 my_device
+
+@end example
+
+This adds a journal which slows down the writes but makes us immune to
+power failures.
 
 
 
@@ -3765,6 +4052,8 @@ utilize fully by mere experimentation.
 @menu
 * CHROMA KEY::
 * HISTOGRAM::
+* TIME AVERAGE::
+* VIDEO SCOPE::
 @end menu
 
 
@@ -3807,6 +4096,47 @@ to.  Enable @emph{automatic} mode to have the histogram calculate
 automatic input values for every frame.  The threshold is only used in
 automatic mode and determines how sensitive to the upper and lower
 boundaries of the histogram the automatic gain should be.
+
+
+
+
+
+@node TIME AVERAGE
+@section TIME AVERAGE
+
+Time average is one effect which has many uses besides creating nifty
+trail patterns of moving objects.  It's main use is reducing noise in
+still images.  Merely point a video camera at a stationary subject for
+30 frames, capture the frames, and average them using TIME AVERAGE and
+you'll have a super high quality print.  In 16 bit colormodels, time
+average can increase the dynamic range of lousy cameras.
+
+
+
+@node VIDEO SCOPE
+@section VIDEO SCOPE
+
+The video scope plots two views of the image.  One view plots the
+intensity of each pixel against horizontal position.  They call this
+the WAVEFORM.  Another view translates hue to angle and saturation to
+radius for each pixel.  They call this the VECTORSCOPE.
+
+The vectorscope is actually very useful for determining if an image is
+saturated.  When adjusting saturation, it's important to watch the
+vectorscope to make sure pixels don't extend past the 100 radius.
+
+The waveform allows you to make sure image data extends from complete
+black to complete white while adjusting the brightness/contrast.
+
+
+
+
+
+
+
+
+
+
 
 
 @node PLUGIN AUTHORING
@@ -4732,6 +5062,70 @@ histogram, perspective.
 
 New audio effect:
 Sound level
+
+
+
+
+
+
+@b{1.1.5}
+
+
+
+
+
+More options for the ffmpeg/MPEG-4 codecs.
+
+Histogram works on SMP.
+
+Better 16 bit alpha blending.
+
+BRender path updates from preferences.
+
+Separate preroll for background rendering and rendering.
+
+Deinterlace by averaging lines 0 and 2 or 1 and 3 to get intervening lines.
+
+Adaptive deinterlace.
+
+Frame per second statistics in renderfarm are more reliable.
+
+Select and slide in the patchbay.
+
+Video scope can be resized.
+
+Effect keyframes pasted in right positions more often.
+
+Selective denoising of video based on color channel.
+
+More mouse wheel bindings in MainWindow and ListBox.
+
+Ctrl-w closes effect windows.
+
+Perspective doesn't crash when switching from stretch to sheer.
+
+Better text list searching and keyboard navigation.
+
+Better Vorbis decoding after a pause.
+
+Close recording without recording anything doesn't crash.
+
+Save backup now option.
+
+OpenGL not required anymore.
+
+Time format changes update the selection textboxes more often.
+
+MPEG-4 deblocking option in XMovie and Cinelerra.
+
+Resize in Record GUI doesn't screw it up.
+
+Better export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
+
+Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
+
+
+
 
 @end itemize
 

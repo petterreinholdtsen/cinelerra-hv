@@ -67,7 +67,6 @@ public:
 	int set_show_derived(int value) {};
 
 	int popup_transition(int x, int y);
-	char* get_module_title();
 // Update the widgets after loading
 	int update_display();
 // Update edit after attaching

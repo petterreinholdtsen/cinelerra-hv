@@ -16,6 +16,7 @@ OBJS = \
 	$(OBJDIR)/bcfilebox.o \
 	$(OBJDIR)/bcipc.o \
 	$(OBJDIR)/bclistbox.o \
+	$(OBJDIR)/bclistboxitem.o \
 	$(OBJDIR)/bcmenubar.o \
 	$(OBJDIR)/bcmeter.o \
 	$(OBJDIR)/bcpan.o \
@@ -32,6 +33,7 @@ OBJS = \
 	$(OBJDIR)/bcslider.o \
 	$(OBJDIR)/bcsubwindow.o \
 	$(OBJDIR)/bctextbox.o \
+	$(OBJDIR)/bctheme.o \
 	$(OBJDIR)/bctitle.o \
 	$(OBJDIR)/bctoggle.o \
 	$(OBJDIR)/bctumble.o \
@@ -55,15 +57,22 @@ OBJS = \
 OUTPUT = $(OBJDIR)/libguicast.so
 STATICOUTPUT = $(OBJDIR)/libguicast.a
 
+UTILS = $(OBJDIR)/bootstrap $(OBJDIR)/pngtoh
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(OBJS) $(CXXREPOSITORY) > $(OBJDIR)/objs)
 
 
 # PTHREAD DOESN'T WORK WHEN LINKED HERE
-all: $(OBJS)
+all: $(OBJS) $(UTILS)
 	ar rcs $(STATICOUTPUT) `cat $(OBJDIR)/objs`
 #	$(LDLINKER) $(LFLAGS) -o $(OUTPUT) $(OBJS) $(CXXREPOSITORY)
+
+$(OBJDIR)/bootstrap:
+	gcc -O2 bootstrap.c -o $(OBJDIR)/bootstrap
+
+$(OBJDIR)/pngtoh:
+	gcc -O2 pngtoh.c -o $(OBJDIR)/pngtoh
 
 replace:  replace.o $(STATICOUTPUT)
 	$(CC) -o replace replace.o $(STATICOUTPUT) \
@@ -79,7 +88,7 @@ test:	$(OBJDIR)/test.o $(STATICOUTPUT)
 		$(STATICOUTPUT) \
 		../quicktime/$(OBJDIR)/libquicktime.a \
 		$(LFLAGS) \
-		-lGL \
+		$(GLLIBS) \
 		-lX11 \
 		-lXext \
 		-lXv \
@@ -118,6 +127,9 @@ backup: clean
 $(OBJS) $(OBJDIR)/test.o $(OBJDIR)/test2.o $(OBJDIR)/replace.o:
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
+$(OBJDIR)/bootstrap: bootstrap.c
+$(OBJDIR)/pngtoh: pngtoh.c
+
 $(OBJDIR)/bcbitmap.o: 	   				      bcbitmap.C
 $(OBJDIR)/bcbutton.o: 	   				      bcbutton.C
 $(OBJDIR)/bccapture.o:     				      bccapture.C
@@ -128,6 +140,7 @@ $(OBJDIR)/bcdragwindow.o:  				      bcdragwindow.C
 $(OBJDIR)/bcfilebox.o:     				      bcfilebox.C
 $(OBJDIR)/bcipc.o: 	   				      bcipc.C
 $(OBJDIR)/bclistbox.o:     				      bclistbox.C
+$(OBJDIR)/bclistboxitem.o:     				      bclistboxitem.C
 $(OBJDIR)/bcmenubar.o:     				      bcmenubar.C
 $(OBJDIR)/bcmeter.o: 	   				      bcmeter.C
 $(OBJDIR)/bcpan.o: 	   				      bcpan.C
@@ -145,6 +158,7 @@ $(OBJDIR)/bcslider.o: 	   				      bcslider.C
 $(OBJDIR)/bcsubwindow.o:   				      bcsubwindow.C
 $(OBJDIR)/bctextbox.o:     				      bctextbox.C
 $(OBJDIR)/bctitle.o: 	   				      bctitle.C
+$(OBJDIR)/bctheme.o: 	   				      bctheme.C
 $(OBJDIR)/bctoggle.o: 	   				      bctoggle.C
 $(OBJDIR)/bctumble.o: 	   				      bctumble.C
 $(OBJDIR)/bcwindow.o: 	   				      bcwindow.C

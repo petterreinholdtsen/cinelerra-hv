@@ -18,6 +18,7 @@ public:
 	~KeyFrames();
 
 	Auto* new_auto();
+	void dump();
 };
 
 #endif

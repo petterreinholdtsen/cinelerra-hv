@@ -323,9 +323,12 @@ int Asset::init_values()
 	divx_quantizer = 15;
 	divx_quality = 5;
 	divx_fix_bitrate = 1;
+	divx_use_deblocking = 1;
 
 	ms_bitrate = 1000000;
+	ms_bitrate_tolerance = 500000;
 	ms_quantization = 10;
+	ms_interlaced = 0;
 	ms_gop_size = 45;
 	ms_fix_bitrate = 1;
 
@@ -418,15 +421,17 @@ void Asset::copy_format(Asset *asset)
 	divx_quantizer = asset->divx_quantizer;
 	divx_quality = asset->divx_quality;
 	divx_fix_bitrate = asset->divx_fix_bitrate;
+	divx_use_deblocking = asset->divx_use_deblocking;
 
 	ms_bitrate = asset->ms_bitrate;
+	ms_bitrate_tolerance = asset->ms_bitrate_tolerance;
+	ms_interlaced = asset->ms_interlaced;
 	ms_quantization = asset->ms_quantization;
 	ms_gop_size = asset->ms_gop_size;
 	ms_fix_bitrate = asset->ms_fix_bitrate;
 
 	
 	png_use_alpha = asset->png_use_alpha;
-//printf("Asset::copy_format 2\n");
 }
 
 long Asset::get_index_offset(int channel)
@@ -439,13 +444,9 @@ long Asset::get_index_offset(int channel)
 
 Asset& Asset::operator=(Asset &asset)
 {
-//printf("Asset::operator= 1\n");
 	strcpy(this->path, asset.path);
-//printf("Asset::operator= 1\n");
 	strcpy(this->folder, asset.folder);
-//printf("Asset::operator= 1\n");
 	copy_format(&asset);
-//printf("Asset::operator= 2\n");
 	return *this;
 }
 
@@ -454,7 +455,6 @@ int Asset::equivalent(Asset &asset,
 	int test_audio, 
 	int test_video)
 {
-//printf("Asset::equivalent %s %s %d %d\n", path, asset.path, format, asset.format);
 	int result = (!strcmp(asset.path, path) &&
 		format == asset.format);
 
@@ -498,11 +498,6 @@ int Asset::operator!=(Asset &asset)
 
 int Asset::test_path(const char *path)
 {
-// 	char old_name[1024], new_name[1024];
-// 	FileSystem fs;
-// 
-// 	fs.extract_name(old_name, this->path);
-// 	fs.extract_name(new_name, path);
 	if(!strcasecmp(this->path, path)) 
 		return 1; 
 	else 
@@ -660,8 +655,11 @@ int Asset::read_video(FileXML *file)
 	divx_quantizer = file->tag.get_property("DIVX_QUANTIZER", divx_quantizer);
 	divx_quality = file->tag.get_property("DIVX_QUALITY", divx_quality);
 	divx_fix_bitrate = file->tag.get_property("DIVX_FIX_BITRATE", divx_fix_bitrate);
+	divx_use_deblocking = file->tag.get_property("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
 	ms_bitrate = file->tag.get_property("MS_BITRATE", ms_bitrate);
+	ms_bitrate_tolerance = file->tag.get_property("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
+	ms_interlaced = file->tag.get_property("MS_INTERLACED", ms_interlaced);
 	ms_quantization = file->tag.get_property("MS_QUANTIZATION", ms_quantization);
 	ms_gop_size = file->tag.get_property("MS_GOP_SIZE", ms_gop_size);
 	ms_fix_bitrate = file->tag.get_property("MS_FIX_BITRATE", ms_fix_bitrate);
@@ -848,9 +846,12 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("DIVX_QUANTIZER", divx_quantizer);
 	file->tag.set_property("DIVX_QUALITY", divx_quality);
 	file->tag.set_property("DIVX_FIX_BITRATE", divx_fix_bitrate);
+	file->tag.set_property("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
 
 	file->tag.set_property("MS_BITRATE", ms_bitrate);
+	file->tag.set_property("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
+	file->tag.set_property("MS_INTERLACED", ms_interlaced);
 	file->tag.set_property("MS_QUANTIZATION", ms_quantization);
 	file->tag.set_property("MS_GOP_SIZE", ms_gop_size);
 	file->tag.set_property("MS_FIX_BITRATE", ms_fix_bitrate);
@@ -962,8 +963,11 @@ void Asset::load_defaults(Defaults *defaults,
 	divx_quantizer = GET_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
 	divx_quality = GET_DEFAULT("DIVX_QUALITY", divx_quality);
 	divx_fix_bitrate = GET_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
+	divx_use_deblocking = GET_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
 	ms_bitrate = GET_DEFAULT("MS_BITRATE", ms_bitrate);
+	ms_bitrate_tolerance = GET_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
+	ms_interlaced = GET_DEFAULT("MS_INTERLACED", ms_interlaced);
 	ms_quantization = GET_DEFAULT("MS_QUANTIZATION", ms_quantization);
 	ms_gop_size = GET_DEFAULT("MS_GOP_SIZE", ms_gop_size);
 	ms_fix_bitrate = GET_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
@@ -1020,9 +1024,12 @@ void Asset::save_defaults(Defaults *defaults, char *prefix)
 	UPDATE_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
 	UPDATE_DEFAULT("DIVX_QUALITY", divx_quality);
 	UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
+	UPDATE_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
 
 	UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
+	UPDATE_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
+	UPDATE_DEFAULT("MS_INTERLACED", ms_interlaced);
 	UPDATE_DEFAULT("MS_QUANTIZATION", ms_quantization);
 	UPDATE_DEFAULT("MS_GOP_SIZE", ms_gop_size);
 	UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
@@ -1090,6 +1097,6 @@ int Asset::dump()
 	printf("   audio_length %ld\n", audio_length);
 	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c\n",
 		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3]);
-	printf("   video_length %ld\n", video_length);
+	printf("   video_length %ld \n", video_length);
 	return 0;
 }

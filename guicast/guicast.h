@@ -5,6 +5,7 @@
 #include "bcbutton.h"
 #include "bcclipboard.h"
 #include "bcdragwindow.h"
+#include "bclistboxitem.h"
 #include "bcpan.h"
 #include "bcfilebox.h"
 #include "bclistbox.h"

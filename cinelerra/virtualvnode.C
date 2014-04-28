@@ -302,15 +302,6 @@ int VirtualVNode::render_projector(VFrame *input,
 //for(int j = 0; j < input->get_w() * 3 * 5; j++)
 //	input->get_rows()[0][j] = 255;
 // 
-// printf("VirtualVNode::render_projector %f %f %f %f -> %f %f %f %f\n",
-// 	in_x1, 
-// 	in_y1, 
-// 	in_x2, 
-// 	in_y2, 
-// 	out_x1, 	
-// 	out_y1, 
-// 	out_x2, 
-// 	out_y2);
 			if(out_x2 > out_x1 && 
 				out_y2 > out_y1 && 
 				in_x2 > in_x1 && 

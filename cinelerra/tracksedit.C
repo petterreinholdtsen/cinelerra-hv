@@ -11,8 +11,6 @@
 #include "intautos.h"
 #include "localsession.h"
 #include "mainundo.h"
-#include "mwindow.h"
-#include "mwindowgui.h"
 #include "module.h"
 #include "mainsession.h"
 #include "pluginserver.h"
@@ -22,6 +20,7 @@
 #include "tracks.h"
 #include "trackscroll.h"
 #include "transition.h"
+#include "transportque.h"
 #include "vtrack.h"
 #include <string.h>
 
@@ -29,13 +28,12 @@ int Tracks::clear(double start, double end, int clear_plugins)
 {
 	Track *current_track;
 
-//printf("Tracks::clear 1\n");
 	for(current_track = first; 
 		current_track; 
 		current_track = current_track->next)
 	{
 		if(current_track->record) 
-		{ 
+		{
 			current_track->clear(start, 
 				end, 
 				1, 
@@ -44,7 +42,6 @@ int Tracks::clear(double start, double end, int clear_plugins)
 				1); 
 		}
 	}
-//printf("Tracks::clear 2\n");
 	return 0;
 }
 
@@ -358,7 +355,6 @@ void Tracks::move_effect(Plugin *plugin,
 		}
 
 
-//printf("Tracks::move_effect 1\n");
 		result = dest_track->insert_effect("", 
 				&plugin->shared_location, 
 				0,
@@ -366,31 +362,24 @@ void Tracks::move_effect(Plugin *plugin,
 				start,
 				length,
 				plugin->plugin_type);
-//printf("Tracks::move_effect 2\n");
 	}
 
-//printf("Tracks::move_effect 2 %p %p\n", result, plugin);
 
 
 	result->copy_from(plugin);
-//printf("Tracks::move_effect 2\n");
 	result->shift(dest_position - plugin->startproject);
-//printf("Tracks::move_effect 3\n");
 
 // Clear new plugin from old set
 	plugin->plugin_set->clear(plugin->startproject, plugin->startproject + plugin->length);
 
-//printf("Tracks::move_effect 4\n");
 
 	source_track->optimize();
-//printf("Tracks::move_effect 5\n");
 }
 
 
 
 int Tracks::concatenate_tracks(int edit_plugins)
 {
-//printf("Tracks::concatenate_tracks 1\n");
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
 	double output_start;
@@ -398,7 +387,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 	int result = 0;
 	IntAuto *play_keyframe = 0;
 
-//printf("Tracks::concatenate_tracks 1\n");
 // Relocate tracks
 	for(i = 0; i < 2; i++)
 	{
@@ -411,7 +399,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 
 		first_output_track = output_track;
 
-//printf("Tracks::concatenate_tracks 1\n");
 // Get first input track
 		for(input_track = first;
 			input_track;
@@ -422,7 +409,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 				!input_track->record) break;
 		}
 
-//printf("Tracks::concatenate_tracks 1\n");
 
 		if(output_track && input_track)
 		{
@@ -430,26 +416,21 @@ int Tracks::concatenate_tracks(int edit_plugins)
 			while(input_track)
 			{
 				output_start = output_track->get_length();
-//printf("Tracks::concatenate_tracks 1\n");
 				output_track->insert_track(input_track, 
 					output_start, 
 					0,
 					edit_plugins);
-//printf("Tracks::concatenate_tracks 1\n");
 
 // Get next source and destination
 				for(input_track = input_track->next; 
 					input_track; 
 					input_track = input_track->next)
 				{
-//printf("Tracks::concatenate_tracks 1 %p %p\n", input_track, play_keyframe);
 
 					if(input_track->data_type == data_type && 
 						!input_track->record && 
 						input_track->play) break;
-//printf("Tracks::concatenate_tracks 2\n");
 				}
-//printf("Tracks::concatenate_tracks 3\n");
 
 				for(output_track = output_track->next; 
 					output_track; 
@@ -458,23 +439,18 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					if(output_track->data_type == data_type && 
 						output_track->record) break;
 				}
-//printf("Tracks::concatenate_tracks 1\n");
 
 				if(!output_track)
 				{
 					output_track = first_output_track;
 				}
-//printf("Tracks::concatenate_tracks 1\n");
 			}
-//printf("Tracks::concatenate_tracks 1\n");
 			result = 1;
 		}
 
-//printf("Tracks::concatenate_tracks 1\n");
 		if(data_type == TRACK_AUDIO) data_type = TRACK_VIDEO;
 	}
 
-//printf("Tracks::concatenate_tracks 2\n");
 	return result;
 }
 
@@ -643,32 +619,6 @@ int Tracks::move_tracks_down()
 }
 
 
-int Tracks::paste_assets(FileXML *xml)
-{
-	int result = 0;
-
-	while(!result)
-	{
-		result = xml->read_tag();
-		if(!result)
-		{
-			if(xml->tag.title_is("/ASSETS"))
-			{
-				result = 1;
-			}
-			else
-			if(xml->tag.title_is("ASSET"))
-			{
-				char *path = xml->tag.get_property("SRC");
-				Asset new_asset(path ? path : SILENCE);
-				new_asset.read(mwindow->plugindb, xml);
-				mwindow->assets->update(&new_asset);
-			}
-		}
-	}
-	return 0;
-}
-
 
 void Tracks::paste_audio_transition(PluginServer *server)
 {
@@ -833,49 +783,6 @@ int Tracks::paste_silence(double start, double end, int edit_plugins)
 
 
 
-
-int Tracks::select_translation(int cursor_x, int cursor_y)
-{
-// cursor_x is relative to samples
-	int result = 0;
-	Track* current_track;
-	
-	for(current_track = first; 
-		current_track && !result; 
-		current_track = current_track->next)
-	{
-		if(current_track->record) 
-			result = current_track->select_translation(cursor_x, cursor_y);
-	}
-	if(result)
-	{
-//		mwindow->undo->update_undo_edits("Translation", 0);
-	}
-	return result;
-}
-
-int Tracks::update_translation(int cursor_x, int cursor_y, int shift_down)
-{
-	int result = 0;
-	for(Track* current = first; current && !result; current = NEXT)
-	{
-		result = current->update_translation(cursor_x, cursor_y, shift_down);
-	}
-}
-
-int Tracks::end_translation()
-{
-	Track *current;
-	int result = 0;
-
-	for(current = first; current; current = NEXT)
-	{
-		result = current->end_translation();
-	}
-	return result;
-}
-
-
 int Tracks::select_auto(int cursor_x, int cursor_y)
 {
 	int result = 0;
@@ -938,25 +845,6 @@ int Tracks::modify_pluginhandles(double &oldposition,
 		}
 	}
 	return 0;
-}
-
-int Tracks::reset_translation(long start, long end)
-{
-	Track *current_track;
-	int result = 0;
-
-	for(current_track = first; 
-		current_track; 
-		current_track = current_track->next)
-	{
-		if(current_track->record) { result += current_track->reset_translation(start, end); }
-	}
-
-	if(result)
-	{
-//		mwindow->draw();
-		mwindow->session->changes_made = 1;
-	}
 }
 
 

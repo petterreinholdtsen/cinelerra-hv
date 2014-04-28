@@ -338,16 +338,9 @@ void MWindow::create_plugindb(int do_audio,
 		ArrayList<PluginServer*> &plugindb)
 {
 // Get plugins
-//printf("MWindow::create_plugindb 1 %d\n", this->plugindb->total);
 	for(int i = 0; i < this->plugindb->total; i++)
 	{
 		PluginServer *current = this->plugindb->values[i];
-//printf("MWindow::create_plugindb 2 %d %d %d %d %d\n", this->plugindb->total,
-//	i, 
-// 	current->audio,
-//	current->video,
-//	current->realtime,
-//	current->transition);
 
 		if(current->audio == do_audio &&
 			current->video == do_video &&
@@ -356,7 +349,6 @@ void MWindow::create_plugindb(int do_audio,
 			current->theme == is_theme)
 			plugindb.append(current);
 	}
-//printf("MWindow::create_plugindb 3 %d\n");
 
 // Alphabetize list by title
 	int done = 0;
@@ -376,7 +368,6 @@ void MWindow::create_plugindb(int do_audio,
 			}
 		}
 	}
-//printf("MWindow::create_plugindb 4\n");
 }
 
 PluginServer* MWindow::scan_plugindb(char *title)
@@ -391,13 +382,10 @@ PluginServer* MWindow::scan_plugindb(char *title)
 
 void MWindow::init_preferences()
 {
-//printf("MWindow::init_preferences 1\n");
 	preferences = new Preferences;
 	preferences->load_defaults(defaults);
-//printf("MWindow::init_preferences 1\n");
 	session = new MainSession(this);
 	session->load_defaults(defaults);
-//printf("MWindow::init_preferences 2\n");
 }
 
 void MWindow::clean_indexes()
@@ -472,19 +460,12 @@ void MWindow::init_theme()
 		if(plugindb->values[i]->theme &&
 			!strcasecmp(preferences->theme, plugindb->values[i]->title))
 		{
-//printf("MWindow::init_theme 1\n");
 			PluginServer plugin = *plugindb->values[i];
-//printf("MWindow::init_theme 1\n");
 			plugin.open_plugin(0, 0, 0);
-//printf("MWindow::init_theme 1\n");
 			theme = plugin.new_theme();
-//printf("MWindow::init_theme 1\n");
 			theme->mwindow = this;
-//printf("MWindow::init_theme 1\n");
 			strcpy(theme->path, plugin.path);
-//printf("MWindow::init_theme 1\n");
 			plugin.close_plugin();
-//printf("MWindow::init_theme 2\n");
 		}
 	}
 

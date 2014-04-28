@@ -27,18 +27,30 @@ DenoiseVideoConfig::DenoiseVideoConfig()
 {
 	frames = 2;
 	threshold = 0.1;
+	do_r = 1;
+	do_g = 1;
+	do_b = 1;
+	do_a = 1;
 }
 
 int DenoiseVideoConfig::equivalent(DenoiseVideoConfig &that)
 {
 	return frames == that.frames && 
-		EQUIV(threshold, that.threshold);
+		EQUIV(threshold, that.threshold) &&
+		do_r == that.do_r &&
+		do_g == that.do_g &&
+		do_b == that.do_b &&
+		do_a == that.do_a;
 }
 
 void DenoiseVideoConfig::copy_from(DenoiseVideoConfig &that)
 {
 	frames = that.frames;
 	threshold = that.threshold;
+	do_r = that.do_r;
+	do_g = that.do_g;
+	do_b = that.do_b;
+	do_a = that.do_a;
 }
 
 void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev, 
@@ -52,6 +64,10 @@ void DenoiseVideoConfig::interpolate(DenoiseVideoConfig &prev,
 
 	this->frames = (int)(prev.frames * prev_scale + next.frames * next_scale);
 	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
+	do_r = prev.do_r;
+	do_g = prev.do_g;
+	do_b = prev.do_b;
+	do_a = prev.do_a;
 }
 
 
@@ -104,15 +120,41 @@ int DenoiseVideoThreshold::handle_event()
 
 
 
+DenoiseVideoToggle::DenoiseVideoToggle(DenoiseVideo *plugin, 
+	DenoiseVideoWindow *gui, 
+	int x, 
+	int y, 
+	int *output,
+	char *text)
+ : BC_CheckBox(x, y, *output, text)
+{
+	this->plugin = plugin;
+	this->output = output;
+}
+
+int DenoiseVideoToggle::handle_event()
+{
+	*output = get_value();
+	plugin->send_configure_change();
+}
+
+
+
+
+
+
+
+
+
 
 DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
  	x, 
 	y, 
 	210, 
-	160, 
+	240, 
 	200, 
-	160, 
+	240, 
 	0, 
 	0,
 	1)
@@ -127,10 +169,18 @@ void DenoiseVideoWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, "Frames to accumulate:"));
 	y += 20;
 	add_subwindow(frames = new DenoiseVideoFrames(plugin, x, y));
-	y += 40;
+	y += 30;
 	add_subwindow(new BC_Title(x, y, "Threshold:"));
 	y += 20;
 	add_subwindow(threshold = new DenoiseVideoThreshold(plugin, x, y));
+	y += 40;
+	add_subwindow(do_r = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_r, "Red"));
+	y += 30;
+	add_subwindow(do_g = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_g, "Green"));
+	y += 30;
+	add_subwindow(do_b = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_b, "Blue"));
+	y += 30;
+	add_subwindow(do_a = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_a, "Alpha"));
 	show_window();
 	flush();
 }
@@ -161,23 +211,14 @@ PLUGIN_THREAD_OBJECT(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)
 DenoiseVideo::DenoiseVideo(PluginServer *server)
  : PluginVClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 	accumulation = 0;
-	thread = 0;
-	load_defaults();
 }
 
 
 DenoiseVideo::~DenoiseVideo()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(accumulation) delete [] accumulation;
 }
@@ -201,9 +242,7 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	float transparency = 1 - opacity;
 	float threshold = (float)config.threshold * 
 		cmodel_calculate_max(color_model);
-
-//printf("DenoiseVideo::process_realtime 1\n");
-//printf("DenoiseVideo::process_realtime 1\n");
+	int do_it[4] = { config.do_r, config.do_g, config.do_b, config.do_a };
 
 #define DENOISE_MACRO(type, components, max) \
 { \
@@ -211,25 +250,34 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	{ \
 		type *output_row = (type*)output->get_rows()[i]; \
 		type *input_row = (type*)input->get_rows()[i]; \
+ \
 		for(int k = 0; k < w * components; k++) \
 		{ \
-			float input_pixel = input_row[k]; \
-			(*accumulation_ptr) = \
-				transparency * (*accumulation_ptr) + \
-				opacity * input_pixel; \
- \
- 			if(fabs((*accumulation_ptr) - input_pixel) > threshold) \
+ 			if(do_it[k % components]) \
 			{ \
-				(*accumulation_ptr) = input_pixel; \
-				output_row[k] = (type)(*accumulation_ptr); \
+				float input_pixel = *input_row; \
+				(*accumulation_ptr) = \
+					transparency * (*accumulation_ptr) + \
+					opacity * input_pixel; \
+ \
+ 				if(fabs((*accumulation_ptr) - input_pixel) > threshold) \
+				{ \
+					(*accumulation_ptr) = input_pixel; \
+					*output_row = (type)(*accumulation_ptr); \
+				} \
+				else \
+					*output_row = (type)CLIP((*accumulation_ptr), 0, max); \
 			} \
 			else \
-				output_row[k] = (type)CLIP((*accumulation_ptr), 0, max); \
+			{ \
+				*output_row = *input_row; \
+			} \
  \
+ 			output_row++; \
+			input_row++; \
 			accumulation_ptr++; \
 		} \
 	} \
-\
 }
 
 
@@ -259,7 +307,6 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 			DENOISE_MACRO(uint16_t, 4, 0xffff);
 			break;
 	}
-//printf("DenoiseVideo::process_realtime 2\n");
 }
 
 int DenoiseVideo::is_realtime()
@@ -272,18 +319,19 @@ char* DenoiseVideo::plugin_title()
 	return "Denoise video";
 }
 
-VFrame* DenoiseVideo::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(DenoiseVideo)
 
 SHOW_GUI_MACRO(DenoiseVideo, DenoiseVideoThread)
 
 RAISE_WINDOW_MACRO(DenoiseVideo)
 
+SET_STRING_MACRO(DenoiseVideo);
+
+LOAD_CONFIGURATION_MACRO(DenoiseVideo, DenoiseVideoConfig)
+
 void DenoiseVideo::update_gui()
 {
-	if(thread) 
+	if(thread)
 	{
 		load_configuration();
 		thread->window->lock_window();
@@ -294,10 +342,6 @@ void DenoiseVideo::update_gui()
 }
 
 
-
-SET_STRING_MACRO(DenoiseVideo);
-
-LOAD_CONFIGURATION_MACRO(DenoiseVideo, DenoiseVideoConfig)
 
 int DenoiseVideo::load_defaults()
 {
@@ -311,6 +355,10 @@ int DenoiseVideo::load_defaults()
 
 	config.frames = defaults->get("FRAMES", config.frames);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.do_r = defaults->get("DO_R", config.do_r);
+	config.do_g = defaults->get("DO_G", config.do_g);
+	config.do_b = defaults->get("DO_B", config.do_b);
+	config.do_a = defaults->get("DO_A", config.do_a);
 	return 0;
 }
 
@@ -318,6 +366,10 @@ int DenoiseVideo::save_defaults()
 {
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->update("FRAMES", config.frames);
+	defaults->update("DO_R", config.do_r);
+	defaults->update("DO_G", config.do_g);
+	defaults->update("DO_B", config.do_b);
+	defaults->update("DO_A", config.do_a);
 	defaults->save();
 	return 0;
 }
@@ -331,6 +383,10 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("DENOISE_VIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("DO_R", config.do_r);
+	output.tag.set_property("DO_G", config.do_g);
+	output.tag.set_property("DO_B", config.do_b);
+	output.tag.set_property("DO_A", config.do_a);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -349,6 +405,10 @@ void DenoiseVideo::read_data(KeyFrame *keyframe)
 		{
 			config.frames = input.tag.get_property("FRAMES", config.frames);
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
+			config.do_r = input.tag.get_property("DO_R", config.do_r);
+			config.do_g = input.tag.get_property("DO_G", config.do_g);
+			config.do_b = input.tag.get_property("DO_B", config.do_b);
+			config.do_a = input.tag.get_property("DO_A", config.do_a);
 		}
 	}
 }

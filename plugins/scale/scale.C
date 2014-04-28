@@ -163,7 +163,6 @@ int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	VFrame *input, *output;
 	
-	
 	input = input_ptr;
 	output = output_ptr;
 
@@ -181,7 +180,6 @@ int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		input = temp_frame;
 	}
 //printf("ScaleMain::process_realtime 2 %p\n", input);
-
 
 	if(!overlayer)
 	{
@@ -270,7 +268,7 @@ int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			out_x2, 
 			out_y2, 
 			1,
-			TRANSFER_NORMAL,
+			TRANSFER_REPLACE,
 			get_interpolation_type());
 
 	}

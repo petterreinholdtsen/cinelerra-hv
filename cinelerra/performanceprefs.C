@@ -25,6 +25,9 @@ int PerformancePrefs::create_objects()
 {
 	int x = 5, y = 5;
 	int xmargin1 = 5;
+	int xmargin2 = 170;
+	int xmargin3 = 250;
+	int xmargin4 = 380;
 	char string[BCTEXTLEN];
 
 	node_list = 0;
@@ -68,10 +71,14 @@ int PerformancePrefs::create_objects()
 		x, 
 		y + 60);
 	brender_fragment->create_objects();
+	add_subwindow(new BC_Title(x, y + 95, "Frames to preroll background:"));
+	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, 
+		this, 
+		x + xmargin3, 
+		y + 90);
+	bpreroll->create_objects();
 
-	int xmargin2 = 170;
-	int xmargin3 = 250;
-	int xmargin4 = 380;
+
 	x += xmargin4;
 	add_subwindow(new BC_Title(x, y, "Output for background rendering:"));
 	y += 20;
@@ -105,8 +112,10 @@ int PerformancePrefs::create_objects()
 		this, 
 		x + xmargin4, 
 		y - 5));
-	sprintf(string, "Master node framerate: %0.3f", pwindow->thread->preferences->local_rate);
-	add_subwindow(new BC_Title(x + xmargin4, y + node_list->get_h(), string));
+#define MASTER_NODE_FRAMERATE_TEXT "Master node framerate: %0.3f"
+	sprintf(string, MASTER_NODE_FRAMERATE_TEXT, 
+		pwindow->thread->preferences->local_rate);
+	add_subwindow(master_rate = new BC_Title(x + xmargin4, y + node_list->get_h(), string));
 
 	y += 25;
 	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, 
@@ -336,6 +345,27 @@ PrefsRenderPreroll::~PrefsRenderPreroll()
 int PrefsRenderPreroll::handle_event()
 {
 	pwindow->thread->preferences->render_preroll = atof(get_text());
+	return 1;
+}
+
+
+PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow, 
+		PerformancePrefs *subwindow, 
+		int x, 
+		int y)
+ : BC_TumbleTextBox(subwindow, 
+ 	(long)pwindow->thread->preferences->brender_preroll,
+	(long)0, 
+	(long)100,
+	x,
+	y,
+	100)
+{
+	this->pwindow = pwindow;
+}
+int PrefsBRenderPreroll::handle_event()
+{
+	pwindow->thread->preferences->brender_preroll = atol(get_text());
 	return 1;
 }
 
@@ -642,6 +672,12 @@ int PrefsRenderFarmReset::handle_event()
 	pwindow->thread->preferences->reset_rates();
 	subwindow->generate_node_list();
 	subwindow->update_node_list();
+
+	char string[BCTEXTLEN];
+	sprintf(string, 
+		MASTER_NODE_FRAMERATE_TEXT, 
+		pwindow->thread->preferences->local_rate);
+	subwindow->master_rate->update(string);
 	subwindow->hot_node = -1;
 	return 1;
 }

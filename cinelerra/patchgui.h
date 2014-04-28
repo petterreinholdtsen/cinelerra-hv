@@ -32,13 +32,7 @@ public:
 
 	virtual int create_objects();
 	virtual int reposition(int x, int y);
-	void toggle_behavior(int play, 
-		int record, 
-		int automate, 
-		int gang,
-		int draw, 
-		int mute,
-		int expand,
+	void toggle_behavior(int type, 
 		int value,
 		BC_Toggle *toggle,
 		int *output);
@@ -70,7 +64,8 @@ class PlayPatch : public BC_Toggle
 {
 public:
 	PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
@@ -79,7 +74,8 @@ class RecordPatch : public BC_Toggle
 {
 public:
 	RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
@@ -97,7 +93,8 @@ class AutoPatch : public BC_Toggle
 {
 public:
 	AutoPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
@@ -106,7 +103,8 @@ class GangPatch : public BC_Toggle
 {
 public:
 	GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
@@ -115,7 +113,8 @@ class DrawPatch : public BC_Toggle
 {
 public:
 	DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };
@@ -124,7 +123,8 @@ class MutePatch : public BC_Toggle
 {
 public:
 	MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	static IntAuto* get_keyframe(MWindow *mwindow, PatchGUI *patch);
 	MWindow *mwindow;
 	PatchGUI *patch;
@@ -134,7 +134,8 @@ class ExpandPatch : public BC_Toggle
 {
 public:
 	ExpandPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
-	int handle_event();
+	int button_press_event();
+	int button_release_event();
 	MWindow *mwindow;
 	PatchGUI *patch;
 };

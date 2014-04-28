@@ -42,7 +42,8 @@ Preferences::Preferences()
 	theme[0] = 0;
 	use_renderfarm = 0;
 	renderfarm_port = DEAMON_PORT;
-	render_preroll = 0;
+	render_preroll = 0.5;
+	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_job_count = 1;
 	brender_asset = new Asset;
@@ -70,21 +71,29 @@ void Preferences::copy_rates_from(Preferences *preferences)
 		j < preferences->renderfarm_nodes.total; 
 		j++)
 	{
+		double new_rate = preferences->renderfarm_rate.values[j];
 // Put in the master node
 		if(preferences->renderfarm_nodes.values[j][0] == '/')
-			local_rate = preferences->renderfarm_rate.values[j];
-		else
-// Search for local node
-		for(int i = 0; i < renderfarm_nodes.total; i++)
 		{
-			if(!strcmp(preferences->renderfarm_nodes.values[j], renderfarm_nodes.values[i]) &&
-				preferences->renderfarm_ports.values[j] == renderfarm_ports.values[i])
+			if(!EQUIV(new_rate, 0.0))
+				local_rate = new_rate;
+		}
+		else
+// Search for local node and copy it to that node
+		if(!EQUIV(new_rate, 0.0))
+		{
+			for(int i = 0; i < renderfarm_nodes.total; i++)
 			{
-				renderfarm_rate.values[i] = preferences->renderfarm_rate.values[j];
-				break;
+				if(!strcmp(preferences->renderfarm_nodes.values[j], renderfarm_nodes.values[i]) &&
+					preferences->renderfarm_ports.values[j] == renderfarm_ports.values[i])
+				{
+					renderfarm_rate.values[i] = new_rate;
+					break;
+				}
 			}
 		}
 	}
+
 //printf("Preferences::copy_rates_from 1 %f %f\n", local_rate, preferences->local_rate);
 	preferences_lock->unlock();
 }
@@ -116,6 +125,7 @@ Preferences& Preferences::operator=(Preferences &that)
 	use_renderfarm = that.use_renderfarm;
 	renderfarm_port = that.renderfarm_port;
 	render_preroll = that.render_preroll;
+	brender_preroll = that.brender_preroll;
 	renderfarm_job_count = that.renderfarm_job_count;
 	strcpy(renderfarm_mountpoint, that.renderfarm_mountpoint);
 	renderfarm_consolidate = that.renderfarm_consolidate;
@@ -177,6 +187,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
 	render_preroll = defaults->get("RENDERFARM_PREROLL", render_preroll);
+	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
 	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
@@ -232,6 +243,7 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("LOCAL_RATE", local_rate);
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
+	defaults->update("BRENDER_PREROLL", brender_preroll);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);

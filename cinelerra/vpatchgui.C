@@ -142,7 +142,7 @@ VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
 			w, 
 			w, 
 			0, 
-			100, 
+			MAX_VIDEO_FADE, 
 			(long)get_keyframe(mwindow, patch)->value)
 {
 	this->mwindow = mwindow;

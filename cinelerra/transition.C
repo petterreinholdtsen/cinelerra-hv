@@ -193,11 +193,6 @@ int Transition::update_derived()
 // Redraw transition titles
 }
 
-char* Transition::get_module_title()
-{
-	return edit->edits->track->get_patch_of()->title;
-}
-
 int Transition::update_display()
 {
 // Don't draw anything during loads.

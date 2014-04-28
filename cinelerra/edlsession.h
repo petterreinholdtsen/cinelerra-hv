@@ -21,7 +21,7 @@ public:
 	int load_xml(FileXML *xml, int append_mode, unsigned long load_flags);
 	int save_xml(FileXML *xml);
 	int copy(EDLSession *session);
-	static int calculate_smp();
+	int calculate_smp();
 	int load_audio_config(FileXML *file, int append_mode, unsigned long load_flags);
     int save_audio_config(FileXML *xml);
 	int load_video_config(FileXML *file, int append_mode, unsigned long load_flags);
@@ -103,6 +103,7 @@ public:
 	int interpolation_type;
 // labels follow edits during editing
 	int labels_follow_edits;
+	int mpeg4_deblock;
 	int plugins_follow_edits;
 	int meter_format;
 	float min_meter_db;

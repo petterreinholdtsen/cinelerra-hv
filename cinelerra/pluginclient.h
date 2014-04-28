@@ -126,16 +126,13 @@ void thread_class::run() \
 #define PLUGIN_DESTRUCTOR_MACRO \
 	if(thread) \
 	{ \
-/* prntf("PLUGIN_DESTRUCTOR_MACRO 1\n"); */ \
 		thread->window->set_done(0); \
 		thread->completion.lock(); \
 		delete thread; \
 	} \
  \
-/* printf("PLUGIN_DESTRUCTOR_MACRO 2\n"); */ \
 	if(defaults) save_defaults(); \
-	if(defaults) delete defaults; \
-/* printf("PLUGIN_DESTRUCTOR_MACRO 3\n"); */ \
+	if(defaults) delete defaults;
 
 
 
@@ -143,14 +140,9 @@ void thread_class::run() \
 #define SHOW_GUI_MACRO(plugin_class, thread_class) \
 int plugin_class::show_gui() \
 { \
-/* printf("plugin_class::show_gui 1\n"); */ \
 	load_configuration(); \
-/* printf("plugin_class::show_gui 1\n"); */ \
 	thread_class *new_thread = new thread_class(this); \
-/* printf("plugin_class::show_gui 1\n"); */ \
 	new_thread->start(); \
-/* sleep(10); */ \
-/* printf("plugin_class::show_gui 2\n"); */ \
 	return 0; \
 }
 
@@ -188,25 +180,15 @@ VFrame* plugin_class::new_picon() \
 int plugin_class::load_configuration() \
 { \
 	KeyFrame *prev_keyframe, *next_keyframe; \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	prev_keyframe = get_prev_keyframe(get_source_position()); \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	next_keyframe = get_next_keyframe(get_source_position()); \
-/* printf("plugin_class::load_configuration 1 %p %p\n", prev_keyframe, next_keyframe); */ \
- \
  \
 	config_class old_config, prev_config, next_config; \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	old_config.copy_from(config); \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	read_data(prev_keyframe); \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	prev_config.copy_from(config); \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	read_data(next_keyframe); \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	next_config.copy_from(config); \
-/* printf("plugin_class::load_configuration 1\n"); */ \
 	config.interpolate(prev_config,  \
 		next_config,  \
 		(next_keyframe->position == prev_keyframe->position) ? \
@@ -217,7 +199,6 @@ int plugin_class::load_configuration() \
 			next_keyframe->position, \
 		get_source_position()); \
  \
-/* printf("plugin_class::load_configuration 2\n"); */ \
 	if(!config.equivalent(old_config)) \
 		return 1; \
 	else \

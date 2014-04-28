@@ -3,7 +3,6 @@
 /COPYING/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /Makefile.2/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.50/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/Makefile.ffmpeg/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.jpeg/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.lame/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /Makefile.mad/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -19,15 +18,11 @@
 /ctab.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /dechunk.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
 /depend.dv/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/depend.ffmpeg/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /depend.jpeg/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /depend.lame/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /depend.mad/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /depend.vorbis/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /dinf.c/1.1.1.1/Fri Jun 21 12:35:22 2002//
-/div3.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/div3.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/divx.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /divx.c.2/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /divx.c.50/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /divx.c.encore2/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -65,7 +60,6 @@
 /mmx.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /moov.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mvhd.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/plugin.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /qtinfo.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /qtmp3.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /qtmp3.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -126,6 +120,7 @@ D/decore50////
 D/docs////
 D/encore2////
 D/encore50////
+D/ffmpeg-2.4.5////
 D/jpeg////
 D/jpeg-mmx-0.1.4////
 D/lame-3.92////
@@ -134,38 +129,44 @@ D/libdv-0.9.5////
 D/libogg-1.0rc2////
 D/libraw1394////
 D/libvorbis-1.0rc2////
-D/libdv////
-/stsdtable.c/1.2/Fri Jun 28 12:36:29 2002//
-/udta.c/1.2/Fri Jun 28 12:27:00 2002//
+/stsdtable.c/1.2/Sat Jun 29 03:42:15 2002//
+/udta.c/1.2/Sat Jun 29 03:42:15 2002//
 D/libdv-cvs062602////
+/Makefile.libraw/1.1/Tue Jul  2 14:21:50 2002//
+/depend.libraw/1.1/Tue Jul  2 14:21:39 2002//
+/global_config/1.1/Tue Jul  2 14:20:27 2002//
 D/libraw1394-0.9.0////
-/global_config/1.1/Tue Jul  2 21:13:55 2002//
-/depend.libraw/1.1/Tue Jul  2 21:17:20 2002//
-/Makefile.libraw/1.1/Tue Jul  2 21:17:25 2002//
-/libmjpeg.h/1.2/Mon Jul 15 12:36:48 2002//
-/libdv.c/1.3/Fri Jul 19 14:57:14 2002//
-/libdv.h/1.2/Fri Jul 19 14:21:52 2002//
-/Makefile.encore2/1.2/Mon Jul 22 12:20:21 2002//
-/Makefile.encore50/1.2/Mon Jul 22 12:20:21 2002//
-/Makefile.vorbis/1.2/Mon Jul 22 12:20:21 2002//
-D/libogg-1.0////
+/libmjpeg.h/1.2/Sat Jul 13 06:24:45 2002//
+/libdv.c/1.3/Sat Jul 20 02:34:47 2002//
+/Makefile.encore2/1.2/Sat Jul 20 02:47:23 2002//
+/Makefile.vorbis/1.2/Sat Jul 20 03:31:12 2002//
+/vorbis.c/1.4/Sat Jul 27 03:03:50 2002//
 D/libvorbis-1.0////
-/vorbis.c/1.4/Thu Jul 25 13:30:18 2002//
-/qtprivate.h/1.2/Mon Jul 29 12:14:22 2002//
-/quicktime.c/1.2/Mon Jul 29 12:14:22 2002//
-/quicktime.h/1.2/Mon Jul 29 12:14:22 2002//
-/cmodel_default.c/1.2/Thu Aug  1 14:56:57 2002//
-/codecs.c/1.2/Mon Aug  5 12:17:28 2002//
-/colormodels.c/1.1.1.1/Wed Aug 14 21:48:13 2002//
-/cmodel_permutation.h/1.5/Mon Oct  7 12:29:04 2002//
-/cmodel_yuv422.c/1.2/Mon Oct  7 12:29:04 2002//
-/dv.c/1.3/Mon Oct  7 12:29:04 2002//
-/debug/1.3/Sat Nov  2 04:34:08 2002//
-/jpeg.c/1.4/Sat Nov  2 04:34:08 2002//
-/libmjpeg.c/1.5/Sat Nov  2 04:34:08 2002//
-/recover.c/1.3/Sat Nov  2 04:34:08 2002//
-/util.c/1.3/Mon Nov  4 15:05:56 2002//
-/Makefile/1.4/Mon Nov  4 15:16:53 2002//
-D/ffmpeg-2.4.5////
+D/libogg-1.0////
+/qtprivate.h/1.2/Sun Jul 28 07:05:13 2002//
+/quicktime.c/1.2/Sun Jul 28 07:09:47 2002//
+/codecs.c/1.2/Sat Aug  3 18:27:07 2002//
+/cmodel_yuv422.c/1.2/Sun Oct  6 07:37:26 2002//
+/dv.c/1.3/Sun Oct  6 08:44:20 2002//
+/debug/1.3/Fri Nov  1 08:42:50 2002//
+/jpeg.c/1.4/Fri Nov  1 09:37:22 2002//
+/libmjpeg.c/1.5/Fri Nov  1 09:37:41 2002//
+/recover.c/1.3/Fri Nov  1 09:23:32 2002//
+/util.c/1.3/Sun Nov  3 21:19:08 2002//
+/Makefile.dv/1.3/Mon Nov 11 05:19:11 2002//
 D/libdv-0.98////
-/Makefile.dv/1.3/Fri Nov  8 14:40:44 2002//
+/Makefile.ffmpeg/1.2/Sat Nov 23 05:33:37 2002//
+/depend.ffmpeg/1.2/Sat Nov 23 05:33:37 2002//
+/div3.c/1.2/Sat Nov 23 05:33:37 2002//
+/div3.h/1.2/Sat Nov 23 05:33:37 2002//
+/libdv.h/1.3/Sat Nov 23 05:33:37 2002//
+/plugin.c/1.2/Sat Nov 23 05:33:37 2002//
+/quicktime.h/1.3/Sat Nov 23 05:33:37 2002//
+D/ffmpeg-111402////
+/Makefile/1.5/Wed Feb  5 06:40:02 2003//
+/Makefile.encore50/1.3/Wed Feb  5 06:42:06 2003//
+/depend.encore50/1.1/Wed Feb  5 06:37:51 2003//
+/divx.c/1.4/Tue Feb  4 07:11:16 2003//
+/cmodel_permutation.h/1.7/Thu Feb  6 06:05:16 2003//
+/cmodel_default.c/1.2/Thu Feb  6 04:41:57 2003//
+/colormodels.c/1.1.1.1/Thu Feb  6 06:06:33 2003//

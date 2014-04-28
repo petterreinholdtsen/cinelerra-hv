@@ -246,7 +246,7 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			config.out_x + config.out_w,
 			config.out_y + config.out_h,
 			1,
-			TRANSFER_NORMAL,
+			TRANSFER_REPLACE,
 			get_interpolation_type());
 
 }

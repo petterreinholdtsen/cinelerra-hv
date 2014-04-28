@@ -36,7 +36,6 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	this->edl = edl;
 	this->tracks = tracks;
 	y_pixel = 0;
-	module_view = 0;
 	expand_view = 0;
 	draw = 1;
 	gang = 1;
@@ -768,7 +767,6 @@ int Track::dump()
 Track::Track() : ListItem<Track>()
 {
 	y_pixel = 0;
-	module_view = 0;
 }
 
 // ======================================== accounting
@@ -778,21 +776,6 @@ int Track::number_of()
 	return tracks->number_of(this); 
 }
 
-
-Patch* Track::get_patch_of()
-{
-	return 0;
-}
-
-Module* Track::get_module_of()
-{
-	return 0;
-}
-
-int Track::track_visible(int x, int w, int y, int h)
-{
-	return 0;
-}
 
 
 
@@ -1066,26 +1049,21 @@ int Track::clear(double start,
 {
 // Edits::move_auto calls this routine after the units are converted to the track
 // format.
-//printf("Track::clear 1\n");
 	if(convert_units)
 	{
 		start = to_units(start, 0);
 		end = to_units(end, 0);
 	}
-//printf("Track::clear 1\n");
 
 	if(edit_edits)
 		automation->clear((long)start, (long)end, 0, 1);
-//printf("Track::clear 1\n");
 
 	if(edit_plugins)
 		for(int i = 0; i < plugin_set.total; i++)
 			plugin_set.values[i]->clear((long)start, (long)end);
 
-//printf("Track::clear 1\n");
 	if(edit_edits)
 		edits->clear((long)start, (long)end);
-//printf("Track::clear 2\n");
 	return 0;
 }
 
@@ -1103,24 +1081,6 @@ int Track::popup_transition(int cursor_x, int cursor_y)
 	return 0;
 }
 
-int Track::select_handle(int cursor_x, int cursor_y, long &selection)
-{
-	int result = 0;
-	Edit *current_edit;
-	Patch *patch = get_patch_of();
-	double view_start, view_units, zoom_units;
-
-
-	get_dimensions(view_start, view_units, zoom_units);
-	for(current_edit = edits->first; current_edit && !result; current_edit = current_edit->next)
-	{
-		result = current_edit->select_handle(view_start, zoom_units, cursor_x, cursor_y, selection);
-	}
-
-	if(!patch->record && result) result = 3;
-
-	return result;
-}
 
 
 int Track::modify_edithandles(double oldposition, 
@@ -1130,7 +1090,6 @@ int Track::modify_edithandles(double oldposition,
 	int edit_labels,
 	int edit_plugins)
 {
-//printf("Track::modify_handles 1\n");
 	edits->modify_handles(oldposition, 
 		newposition, 
 		currentend, 
@@ -1138,7 +1097,8 @@ int Track::modify_edithandles(double oldposition,
 		1,
 		edit_labels,
 		edit_plugins);
-//printf("Track::modify_handles 2\n");
+
+
 	return 0;
 }
 
@@ -1148,7 +1108,6 @@ int Track::modify_pluginhandles(double oldposition,
 	int handle_mode,
 	int edit_labels)
 {
-//printf("Track::modify_pluginhandles 1\n");
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		plugin_set.values[i]->modify_handles(oldposition, 
@@ -1159,23 +1118,18 @@ int Track::modify_pluginhandles(double oldposition,
 			edit_labels,
 			1);
 	}
-//printf("Track::modify_pluginhandles 2\n");
 	return 0;
 }
 
 
 int Track::paste_silence(double start, double end, int edit_plugins)
 {
-//printf("Track::paste_silence 1\n");
 	start = to_units(start, 0);
 	end = to_units(end, 1);
 
-//printf("Track::paste_silence 1\n");
 	edits->paste_silence((long)start, (long)end);
-//printf("Track::paste_silence 1\n");
 	shift_keyframes(start, end - start, 0);
 	if(edit_plugins) shift_effects(start, end - start, 0);
-//printf("Track::paste_silence 1\n");
 
 	edits->optimize();
 	return 0;

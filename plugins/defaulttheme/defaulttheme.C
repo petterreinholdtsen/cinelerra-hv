@@ -235,15 +235,10 @@ void DefaultTheme::initialize()
 
 
 
-//printf("DefaultTheme::DefaultTheme 1\n");
 	build_icons();
-//printf("DefaultTheme::DefaultTheme 1\n");
 	build_bg_data();
-//printf("DefaultTheme::DefaultTheme 1\n");
 	build_patches();
-//printf("DefaultTheme::DefaultTheme 1\n");
 	build_overlays();
-//printf("DefaultTheme::DefaultTheme 2\n");
 
 
 
@@ -324,7 +319,6 @@ void DefaultTheme::initialize()
 	label_toggle = default_labeltoggle;
 	out_point = default_outpoint;
 	flush_images();
-//printf("DefaultTheme::initialize 3\n");
 
 	title_font = MEDIUMFONT_3D;
 	title_color = WHITE;
@@ -375,7 +369,6 @@ void DefaultTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mcanvas_y = mtimebar_y + mtimebar_h;
 	mcanvas_w = w - patchbay_w;
 	mcanvas_h = patchbay_h;
-//printf("DefaultTheme::get_mwindow_sizes %d %d %d %d\n", mtimebar_x, mtimebar_y, mtimebar_w, mtimebar_h);
 }
 
 void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui)
@@ -509,15 +502,10 @@ void DefaultTheme::get_vwindow_sizes(VWindowGUI *gui)
 
 void DefaultTheme::build_icons()
 {
-//printf("DefaultTheme::build_icons 1\n");
 	mwindow_icon = new VFrame(get_image("heroine_icon.png"));
-//printf("DefaultTheme::build_icons 1\n");
 	vwindow_icon = new VFrame(get_image("heroine_icon.png"));
-//printf("DefaultTheme::build_icons 1\n");
 	cwindow_icon = new VFrame(get_image("heroine_icon.png"));
-//printf("DefaultTheme::build_icons 1\n");
 	awindow_icon = new VFrame(get_image("heroine_icon.png"));
-//printf("DefaultTheme::build_icons 1\n");
 	record_icon = new VFrame(get_image("heroine_icon.png"));
 	clip_icon = new VFrame(get_image("clip_icon.png"));
 }
@@ -607,12 +595,7 @@ void DefaultTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
 	int margin = 35;
 	int panel_w = 300;
-// 	gui->draw_3segmenth(0,
-// 		0,
-// 		panel_w,
-// 		rmonitor_panel);
 	int x = rmonitor_canvas_w - margin;
-//printf("DefaultTheme::draw_rmonitor_bg 1 %d\n", x);
 	gui->draw_9segment(x,
 		0,
 		mwindow->session->rmonitor_w - x,
@@ -759,7 +742,6 @@ void DefaultTheme::draw_new_bg(NewWindow *gui)
 
 void DefaultTheme::draw_setformat_bg(SetFormatWindow *gui)
 {
-//printf("DefaultTheme::draw_setformat_bg 1\n");
 	gui->draw_vframe(setformat_bg, 0, 0);
 }
 

@@ -14,7 +14,6 @@ BC_Toggle::BC_Toggle(int x, int y,
 		int color)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
-//printf("BC_Toggle::BC_Toggle 1\n");
 	this->data = data;
 	images[0] = images[1] = images[2] = images[3] = images[4] = 0;
 	status = value ? TOGGLE_CHECKED : TOGGLE_UP;
@@ -23,7 +22,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 	this->bottom_justify = bottom_justify;
 	this->font = font;
 	this->color = color;
-//printf("BC_Toggle::BC_Toggle 2\n");
+	select_drag = 0;
 }
 
 
@@ -40,7 +39,6 @@ BC_Toggle::~BC_Toggle()
 int BC_Toggle::initialize()
 {
 // Get the image
-//printf("BC_Toggle::initialize 1\n");
 	set_images(data);
 	w = images[0]->get_w();
 	h = images[0]->get_h();
@@ -78,7 +76,6 @@ int BC_Toggle::initialize()
 
 // Display the bitmap
 	draw_face();
-//printf("BC_Toggle::initialize 2\n");
 	return 0;
 }
 
@@ -99,6 +96,11 @@ int BC_Toggle::set_images(VFrame **data)
 	images[3] = new BC_Pixmap(top_level, data[3], PIXMAP_ALPHA);
 	images[4] = new BC_Pixmap(top_level, data[4], PIXMAP_ALPHA);
 	return 0;
+}
+
+void BC_Toggle::set_select_drag(int value)
+{
+	this->select_drag = value;
 }
 
 int BC_Toggle::draw_face()
@@ -172,9 +174,10 @@ int BC_Toggle::cursor_leave_event()
 int BC_Toggle::button_press_event()
 {
 	hide_tooltip();
-	if(top_level->event_win == win)
+	if(top_level->event_win == win && get_buttonpress() == 1)
 	{
 		status = TOGGLE_DOWN;
+		top_level->toggle_value = !this->value;
 		draw_face();
 		return 1;
 	}
@@ -184,32 +187,28 @@ int BC_Toggle::button_press_event()
 int BC_Toggle::button_release_event()
 {
 	hide_tooltip();
-//printf("BC_Toggle::button_release_event 1\n");
 	if(top_level->event_win == win && status == TOGGLE_DOWN)
 	{
-//printf("BC_Toggle::button_release_event 2\n");
 		if(!value)
 		{
-//printf("BC_Toggle::button_release_event 3\n");
 			status = TOGGLE_CHECKEDHI;
 			value = 1;
-			draw_face();
-			return handle_event();
 		}
 		else
 		{
-//printf("BC_Toggle::button_release_event 4\n");
 			status = TOGGLE_UPHI;
 			value = 0;
-			draw_face();
-			return handle_event();
 		}
+
+		draw_face();
+		return handle_event();
 	}
 	return 0;
 }
 
 int BC_Toggle::cursor_motion_event()
 {
+	if(select_drag) return 0;
 	if(top_level->button_down && top_level->event_win == win && !cursor_inside())
 	{
 		if(status == TOGGLE_DOWN)

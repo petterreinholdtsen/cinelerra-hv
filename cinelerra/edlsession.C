@@ -24,8 +24,9 @@ EDLSession::EDLSession(EDL *edl)
 	interpolation_type = CUBIC_LINEAR;
 	force_uniprocessor = 0;
 	test_playback_edits = 1;
-	smp = force_uniprocessor ? 0 : calculate_smp();
+	smp = calculate_smp();
 	brender_start = 0.0;
+	mpeg4_deblock = 1;
 
 	for(int i = 0; i < PLAYBACK_STRATEGIES; i++)
 	{
@@ -55,6 +56,9 @@ int EDLSession::calculate_smp()
 /* Get processor count */
 	int result = 1;
 	FILE *proc;
+
+	if(force_uniprocessor) return 0;
+
 	if(proc = fopen("/proc/cpuinfo", "r"))
 	{
 		char string[1024];
@@ -99,7 +103,8 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 		session->output_h != output_h ||
 		session->frame_rate != frame_rate ||
 		session->color_model != color_model ||
-		session->interpolation_type != interpolation_type)
+		session->interpolation_type != interpolation_type ||
+		session->mpeg4_deblock != mpeg4_deblock)
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
@@ -185,6 +190,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
 	meter_format = defaults->get("METER_FORMAT", METER_DB);
 	min_meter_db = defaults->get("MIN_METER_DB", (float)-85);
+	mpeg4_deblock = defaults->get("MPEG4_DEBLOCK", mpeg4_deblock);
 	output_w = defaults->get("OUTPUTW", 720);
 	output_h = defaults->get("OUTPUTH", 480);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
@@ -214,7 +220,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	sample_rate = defaults->get("SAMPLERATE", 48000);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
 	show_titles = defaults->get("SHOW_TITLES", 1);
-	smp = force_uniprocessor ? 0 : calculate_smp();
+	smp = calculate_smp();
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMS);
 	tool_window = defaults->get("TOOL_WINDOW", 0);
@@ -304,6 +310,7 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
     defaults->update("METER_FORMAT", meter_format);
     defaults->update("MIN_METER_DB", min_meter_db);
+	defaults->update("MPEG4_DEBLOCK", mpeg4_deblock);
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
     defaults->update("PLAYBACK_BUFFER", playback_buffer);
@@ -481,11 +488,12 @@ int EDLSession::load_xml(FileXML *file,
 		force_uniprocessor = file->tag.get_property("FORCE_UNIPROCESSOR", force_uniprocessor);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
 		labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
+		mpeg4_deblock = file->tag.get_property("MPEG4_DEBLOCK", mpeg4_deblock);
 		plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 		playback_preload = file->tag.get_property("PLAYBACK_PRELOAD", playback_preload);
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
-		smp = force_uniprocessor ? 0 : calculate_smp();
+		smp = calculate_smp();
 //		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
@@ -537,6 +545,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("FORCE_UNIPROCESSOR", force_uniprocessor);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
+	file->tag.set_property("MPEG4_DEBLOCK", mpeg4_deblock);
 	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("PLAYBACK_PRELOAD", playback_preload);
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
@@ -651,6 +660,7 @@ int EDLSession::copy(EDLSession *session)
 	enable_duplex = session->enable_duplex;
 	folderlist_format = session->folderlist_format;
 	force_uniprocessor = session->force_uniprocessor;
+	smp = calculate_smp();
 	frame_rate = session->frame_rate;
 	frames_per_foot = session->frames_per_foot;
 	highlighted_track = session->highlighted_track;
@@ -661,6 +671,7 @@ int EDLSession::copy(EDLSession *session)
 //	last_playback_position = session->last_playback_position;
 	meter_format = session->meter_format;
 	min_meter_db = session->min_meter_db;
+	mpeg4_deblock = session->mpeg4_deblock;
 	output_w = session->output_w;
 	output_h = session->output_h;
 	playback_buffer = session->playback_buffer;

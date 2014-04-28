@@ -103,7 +103,7 @@ void BC_Pan::set_images(VFrame **data)
 
 int BC_Pan::button_press_event()
 {
-	if(is_event_win())
+	if(is_event_win() && get_buttonpress() == 1)
 	{
 		activate();
 		x_origin = get_cursor_x();

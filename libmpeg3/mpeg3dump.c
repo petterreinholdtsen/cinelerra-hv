@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	char outfile[1024];
 	int decompress_audio = 0, decompress_video = 0;
 	int audio_track = 0;
-	int print_offsets = 1;
+	int print_offsets = 0;
 
 	outfile[0] = 0;
 	if(argc < 2)

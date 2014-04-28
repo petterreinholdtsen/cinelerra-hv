@@ -9,6 +9,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+
+
+
+
 
 
 REGISTER_PLUGIN(AgingMain)
@@ -102,7 +107,7 @@ int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 AgingServer::AgingServer(AgingMain *plugin, int total_clients, int total_packages)
- : LoadServer(total_clients, total_packages)
+ : LoadServer(1, 1 /* total_clients, total_packages */)
 {
 	this->plugin = plugin;
 }
@@ -232,13 +237,14 @@ void AgingClient::coloraging(unsigned char **output_rows,
 { \
 	int i, j, y, y1, y2; \
 	type *p, a, b; \
+	int w_256 = w * 256; \
  \
 	for(i = 0; i < plugin->config.scratch_lines; i++) \
 	{ \
 		if(plugin->config.scratches[i].life)  \
 		{ \
 			plugin->config.scratches[i].x = plugin->config.scratches[i].x + plugin->config.scratches[i].dx; \
-			if(plugin->config.scratches[i].x < 0 || plugin->config.scratches[i].x > w * 256)  \
+			if(plugin->config.scratches[i].x < 0 || plugin->config.scratches[i].x > w_256)  \
 			{ \
 				plugin->config.scratches[i].life = 0; \
 				break; \
@@ -246,7 +252,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
 \
 			p = (type*)output_rows[0] + \
 				(plugin->config.scratches[i].x >> 8) * \
-				components + j; \
+				components; \
 \
 			if(plugin->config.scratches[i].init)  \
 			{ \
@@ -301,7 +307,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
 			if((EffectTV::fastrand() & 0xf0000000) == 0)  \
 			{ \
 				plugin->config.scratches[i].life = 2 + (EffectTV::fastrand() >> 27); \
-				plugin->config.scratches[i].x = EffectTV::fastrand() % (w * 256); \
+				plugin->config.scratches[i].x = EffectTV::fastrand() % (w_256); \
 				plugin->config.scratches[i].dx = ((int)EffectTV::fastrand()) >> 23; \
 				plugin->config.scratches[i].init = (EffectTV::fastrand() % (h - 1)) + 1; \
 			} \
@@ -549,7 +555,6 @@ void AgingClient::process_package(LoadPackage *package)
 	AgingPackage *local_package = (AgingPackage*)package;
 	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
 	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;
-
 
 //printf("AgingClient::process_package 1\n");
 	if(plugin->config.colorage)

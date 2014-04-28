@@ -11,8 +11,6 @@
 #include "intauto.h"
 #include "intautos.h"
 #include "localsession.h"
-#include "mwindow.h"
-#include "mwindowgui.h"
 #include "module.h"
 #include "panauto.h"
 #include "panautos.h"
@@ -22,6 +20,7 @@
 #include "track.h"
 #include "trackcanvas.h"
 #include "tracks.h"
+#include "transportque.inc"
 #include "vtrack.h"
 #include <string.h>
 
@@ -119,9 +118,7 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 Tracks& Tracks::operator=(Tracks &tracks)
 {
 	Track *new_track;
-//printf("Tracks::operator= 1\n");
 	delete_all_tracks();
-//printf("Tracks::operator= 2\n");
 	for(Track *current = tracks.first; current; current = NEXT)
 	{
 		switch(current->data_type)
@@ -133,18 +130,9 @@ Tracks& Tracks::operator=(Tracks &tracks)
 				new_track = add_video_track(); 
 				break;
 		}
-//printf("Tracks::operator= 3\n");
 		*new_track = *current;
-//printf("Tracks::operator= 4\n");
 	}
-//printf("Tracks::operator= 5\n");
 	return *this;
-}
-
-int Tracks::load_defaults(Defaults *defaults)
-{
-// Tracks
-	return 0;
 }
 
 int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
@@ -154,7 +142,6 @@ int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
 	Track *track = 0;
 	sprintf(string, "");
 	
-//printf("Tracks::load 1\n");
 	xml->tag.get_property("TYPE", string);
 
 	if((load_flags & LOAD_ALL) == LOAD_ALL ||
@@ -162,12 +149,10 @@ int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
 	{
 		if(!strcmp(string, "VIDEO"))
 		{
-//printf("Tracks::load 2\n");
 			add_video_track();
 		}
 		else
 		{
-//printf("Tracks::load 3\n");
 			add_audio_track();    // default to audio
 		}
 		track = last;
@@ -177,11 +162,9 @@ int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
 		track = get_item_number(track_offset);
 		track_offset++;
 	}
-//printf("Tracks::load 4 %p\n", last);
 
 // load it
 	if(track) track->load(xml, track_offset, load_flags);
-//printf("Tracks::load 2 %d\n", total());
 
 	return 0;
 }
@@ -261,13 +244,7 @@ int Tracks::delete_track(Track *track)
 	return 0;
 }
 
-int Tracks::total_of(int play, 
-		int record, 
-		int automate, 
-		int gang, 
-		int draw, 
-		int mute,
-		int expand)
+int Tracks::total_of(int type)
 {
 	int result = 0;
 	IntAuto *mute_keyframe = 0;
@@ -281,12 +258,12 @@ int Tracks::total_of(int play,
 			(Auto*)mute_keyframe);
 
 		result += 
-			(current->play && play) ||
-			(current->record && record) ||
-			(current->gang && gang) ||
-			(current->draw && draw) ||
-			(mute_keyframe->value && mute) ||
-			(current->expand_view && expand);
+			(current->play && type == PLAY) ||
+			(current->record && type == RECORD) ||
+			(current->gang && type == GANG) ||
+			(current->draw && type == DRAW) ||
+			(mute_keyframe->value && type == MUTE) ||
+			(current->expand_view && type == EXPAND);
 	}
 	return result;
 }
@@ -445,40 +422,24 @@ int Tracks::dump()
 	return 0;
 }
 
-void Tracks::select_all(int play, 
-		int record, 
-		int automate, 
-		int gang, 
-		int draw, 
-		int mute,
-		int expand,
+void Tracks::select_all(int type,
 		int value)
 {
-// printf("Tracks::select_all %d %d %d %d %d %d %d %d\n",
-// 	play, 
-// 	record, 
-// 	automate, 
-// 	gang, 
-// 	draw, 
-// 	mute,
-// 	expand,
-// 	value);
-
 	for(Track* current = first; current; current = NEXT)
 	{
 		double position = edl->local_session->selectionstart;
 
-		if(play) current->play = value;
-		if(record) current->record = value;
-		if(gang) current->gang = value;
-		if(draw) current->draw = value;
+		if(type == PLAY) current->play = value;
+		if(type == RECORD) current->record = value;
+		if(type == GANG) current->gang = value;
+		if(type == DRAW) current->draw = value;
 		
-		if(mute)
+		if(type == MUTE)
 		{
 			((IntAuto*)current->automation->mute_autos->get_auto_for_editing(position))->value = value;
 		}
 
-		if(expand) current->expand_view = value;
+		if(type == EXPAND) current->expand_view = value;
 	}
 }
 
@@ -520,82 +481,6 @@ void Tracks::select_all(int play,
 
 
 
-
-
-
-
-Tracks::Tracks(MWindow *mwindow)
- : List<Track>()
-{
-	this->mwindow = mwindow;
-	canvas = 0;
-	cursor = 0;
-	overlays_visible = 0;
-	handles = 0;
-	titles = 0;
-}
-// 
-// Tracks::~Tracks()
-// {
-// 	if(cursor) delete cursor;
-// 	if(canvas) delete canvas;
-// }
-// 
-int Tracks::create_objects(Defaults *defaults, int w, int h, int top, int bottom)
-{
-//	load_defaults(defaults);
-
-// 	if(mwindow->gui)
-// 	{
-// 		cursor = new Cursor_(canvas);
-// 		show_overlays(0);
-// 	}
-	return 0;
-}
-
-int Tracks::save_defaults(Defaults *defaults)
-{
-	defaults->update("SHOWTITLES", titles);
-	defaults->update("SHOWHANDLES", handles);
-	defaults->update("SHOWOUTPUT", show_output);
-	auto_conf.save_defaults(defaults);
-	return 0;
-}
-
-int Tracks::set_index_file(int flash, Asset *asset)
-{
-	Track* current;
-	int result;
-
-	result = 1;
-
-	if(mwindow->gui)
-	{
-//		hide_overlays(0);
-
-		for(current = first; current; current = NEXT)
-		{
-//			if(!(current->set_index_files(0, asset))) result = 0;
-		}
-
-//		show_overlays(flash);
-	}
-
-	return result;
-}
-
-
-int Tracks::resize_event(int w, int h, int top, int bottom)
-{
-	canvas->reposition_window(mwindow->theme->patchbay_w, top, w - mwindow->theme->patchbay_w - 17, bottom - top);
-	return 0;
-}
-
-int Tracks::flip_vertical(int top, int bottom)
-{
-	resize_event(mwindow->gui->get_w(), mwindow->gui->get_h(), top, bottom);
-	return 0;
-}
 
 
 
@@ -652,10 +537,6 @@ Track* Tracks::number(int number)
 	return current;
 }
 
-int Tracks::copy_length(long start, long end)
-{
-	return mwindow->patches->copy_length();
-}
 
 int Tracks::total_playable_vtracks()
 {

@@ -4,7 +4,7 @@
 #include "bctitle.h"
 #include "clip.h"
 #include "filesystem.h"
-
+#include "bclistboxitem.h"
 #include <string.h>
 #include <sys/stat.h>
 
@@ -259,7 +259,7 @@ int BC_FileBoxCancel::handle_event()
 
 BC_FileBoxUseThis::BC_FileBoxUseThis(BC_FileBox *filebox)
  : BC_Button(filebox->get_w() / 2 - 50, 
- 	filebox->get_h() - 50, 
+ 	filebox->get_h() - 35, 
 	BC_WindowBase::get_resources()->usethis_button_images)
 {
 	this->filebox = filebox; 
@@ -372,9 +372,7 @@ BC_FileBox::BC_FileBox(int x,
 		char *init_path,
 		char *title,
 		char *caption,
-// Set to 1 to get hidden files. 
 		int show_all_files,
-// Want only directories
 		int want_directory,
 		int multiple_files,
 		int h_padding)
@@ -411,7 +409,6 @@ BC_FileBox::BC_FileBox(int x,
 		sprintf(filename, "");
 	}
 	this->h_padding = h_padding;
-//printf("BC_FileBox::BC_FileBox %d\n", want_directory);
 }
 
 BC_FileBox::~BC_FileBox()
@@ -486,7 +483,7 @@ int BC_FileBox::get_listbox_w()
 
 int BC_FileBox::get_listbox_h(int y)
 {
-	return get_h() - y - h_padding - 100;
+	return get_h() - y - h_padding - 110;
 }
 
 int BC_FileBox::create_icons()
@@ -538,6 +535,24 @@ int BC_FileBox::resize_event(int w, int h)
 	set_h(h);
 	get_resources()->filebox_w = get_w();
 	get_resources()->filebox_h = get_h();
+	return 1;
+}
+
+int BC_FileBox::keypress_event()
+{
+	switch(get_keypress())
+	{
+		case 'w':
+			if(ctrl_down()) set_done(1);
+			return 1;
+			break;
+	}
+	return 0;
+}
+
+int BC_FileBox::close_event()
+{
+	set_done(1);
 	return 1;
 }
 
@@ -637,10 +652,8 @@ int BC_FileBox::submit_file(char *path, int return_value, int use_this)
 	if(!path[0]) return 1;   // blank
 
 // is a directory, change directories
-//printf("BC_FileBox::submit_file 1\n");
 	if(!fs->is_dir(path) && !use_this)
 	{
-//printf("BC_FileBox::submit_file 2\n");
 		fs->change_dir(path);
 		create_tables();
 		listbox->update(list_column, 
@@ -660,25 +673,18 @@ int BC_FileBox::submit_file(char *path, int return_value, int use_this)
 		else
 			textbox->update("");
 		listbox->reset_query();
-//printf("BC_FileBox::submit_file 3\n");
 		return 1;
 	}
 	else
 // Is a file or desired directory.  Quit the operation.
 	{
-//printf("BC_FileBox::submit_file 4 %s\n", path);
+//printf("BC_FileBox::submit_file 1\n");
 		fs->extract_dir(directory, path);     // save directory for defaults
-//printf("BC_FileBox::submit_file 5\n");
 		fs->extract_name(filename, path);     // save filename
-//printf("BC_FileBox::submit_file 6\n");
 		fs->complete_path(path);
-//printf("BC_FileBox::submit_file 7\n");
 		strcpy(this->path, path);          // save complete path
-//printf("BC_FileBox::submit_file 8\n");
 		newfolder_thread->interrupt();
-//printf("BC_FileBox::submit_file 9\n");
 		set_done(return_value);
-//printf("BC_FileBox::submit_file 10\n");
 		return 0;
 	}
 	return 0;

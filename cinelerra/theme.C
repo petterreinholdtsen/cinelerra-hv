@@ -242,7 +242,6 @@ unsigned char* Theme::get_image(char *title)
 // Read contents
 	if(!data_buffer)
 	{
-//printf("Theme::get_image 1\n");
 		FILE *fd = fopen(path, "r");
 
 		if(!fd)
@@ -254,29 +253,22 @@ unsigned char* Theme::get_image(char *title)
 		int data_size;
 		int contents_size;
 
-//printf("Theme::get_image 1\n");
 		fseek(fd, -8, SEEK_END);
-//printf("Theme::get_image 1\n");
 		total_bytes = ftell(fd);
-//printf("Theme::get_image 1\n");
 		fread(&data_offset, 1, 4, fd);
-//printf("Theme::get_image 1\n");
 		fread(&contents_offset, 1, 4, fd);
 
-//printf("Theme::get_image 1\n");
 
 		fseek(fd, data_offset, SEEK_SET);
 		data_size = contents_offset - data_offset;
 		data_buffer = new char[data_size];
 		fread(data_buffer, 1, data_size, fd);
 
-//printf("Theme::get_image 1\n");
 		fseek(fd, contents_offset, SEEK_SET);
 		contents_size = total_bytes - contents_offset;
 		contents_buffer = new char[contents_size];
 		fread(contents_buffer, 1, contents_size, fd);
 
-//printf("Theme::get_image 2\n");
 		char *start_of_title = contents_buffer;
 		for(int i = 0; i < contents_size; )
 		{
@@ -287,7 +279,6 @@ unsigned char* Theme::get_image(char *title)
 				offsets.append(*(int*)(contents_buffer + i));
 				i += 4;
 				start_of_title = contents_buffer + i;
-//printf("%x %s\n", offsets.values[offsets.total - 1], contents.values[contents.total - 1]);
 			}
 			else
 				i++;
@@ -295,7 +286,6 @@ unsigned char* Theme::get_image(char *title)
 		fclose(fd);
 	}
 
-//printf("%p %s\n", last_image, title);
 	if(last_image && !strcasecmp(last_image, title))
 	{
 		return (unsigned char*)(data_buffer + last_offset);

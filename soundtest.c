@@ -40,6 +40,8 @@ int main(int argc, char *argv[]){
 		bufsize += (long)(log(fragsize) / log(2));
 	}
 
+#ifdef USE_FULLDUPLEX
+
 	printf("*** Full duplex\n");
 
 	if((dsp = open("/dev/dsp", O_RDWR)) < 0){
@@ -86,7 +88,7 @@ int main(int argc, char *argv[]){
 	close(dsp);
 
 
-
+#endif
 
 
 	printf("\n*** Half duplex\n");

@@ -1,0 +1,19 @@
+/.cvsignore/1.1/Thu Nov 14 16:54:11 2002//
+/COPYING/1.1/Thu Nov 14 16:54:11 2002//
+/Changelog/1.1/Thu Nov 14 16:54:11 2002//
+/INSTALL/1.1/Thu Nov 14 16:54:11 2002//
+/Makefile/1.1/Thu Nov 14 16:54:11 2002//
+/README/1.1/Thu Nov 14 16:54:11 2002//
+/VERSION/1.1/Thu Nov 14 16:54:11 2002//
+/berrno.h/1.1/Thu Nov 14 16:54:11 2002//
+/config.h/1.1/Thu Nov 14 16:54:11 2002//
+/config.mak/1.1/Thu Nov 14 16:54:11 2002//
+/configure/1.1/Thu Nov 14 16:54:11 2002//
+/cygwin_inttypes.h/1.1/Thu Nov 14 16:54:11 2002//
+/ffmpeg.c/1.1/Thu Nov 14 16:54:11 2002//
+/ffserver.c/1.1/Thu Nov 14 16:54:11 2002//
+/ffserver.h/1.1/Thu Nov 14 16:54:11 2002//
+D/doc////
+D/libav////
+D/libavcodec////
+D/tests////

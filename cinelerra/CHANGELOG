@@ -1042,3 +1042,52 @@ Single frame recording with multiple batches doesn't crash.
 Sound Level
 DV encoding with proper color conversion.
 
+
+
+
+
+
+
+
+11/08/02
+
+More options for the ffmpeg/MPEG-4 codecs.
+Histogram works on SMP.
+Proper 16 bit alpha blending.
+BRender path updates from preferences.
+Separate preroll for background rendering and rendering.
+Deinterlace by averaging lines 0 and 2 or 1 and 3 to get intervening lines.
+Adaptive deinterlace.
+Frame per second statistics in renderfarm are more reliable.
+Select and slide in the patchbay.
+Video scope can be resized.
+Effect keyframes pasted in right positions.
+Selective denoising of video based on color channel.
+
+
+
+1/12/03
+
+More mouse wheel bindings in MainWindow and ListBox.
+Ctrl-w closes effect windows.
+Perspective doesn't crash when switching from stretch to sheer.
+Better text list searching and keyboard navigation.
+Better Vorbis decoding.
+
+
+
+2/10/03
+
+Close recording without recording anything doesn't crash.
+Save backup now option.
+OpenGL not required anymore.
+Time format changes update the selection textboxes more often.
+MPEG-4 deblocking option in XMovie.
+Resize in Record GUI.
+Export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
+Import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
+
+
+
+
+

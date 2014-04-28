@@ -1,5 +1,6 @@
 #include "drivesync.h"
 
+#include <stdio.h>
 #include <unistd.h>
 
 DriveSync::DriveSync()

@@ -27,6 +27,7 @@ public:
 	void shift_keyframes_recursive(long position, long length);
 	void shift_effects_recursive(long position, long length);
 	void clear(long start, long end);
+	void copy_from(PluginSet *src);
 	void copy(long start, long end, FileXML *file);
 	void copy_keyframes(long start, 
 		long end, 
@@ -59,6 +60,7 @@ public:
 		int do_optimize);
 
 	PluginAutos *automation;
+	int record;
 };
 
 

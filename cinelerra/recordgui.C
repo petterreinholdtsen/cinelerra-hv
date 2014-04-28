@@ -517,6 +517,7 @@ int RecordGUI::resize_event(int w, int h)
 	x = w - 90;
 	cancel->reposition_window(x, y);
 
+	flash();
 	return 1;
 }
 

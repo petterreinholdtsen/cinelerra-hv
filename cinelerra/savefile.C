@@ -14,6 +14,36 @@
 
 #include <string.h>
 
+
+
+
+
+
+
+
+
+
+SaveBackup::SaveBackup(MWindow *mwindow)
+ : BC_MenuItem("Save backup")
+{
+	this->mwindow = mwindow;
+}
+int SaveBackup::handle_event()
+{
+	mwindow->save_backup();
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
 Save::Save(MWindow *mwindow) : BC_MenuItem("Save", "s", 's')
 { 
 	this->mwindow = mwindow; 
@@ -177,6 +207,13 @@ void SaveAs::run()
 	if(quit_now) mwindow->gui->set_done(0);
 	return;
 }
+
+
+
+
+
+
+
 
 SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(),

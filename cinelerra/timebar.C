@@ -734,6 +734,7 @@ int TimeBar::cursor_motion_event()
 {
 	int result = 0;
 	int redraw = 0;
+
 	switch(current_operation)
 	{
 		case TIMEBAR_DRAG:

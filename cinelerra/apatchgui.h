@@ -1,6 +1,7 @@
 #ifndef APATCHGUI_H
 #define APATCHGUI_H
 
+#include "apatchgui.inc"
 #include "atrack.inc"
 #include "floatauto.inc"
 #include "guicast.h"

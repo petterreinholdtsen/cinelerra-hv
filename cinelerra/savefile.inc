@@ -3,5 +3,6 @@
 
 class SaveAs;
 class Save;
+class SaveBackup;
 
 #endif

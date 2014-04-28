@@ -1572,24 +1572,31 @@ static mpeg3demux_timecode_t* next_timecode(mpeg3_demuxer_t *demuxer,
 	while(!done)
 	{
 /* Increase timecode number */
+//printf(__FUNCTION__ " 1\n");
 		if(*current_timecode < demuxer->titles[*current_title]->timecode_table_size - 1) 
 		{
+//printf(__FUNCTION__ " 2\n");
 			(*current_timecode)++;
 			if(demuxer->titles[*current_title]->timecode_table[*current_timecode].program == current_program)
 				return &(demuxer->titles[*current_title]->timecode_table[*current_timecode]);
+//printf(__FUNCTION__ " 3\n");
 		}
 		else
 /* Increase title number */
 		if(*current_title < demuxer->total_titles - 1)
 		{
+//printf(__FUNCTION__ " 4\n");
 			(*current_title)++;
 			(*current_timecode) = 0;
-			if(demuxer->titles[*current_title]->timecode_table[*current_timecode].program == current_program)
-				return &(demuxer->titles[*current_title]->timecode_table[*current_timecode]);
+			if(*current_timecode < *current_timecode < demuxer->titles[*current_title]->timecode_table_size)
+				if(demuxer->titles[*current_title]->timecode_table[*current_timecode].program == current_program)
+					return &(demuxer->titles[*current_title]->timecode_table[*current_timecode]);
+//printf(__FUNCTION__ " 5\n");
 		}
 		else
 /* End of disk */
 			done = 1;
+//printf(__FUNCTION__ " 6\n");
 	}
 	return 0;
 }
@@ -1673,6 +1680,7 @@ int mpeg3demux_assign_programs(mpeg3_demuxer_t *demuxer)
 	int total_timecodes;
 	mpeg3_title_t **titles = demuxer->titles;
 
+//printf(__FUNCTION__ " 1\n");
 	for(i = 0, total_timecodes = 0; i < demuxer->total_titles; i++)
 	{
 		total_timecodes += demuxer->titles[i]->timecode_table_size;
@@ -1684,6 +1692,7 @@ int mpeg3demux_assign_programs(mpeg3_demuxer_t *demuxer)
 		}
 	}
 
+//printf(__FUNCTION__ " 2\n");
 /* Assign absolute timecodes in each program. */
 	for(current_program = 0; 
 		current_program < total_programs; 
@@ -1692,11 +1701,15 @@ int mpeg3demux_assign_programs(mpeg3_demuxer_t *demuxer)
 		current_time = 0;
 		current_title = 0;
 		current_timecode = -1;
+
+//printf(__FUNCTION__ " 3\n");
 		while(timecode = next_timecode(demuxer, 
 		    &current_title, 
 			&current_timecode, 
 			current_program))
 		{
+
+//printf(__FUNCTION__ " 4 %p\n", timecode);
 			timecode->absolute_start_time = current_time;
 
 /*
@@ -1707,10 +1720,14 @@ int mpeg3demux_assign_programs(mpeg3_demuxer_t *demuxer)
  */
 
 			current_time += fabs(timecode->end_time - timecode->start_time);
+//printf(__FUNCTION__ " 4.1 %p\n", timecode);
 			timecode->absolute_end_time = current_time;
+//printf(__FUNCTION__ " 4.2 %p\n", timecode);
 		}
+//printf(__FUNCTION__ " 5\n");
 	}
 
+//printf(__FUNCTION__ " 6\n");
 //for(i = 0; i < demuxer->total_titles; i++) mpeg3_dump_title(demuxer->titles[i]);
 
 	demuxer->current_program = 0;

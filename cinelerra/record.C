@@ -599,12 +599,12 @@ void Record::run()
 		mwindow->gui->lock_window();
 		ArrayList<EDL*> new_edls;
 
-//printf("Record::run 2\n");
-		mwindow->undo->update_undo_before("render", LOAD_EDITS | LOAD_TIMEBAR);
+//printf("Record::run 3\n");
 
 // Paste assets
 		for(int i = 0; i < batches.total; i++)
 		{
+//printf("Record::run 4\n");
 			Batch *batch = batches.values[i];
 			Asset *asset = batch->get_current_asset();
 
@@ -622,33 +622,42 @@ void Record::run()
 					new_edls.append(new_edl);
 				}
 			}
+//printf("Record::run 5\n");
 		}
 
-		mwindow->paste_edls(&new_edls, 
-			load_mode,
-			0,
-			-1,
-			mwindow->edl->session->labels_follow_edits,
-			mwindow->edl->session->plugins_follow_edits);
+		if(new_edls.total)
+		{
+			mwindow->undo->update_undo_before("render", LOAD_EDITS | LOAD_TIMEBAR);
+//printf("Record::run 6\n");
+			mwindow->paste_edls(&new_edls, 
+				load_mode,
+				0,
+				-1,
+				mwindow->edl->session->labels_follow_edits,
+				mwindow->edl->session->plugins_follow_edits);
+//printf("Record::run 7\n");
 
-		new_edls.remove_all_objects();
+			new_edls.remove_all_objects();
+//printf("Record::run 8\n");
 
-		mwindow->save_backup();
-		mwindow->undo->update_undo_after();
-		mwindow->restart_brender();
-		mwindow->update_plugin_guis();
-		mwindow->gui->update(1, 
-			2,
-			1,
-			1,
-			0,
-			1,
-			0);
-		mwindow->sync_parameters(CHANGE_ALL);
+			mwindow->save_backup();
+			mwindow->undo->update_undo_after();
+			mwindow->restart_brender();
+			mwindow->update_plugin_guis();
+			mwindow->gui->update(1, 
+				2,
+				1,
+				1,
+				0,
+				1,
+				0);
+			mwindow->sync_parameters(CHANGE_ALL);
+		}
 		mwindow->gui->unlock_window();
+//printf("Record::run 9\n");
 	}
 
-//printf("Record 1\n");
+//printf("Record::run 10\n");
 // Delete everything
 	script = 0;
 //printf("Record 1\n");

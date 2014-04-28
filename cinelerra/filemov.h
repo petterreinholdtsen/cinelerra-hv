@@ -213,7 +213,7 @@ class MOVConfigVideoNum;
 class MOVConfigVideoFix;
 class MOVConfigVideoFixBitrate;
 class MOVConfigVideoFixQuant;
-
+class MOVConfigVideoCheckBox;
 
 
 class MOVConfigVideo : public BC_Window
@@ -226,6 +226,7 @@ public:
 
 	int create_objects();
 	int close_event();
+	void reset();
 
 	void update_parameters();
 
@@ -240,8 +241,10 @@ public:
 	BC_Title *jpeg_quality_title;
 
 	MOVConfigVideoNum *ms_bitrate;
+	MOVConfigVideoNum *ms_bitrate_tolerance;
 	MOVConfigVideoNum *ms_quantization;
 	MOVConfigVideoNum *ms_gop_size;
+	MOVConfigVideoCheckBox *ms_interlaced;
 	MOVConfigVideoFixBitrate *ms_fix_bitrate;
 	MOVConfigVideoFixQuant *ms_fix_quant;
 
@@ -290,6 +293,17 @@ public:
 	BC_Radial *opposite;
 	int *output;
 	int value;
+};
+
+class MOVConfigVideoCheckBox : public BC_CheckBox
+{
+public:
+	MOVConfigVideoCheckBox(char *title_text,
+		int x,
+		int y,
+		int *output);
+	int handle_event();
+	int *output;
 };
 
 class MOVConfigVideoNum : public BC_TumbleTextBox

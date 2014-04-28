@@ -6,7 +6,6 @@
 #include "localsession.h"
 #include "mwindow.h"
 #include "messages.h"
-#include "module.h"
 #include "plugin.h"
 #include "pluginpopup.h"
 #include "pluginset.h"
@@ -137,6 +136,17 @@ void Plugin::synchronize_params(Edit *edit)
 	strcpy(this->title, plugin->title);
 	copy_keyframes(plugin);
 }
+
+void Plugin::shift_keyframes(long position)
+{
+	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
+		keyframe; 
+		keyframe = (KeyFrame*)keyframe->next)
+	{
+		keyframe->position += position;
+	}
+}
+
 
 void Plugin::equivalent_output(Edit *edit, long *result)
 {
@@ -569,13 +579,7 @@ void Plugin::resample(double old_rate, double new_rate)
 void Plugin::shift(long difference)
 {
 	Edit::shift(difference);
-
-	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
-		keyframe; 
-		keyframe = (KeyFrame*)keyframe->next)
-	{
-		keyframe->position += difference;
-	}
+	shift_keyframes(difference);
 }
 
 void Plugin::dump()
@@ -587,15 +591,8 @@ void Plugin::dump()
 		shared_location.module, 
 		shared_location.plugin);
 	printf("    startproject %ld length %ld\n", startproject, length);
-	printf("    DEFAULT_KEYFRAME\n");
-	((KeyFrame*)keyframes->default_auto)->dump();
-	printf("    KEYFRAMES total=%d\n", keyframes->total());
-	for(KeyFrame *current = (KeyFrame*)keyframes->first;
-		current;
-		current = (KeyFrame*)NEXT)
-	{
-		current->dump();
-	}
+
+	keyframes->dump();
 }
 
 

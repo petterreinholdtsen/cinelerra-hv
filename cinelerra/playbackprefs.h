@@ -17,6 +17,7 @@ class PlaybackNearest;
 class PlaybackBicubicBicubic;
 class PlaybackBicubicBilinear;
 class PlaybackBilinearBilinear;
+class PlaybackDeblock;
 class PlaybackHead;
 class PlaybackHeadCount;
 class PlaybackHost;
@@ -55,6 +56,7 @@ public:
 	PlaybackBicubicBicubic *cubic_cubic;
 	PlaybackBicubicBilinear *cubic_linear;
 	PlaybackBilinearBilinear *linear_linear;
+	PlaybackDeblock *mpeg4_deblock;
 
 	long current_head;
 	BC_Title *head_title;
@@ -176,7 +178,14 @@ class VideoEveryFrame : public BC_CheckBox
 {
 public:
 	VideoEveryFrame(PreferencesWindow *pwindow, int x, int y);
-	~VideoEveryFrame();
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class PlaybackDeblock : public BC_CheckBox
+{
+public:
+	PlaybackDeblock(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

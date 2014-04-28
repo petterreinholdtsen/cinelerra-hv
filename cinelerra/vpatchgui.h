@@ -4,6 +4,7 @@
 #include "floatauto.inc"
 #include "guicast.h"
 #include "patchgui.h"
+#include "vpatchgui.inc"
 #include "vtrack.inc"
 
 class VFadePatch;

@@ -4,7 +4,6 @@
 /clearblock.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /debug.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /debug.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/decore.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /decore.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /gen_draw.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /gen_draw.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -23,9 +22,7 @@
 /mp4_header.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mp4_iquant.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mp4_iquant.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/mp4_mblock.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mp4_mblock.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/mp4_picture.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mp4_predict.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mp4_predict.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /mp4_recon.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -46,3 +43,6 @@
 /yuv2rgb.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
 D/att_mmx////
 D/intel_mmx////
+/decore.c/1.1.1.1/Sun Nov 24 10:08:07 2002//
+/mp4_mblock.c/1.1.1.1/Sun Nov 24 10:15:21 2002//
+/mp4_picture.c/1.1.1.1/Sun Nov 24 10:15:38 2002//

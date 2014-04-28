@@ -198,8 +198,20 @@ void PackageRenderer::create_engine()
 	render_engine->arm_command(command, current_achannel, current_vchannel);
 //printf("PackageRenderer::create_engine 1\n");
 
-	audio_preroll = Units::to_long(preferences->render_preroll * default_asset->sample_rate);
-	video_preroll = Units::to_long(preferences->render_preroll * default_asset->frame_rate);
+	if(package->use_brender)
+	{
+		audio_preroll = Units::to_long((double)preferences->brender_preroll /
+			default_asset->frame_rate *
+			default_asset->sample_rate);
+		video_preroll = preferences->brender_preroll;
+	}
+	else
+	{
+		audio_preroll = Units::to_long(preferences->render_preroll * 
+			default_asset->sample_rate);
+		video_preroll = Units::to_long(preferences->render_preroll * 
+			default_asset->frame_rate);
+	}
 	audio_position = package->audio_start - audio_preroll;
 	video_position = package->video_start - video_preroll;
 

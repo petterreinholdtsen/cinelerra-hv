@@ -1,34 +1,33 @@
-D/macos////
-D/lib////
-D/include////
+/AUTHORS/1.1/Mon Jul 22 12:33:53 2002//
+/COPYING/1.1/Mon Jul 22 12:33:53 2002//
+/HACKING/1.1/Mon Jul 22 12:33:53 2002//
+/Makefile/1.1/Mon Jul 22 12:33:53 2002//
+/Makefile.am/1.1/Mon Jul 22 12:33:53 2002//
+/Makefile.in/1.1/Mon Jul 22 12:33:53 2002//
+/README/1.1/Mon Jul 22 12:33:53 2002//
+/acinclude.m4/1.1/Mon Jul 22 12:33:53 2002//
+/aclocal.m4/1.1/Mon Jul 22 12:33:53 2002//
+/autogen.sh/1.1/Mon Jul 22 12:33:53 2002//
+/config.cache/1.1/Mon Jul 22 12:33:53 2002//
+/config.guess/1.1/Mon Jul 22 12:33:53 2002//
+/config.log/1.1/Mon Jul 22 12:33:53 2002//
+/config.status/1.1/Mon Jul 22 12:33:53 2002//
+/config.sub/1.1/Mon Jul 22 12:33:53 2002//
+/configure/1.1/Mon Jul 22 12:33:53 2002//
+/configure.in/1.1/Mon Jul 22 12:33:53 2002//
+/install-sh/1.1/Mon Jul 22 12:33:53 2002//
+/libtool/1.1/Mon Jul 22 12:33:53 2002//
+/libvorbis.spec/1.1/Mon Jul 22 12:33:53 2002//
+/ltmain.sh/1.1/Mon Jul 22 12:33:53 2002//
+/missing/1.1/Mon Jul 22 12:33:53 2002//
+/mkinstalldirs/1.1/Mon Jul 22 12:33:53 2002//
+/todo.txt/1.1/Mon Jul 22 12:33:53 2002//
+/vorbis.m4/1.1/Mon Jul 22 12:33:53 2002//
+D/debian////
 D/doc////
 D/examples////
-D/win32////
-D/debian////
+D/include////
+D/lib////
+D/macos////
 D/vq////
-D/CVS////
-/AUTHORS/1.1/Wed Jul  3 00:37:55 2002//
-/COPYING/1.1/Wed Jul  3 00:37:55 2002//
-/HACKING/1.1/Thu Aug 23 17:51:19 2001//
-/Makefile/1.1/Mon Jul 22 12:32:53 2002//
-/Makefile.am/1.1/Sat Jul 13 11:31:36 2002//
-/Makefile.in/1.1/Fri Jul 19 14:12:25 2002//
-/README/1.1/Thu Jul 11 08:57:27 2002//
-/acinclude.m4/1.1/Tue Jul  9 13:08:57 2002//
-/aclocal.m4/1.1/Fri Jul 19 14:12:13 2002//
-/autogen.sh/1.1/Thu Jul 11 03:59:29 2002//
-/config.cache/1.1/Mon Jul 22 12:32:53 2002//
-/config.guess/1.1/Mon Jul  1 12:16:52 2002//
-/config.log/1.1/Mon Jul 22 12:32:53 2002//
-/config.status/1.1/Mon Jul 22 12:32:53 2002//
-/config.sub/1.1/Mon Jul  1 12:16:52 2002//
-/configure/1.1/Fri Jul 19 14:12:17 2002//
-/configure.in/1.1/Fri Jul 19 14:11:24 2002//
-/install-sh/1.1/Tue Jun 18 03:58:03 2002//
-/libtool/1.1/Mon Jul 22 12:32:51 2002//
-/libvorbis.spec/1.1/Fri Jul 19 06:48:15 2002//
-/ltmain.sh/1.1/Tue Jul  2 17:12:16 2002//
-/missing/1.1/Tue Jun 18 03:58:03 2002//
-/mkinstalldirs/1.1/Mon Jul 22 12:33:53 2002//
-/todo.txt/1.1/Wed Jul 12 09:36:16 2000//
-/vorbis.m4/1.1/Tue Jul  9 13:08:57 2002//
+D/win32////

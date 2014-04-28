@@ -5,6 +5,7 @@ HAVE_CFLAGS := $(shell if [ -n "$CFLAGS" ]; then echo yes; fi )
 HAVE_LIBXXF86VM := $(shell if [ -f /usr/X11R6/include/X11/extensions/xf86vmode.h ]; then echo yes; fi )
 HAVE_ESOUND := yes
 HAVE_AVIFILE := n
+HAVE_GL := n
 OBJDIR := $(shell uname --machine)
 
 
@@ -25,6 +26,11 @@ PLUGINDIR := /usr/lib/cinelerra
 
 ifneq ($(HAVE_CFLAGS), yes)
 CFLAGS = -O2 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+endif
+
+ifeq ($(HAVE_GL), yes)
+GLLIBS := -lGL
+CFLAGS += -DHAVE_GL
 endif
 
 

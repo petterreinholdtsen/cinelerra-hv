@@ -11,6 +11,7 @@
 
 #define DIVX_NAME "OpenDIVX"
 #define DIV3_NAME "Microsoft MPEG-4"
+#define DIV4_NAME "MPEG-4"
 #define DV_NAME "DV"
 #define PNG_NAME "PNG"
 #define PNGA_NAME "PNG with Alpha"
@@ -128,26 +129,22 @@ int FileMOV::open_file(int rd, int wr)
 	this->rd = rd;
 	this->wr = wr;
 
-//printf("FileMOV::open_file 1 %s\n", asset->path);
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
-//printf("FileMOV::open_file 1\n");
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
 		printf("FileMOV::open_file %s: No such file or directory\n", asset->path);
 		return 1;
 	}
-//printf("FileMOV::open_file 2\n");
 
 	quicktime_set_cpus(fd, file->cpus);
-//	quicktime_set_cpus(fd, 2);
 
-//printf("FileMOV::open_file 2.1\n");
 	if(rd) format_to_asset();
-//printf("FileMOV::open_file 2.2\n");
 
 	if(wr) asset_to_format();
-//printf("FileMOV::open_file 3\n");
+
+// Set decoding parameter
+	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
 
 	return 0;
 }
@@ -287,6 +284,8 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "divx_fix_bitrate", &asset->divx_fix_bitrate);
 
 		quicktime_set_parameter(fd, "div3_bitrate", &asset->ms_bitrate);
+		quicktime_set_parameter(fd, "div3_bitrate_tolerance", &asset->ms_bitrate_tolerance);
+		quicktime_set_parameter(fd, "div3_interlaced", &asset->ms_interlaced);
 		quicktime_set_parameter(fd, "div3_quantizer", &asset->ms_quantization);
 		quicktime_set_parameter(fd, "div3_gop_size", &asset->ms_gop_size);
 		quicktime_set_parameter(fd, "div3_fix_bitrate", &asset->ms_fix_bitrate);
@@ -895,6 +894,7 @@ char* FileMOV::strtocompression(char *string)
 {
 	if(!strcasecmp(string, DIVX_NAME)) return QUICKTIME_DIVX;
 	if(!strcasecmp(string, DIV3_NAME)) return QUICKTIME_DIV3;
+	if(!strcasecmp(string, DIV4_NAME)) return QUICKTIME_DIV4;
 	if(!strcasecmp(string, DV_NAME)) return QUICKTIME_DV;
 	if(!strcasecmp(string, PNG_NAME)) return QUICKTIME_PNG;
 	if(!strcasecmp(string, PNGA_NAME)) return MOV_PNGA;
@@ -925,6 +925,7 @@ char* FileMOV::compressiontostr(char *string)
 {
 	if(match4(string, QUICKTIME_DIVX)) return DIVX_NAME;
 	if(match4(string, QUICKTIME_DIV3)) return DIV3_NAME;
+	if(match4(string, QUICKTIME_DIV4)) return DIV4_NAME;
 	if(match4(string, QUICKTIME_DV)) return DV_NAME;
 	if(match4(string, MOV_PNGA)) return PNGA_NAME;
 	if(match4(string, QUICKTIME_RAW)) return RGB_NAME;
@@ -1354,29 +1355,7 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	this->lock_compressor = lock_compressor;
 	compression_popup = 0;
 
-
-
-
-	jpeg_quality = 0;
-	jpeg_quality_title = 0;
-
-	divx_bitrate = 0;
-	divx_rc_period = 0;
-	divx_rc_reaction_ratio = 0;
-	divx_rc_reaction_period = 0;
-	divx_max_key_interval = 0;
-	divx_max_quantizer = 0;
-	divx_min_quantizer = 0;
-	divx_quantizer = 0;
-	divx_quality = 0;
-	divx_fix_bitrate = 0;
-	divx_fix_quant = 0;
-
-	ms_bitrate = 0;
-	ms_quantization = 0;
-	ms_gop_size = 0;
-	ms_fix_bitrate = 0;
-	ms_fix_quant = 0;
+	reset();
 }
 
 MOVConfigVideo::~MOVConfigVideo()
@@ -1393,6 +1372,7 @@ int MOVConfigVideo::create_objects()
 	{
 		compression_items.append(new BC_ListBoxItem(DIVX_NAME));
 		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
+		compression_items.append(new BC_ListBoxItem(DIV4_NAME));
 		compression_items.append(new BC_ListBoxItem(DV_NAME));
 		compression_items.append(new BC_ListBoxItem(QTJPEG_NAME));
 		compression_items.append(new BC_ListBoxItem(MJPA_NAME));
@@ -1409,6 +1389,7 @@ int MOVConfigVideo::create_objects()
 	else
 	{
 		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
+		compression_items.append(new BC_ListBoxItem(DIV4_NAME));
 		compression_items.append(new BC_ListBoxItem(QTJPEG_NAME));
 	}
 
@@ -1444,6 +1425,33 @@ int MOVConfigVideo::close_event()
 	return 1;
 }
 
+
+void MOVConfigVideo::reset()
+{
+	jpeg_quality = 0;
+	jpeg_quality_title = 0;
+
+	divx_bitrate = 0;
+	divx_rc_period = 0;
+	divx_rc_reaction_ratio = 0;
+	divx_rc_reaction_period = 0;
+	divx_max_key_interval = 0;
+	divx_max_quantizer = 0;
+	divx_min_quantizer = 0;
+	divx_quantizer = 0;
+	divx_quality = 0;
+	divx_fix_bitrate = 0;
+	divx_fix_quant = 0;
+
+	ms_bitrate = 0;
+	ms_bitrate_tolerance = 0;
+	ms_quantization = 0;
+	ms_interlaced = 0;
+	ms_gop_size = 0;
+	ms_fix_bitrate = 0;
+	ms_fix_quant = 0;
+}
+
 void MOVConfigVideo::update_parameters()
 {
 	if(jpeg_quality)
@@ -1465,33 +1473,17 @@ void MOVConfigVideo::update_parameters()
 	if(divx_fix_bitrate) delete divx_fix_bitrate;
 
 	if(ms_bitrate) delete ms_bitrate;
+	if(ms_bitrate_tolerance) delete ms_bitrate_tolerance;
+	if(ms_interlaced) delete ms_interlaced;
 	if(ms_quantization) delete ms_quantization;
 	if(ms_gop_size) delete ms_gop_size;
 	if(ms_fix_bitrate) delete ms_fix_bitrate;
 	if(ms_fix_quant) delete ms_fix_quant;
 
-	jpeg_quality = 0;
-	jpeg_quality_title = 0;
+	reset();
 
-	divx_bitrate = 0;
-	divx_rc_period = 0;
-	divx_rc_reaction_ratio = 0;
-	divx_rc_reaction_period = 0;
-	divx_max_key_interval = 0;
-	divx_max_quantizer = 0;
-	divx_min_quantizer = 0;
-	divx_quantizer = 0;
-	divx_quality = 0;
-	divx_fix_bitrate = 0;
-	divx_fix_quant = 0;
-
-	ms_bitrate = 0;
-	ms_quantization = 0;
-	ms_gop_size = 0;
-	ms_fix_bitrate = 0;
-	ms_fix_quant = 0;
-
-	if(!strcmp(asset->vcodec, QUICKTIME_DIV3))
+	if(!strcmp(asset->vcodec, QUICKTIME_DIV3) ||
+		!strcmp(asset->vcodec, QUICKTIME_DIV4))
 	{
 		int x = param_x, y = param_y;
 		ms_bitrate = new MOVConfigVideoNum(this, 
@@ -1504,7 +1496,14 @@ void MOVConfigVideo::update_parameters()
 				y,
 				&asset->ms_fix_bitrate,
 				1));
+		y += 30;
 
+		ms_bitrate_tolerance = new MOVConfigVideoNum(this, 
+			"Bitrate tolerance:", 
+			x, 
+			y, 
+			&asset->ms_bitrate_tolerance);
+		ms_bitrate_tolerance->create_objects();
 		y += 30;
 		ms_quantization = new MOVConfigVideoNum(this, 
 			"Quantization:", 
@@ -1520,6 +1519,11 @@ void MOVConfigVideo::update_parameters()
 		ms_fix_quant->opposite = ms_fix_bitrate;
 
 
+		y += 30;
+		add_subwindow(ms_interlaced = new MOVConfigVideoCheckBox("Interlaced", 
+			x, 
+			y, 
+			&asset->ms_interlaced));
 		y += 30;
 		ms_gop_size = new MOVConfigVideoNum(this, 
 			"Keyframe interval:", 
@@ -1660,6 +1664,24 @@ void MOVConfigVideoNum::create_objects()
 int MOVConfigVideoNum::handle_event()
 {
 	*output = atol(get_text());
+	return 1;
+}
+
+
+
+
+
+
+
+MOVConfigVideoCheckBox::MOVConfigVideoCheckBox(char *title_text, int x, int y, int *output)
+ : BC_CheckBox(x, y, *output, title_text)
+{
+	this->output = output;
+}
+
+int MOVConfigVideoCheckBox::handle_event()
+{
+	*output = get_value();
 	return 1;
 }
 

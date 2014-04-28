@@ -222,11 +222,17 @@ public:
 	int divx_quality;
 	int divx_fix_bitrate;
 
+
+// Divx video decompression
+	int divx_use_deblocking;
+
 // PNG video compression
 	int png_use_alpha;
 
 // Microsoft MPEG-4
 	int ms_bitrate;
+	int ms_bitrate_tolerance;
+	int ms_interlaced;
 	int ms_quantization;
 	int ms_gop_size;
 	int ms_fix_bitrate;

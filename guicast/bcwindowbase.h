@@ -59,9 +59,9 @@
 
 
 
-
+#ifdef HAVE_GL
 typedef void* GLXContext;
-
+#endif
 
 class BC_ResizeCall
 {
@@ -228,6 +228,9 @@ public:
 // Deactivate this subwindow
 	virtual int deactivate();
 	void set_active_subwindow(BC_WindowBase *subwindow);
+// Get value of toggle value when dragging a selection
+	int get_toggle_value();
+
 
 // Set the gc to the color
 	void set_color(long color);
@@ -574,6 +577,8 @@ private:
 	int button_pressed;
 // Last key pressed
 	int key_pressed;
+// During a selection drag involving toggles, set the same value for each toggle
+	int toggle_value;
 
 	static BC_Resources resources;
 // Array of repeaters for multiple repeating objects.
@@ -617,7 +622,9 @@ private:
 	Display* display;
  	Window win;
 	Pixmap pixmap;
+#ifdef HAVE_GL
 	GLXContext gl_context;
+#endif
 	static Mutex opengl_lock;
 	int window_lock;
 	GC gc;

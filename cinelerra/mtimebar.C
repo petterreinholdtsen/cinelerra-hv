@@ -178,6 +178,7 @@ int MTimeBar::resize_event()
 		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h);
+	update();
 	return 1;
 }
 

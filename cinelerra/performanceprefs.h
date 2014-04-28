@@ -32,6 +32,7 @@ public:
 	PrefsRenderFarmEditNode *edit_node;
 	PrefsRenderFarmNodes *node_list;
 	FormatTools *brender_tools;
+	BC_Title *master_rate;
 };
 
 
@@ -70,6 +71,17 @@ public:
 	
 	int handle_event();
 	
+	PreferencesWindow *pwindow;
+};
+
+class PrefsBRenderPreroll : public BC_TumbleTextBox
+{
+public:
+	PrefsBRenderPreroll(PreferencesWindow *pwindow, 
+		PerformancePrefs *subwindow, 
+		int x, 
+		int y);
+	int handle_event();
 	PreferencesWindow *pwindow;
 };
 

@@ -200,7 +200,9 @@ int BC_PopupMenu::button_press_event()
 {
 	int result = 0;
 
-	if(is_event_win() && use_title)
+	if(get_buttonpress() == 1 &&
+		is_event_win() && 
+		use_title)
 	{
 		top_level->hide_tooltip();
 		if(status == BUTTON_HI || status == BUTTON_UP) status = BUTTON_DN;
@@ -215,18 +217,7 @@ int BC_PopupMenu::button_press_event()
 		menu_popup->dispatch_button_press();
 		return 1;
 	}
-// 
-// 	if(!result && use_title && top_level->event_win == win && cursor_inside())
-// 	{
-// // Either menu isn't down or menu didn't get it so try title.
-// 		if(!popup_down)
-// 		{
-// // Title activated
-// 			button_releases = 0;
-// 			activate_menu();
-// 		}
-// 		result = 1;
-// 	}
+
 	return 0;
 }
 

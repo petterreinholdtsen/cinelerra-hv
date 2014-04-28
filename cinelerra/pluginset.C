@@ -13,33 +13,32 @@
 PluginSet::PluginSet(EDL *edl, Track *track)
  : Edits(edl, track)
 {
+	record = 1;
 }
 
 PluginSet::~PluginSet()
 {
-//printf("PluginSet::~PluginSet 1 %p %p\n", this, last);
 	while(last) delete last;
-//printf("PluginSet::~PluginSet 2\n");
 }
 
 
 PluginSet& PluginSet::operator=(PluginSet& plugins)
 {
-//printf("PluginSet::operator= 1\n");
-	while(last) delete last;
-//printf("PluginSet::operator= 2\n");
-	for(Plugin *current = (Plugin*)plugins.first; current; current = (Plugin*)NEXT)
-	{
-//printf("PluginSet::operator= 3\n");
-		Plugin *new_plugin;
-//printf("PluginSet::operator= 4\n");
-		append(new_plugin = (Plugin*)create_edit());
-//printf("PluginSet::operator= 5\n");
-		new_plugin->copy_from(current);
-//printf("PluginSet::operator= 6\n");
-	}
-//printf("PluginSet::operator= 7\n");
+//printf("PluginSet::operator= : you should call copy_from instead, to allow conditional copies.\n");
+	copy_from(&plugins);
 	return *this;
+}
+
+void PluginSet::copy_from(PluginSet *src)
+{
+	while(last) delete last;
+	for(Plugin *current = (Plugin*)src->first; current; current = (Plugin*)NEXT)
+	{
+		Plugin *new_plugin;
+		append(new_plugin = (Plugin*)create_edit());
+		new_plugin->copy_from(current);
+	}
+	this->record = src->record;
 }
 
 Plugin* PluginSet::get_first_plugin()
@@ -206,7 +205,6 @@ void PluginSet::paste_keyframes(long start,
 // paste keyframes from one plugin into an incompatible plugin.
 					if(position >= current->startproject)
 					{
-//printf("PluginSet::paste_keyframes 1 %d %d\n", position, current->startproject);
 						KeyFrame *keyframe;
 						if(file->tag.get_property("DEFAULT", 0) || default_only)
 						{
@@ -222,7 +220,6 @@ void PluginSet::paste_keyframes(long start,
 						break;
 					}
 				}
-//printf("PluginSet::paste_keyframes 2 %d %d\n", position, current->startproject);
 
 			}
 		}
@@ -253,6 +250,7 @@ void PluginSet::shift_effects(long start, long length)
 void PluginSet::copy(long start, long end, FileXML *file)
 {
 	file->tag.set_title("PLUGINSET");	
+	file->tag.set_property("RECORD", record);
 	file->append_tag();
 	file->append_newline();
 
@@ -278,6 +276,7 @@ void PluginSet::load(FileXML *file, unsigned long load_flags)
 	Plugin *plugin = (Plugin*)first;
 	long startproject = 0;
 
+	record = file->tag.get_property("RECORD", record);
 	do{
 		result = file->read_tag();
 
@@ -333,7 +332,25 @@ int PluginSet::optimize()
 	int result = 1;
 	Plugin *current_edit;
 
-//printf("PluginSet::optimize 1\n");
+// Delete keyframes out of range
+	for(current_edit = (Plugin*)first;
+		current_edit; 
+		current_edit = (Plugin*)current_edit->next)
+	{
+		for(KeyFrame *current_keyframe = (KeyFrame*)current_edit->keyframes->last;
+			current_keyframe; )
+		{
+			KeyFrame *previous_keyframe = (KeyFrame*)current_keyframe->previous;
+			if(current_keyframe->position >= 
+				current_edit->startproject + current_edit->length ||
+				current_keyframe->position < current_edit->startproject)
+			{
+				delete current_keyframe;
+			}
+			current_keyframe = previous_keyframe;
+		}
+	}
+
 // Insert silence between plugins
 	for(Plugin *current = (Plugin*)last; current; current = (Plugin*)PREVIOUS)
 	{
@@ -384,7 +401,6 @@ int PluginSet::optimize()
 		}
 
 
-//printf("PluginSet::optimize 1\n");
 // merge identical plugins with same keyframes
 		for(current_edit = (Plugin*)first; 
 			current_edit && current_edit->next && !result; )
@@ -392,11 +408,9 @@ int PluginSet::optimize()
 			Plugin *next_edit = (Plugin*)current_edit->next;
 
 
-//printf("PluginSet::optimize 2 %d\n", next_edit->identical(current_edit));
 // plugins identical
    			if(next_edit->identical(current_edit))
         	{
-//printf("PluginSet::optimize 3\n");
         		current_edit->length += next_edit->length;
 // Merge keyframes
 				for(KeyFrame *source = (KeyFrame*)next_edit->keyframes->first;
@@ -414,7 +428,6 @@ int PluginSet::optimize()
     		current_edit = (Plugin*)current_edit->next;
 		}
 
-//printf("PluginSet::optimize 1 %p %p\n", this, last);
 // delete last edit if 0 length or silence
 		if(last)
 		{
@@ -424,10 +437,8 @@ int PluginSet::optimize()
 				result = 1;
 			}
 		}
-//printf("PluginSet::optimize 2\n");
 	}
 
-//track->dump();
 	return 0;
 }
 

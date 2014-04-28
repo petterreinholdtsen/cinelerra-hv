@@ -6,6 +6,14 @@
 #include "mwindow.inc"
 #include "savefile.inc"
 
+class SaveBackup : public BC_MenuItem
+{
+public:
+	SaveBackup(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 class Save : public BC_MenuItem
 {
 public:

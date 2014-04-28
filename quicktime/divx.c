@@ -21,15 +21,16 @@ typedef struct
 	int decode_initialized;
 	int encode_initialized;
 	int bitrate;
-	long rc_period; // the intended rate control averaging period
+	long rc_period;          // the intended rate control averaging period
 	long rc_reaction_period; // the reation period for rate control
-	long rc_reaction_ratio; // the ratio for down/up rate control
-	long max_key_interval; // the maximum interval between key frames
-	int max_quantizer; // the upper limit of the quantizer
-	int min_quantizer; // the lower limit of the quantizer
-	int quantizer;    // For vbr
-	int quality; // the forward search range for motion estimation
+	long rc_reaction_ratio;  // the ratio for down/up rate control
+	long max_key_interval;   // the maximum interval between key frames
+	int max_quantizer;       // the upper limit of the quantizer
+	int min_quantizer;       // the lower limit of the quantizer
+	int quantizer;           // For vbr
+	int quality;             // the forward search range for motion estimation
 	int fix_bitrate;
+	int use_deblocking;
 // Last frame decoded
 	long last_frame;  
 	int encode_handle;
@@ -551,6 +552,9 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 		codec->temp_frame = malloc(width_i * height_i * 3 / 2);
 
+		
+
+
 
 /*
  * 		codec->dec_param.width = width_i;
@@ -580,9 +584,10 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		codec->decode_initialized = 1;
 	}
 
-//printf("decode 1\n");
-//pthread_mutex_unlock(&decode_mutex);
-//return 0;
+// Enable deblocking.  This doesn't make much difference at high bitrates.
+	DEC_SET dec_set_arg;
+	dec_set_arg.postproc_level = (codec->use_deblocking ? 100 : 0);
+	decore(codec->decode_handle, DEC_OPT_SETPP, &dec_set_arg, NULL);
 
 
 
@@ -696,16 +701,13 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 //printf("decode 1\n");
 
-//printf("decode 1\n");
-
 
 	dec_frame.bitstream = codec->work_buffer;
 	dec_frame.length = bytes;
 	dec_frame.render_flag = 1;
 
-//printf("decode 1\n");
-//	decore(codec->dec_param.handle, DEC_OPT_DECODE, &dec_frame, NULL);
-	decore(codec->decode_handle, 0, &dec_frame, NULL);
+//printf("decode 1 %d %llx\n", vtrack->current_position, quicktime_position(file));
+		decore(codec->decode_handle, 0, &dec_frame, NULL);
 //printf("decode 2\n");
 
 
@@ -921,6 +923,9 @@ static int set_parameter(quicktime_t *file,
 	else
 	if(!strcasecmp(key, "divx_fix_bitrate"))
 		codec->fix_bitrate = *(int*)value;
+	else
+	if(!strcasecmp(key, "divx_use_deblocking"))
+		codec->use_deblocking = *(int*)value;
 	return 0;
 }
 

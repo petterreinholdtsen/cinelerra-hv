@@ -1,3 +1,4 @@
+#include "cursors.h"
 #include "perspective.h"
 
 
@@ -118,6 +119,7 @@ int PerspectiveWindow::create_objects()
 		y, 
 		get_w() - 20, 
 		get_h() - 140));
+	canvas->set_cursor(CROSS_CURSOR);
 	y += canvas->get_h() + 10;
 	add_subwindow(new BC_Title(x, y, "Current X:"));
 	x += 80;
@@ -825,6 +827,7 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	int need_reconfigure = load_configuration();
 
+
 	if(!engine) engine = new PerspectiveEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
@@ -845,6 +848,7 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	int w = input_ptr->get_w();
 	int h = input_ptr->get_h();
 	int color_model = input_ptr->get_color_model();
+
 	if(temp && 
 		config.mode == PerspectiveConfig::STRETCH &&
 		(temp->get_w() != w * OVERSAMPLE ||
@@ -855,7 +859,8 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 	else
 	if(temp &&
-		config.mode == PerspectiveConfig::PERSPECTIVE &&
+		(config.mode == PerspectiveConfig::PERSPECTIVE ||
+		config.mode == PerspectiveConfig::SHEER) &&
 		(temp->get_w() != w ||
 			temp->get_h() != h))
 	{
@@ -893,7 +898,6 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		output->clear_frame();
 	}
 
-//printf("PerspectiveMain::process_realtime %p %p %p\n", input, temp, output);
 
 
 	engine->process_packages();
@@ -1331,7 +1335,7 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 
 
 
-// printf("PerspectiveUnit::process_package 1 %f %f %f %f %f %f %f %f\n", 
+// printf("PerspectiveUnit::process_package 10 %f %f %f %f %f %f %f %f\n", 
 // out_x1,
 // out_y1,
 // out_x2,
@@ -1619,11 +1623,13 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 				break;
 		}
 
+//printf("PerspectiveUnit::process_package 50\n");
 	}
 	else
 	{
 		int max_x = w * OVERSAMPLE - 1;
 		int max_y = h * OVERSAMPLE - 1;
+//printf("PerspectiveUnit::process_package 50 %d %d\n", max_x, max_y);
 		float top_w = out_x2 - out_x1;
 		float bottom_w = out_x3 - out_x4;
 		float left_h = out_y4 - out_y1;

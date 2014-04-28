@@ -195,7 +195,6 @@ int TrackCanvas::keypress_event()
 
 int TrackCanvas::drag_motion()
 {
-//printf("TrackCanvas::drag_motion 1 %d\n", mwindow->session->current_operation);
 
 	int cursor_x = get_relative_cursor_x();
 	int cursor_y = get_relative_cursor_y();
@@ -2916,7 +2915,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
-//printf("TrackCanvas::draw_overlays 1 %d %p\n", get_window_lock(), background_pixmap);
+
+
 // Move background pixmap to foreground pixmap
 	draw_pixmap(background_pixmap, 
 		0, 
@@ -3267,7 +3267,7 @@ int TrackCanvas::cursor_motion_event()
 	int new_cursor = 0;
 	int rerender = 0;
 	double position = 0;
-//printf("TrackCanvas::cursor_motion 1\n");
+//printf("TrackCanvas::cursor_motion_event 1 %f\n", mwindow->edl->local_session->selectionstart);
 	result = 0;
 
 // Default cursor
@@ -3382,6 +3382,7 @@ int TrackCanvas::cursor_motion_event()
 				mwindow->edl->local_session->selectionend = position;
 // Don't que the CWindow
 			}
+//printf("TrackCanvas::cursor_motion_event 1 %f %f %f\n", position, mwindow->edl->local_session->selectionstart, mwindow->edl->local_session->selectionend);
 
 			gui->cursor->hide();
 			gui->cursor->draw();
@@ -3505,15 +3506,12 @@ int TrackCanvas::cursor_motion_event()
 			stop_dragscroll();
 	}
 
-//printf("TrackCanvas::cursor_motion_event 1 %d\n", get_window_lock());
 	if(update_overlay)
 	{
-//		lock_window();
 		draw_overlays();
 		flash();
-//		unlock_window();
 	}
-//printf("TrackCanvas::cursor_motion_event 2\n");
+//printf("TrackCanvas::cursor_motion_event 100 %f\n", mwindow->edl->local_session->selectionstart);
 	return result;
 }
 
@@ -3585,6 +3583,10 @@ int TrackCanvas::repeat_event(long duration)
 			x_distance) * 
 			mwindow->edl->local_session->zoom_sample /
 			mwindow->edl->session->sample_rate;
+		position = mwindow->edl->align_to_frame(position, 0);
+		position = MAX(position, 0);
+
+//printf("TrackCanvas::repeat_event 1 %f\n", position);
 		switch(mwindow->session->current_operation)
 		{
 			case SELECT_REGION:
@@ -3621,12 +3623,10 @@ int TrackCanvas::repeat_event(long duration)
 int TrackCanvas::button_release_event()
 {
 	int redraw = 0, update_overlay = 0, result = 0;
-//printf("TrackCanvas::button_release_event 1 %d\n", mwindow->session->current_operation);
 
 	switch(mwindow->session->current_operation)
 	{
 		case DRAG_EDITHANDLE2:
-//printf("TrackCanvas::button_release_event 2\n");
 			mwindow->session->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 			result = 1;
@@ -3635,16 +3635,12 @@ int TrackCanvas::button_release_event()
 			break;
 
 		case DRAG_EDITHANDLE1:
-//printf("TrackCanvas::button_release_event 2\n");
 			mwindow->session->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 			result = 1;
-			
-//			end_edithandle_selection();
 			break;
 
 		case DRAG_PLUGINHANDLE2:
-//printf("TrackCanvas::button_release_event 2\n");
 			mwindow->session->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 			result = 1;
@@ -3653,12 +3649,9 @@ int TrackCanvas::button_release_event()
 			break;
 
 		case DRAG_PLUGINHANDLE1:
-//printf("TrackCanvas::button_release_event 2\n");
 			mwindow->session->current_operation = NO_OPERATION;
 			drag_scroll = 0;
 			result = 1;
-			
-//			end_pluginhandle_selection();
 			break;
 
 		case DRAG_FADE:
@@ -3697,7 +3690,6 @@ int TrackCanvas::button_release_event()
 		default:
 			if(mwindow->session->current_operation)
 			{
-//printf("TrackCanvas::button_release_event 3\n");
 				mwindow->session->current_operation = NO_OPERATION;
 				drag_scroll = 0;
 // Traps button release events
@@ -3705,7 +3697,6 @@ int TrackCanvas::button_release_event()
 			}
 			break;
 	}
-//printf("TrackCanvas::button_release_event 4 %d\n", result);
 
 	if(update_overlay)
 	{
@@ -4221,6 +4212,7 @@ int TrackCanvas::button_press_event()
 	int cursor_x, cursor_y;
 	int new_cursor, update_cursor;
 
+//printf("TrackCanvas::button_press_event 1\n");
 	cursor_x = get_cursor_x();
 	cursor_y = get_cursor_y();
 
@@ -4239,6 +4231,21 @@ int TrackCanvas::button_press_event()
 		}
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;
+
+		if(get_buttonpress() == 4)
+		{
+//printf("TrackCanvas::button_press_event 1\n");
+			mwindow->move_up(get_h() / 10);
+			result = 1;
+		}
+		else
+		if(get_buttonpress() == 5)
+		{
+//printf("TrackCanvas::button_press_event 2\n");
+			mwindow->move_down(get_h() / 10);
+			result = 1;
+		}
+		else
 		switch(mwindow->edl->session->editing_mode)
 		{
 // Test handles and resource boundaries and highlight a track
@@ -4375,14 +4382,10 @@ int TrackCanvas::button_press_event()
 
 		if(rerender)
 		{
-//printf("TrackCanvas::button_press_event 1\n");
 			mwindow->cwindow->update(1, 0, 0);
-//printf("TrackCanvas::button_press_event 2\n");
 // Update faders
 			mwindow->update_plugin_guis();
-//printf("TrackCanvas::button_press_event 3\n");
 			gui->patchbay->update();
-//printf("TrackCanvas::button_press_event 4\n");
 		}
 
 		if(update_overlay)
@@ -4404,9 +4407,6 @@ int TrackCanvas::button_press_event()
 
 
 	}
-// 	else
-// 	if(active)
-// 		deactivate();
 	return result;
 }
 

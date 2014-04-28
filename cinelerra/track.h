@@ -169,8 +169,6 @@ public:
 
 
 
-// If module is visible
-	int module_view;
 
 
 	int load_automation(FileXML *file);
@@ -180,7 +178,6 @@ public:
 	virtual int dump();
 
 
-	int track_visible(int x, int w, int y, int h);
 
 // ===================================== editing
 	int copy(double start, 
@@ -259,7 +256,6 @@ public:
 	int popup_transition(int cursor_x, int cursor_y);
 
 // Return 1 if the left handle was selected 2 if the right handle was selected 3 if the track isn't recordable
-	int select_handle(int cursor_x, int cursor_y, long &selection);
 	int modify_edithandles(double oldposition, 
 		double newposition, 
 		int currentend, 
@@ -284,8 +280,6 @@ public:
 
 // Absolute number of this track
 	int number_of();           
-	Patch* get_patch_of();
-	Module* get_module_of();
 
 // get_dimensions is used for getting drawing regions so use floats for partial frames
 // get the display dimensions in SAMPLES OR FRAMES
@@ -301,15 +295,8 @@ public:
 
 // ===================================== for handles, titles, etc
 
-	Patch *patch;
-	Module *module;
 	long old_view_start;
 	int pixel;   // pixel position from top of track view
-	IntAutos *play_autos;
-	IntAutos *mute_autos;
-	FloatAutos *fade_autos;
-// Transition currently being rendered
-	Transition *transition;
 // Dimensions of this track if video
 	int track_w, track_h;
 };

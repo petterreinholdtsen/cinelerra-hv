@@ -18,7 +18,9 @@
 #include "sizes.h"
 #include "vframe.h"
 
+#ifdef HAVE_GL
 #include <GL/gl.h>
+#endif
 #include <string.h>
 
 #include <X11/extensions/Xvlib.h>
@@ -46,8 +48,7 @@ BC_WindowTree::BC_WindowTree(Display* display,
 	XQueryTree(display, 
 		root_win, 
 		&temp_win, 
-		&temp_win, 
-		&stack, 
+		&temp_win, 		&stack, 
 		(unsigned int*)&stack_total);
 
 	for(int i = 0; i < stack_total; i++)
@@ -114,6 +115,8 @@ BC_WindowBase::BC_WindowBase()
 
 BC_WindowBase::~BC_WindowBase()
 {
+//printf("BC_WindowBase::~BC_WindowBase 1 %s\n", title);
+
 #ifdef HAVE_LIBXXF86VM
    if(window_type == VIDMODE_SCALED_WINDOW && vm_switched)
    {
@@ -204,6 +207,7 @@ int BC_WindowBase::initialize()
 	temp_bitmap = 0;
 	tooltip_on = 0;
 	temp_cursor = 0;
+	toggle_value = 0;
 #ifdef HAVE_LIBXXF86VM
    vm_switched = 0;
 #endif
@@ -539,6 +543,7 @@ int BC_WindowBase::dispatch_event()
     Window tempwin;
   	KeySym keysym;
   	char keys_return[2];
+	int result;
 	XClientMessageEvent *ptr;
 	int temp;
 	int cancel_resize, cancel_translation;
@@ -783,7 +788,16 @@ int BC_WindowBase::dispatch_event()
 			}
 
 //printf("BC_WindowBase::run_window %d %d %x\n", shift_down(), alt_down(), key_pressed);
-			dispatch_keypress_event();
+			result = dispatch_keypress_event();
+// Handle some default keypresses
+			if(!result)
+			{
+				if(key_pressed == 'w' ||
+					key_pressed == 'W')
+				{
+					close_event();
+				}
+			}
 			break;
 
 		case LeaveNotify:
@@ -954,7 +968,6 @@ int BC_WindowBase::dispatch_keypress_event()
 
 	if(!result) result = keypress_event();
 
-//printf("BC_WindowBase::dispatch_keypress_event 1 %d\n", result);
 	return result;
 }
 
@@ -1084,11 +1097,11 @@ int BC_WindowBase::dispatch_cursor_enter()
 {
 	int result = 0;
 
-//printf("BC_WindowBase::dispatch_cursor_enter 1 %s %p\n", title, this);
 	if(active_menubar) result = active_menubar->dispatch_cursor_enter();
+//printf("BC_WindowBase::dispatch_cursor_enter 2 %s\n", title);
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_cursor_enter();
+//printf("BC_WindowBase::dispatch_cursor_enter 3 %s\n", title);
 	if(!result && active_subwindow) result = active_subwindow->dispatch_cursor_enter();
-//printf("BC_WindowBase::dispatch_cursor_enter 1 %s %p\n", title, this);
 
 	for(int i = 0; !result && i < subwindows->total; i++)
 	{
@@ -1096,8 +1109,8 @@ int BC_WindowBase::dispatch_cursor_enter()
 	}
 //printf("BC_WindowBase::dispatch_cursor_enter 1 %s %p\n", title, this);
 
+//printf("BC_WindowBase::dispatch_cursor_enter 5 %s %p\n", title, this);
 	if(!result) result = cursor_enter_event();
-//printf("BC_WindowBase::dispatch_cursor_enter 2 %s %p\n", title, this);
 	return result;
 }
 
@@ -1705,92 +1718,6 @@ void BC_WindowBase::stop_video()
 {
 	video_on = 0;
 }
-
-
-
-extern "C"
-{
-	GLXContext glXCreateContext(Display *dpy,
-                               XVisualInfo *vis,
-                               GLXContext shareList,
-                               int direct);
-	
-  	int glXMakeCurrent(Display *dpy,
-                       Drawable drawable,
-                       GLXContext ctx);
-
-	void glXSwapBuffers(Display *dpy,
-                       Drawable drawable);
-};
-
-
-
-void BC_WindowBase::enable_opengl()
-{
-	lock_window();
-	opengl_lock.lock();
-
-	XVisualInfo viproto;
-	XVisualInfo *visinfo;
-	int nvi;
-
-//printf("BC_WindowBase::enable_opengl 1\n");
-	viproto.screen = top_level->screen;
-	visinfo = XGetVisualInfo(top_level->display,
-    	VisualScreenMask,
-    	&viproto,
-    	&nvi);
-//printf("BC_WindowBase::enable_opengl 1 %p\n", visinfo);
-
-	gl_context = glXCreateContext(top_level->display,
-		visinfo,
-		0,
-		1);
-//printf("BC_WindowBase::enable_opengl 1\n");
-
-	glXMakeCurrent(top_level->display,
-		win,
-		gl_context);
-
-	unsigned long valuemask = CWEventMask;
-	XSetWindowAttributes attributes;
-	attributes.event_mask = DEFAULT_EVENT_MASKS |
-			ExposureMask;
-	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
-
-	opengl_lock.unlock();
-	unlock_window();
-//printf("BC_WindowBase::enable_opengl 2\n");
-}
-
-void BC_WindowBase::disable_opengl()
-{
-	unsigned long valuemask = CWEventMask;
-	XSetWindowAttributes attributes;
-	attributes.event_mask = DEFAULT_EVENT_MASKS;
-	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
-}
-
-void BC_WindowBase::lock_opengl()
-{
-	lock_window();
-	opengl_lock.lock();
-	glXMakeCurrent(top_level->display,
-		win,
-		gl_context);
-}
-
-void BC_WindowBase::unlock_opengl()
-{
-	opengl_lock.unlock();
-	unlock_window();
-}
-
-void BC_WindowBase::flip_opengl()
-{
-	glXSwapBuffers(top_level->display, win);
-}
-
 
 
 
@@ -2947,6 +2874,11 @@ char* BC_WindowBase::get_title()
 	return title;
 }
 
+int BC_WindowBase::get_toggle_value()
+{
+	return toggle_value;
+}
+
 int BC_WindowBase::set_icon(VFrame *data)
 {
 	if(icon_pixmap) delete icon_pixmap;
@@ -3102,5 +3034,94 @@ void BC_WindowBase::restore_vm()
    XF86VidModeSwitchToMode(top_level->display,XDefaultScreen(top_level->display),&orig_modeline);
    XFlush(top_level->display);
 }
+
+
 #endif
 
+
+#ifdef HAVE_GL
+
+extern "C"
+{
+	GLXContext glXCreateContext(Display *dpy,
+                               XVisualInfo *vis,
+                               GLXContext shareList,
+                               int direct);
+	
+  	int glXMakeCurrent(Display *dpy,
+                       Drawable drawable,
+                       GLXContext ctx);
+
+	void glXSwapBuffers(Display *dpy,
+                       Drawable drawable);
+};
+
+
+
+void BC_WindowBase::enable_opengl()
+{
+	lock_window();
+	opengl_lock.lock();
+
+	XVisualInfo viproto;
+	XVisualInfo *visinfo;
+	int nvi;
+
+//printf("BC_WindowBase::enable_opengl 1\n");
+	viproto.screen = top_level->screen;
+	visinfo = XGetVisualInfo(top_level->display,
+    	VisualScreenMask,
+    	&viproto,
+    	&nvi);
+//printf("BC_WindowBase::enable_opengl 1 %p\n", visinfo);
+
+	gl_context = glXCreateContext(top_level->display,
+		visinfo,
+		0,
+		1);
+//printf("BC_WindowBase::enable_opengl 1\n");
+
+	glXMakeCurrent(top_level->display,
+		win,
+		gl_context);
+
+	unsigned long valuemask = CWEventMask;
+	XSetWindowAttributes attributes;
+	attributes.event_mask = DEFAULT_EVENT_MASKS |
+			ExposureMask;
+	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
+
+	opengl_lock.unlock();
+	unlock_window();
+//printf("BC_WindowBase::enable_opengl 2\n");
+}
+
+void BC_WindowBase::disable_opengl()
+{
+	unsigned long valuemask = CWEventMask;
+	XSetWindowAttributes attributes;
+	attributes.event_mask = DEFAULT_EVENT_MASKS;
+	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
+}
+
+void BC_WindowBase::lock_opengl()
+{
+	lock_window();
+	opengl_lock.lock();
+	glXMakeCurrent(top_level->display,
+		win,
+		gl_context);
+}
+
+void BC_WindowBase::unlock_opengl()
+{
+	opengl_lock.unlock();
+	unlock_window();
+}
+
+void BC_WindowBase::flip_opengl()
+{
+	glXSwapBuffers(top_level->display, win);
+}
+
+#endif

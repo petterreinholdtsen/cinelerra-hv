@@ -15,24 +15,17 @@ CICache::CICache(EDL *edl,
 	ArrayList<PluginServer*> *plugindb)
  : List<CICacheItem>()
 {
-//printf("CICache 1\n");
 	this->edl = new EDL;
 	this->edl->create_objects();
-//printf("CICache 1 %p\n", this->edl);
 	*this->edl = *edl;
-//printf("CICache 1\n");
 	this->plugindb = plugindb;
 	this->preferences = preferences;
-//printf("CICache 2\n");
 }
 
 CICache::~CICache()
 {
-//printf("CICache::~CICache 1\n");
 	while(last) delete last;
-//printf("CICache::~CICache 1\n");
 	delete edl;
-//printf("CICache::~CICache 1\n");
 }
 
 void CICache::set_edl(EDL *edl)
@@ -66,9 +59,7 @@ File* CICache::check_out(Asset *asset)
 {
 	File *result = 0;
 
-//printf("CICache::check_out 1\n");fflush(stdout);
 	check_out_lock.lock();
-//printf("CICache::check_out 2\n");fflush(stdout);
 
 // search for it in the cache
 	CICacheItem *current, *new_item = 0;
@@ -85,22 +76,15 @@ File* CICache::check_out(Asset *asset)
 // didn't find it so create a new one
 	if(!new_item)
 	{
-//printf("CICache::check_out 3 %p\n", asset);fflush(stdout);
-//printf("CICache::check_out 3 %s\n", asset->path);
 		new_item = append(new CICacheItem(this, asset));
-//printf("CICache::check_out 3.1 %s\n", asset->path);
 	}
 
-//printf("CICache::check_out 3.2 %s\n", asset->path);
 	if(new_item)
 	{
-//printf("CICache::check_out 3.3 %s\n", asset->path);
 		if(new_item->file)
 		{
 // opened successfully
-//printf("CICache::check_out 4 %p %p %s\n", new_item, new_item->asset, new_item->asset->path);fflush(stdout);
 			new_item->item_lock.lock();
-//printf("CICache::check_out 5\n");fflush(stdout);
 			new_item->checked_out = 1;
 
 			result = new_item->file;
@@ -108,16 +92,12 @@ File* CICache::check_out(Asset *asset)
 		else
 		{
 // failed
-//printf("CICache::check_out 6 %p\n", asset);fflush(stdout);
 			delete new_item;
-//printf("CICache::check_out 7 %p\n", asset);fflush(stdout);
 			new_item = 0;
 		}
 	}
-//printf("CICache::check_out 8\n");fflush(stdout);
 
 	check_out_lock.unlock();
-//printf("CICache::check_out 9\n");fflush(stdout);
 
 	return result;
 }
@@ -131,7 +111,6 @@ int CICache::check_in(Asset *asset)
 	total_lock.lock();
 	for(current = first; current && !result; current = NEXT)
 	{
-//printf("CICache::check_in %s %s\n", current->asset->path, asset->path);
 // Pointers are different
 		if(!strcmp(current->asset->path, asset->path))
 		{
@@ -161,17 +140,14 @@ int CICache::delete_entry(Asset *asset)
 	lock_all();
 	int result = 0;
 	CICacheItem *current, *temp;
-//printf("CICache::delete_entry 1 %p %d\n", this, total());
 
 	for(current = first; current; current = temp)
 	{
-//printf("CICache::delete_entry 1 this %s %s %d\n", asset->path, current->asset->path, current->checked_out);
 		temp = NEXT;
 		if(current->asset->equivalent(*asset, 0, 0))
 		{
 			if(!current->checked_out)
 			{
-//printf("CICache::delete_entry 2\n");
 				delete current;
 			}
 			else
@@ -182,7 +158,6 @@ int CICache::delete_entry(Asset *asset)
 		current = temp;
 	}
 
-//printf("CICache::delete_entry 3 %p %d\n", this, total());
 	unlock_all();
 	return 0;
 }
@@ -306,21 +281,21 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 	this->cache = cache;
 	checked_out = 0;
 
-//printf("CICacheItem::CICacheItem 1\n");
 	file = new File;
-//printf("CICacheItem::CICacheItem 2\n");
 	file->set_processors(cache->edl->session->smp ? 2: 1);
-//printf("CICacheItem::CICacheItem 3\n");
 	file->set_preload(cache->edl->session->playback_preload);
-//printf("CICacheItem::CICacheItem 4\n");
+
+
+// Copy decoding parameters from session to asset so file can see them.
+	this->asset->divx_use_deblocking = cache->edl->session->mpeg4_deblock;
+
+
+
 	if(result = file->open_file(cache->plugindb, this->asset, 1, 0, -1, -1))
 	{
-//printf("CICacheItem::CICacheItem 4.1\n");
 		delete file;
-//printf("CICacheItem::CICacheItem 4.2\n");
 		file = 0;
 	}
-//printf("CICacheItem::CICacheItem 1 %p %p %s\n", this->asset, file->asset, asset->path);
 }
 
 // File already opened
@@ -334,14 +309,12 @@ CICacheItem::CICacheItem(CICache *cache, File *file)
 	this->cache = cache;
 	checked_out = 0;
 
-//printf("CICacheItem::CICacheItem 2 %p %p\n", this->asset, file->asset);
 	file->set_processors(cache->edl->session->smp ? 2: 1);
 	file->set_preload(cache->edl->session->playback_preload);
 }
 
 CICacheItem::~CICacheItem()
 {
-//printf("CICacheItem::~CICacheItem %p %s\n", asset, asset->path);
 	delete file;
 	delete asset;
 }

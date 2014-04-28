@@ -1589,7 +1589,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 #define PROCESS(type, components) \
 { \
-	for(int i = 0; i < h; i++) \
+	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
 		type *row = (type*)input->get_rows()[i]; \
 		for(int j = 0; j < w; j++) \
@@ -1605,7 +1605,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 #define PROCESS_YUV(type, components, max) \
 { \
-	for(int i = 0; i < h; i++) \
+	for(int i = pkg->start; i < pkg->end; i++) \
 	{ \
 		type *row = (type*)input->get_rows()[i]; \
 		for(int j = 0; j < w; j++) \

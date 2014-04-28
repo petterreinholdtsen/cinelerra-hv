@@ -8,7 +8,6 @@
 #include "file.inc"
 #include "filexml.inc"
 #include "linklist.h"
-#include "mwindow.inc"
 #include "pluginserver.inc"
 #include "threadindexer.inc"
 #include "track.h"
@@ -65,23 +64,11 @@ public:
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 // Total number of tracks where the following toggles are selected
-	void select_all(int play, 
-		int record, 
-		int automate, 
-		int gang, 
-		int draw, 
-		int mute,
-		int expand,
+	void select_all(int type,
 		int value);
 	void translate_camera(float offset_x, float offset_y);
 	void translate_projector(float offset_x, float offset_y);
-	int total_of(int play, 
-		int record, 
-		int automate, 
-		int gang, 
-		int draw, 
-		int mute,
-		int expand);
+	int total_of(int type);
 // add a track
 	Track* add_audio_track(int to_end = 1);
 	Track* add_video_track(int to_end = 1);
@@ -93,102 +80,44 @@ public:
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	Tracks(MWindow *mwindow);
 
-	int create_objects(Defaults *defaults, int w, int h, int top, int bottom);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+// Types for drag toggle behavior
+	enum
+	{
+		NONE,
+		PLAY,
+		RECORD,
+		GANG,
+		DRAW,
+		MUTE,
+		EXPAND
+	};
 
+
+
+	
+	
+	
+	
+	
+	
 	int change_channels(int oldchannels, int newchannels);
-	int set_index_file(int flash, Asset *asset);
 	int dump();
 
-// ======================================= file operations
 
-	int update_old_filename(char *old_filename, char *new_filename);
-
-// ======================================= drawing
-
-	int show_overlays(int flash);
-	int hide_overlays(int flash);
-
-	int resize_event(int w, int h, int top, int bottom);
-	int flip_vertical(int top, int bottom);
-
-	int draw_cursor(int flash);
-	int draw_loop_points(int flash);
-
-	int toggle_handles();
-	int toggle_titles();
-	int set_draw_output();
-
-	int draw_handles(int flash);
-	int draw_floating_handle(int flash);
-
-	int draw_titles(int flash);
-
-	int toggle_auto_fade();
-	int toggle_auto_play();
-	int toggle_auto_mute();
-// set the video autos since only one can be visible at a time
-	int set_show_autos(int camera, int project);
-	int toggle_auto_project();
-	int toggle_auto_project_z();
-	int toggle_auto_camera();
-	int toggle_auto_camera_z();
-	int toggle_auto_pan(int pan);
-	int toggle_auto_plugin(int plugin);
-	int draw_autos(int flash);
-	int show_autos(int flash);
-	int hide_autos(int flash);
-	int draw_floating_autos(int flash);
-	int draw_playback_cursor(int x, int flash = 1);
-	int draw_loop_points(long start, long end, int flash);
-
-
-// ================================== movement
-
-	int zoom_y();
-	int expand_y();
-	int expand_t();
-	int zoom_t();
-	int samplemovement(long distance);
-	int trackmovement(long distance);
-	int move_up(long distance = 0);
-	int move_down(long distance = 0);
-	int redo_pixels();           // reset all the track pixels after a delete or move
-
-// ================================== track editing
-	int import_audio_track(long length, int channel, Asset *asset);
-	int import_video_track(long length, int layer, Asset *asset);
-	int import_vtransition_track(long length, Asset *asset);
-	int import_atransition_track(long length, Asset *asset);
-	int add_vtransition_track(int flash = 1);
-	int add_atransition_track(int flash = 1);
 
 // Change references to shared modules in all tracks from old to new.
 // If do_swap is true values of new are replaced with old.
 	void change_modules(int old_location, int new_location, int do_swap);
 // Append all the tracks to the end of the recordable tracks
 	int concatenate_tracks(int edit_plugins);
-	int copyable_tracks(long start, long end);  // return number of tracks to copy
 // Change references to shared plugins in all tracks
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 
 	int delete_audio_track();       // delete the last audio track
 	int delete_video_track();        // delete the last video track
 	int delete_tracks();     // delete all the recordable tracks
-	int delete_all(int flash = 1);      // delete just the tracks
 	int delete_all_tracks();      // delete just the tracks
-// Swap link list positions of tracks including references
-	void swap_tracks(Track *first, Track *second);
 
 // ================================== EDL editing
 	int copy(double start, 
@@ -238,8 +167,6 @@ public:
 		int edit_plugins);
 	int purge_asset(Asset *asset);
 	int asset_used(Asset *asset);
-	int select_translation(int cursor_x, int cursor_y);    // select video coordinates for frame
-	int update_translation(int cursor_x, int cursor_y, int shift_down);
 // Transition popup
 	int popup_transition(int cursor_x, int cursor_y);
 	int select_auto(int cursor_x, int cursor_y);
@@ -255,13 +182,11 @@ public:
 		int currentend, 
 		int handle_mode,
 		int edit_labels);
-	int end_translation();
 	int select_handles();
 	int select_region();
 	int select_edit(long cursor_position, int cursor_x, int cursor_y, long &new_start, long &new_end);
 	int feather_edits(long start, long end, long samples, int audio, int video);
 	long get_feather(long selectionstart, long selectionend, int audio, int video);
-	int reset_translation(long start, long end);
 // Move edit boundaries and automation during a framerate change
 	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, long start, long end);
 
@@ -271,10 +196,6 @@ public:
 	int show_output;          // what type of video to draw
 	AutoConf auto_conf;      // which autos are visible
 	int overlays_visible;
-	int view_start;         // vertical start of track view
-	int view_pixels();          // return the view width in pixels from the canvas
-	int vertical_pixels();       // return the view height in pixels
-	long view_samples();      // return the view width in samples from the canvas
 	double total_playable_length();     // Longest track.
 // Used by equivalent_output
 	int total_playable_vtracks();
@@ -282,14 +203,9 @@ public:
 	int totalpixels();       // height of all tracks in pixels
 	int number_of(Track *track);        // track number of pointer
 	Track* number(int number);      // pointer to track number
-	int copy_length(long start, long end);
 
-	MWindow *mwindow;
-	TrackCanvas *canvas;
-	Cursor_ *cursor;
 
 private:
-	int paste_assets(FileXML *xml);
 };
 
 #endif

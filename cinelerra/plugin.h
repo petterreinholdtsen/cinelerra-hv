@@ -60,6 +60,8 @@ public:
 // to determine a corresponding GUI.
 	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
+// Used by Edits::insert_edits and Plugin::shift to shift plugin keyframes
+	void shift_keyframes(long position);
 
 	void change_plugin(char *title, 
 		SharedLocation *shared_location, 
@@ -120,32 +122,6 @@ public:
 
 // location of plugin if shared
 	SharedLocation shared_location;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	Module *module;
 };
 
 

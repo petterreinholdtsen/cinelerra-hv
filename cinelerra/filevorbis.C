@@ -314,7 +314,7 @@ int FileVorbis::read_samples(double *buffer, long len)
 			for(int i = 0; i < asset->channels; i++)
 			{
 				double *temp = pcm_history[i];
-				for(int j = 0; j < diff; j++)
+				for(int j = 0; j < HISTORY_MAX - diff; j++)
 				{
 					temp[j] = temp[j + diff];
 				}
@@ -331,7 +331,10 @@ int FileVorbis::read_samples(double *buffer, long len)
 
 // Fill history buffer
 	if(history_start + history_size != ov_pcm_tell(&vf))
+	{
+//printf("FileVorbis::read_samples %d %d\n", history_start + history_size, ov_pcm_tell(&vf));
 		ov_pcm_seek(&vf, history_start + history_size);
+	}
 
 	while(accumulation < decode_len)
 	{
@@ -352,6 +355,11 @@ int FileVorbis::read_samples(double *buffer, long len)
 		history_size += result;
 		accumulation += result;
 	}
+
+
+// printf("FileVorbis::read_samples 1 %d %d\n", 
+// file->current_sample,
+// history_start);
 
 	double *input = pcm_history[file->current_channel] + 
 		file->current_sample - 

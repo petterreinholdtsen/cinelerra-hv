@@ -93,45 +93,41 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, "Video Out", LARGEFONT, BLACK));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, "Framerate achieved:"));
+	add_subwindow(new BC_Title(10, y, "Framerate achieved:"));
 	add_subwindow(framerate_title = new BC_Title(x + 150, y, "--", MEDIUMFONT, RED));
 	draw_framerate();
 	y += 30;
 
-	add_subwindow(new VideoEveryFrame(pwindow, x, y));
+	add_subwindow(new VideoEveryFrame(pwindow, 10, y));
 	y += 40;
  	add_subwindow(new BC_Title(x, y, "Scaling equation:"));
 	y += 20;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == NEAREST_NEIGHBOR, 
-		x, 
+		10, 
 		y));
 	y += 20;
-// 	add_subwindow(cubic_cubic = new PlaybackBicubicBicubic(pwindow,
-// 		this, 
-// 		pwindow->thread->edl->session->interpolation_type == CUBIC_CUBIC, 
-// 		x, 
-// 		y));
-// 	y += 20;
 	add_subwindow(cubic_linear = new PlaybackBicubicBilinear(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == CUBIC_LINEAR, 
-		x, 
+		10, 
 		y));
 	y += 20;
 	add_subwindow(linear_linear = new PlaybackBilinearBilinear(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == LINEAR_LINEAR, 
-		x, 
+		10, 
 		y));
 
 	y += 35;
 	add_subwindow(new BC_Title(x, y, "Preload buffer for Quicktime:", MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	add_subwindow(new PlaybackPreload(x + 210, y, pwindow, this, string));
-	y += 35;
+	y += 30;
 
+	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
+	y += 35;
 	add_subwindow(vdevice_title = new BC_Title(x, y, "Video Driver:"));
 	video_device = new VDevicePrefs(x + 100, 
 		y, 
@@ -263,6 +259,15 @@ PlaybackConfig* PlaybackPrefs::current_config()
 	return current_config_list()->values[current_head];
 }
 
+
+void PlaybackPrefs::update(int interpolation)
+{
+	pwindow->thread->edl->session->interpolation_type = interpolation;
+	nearest_neighbor->update(interpolation == NEAREST_NEIGHBOR);
+//	cubic_cubic->update(interpolation == CUBIC_CUBIC);
+	cubic_linear->update(interpolation == CUBIC_LINEAR);
+	linear_linear->update(interpolation == LINEAR_LINEAR);
+}
 
 
 int PlaybackPrefs::get_buffer_bytes()
@@ -476,14 +481,11 @@ int PlaybackRealTime::handle_event()
 	return 1;
 }
 
-void PlaybackPrefs::update(int interpolation)
-{
-	pwindow->thread->edl->session->interpolation_type = interpolation;
-	nearest_neighbor->update(interpolation == NEAREST_NEIGHBOR);
-//	cubic_cubic->update(interpolation == CUBIC_CUBIC);
-	cubic_linear->update(interpolation == CUBIC_LINEAR);
-	linear_linear->update(interpolation == LINEAR_LINEAR);
-}
+
+
+
+
+
 
 PlaybackNearest::PlaybackNearest(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
  : BC_Radial(x, y, value, "Nearest neighbor enlarge and reduce")
@@ -571,12 +573,35 @@ VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, int x, int y)
 	this->pwindow = pwindow;
 }
 
-VideoEveryFrame::~VideoEveryFrame()
-{
-}
-
 int VideoEveryFrame::handle_event()
 {
 	pwindow->thread->edl->session->video_every_frame = get_value();
 	return 1;
 }
+
+
+
+
+
+PlaybackDeblock::PlaybackDeblock(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->edl->session->mpeg4_deblock, 
+	"MPEG-4 Deblocking")
+{
+	this->pwindow = pwindow;
+}
+
+int PlaybackDeblock::handle_event()
+{
+	pwindow->thread->edl->session->mpeg4_deblock = get_value();
+	return 1;
+}
+
+
+
+
+
+
+
+

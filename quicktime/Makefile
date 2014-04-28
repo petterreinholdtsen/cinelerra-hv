@@ -45,7 +45,7 @@ include Makefile.vorbis
 include Makefile.ffmpeg
 include Makefile.lame
 include Makefile.dv
-
+include Makefile.encore50
 
 
 
@@ -135,103 +135,6 @@ OBJS += \
 
 
 
-# OBJS += \
-# 	$(OBJDIR)/$(DECORE_DIR)/bitstream.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/colorspace.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/decoder.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/decore2.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/idct.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/image.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/mbcoding.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/mbprediction.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/quantize.o \
-# 	$(OBJDIR)/$(DECORE_DIR)/transfer.o
-
-OBJS += \
-	$(OBJDIR)/$(DECORE_DIR)/debug.o \
-	$(OBJDIR)/$(DECORE_DIR)/basic_prediction.o \
-	$(OBJDIR)/$(DECORE_DIR)/clearblock.o \
-	$(OBJDIR)/$(DECORE_DIR)/decore.o \
-	$(OBJDIR)/$(DECORE_DIR)/getbits.o \
-	$(OBJDIR)/$(DECORE_DIR)/idct.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_vars.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_block.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_decoder.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_header.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_iquant.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_mblock.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_picture.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_predict.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_recon.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_tables.o \
-	$(OBJDIR)/$(DECORE_DIR)/mp4_vld.o \
-	$(OBJDIR)/$(DECORE_DIR)/postprocess.o \
-	$(OBJDIR)/$(DECORE_DIR)/yuv2rgb.o \
-	$(OBJDIR)/$(DECORE_DIR)/transferidct.o
-
-#OBJS += \
-#	$(OBJDIR)/$(ENCORE_DIR)/bitstream.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/colorspace/colorspace.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/encoder.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/encore.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/image.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbcoding/mbcoding.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbcoding/putvlc.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/compensate.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/halfpel.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/mad.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/sad.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/mbmotionestcomp.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbprediction/mbprediction.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/dct.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/fdct.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/idct.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/mbtransquant.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/quantize.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/transfer.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/ratecontrol.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/rgb2yuv.o  \
-#	$(OBJDIR)/$(ENCORE_DIR)/timer.o
-
-
-ifeq ($(USE_MMX), 1)
-
-
-#CFLAGS += -D_MMX_
-#ENCOREMMX_OBJS= \
-#	$(OBJDIR)/$(ENCORE_DIR)/colorspace/intel_mmx/colorspace_mmx.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/colorspace/intel_mmx/yuv_to_yuv.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/fdct_mmx.o \
-#	$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/idct_sse.o \
-#        $(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/transfer_mmx.o \
-#        $(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/quant_mmx.o \
-#        $(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/intel_mmx/halfpel_mmx.o \
-#        $(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/intel_mmx/compensate_mmx.o \
-#        $(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/intel_mmx/sad_mmx.o 
-
-
-
-endif
-
-
-OBJS += \
-	$(OBJDIR)/$(ENCORE_DIR)/bitstream.o \
-	$(OBJDIR)/$(ENCORE_DIR)/encore.o \
-	$(OBJDIR)/$(ENCORE_DIR)/mom_access.o \
-	$(OBJDIR)/$(ENCORE_DIR)/mom_util.o \
-	$(OBJDIR)/$(ENCORE_DIR)/mot_code.o \
-	$(OBJDIR)/$(ENCORE_DIR)/mot_est_comp.o \
-	$(OBJDIR)/$(ENCORE_DIR)/mot_est_mb.o \
-	$(OBJDIR)/$(ENCORE_DIR)/mot_util.o \
-	$(OBJDIR)/$(ENCORE_DIR)/putvlc.o \
-	$(OBJDIR)/$(ENCORE_DIR)/rate_ctl.o \
-	$(OBJDIR)/$(ENCORE_DIR)/text_bits.o \
-	$(OBJDIR)/$(ENCORE_DIR)/text_code.o \
-	$(OBJDIR)/$(ENCORE_DIR)/text_code_mb.o \
-	$(OBJDIR)/$(ENCORE_DIR)/text_dct.o \
-	$(OBJDIR)/$(ENCORE_DIR)/vop_code.o
-
-
 
 
 
@@ -281,7 +184,7 @@ CFLAGS += \
 
 
 DIRS += \
-	$(OBJDIR)/$(DECORE_DIR)
+	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/postprocess
 
 DIRS += \
 	$(OBJDIR)/$(ENCORE_DIR) \
@@ -381,6 +284,9 @@ $(JPEG_NASM):
 $(ENCOREMMX_OBJS):
 	nasm -f elf $(subst $(OBJDIR)/,, $*.asm) -o $*.o
 
+$(DECOREMMX_OBJS):
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+
 
 $(FFMPEG_OBJS):
 	$(CC) `cat $(OBJDIR)/ffmpeg_flags` -c $(subst $(OBJDIR)/,, $*.c) -o $*.o
@@ -474,90 +380,24 @@ $(OBJDIR)/yv12.o:			  yv12.c
 
 
 
-# $(OBJDIR)/$(DECORE_DIR)/bitstream.o: 		    $(DECORE_DIR)/bitstream.c
-# $(OBJDIR)/$(DECORE_DIR)/colorspace.o: 	    $(DECORE_DIR)/colorspace.c
-# $(OBJDIR)/$(DECORE_DIR)/decoder.o: 		    $(DECORE_DIR)/decoder.c
-# $(OBJDIR)/$(DECORE_DIR)/decore2.o: 		    $(DECORE_DIR)/decore2.c
-# $(OBJDIR)/$(DECORE_DIR)/idct.o: 		    $(DECORE_DIR)/idct.c
-# $(OBJDIR)/$(DECORE_DIR)/image.o: 		    $(DECORE_DIR)/image.c
-# $(OBJDIR)/$(DECORE_DIR)/mbcoding.o: 		    $(DECORE_DIR)/mbcoding.c
-# $(OBJDIR)/$(DECORE_DIR)/mbprediction.o: 	    $(DECORE_DIR)/mbprediction.c
-# $(OBJDIR)/$(DECORE_DIR)/quantize.o: 		    $(DECORE_DIR)/quantize.c
-# $(OBJDIR)/$(DECORE_DIR)/transfer.o: 		    $(DECORE_DIR)/transfer.c
-
-$(OBJDIR)/$(DECORE_DIR)/debug.o: 		    $(DECORE_DIR)/debug.c
-$(OBJDIR)/$(DECORE_DIR)/basic_prediction.o: 	    $(DECORE_DIR)/basic_prediction.c
-$(OBJDIR)/$(DECORE_DIR)/clearblock.o: 		    $(DECORE_DIR)/clearblock.c
-$(OBJDIR)/$(DECORE_DIR)/decore.o: 		    $(DECORE_DIR)/decore.c
-$(OBJDIR)/$(DECORE_DIR)/gen_draw.o: 		    $(DECORE_DIR)/gen_draw.c
-$(OBJDIR)/$(DECORE_DIR)/getbits.o: 		    $(DECORE_DIR)/getbits.c
-$(OBJDIR)/$(DECORE_DIR)/gen_usetime.o:  	    $(DECORE_DIR)/gen_usetime.c
-$(OBJDIR)/$(DECORE_DIR)/idct.o: 		    $(DECORE_DIR)/idct.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_vars.o: 		    $(DECORE_DIR)/mp4_vars.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_block.o: 		    $(DECORE_DIR)/mp4_block.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_decoder.o:  	    $(DECORE_DIR)/mp4_decoder.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_header.o: 		    $(DECORE_DIR)/mp4_header.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_iquant.o: 		    $(DECORE_DIR)/mp4_iquant.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_mblock.o: 		    $(DECORE_DIR)/mp4_mblock.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_picture.o:  	    $(DECORE_DIR)/mp4_picture.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_predict.o:  	    $(DECORE_DIR)/mp4_predict.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_recon.o: 		    $(DECORE_DIR)/mp4_recon.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_tables.o: 		    $(DECORE_DIR)/mp4_tables.c
-$(OBJDIR)/$(DECORE_DIR)/mp4_vld.o: 		    $(DECORE_DIR)/mp4_vld.c
-$(OBJDIR)/$(DECORE_DIR)/store.o: 		    $(DECORE_DIR)/store.c
-$(OBJDIR)/$(DECORE_DIR)/postprocess.o:  	    $(DECORE_DIR)/postprocess.c
-$(OBJDIR)/$(DECORE_DIR)/yuv2rgb.o: 		    $(DECORE_DIR)/yuv2rgb.c
-$(OBJDIR)/$(DECORE_DIR)/transferidct.o: 	    $(DECORE_DIR)/transferidct.c
-
-
-#$(OBJDIR)/$(ENCORE_DIR)/bitstream.o: 			     $(ENCORE_DIR)/bitstream.c
-#$(OBJDIR)/$(ENCORE_DIR)/colorspace/colorspace.o: 	     $(ENCORE_DIR)/colorspace/colorspace.c
-#$(OBJDIR)/$(ENCORE_DIR)/encoder.o: 			     $(ENCORE_DIR)/encoder.c
-#$(OBJDIR)/$(ENCORE_DIR)/encore.o: 			     $(ENCORE_DIR)/encore.c
-#$(OBJDIR)/$(ENCORE_DIR)/image.o: 			     $(ENCORE_DIR)/image.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbcoding/mbcoding.o: 		     $(ENCORE_DIR)/mbcoding/mbcoding.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbcoding/putvlc.o: 		     $(ENCORE_DIR)/mbcoding/putvlc.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/compensate.o: 	     $(ENCORE_DIR)/mbmotionestcomp/compensate.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/mbmotionestcomp.o:  $(ENCORE_DIR)/mbmotionestcomp/mbmotionestcomp.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/sad.o:   	     $(ENCORE_DIR)/mbmotionestcomp/sad.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbprediction/mbprediction.o: 	     $(ENCORE_DIR)/mbprediction/mbprediction.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/dct.o: 		     $(ENCORE_DIR)/mbtransquant/dct.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/fdct.o: 	     	     $(ENCORE_DIR)/mbtransquant/fdct.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/idct.o: 		     $(ENCORE_DIR)/mbtransquant/idct.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/mbtransquant.o: 	     $(ENCORE_DIR)/mbtransquant/mbtransquant.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/quantize.o: 	     $(ENCORE_DIR)/mbtransquant/quantize.c
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/transfer.o: 	     $(ENCORE_DIR)/mbtransquant/transfer.c
-#$(OBJDIR)/$(ENCORE_DIR)/ratecontrol.o:  		     $(ENCORE_DIR)/ratecontrol.c
-#$(OBJDIR)/$(ENCORE_DIR)/rgb2yuv.o: 			     $(ENCORE_DIR)/rgb2yuv.c
-#$(OBJDIR)/$(ENCORE_DIR)/timer.o: 			     $(ENCORE_DIR)/timer.c
-
-#$(OBJDIR)/$(ENCORE_DIR)/colorspace/intel_mmx/colorspace_mmx.o:       $(ENCORE_DIR)/colorspace/intel_mmx/colorspace_mmx.asm
-#$(OBJDIR)/$(ENCORE_DIR)/colorspace/intel_mmx/yuv_to_yuv.o:           $(ENCORE_DIR)/colorspace/intel_mmx/yuv_to_yuv.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/fdct_mmx.o: 	      $(ENCORE_DIR)/mbtransquant/intel_mmx/fdct_mmx.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/idct_sse.o: 	      $(ENCORE_DIR)/mbtransquant/intel_mmx/idct_sse.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/transfer_mmx.o:       $(ENCORE_DIR)/mbtransquant/intel_mmx/transfer_mmx.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbtransquant/intel_mmx/quant_mmx.o: 	      $(ENCORE_DIR)/mbtransquant/intel_mmx/quant_mmx.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/intel_mmx/halfpel_mmx.o:     $(ENCORE_DIR)/mbmotionestcomp/intel_mmx/halfpel_mmx.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/intel_mmx/compensate_mmx.o:  $(ENCORE_DIR)/mbmotionestcomp/intel_mmx/compensate_mmx.asm
-#$(OBJDIR)/$(ENCORE_DIR)/mbmotionestcomp/intel_mmx/sad_mmx.o: 	      $(ENCORE_DIR)/mbmotionestcomp/intel_mmx/sad_mmx.asm
 
 
 
-$(OBJDIR)/$(ENCORE_DIR)/bitstream.o: 	   $(ENCORE_DIR)/bitstream.c
-$(OBJDIR)/$(ENCORE_DIR)/encore.o: 	   $(ENCORE_DIR)/encore.c
-$(OBJDIR)/$(ENCORE_DIR)/mom_access.o: 	   $(ENCORE_DIR)/mom_access.c
-$(OBJDIR)/$(ENCORE_DIR)/mom_util.o: 	   $(ENCORE_DIR)/mom_util.c
-$(OBJDIR)/$(ENCORE_DIR)/mot_code.o: 	   $(ENCORE_DIR)/mot_code.c
-$(OBJDIR)/$(ENCORE_DIR)/mot_est_comp.o:    $(ENCORE_DIR)/mot_est_comp.c
-$(OBJDIR)/$(ENCORE_DIR)/mot_est_mb.o: 	   $(ENCORE_DIR)/mot_est_mb.c
-$(OBJDIR)/$(ENCORE_DIR)/mot_util.o: 	   $(ENCORE_DIR)/mot_util.c
-$(OBJDIR)/$(ENCORE_DIR)/putvlc.o: 	   $(ENCORE_DIR)/putvlc.c
-$(OBJDIR)/$(ENCORE_DIR)/rate_ctl.o: 	   $(ENCORE_DIR)/rate_ctl.c
-$(OBJDIR)/$(ENCORE_DIR)/text_bits.o: 	   $(ENCORE_DIR)/text_bits.c
-$(OBJDIR)/$(ENCORE_DIR)/text_code.o: 	   $(ENCORE_DIR)/text_code.c
-$(OBJDIR)/$(ENCORE_DIR)/text_code_mb.o:    $(ENCORE_DIR)/text_code_mb.c
-$(OBJDIR)/$(ENCORE_DIR)/text_dct.o: 	   $(ENCORE_DIR)/text_dct.c
-$(OBJDIR)/$(ENCORE_DIR)/vop_code.o:	   $(ENCORE_DIR)/vop_code.c
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -578,3 +418,5 @@ include depend.jpeg
 include depend.lame
 include depend.dv
 include depend.libraw
+include depend.encore50
+

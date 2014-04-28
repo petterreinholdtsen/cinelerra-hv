@@ -22,6 +22,7 @@ extern "C" {
 #define QUICKTIME_DIVX "DIVX"
 
 #define QUICKTIME_DIV3 "DIV3"
+#define QUICKTIME_DIV4 "DIV4"
 
 #define QUICKTIME_DV "dvc "
 

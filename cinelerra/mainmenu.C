@@ -88,6 +88,7 @@ int MainMenu::create_objects()
 	filemenu->add_item(new DumpEDL(mwindow));
 	filemenu->add_item(new DumpPlugins(mwindow));
 	filemenu->add_item(new LoadBackup(mwindow));
+	filemenu->add_item(new SaveBackup(mwindow));
 
 	BC_Menu *editmenu;
 	add_menu(editmenu = new BC_Menu("Edit"));

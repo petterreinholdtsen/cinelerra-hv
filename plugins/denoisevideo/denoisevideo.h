@@ -2,6 +2,7 @@
 #define DENOISEVIDEO_H
 
 class DenoiseVideo;
+class DenoiseVideoWindow;
 
 #include "bcdisplayinfo.h"
 #include "defaults.inc"
@@ -25,6 +26,7 @@ public:
 
 	int frames;
 	float threshold;
+	int do_r, do_g, do_b, do_a;
 };
 
 
@@ -47,6 +49,21 @@ public:
 	DenoiseVideo *plugin;
 };
 
+class DenoiseVideoToggle : public BC_CheckBox
+{
+public:
+	DenoiseVideoToggle(DenoiseVideo *plugin, 
+		DenoiseVideoWindow *gui, 
+		int x, 
+		int y, 
+		int *output,
+		char *text);
+	int handle_event();
+	DenoiseVideo *plugin;
+	int *output;
+};
+
+
 class DenoiseVideoWindow : public BC_Window
 {
 public:
@@ -58,10 +75,8 @@ public:
 	DenoiseVideo *plugin;
 	DenoiseVideoFrames *frames;
 	DenoiseVideoThreshold *threshold;
+	DenoiseVideoToggle *do_r, *do_g, *do_b, *do_a;
 };
-
-
-
 
 
 PLUGIN_THREAD_HEADER(DenoiseVideo, DenoiseVideoThread, DenoiseVideoWindow)

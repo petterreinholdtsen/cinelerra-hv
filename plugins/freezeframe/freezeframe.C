@@ -230,27 +230,29 @@ int FreezeFrameMain::save_defaults()
 int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
+	KeyFrame *prev_keyframe;
+	int new_keyframe;
+	prev_keyframe = get_prev_keyframe(get_source_position());
+	new_keyframe = (prev_keyframe->position == get_source_position());
 
-	if(!first_frame && config.enabled)
+	if(!first_frame && config.enabled || new_keyframe)
 	{
-//printf("FreezeFrameMain::process_realtime 1\n");
-		first_frame = new VFrame(0, 
-			input_ptr->get_w(), 
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
+		if(!first_frame)
+			first_frame = new VFrame(0, 
+				input_ptr->get_w(), 
+				input_ptr->get_h(),
+				input_ptr->get_color_model());
 		first_frame->copy_from(input_ptr);
 		output_ptr->copy_from(input_ptr);
 	}
 	else
 	if(!first_frame && !config.enabled)
 	{
-//printf("FreezeFrameMain::process_realtime 2\n");
 		output_ptr->copy_from(input_ptr);
 	}
 	else
 	if(first_frame && !config.enabled)
 	{
-//printf("FreezeFrameMain::process_realtime 3\n");
 		delete first_frame;
 		first_frame = 0;
 		output_ptr->copy_from(input_ptr);
@@ -258,7 +260,6 @@ int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	else
 	if(first_frame && config.enabled)
 	{
-//printf("FreezeFrameMain::process_realtime 4\n");
 		output_ptr->copy_from(first_frame);
 	}
 	return 0;

@@ -33,6 +33,8 @@ public:
 	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
 	virtual void synchronize_params(Edit *edit);
+// Used by Edits::insert_edits to shift plugin keyframes
+	virtual void shift_keyframes(long position) {};
 
 // Get size of frame to draw on timeline
 	double picon_w();

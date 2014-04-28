@@ -84,6 +84,7 @@ void ZoomBar::redraw_time_dependancies()
 // Recalculate sample zoom menu
 	sample_zoom->update_menu();
 	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
+	update_clocks();
 }
 
 int ZoomBar::draw()
@@ -94,6 +95,7 @@ int ZoomBar::draw()
 
 int ZoomBar::update()
 {
+//printf("ZoomBar::update 1 %f\n", mwindow->edl->local_session->selectionstart);
 	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
 	amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	track_zoom->update(mwindow->edl->local_session->zoom_track);
@@ -103,6 +105,7 @@ int ZoomBar::update()
 
 int ZoomBar::update_clocks()
 {
+//printf("ZoomBar::update_clocks 1 %f\n", mwindow->edl->local_session->selectionstart);
 	from_value->update_position(mwindow->edl->local_session->selectionstart);
 	length_value->update_position(mwindow->edl->local_session->selectionend - 
 		mwindow->edl->local_session->selectionstart);
@@ -226,6 +229,7 @@ int ZoomBar::set_selection(int which_one)
 	mwindow->gui->cursor->hide();
 	mwindow->gui->cursor->show();
 	update();
+	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->gui->canvas->flash();
 
 	return 0;

@@ -4,6 +4,7 @@
 #include "bcbutton.h"
 #include "bcfilebox.inc"
 #include "bclistbox.h"
+#include "bclistboxitem.inc"
 #include "bcresources.inc"
 #include "bctextbox.h"
 #include "bcwindow.h"
@@ -156,7 +157,21 @@ public:
 class BC_FileBox : public BC_Window
 {
 public:
-	BC_FileBox(int x, int y,
+	BC_FileBox(int x, 
+		int y,
+		char *init_path,
+		char *title,
+		char *caption,
+// Set to 1 to get hidden files. 
+		int show_all_files = 0,
+// Want only directories
+		int want_directory = 0,
+		int multiple_files = 0,
+		int h_padding = 0);
+	BC_FileBox(int x, 
+		int y,
+		int w,
+		int h,
 		char *init_path,
 		char *title,
 		char *caption,
@@ -182,6 +197,9 @@ public:
 	friend class BC_FileBoxUseThis;
 
 	virtual int create_objects();
+	virtual int keypress_event();
+	virtual int close_event();
+
 // Give the most recently selected path
 	char* get_path();
 // Give the path of any selected item or 0

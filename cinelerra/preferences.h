@@ -51,6 +51,7 @@ public:
 // Title of theme
 	char theme[BCTEXTLEN];
 	double render_preroll;
+	int brender_preroll;
 
 	Asset *brender_asset;
 	int use_brender;

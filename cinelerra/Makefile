@@ -252,7 +252,6 @@ OBJS = \
 	$(OBJDIR)/zoompanel.o
 
 
-BOOTSTRAP = $(OBJDIR)/bootstrap	
 
 OUTPUT = $(OBJDIR)/cinelerra
 
@@ -281,7 +280,7 @@ LIBS = \
 	-L/usr/X11R6/lib \
 	$(ALSA_LIBS) \
 	-luuid \
-	-lGL \
+	$(GLLIBS) \
 	-lX11 \
 	-lXext \
 	-lXv \
@@ -410,8 +409,6 @@ install:
 	rm -f /usr/bin/cinelerra
 	cp $(OUTPUT) /usr/bin
 
-$(BOOTSTRAP): bootstrap.c
-	gcc -o $(BOOTSTRAP) bootstrap.c
 
 $(LIBOBJS) $(OBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o

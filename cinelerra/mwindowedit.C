@@ -647,7 +647,6 @@ void MWindow::insert_effect(char *title,
 
 int MWindow::modify_edithandles()
 {
-//printf("TrackCanvas::end_handle_selection 1\n");
 	undo->update_undo_before("drag handle", LOAD_EDITS | LOAD_TIMEBAR);
 
 
@@ -672,7 +671,6 @@ int MWindow::modify_pluginhandles()
 {
 	undo->update_undo_before("drag handle", LOAD_EDITS | LOAD_TIMEBAR);
 
-//printf("MWindow::modify_pluginhandles 1\n");
 	edl->modify_pluginhandles(session->drag_start, 
 		session->drag_position, 
 		session->drag_handle, 
@@ -1205,6 +1203,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	ArrayList<Track*> destination_tracks;
 	int need_new_tracks = 0;
 
+	if(!new_edls->total) return 0;
 //printf("MWindow::paste_edls 1\n");
 
 // Delete current project

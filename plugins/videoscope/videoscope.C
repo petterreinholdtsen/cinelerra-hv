@@ -248,8 +248,8 @@ int VideoScopeWindow::resize_event(int w, int h)
 	plugin->h = h;
 	calculate_sizes(w, h);
 	waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
-	waveform->clear_box(0, 0, wave_w, wave_h);
 	vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
+	waveform->clear_box(0, 0, wave_w, wave_h);
 	vectorscope->clear_box(0, 0, wave_w, wave_h);
 	allocate_bitmaps();
 	draw_overlays();

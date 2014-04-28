@@ -375,6 +375,7 @@ int Edit::shift_start_in(int edit_mode,
 			startsource += cut_length;
 			length -= cut_length;
 			previous->length += cut_length;
+printf("Edit::shift_start_in 2\n");
 		}
 		else
 		{		// Clear entire edit
@@ -451,6 +452,7 @@ int Edit::shift_start_out(int edit_mode,
 				startproject -= cut_length;
 				startsource -= cut_length;
 				length += cut_length;
+printf("Edit::shift_start_out 2\n");
 			}
 			else
 			{   // Clear entire previous edit
@@ -506,7 +508,6 @@ int Edit::shift_end_in(int edit_mode,
 	else
 	if(edit_mode == MOVE_ONE_EDIT)
 	{
-//printf("Edit::shift_end_in 2 %d\n", cut_length);
 		if(next)
 		{
 			if(next->asset)
@@ -525,6 +526,7 @@ int Edit::shift_end_in(int edit_mode,
 				next->startproject -= cut_length;
 				next->startsource -= cut_length;
 				next->length += cut_length;
+printf("Edit::shift_end_in 2 %d\n", cut_length);
 			}
 			else
 			{
@@ -610,6 +612,7 @@ int Edit::shift_end_out(int edit_mode,
 				next->startproject += cut_length;
 				next->startsource += cut_length;
 				next->length -= cut_length;
+printf("Edit::shift_end_out 2 %d\n", cut_length);
 			}
 			else
 			{

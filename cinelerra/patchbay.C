@@ -5,7 +5,10 @@
 #include "floatautos.h"
 #include "clip.h"
 #include "edl.h"
+#include "edlsession.h"
 #include "filexml.h"
+#include "intauto.h"
+#include "intautos.h"
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -15,6 +18,7 @@
 #include "mainsession.h"
 #include "theme.h"
 #include "track.h"
+#include "trackcanvas.h"
 #include "tracks.h"
 #include "vpatchgui.h"
 #include "vtrack.inc"
@@ -27,15 +31,15 @@ PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
 	mwindow->theme->patchbay_w,
 	mwindow->theme->patchbay_h)
 {
-	button_down = 0;
-	reconfigure_trigger = 0;
 	this->mwindow = mwindow;
 	this->gui = gui;
+	button_down = 0;
+	reconfigure_trigger = 0;
+	drag_operation = Tracks::NONE;
 }
 
 PatchBay::~PatchBay() 
 {
-	delete_all();
 }
 
 int PatchBay::create_objects()
@@ -54,6 +58,122 @@ void PatchBay::resize_event()
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	update();
 	flash();
+}
+
+int PatchBay::button_press_event()
+{
+	int result = 0;
+// Too much junk to support the wheel
+	return result;
+}
+
+int PatchBay::cursor_motion_event()
+{
+	int cursor_x = get_relative_cursor_x();
+	int cursor_y = get_relative_cursor_y();
+	int update_gui = 0;
+
+	if(drag_operation != Tracks::NONE)
+	{
+		if(cursor_y >= 0 &&
+			cursor_y < get_h())
+		{
+// Get track we're inside of
+			for(Track *track = mwindow->edl->tracks->first;
+				track;
+				track = track->next)
+			{
+				int y = track->y_pixel;
+				int h = track->vertical_span(mwindow->theme);
+				if(cursor_y >= y && cursor_y < y + h)
+				{
+					switch(drag_operation)
+					{
+						case Tracks::PLAY:
+							if(track->play != new_status)
+							{
+								track->play = new_status;
+								mwindow->gui->unlock_window();
+								mwindow->restart_brender();
+								mwindow->sync_parameters(CHANGE_EDL);
+								mwindow->gui->lock_window();
+								update_gui = 1;
+							}
+							break;
+						case Tracks::RECORD:
+							if(track->record != new_status)
+							{
+								track->record = new_status;
+								update_gui = 1;
+							}
+							break;
+						case Tracks::GANG:
+							if(track->gang != new_status)
+							{
+								track->gang = new_status;
+								update_gui = 1;
+							}
+							break;
+						case Tracks::DRAW:
+							if(track->draw != new_status)
+							{
+								track->draw = new_status;
+								update_gui = 1;
+							}
+							break;
+						case Tracks::EXPAND:
+							if(track->expand_view != new_status)
+							{
+								track->expand_view = new_status;
+								mwindow->trackmovement(mwindow->edl->local_session->track_start);
+								update_gui = 0;
+							}
+							break;
+						case Tracks::MUTE:
+						{
+							IntAuto *current = 0;
+							Auto *keyframe = 0;
+							double position = mwindow->edl->local_session->selectionstart;
+							Autos *mute_autos = track->automation->mute_autos;
+
+							current = (IntAuto*)mute_autos->get_prev_auto(PLAY_FORWARD, 
+								keyframe);
+
+							if(current->value != new_status)
+							{
+								mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+
+								current = (IntAuto*)mute_autos->get_auto_for_editing(position);
+
+								current->value = new_status;
+
+								mwindow->undo->update_undo_after();
+
+								mwindow->gui->unlock_window();
+								mwindow->restart_brender();
+								mwindow->sync_parameters(CHANGE_PARAMS);
+								mwindow->gui->lock_window();
+
+								if(mwindow->edl->session->auto_conf->mute)
+								{
+									mwindow->gui->canvas->draw_overlays();
+									mwindow->gui->canvas->flash();
+								}
+								update_gui = 1;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if(update_gui)
+	{
+		update();
+	}
+	return 0;
 }
 
 void PatchBay::change_meter_format(int mode, float min)
@@ -80,14 +200,11 @@ void PatchBay::update_meters(ArrayList<double> *module_levels)
 	{
 		APatchGUI *patchgui = (APatchGUI*)patches.values[patch_number];
 
-//printf("PatchBay::update_meters %d %d\n", patch_number, patchgui->data_type);
 		if(patchgui->data_type == TRACK_AUDIO)
 		{
-//printf("PatchBay::update_meters %p\n",  patchgui->meter);
 			if(patchgui->meter)
 			{
 				double level = module_levels->values[level_number];
-//printf("PatchBay::update_meters %d %f\n", level_number, level);
 				patchgui->meter->update(level, level > 1);
 			}
 
@@ -117,7 +234,6 @@ void PatchBay::stop_meters()
 		patch_number++)
 	{
 		APatchGUI *patchgui = (APatchGUI*)patches.values[patch_number];
-//printf("PatchBay::update_meters %d %d\n", patch_number, patchgui->data_type);
 		if(patchgui->data_type == TRACK_AUDIO && patchgui->meter)
 		{
 			patchgui->meter->reset();
@@ -131,7 +247,6 @@ void PatchBay::stop_meters()
 int PatchBay::update()
 {
 	int patch_count = 0;
-//printf("PatchBay::update 1\n");
 
 // Every patch has a GUI regardless of whether or not it is visible.
 // Make sure GUI's are allocated for every patch and deleted for non-existant
@@ -143,15 +258,11 @@ int PatchBay::update()
 		PatchGUI *patchgui;
 		int y = current->y_pixel;
 
-//printf("PatchBay::update 2\n");
 		if(patches.total > patch_count)
 		{
-//printf("PatchBay::update 2.1\n");
 			if(patches.values[patch_count]->track->id != current->id)
 			{
-//printf("PatchBay::update 2.2\n");
 				delete patches.values[patch_count];
-//printf("PatchBay::update 2.3\n");
 
 				switch(current->data_type)
 				{
@@ -162,15 +273,11 @@ int PatchBay::update()
 						patchgui = patches.values[patch_count] = new VPatchGUI(mwindow, this, (VTrack*)current, PATCH_X, y);
 						break;
 				}
-//printf("PatchBay::update 2.4\n");
 				patchgui->create_objects();
-//printf("PatchBay::update 2.5\n");
 			}
 			else
 			{
-//printf("PatchBay::update 2.6\n");
 				patches.values[patch_count]->update(PATCH_X, y);
-//printf("PatchBay::update 2.7\n");
 			}
 		}
 		else
@@ -188,26 +295,22 @@ int PatchBay::update()
 			patchgui->create_objects();
 		}
 	}
-//printf("PatchBay::update 3\n");
 
 	while(patches.total > patch_count)
 	{
 		delete patches.values[patches.total - 1];
 		patches.remove_number(patches.total - 1);
 	}
-//printf("PatchBay::update 4\n");
 
 	return 0;
 }
 
 void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 {
-//printf("PatchBay::synchronize_faders 1\n");
 	for(Track *current = mwindow->edl->tracks->first;
 		current;
 		current = NEXT)
 	{
-//printf("PatchBay::synchronize_faders %p %p\n", current, skip);
 		if(current->data_type == data_type &&
 			current->gang && 
 			current->record && 
@@ -223,6 +326,10 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
 			keyframe->value += change;
+			if(data_type == TRACK_AUDIO)
+				CLAMP(keyframe->value, INFINITYGAIN, MAX_AUDIO_FADE);
+			else
+				CLAMP(keyframe->value, 0, MAX_VIDEO_FADE);
 			if(update_undo)
 				mwindow->undo->update_undo_after();
 
@@ -236,7 +343,6 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 		}
 	}
 
-//printf("PatchBay::synchronize_faders 2\n");
 }
 
 
@@ -250,163 +356,3 @@ int PatchBay::resize_event(int top, int bottom)
 }
 
 
-int PatchBay::add_track(int start_pixel, char *default_title, int data_type)
-{
-	return 0;
-}
-
-int PatchBay::delete_track(int start_pixel)
-{
-	return 0;
-}
-
-int PatchBay::delete_track(Patch *patch, int start_pixel)
-{
-	return 0;
-}
-
-int PatchBay::delete_all()
-{
-	return 0;
-}
-
-int PatchBay::expand_t(int start_pixel)
-{
-	return 0;
-}
-
-int PatchBay::zoom_in_t(int start_pixel)
-{
-	return 0;
-}
-
-int PatchBay::trackmovement(int distance)
-{
-	return 0;
-}
-
-int PatchBay::redo_pixels(int start_pixel)
-{
-	return 0;
-}
-
-int PatchBay::number_of(Patch *patch)
-{
-	return 0;
-}
-
-Patch* PatchBay::number(int number)
-{
-	return 0;
-}
-
-int PatchBay::copy_length()
-{
-	return 0;
-}
-
-BC_TextBox* PatchBay::atrack_title_number(int number)    // return textbox of atrack #
-{
-	return 0;
-}
-
-int PatchBay::total_playable_atracks()
-{
-	return 0;
-}
-
-int PatchBay::total_playable_vtracks()
-{
-	return 0;
-}
-
-int PatchBay::total_recordable_atracks()
-{
-	return 0;
-}
-
-int PatchBay::total_recordable_vtracks()
-{
-	return 0;
-}
-
-int PatchBay::deselect_all_play()
-{
-	return 0;
-}
-
-int PatchBay::select_all_play()
-{
-	return 0;
-}
-
-int PatchBay::deselect_all_record()
-{
-	return 0;
-}
-
-int PatchBay::select_all_record()
-{
-	return 0;
-}
-
-int PatchBay::deselect_all_auto()
-{
-	return 0;
-}
-
-int PatchBay::deselect_all_draw()
-{
-	return 0;
-}
-
-int PatchBay::select_all_auto()
-{
-	return 0;
-}
-
-int PatchBay::select_all_draw()
-{
-	return 0;
-}
-
-int PatchBay::plays_selected()
-{
-	return 0;
-}
-
-int PatchBay::records_selected()
-{
-	return 0;
-}
-
-int PatchBay::autos_selected()
-{
-	return 0;
-}
-
-int PatchBay::draws_selected()
-{
-	return 0;
-}
-
-int PatchBay::total_audio()
-{
-	return 0;
-}
-
-int PatchBay::total_video()
-{
-	return 0;
-}
-
-
-int PatchBay::cursor_motion()
-{
-	return 0;
-}
-
-int PatchBay::button_release()
-{
-	return 0;
-}

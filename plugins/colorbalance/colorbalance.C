@@ -166,16 +166,16 @@ void ColorBalanceEngine::run()
  \
 			if(do_yuv) \
 			{ \
-				rgbtoyuv(r, g, b, y, cb, cr); \
+				rgbtoyuv(CLAMP(r, 0, max), CLAMP(g, 0, max), CLAMP(b, 0, max), y, cb, cr); \
                 output_rows[j][k] = y; \
                 output_rows[j][k + 1] = cb; \
                 output_rows[j][k + 2] = cr; \
 			} \
 			else \
 			{ \
-                output_rows[j][k] = r; \
-                output_rows[j][k + 1] = g; \
-                output_rows[j][k + 2] = b; \
+                output_rows[j][k] = CLAMP(r, 0, max); \
+                output_rows[j][k + 1] = CLAMP(g, 0, max); \
+                output_rows[j][k + 2] = CLAMP(b, 0, max); \
 			} \
 		} \
 	} \
@@ -336,10 +336,13 @@ int ColorBalanceMain::reconfigure()
 	    b_n += (int)(config.yellow / 100 * max  * yellow_blue_transfer[b_n]); \
  \
         if(r_n > max) r_n = max; \
-        if(r_n < 0) r_n = 0; \
+        else \
+		if(r_n < 0) r_n = 0; \
         if(g_n > max) g_n = max; \
+        else \
         if(g_n < 0) g_n = 0; \
         if(b_n > max) b_n = max; \
+        else \
         if(b_n < 0) b_n = 0; \
  \
         r_lookup[i] = r_n; \

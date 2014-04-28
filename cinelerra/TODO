@@ -11,20 +11,39 @@ Quit freezes when background rendering is on.
  - Not reproducible.
 Browse button for renderfarm path doesn't work.
  - Real slow ls.  Need to block preferencesthread.
-Histogram brightness varies depending on render node.
 DVD authoring guide
-Motion compensation.
 BRender should stop during rendered effect and during effect detach
  - test
+Renderfarm client runs without access to the filesystem and crashes.
 Rendering doesn't start sometimes.
+Drag plugin handle should only affect plugins with matching handles.
+Motion compensation.
+Middle mouse button drag of edit doesn't affect plugin.
+Zoomblur transition
+Master node framerate not displaying.
+Independant record options for plugin sets.
 
+
+
+
+Redo plugin keyframes.
+Undo Replace project doesn't work.
+Paste from load file after recording doesn't work.
+Changing channel count -> crash
 
 In/Out shifting locks up sometimes.
 Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
 Plugin server locks up in sync_parameters when show plugin keyframes is on.
+Effect tweeking locks up if the time taken to render it is really long.
+
+
+
+
+
 
 B
 -----------
+Advancemame/scale2x filter
 Fourier with window size less than fragment size crashed.
 Moving icons in AWindow should reorder the contents in memory.
 Changes_made not set after tweek.

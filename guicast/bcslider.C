@@ -222,12 +222,14 @@ int BC_Slider::keypress_event()
 
 int BC_Slider::cursor_enter_event()
 {
+//printf("BC_Slider::cursor_enter_event 1\n");
 	if(top_level->event_win == win && status == SLIDER_UP)
 	{
 		tooltip_done = 0;
 		status = SLIDER_HI;
 		draw_face();
 	}
+//printf("BC_Slider::cursor_enter_event 2\n");
 	return 0;
 }
 
@@ -257,7 +259,7 @@ int BC_Slider::activate()
 int BC_Slider::button_press_event()
 {
 	int result = 0;
-	if(top_level->event_win == win)
+	if(is_event_win())
 	{
 		if(!tooltip_on) top_level->hide_tooltip();
 		if(status == SLIDER_HI)
@@ -278,6 +280,7 @@ int BC_Slider::button_press_event()
 				handle_event();
 			}
 			else
+			if(get_buttonpress() == 1)
 			{
 				button_down = 1;
 				status = SLIDER_DN;

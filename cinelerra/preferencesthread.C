@@ -121,14 +121,12 @@ int PreferencesThread::apply_settings()
 // Compare sessions 											
 
 
-//printf("PreferencesThread::apply_settings 1\n");
 	AudioOutConfig *this_aconfig = edl->session->playback_config[edl->session->playback_strategy].values[0]->aconfig;
 	VideoOutConfig *this_vconfig = edl->session->playback_config[edl->session->playback_strategy].values[0]->vconfig;
 	AudioOutConfig *aconfig = mwindow->edl->session->playback_config[edl->session->playback_strategy].values[0]->aconfig;
 	VideoOutConfig *vconfig = mwindow->edl->session->playback_config[edl->session->playback_strategy].values[0]->vconfig;
 
 
-//printf("PreferencesThread::apply_settings 1\n");
 	rerender = 
 		(edl->session->playback_preload != mwindow->edl->session->playback_preload) ||
 		(edl->session->interpolation_type != mwindow->edl->session->interpolation_type) ||
@@ -140,10 +138,11 @@ int PreferencesThread::apply_settings()
 		(edl->session->audio_module_fragment != mwindow->edl->session->audio_module_fragment) ||
 		(edl->session->audio_read_length != mwindow->edl->session->audio_read_length) ||
 		(edl->session->playback_strategy != mwindow->edl->session->playback_strategy) ||
+		(edl->session->force_uniprocessor != mwindow->edl->session->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
-		(*this_vconfig != *vconfig);
+		(*this_vconfig != *vconfig) ||
+		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
 
-//printf("PreferencesThread::apply_settings 1\n");
 
 
 
@@ -152,8 +151,6 @@ int PreferencesThread::apply_settings()
 	*mwindow->preferences = *preferences;
 	mwindow->init_brender();
 
-//printf("PreferencesThread::apply_settings 1\n");
-//printf("PreferencesThread::apply_settings %d %d\n", redraw_meters, redraw_times);
 	if(redraw_meters)
 	{
 		mwindow->cwindow->gui->lock_window();
@@ -183,7 +180,6 @@ int PreferencesThread::apply_settings()
 		mwindow->lwindow->gui->unlock_window();
 	}
 
-//printf("PreferencesThread::apply_settings 1 %d\n", redraw_overlays);
 	if(redraw_overlays)
 	{
 		mwindow->gui->lock_window();
@@ -192,16 +188,14 @@ int PreferencesThread::apply_settings()
 		mwindow->gui->unlock_window();
 	}
 
-//printf("PreferencesThread::apply_settings 1\n");
 	if(redraw_times)
 	{
 		mwindow->gui->lock_window();
-		mwindow->gui->update(0, 0, 1, 1, 0, 1, 0);
+		mwindow->gui->update(0, 0, 1, 0, 0, 1, 0);
 		mwindow->gui->redraw_time_dependancies();
 		mwindow->gui->unlock_window();
 	}
 
-//printf("PreferencesThread::apply_settings 1\n");
 	if(rerender)
 	{
 		mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
@@ -214,7 +208,6 @@ int PreferencesThread::apply_settings()
 	{
 		mwindow->gui->flush();
 	}
-//printf("PreferencesThread::apply_settings 2 %d %d %d\n", redraw_meters, redraw_times, rerender);
 	return 0;
 }
 

@@ -338,7 +338,7 @@ int RenderEngine::open_output()
 			if(channel) video->set_channel(channel);
 //printf("RenderEngine::open_output 1 %d\n", config->vconfig->driver);
 			video->set_quality(80);
-//printf("RenderEngine::open_output 1 %d\n", config->vconfig->driver);
+//printf("RenderEngine::open_output 1 %d\n", edl->session->smp);
 			video->set_cpus(edl->session->smp + 1);
 //printf("RenderEngine::open_output 2 %d\n", config->vconfig->driver);
 		}

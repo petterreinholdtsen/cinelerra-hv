@@ -2,6 +2,7 @@
 #define BCLISTBOX_H
 
 #include "bcdragwindow.inc"
+#include "bclistboxitem.inc"
 #include "bcpixmap.inc"
 #include "bcpopuplistbox.inc"
 #include "bcscrollbar.h"
@@ -20,71 +21,10 @@ enum
 	BCLISTBOX_NO_OPERATION,
 	BCLISTBOX_DRAG_DIVISION,   // Dragging column division
 	BCLISTBOX_SELECT,          // Select item
-	BCLISTBOX_SELECT_RECT      // Selection rectangle
+	BCLISTBOX_SELECT_RECT,     // Selection rectangle
+	BCLISTBOX_WHEEL            // Wheel mouse
 };
 
-// Every item in a list inherits this
-class BC_ListBoxItem
-{
-public:
-	BC_ListBoxItem();
-// New items
-	BC_ListBoxItem(char *text, int color = BLACK);
-	BC_ListBoxItem(char *text, 
-		BC_Pixmap *icon, 
-		int color = BLACK);
-	
-
-
-// autoplace is always 1 in initialization.
-// Positions set with the set_ commands cancel autoplacement.
-// Final positions are calculated in the next draw_items.
-
-	virtual ~BC_ListBoxItem();
-
-	friend class BC_ListBox;
-
-	BC_ListBoxItem& operator=(BC_ListBoxItem& item);
-	void set_text(char *new_text);
-	char* get_text();
-	void set_icon(BC_Pixmap *icon);
-	int get_icon_x();
-	int get_icon_y();
-	int get_text_x();
-	int get_text_y();
-	void set_icon_x(int x);
-	void set_icon_y(int y);
-	void set_text_x(int x);
-	void set_text_y(int y);
-	void set_color(int color);
-	void set_searchable(int value);
-	int get_color();
-	void set_selected(int value);
-	int set_autoplace_icon(int value);
-	int set_autoplace_text(int value);
-
-private:
-	int initialize();
-	int get_icon_w();
-	int get_icon_h();
-
-
-	BC_Pixmap *icon;
-// x and y position in listbox relative to top left
-// Different positions for icon mode and text mode are maintained
-	int icon_x, icon_y;
-	int text_x, text_y;
-// If autoplacement should be performed in the next draw
-	int autoplace_icon, autoplace_text;
-	char *text;
-	int color;
-// 1 - currently selected
-// 2 - previously selected and now adding selections with shift
-	int selected;
-// Allow this item to be included in searches
-	int searchable;
-	BC_ListBox *listbox;
-};
 
 class BC_ListBoxYScroll : public BC_ScrollBar
 {
@@ -180,7 +120,7 @@ public:
 // Allow scrolling when dragging items
 	void set_drag_scroll(int value);
 	int set_selection_mode(int mode);
-	int set_yposition(int position);
+	int set_yposition(int position, int draw_items = 1);
 	int set_xposition(int position);
 	int get_highlighted_item();
 	int get_yscroll_x();
@@ -207,7 +147,8 @@ private:
 	int draw_items();
 	int draw_border();
 	int draw_rectangle();
-	void query_list();
+// Returns 1 if selection changed
+	int query_list();
 	void init_column_width();
 	void reset_cursor(int new_cursor);
 // Fix boundary conditions after resize

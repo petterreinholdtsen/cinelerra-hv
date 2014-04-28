@@ -14,14 +14,28 @@
 #define BUTTON_UPHI 1
 #define BUTTON_DOWNHI 2
 
-BC_Button::BC_Button(int x, int y, 
+BC_Button::BC_Button(int x, 
+	int y, 
 	VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
 	this->data = data;
 	for(int i = 0; i < 3; i++) images[i] = 0;
 	if(!data) printf("BC_Button::BC_Button data == 0\n");
-//printf("BC_Button::BC_Button 1 %p %p\n", images[0], images[1]);
+	status = BUTTON_UP;
+	this->w_argument = 0;
+}
+
+BC_Button::BC_Button(int x, 
+	int y, 
+	int w, 
+	VFrame **data)
+ : BC_SubWindow(x, y, 0, 0, -1)
+{
+	this->data = data;
+	this->w_argument = w;
+	for(int i = 0; i < 3; i++) images[i] = 0;
+	if(!data) printf("BC_Button::BC_Button data == 0\n");
 	status = BUTTON_UP;
 }
 
@@ -35,7 +49,6 @@ BC_Button::~BC_Button()
 
 int BC_Button::initialize()
 {
-//printf("BC_Button::initialize 1 %p %p\n", images[0], images[1]);
 // Get the image
 	set_images(data);
 
@@ -49,7 +62,6 @@ int BC_Button::initialize()
 
 int BC_Button::reposition_window(int x, int y)
 {
-//printf("BC_Button::reposition_window %d %d\n", w, h);
 	BC_WindowBase::reposition_window(x, y);
 	draw_face();
 	return 0;
@@ -67,17 +79,17 @@ int BC_Button::update_bitmaps(VFrame **data)
 
 int BC_Button::set_images(VFrame **data)
 {
-//printf("BC_Button::set_images 1 %p %p\n", images[0], images[1]);
 	for(int i = 0; i < 3; i++)
 	{
-//printf("BC_Button::set_images 1\n");
 		if(images[i]) delete images[i];
-//printf("BC_Button::set_images 2 %d %p\n", i, images[1]);
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
-//printf("BC_Button::set_images 3 %d %p\n", i, images[1]);
 	}
 
-	w = images[BUTTON_UP]->get_w();
+	if(w_argument > 0)
+		w = w_argument;
+	else
+		w = images[BUTTON_UP]->get_w();
+
 	h = images[BUTTON_UP]->get_h();
 	return 0;
 }
@@ -248,34 +260,43 @@ int BC_CancelButton::keypress_event()
 #define RIGHT_HI 7
 #define RIGHT_UP 8
 
-BC_GenericButton::BC_GenericButton(int x, int y, char *text)
- : BC_Button(x, y, BC_WindowBase::get_resources()->generic_button_images)
+BC_GenericButton::BC_GenericButton(int x, int y, char *text, VFrame **data)
+ : BC_Button(x, 
+ 	y, 
+	data ? data : BC_WindowBase::get_resources()->generic_button_images)
 {
-//printf("BC_GenericButton::BC_GenericButton 1\n");
+	strcpy(this->text, text);
+}
+
+BC_GenericButton::BC_GenericButton(int x, int y, int w, char *text, VFrame **data)
+ : BC_Button(x, 
+ 	y, 
+	w,
+	data ? data : BC_WindowBase::get_resources()->generic_button_images)
+{
 	strcpy(this->text, text);
 }
 
 int BC_GenericButton::set_images(VFrame **data)
 {
-//printf("BC
 	for(int i = 0; i < 3; i++)
 	{
-//printf("BC_GenericButton::set_images 2\n");
 		if(images[i]) delete images[i];
-//printf("BC_GenericButton::set_images 3\n");
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
-//printf("BC_GenericButton::set_images 4\n");
 	}
-	w = get_text_width(MEDIUMFONT, text) + 
-		images[BUTTON_UP]->get_w() / 3;
-//printf("BC_GenericButton::set_images 2\n");
+
+	if(w_argument)
+		w = w_argument;
+	else
+		w = get_text_width(MEDIUMFONT, text) + images[BUTTON_UP]->get_w() / 3;
+
+
 	h = images[BUTTON_UP]->get_h();
 	return 0;
 }
 
 int BC_GenericButton::draw_face()
 {
-//printf("BC_GenericButton::draw_face 1 %d %d %d %d\n", x, y, w, h);
 	draw_top_background(parent_window, 0, 0, w, h);
 	draw_3segmenth(0, 0, w, images[status]);
 
@@ -286,6 +307,5 @@ int BC_GenericButton::draw_face()
 		text);
 
 	flash();
-//printf("BC_GenericButton::draw_face 2\n");
 	return 0;
 }

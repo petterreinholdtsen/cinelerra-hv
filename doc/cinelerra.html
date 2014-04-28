@@ -151,13 +151,20 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 <li><a href="#DISABLING%20SWAP%20SPACE">DISABLING SWAP SPACE</a>
 <li><a href="#ENLARGING%20SOUND%20BUFFERS">ENLARGING SOUND BUFFERS</a>
 <li><a href="#MAKING%20XFree86%20FASTER">MAKING XFree86 FASTER</a>
-<li><a href="#FREEING%20MORE%20MEMORY">FREEING MORE MEMORY</a>
+<li><a href="#FREEING%20MORE%20SHARED%20MEMORY">FREEING MORE SHARED MEMORY</a>
+<li><a href="#SPEEDING%20UP%20THE%20HARD%20DRIVE">SPEEDING UP THE HARD DRIVE</a>
+<li><a href="#DISABLING%20CRON">DISABLING CRON</a>
+<li><a href="#REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>
+<li><a href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>
+<li><a href="#SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>
 </ul>
 <li><a name="toc_EFFECT%20DESCRIPTIONS"></a>
     <a href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <ul>
 <li><a href="#CHROMA%20KEY">CHROMA KEY</a>
 <li><a href="#HISTOGRAM">HISTOGRAM</a>
+<li><a href="#TIME%20AVERAGE">TIME AVERAGE</a>
+<li><a href="#VIDEO%20SCOPE">VIDEO SCOPE</a>
 </ul>
 <li><a name="toc_PLUGIN%20AUTHORING"></a>
     <a href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
@@ -228,22 +235,21 @@ involve many hours setting up command line sequences and writing to
 disk. For a time it seemed as if the original dream of immersive movie
 making for everyone regardless of income level had arrived.
 
-<p>Later on Broadcast 2000 began to come short.  Its audio was pretty
-graceful.  Its video was graceful if you knew how to use it
-efficiently, but quality issues and new user interface techniques were
-emerging.  Broadcast 2000 kept the audio interface from its ancestors,
-which didn't apply well to video.  Users likewise were maturing.  No
-longer would it be sufficient to just edit video on a UNIX box.  Most
-users expected on UNIX the same thing they got in Win or Mac. In mid
-2000 designs for a Broadcast 2000 replacement were drafted.  The
-Broadcast name was officially retired from the series and the software
-would now be called Cinelerra.  Cinelerra would allow users to
-configure certain effects in much less time than required with
-Broadcast 2000.  It would begin to emulate some of the features found
-in Win and Mac software while not attempting to become a clone.  It's
-interface would be designed for video from the ground up, while
-supplementing that with the Broadcast audio interface.  As always,
-quality improvements would happen.
+<p>Later on Broadcast 2000 began to come short.  Its audio and video was
+graceful if you knew how to use it efficiently, but quality issues and
+new user interface techniques were emerging.  Broadcast 2000 kept the
+audio interface from its ancestors, which didn't apply well to video. 
+Users likewise were maturing.  No longer would it be sufficient to just
+edit video on a UNIX box.  Most users expected on UNIX the same thing
+they got in Win or Mac. In mid 2000 designs for a Broadcast 2000
+replacement were drafted.  The Broadcast name was officially retired
+from the series and the software would now be called Cinelerra. 
+Cinelerra would allow users to configure certain effects in much less
+time than required with Broadcast 2000.  It would begin to emulate some
+of the features found in Win and Mac software while not attempting to
+become a clone.  It's interface would be designed for video from the
+ground up, while supplementing that with the Broadcast audio
+interface.  As always, quality improvements would happen.
 
 <ul>
 <li><a accesskey=1 href="#ABOUT%20THIS%20MANUAL">ABOUT THIS MANUAL</a>: 
@@ -578,6 +584,13 @@ handle CDROM sources better when this is around 1000000.  This reduces
 the amount of seeking.  For normal use this should be 0.
 
 </p><li>
+MPEG-4 DEBLOCKING
+
+<p>For assets which are compressed in OpenDivx and Quicktime, this enables
+deblocking.  This greatly improves the picture quality during decoding
+while slowing it down.
+
+</p><li>
 VIDEO DRIVER
 
 <p>Normally video on the timeline goes to the
@@ -812,9 +825,9 @@ SECONDS TO PREROLL RENDERS
 number of seconds to render without writing to disk before the selected
 region is rendered.  When using the renderfarm you'll sometimes need to
 preroll to get seemless transitions between the jobs.  Every job in a
-renderfarm is prerolled by this value.  Background rendering is
-degraded when preroll is used.  When using background rendering, this
-number is ideally 0.
+renderfarm is prerolled by this value.  This does not affect background
+rendering, however.  Background rendering uses a different preroll
+value.
 
 </p><li>
 FORCE SINGLE PROCESSOR USE
@@ -859,6 +872,13 @@ rendering creates a single job for the entire timeline.  The number of
 frames specified here is scaled to the relative CPU speed of rendering
 nodes and used in a single renderfarm job.  The optimum number is 10 -
 30 since network bandwidth is used to initialize each job.
+
+</p><li>FRAMES TO PREROLL BACKGROUND
+
+<p>This is the number of frames to render ahead of each background
+rendering job.  Background rendering is degraded when preroll is used
+since the jobs are small.  When using background rendering, this number
+is ideally 0.  Some effects may require 3 frames of preroll.
 
 </p><li>OUTPUT FOR BACKGROUND RENDERING
 
@@ -1989,17 +2009,57 @@ the left, the most important of which is the <em>arm track</em>
 attribute.
 
 <br><p>
-<img src="track_attributes.png" alt="track_attributes.png"><em>Track attributes</em>
+<img src="track_attributes.png" alt="track_attributes.png">
+<em>Track attributes</em>
 
 <p>Only the <em>armed tracks</em> are affected by editing operations.  Make
 sure you have enough armed destination tracks when you paste or splice
 material or some tracks in the material will get left out.
 
-<p>In addition to editing operations, the armed tracks in combination with
-the active region determine where material is inserted when loading
-files.  If the files are loaded with one of the insertion strategies
-which doesn't delete the existing project, the armed tracks will be
-used as destination tracks.
+<p>The other attributes affect the output of the track.
+
+<ul>
+
+<li>
+<b>Play track</b> determines whether the track is rendered or not.  If
+it's off, the track is not rendered.  However, if the track is chained
+to any other tracks, the other tracks perform all the effects in the
+chained track, regardless of play status.
+
+<li>
+<b>Gang fader</b> causes the fader to track the movement of whatever other
+fader you're adjusting.  A fader is only ganged if the <b>arm track</b> is
+also on.  This is normally used to adjust audio levels on all the
+tracks simultaneously.
+
+<li>
+<b>Draw data</b> determines if picons or waveforms are drawn on the
+track.  By default, some file formats load with this off while other
+file formats load with it on.  This depends on whether the file format
+takes a long time to draw on the timeline.  Merely set it to on if you
+want to see picons for any file format.
+
+<li>
+<b>Mute track</b> causes the output to be thrown away once the track is
+completely rendered.  This happens whether or not <b>play track</b> is
+on.  If the track is part of an effect chain, the output of the effect
+chain track is overlayed on the final output even though it's routed
+back to another track.  Mute track is used to keep the effect chain
+track from overlapping the output of the source track.
+
+</ul>
+
+<p>There are two ways to set the same attribute on multiple tracks very
+quickly.  Hold down <b>shift</b> while clicking a track's attribute to
+match the same attribute in all the other tracks.  If you don't want to
+affect all the other tracks, click on an attribute and drag across
+other tracks to have the same attribute set in them.
+
+<p>In addition to restricting editing operations, the armed tracks in
+combination with the active region determine where material is inserted
+when loading files.  If the files are loaded with one of the insertion
+strategies which doesn't delete the existing project, the armed tracks
+will be used as destination tracks.
 
 <p>The active region is the range of time in the edit decision on the
 timeline.  The active region is determined first by the presence of
@@ -3586,7 +3646,12 @@ Up:<a rel=up accesskey=u href="#Top">Top</a>
 <li><a accesskey=1 href="#DISABLING%20SWAP%20SPACE">DISABLING SWAP SPACE</a>: 
 <li><a accesskey=2 href="#ENLARGING%20SOUND%20BUFFERS">ENLARGING SOUND BUFFERS</a>: 
 <li><a accesskey=3 href="#MAKING%20XFree86%20FASTER">MAKING XFree86 FASTER</a>: 
-<li><a accesskey=4 href="#FREEING%20MORE%20MEMORY">FREEING MORE MEMORY</a>: 
+<li><a accesskey=4 href="#FREEING%20MORE%20SHARED%20MEMORY">FREEING MORE SHARED MEMORY</a>: 
+<li><a accesskey=5 href="#SPEEDING%20UP%20THE%20HARD%20DRIVE">SPEEDING UP THE HARD DRIVE</a>: 
+<li><a accesskey=6 href="#DISABLING%20CRON">DISABLING CRON</a>: 
+<li><a accesskey=7 href="#REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>: 
+<li><a accesskey=8 href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>: 
+<li><a accesskey=9 href="#SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>: 
 </ul>
 
 <p><hr>
@@ -3597,10 +3662,17 @@ Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</
 
 <h3>DISABLING SWAP SPACE</h3>
 
-<p>Cinelerra runs best without a swap space.  With memory sizes increasing
-and hard drives still spinning as fast as they were in 1997, swap
-spaces are pointless.  The question then is how to make Linux run
-without a swap space.  Theoretically it should be a matter of running
+<p>On systems with lots of memory, Cinelerra sometimes runs better without
+a swap space.  If you have 4 GB of RAM, you're probably better off
+without a swap space.  If you have 512MB of RAM, you should keep the
+swap.  If you want to do recording, you should probably disable swap
+space in any case.  There's a reason for this.  Linux only allows half
+the available memory to be used.  Beyond that, it starts searching for
+free pages to swap, in order to cache more disk access.  In a 4 GB
+system, you start waiting for page swaps after using only 2 GB.
+
+<p>The question then is how to make Linux run without a swap space. 
+Theoretically it should be a matter of running
 
 <br><pre>swapoff -a
 </pre>
@@ -3669,7 +3741,7 @@ sound cards.  Edit <b>linux/drivers/sound/emu10k1/audio.c</b>
 
 <p><hr>
 Node:<a name="MAKING%20XFree86%20FASTER">MAKING XFree86 FASTER</a>,
-Next:<a rel=next accesskey=n href="#FREEING%20MORE%20MEMORY">FREEING MORE MEMORY</a>,
+Next:<a rel=next accesskey=n href="#FREEING%20MORE%20SHARED%20MEMORY">FREEING MORE SHARED MEMORY</a>,
 Previous:<a rel=previous accesskey=p href="#ENLARGING%20SOUND%20BUFFERS">ENLARGING SOUND BUFFERS</a>,
 Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
 <br>
@@ -3687,18 +3759,211 @@ adding a line to your XF86Config* files.
 <p>and restart the X server.
 
 <p><hr>
-Node:<a name="FREEING%20MORE%20MEMORY">FREEING MORE MEMORY</a>,
+Node:<a name="FREEING%20MORE%20SHARED%20MEMORY">FREEING MORE SHARED MEMORY</a>,
+Next:<a rel=next accesskey=n href="#SPEEDING%20UP%20THE%20HARD%20DRIVE">SPEEDING UP THE HARD DRIVE</a>,
 Previous:<a rel=previous accesskey=p href="#MAKING%20XFree86%20FASTER">MAKING XFree86 FASTER</a>,
 Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
 <br>
 
-<h3>FREEING MORE MEMORY</h3>
+<h3>FREEING MORE SHARED MEMORY</h3>
 
 <p>The Linux kernel only allows 32MB of shared memory to be allocated by
 default.  This needs to be increased to do anything useful.  Run the
 following command:
 
 <p><b>echo "0x7fffffff" &gt; /proc/sys/kernel/shmmax</b>
+
+<p><hr>
+Node:<a name="SPEEDING%20UP%20THE%20HARD%20DRIVE">SPEEDING UP THE HARD DRIVE</a>,
+Next:<a rel=next accesskey=n href="#DISABLING%20CRON">DISABLING CRON</a>,
+Previous:<a rel=previous accesskey=p href="#FREEING%20MORE%20SHARED%20MEMORY">FREEING MORE SHARED MEMORY</a>,
+Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
+<br>
+
+<h3>SPEEDING UP THE HARD DRIVE</h3>
+
+<p>This is a very popular command sequence among Linux gurus, which is not
+done by default on Linux distributions.
+
+<p><b>hdparm -c3 -d1 -u1 -k1 /dev/hda</b>
+
+<p><b>-c3</b> puts the hard drive into 32 bit I/O with sync.  This normally
+doesn't work due to inept kernel support for most IDE controllers.  If
+you get lost interrupt or SeekComplete errors, quickly use <b>-c0</b>
+instead of <b>-c3</b> in your command.
+
+<p><b>-d1</b> enables DMA of course.  This frees up the CPU partially during
+data transfers.
+
+<p><b>-u1</b> allows multiple interrupts to be handled during hard drive
+transactions.  This frees up even more CPU time.
+
+<p><b>-k1</b> prevents Linux from resetting your settings in case of a
+glitch.
+
+<p><hr>
+Node:<a name="DISABLING%20CRON">DISABLING CRON</a>,
+Next:<a rel=next accesskey=n href="#REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>,
+Previous:<a rel=previous accesskey=p href="#SPEEDING%20UP%20THE%20HARD%20DRIVE">SPEEDING UP THE HARD DRIVE</a>,
+Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
+<br>
+
+<h3>DISABLING CRON</h3>
+
+<p>Linux runs some daily operations like compressing man pages.  These may
+be acceptable background tasks while compiling or word processing but
+not while playing video.  Disable these operations by editing
+<b>/etc/rc.d/init.d/anacron</b>.
+
+<p>Put <b>exit</b> before the first line not beginning in <b>#</b>.
+
+<p>In <b>/etc/rc.d/init.d/crond</b> put <b>exit</b> before the first line not
+beginning in <b>#</b>.  Then make like Win 2000 and reboot.
+
+<p>You can't use the <b>at</b> command anymore, but who uses that command
+anyways?
+
+<p><hr>
+Node:<a name="REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>,
+Next:<a rel=next accesskey=n href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>,
+Previous:<a rel=previous accesskey=p href="#DISABLING%20CRON">DISABLING CRON</a>,
+Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
+<br>
+
+<h3>REDUCING USB MOUSE SENSITIVITY</h3>
+
+<p>Gamers like high resolution mice, but this can be painful for precisely
+positioning the mouse on a timeline or video screen.  XFree86 once
+allowed you to reduce PS/2 mouse sensitivity using commands like
+<b>xset m 1 1</b> but you're out of luck with USB mice or KVM's.
+
+<p>We have a way to reduce USB mouse sensitivity.  Edit
+<b>/usr/src/linux/drivers/input/mousedev.c</b>.
+
+<p>After the line saying
+
+<br><pre>struct mousedev_list {
+</pre>
+
+<p>put
+
+<br><pre>#define DOWNSAMPLE 4
+int x_accum, y_accum;
+</pre>
+
+<p>Next, the section which says something like:
+
+<br><pre>case EV_REL:
+	switch (code) {
+		case REL_X:	list-&gt;dx += value; break;
+		case REL_Y:	list-&gt;dy -= value; break;
+		case REL_WHEEL:	if (list-&gt;mode) list-&gt;dz -= value; break;
+	}
+	break;
+</pre>
+
+<p>must be replaced by
+
+<br><pre>
+case EV_REL:
+	switch (code) {
+		case REL_X:
+			list-&gt;x_accum += value;
+			list-&gt;dx += list-&gt;x_accum / DOWNSAMPLE;
+			list-&gt;x_accum %= DOWNSAMPLE;
+			break;
+		case REL_Y:
+			list-&gt;y_accum += value;
+			list-&gt;dy -= list-&gt;y_accum / DOWNSAMPLE;
+			list-&gt;y_accum %= DOWNSAMPLE;
+			break;
+		case REL_WHEEL:	if (list-&gt;mode) list-&gt;dz -= value; break;
+	}
+	break;
+
+
+
+</pre>
+
+<p>Change the value of <b>DOWNSAMPLE</b> to change the mouse sensitivity.
+
+<p><hr>
+Node:<a name="ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>,
+Next:<a rel=next accesskey=n href="#SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>,
+Previous:<a rel=previous accesskey=p href="#REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>,
+Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
+<br>
+
+<h3>ASSORTED X TWEEKS</h3>
+
+<p>Screen blanking is really annoying, unless you're fabulously rich and
+can afford to leave your monitor on 24 hours a day without power saving
+mode.  In <b>/etc/X11/xinit/xinitrc</b> put
+
+<br><pre>xset s off
+xset s noblank
+</pre>
+
+<p>before the first <b>if</b> statement.
+
+<p>How about those windows keys which no Linux distribution even thinks to
+use.  You can make the window keys provide ALT functionality by editing
+<b>/etc/X11/Xmodmap</b>.  Append the following to it.
+
+<br><pre>keycode 115 = Hyper_L
+keycode 116 = Hyper_R
+add mod4 = Hyper_L
+add mod5 = Hyper_R
+</pre>
+
+<p>The actual changes to a window manager to make it recognize window keys
+for ALT are complex.  In <b>FVWM</b> at least, you can edit
+<b>/etc/X11/fvwm/system.fvwm2rc</b> and put
+
+<br><pre>Mouse 0 T A move-and-raise-or-raiselower
+#Mouse 0 W M move
+Mouse 0 W 4 move
+Mouse 0 W 5 move
+Mouse 0 F A resize-or-raiselower
+Mouse 0 S A resize-or-raiselower
+</pre>
+
+<p>in place of the default section for moving and resizing.  Your best
+performance is going to be on FVWM.  Other window managers seem to slow
+down video with extra event trapping and aren't as efficient in layout.
+
+<p><hr>
+Node:<a name="SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>,
+Previous:<a rel=previous accesskey=p href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>,
+Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
+<br>
+
+<h3>SPEEDING UP THE FILE SYSTEM</h3>
+
+<p>You'll often store video on an expensive, gigantic disk array separate
+from your boot disk.  You'll thus have to manually install an EXT
+filesystem on this disk array, using the <b>mke2fs</b> command.  By far
+the fastest file system is
+
+<br><pre>
+mke2fs -i 65536 -b 4096 my_device
+tune2fs -r0 -c10000 my_device
+
+</pre>
+
+<p>This has no journaling, reserves as few blocks as possible for
+filenames, and accesses the largest amount of data per block possible. 
+A slightly slower file system, which is easier to recover after power
+failures is
+
+<br><pre>
+mke2fs -j -i 65536 -b 4096 my_device
+tune2fs -r0 -c10000 my_device
+
+</pre>
+
+<p>This adds a journal which slows down the writes but makes us immune to
+power failures.
 
 <p><hr>
 Node:<a name="EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>,
@@ -3716,6 +3981,8 @@ utilize fully by mere experimentation.
 <ul>
 <li><a accesskey=1 href="#CHROMA%20KEY">CHROMA KEY</a>: 
 <li><a accesskey=2 href="#HISTOGRAM">HISTOGRAM</a>: 
+<li><a accesskey=3 href="#TIME%20AVERAGE">TIME AVERAGE</a>: 
+<li><a accesskey=4 href="#VIDEO%20SCOPE">VIDEO SCOPE</a>: 
 </ul>
 
 <p><hr>
@@ -3743,6 +4010,7 @@ to blur just the alpha.
 
 <p><hr>
 Node:<a name="HISTOGRAM">HISTOGRAM</a>,
+Next:<a rel=next accesskey=n href="#TIME%20AVERAGE">TIME AVERAGE</a>,
 Previous:<a rel=previous accesskey=p href="#CHROMA%20KEY">CHROMA KEY</a>,
 Up:<a rel=up accesskey=u href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
@@ -3758,6 +4026,42 @@ to.  Enable <em>automatic</em> mode to have the histogram calculate
 automatic input values for every frame.  The threshold is only used in
 automatic mode and determines how sensitive to the upper and lower
 boundaries of the histogram the automatic gain should be.
+
+<p><hr>
+Node:<a name="TIME%20AVERAGE">TIME AVERAGE</a>,
+Next:<a rel=next accesskey=n href="#VIDEO%20SCOPE">VIDEO SCOPE</a>,
+Previous:<a rel=previous accesskey=p href="#HISTOGRAM">HISTOGRAM</a>,
+Up:<a rel=up accesskey=u href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+
+<h3>TIME AVERAGE</h3>
+
+<p>Time average is one effect which has many uses besides creating nifty
+trail patterns of moving objects.  It's main use is reducing noise in
+still images.  Merely point a video camera at a stationary subject for
+30 frames, capture the frames, and average them using TIME AVERAGE and
+you'll have a super high quality print.  In 16 bit colormodels, time
+average can increase the dynamic range of lousy cameras.
+
+<p><hr>
+Node:<a name="VIDEO%20SCOPE">VIDEO SCOPE</a>,
+Previous:<a rel=previous accesskey=p href="#TIME%20AVERAGE">TIME AVERAGE</a>,
+Up:<a rel=up accesskey=u href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+
+<h3>VIDEO SCOPE</h3>
+
+<p>The video scope plots two views of the image.  One view plots the
+intensity of each pixel against horizontal position.  They call this
+the WAVEFORM.  Another view translates hue to angle and saturation to
+radius for each pixel.  They call this the VECTORSCOPE.
+
+<p>The vectorscope is actually very useful for determining if an image is
+saturated.  When adjusting saturation, it's important to watch the
+vectorscope to make sure pixels don't extend past the 100 radius.
+
+<p>The waveform allows you to make sure image data extends from complete
+black to complete white while adjusting the brightness/contrast.
 
 <p><hr>
 Node:<a name="PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>,
@@ -4571,7 +4875,7 @@ Up:<a rel=up accesskey=u href="#Top">Top</a>
 
 <p>Stamp timecode in titler.
 
-<p>Memory leak in rendering stages removed.
+<p>Memory leaks in rendering stages removed.
 
 <p>Removed legacy plugin server code.
 
@@ -4608,10 +4912,68 @@ play back instead of just the owning track.
 
 <p>Quicktime recovery utility improved.
 
-<p>New video effects:
+<p>Single frame recording with multiple batches doesn't crash.
 
-<p>gradient, downsample video, radial blur, linear blur, zoom blur,
+<p>DV encoding.
+
+<p>New video effects:
+gradient, downsample video, radial blur, linear blur, zoom blur,
 histogram, perspective.
+
+<p>New audio effect:
+Sound level
+
+<p><b>1.1.5</b>
+
+<p>More options for the ffmpeg/MPEG-4 codecs.
+
+<p>Histogram works on SMP.
+
+<p>Better 16 bit alpha blending.
+
+<p>BRender path updates from preferences.
+
+<p>Separate preroll for background rendering and rendering.
+
+<p>Deinterlace by averaging lines 0 and 2 or 1 and 3 to get intervening lines.
+
+<p>Adaptive deinterlace.
+
+<p>Frame per second statistics in renderfarm are more reliable.
+
+<p>Select and slide in the patchbay.
+
+<p>Video scope can be resized.
+
+<p>Effect keyframes pasted in right positions more often.
+
+<p>Selective denoising of video based on color channel.
+
+<p>More mouse wheel bindings in MainWindow and ListBox.
+
+<p>Ctrl-w closes effect windows.
+
+<p>Perspective doesn't crash when switching from stretch to sheer.
+
+<p>Better text list searching and keyboard navigation.
+
+<p>Better Vorbis decoding after a pause.
+
+<p>Close recording without recording anything doesn't crash.
+
+<p>Save backup now option.
+
+<p>OpenGL not required anymore.
+
+<p>Time format changes update the selection textboxes more often.
+
+<p>MPEG-4 deblocking option in XMovie and Cinelerra.
+
+<p>Resize in Record GUI doesn't screw it up.
+
+<p>Better export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
+
+<p>Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
 
 </ul>
 

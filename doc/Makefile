@@ -23,7 +23,13 @@ IMAGES = \
 	../plugins/defaulttheme/data/wrench.png \
 	../plugins/defaulttheme/data/magnify.png
 
+$(OUTPUT):
+	cinelerra.html
 
 all:
 	cp $(IMAGES) .
 	makeinfo --html --no-split cinelerra.texi
+
+install:
+	cp $(IMAGES) /amazon/httpd/html/cinelerra
+	cp cinelerra.html /amazon/httpd/html/cinelerra

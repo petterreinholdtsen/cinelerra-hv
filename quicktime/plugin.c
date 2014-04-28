@@ -256,6 +256,7 @@ void quicktime_register_internal_vcodec()
 
 	quicktime_register_vcodec(QUICKTIME_DIVX, quicktime_init_codec_divx); 
 	quicktime_register_vcodec(QUICKTIME_DIV3, quicktime_init_codec_div3); 
+	quicktime_register_vcodec(QUICKTIME_DIV4, quicktime_init_codec_div4); 
 	quicktime_register_vcodec(QUICKTIME_DV, quicktime_init_codec_dv); 
 
 

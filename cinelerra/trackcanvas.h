@@ -135,7 +135,8 @@ public:
 		int ax,
 		int ay,
 		int ax2,
-		int ay2);
+		int ay2,
+		int *prev_y);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
 		double unit_start,

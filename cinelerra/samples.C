@@ -40,7 +40,7 @@ Samples::Samples()
 Samples::Samples(int samples)
 {
 	reset();
-	allocate(samples);
+	allocate(samples, 1);
 }
 
 Samples::Samples(Samples *src)
@@ -58,6 +58,7 @@ Samples::~Samples()
 
 void Samples::reset()
 {
+	use_shm = 1;
 	shmid = -1;
 	data = 0;
 	allocated = 0;
@@ -66,31 +67,67 @@ void Samples::reset()
 
 void Samples::clear_objects()
 {
-	if(data) shmdt(data);
+	if(use_shm)
+	{
+		if(data) shmdt(data);
+	}
+	else
+	{
+		delete [] data;
+	}
+
 	reset();
 }
 
 
 void Samples::share(int shmid)
 {
-	if(data) shmdt(data);
+	if(data)
+	{
+		if(use_shm)
+			shmdt(data);
+		else
+			delete [] data;
+	}
 
+	this->use_shm = 1;
 	data = (double*)shmat(shmid, NULL, 0);
 	this->allocated = 0;
 	this->shmid = shmid;
 }
 
-void Samples::allocate(int samples)
+void Samples::allocate(int samples, int use_shm)
 {
-	if(data && this->allocated >= samples) return;
-	if(data) shmdt(data);
+	if(data && 
+		this->allocated >= samples && 
+		this->use_shm == use_shm) return;
 
-	shmid = shmget(IPC_PRIVATE, 
-		(samples + 1) * sizeof(double), 
-		IPC_CREAT | 0777);
-	data = (double*)shmat(shmid, NULL, 0);
-// This causes it to automatically delete when the program exits.
-	shmctl(shmid, IPC_RMID, 0);
+	if(data) 
+	{
+		if(this->use_shm)
+			shmdt(data);
+		else
+			delete [] data;
+	}
+	
+	this->use_shm = use_shm;
+
+	if(use_shm)
+	{
+		shmid = shmget(IPC_PRIVATE, 
+			(samples + 1) * sizeof(double), 
+			IPC_CREAT | 0777);
+		data = (double*)shmat(shmid, NULL, 0);
+	// This causes it to automatically delete when the program exits.
+		shmctl(shmid, IPC_RMID, 0);
+	}
+	else
+	{
+		shmid = -1;
+		data = new double[samples];
+	}
+	
+	
 	this->allocated = samples;
 
 

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,18 +36,20 @@ class VideoDevice;
 #define CAPTURE_DVB          8
 #define CAPTURE_JPEG_WEBCAM  20
 #define CAPTURE_YUYV_WEBCAM  21
+#define CAPTURE_MPEG         22
 
-#define VIDEO4LINUX_TITLE      "Video4Linux"
-#define VIDEO4LINUX2_TITLE     "Video4Linux2"
-#define VIDEO4LINUX2JPEG_TITLE "Video4Linux2 JPEG"
-#define SCREENCAPTURE_TITLE    "Screencapture"
-#define CAPTURE_LML_TITLE      "LML 33"
-#define CAPTURE_BUZ_TITLE      "Buz"
-#define CAPTURE_FIREWIRE_TITLE "DV 1394"
-#define CAPTURE_IEC61883_TITLE "IEC 61883"
-#define CAPTURE_DVB_TITLE      "DVB"
+#define VIDEO4LINUX_TITLE         "Video4Linux"
+#define VIDEO4LINUX2_TITLE        "Video4Linux2"
+#define VIDEO4LINUX2JPEG_TITLE    "Video4Linux2 JPEG"
+#define SCREENCAPTURE_TITLE       "Screencapture"
+#define CAPTURE_LML_TITLE         "LML 33"
+#define CAPTURE_BUZ_TITLE         "Buz"
+#define CAPTURE_FIREWIRE_TITLE    "DV 1394"
+#define CAPTURE_IEC61883_TITLE    "IEC 61883"
+#define CAPTURE_DVB_TITLE         "DVB"
 #define CAPTURE_JPEG_WEBCAM_TITLE "JPEG Webcam"
 #define CAPTURE_YUYV_WEBCAM_TITLE "YUYV Webcam"
+#define CAPTURE_MPEG_TITLE        "Video4Linux2 MPEG"
 
 
 #define PLAYBACK_X11 	  10

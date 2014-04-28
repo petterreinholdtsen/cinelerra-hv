@@ -334,7 +334,8 @@ void MWindow::clear(int clear_handle)
 		edl->clear(start, 
 			end, 
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits);
 	}
 }
 
@@ -416,7 +417,8 @@ int MWindow::clear_labels(double start, double end)
 void MWindow::concatenate_tracks()
 {
 	undo->update_undo_before();
-	edl->tracks->concatenate_tracks(edl->session->plugins_follow_edits);
+	edl->tracks->concatenate_tracks(edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 	save_backup();
 	undo->update_undo_after(_("concatenate tracks"), LOAD_EDITS);
 
@@ -568,7 +570,8 @@ void MWindow::cut()
 	edl->clear(start, 
 		end,
 		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 
 
 	edl->optimize();
@@ -685,6 +688,7 @@ void MWindow::insert(double position,
 	FileXML *file,
 	int edit_labels,
 	int edit_plugins,
+	int edit_autos,
 	EDL *parent_edl)
 {
 // For clipboard pasting make the new edl use a separate session 
@@ -717,7 +721,8 @@ void MWindow::insert(double position,
 		0, 
 		position,
 		edit_labels,
-		edit_plugins);
+		edit_plugins,
+		edit_autos);
 // if(vwindow->edl)
 // printf("MWindow::insert 5 %f %f\n", 
 // vwindow->edl->local_session->in_point,
@@ -893,7 +898,8 @@ int MWindow::modify_edithandles()
 		session->drag_handle, 
 		edl->session->edit_handle_mode[session->drag_button],
 		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 
 	finish_modify_handles();
 
@@ -911,6 +917,7 @@ int MWindow::modify_pluginhandles()
 		session->drag_handle, 
 		edl->session->edit_handle_mode[session->drag_button],
 		edl->session->labels_follow_edits,
+		edl->session->autos_follow_edits,
 		session->trim_edits);
 
 	finish_modify_handles();
@@ -975,7 +982,8 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 		track, 
 		position,
 		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 
 	save_backup();
 	undo->update_undo_after(_("move edit"), LOAD_ALL);
@@ -1125,10 +1133,15 @@ void MWindow::mute_selection()
 		edl->clear(start, 
 			end, 
 			0, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits);
 		edl->local_session->set_selectionend(end);
 		edl->local_session->set_selectionstart(start);
-		edl->paste_silence(start, end, 0, edl->session->plugins_follow_edits);
+		edl->paste_silence(start, 
+			end, 
+			0, 
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits);
 		save_backup();
 		undo->update_undo_after(_("mute"), LOAD_EDITS);
 
@@ -1178,11 +1191,13 @@ void MWindow::overwrite(EDL *source)
 		edl->clear(dst_start, 
 			dst_start + overwrite_len, 
 			0, 
+			0,
 			0);
 
 	paste(dst_start, 
 		dst_start + overwrite_len, 
 		&file,
+		0,
 		0,
 		0);
 
@@ -1203,7 +1218,8 @@ int MWindow::paste(double start,
 	double end, 
 	FileXML *file,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 	clear(0);
 
@@ -1212,6 +1228,7 @@ int MWindow::paste(double start,
 			file,
 			edit_labels,
 			edit_plugins,
+			edit_autos,
 			edl);
 
 	return 0;
@@ -1245,7 +1262,9 @@ void MWindow::paste()
 		insert(start, 
 			&file, 
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits,
+			0);
 
 		edl->optimize();
 
@@ -1289,7 +1308,8 @@ int MWindow::paste_assets(double position, Track *dest_track)
 			dest_track, 
 			0,
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits);
 		result = 1;
 	}
 
@@ -1301,7 +1321,8 @@ int MWindow::paste_assets(double position, Track *dest_track)
 			dest_track,
 			position, 
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits);
 		result = 1;
 	}
 
@@ -1327,7 +1348,8 @@ void MWindow::load_assets(ArrayList<Indexable*> *new_assets,
 	Track *first_track,
 	RecordLabels *labels,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 const int debug = 0;
 if(debug) printf("MWindow::load_assets %d\n", __LINE__);
@@ -1373,7 +1395,8 @@ if(debug) printf("MWindow::load_assets %d\n", __LINE__);
 		first_track,
 		position,
 		edit_labels,
-		edit_plugins);
+		edit_plugins,
+		edit_autos);
 if(debug) printf("MWindow::load_assets %d\n", __LINE__);
 
 
@@ -1403,7 +1426,8 @@ int MWindow::paste_automation()
 		edl->tracks->paste_automation(edl->local_session->get_selectionstart(), 
 			&file,
 			0,
-			1); 
+			1,
+			edl->session->typeless_keyframes); 
 		save_backup();
 		undo->update_undo_after(_("paste keyframes"), LOAD_AUTOMATION);
 		delete [] string;
@@ -1437,7 +1461,8 @@ int MWindow::paste_default_keyframe()
 		edl->tracks->paste_automation(edl->local_session->get_selectionstart(), 
 			&file, 
 			1, 
-			0); 
+			0,
+			edl->session->typeless_keyframes); 
 //		edl->tracks->paste_default_keyframe(&file); 
 		undo->update_undo_after(_("paste default keyframe"), LOAD_AUTOMATION);
 
@@ -1463,7 +1488,8 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	Track *first_track,
 	double current_position,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 
 	ArrayList<Track*> destination_tracks;
@@ -1508,6 +1534,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 // Insert labels for certain modes constitutively
 		edit_labels = 1;
 		edit_plugins = 1;
+		edit_autos = 1;
 // Force reset of preview
 		original_length = 0;
 //		original_preview_end = -1;
@@ -1740,6 +1767,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 						current_position, 
 						replace_default,
 						edit_plugins,
+						edit_autos,
 						edl_length);
 //PRINT_TRACE
 				}
@@ -1821,7 +1849,8 @@ void MWindow::paste_silence()
 	edl->paste_silence(start, 
 		end, 
 		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 	edl->optimize();
 	save_backup();
 	undo->update_undo_after(_("silence"), LOAD_EDITS | LOAD_TIMEBAR);
@@ -2220,7 +2249,8 @@ void MWindow::splice(EDL *source)
 		start, 
 		&file,
 		edl->session->labels_follow_edits,
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 
 // Position at end of clip
 	edl->local_session->set_selectionstart(start + 
@@ -2243,6 +2273,7 @@ void MWindow::to_clip()
 	FileXML file;
 	double start, end;
 	
+	gui->lock_window("MWindow::to_clip 1");
 	start = edl->local_session->get_selectionstart();
 	end = edl->local_session->get_selectionend();
 
@@ -2271,9 +2302,12 @@ void MWindow::to_clip()
 	new_edl->local_session->set_selectionend(0);
 
 	gui->unlock_window();
+
 	awindow->clip_edit->create_clip(new_edl);
-	gui->lock_window("MWindow::to_clip");
+
+	gui->lock_window("MWindow::to_clip 2");
 	save_backup();
+	gui->unlock_window();
 }
 
 
@@ -2335,7 +2369,8 @@ void MWindow::trim_selection()
 	edl->trim_selection(edl->local_session->get_selectionstart(), 
 		edl->local_session->get_selectionend(), 
 		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		edl->session->autos_follow_edits);
 
 	save_backup();
 	undo->update_undo_after(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);

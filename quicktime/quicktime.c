@@ -113,14 +113,18 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 				new_file.rd = 0;
 				
 /* Write ftyp header */
-				if(ftyp_exists) quicktime_write_data(&new_file, ftyp_data, ftyp_size);
-				
+				if(ftyp_exists) 
+				{
+					quicktime_write_data(&new_file, ftyp_data, ftyp_size);
+				}
+					
+
 /* Write moov once to get final size with our substituted headers */
 				moov_start = quicktime_position(&new_file);
 				quicktime_write_moov(&new_file, &(old_file->moov), 0);
 				moov_end = quicktime_position(&new_file);
 
-printf("make_streamable 0x%llx 0x%llx\n", moov_end - moov_start, mdat_start);
+printf("make_streamable 0x%llx 0x%llx\n", (long long)moov_end - moov_start, (long long)mdat_start);
 				quicktime_shift_offsets(&(old_file->moov), 
 					moov_end - moov_start - mdat_start + ftyp_size);
 
@@ -520,7 +524,7 @@ int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track)
 	{
 		fprintf(stderr, 
 			"quicktime_set_video_position: frame=%lld track=%d >= file->total_vtracks %d\n", 
-			frame,
+			(long long)frame,
 			track,
 			file->total_vtracks);
 		track = file->total_vtracks - 1;
@@ -1371,6 +1375,19 @@ quicktime_t* quicktime_open(char *filename, int rd, int wr)
 		if(wr)
 		{
 			quicktime_set_presave(new_file, 1);
+
+
+
+
+// android requires the ftyp header
+			const unsigned char ftyp_data[] = 
+			{
+				0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32, 0x00, 0x00, 0x00, 0x01, 0x6d, 0x70, 0x34, 0x32, 0x61, 0x76, 0x63, 0x31
+			};
+			quicktime_write_data(new_file, (unsigned char*)ftyp_data, sizeof(ftyp_data));
+			
+
+
 			quicktime_atom_write_header64(new_file, 
 				&new_file->mdat.atom, 
 				"mdat");

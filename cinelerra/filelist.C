@@ -262,6 +262,7 @@ int FileList::read_frame(VFrame *frame)
 {
 	int result = 0;
 
+//	PRINT_TRACE
 // printf("FileList::read_frame %d %d use_header=%d current_frame=%d total=%d\n", 
 // __LINE__, 
 // result,

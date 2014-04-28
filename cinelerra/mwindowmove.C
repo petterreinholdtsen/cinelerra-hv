@@ -244,11 +244,18 @@ void MWindow::zoom_amp(int64_t zoom_amp)
 
 void MWindow::zoom_track(int64_t zoom_track)
 {
+// scale waveforms
 	edl->local_session->zoom_y = (int64_t)((float)edl->local_session->zoom_y * 
 		zoom_track / 
 		edl->local_session->zoom_track);
 	CLAMP(edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
+
+// scale tracks
+	double scale = (double)zoom_track / edl->local_session->zoom_track;
 	edl->local_session->zoom_track = zoom_track;
+
+// shift row position
+	edl->local_session->track_start *= scale;
 	trackmovement(edl->local_session->track_start);
 //printf("MWindow::zoom_track %d %d\n", edl->local_session->zoom_y, edl->local_session->zoom_track);
 }

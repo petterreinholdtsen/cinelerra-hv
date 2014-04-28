@@ -258,6 +258,7 @@ void ArrayList<TYPE>::remove_all_objects()
 		else
 			delete values[i];
 	}
+	
 	total = 0;
 }
 

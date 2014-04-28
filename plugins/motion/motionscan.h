@@ -32,7 +32,7 @@
 class MotionScan;
 
 #define OVERSAMPLE 4
-#define MOTION_FILE "/tmp/motion"
+#define MOTION_FILE "/tmp/m"
 
 class MotionScanPackage : public LoadPackage
 {

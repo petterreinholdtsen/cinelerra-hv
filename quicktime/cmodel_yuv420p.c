@@ -250,10 +250,12 @@ static inline void transfer_YUV_PLANAR_to_RGB_FLOAT(float* *output,
 	u = *input_u;
 	v = *input_v;
 	YUV_TO_FLOAT(y, u, v, r, g, b)
+// optimization error here
 
-	*(*output)++ = r;
-	*(*output)++ = g;
-	*(*output)++ = b;
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output) += 3;
 }
 
 
@@ -270,10 +272,12 @@ static inline void transfer_YUV_PLANAR_to_RGBA_FLOAT(float* *output,
 	v = *input_v;
 	YUV_TO_FLOAT(y, u, v, r, g, b)
 
-	*(*output)++ = r;
-	*(*output)++ = g;
-	*(*output)++ = b;
-	*(*output)++ = 1.0;
+// optimization error here
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output)[3] = 1.0;
+	(*output) += 4;
 }
 
 
@@ -985,9 +989,9 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 				case BC_YUV420P: \
 					for(i = 0; i < out_h; i++) \
 					{ \
-						unsigned char *output_y = out_y_plane + i * total_in_w; \
-						unsigned char *output_u = out_u_plane + i / 2 * total_in_w / 2; \
-						unsigned char *output_v = out_v_plane + i / 2 * total_in_w / 2; \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i / 2 * total_out_w / 2; \
+						unsigned char *output_v = out_v_plane + i / 2 * total_out_w / 2; \
 						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
 						unsigned char *input_u = in_u_plane + row_table[i] * total_in_w / 2; \
 						unsigned char *input_v = in_v_plane + row_table[i] * total_in_w / 2; \
@@ -1015,9 +1019,9 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 				case BC_YUV422P: \
 					for(i = 0; i < out_h; i++) \
 					{ \
-						unsigned char *output_y = out_y_plane + i * total_in_w; \
-						unsigned char *output_u = out_u_plane + i * total_in_w / 2; \
-						unsigned char *output_v = out_v_plane + i * total_in_w / 2; \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i * total_out_w / 2; \
+						unsigned char *output_v = out_v_plane + i * total_out_w / 2; \
 						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
 						unsigned char *input_u = in_u_plane + row_table[i] * total_in_w / 2; \
 						unsigned char *input_v = in_v_plane + row_table[i] * total_in_w / 2; \
@@ -1036,9 +1040,9 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 				case BC_YUV444P: \
 					for(i = 0; i < out_h; i++) \
 					{ \
-						unsigned char *output_y = out_y_plane + i * total_in_w; \
-						unsigned char *output_u = out_u_plane + i * total_in_w; \
-						unsigned char *output_v = out_v_plane + i * total_in_w; \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i * total_out_w; \
+						unsigned char *output_v = out_v_plane + i * total_out_w; \
 						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
 						unsigned char *input_u = in_u_plane + row_table[i] * total_in_w / 2; \
 						unsigned char *input_v = in_v_plane + row_table[i] * total_in_w / 2; \
@@ -1200,9 +1204,9 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 				case BC_YUV420P: \
 					for(i = 0; i < out_h; i++) \
 					{ \
-						unsigned char *output_y = out_y_plane + i * total_in_w; \
-						unsigned char *output_u = out_u_plane + i / 2 * total_in_w / 2; \
-						unsigned char *output_v = out_v_plane + i / 2 * total_in_w / 2; \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i / 2 * total_out_w / 2; \
+						unsigned char *output_v = out_v_plane + i / 2 * total_out_w / 2; \
 						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
 						unsigned char *input_u = in_u_plane + row_table[i] * total_in_w; \
 						unsigned char *input_v = in_v_plane + row_table[i] * total_in_w; \
@@ -1230,9 +1234,9 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 				case BC_YUV422P: \
 					for(i = 0; i < out_h; i++) \
 					{ \
-						unsigned char *output_y = out_y_plane + i * total_in_w; \
-						unsigned char *output_u = out_u_plane + i * total_in_w / 2; \
-						unsigned char *output_v = out_v_plane + i * total_in_w / 2; \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i * total_out_w / 2; \
+						unsigned char *output_v = out_v_plane + i * total_out_w / 2; \
 						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
 						unsigned char *input_u = in_u_plane + row_table[i] * total_in_w; \
 						unsigned char *input_v = in_v_plane + row_table[i] * total_in_w; \
@@ -1251,9 +1255,9 @@ static inline void transfer_YUV444P_to_YUV444P(unsigned char *input_y,
 				case BC_YUV444P: \
 					for(i = 0; i < out_h; i++) \
 					{ \
-						unsigned char *output_y = out_y_plane + i * total_in_w; \
-						unsigned char *output_u = out_u_plane + i * total_in_w; \
-						unsigned char *output_v = out_v_plane + i * total_in_w; \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i * total_out_w; \
+						unsigned char *output_v = out_v_plane + i * total_out_w; \
 						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
 						unsigned char *input_u = in_u_plane + row_table[i] * total_in_w; \
 						unsigned char *input_v = in_v_plane + row_table[i] * total_in_w; \

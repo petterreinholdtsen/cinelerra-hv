@@ -118,7 +118,7 @@ void Module::create_new_attachments()
 // Not used in pluginarray
 	if(commonrender)
 	{
-		new_total_attachments = track->plugin_set.total;
+		new_total_attachments = track->plugin_set.size();
 		if(new_total_attachments)
 		{
 			new_attachments = new AttachmentPoint*[new_total_attachments];
@@ -132,9 +132,16 @@ void Module::create_new_attachments()
 						1);
 
 				if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
+				{
 					new_attachments[i] = new_attachment(plugin);
+// printf("Module::create_new_attachments %d new_attachment=%p\n", 
+// __LINE__, 
+// new_attachments[i]->virtual_plugins.values);
+				}
 				else
+				{
 					new_attachments[i] = 0;
+				}
 			}
 		}
 		else
@@ -146,6 +153,11 @@ void Module::create_new_attachments()
 
 void Module::swap_attachments()
 {
+// for(int i = 0; i < total_attachments; i++)
+// printf("Module::swap_attachments %d attachment=%p\n", __LINE__, attachments[i] ? attachments[i]->virtual_plugins.values : 0);
+// for(int i = 0; i < new_total_attachments; i++)
+// printf("Module::swap_attachments %d new_attachment=%p\n", __LINE__, new_attachments[i] ? new_attachments[i]->virtual_plugins.values : 0);
+
 // None of this is used in a pluginarray
 	for(int i = 0; 
 		i < new_total_attachments &&
@@ -158,6 +170,11 @@ void Module::swap_attachments()
 			attachments[i] &&
 			new_attachments[i]->identical(attachments[i]))
 		{
+// printf("Module::swap_attachments %d virtual_plugins=%p new_virtual_plugins=%p\n", 
+// __LINE__, 
+// new_attachments[i]->virtual_plugins.values,
+// new_attachments[i]->new_virtual_plugins.values);
+
 			delete new_attachments[i];
 			new_attachments[i] = attachments[i];
 			attachments[i] = 0;
@@ -177,6 +194,12 @@ void Module::swap_attachments()
 
 	attachments = new_attachments;
 	total_attachments = new_total_attachments;
+	
+	new_attachments = 0;
+	new_total_attachments = 0;
+
+// for(int i = 0; i < total_attachments; i++)
+// printf("Module::swap_attachments %d final_attachment=%p\n", __LINE__, attachments[i] ? attachments[i]->virtual_plugins.values : 0);
 }
 
 int Module::render_init()

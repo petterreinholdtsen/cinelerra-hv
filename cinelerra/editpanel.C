@@ -587,7 +587,9 @@ void EditPanel::clear_outpoint()
 
 void EditPanel::to_clip()
 {
+	subwindow->unlock_window();
 	mwindow->to_clip();
+	subwindow->lock_window("EditPanel::to_clip");
 }
 
 

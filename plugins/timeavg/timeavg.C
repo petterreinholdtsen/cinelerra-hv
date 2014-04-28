@@ -28,6 +28,7 @@
 #include "cicolors.h"
 #include "timeavg.h"
 #include "timeavgwindow.h"
+#include "transportque.h"
 #include "vframe.h"
 
 
@@ -135,10 +136,39 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 
 	int reset = load_configuration();
 
-// Allocate accumulation
-	if(!accumulation)
+// reset buffer on the keyframes
+	int64_t actual_previous_number = start_position;
+	if(get_direction() == PLAY_FORWARD)
 	{
-		accumulation = new unsigned char[w * 
+		actual_previous_number--;
+		if(actual_previous_number < get_source_start())
+			reset = 1;
+		else
+		{
+			KeyFrame *keyframe = get_prev_keyframe(start_position, 1);
+			if(keyframe->position > 0 &&
+				actual_previous_number < keyframe->position)
+				reset = 1;
+		}
+	}
+	else
+	{
+		actual_previous_number++;
+		if(actual_previous_number >= get_source_start() + get_total_len())
+			reset = 1;
+		else
+		{
+			KeyFrame *keyframe = get_next_keyframe(start_position, 1);
+			if(keyframe->position > 0 &&
+				actual_previous_number >= keyframe->position)
+				reset = 1;
+		}
+	}
+
+// Allocate accumulation
+	if(!accumulation || reset)
+	{
+		if(!accumulation) accumulation = new unsigned char[w * 
 			h * 
 			BC_CModels::components(color_model) *
 			MAX(sizeof(float), sizeof(int))];

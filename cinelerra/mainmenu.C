@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -186,6 +186,8 @@ void MainMenu::create_objects()
 	mwindow->preferences_thread = preferences->thread;
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
 	settingsmenu->add_item(plugins_follow_edits = new PluginsFollowEdits(mwindow));
+	settingsmenu->add_item(keyframes_follow_edits = new KeyframesFollowEdits(mwindow));
+	settingsmenu->add_item(typeless_keyframes = new TypelessKeyframes(mwindow));
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
@@ -211,6 +213,7 @@ void MainMenu::create_objects()
 	viewmenu->add_item(pan_automation = new ShowAutomation(mwindow, _("Pan"), "6", AUTOMATION_PAN));
 	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "7"));
 	viewmenu->add_item(mask_automation = new ShowAutomation(mwindow, _("Mask"), "8", AUTOMATION_MASK));
+	viewmenu->add_item(speed_automation = new ShowAutomation(mwindow, _("Speed"), "9", AUTOMATION_SPEED));
 	viewmenu->add_item(camera_x = new ShowAutomation(mwindow, _("Camera X"), "", AUTOMATION_CAMERA_X));
 	viewmenu->add_item(camera_y = new ShowAutomation(mwindow, _("Camera Y"), "", AUTOMATION_CAMERA_Y));
 	viewmenu->add_item(camera_z = new ShowAutomation(mwindow, _("Camera Z"), "", AUTOMATION_CAMERA_Z));
@@ -243,6 +246,8 @@ void MainMenu::update_toggles(int use_lock)
 	keyframe_type->set_checked(mwindow->edl->local_session->floatauto_type == Auto::BEZIER);
 	labels_follow_edits->set_checked(mwindow->edl->session->labels_follow_edits);
 	plugins_follow_edits->set_checked(mwindow->edl->session->plugins_follow_edits);
+	keyframes_follow_edits->set_checked(mwindow->edl->session->autos_follow_edits);
+	typeless_keyframes->set_checked(mwindow->edl->session->typeless_keyframes);
 	cursor_on_frames->set_checked(mwindow->edl->session->cursor_on_frames);
 	loop_playback->set_checked(mwindow->edl->local_session->loop_playback);
 
@@ -261,6 +266,7 @@ void MainMenu::update_toggles(int use_lock)
 	plugin_automation->set_checked(mwindow->edl->session->auto_conf->plugins);
 	mode_automation->update_toggle();
 	mask_automation->update_toggle();
+	speed_automation->update_toggle();
 
 	if(use_lock) mwindow->gui->unlock_window();
 }
@@ -1184,14 +1190,14 @@ int PluginsFollowEdits::handle_event()
 
 
 
-AutosFollowEdits::AutosFollowEdits(MWindow *mwindow)
- : BC_MenuItem(_("Autos follow edits")) 
+KeyframesFollowEdits::KeyframesFollowEdits(MWindow *mwindow)
+ : BC_MenuItem(_("Keyframes follow edits")) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->autos_follow_edits);
 }
 
-int AutosFollowEdits::handle_event()
+int KeyframesFollowEdits::handle_event()
 { 
 	mwindow->edl->session->autos_follow_edits ^= 1; 
 	set_checked(!get_checked());
@@ -1209,6 +1215,20 @@ int CursorOnFrames::handle_event()
 {
 	mwindow->edl->session->cursor_on_frames = !mwindow->edl->session->cursor_on_frames; 
 	set_checked(mwindow->edl->session->cursor_on_frames);
+}
+
+
+TypelessKeyframes::TypelessKeyframes(MWindow *mwindow)
+ : BC_MenuItem(_("Typeless keyframes")) 
+{ 
+	this->mwindow = mwindow; 
+	set_checked(mwindow->edl->session->typeless_keyframes);
+}
+
+int TypelessKeyframes::handle_event()
+{
+	mwindow->edl->session->typeless_keyframes = !mwindow->edl->session->typeless_keyframes; 
+	set_checked(mwindow->edl->session->typeless_keyframes);
 }
 
 

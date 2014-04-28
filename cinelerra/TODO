@@ -1,5 +1,7 @@
 BIG BUGS
 ----------------
+Nested EDLs with different colormodels crash.
+Effects not getting rendered if multiple effects have random starting times.
 Drag effect before timeline is finished drawing after a load -> lockup
 Load a sound file.  Change the file on the disk.  Crash on exit.
 Change asset path, CPlayback never returns to redraw the frame.

@@ -130,6 +130,7 @@ int VDevicePrefs::initialize(int creation)
 		case CAPTURE_JPEG_WEBCAM:
 		case CAPTURE_YUYV_WEBCAM:
 		case VIDEO4LINUX2JPEG:
+		case CAPTURE_MPEG:
 			create_v4l2_objs();
 			break;
 		case SCREENCAPTURE:
@@ -477,6 +478,9 @@ char* VDriverMenu::driver_to_string(int driver)
 		case CAPTURE_DVB:
 			sprintf(string, CAPTURE_DVB_TITLE);
 			break;
+		case CAPTURE_MPEG:
+			sprintf(string, CAPTURE_MPEG_TITLE);
+			break;
 		case PLAYBACK_X11:
 			sprintf(string, PLAYBACK_X11_TITLE);
 			break;
@@ -520,6 +524,7 @@ void VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, CAPTURE_JPEG_WEBCAM_TITLE, CAPTURE_JPEG_WEBCAM));
 		add_item(new VDriverItem(this, CAPTURE_YUYV_WEBCAM_TITLE, CAPTURE_YUYV_WEBCAM));
 		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
+		add_item(new VDriverItem(this, CAPTURE_MPEG_TITLE, CAPTURE_MPEG));
 #endif
 
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));

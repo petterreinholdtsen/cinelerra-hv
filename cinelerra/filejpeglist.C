@@ -104,6 +104,8 @@ int FileJPEGList::get_best_colormodel(int driver, int colormodel)
 
 int FileJPEGList::read_frame(VFrame *frame, VFrame *data)
 {
+	PRINT_TRACE
+
 	mjpeg_t *mjpeg = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
@@ -118,6 +120,7 @@ int FileJPEGList::read_frame(VFrame *frame, VFrame *data)
 		frame->get_color_model(),
 		file->cpus);
 	mjpeg_delete(mjpeg);
+	PRINT_TRACE
 	return 0;
 }
 

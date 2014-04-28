@@ -956,7 +956,8 @@ if(debug) printf("Render::render %d\n", __LINE__);
 			0,
 			0,
 			mwindow->edl->session->labels_follow_edits,
-			mwindow->edl->session->plugins_follow_edits);
+			mwindow->edl->session->plugins_follow_edits,
+			mwindow->edl->session->autos_follow_edits);
 if(debug) printf("Render::render %d\n", __LINE__);
 		for(int i = 0; i < assets->size(); i++)
 			assets->get(i)->Garbage::remove_user();

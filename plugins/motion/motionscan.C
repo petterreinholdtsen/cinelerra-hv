@@ -407,6 +407,9 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 					"%d %d", 
 					&dx_result,
 					&dy_result);
+// HACK
+//dx_result *= 2;
+//dy_result *= 2;
 //printf("MotionScan::scan_frame %d %d %d\n", __LINE__, dx_result, dy_result);
 				fclose(input);
 				skip = 1;

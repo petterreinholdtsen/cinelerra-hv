@@ -27,29 +27,6 @@
 #define N_(String) gettext_noop (String)
 
 
-YUVThread::YUVThread(YUVMain *client)
- : Thread()
-{
-	this->client = client;
-	synchronous = 1; // make thread wait for join
-	gui_started.lock();
-}
-
-YUVThread::~YUVThread()
-{
-}
-	
-void YUVThread::run()
-{
-	window = new YUVWindow(client);
-	window->create_objects();
-	gui_started.unlock();
-	window->run_window();
-	delete window;
-}
-
-
-
 
 
 

@@ -41,7 +41,7 @@ public:
 	void reset();
 	void clear_objects();
 	void share(int shmid);
-	void allocate(int samples);
+	void allocate(int samples, int use_shm);
 // Get the buffer
 	double* get_data();
 // Get number of samples allocated
@@ -62,6 +62,7 @@ private:
 	int allocated;
 // Offset to 1st sample in samples.
 	int offset;
+	int use_shm;
 };
 
 

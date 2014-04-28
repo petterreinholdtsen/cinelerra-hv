@@ -461,8 +461,8 @@ int VFrame::allocate_data(unsigned char *data,
 	if(shmid >= 0)
 	{
 		memory_type = VFrame::SHMGET;
-//printf("VFrame::allocate_data %d shmid=%d %p\n", __LINE__, shmid, this->data);
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
+//printf("VFrame::allocate_data %d shmid=%d data=%p\n", __LINE__, shmid, this->data);
 		this->shmid = shmid;
 		this->y_offset = y_offset;
 		this->u_offset = u_offset;
@@ -486,7 +486,7 @@ int VFrame::allocate_data(unsigned char *data,
 			}
 
 			this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
-//printf("VFrame::allocate_data %d %d %p\n", __LINE__, this->shmid, this->data);
+//printf("VFrame::allocate_data %d %d %d\n", __LINE__, size, this->shmid);
 
 //printf("VFrame::allocate_data %d %p\n", __LINE__, this->data);
 // This causes it to automatically delete when the program exits.

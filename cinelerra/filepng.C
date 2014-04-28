@@ -54,6 +54,7 @@ int FilePNG::check_sig(Asset *asset)
 		int temp = fread(test, 16, 1, stream);
 		fclose(stream);
 
+//		if(png_sig_cmp((unsigned char*)test, 0, 8))
 		if(png_check_sig((unsigned char*)test, 8))
 		{
 //printf("FilePNG::check_sig 1\n");

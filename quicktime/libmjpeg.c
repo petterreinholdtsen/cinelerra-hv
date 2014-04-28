@@ -1206,11 +1206,18 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 		unsigned char *u_in = mjpeg->temp_rows[1][0];
 		unsigned char *v_in = mjpeg->temp_rows[2][0];
 
+
 /*
- * printf("mjpeg_decompress 7 in_rowspan=%d out_rowspan=%d\n", 
+ * printf("mjpeg_decompress 7 coded_w=%d coded_h=%d output_w=%d output_h=%d out_rowspan=%d in_colormodel=%d out_colormodel=%d\n", 
  * mjpeg->coded_w,
- * mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
+ * mjpeg->coded_h,
+ * mjpeg->output_w,
+ * mjpeg->output_h,
+ * mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w,
+ * mjpeg->jpeg_color_model,
+ * mjpeg->color_model);
  */
+
 		cmodel_transfer(row_pointers, 
 			0,
 			y_plane,

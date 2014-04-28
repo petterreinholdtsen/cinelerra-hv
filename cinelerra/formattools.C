@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -268,6 +268,7 @@ void FormatTools::update_driver(int driver)
 	switch(driver)
 	{
 		case CAPTURE_DVB:
+		case CAPTURE_MPEG:
 // Just give the user information about how the stream is going to be
 // stored but don't change the asset.
 // Want to be able to revert to user settings.

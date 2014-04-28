@@ -47,7 +47,7 @@
 #include "vtrack.h"
 #include <string.h>
 
-int Tracks::clear(double start, double end, int clear_plugins)
+int Tracks::clear(double start, double end, int clear_plugins, int edit_autos)
 {
 	Track *current_track;
 
@@ -59,9 +59,10 @@ int Tracks::clear(double start, double end, int clear_plugins)
 		{
 			current_track->clear(start, 
 				end, 
-				1, 
-				1, 
+				1, // edits
+				1, // labels
 				clear_plugins, 
+				edit_autos,
 				1,
 				0); 
 		}
@@ -196,6 +197,7 @@ printf("Tracks::set_edit_length %d %f %f\n", __LINE__, end_time, current_track->
 							1,
 							edl->session->labels_follow_edits,
 							edl->session->plugins_follow_edits,
+							edl->session->autos_follow_edits,
 							0);
 					}
 					else
@@ -206,6 +208,7 @@ printf("Tracks::set_edit_length %d %f %f\n", __LINE__, end_time, current_track->
 							1,
 							edl->session->labels_follow_edits,
 							edl->session->plugins_follow_edits,
+							edl->session->autos_follow_edits,
 							0);
 					}
 
@@ -278,6 +281,7 @@ printf("Tracks::set_edit_length %d %f %f\n", __LINE__, end_time, current_track->
 							1,
 							edl->session->labels_follow_edits,
 							edl->session->plugins_follow_edits,
+							edl->session->autos_follow_edits,
 							0);
 					}
 					else
@@ -288,6 +292,7 @@ printf("Tracks::set_edit_length %d %f %f\n", __LINE__, end_time, current_track->
 							1,
 							edl->session->labels_follow_edits,
 							edl->session->plugins_follow_edits,
+							edl->session->autos_follow_edits,
 							0);
 					}
 
@@ -429,7 +434,8 @@ int Tracks::clear_handle(double start,
 	double end,
 	double &longest_distance,
 	int clear_labels,
-	int clear_plugins)
+	int clear_plugins,
+	int edit_autos)
 {
 	Track* current_track;
 	double distance;
@@ -442,6 +448,7 @@ int Tracks::clear_handle(double start,
 				end, 
 				clear_labels,
 				clear_plugins, 
+				edit_autos,
 				distance);
 			if(distance > longest_distance) longest_distance = distance;
 		}
@@ -521,7 +528,8 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	Track *track,
 	double position,
 	int edit_labels,  // Ignored
-	int edit_plugins)  // Ignored
+	int edit_plugins,  // Ignored
+	int edit_autos) // Ignored
 {
 //printf("Tracks::move_edits 1\n");
 	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
@@ -696,14 +704,16 @@ void Tracks::move_effect(Plugin *plugin,
 	result->shift(dest_position - plugin->startproject);
 
 // Clear new plugin from old set
-	plugin->plugin_set->clear(plugin->startproject, plugin->startproject + plugin->length);
+	plugin->plugin_set->clear(plugin->startproject, 
+		plugin->startproject + plugin->length,
+		edl->session->autos_follow_edits);
 
 
 	source_track->optimize();
 }
 
 
-int Tracks::concatenate_tracks(int edit_plugins)
+int Tracks::concatenate_tracks(int edit_plugins, int edit_autos)
 {
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
@@ -745,6 +755,7 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					output_start, 
 					0,
 					edit_plugins,
+					edit_autos,
 					0);
 
 // Get next source and destination
@@ -945,10 +956,14 @@ void Tracks::paste_audio_transition(PluginServer *server)
 void Tracks::paste_automation(double selectionstart, 
 	FileXML *file,
 	int default_only,
-	int active_only)
+	int active_only,
+	int typeless)
 {
+	Track* current_track = 0;
 	Track* current_atrack = 0;
 	Track* current_vtrack = 0;
+	Track* dst_track = 0;
+	int src_type;
 	int result = 0;
 	double length;
 	double frame_rate = edl->session->frame_rate;
@@ -983,7 +998,24 @@ void Tracks::paste_automation(double selectionstart,
 				if(file->tag.title_is("TRACK"))
 				{
 					file->tag.get_property("TYPE", string);
-					
+					if(!strcmp(string, "AUDIO"))
+					{
+						src_type = TRACK_AUDIO;
+					}
+					else
+					{
+						src_type = TRACK_VIDEO;
+					}
+
+// paste to any media type
+					if(typeless)
+					{
+						if(!current_track) current_track = first;
+						while(current_track && !current_track->record)
+							current_track = current_track->next;
+						dst_track = current_track;
+					}
+					else
 					if(!strcmp(string, "AUDIO"))
 					{
 // Get next audio track
@@ -996,18 +1028,7 @@ void Tracks::paste_automation(double selectionstart,
 							(current_atrack->data_type != TRACK_AUDIO ||
 							!current_atrack->record))
 							current_atrack = current_atrack->next;
-
-// Paste it
-						if(current_atrack)
-						{
-							current_atrack->paste_automation(selectionstart,
-								length,
-								frame_rate,
-								sample_rate,
-								file,
-								default_only,
-								active_only);
-						}
+						dst_track = current_atrack;
 					}
 					else
 					{
@@ -1022,18 +1043,27 @@ void Tracks::paste_automation(double selectionstart,
 							!current_vtrack->record))
 							current_vtrack = current_vtrack->next;
 
-// Paste it
-						if(current_vtrack)
+						dst_track = current_vtrack;
+					}
+
+					if(dst_track)
+					{
+						double frame_rate2 = frame_rate;
+						double sample_rate2 = sample_rate;
+						
+						if(src_type != dst_track->data_type)
 						{
-//printf("Tracks::paste_automation 1 %s %d\n", current_vtrack->title, current_vtrack->record);
-							current_vtrack->paste_automation(selectionstart,
-								length,
-								frame_rate,
-								sample_rate,
-								file,
-								default_only,
-								active_only);
+							frame_rate2 = sample_rate;
+							sample_rate2 = frame_rate;
 						}
+						
+						dst_track->paste_automation(selectionstart,
+							length,
+							frame_rate2,
+							sample_rate2,
+							file,
+							default_only,
+							active_only);
 					}
 				}
 			}
@@ -1074,7 +1104,10 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 }
 
 
-int Tracks::paste_silence(double start, double end, int edit_plugins)
+int Tracks::paste_silence(double start, 
+	double end, 
+	int edit_plugins, 
+	int edit_autos)
 {
 	Track* current_track;
 
@@ -1084,7 +1117,10 @@ int Tracks::paste_silence(double start, double end, int edit_plugins)
 	{
 		if(current_track->record) 
 		{ 
-			current_track->paste_silence(start, end, edit_plugins); 
+			current_track->paste_silence(start, 
+				end, 
+				edit_plugins, 
+				edit_autos); 
 		}
 	}
 	return 0;
@@ -1115,7 +1151,8 @@ int Tracks::modify_edithandles(double &oldposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 	Track *current;
 
@@ -1128,7 +1165,8 @@ int Tracks::modify_edithandles(double &oldposition,
 				currentend,
 				handle_mode,
 				edit_labels,
-				edit_plugins);
+				edit_plugins,
+				edit_autos);
 		}
 	}
 	return 0;
@@ -1139,6 +1177,7 @@ int Tracks::modify_pluginhandles(double &oldposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	Track *current;
@@ -1152,6 +1191,7 @@ int Tracks::modify_pluginhandles(double &oldposition,
 				currentend, 
 				handle_mode,
 				edit_labels,
+				edit_autos,
 				trim_edits);
 		}
 	}

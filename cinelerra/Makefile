@@ -405,6 +405,7 @@ LIBS += -lXft
 endif
 
 CFLAGS += \
+	-g \
 	-c \
 	-I../guicast \
 	-I../quicktime \
@@ -457,7 +458,7 @@ else
 
 LDFLAGS1 = -export-dynamic
 LDFLAGS2 = 
-LINKER = g++ -o $(OUTPUT)
+LINKER = g++ -g -o $(OUTPUT)
 
 
 endif
@@ -497,7 +498,7 @@ $(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(FFMPEG_OBJS) 
 # Also VFS only overrides the C library when dynamic linking is used.
 $(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(THEME_DATA) $(SNDFILE_LIB) ../guicast/$(OBJDIR)/libguicast.a
 	$(LINKER) `cat $(OBJDIR)/objs`
-	strip $(OUTPUT)
+#	strip $(OUTPUT)
 
 $(OBJDIR)/test: 
 	$(CC) -shared -o $(OBJDIR)/test.so \

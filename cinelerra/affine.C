@@ -426,6 +426,7 @@ void AffineUnit::process_package(LoadPackage *package)
 	{
 		AffineMatrix matrix;
 		float temp;
+// swap points 3 & 4
 		temp = out_x4;
 		out_x4 = out_x3;
 		out_x3 = temp;
@@ -582,7 +583,7 @@ void AffineUnit::process_package(LoadPackage *package)
 				server->output->set_opengl_state(VFrame::SCREEN);
 			}
 			return;
-#endif
+#endif // HAVE_GL
 		}
 
 
@@ -605,11 +606,18 @@ void AffineUnit::process_package(LoadPackage *package)
 		CLAMP(tx1, server->out_x, server->out_x + server->out_w);
 		CLAMP(tx2, server->out_x, server->out_x + server->out_w);
 
+
 		xinc = m.values[0][0];
 		yinc = m.values[1][0];
 		winc = m.values[2][0];
 
 //printf("AffineUnit::process_package 2 tx1=%d ty1=%d tx2=%d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
+//printf("AffineUnit::process_package %d %d %d %d %d\n", 
+//__LINE__,
+//min_in_x,
+//max_in_x,
+//min_in_y,
+//max_in_y);
 
 #define CUBIC_ROW(in_row, chroma_offset) \
 	transform_cubic(dx, \
@@ -857,7 +865,226 @@ void AffineUnit::process_package(LoadPackage *package)
 				TRANSFORM(4, unsigned char, int, 0x0, 0xff)
 				break;
 			case BC_YUV888:
-				TRANSFORM(3, unsigned char, int, 0x80, 0xff)
+// DEBUG
+//				TRANSFORM(3, unsigned char, int, 0x80, 0xff)
+{
+	
+	unsigned char **in_rows = (unsigned char**)server->input->get_rows();
+	float round_factor = 0.0;
+	if(sizeof(unsigned char) < 4) round_factor = 0.5;
+	for(int y = ty1; y < ty2; y++)
+	{
+		unsigned char *out_row = (unsigned char*)server->output->get_rows()[y];
+
+		if(!interpolate)
+		{
+        	tx = xinc * (tx1 + 0.5) +
+				m.values[0][1] * (y + pivot_offset_y + 0.5) +
+				m.values[0][2] +
+				pivot_offset_x * xinc;
+        	ty = yinc * (tx1 + 0.5) +
+				m.values[1][1] * (y + pivot_offset_y + 0.5) +
+				m.values[1][2] +
+				pivot_offset_x * yinc;
+        	tw = winc * (tx1 + 0.5) +
+				m.values[2][1] * (y + pivot_offset_y + 0.5) +
+				m.values[2][2] +
+				pivot_offset_x * winc;
+		}
+      	else
+        {
+        	tx = xinc * tx1 +
+				m.values[0][1] * (y + pivot_offset_y) +
+				m.values[0][2] +
+				pivot_offset_x * xinc;
+        	ty = yinc * tx1 +
+				m.values[1][1] * (y + pivot_offset_y) +
+				m.values[1][2] +
+				pivot_offset_x * yinc;
+        	tw = winc * tx1 +
+				m.values[2][1] * (y + pivot_offset_y) +
+				m.values[2][2] +
+				pivot_offset_x * winc;
+        }
+
+
+		out_row += tx1 * 3;
+		for(int x = tx1; x < tx2; x++)
+		{
+/* Normalize homogeneous coords */
+			if(tw == 0.0)
+			{
+				ttx = 0.0;
+				tty = 0.0;
+			}
+			else
+			if(tw != 1.0)
+			{
+				ttx = tx / tw;
+				tty = ty / tw;
+			}
+			else
+			{
+				ttx = tx;
+				tty = ty;
+			}
+			itx = (int)ttx;
+			ity = (int)tty;
+
+			int row1 = ity - 1;
+			int row2 = ity;
+			int row3 = ity + 1;
+			int row4 = ity + 2;
+			CLAMP(row1, min_in_y, max_in_y);
+			CLAMP(row2, min_in_y, max_in_y);
+			CLAMP(row3, min_in_y, max_in_y);
+			CLAMP(row4, min_in_y, max_in_y);
+
+/* Set destination pixels if in clipping region */
+			if(!interpolate &&
+				x >= min_out_x &&
+				x < max_out_x)
+			{
+				if(itx >= min_in_x &&
+					itx <= max_in_x &&
+					ity >= min_in_y &&
+					ity <= max_in_y)
+				{
+					unsigned char *src = in_rows[ity] + itx * 3;
+					*out_row++ = *src++;
+					*out_row++ = *src++;
+					*out_row++ = *src++;
+					if(3 == 4) *out_row++ = *src;
+				}
+				else
+/* Fill with chroma */
+				{
+					*out_row++ = 0;
+					*out_row++ = 0x80;
+					*out_row++ = 0x80;
+					if(3 == 4) *out_row++ = 0;
+				}
+			}
+			else
+/* Bicubic algorithm */
+			if(interpolate && 
+				x >= min_out_x && 
+				x < max_out_x)
+			{
+/* clipping region */
+				if ((itx + 2) >= min_in_x &&
+					(itx - 1) <= max_in_x &&
+                  	(ity + 2) >= min_in_y &&
+					(ity - 1) <= max_in_y)
+                {
+                	float dx, dy;
+
+/* the fractional error */
+                	dx = ttx - itx;
+                	dy = tty - ity;
+
+/* Row and column offsets in cubic block */
+					int col1 = itx - 1;
+					int col2 = itx;
+					int col3 = itx + 1;
+					int col4 = itx + 2;
+					CLAMP(col1, min_in_x, max_in_x);
+					CLAMP(col2, min_in_x, max_in_x);
+					CLAMP(col3, min_in_x, max_in_x);
+					CLAMP(col4, min_in_x, max_in_x);
+					int col1_offset = col1 * 3;
+					int col2_offset = col2 * 3;
+					int col3_offset = col3 * 3;
+					int col4_offset = col4 * 3;
+
+					unsigned char *row1_ptr = in_rows[row1];
+					unsigned char *row2_ptr = in_rows[row2];
+					unsigned char *row3_ptr = in_rows[row3];
+					unsigned char *row4_ptr = in_rows[row4];
+					int r, g, b, a;
+
+					r = (int)(transform_cubic(dy,
+                    	CUBIC_ROW(row1_ptr, 0x0),
+                    	CUBIC_ROW(row2_ptr, 0x0),
+                    	CUBIC_ROW(row3_ptr, 0x0),
+                    	CUBIC_ROW(row4_ptr, 0x0)) +
+						round_factor);
+
+					row1_ptr++;
+					row2_ptr++;
+					row3_ptr++;
+					row4_ptr++;
+					g = (int)(transform_cubic(dy,
+                    	CUBIC_ROW(row1_ptr, 0x80),
+                    	CUBIC_ROW(row2_ptr, 0x80),
+                    	CUBIC_ROW(row3_ptr, 0x80),
+                    	CUBIC_ROW(row4_ptr, 0x80)) +
+						round_factor);
+					g += 0x80;
+
+					row1_ptr++;
+					row2_ptr++;
+					row3_ptr++;
+					row4_ptr++;
+					b = (int)(transform_cubic(dy,
+                    	CUBIC_ROW(row1_ptr, 0x80),
+                    	CUBIC_ROW(row2_ptr, 0x80),
+                    	CUBIC_ROW(row3_ptr, 0x80),
+                    	CUBIC_ROW(row4_ptr, 0x80)) +
+						round_factor);
+					b += 0x80;
+
+					if(3 == 4)
+					{
+						row1_ptr++;
+						row2_ptr++;
+						row3_ptr++;
+						row4_ptr++;
+						a = (int)(transform_cubic(dy,
+                    		CUBIC_ROW(row1_ptr, 0x0),
+                    		CUBIC_ROW(row2_ptr, 0x0),
+                    		CUBIC_ROW(row3_ptr, 0x0),
+                    		CUBIC_ROW(row4_ptr, 0x0)) + 
+							round_factor);
+					}
+
+ 					if(sizeof(unsigned char) < 4)
+					{
+						*out_row++ = CLIP(r, 0, 0xff);
+						*out_row++ = CLIP(g, 0, 0xff);
+						*out_row++ = CLIP(b, 0, 0xff);
+						if(3 == 4) *out_row++ = CLIP(a, 0, 0xff);
+					}
+					else
+					{
+						*out_row++ = r;
+						*out_row++ = g;
+						*out_row++ = b;
+						if(3 == 4) *out_row++ = a;
+					}
+                }
+				else
+/* Fill with chroma */
+				{
+					*out_row++ = 0;
+					*out_row++ = 0x80;
+					*out_row++ = 0x80;
+					if(3 == 4) *out_row++ = 0;
+				}
+			}
+			else
+			{
+				out_row += 3;
+			}
+
+/*  increment the transformed coordinates  */
+			tx += xinc;
+			ty += yinc;
+			tw += winc;
+		}
+	}
+}
+
 				break;
 			case BC_YUVA8888:
 				TRANSFORM(4, unsigned char, int, 0x80, 0xff)

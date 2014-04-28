@@ -699,7 +699,8 @@ void EDL::synchronize_params(EDL *edl)
 int EDL::trim_selection(double start, 
 	double end,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 	if(start != end)
 	{
@@ -707,11 +708,13 @@ int EDL::trim_selection(double start,
 		clear(0, 
 			start,
 			edit_labels,
-			edit_plugins);
+			edit_plugins,
+			edit_autos);
 		clear(end - start, 
 			tracks->total_length(),
 			edit_labels,
-			edit_plugins);
+			edit_plugins,
+			edit_autos);
 	}
 	return 0;
 }
@@ -779,7 +782,8 @@ void EDL::set_outpoint(double position)
 int EDL::clear(double start, 
 	double end, 
 	int clear_labels,
-	int clear_plugins)
+	int clear_plugins,
+	int edit_autos)
 {
 	if(start == end)
 	{
@@ -788,7 +792,8 @@ int EDL::clear(double start,
 			end,
 			distance, 
 			clear_labels,
-			clear_plugins);
+			clear_plugins,
+			edit_autos);
 		if(clear_labels && distance > 0)
 			labels->paste_silence(start, 
 				start + distance);
@@ -797,7 +802,8 @@ int EDL::clear(double start,
 	{
 		tracks->clear(start, 
 			end,
-			clear_plugins);
+			clear_plugins,
+			edit_autos);
 		if(clear_labels) 
 			labels->clear(start, 
 				end, 
@@ -817,14 +823,16 @@ void EDL::modify_edithandles(double oldposition,
 	int currentend,
 	int handle_mode,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 	tracks->modify_edithandles(oldposition, 
 		newposition, 
 		currentend,
 		handle_mode,
 		edit_labels, 
-		edit_plugins);
+		edit_plugins,
+		edit_autos);
 	labels->modify_handles(oldposition, 
 		newposition, 
 		currentend,
@@ -837,6 +845,7 @@ void EDL::modify_pluginhandles(double oldposition,
 	int currentend, 
 	int handle_mode,
 	int edit_labels,
+	int edit_autos,
 	Edits *trim_edits)
 {
 	tracks->modify_pluginhandles(oldposition, 
@@ -844,6 +853,7 @@ void EDL::modify_pluginhandles(double oldposition,
 		currentend, 
 		handle_mode,
 		edit_labels,
+		edit_autos,
 		trim_edits);
 	optimize();
 }
@@ -851,13 +861,15 @@ void EDL::modify_pluginhandles(double oldposition,
 void EDL::paste_silence(double start, 
 	double end, 
 	int edit_labels, 
-	int edit_plugins)
+	int edit_plugins,
+	int edit_autos)
 {
 	if(edit_labels) 
 		labels->paste_silence(start, end);
 	tracks->paste_silence(start, 
 		end, 
-		edit_plugins);
+		edit_plugins,
+		edit_autos);
 }
 
 

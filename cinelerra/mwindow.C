@@ -1332,7 +1332,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				edl->clear(start, 
 					end,
 					edl->session->labels_follow_edits,
-					edl->session->plugins_follow_edits);
+					edl->session->plugins_follow_edits,
+					edl->session->autos_follow_edits);
 		}
 
 		paste_edls(&new_edls, 
@@ -1340,7 +1341,8 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			0,
 			-1,
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			edl->session->autos_follow_edits);
 	}
 
 

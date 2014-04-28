@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +21,8 @@
 #include "asset.h"
 #include "assets.h"
 #include "audiodevice.h"
+#include "awindow.h"
+#include "awindowgui.h"
 #include "batch.h"
 #include "channel.h"
 #include "channeldb.h"
@@ -351,6 +352,7 @@ void Record::source_to_text(char *string, Batch *batch)
 		case VIDEO4LINUX2JPEG:
 		case CAPTURE_JPEG_WEBCAM:
 		case CAPTURE_YUYV_WEBCAM:
+		case CAPTURE_MPEG:
 			if(batch->channel < 0 || batch->channel >= channeldb->size())
 				sprintf(string, _("None"));
 			else
@@ -580,7 +582,8 @@ void Record::run()
 				0,
 				-1,
 				mwindow->edl->session->labels_follow_edits,
-				mwindow->edl->session->plugins_follow_edits);
+				mwindow->edl->session->plugins_follow_edits,
+				mwindow->edl->session->autos_follow_edits);
 //printf("Record::run 7\n");
 
 			for(int i = 0; i < new_edls.size(); i++)
@@ -602,6 +605,12 @@ void Record::run()
 			mwindow->sync_parameters(CHANGE_ALL);
 		}
 		mwindow->gui->unlock_window();
+
+
+		mwindow->awindow->gui->lock_window("Record::record");
+		mwindow->awindow->gui->update_assets();
+		mwindow->awindow->gui->flush();
+		mwindow->awindow->gui->unlock_window();
 	}
 
 // Delete everything

@@ -103,6 +103,12 @@ void VirtualNode::dump(int indent)
 int VirtualNode::expand(int persistent_plugins, int64_t current_position)
 {
 	const int debug = 0;
+
+
+
+// TODO: need to use speed curve to determine chain for current position
+
+
 // module needs to know where the input data for the next process is
 if(debug) printf("VirtualNode::expand %d real_module=%p real_plugin=%p\n", 
 __LINE__,

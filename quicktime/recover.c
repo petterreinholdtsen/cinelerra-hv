@@ -21,10 +21,12 @@
 
 //#define WIDTH 720
 //#define HEIGHT 480
-#define WIDTH 1280
-#define HEIGHT 720
+#define WIDTH 960
+#define HEIGHT 540
 #define FRAMERATE (double)30000/1001
 //#define FRAMERATE (double)30
+#define STARTING_OFFSET 0x28
+
 #define CHANNELS 1
 #define SAMPLERATE 48000
 #define AUDIO_CHUNK 2048
@@ -35,10 +37,14 @@
 #define AUDIO_FILE "/tmp/audio.pcm"
 #define VIDEO_FILE "/tmp/video.mov"
 //#define VCODEC QUICKTIME_MJPA
-//#define VCODEC QUICKTIME_JPEG
+#define VCODEC QUICKTIME_JPEG
+
 
 // Only 1 variation of this, recorded by 1 camcorder
-#define VCODEC QUICKTIME_H264
+//#define VCODEC QUICKTIME_H264
+// H264 rendered by Cinelerra
+#define USE_X264
+
 #define ACODEC QUICKTIME_MP4A
 
 //#define READ_ONLY
@@ -59,6 +65,19 @@
 #define GOT_IMAGE_END   7
 
 
+
+#ifdef USE_X264
+unsigned char h264_desc[] = 
+{
+
+	0x01, 0x4d, 0x40, 0x1f, 0xff, 0xe1, 0x00, 0x16, 0x67, 0x4d, 0x40, 0x33, 0x9a,
+	0x74, 0x07, 0x80, 0x8b, 0xf7, 0x08, 0x00, 0x00, 0x1f, 0x48, 0x00, 0x07, 0x53, 0x04,
+	0x78, 0xc1, 0x95, 0x01, 0x00, 0x04, 0x68, 0xee, 0x1f, 0x20
+
+};
+
+#else
+
 // H264 description for cheap camcorder format
 unsigned char h264_desc[] = 
 {
@@ -70,6 +89,7 @@ unsigned char h264_desc[] =
 	0xee, 0x3c, 0x80 
 };
 
+#endif
 
 // Table utilities
 #define NEW_TABLE(ptr, size, allocation) \
@@ -142,13 +162,14 @@ int main(int argc, char *argv[])
 	int fields = 1;
 	int is_h264 = 0;
 	int is_keyframe = 0;
+	int next_is_keyframe = 0;
 	time_t current_time = time(0);
 	time_t prev_time = 0;
 	int jpeg_header_offset;
 	int64_t field1_offset = 0;
 	int64_t field2_offset = 0;
-	int64_t image_start = 0;
-	int64_t image_end = 0;
+	int64_t image_start = STARTING_OFFSET;
+	int64_t image_end = STARTING_OFFSET;
 	int update_time = 0;
 	int state = GOT_NOTHING;
 	char *in_path;
@@ -243,6 +264,10 @@ int main(int argc, char *argv[])
 
 	if(!memcmp(VCODEC, QUICKTIME_H264, 4))
 	{
+
+#ifdef USE_X264
+		printf("   X264\n");
+#endif
 		is_h264 = 1;
 	}
 
@@ -254,6 +279,9 @@ int main(int argc, char *argv[])
 		perror("open input");
 		exit(1);
 	}
+	
+	fseek(in, STARTING_OFFSET, SEEK_SET);
+	
 
 
 #ifndef READ_ONLY
@@ -317,7 +345,7 @@ int main(int argc, char *argv[])
 #endif
 
 	audio_start = (int64_t)0x10;
-	ftell_byte = 0;
+	ftell_byte = STARTING_OFFSET;
 
 	if(fstat(fileno(in), &status))
 		perror("get_file_length fstat:");
@@ -350,6 +378,63 @@ int main(int argc, char *argv[])
 			{
 				if(is_h264)
 				{
+#ifdef USE_X264
+					if(search_buffer[i] == 0x00 &&
+						search_buffer[i + 1] == 0x00 &&
+						search_buffer[i + 4] == 0x06 &&
+						search_buffer[i + 5] == 0x05)
+					{
+//printf("main %d\n", __LINE__);
+						state = GOT_IMAGE_START;
+						image_end = current_byte + i;
+						is_keyframe = next_is_keyframe;
+						next_is_keyframe = 1;
+					}
+					else
+					if(search_buffer[i] == 0x00 &&
+						search_buffer[i + 1] == 0x00 &&
+						search_buffer[i + 4] == 0x41 &&
+						search_buffer[i + 5] == 0x9a)
+					{
+//printf("main %d\n", __LINE__);
+						state = GOT_IMAGE_START;
+						image_end = current_byte + i;
+						is_keyframe = next_is_keyframe;
+						next_is_keyframe = 0;
+					}
+
+					if(state == GOT_IMAGE_START)
+					{
+// end of previous frame
+						if(start_size > 0) 
+						{
+							APPEND_TABLE(end_table, end_size, end_allocation, image_end)
+// Copy frame
+							int frame_size = image_end - image_start;
+							FSEEK(in, image_start, SEEK_SET);
+							fread(frame_buffer, frame_size, 1, in);
+							FSEEK(in, ftell_byte, SEEK_SET);
+							quicktime_write_frame(video_out, 
+								frame_buffer, 
+								frame_size, 
+								0);
+							if(is_keyframe)
+							{
+								quicktime_video_map_t *vtrack = &(video_out->vtracks[0]);
+								quicktime_insert_keyframe(video_out, 
+									vtrack->current_position - 1, 
+									0);
+							}
+							image_start = image_end;
+						}
+// start of next frame
+						APPEND_TABLE(start_table, start_size, start_allocation, image_start)
+						state = GOT_NOTHING;
+
+
+					}
+					
+#else // USE_X264
 					if(search_buffer[i] == 0x00 &&
 						search_buffer[i + 1] == 0x00 &&
 						search_buffer[i + 2] == 0x00 &&
@@ -363,6 +448,7 @@ int main(int argc, char *argv[])
 						else
 							is_keyframe = 0;
 					}
+#endif // !USE_X264
 				}
 				else
 				if(search_buffer[i] == 0xff &&
@@ -525,6 +611,16 @@ int main(int argc, char *argv[])
 
 						APPEND_TABLE(start_table, start_size, start_allocation, image_start)
 						APPEND_TABLE(end_table, end_size, end_allocation, image_end)
+
+						int frame_size = image_end - image_start;
+						FSEEK(in, image_start, SEEK_SET);
+						fread(frame_buffer, frame_size, 1, in);
+						FSEEK(in, ftell_byte, SEEK_SET);
+						quicktime_write_frame(video_out, 
+							frame_buffer, 
+							image_end - image_start, 
+							0);
+		
 
 //printf("%d %llx - %llx\n", start_size, image_start, image_end - image_start);
 

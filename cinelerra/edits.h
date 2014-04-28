@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,8 @@ public:
 // Insert edits from different EDL
 	void insert_edits(Edits *edits, 
 		int64_t position,
-		int64_t min_length);
+		int64_t min_length,
+		int edit_autos);
 // Insert asset from same EDL
 	void insert_asset(Asset *asset, 
 		EDL *nested_edl,
@@ -61,6 +62,7 @@ public:
 	int clear_handle(double start, 
 		double end, 
 		int edit_plugins, 
+		int edit_autos,
 		double &distance);
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
@@ -75,9 +77,10 @@ public:
 		int edit_edits,
 		int edit_labels, 
 		int edit_plugins,
+		int edit_autos,
 		Edits *trim_edits);
 	virtual void shift_keyframes_recursive(int64_t position, int64_t length);
-	virtual void shift_effects_recursive(int64_t position, int64_t length);
+	virtual void shift_effects_recursive(int64_t position, int64_t length, int edit_autos);
 // Returns the newly created edit
 	Edit* paste_silence(int64_t start, int64_t end);
 	void resample(double old_rate, double new_rate);
@@ -127,6 +130,7 @@ public:
 		int edit_edits,
 		int edit_labels,
 		int edit_plugins,
+		int edit_autos,
 		Edits *trim_edits);
 	virtual int optimize();
 

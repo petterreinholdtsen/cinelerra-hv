@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "floatautos.h"
 #include "intautos.h"
 #include "track.h"
 #include "transportque.inc"
@@ -52,6 +53,9 @@ void Automation::create_objects()
 {
 	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
 	autos[AUTOMATION_MUTE]->create_objects();
+
+	autos[AUTOMATION_SPEED] = new FloatAutos(edl, track, 1.0);
+	autos[AUTOMATION_SPEED]->create_objects();
 }
 
 Automation& Automation::operator=(Automation& automation)
@@ -93,7 +97,8 @@ static const char *xml_titles[] =
 	"PANAUTOS",
 	"MODEAUTOS",
 	"MASKAUTOS",
-	"NUDGEAUTOS"
+//	"NUDGEAUTOS"
+	"SPEEDAUTOS"
 };
 
 int Automation::load(FileXML *file)

@@ -57,7 +57,7 @@ GCC = gcc
 
 
 ifneq ($(HAVE_CFLAGS), y)
-CFLAGS = -O2 
+CFLAGS = -O2
 endif
 
 ifeq ($(HAVE_GL), y)

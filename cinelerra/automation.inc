@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ enum
 	AUTOMATION_PAN,
 	AUTOMATION_MODE,
 	AUTOMATION_MASK,
+	AUTOMATION_SPEED,
 	AUTOMATION_TOTAL
 };
 

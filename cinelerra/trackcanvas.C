@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2013 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -297,6 +297,7 @@ int TrackCanvas::drag_start_event()
 
 	if(is_event_win())
 	{
+
 		if(do_plugins(get_drag_x(), 
 			get_drag_y(), 
 			1,
@@ -407,6 +408,7 @@ int TrackCanvas::drag_stop()
 					!mwindow->session->pluginset_highlighted)
 				{
 // Move plugin if different startproject
+
 					mwindow->move_effect(mwindow->session->drag_plugin,
 						0,
 						mwindow->session->track_highlighted,
@@ -417,13 +419,16 @@ int TrackCanvas::drag_stop()
 // Move source to different location
 				if(mwindow->session->pluginset_highlighted)
 				{
-//printf("TrackCanvas::drag_stop 6\n");
 					if(mwindow->session->plugin_highlighted)
 					{
-						mwindow->move_effect(mwindow->session->drag_plugin,
-							mwindow->session->plugin_highlighted->plugin_set,
-							0,
-							mwindow->session->plugin_highlighted->startproject);
+						if(mwindow->session->plugin_highlighted !=
+							mwindow->session->drag_plugin)
+						{
+							mwindow->move_effect(mwindow->session->drag_plugin,
+								mwindow->session->plugin_highlighted->plugin_set,
+								0,
+								mwindow->session->plugin_highlighted->startproject);
+						}
 					}
 					else
 					{
@@ -1728,7 +1733,7 @@ static int auto_colors[] =
 	0,
 	0,
 	0,
-	0
+	WHITE
 };
 
 // The operations which correspond to each automation type
@@ -1745,7 +1750,7 @@ static int auto_operations[] =
 	DRAG_PAN,
 	DRAG_MODE,
 	DRAG_MASK,
-	DRAG_NUDGE
+	DRAG_SPEED
 };
 
 // The buttonpress operations, so nothing changes unless the mouse moves
@@ -1764,7 +1769,7 @@ static int pre_auto_operations[] =
 	DRAG_PAN_PRE,
 	DRAG_MODE_PRE,
 	DRAG_MASK_PRE,
-	DRAG_NUDGE
+	DRAG_SPEED
 };
 
 
@@ -2425,7 +2430,8 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	int x1,
 	int y1,
 	int x2,
-	int y2)
+	int y2,
+	int *prev_y)
 {
 // Solve bezier equation for either every pixel or a certain large number of
 // points.
@@ -2438,7 +2444,6 @@ void TrackCanvas::draw_floatline(int center_pixel,
 
 
 
-	int prev_y;
 // Call by reference fails for some reason here
 	FloatAuto *previous1 = previous, *next1 = next;
 	float automation_min = mwindow->edl->local_session->automation_min;
@@ -2450,7 +2455,8 @@ void TrackCanvas::draw_floatline(int center_pixel,
 // Interpolate value between frames
 		X_TO_FLOATLINE(x)
 
-		if(x > x1 && 
+		if(*prev_y == 0x7fffffff) *prev_y = y;
+		if(/* x > x1 && */
 			y >= center_pixel - yscale / 2 && 
 			y < center_pixel + yscale / 2 - 1)
 		{
@@ -2459,9 +2465,9 @@ void TrackCanvas::draw_floatline(int center_pixel,
 // (int)(center_pixel - yscale / 2),
 // (int)(center_pixel + yscale / 2 - 1));
 
- 			draw_line(x - 1, prev_y, x, y);
+ 			draw_line(x - 1, *prev_y, x, y);
 		}
-		prev_y = y;
+		*prev_y = y;
 	}
 
 
@@ -2725,6 +2731,7 @@ float TrackCanvas::percentage_to_value(float percentage,
 			FloatAuto *ptr = (FloatAuto*)reference;
 			result -= ptr->value;
 		}
+//printf("TrackCanvas::percentage_to_value %d %f\n", __LINE__, result);
 	}
 	return result;
 }
@@ -2823,6 +2830,8 @@ int TrackCanvas::do_float_autos(Track *track,
 	int draw_auto;
 	double slope;
 	int skip = 0;
+	int prev_y1 = 0x7fffffff;
+	int prev_y2 = 0x7fffffff;
 	
 	auto_instance = 0;
 
@@ -3016,7 +3025,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ax, 
 				(int)ay, 
 				(int)ax2, 
-				(int)ay2);
+				(int)ay2,
+				&prev_y1);
 
 
 
@@ -3077,7 +3087,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ax, 
 				(int)ay, 
 				(int)ax2, 
-				(int)ay2);
+				(int)ay2,
+				&prev_y2);
 	}
 
 
@@ -3642,6 +3653,9 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 		cursor_y,
 		current)) return 0;
 
+//printf("TrackCanvas::update_drag_floatauto %d %f\n", __LINE__, percentage);
+
+
 	switch(mwindow->session->drag_handle)
 	{
 // Center
@@ -3972,6 +3986,7 @@ int TrackCanvas::cursor_motion_event()
 
 // Rubber band curves
 		case DRAG_FADE:
+		case DRAG_SPEED:
 		case DRAG_CZOOM:
 		case DRAG_PZOOM:
 		case DRAG_CAMERA_X:
@@ -4338,6 +4353,7 @@ int TrackCanvas::button_release_event()
 			break;
 
 		case DRAG_FADE:
+		case DRAG_SPEED:
 // delete the drag_auto_gang first and remove out of order keys
 			synchronize_autos(0, 0, 0, -1); 
 		case DRAG_CZOOM:
@@ -4831,6 +4847,18 @@ int TrackCanvas::do_plugins(int cursor_x,
 							plugin->title,
 							plugin->track->data_type);
 						VFrame *frame = server->picon;
+
+						if(!frame)
+						{
+							if(plugin->track->data_type == TRACK_AUDIO)
+							{
+								frame = mwindow->theme->get_image("aeffect_icon");
+							}
+							else
+							{
+								frame = mwindow->theme->get_image("veffect_icon");
+							}
+						}
 
 						drag_popup = new BC_DragWindow(gui, 
 							frame /*, 

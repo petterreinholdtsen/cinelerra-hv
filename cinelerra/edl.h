@@ -150,19 +150,22 @@ public:
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		int edit_autos);
 
 	void modify_pluginhandles(double oldposition, 
 		double newposition, 
 		int currentend, 
 		int handle_mode,
 		int edit_labels,
+		int edit_autos,
 		Edits *trim_edits);
 
 	int trim_selection(double start, 
 		double end,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		int edit_autos);
 
 // Editing functions
 	int copy_assets(double start, 
@@ -181,13 +184,15 @@ public:
 	void paste_silence(double start, 
 		double end, 
 		int edit_labels /* = 1 */, 
-		int edit_plugins);
+		int edit_plugins,
+		int edit_autos);
 	void remove_from_project(ArrayList<Indexable*> *assets);
 	void remove_from_project(ArrayList<EDL*> *clips);
 	int clear(double start, 
 		double end, 
 		int clear_labels,
-		int clear_plugins);
+		int clear_plugins,
+		int edit_autos);
 // Insert the asset at a point in the EDL
 	void insert_asset(Asset *asset, 
 		EDL *nested_edl,

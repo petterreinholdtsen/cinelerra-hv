@@ -290,7 +290,7 @@ ChromaKeyWindow::update_sample ()
 
 
 
-  ChromaKeyColor::ChromaKeyColor (ChromaKeyHSV * plugin,
+ChromaKeyColor::ChromaKeyColor (ChromaKeyHSV * plugin,
 				  ChromaKeyWindow * gui, int x, int y):
 BC_GenericButton (x, y, _("Color..."))
 {

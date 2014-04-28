@@ -70,7 +70,10 @@ static const char *tips[] =
 	"Map 5.1:1 maps 6 recordable AC3 tracks to 2 channels.\n"),
 
 	N_("Alt + left moves to the previous edit handle.\n"
-	"Alt + right moves to the next edit handle.\n")
+	"Alt + right moves to the next edit handle.\n"),
+
+	N_("Settings->typeless keyframes allows keyframes from any track to be pasted on either\n"
+	"audio or video tracks.\n")
 };
 
 static int total_tips = sizeof(tips) / sizeof(char*);

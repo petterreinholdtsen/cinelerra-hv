@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,6 +138,7 @@ void HistogramMain::render_gui(void *data)
 			tabulate_curve(HISTOGRAM_GREEN, 0);
 			tabulate_curve(HISTOGRAM_BLUE, 0);
 			((HistogramWindow*)thread->window)->unlock_window();
+
 
 // Need a second pass to get the luminance values.
 			calculate_histogram((VFrame*)data, 1);
@@ -300,6 +301,7 @@ float HistogramMain::calculate_level(float input,
 	if(!EQUIV(config.gamma[mode], 0))
 	{
 		output = pow(output, 1.0 / config.gamma[mode]);
+		CLAMP(output, 0, 1.0);
 	}
 
 // Apply value curve
@@ -437,7 +439,8 @@ int HistogramMain::process_buffer(VFrame *frame,
 	double frame_rate)
 {
 	int need_reconfigure = load_configuration();
-//printf("HistogramMain::process_buffer 1 %d\n", need_reconfigure);
+
+
 
 	int use_opengl = calculate_use_opengl();
 
@@ -456,13 +459,14 @@ int HistogramMain::process_buffer(VFrame *frame,
 		get_project_smp() + 1);
 	this->input = frame;
 	this->output = frame;
-
 // Always plot to set the curves if automatic
 	if(config.plot || config.automatic) send_render_gui(frame);
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
+
+
 	if(need_reconfigure || 
 		!lookup[0] || 
 		config.automatic)
@@ -473,10 +477,23 @@ int HistogramMain::process_buffer(VFrame *frame,
 			calculate_automatic(input);
 		}
 
+
 // Generate transfer tables with value function for integer colormodels.
 		for(int i = 0; i < 3; i++)
 			tabulate_curve(i, 1);
 	}
+
+// printf("HistogramMain::process_buffer %d %f %f %f  %f %f %f  %f %f %f\n", 
+// __LINE__, 
+// config.low_input[HISTOGRAM_RED],
+// config.gamma[HISTOGRAM_RED],
+// config.high_input[HISTOGRAM_RED],
+// config.low_input[HISTOGRAM_GREEN],
+// config.gamma[HISTOGRAM_GREEN],
+// config.high_input[HISTOGRAM_GREEN],
+// config.low_input[HISTOGRAM_BLUE],
+// config.gamma[HISTOGRAM_BLUE],
+// config.high_input[HISTOGRAM_BLUE]);
 
 
 
@@ -495,6 +512,7 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	if(!preview_lookup[subscript])
 		preview_lookup[subscript] = new int[HISTOGRAM_SLOTS];
 
+//printf("HistogramMain::tabulate_curve %d input=%p\n", __LINE__, input);
 
 
 // Generate lookup tables for integer colormodels
@@ -521,6 +539,12 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 						0xffff);
 					CLAMP(lookup[subscript][i], 0, 0xffff);
 				}
+// for(i = 0; i < 0x100; i++)
+// {
+// if(subscript == HISTOGRAM_BLUE) printf("%d ", lookup[subscript][i * 0x100]);
+// }
+// if(subscript == HISTOGRAM_BLUE) printf("\n");
+
 				break;
 		}
 	}

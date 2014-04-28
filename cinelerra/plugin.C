@@ -569,7 +569,9 @@ void Plugin::resample(double old_rate, double new_rate)
 void Plugin::shift(int64_t difference)
 {
 	Edit::shift(difference);
-	shift_keyframes(difference);
+	
+	if(edl->session->autos_follow_edits)
+		shift_keyframes(difference);
 }
 
 void Plugin::dump()

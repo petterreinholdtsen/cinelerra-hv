@@ -272,7 +272,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 
 
 SharpenEngine::SharpenEngine(SharpenMain *plugin)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->plugin = plugin;
 	last_frame = 0;

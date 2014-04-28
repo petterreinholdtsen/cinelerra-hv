@@ -133,9 +133,11 @@ void quicktime_write_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table
 	quicktime_write_int16(file, table->packet_size);
 	quicktime_write_fixed32(file, table->sample_rate);
 
-// Write header for mp4v
+// Write header for mp4a
 	if(table->esds.mpeg4_header_size && table->esds.mpeg4_header)
 	{
+// Android requires leaving out the WAVE header
+#if 0
 // Version 1 info
 		quicktime_write_int32(file, 0);
 		quicktime_write_int32(file, 0);
@@ -154,9 +156,10 @@ void quicktime_write_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table
 		quicktime_atom_write_header(file, &mp4a_atom, "mp4a");
 		quicktime_write_int32(file, 0x0);
 		quicktime_atom_write_footer(file, &mp4a_atom);
+#endif // 0
 
 		quicktime_write_esds(file, &table->esds, 0, 1);
-		quicktime_atom_write_footer(file, &wave_atom);
+//		quicktime_atom_write_footer(file, &wave_atom);
 	}
 }
 

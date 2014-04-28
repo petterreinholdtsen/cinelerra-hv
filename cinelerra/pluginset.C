@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -182,35 +183,37 @@ int PluginSet::get_number()
 	return track->plugin_set.number_of(this);
 }
 
-void PluginSet::clear(int64_t start, int64_t end)
+void PluginSet::clear(int64_t start, int64_t end, int edit_autos)
 {
-// Clear keyframes
-	for(Plugin *current = (Plugin*)first;
-		current;
-		current = (Plugin*)NEXT)
+	if(edit_autos)
 	{
-		current->keyframes->clear(start, end, 1);
+// Clear keyframes
+		for(Plugin *current = (Plugin*)first;
+			current;
+			current = (Plugin*)NEXT)
+		{
+			current->keyframes->clear(start, end, 1);
+		}
 	}
 
 // Clear edits
 	Edits::clear(start, end);
 }
 
-void PluginSet::clear_recursive(int64_t start, int64_t end)
-{
+//void PluginSet::clear_recursive(int64_t start, int64_t end)
+//{
 //printf("PluginSet::clear_recursive 1\n");
-	clear(start, end);
-}
+//	clear(start, end, 1);
+//}
 
 void PluginSet::shift_keyframes_recursive(int64_t position, int64_t length)
 {
 // Plugin keyframes are shifted in shift_effects
 }
 
-void PluginSet::shift_effects_recursive(int64_t position, int64_t length)
+void PluginSet::shift_effects_recursive(int64_t position, int64_t length, int edit_autos)
 {
 // Effects are shifted in length extension
-//	shift_effects(position, length);
 }
 
 
@@ -314,7 +317,7 @@ void PluginSet::paste_keyframes(int64_t start,
 	}
 }
 
-void PluginSet::shift_effects(int64_t start, int64_t length)
+void PluginSet::shift_effects(int64_t start, int64_t length, int edit_autos)
 {
 	for(Plugin *current = (Plugin*)first;
 		current;
@@ -338,10 +341,10 @@ void PluginSet::shift_effects(int64_t start, int64_t length)
 // Shift keyframes in this effect.
 // If the default keyframe lands on the starting point, it must be shifted
 // since the effect start is shifted.
-		if(current->keyframes->default_auto->position >= start)
+		if(edit_autos && current->keyframes->default_auto->position >= start)
 			current->keyframes->default_auto->position += length;
 
-		current->keyframes->paste_silence(start, start + length);
+		if(edit_autos) current->keyframes->paste_silence(start, start + length);
 	}
 }
 

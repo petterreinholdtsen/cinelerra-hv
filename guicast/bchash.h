@@ -24,7 +24,7 @@
 
 
 
-// Hash table with persistent storage in stringfiles.
+// Key/value table with persistent storage in stringfiles.
 
 
 #include "bcwindowbase.inc"

@@ -99,6 +99,8 @@ public:
 	char current_folder[BCTEXTLEN];
 // align cursor on frame boundaries
 	int cursor_on_frames;
+// paste keyframes to any track type
+	int typeless_keyframes;
 // Destination item for CWindow
 	int cwindow_dest;
 // Current submask being edited in CWindow

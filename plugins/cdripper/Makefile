@@ -7,7 +7,7 @@ include ../../global_config
 OBJS = $(OBJDIR)/cdripper.o \
 	$(OBJDIR)/cdripwindow.o
 
-OUTPUT = ../$(OBJDIR)/cdripper.plugin
+OUTPUT = $(PLUGIN_DIR)/cdripper.plugin
 
 include ../../plugin_config
 

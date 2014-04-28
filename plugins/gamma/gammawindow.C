@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "gammawindow.h"
 #include "language.h"
@@ -6,33 +27,29 @@
 
 
 
-PLUGIN_THREAD_OBJECT(GammaMain, GammaThread, GammaWindow)
 
 
 
 
 
-
-GammaWindow::GammaWindow(GammaMain *client, int x, int y)
- : BC_Window(client->gui_string, x,
- 	y,
+GammaWindow::GammaWindow(GammaMain *client)
+ : PluginClientWindow(client,
 	400, 
-	350, 
+	380, 
 	400, 
-	350, 
-	0, 
+	380, 
 	0)
 { 
 	this->client = client; 
 }
 
-int GammaWindow::create_objects()
+void GammaWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(histogram = new BC_SubWindow(x, 
 		y, 
 		get_w() - x * 2, 
-		get_h() - 150, 
+		get_h() - 180, 
 		WHITE));
 	y += histogram->get_h() + 10;
 
@@ -78,7 +95,6 @@ int GammaWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
 void GammaWindow::update()
@@ -132,9 +148,9 @@ void GammaWindow::update_histogram()
 
 	histogram->set_color(GREEN);
 	int y1 = histogram->get_h();
-	float scale = 1.0 / client->config.max;
+	float max = client->config.max * client->config.gamma;
+	float scale = 1.0 / max;
 	float gamma = client->config.gamma - 1.0;
-	float max = client->config.max;
 	for(int i = 1; i < histogram->get_w(); i++)
 	{
 		float in = (float)i / histogram->get_w();
@@ -146,7 +162,8 @@ void GammaWindow::update_histogram()
 	histogram->flash();
 }
 
-WINDOW_CLOSE_EVENT(GammaWindow)
+
+
 
 MaxSlider::MaxSlider(GammaMain *client, 
 	GammaWindow *gui, 

@@ -1,82 +1,97 @@
-Big bugs
+BIG BUGS
 ----------------
 Node framerates not displaying.
 Drag effect before timeline is finished drawing after a load -> lockup
-Quicktime mp3 needs standards check
-Importing assets of the same name but different resolutions crashes because the
-formats aren't updated.
-Default pan keyframe gets pasted when dragging edit from one track to another.
-Undo doesn't restore project title from previous load.
- - New file can be saved under old filename if undo is used.
- - Current title changes in save function and could not be restored in redo.
 Load a sound file.  Change the file on the disk.  Crash on exit.
-Batch filename not saved from recording dialog if cancelled.
-fix AC3 gain problem.
-TOC progress sometimes doesn't automatically close if not updated at least once.
-Labels always edited when concatenating new files to existing tracks.
-Need to paste silence when pasting segment from a silent part of a track.
-Slow undo updating if many still frames.
 Change asset path, CPlayback never returns to redraw the frame.
-First toggle between playback window and fullscreen sometimes crashes.
-Cursor position is wrong during looped playback
+Starting recording sometimes jumps to end of time duration or
+significantly ahead and stops.
 
 
 
 
 
 
-Big Features
+WISH LIST
 ----------------
+
+Private plugin data storage in the track.
+ - save_private(position) & load_private(position) calls
+ - the problem is the playback thread doesn't have access to the timeline EDL
+ - would need a call to send data back to the timeline EDL
+Double click -> select edit -> drag to expand selection by edit
+Embedded sequences
+Remove unused files from project and disk.
+Documentation
+* - motion
+* - motion 2 point
+* - lens
+* - swap frames
+* - menu effect attach
+* - title outlines
+* - presets
+* - keyframe spanning
+clear button in error dialog
+WMV 9 & 3
+AVI with AC3 audio has audio ID 0x2000
+Option to display full path for assets
+custom button bar
+ - preferences window with possible buttons and current buttons for the 3 main windows
+ - buttons need different implementations for each window because of locking
+ - order is fixed
+ - drag from possible buttons to current buttons to add
+ - drag from current buttons to possible buttons to remove
+ - remove icons after dragging out of possible buttons
+ - prev/next edit
+ - save
+ - open
+ - record
+ - new
+ - keyframe straight or curved
+ - modify labels
+ - modify effects
+ - align on frames
 undo menu showing previous 20 steps to undo
-Picons instead of pulldown menu for load dialog.
+ - or page in resources window
+Page in resources window for overlays
 Common service for audio and video drivers.
-Documentation:
- - recording interface
- - section on creating a new project in which channels are described
- - Channels must be encoded as C, FL, FR, BL, BR, LFE for MPEG-4 audio and AC3.
+Embedded sequences
+ - pulldown menu of sequences
+ - tabs for sequences
+ - sequence naming
+
+time stretch rubber band
+ - before or after effects
+
+Music synthesis
+ - track type, asset or effect
+
+Image synthesis
+ - track type, asset or effect
+ - particle system
+ - track motion of every pixel, determine Z for every pixel
+ - track motion for successively smaller macroblocks
+ - synthesize picture using cubes and compare
 
 Digital TV
-	- make tuner part of executable and access through render client
-	- combined tuner driver
-	- automatic scan with selection of first video and audio PID's
-	- user selects PID's in the channel edit dialog
-	- available PID's are updated in realtime
-	- software preview of video and audio.  Maybe decoded in the record driver.
-
-@item
-
-CHANNELS
-
-The number of channels Cinelerra should set the device for.  Regardless
-of the number of channels in the project, the number of channels set
-here will be written to the device.  When this is set to 2 and the
-project has 1 channel you'll hear sound through the left speaker and
-not centered as expected for a monaural project.  When this is set to 1
-and the project has 2 channels you'll hear the left channel centered
-and not 2 channels mixed together.
-
-@item
-CHANNELS
-
-The number of channels Cinelerra should set the device for.  Regardless
-of the number of channels in the record operation, the number of
-channels set here will be read from the device.  When this is set to 2
-and the record operation has 1 channel you'll record the left speaker
-and not a mix of the left and right speakers as expected for a monaural
-project.  When this is set to 1 and the project has 2 channels you'll
-record the left and right channels mixed into the left speaker and not
-1 channel spead across two speakers.
+ - dump network tuner
+ - combined tuner driver for audio and video
+ - channel scan only detects physical number and pids default to 0
+ - user adds channels based on physical number
+ - dialog adds new subchannels as they're detected
+ - user selects PID's for audio and video in the channel edit dialog
+ - filters PID's because of image format differences
+ - software preview of video and audio.  
+ - Maybe audio decoded in the record driver with playback on the playback device.
 
 
 
-ruler and angle measurement tool
+
 rendering, playback, record settings bound to EDL.
 histogram parade - either toggle, different plugin, or plugin replacement
-filebox history should be alphabetical but still deleted based on age
 editing in place
 Apply motion tracking to another effect or mask.
  - currently involves matchmoving an alpha multiply track
-4 point motion tracking
 Denoise from mjpeg tools.
  - yuvdeinterlace
 Check for output asset being used in project before rendering.
@@ -108,10 +123,15 @@ Zoom transition
 
 
 
-Not going to happen
+NOT GOING TO HAPPEN
 ---------------------
 Hide controls in Record Monitor
-
+Quicktime mp3 needs standards check
+ - no need for mp3 anymore
+Dissolve doesn't work in YUVA OpenGL
+ - not reproducible
+Batch filename not saved from recording dialog if cancelled.
+ - not reproducible
 
 
 

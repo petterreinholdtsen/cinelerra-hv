@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -73,14 +94,13 @@ public:
 	int *output;
 };
 
-class LinearBlurWindow : public BC_Window
+class LinearBlurWindow : public PluginClientWindow
 {
 public:
-	LinearBlurWindow(LinearBlurMain *plugin, int x, int y);
+	LinearBlurWindow(LinearBlurMain *plugin);
 	~LinearBlurWindow();
 
-	int create_objects();
-	int close_event();
+	void create_objects();
 
 	LinearBlurSize *angle, *steps, *radius;
 	LinearBlurToggle *r, *g, *b, *a;
@@ -89,7 +109,6 @@ public:
 
 
 
-PLUGIN_THREAD_HEADER(LinearBlurMain, LinearBlurThread, LinearBlurWindow)
 
 
 // Output coords for a layer of blurring
@@ -118,7 +137,7 @@ public:
 	void update_gui();
 	int handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(LinearBlurConfig, LinearBlurThread)
+	PLUGIN_CLASS_MEMBERS(LinearBlurConfig)
 
 	void delete_tables();
 	VFrame *input, *output, *temp;
@@ -241,20 +260,16 @@ void LinearBlurConfig::interpolate(LinearBlurConfig &prev,
 
 
 
-PLUGIN_THREAD_OBJECT(LinearBlurMain, LinearBlurThread, LinearBlurWindow)
 
 
 
-LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
+LinearBlurWindow::LinearBlurWindow(LinearBlurMain *plugin)
+ : PluginClientWindow(plugin,
 	230, 
 	290, 
 	230, 
 	290, 
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin; 
 }
@@ -263,7 +278,7 @@ LinearBlurWindow::~LinearBlurWindow()
 {
 }
 
-int LinearBlurWindow::create_objects()
+void LinearBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -290,10 +305,8 @@ int LinearBlurWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(LinearBlurWindow)
 
 
 
@@ -358,7 +371,7 @@ int LinearBlurSize::handle_event()
 LinearBlurMain::LinearBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -371,25 +384,19 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 
 LinearBlurMain::~LinearBlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
 	if(temp) delete temp;
 }
 
-char* LinearBlurMain::plugin_title() { return N_("Linear Blur"); }
+const char* LinearBlurMain::plugin_title() { return N_("Linear Blur"); }
 int LinearBlurMain::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(LinearBlurMain)
-
-SHOW_GUI_MACRO(LinearBlurMain, LinearBlurThread)
-
-SET_STRING_MACRO(LinearBlurMain)
-
-RAISE_WINDOW_MACRO(LinearBlurMain)
-
+NEW_WINDOW_MACRO(LinearBlurMain, LinearBlurWindow)
 LOAD_CONFIGURATION_MACRO(LinearBlurMain, LinearBlurConfig)
 
 void LinearBlurMain::delete_tables()
@@ -538,15 +545,15 @@ void LinearBlurMain::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->radius->update(config.radius);
-		thread->window->angle->update(config.angle);
-		thread->window->steps->update(config.steps);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->a->update(config.a);
-		thread->window->unlock_window();
+		((LinearBlurWindow*)thread->window)->lock_window();
+		((LinearBlurWindow*)thread->window)->radius->update(config.radius);
+		((LinearBlurWindow*)thread->window)->angle->update(config.angle);
+		((LinearBlurWindow*)thread->window)->steps->update(config.steps);
+		((LinearBlurWindow*)thread->window)->r->update(config.r);
+		((LinearBlurWindow*)thread->window)->g->update(config.g);
+		((LinearBlurWindow*)thread->window)->b->update(config.b);
+		((LinearBlurWindow*)thread->window)->a->update(config.a);
+		((LinearBlurWindow*)thread->window)->unlock_window();
 	}
 }
 
@@ -592,7 +599,7 @@ void LinearBlurMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("LINEARBLUR");
 
 	output.tag.set_property("RADIUS", config.radius);
@@ -610,7 +617,7 @@ void LinearBlurMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

@@ -1,7 +1,29 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
 #include "filexml.h"
+#include "floatauto.h"
 #include "localsession.h"
 
 
@@ -29,6 +51,7 @@ LocalSession::LocalSession(EDL *edl)
 	track_start = 0;
 	automation_min = -10;
 	automation_max = 10;
+	floatauto_type = Auto::BEZIER;
 	red = green = blue = 0;
 }
 
@@ -59,6 +82,7 @@ void LocalSession::copy_from(LocalSession *that)
 	green = that->green;
 	automation_min = that->automation_min;
 	automation_max = that->automation_max;
+	floatauto_type = that->floatauto_type;
 	blue = that->blue;
 }
 
@@ -96,6 +120,7 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("BLUE", blue);
 	file->tag.set_property("AUTOMATION_MIN", automation_min);
 	file->tag.set_property("AUTOMATION_MAX", automation_max);
+	file->tag.set_property("FLOATAUTO_TYPE", floatauto_type);
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
@@ -118,7 +143,8 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 {
 	if(load_flags & LOAD_SESSION)
 	{
-		clipboard_length = 0;
+// moved to EDL::load_xml for paste to fill silence.
+//		clipboard_length = 0;
 // Overwritten by MWindow::load_filenames	
 		file->tag.get_property("CLIP_TITLE", clip_title);
 		file->tag.get_property("CLIP_NOTES", clip_notes);
@@ -140,6 +166,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		blue = file->tag.get_property("BLUE", blue);
 		automation_min = file->tag.get_property("AUTOMATION_MIN", automation_min);
 		automation_max = file->tag.get_property("AUTOMATION_MAX", automation_max);
+		floatauto_type = file->tag.get_property("FLOATAUTO_TYPE", floatauto_type);
 	}
 
 
@@ -182,6 +209,7 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	blue = defaults->get("BLUE", 0.0);
 	automation_min = defaults->get("AUTOMATION_MIN", automation_min);
 	automation_max = defaults->get("AUTOMATION_MAX", automation_max);
+	floatauto_type = defaults->get("FLOATAUTO_TYPE", floatauto_type);
 	return 0;
 }
 
@@ -202,6 +230,7 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("BLUE", blue);
 	defaults->update("AUTOMATION_MIN", automation_min);
 	defaults->update("AUTOMATION_MAX", automation_max);
+	defaults->update("FLOATAUTO_TYPE", floatauto_type);
 	return 0;
 }
 

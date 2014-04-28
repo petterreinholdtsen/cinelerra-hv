@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/invert.o
 
-OUTPUT = ../$(OBJDIR)/invertaudio.plugin
+OUTPUT = $(PLUGIN_DIR)/invertaudio.plugin
 
 include ../../plugin_config
 

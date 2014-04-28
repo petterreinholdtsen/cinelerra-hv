@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -73,14 +94,13 @@ public:
 	InterpolateVideo *plugin;
 };
 
-class InterpolateVideoWindow : public BC_Window
+class InterpolateVideoWindow : public PluginClientWindow
 {
 public:
-	InterpolateVideoWindow(InterpolateVideo *plugin, int x, int y);
+	InterpolateVideoWindow(InterpolateVideo *plugin);
 	~InterpolateVideoWindow();
 
 	void create_objects();
-	int close_event();
 	void update_enabled();
 
 	ArrayList<BC_ListBoxItem*> frame_rates;
@@ -92,7 +112,6 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(InterpolateVideo, InterpolateVideoThread, InterpolateVideoWindow)
 
 
 
@@ -102,7 +121,7 @@ public:
 	InterpolateVideo(PluginServer *server);
 	~InterpolateVideo();
 
-	PLUGIN_CLASS_MEMBERS(InterpolateVideoConfig, InterpolateVideoThread)
+	PLUGIN_CLASS_MEMBERS(InterpolateVideoConfig)
 
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
@@ -169,17 +188,13 @@ int InterpolateVideoConfig::equivalent(InterpolateVideoConfig *config)
 
 
 
-InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -226,7 +241,6 @@ void InterpolateVideoWindow::update_enabled()
 	}
 }
 
-WINDOW_CLOSE_EVENT(InterpolateVideoWindow)
 
 
 
@@ -323,7 +337,6 @@ int InterpolateVideoKeyframes::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(InterpolateVideo, InterpolateVideoThread, InterpolateVideoWindow)
 
 
 
@@ -344,7 +357,7 @@ REGISTER_PLUGIN(InterpolateVideo)
 InterpolateVideo::InterpolateVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	bzero(frames, sizeof(VFrame*) * 2);
 	for(int i = 0; i < 2; i++)
 		frame_number[i] = -1;
@@ -355,7 +368,7 @@ InterpolateVideo::InterpolateVideo(PluginServer *server)
 
 InterpolateVideo::~InterpolateVideo()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(frames[0]) delete frames[0];
 	if(frames[1]) delete frames[1];
 }
@@ -513,18 +526,9 @@ int InterpolateVideo::is_realtime()
 	return 1;
 }
 
-char* InterpolateVideo::plugin_title()
-{
-	return N_("Interpolate");
-}
-
 NEW_PICON_MACRO(InterpolateVideo) 
-
-SHOW_GUI_MACRO(InterpolateVideo, InterpolateVideoThread)
-
-RAISE_WINDOW_MACRO(InterpolateVideo)
-
-SET_STRING_MACRO(InterpolateVideo)
+NEW_WINDOW_MACRO(InterpolateVideo, InterpolateVideoWindow)
+const char* InterpolateVideo::plugin_title() { return N_("Interpolate Video"); }
 
 int InterpolateVideo::load_configuration()
 {
@@ -649,7 +653,7 @@ void InterpolateVideo::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("INTERPOLATEVIDEO");
 	output.tag.set_property("INPUT_RATE", config.input_rate);
 	output.tag.set_property("USE_KEYFRAMES", config.use_keyframes);
@@ -661,7 +665,7 @@ void InterpolateVideo::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -683,9 +687,9 @@ void InterpolateVideo::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("InterpolateVideo::update_gui");
-			thread->window->rate->update((float)config.input_rate);
-			thread->window->keyframes->update(config.use_keyframes);
-			thread->window->update_enabled();
+			((InterpolateVideoWindow*)thread->window)->rate->update((float)config.input_rate);
+			((InterpolateVideoWindow*)thread->window)->keyframes->update(config.use_keyframes);
+			((InterpolateVideoWindow*)thread->window)->update_enabled();
 			thread->window->unlock_window();
 		}
 	}

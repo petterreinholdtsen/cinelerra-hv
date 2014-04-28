@@ -1,5 +1,4 @@
-#TARGET_DIR := /home/httpd/html/cinelerra
-TARGET_DIR := /amazon/home/httpd/html/cinelerra
+TARGET_DIR := ../bin/doc
 
 IMAGES = \
 	arrow.png \
@@ -43,6 +42,7 @@ all:
 #	makeinfo --html cinelerra.texi
 
 install:
+	mkdir -p $(TARGET_DIR)
 	cp $(IMAGES) $(TARGET_DIR)
 	cp cinelerra.html $(TARGET_DIR)
 

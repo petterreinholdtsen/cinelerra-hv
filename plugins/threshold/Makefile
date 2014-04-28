@@ -6,7 +6,7 @@ OBJS := \
 	$(OBJDIR)/threshold.o \
 	$(OBJDIR)/thresholdwindow.o
 
-OUTPUT := ../$(OBJDIR)/threshold.plugin
+OUTPUT := $(PLUGIN_DIR)/threshold.plugin
 
 
 include ../../plugin_config

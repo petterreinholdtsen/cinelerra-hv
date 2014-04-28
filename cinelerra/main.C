@@ -1,7 +1,27 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "arraylist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
-#include "builddate.h"
 #include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -21,7 +41,7 @@
 #include <string.h>
 
 #define PACKAGE "cinelerra"
-#define LOCALEDIR "/usr/share/locale"
+#define LOCALEDIR "/locale/"
 
 
 enum
@@ -36,6 +56,24 @@ enum
 
 #include "thread.h"
 
+void get_exe_path(char *result)
+{
+// Get executable path
+	pid_t pid = getpid();
+	char proc_path[BCTEXTLEN];
+	int len = 0;
+	result[0] = 0;
+	sprintf(proc_path, "/proc/%d/exe", pid);
+	if((len = readlink(proc_path, result, BCTEXTLEN)) >= 0)
+	{
+		result[len] = 0;
+//printf("Preferences::Preferences %d %s\n", __LINE__, result);
+		char *ptr = strrchr(result, '/');
+		if(ptr) *ptr = 0;
+	}
+
+}
+
 int main(int argc, char *argv[])
 {
 // handle command line arguments first
@@ -43,11 +81,14 @@ int main(int argc, char *argv[])
 	ArrayList<char*> filenames;
 	FileSystem fs;
 
+
 	int operation = DO_GUI;
 	int deamon_port = DEAMON_PORT;
 	char deamon_path[BCTEXTLEN];
 	char config_path[BCTEXTLEN];
 	char batch_path[BCTEXTLEN];
+	char locale_path[BCTEXTLEN];
+	char exe_path[BCTEXTLEN];
 	int nice_value = 20;
 	config_path[0] = 0;
 	batch_path[0] = 0;
@@ -55,6 +96,9 @@ int main(int argc, char *argv[])
 	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
+
+	get_exe_path(exe_path);
+	sprintf(locale_path, "%s%s", exe_path, LOCALEDIR);
 // detect an UTF-8 locale and try to use a non-Unicode locale instead
 // <---Beginning of dirty hack
 // This hack will be removed as soon as Cinelerra is UTF-8 compliant
@@ -77,13 +121,17 @@ int main(int argc, char *argv[])
     }
 // End of dirty hack --->
 
-
-
-
-	bindtextdomain (PACKAGE, LOCALEDIR);
+	bindtextdomain (PACKAGE, locale_path);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
 	setlocale (LC_CTYPE, "");
+
+
+
+
+
+
+
 
 	for(int i = 1; i < argc; i++)
 	{
@@ -158,7 +206,7 @@ int main(int argc, char *argv[])
 		else
 		{
 			char *new_filename;
-			new_filename = new char[1024];
+			new_filename = new char[BCTEXTLEN];
 			strcpy(new_filename, argv[i]);
             fs.complete_path(new_filename);
 
@@ -177,8 +225,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
-		BUILDDATE 
-		" (C)2006 Heroine Virtual Ltd.\n\n"
+		"(C)2008 Adam Williams\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
@@ -253,20 +300,28 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 			mwindow.create_objects(1, 
 				!filenames.total,
 				config_path);
+//SET_TRACE
 
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{
+//SET_TRACE
 				mwindow.gui->lock_window("main");
+//SET_TRACE
 				mwindow.load_filenames(&filenames, LOAD_REPLACE);
+//SET_TRACE
 				if(filenames.total == 1)
 					mwindow.gui->mainmenu->add_load(filenames.values[0]);
 				mwindow.gui->unlock_window();
+//SET_TRACE
 			}
 
 // run the program
+//SET_TRACE
 			mwindow.start();
+//SET_TRACE
 			mwindow.save_defaults();
+//SET_TRACE
 DISABLE_BUFFER
 			break;
 		}

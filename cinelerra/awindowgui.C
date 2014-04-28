@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assetedit.h"
 #include "assetpopup.h"
@@ -58,7 +79,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
-	char *folder)
+	const char *folder)
  : BC_ListBoxItem(folder, gui->folder_icon)
 {
 	reset();
@@ -310,11 +331,12 @@ AWindowGUI::~AWindowGUI()
 	if(temp_picon) delete temp_picon;
 }
 
-int AWindowGUI::create_objects()
+void AWindowGUI::create_objects()
 {
 	int x, y;
 	AssetPicon *picon;
 
+	lock_window("AWindowGUI::create_objects");
 SET_TRACE
 //printf("AWindowGUI::create_objects 1\n");
 	asset_titles[0] = _("Title");
@@ -429,8 +451,7 @@ SET_TRACE
 //printf("AWindowGUI::create_objects 2\n");
 
 SET_TRACE
-
-	return 0;
+	unlock_window();
 }
 
 int AWindowGUI::resize_event(int w, int h)
@@ -1279,6 +1300,7 @@ int AWindowAssets::drag_start_event()
 int AWindowAssets::drag_motion_event()
 {
 	BC_ListBox::drag_motion_event();
+	unlock_window();
 
 	mwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->gui->drag_motion();
@@ -1291,6 +1313,8 @@ int AWindowAssets::drag_motion_event()
 	mwindow->cwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->cwindow->gui->drag_motion();
 	mwindow->cwindow->gui->unlock_window();
+
+	lock_window("AWindowAssets::drag_motion_event");
 	return 0;
 }
 
@@ -1300,6 +1324,7 @@ int AWindowAssets::drag_stop_event()
 
 	result = gui->drag_stop();
 
+	unlock_window();
 
 	if(!result)
 	{
@@ -1322,7 +1347,7 @@ int AWindowAssets::drag_stop_event()
 		mwindow->cwindow->gui->unlock_window();
 	}
 
-
+	lock_window("AWindowAssets::drag_stop_event");
 
 	if(result) get_drag_popup()->set_animation(0);
 

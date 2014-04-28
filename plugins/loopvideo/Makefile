@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/loopvideo.o
 
-OUTPUT = ../$(OBJDIR)/loopvideo.plugin
+OUTPUT = $(PLUGIN_DIR)/loopvideo.plugin
 
 include ../../plugin_config
 

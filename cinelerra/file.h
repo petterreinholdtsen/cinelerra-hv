@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef FILE_H
 #define FILE_H
 
@@ -191,17 +212,17 @@ public:
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
 // Get the extension for the filename
-	static char* get_tag(int format);
+	static const char* get_tag(int format);
 	static int supports_video(int format);   // returns 1 if the format supports video or audio
 	static int supports_audio(int format);
 	static int strtoformat(char *format);
-	static char* formattostr(int format);
+	static const char* formattostr(int format);
 	static int strtoformat(ArrayList<PluginServer*> *plugindb, char *format);
-	static char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
+	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
 	static int strtobits(char *bits);
-	static char* bitstostr(int bits);
+	static const char* bitstostr(int bits);
 	static int str_to_byteorder(char *string);
-	static char* byteorder_to_str(int byte_order);
+	static const char* byteorder_to_str(int byte_order);
 	int bytes_per_sample(int bits); // Convert the bit descriptor into a byte count.
 
 	Asset *asset;    // Copy of asset since File outlives EDL
@@ -233,7 +254,7 @@ public:
 	int current_channel;
 	int current_layer;
 
-// Position information normalized
+// Position information normalized to project rates
 	int64_t normalized_sample;
 	int64_t normalized_sample_rate;
 	Preferences *preferences;
@@ -244,7 +265,7 @@ private:
 
 	int getting_options;
 	BC_WindowBase *format_window;
-	Mutex *format_completion;
+	Condition *format_completion;
 	FrameCache *frame_cache;
 // Copy read frames to the cache
 	int use_cache;

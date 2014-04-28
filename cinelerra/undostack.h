@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef UNDOSTACK_H
 #define UNDOSTACK_H
 
@@ -24,12 +45,14 @@ public:
 // previous key buffer.
 	void set_data(char *data);
 	void set_description(char *description);
-	char* get_description();
+	void set_filename(char *filename);
+	const char* get_description();
 	void set_flags(uint64_t flags);
 
 // Decompress the buffers and return them in a newly allocated string.
 // The string must be deleted by the user.
 	char* get_data();
+	char* get_filename();
 	int has_data();
 	int get_size();
 	int is_key();
@@ -59,6 +82,8 @@ private:
 
 // pointer to the object which set this undo buffer
 	void *creator;
+
+	char *session_filename;
 };
 
 class UndoStack : public List<UndoStackItem>
@@ -79,6 +104,8 @@ public:
 
 // move to the next undo entry for a redo
 	UndoStackItem* pull_next();
+
+	void dump();
 	
 	UndoStackItem* current;
 };

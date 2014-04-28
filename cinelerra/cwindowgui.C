@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "automation.h"
 #include "autos.h"
 #include "bcsignals.h"
@@ -74,7 +95,8 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	affected_x = 0;
 	affected_y = 0;
 	affected_z = 0;
-	affected_keyframe = 0;
+	mask_keyframe = 0;
+	orig_mask_keyframe = new MaskAuto(0, 0);
 	affected_point = 0;
 	x_offset = 0;
 	y_offset = 0;
@@ -101,8 +123,9 @@ CWindowGUI::~CWindowGUI()
 	delete inactive;
 }
 
-int CWindowGUI::create_objects()
+void CWindowGUI::create_objects()
 {
+	lock_window("CWindowGUI::create_objects");
 	set_icon(mwindow->theme->get_image("cwindow_icon"));
 
 	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
@@ -130,7 +153,9 @@ int CWindowGUI::create_objects()
 	composite_panel->create_objects();
 
 	canvas = new CWindowCanvas(mwindow, this);
+
 	canvas->create_objects(mwindow->edl);
+
 
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
@@ -179,15 +204,17 @@ int CWindowGUI::create_objects()
 // Must create after meter panel
 	tool_panel = new CWindowTool(mwindow, this);
 	tool_panel->Thread::start();
+
 	
 	set_operation(mwindow->edl->session->cwindow_operation);
 
 
+
 	canvas->draw_refresh();
 
-	draw_status();
 
-	return 0;
+	draw_status();
+	unlock_window();
 }
 
 int CWindowGUI::translation_event()
@@ -359,9 +386,7 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 }
 
 
-// TODO
-// Don't refresh the canvas in a load file operation which is going to
-// refresh it anyway.
+
 void CWindowGUI::set_operation(int value)
 {
 	mwindow->edl->session->cwindow_operation = value;
@@ -413,11 +438,25 @@ int CWindowGUI::keypress_event()
 				canvas->start_fullscreen();
 			lock_window("CWindowGUI::keypress_event 1");
 			break;
+		case 'x':
+			unlock_window();
+			mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+			mwindow->cut();
+			mwindow->gui->unlock_window();
+			lock_window("CWindowGUI::keypress_event 2");
+			break;
+		case BACKSPACE:
+			unlock_window();
+			mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+			mwindow->clear_entry();
+			mwindow->gui->unlock_window();
+			lock_window("CWindowGUI::keypress_event 3");
+			break;
 		case ESC:
 			unlock_window();
 			if(mwindow->session->cwindow_fullscreen)
 				canvas->stop_fullscreen();
-			lock_window("CWindowGUI::keypress_event 2");
+			lock_window("CWindowGUI::keypress_event 4");
 			break;
 		case LEFT:
 			if(!ctrl_down()) 
@@ -543,6 +582,14 @@ int CWindowGUI::drag_stop()
 
 	if(mwindow->session->current_operation == DRAG_ASSET)
 	{
+		if(mwindow->session->drag_assets->total ||
+			mwindow->session->drag_clips->total)
+		{
+			mwindow->gui->lock_window("CWindowGUI::drag_stop 5");
+			mwindow->undo->update_undo_before(_("insert assets"), 0);
+			mwindow->gui->unlock_window();
+		}
+
 		if(mwindow->session->drag_assets->total)
 		{
 			mwindow->gui->lock_window("CWindowGUI::drag_stop 1");
@@ -574,7 +621,7 @@ int CWindowGUI::drag_stop()
 			mwindow->save_backup();
 			mwindow->restart_brender();
 			mwindow->gui->update(1, 1, 1, 1, 0, 1, 0);
-			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
+			mwindow->undo->update_undo_after(_("insert assets"), LOAD_ALL);
 			mwindow->gui->unlock_window();
 			mwindow->sync_parameters(LOAD_ALL);
 		}
@@ -731,11 +778,12 @@ int CWindowSlider::handle_event()
 {
 	unlock_window();
 	cwindow->playback_engine->interrupt_playback(1);
-	lock_window("CWindowSlider::handle_event 1");
-	
+
 	mwindow->gui->lock_window("CWindowSlider::handle_event 2");
 	mwindow->select_point((double)get_value());
 	mwindow->gui->unlock_window();
+
+	lock_window("CWindowSlider::handle_event 1");
 	return 1;
 }
 
@@ -748,7 +796,6 @@ void CWindowSlider::set_position()
 	if(mwindow->edl->local_session->preview_start > 
 		mwindow->edl->local_session->preview_end)
 		mwindow->edl->local_session->preview_start = 0;
-
 
 
 	update(mwindow->theme->cslider_w, 
@@ -965,6 +1012,11 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 	get_canvas()->draw_box(x, y, CROPHANDLE_W, CROPHANDLE_H);
 }
 
+
+
+
+
+
 #define CONTROL_W 10
 #define CONTROL_H 10
 #define FIRST_CONTROL_W 20
@@ -974,6 +1026,285 @@ void CWindowCanvas::draw_crophandle(int x, int y)
 #ifndef SQR
 #define SQR(x) ((x) * (x))
 #endif
+
+#define RULERHANDLE_W 16
+#define RULERHANDLE_H 16
+
+
+
+int CWindowCanvas::do_ruler(int draw, 
+	int motion, 
+	int button_press, 
+	int button_release)
+{
+	int result = 0;
+	float x1 = mwindow->edl->session->ruler_x1;
+	float y1 = mwindow->edl->session->ruler_y1;
+	float x2 = mwindow->edl->session->ruler_x2;
+	float y2 = mwindow->edl->session->ruler_y2;
+	float canvas_x1 = x1;
+	float canvas_y1 = y1;
+	float canvas_x2 = x2;
+	float canvas_y2 = y2;
+	float output_x = get_cursor_x();
+	float output_y = get_cursor_y();
+	float canvas_cursor_x = output_x;
+	float canvas_cursor_y = output_y;
+	float old_x1 = x1;
+	float old_x2 = x2;
+	float old_y1 = y1;
+	float old_y2 = y2;
+
+
+	canvas_to_output(mwindow->edl, 0, output_x, output_y);
+	output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
+	output_to_canvas(mwindow->edl, 0, canvas_x2, canvas_y2);
+	mwindow->session->cwindow_output_x = (int)output_x;
+	mwindow->session->cwindow_output_y = (int)output_y;
+
+	if(button_press && get_buttonpress() == 1)
+	{
+		gui->ruler_handle = -1;
+		gui->ruler_translate = 0;
+		if(gui->alt_down())
+		{
+			gui->ruler_translate = 1;
+			gui->ruler_origin_x = x1;
+			gui->ruler_origin_y = y1;
+		}
+		else
+		if(canvas_cursor_x >= canvas_x1 - RULERHANDLE_W / 2 && 
+			canvas_cursor_x < canvas_x1 + RULERHANDLE_W / 2 && 
+			canvas_cursor_y >= canvas_y1 - RULERHANDLE_W && 
+			canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
+		{
+			gui->ruler_handle = 0;
+			gui->ruler_origin_x = x1;
+			gui->ruler_origin_y = y1;
+		}
+		else
+		if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 && 
+			canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 && 
+			canvas_cursor_y >= canvas_y2 - RULERHANDLE_W && 
+			canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
+		{
+			gui->ruler_handle = 1;
+			gui->ruler_origin_x = x2;
+			gui->ruler_origin_y = y2;
+		}
+
+
+// Start new selection
+		if(!gui->ruler_translate && 
+			(gui->ruler_handle < 0 || 
+			(EQUIV(x2 - x1, 0.0) && 
+			EQUIV(y2 - y1, 0.0))))
+		{
+// Hide previous
+			do_ruler(1, 0, 0, 0);
+			get_canvas()->flash();
+			gui->ruler_handle = 1;
+			mwindow->edl->session->ruler_x1 = output_x;
+			mwindow->edl->session->ruler_y1 = output_y;
+			mwindow->edl->session->ruler_x2 = output_x;
+			mwindow->edl->session->ruler_y2 = output_y;
+			gui->ruler_origin_x = mwindow->edl->session->ruler_x2;
+			gui->ruler_origin_y = mwindow->edl->session->ruler_y2;
+		}
+
+		gui->x_origin = output_x;
+		gui->y_origin = output_y;
+		gui->current_operation = CWINDOW_RULER;
+		gui->tool_panel->raise_window();
+		result = 1;
+	}
+
+	if(motion)
+	{
+		if(gui->current_operation == CWINDOW_RULER)
+		{
+			if(gui->ruler_translate)
+			{
+// Hide ruler
+				do_ruler(1, 0, 0, 0);
+				float x_difference = mwindow->edl->session->ruler_x1;
+				float y_difference = mwindow->edl->session->ruler_y1;
+				mwindow->edl->session->ruler_x1 = output_x - gui->x_origin + gui->ruler_origin_x;
+				mwindow->edl->session->ruler_y1 = output_y - gui->y_origin + gui->ruler_origin_y;
+				x_difference -= mwindow->edl->session->ruler_x1;
+				y_difference -= mwindow->edl->session->ruler_y1;
+				mwindow->edl->session->ruler_x2 -= x_difference;
+				mwindow->edl->session->ruler_y2 -= y_difference;
+// Show ruler
+				do_ruler(1, 0, 0, 0);
+				get_canvas()->flash();
+			}
+			else
+			switch(gui->ruler_handle)
+			{
+				case 0:
+					do_ruler(1, 0, 0, 0);
+					mwindow->edl->session->ruler_x1 = output_x - gui->x_origin + gui->ruler_origin_x;
+					mwindow->edl->session->ruler_y1 = output_y - gui->y_origin + gui->ruler_origin_y;
+					if(gui->alt_down() || gui->ctrl_down()) 
+					{
+						double angle_value = fabs(atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
+							(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) * 
+							360 /
+							2 / 
+							M_PI);
+						double distance_value = 
+							sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
+							SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
+						if(angle_value < 22)
+							mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2;
+						else
+						if(angle_value > 67)
+							mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2;
+						else
+						if(mwindow->edl->session->ruler_x1 < mwindow->edl->session->ruler_x2 && 
+							mwindow->edl->session->ruler_y1 < mwindow->edl->session->ruler_y2)
+						{
+							mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 - distance_value / 1.414214;
+							mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 - distance_value / 1.414214;
+						}
+						else
+						if(mwindow->edl->session->ruler_x1 < mwindow->edl->session->ruler_x2 && mwindow->edl->session->ruler_y1 > mwindow->edl->session->ruler_y2)
+						{
+							mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 - distance_value / 1.414214;
+							mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 + distance_value / 1.414214;
+						}
+						else
+						if(mwindow->edl->session->ruler_x1 > mwindow->edl->session->ruler_x2 && 
+							mwindow->edl->session->ruler_y1 < mwindow->edl->session->ruler_y2)
+						{
+							mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 + distance_value / 1.414214;
+							mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 - distance_value / 1.414214;
+						}
+						else
+						{
+							mwindow->edl->session->ruler_x1 = mwindow->edl->session->ruler_x2 + distance_value / 1.414214;
+							mwindow->edl->session->ruler_y1 = mwindow->edl->session->ruler_y2 + distance_value / 1.414214;
+						}
+					}
+					do_ruler(1, 0, 0, 0);
+					get_canvas()->flash();
+					gui->update_tool();
+					break;
+
+				case 1:
+					do_ruler(1, 0, 0, 0);
+					mwindow->edl->session->ruler_x2 = output_x - gui->x_origin + gui->ruler_origin_x;
+					mwindow->edl->session->ruler_y2 = output_y - gui->y_origin + gui->ruler_origin_y;
+					if(gui->alt_down() || gui->ctrl_down()) 
+					{
+						double angle_value = fabs(atan((mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1) /
+							(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1)) * 
+							360 /
+							2 / 
+							M_PI);
+						double distance_value = 
+							sqrt(SQR(mwindow->edl->session->ruler_x2 - mwindow->edl->session->ruler_x1) +
+							SQR(mwindow->edl->session->ruler_y2 - mwindow->edl->session->ruler_y1));
+						if(angle_value < 22)
+							mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1;
+						else
+						if(angle_value > 67)
+							mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1;
+						else
+						if(mwindow->edl->session->ruler_x2 < mwindow->edl->session->ruler_x1 && 
+							mwindow->edl->session->ruler_y2 < mwindow->edl->session->ruler_y1)
+						{
+							mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 - distance_value / 1.414214;
+							mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 - distance_value / 1.414214;
+						}
+						else
+						if(mwindow->edl->session->ruler_x2 < mwindow->edl->session->ruler_x1 && 
+							mwindow->edl->session->ruler_y2 > mwindow->edl->session->ruler_y1)
+						{
+							mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 - distance_value / 1.414214;
+							mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 + distance_value / 1.414214;
+						}
+						else
+						if(mwindow->edl->session->ruler_x2 > mwindow->edl->session->ruler_x1 && mwindow->edl->session->ruler_y2 < mwindow->edl->session->ruler_y1)
+						{
+							mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 + distance_value / 1.414214;
+							mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 - distance_value / 1.414214;
+						}
+						else
+						{
+							mwindow->edl->session->ruler_x2 = mwindow->edl->session->ruler_x1 + distance_value / 1.414214;
+							mwindow->edl->session->ruler_y2 = mwindow->edl->session->ruler_y1 + distance_value / 1.414214;
+						}
+					}
+					do_ruler(1, 0, 0, 0);
+					get_canvas()->flash();
+					gui->update_tool();
+					break;
+			}
+//printf("CWindowCanvas::do_ruler 2 %f %f %f %f\n", gui->ruler_x1, gui->ruler_y1, gui->ruler_x2, gui->ruler_y2);
+		}
+		else
+		{
+// printf("CWindowCanvas::do_ruler 2 %f %f %f %f\n", 
+// canvas_cursor_x, 
+// canvas_cursor_y,
+// canvas_x1,
+// canvas_y1);
+			if(canvas_cursor_x >= canvas_x1 - RULERHANDLE_W / 2 && 
+				canvas_cursor_x < canvas_x1 + RULERHANDLE_W / 2 && 
+				canvas_cursor_y >= canvas_y1 - RULERHANDLE_W && 
+				canvas_cursor_y < canvas_y1 + RULERHANDLE_H / 2)
+			{
+				set_cursor(UPRIGHT_ARROW_CURSOR);
+			}
+			else
+			if(canvas_cursor_x >= canvas_x2 - RULERHANDLE_W / 2 && 
+				canvas_cursor_x < canvas_x2 + RULERHANDLE_W / 2 && 
+				canvas_cursor_y >= canvas_y2 - RULERHANDLE_W && 
+				canvas_cursor_y < canvas_y2 + RULERHANDLE_H / 2)
+			{
+				set_cursor(UPRIGHT_ARROW_CURSOR);
+			}
+			else
+				set_cursor(CROSS_CURSOR);
+
+// Update current position
+			gui->update_tool();
+		}
+	}
+
+// Assume no ruler measurement if 0 length
+	if(draw && (x2 - x1 || y2 - y1))
+	{
+		get_canvas()->set_inverse();
+		get_canvas()->set_color(WHITE);
+		get_canvas()->draw_line((int)canvas_x1, 
+			(int)canvas_y1, 
+			(int)canvas_x2, 
+			(int)canvas_y2);
+		get_canvas()->draw_line((int)canvas_x1 - RULERHANDLE_W / 2, 
+			(int)canvas_y1, 
+			(int)canvas_x1 + RULERHANDLE_W / 2, 
+			(int)canvas_y1);
+		get_canvas()->draw_line((int)canvas_x1, 
+			(int)canvas_y1 - RULERHANDLE_H / 2, 
+			(int)canvas_x1, 
+			(int)canvas_y1 + RULERHANDLE_H / 2);
+		get_canvas()->draw_line((int)canvas_x2 - RULERHANDLE_W / 2, 
+			(int)canvas_y2, 
+			(int)canvas_x2 + RULERHANDLE_W / 2, 
+			(int)canvas_y2);
+		get_canvas()->draw_line((int)canvas_x2, 
+			(int)canvas_y2 - RULERHANDLE_H / 2, 
+			(int)canvas_x2, 
+			(int)canvas_y2 + RULERHANDLE_H / 2);
+		get_canvas()->set_opaque();
+	}
+
+	return result;
+}
+
 
 int CWindowCanvas::do_mask(int &redraw, 
 		int &rerender, 
@@ -994,10 +1325,63 @@ int CWindowCanvas::do_mask(int &redraw,
 		mwindow->edl->local_session->get_selectionstart(1),
 		0);
 	ArrayList<MaskPoint*> points;
-	mask_autos->get_points(&points, mwindow->edl->session->cwindow_mask,
-		position, 
-		PLAY_FORWARD);
-//printf("CWindowCanvas::do_mask 4\n");
+
+// Determine the points based on whether
+// new keyframes will be generated or drawing is performed.
+// If keyframe generation occurs, use the interpolated mask.
+// If no keyframe generation occurs, use the previous mask.
+	int use_interpolated = 0;
+	if(button_press || cursor_motion)
+	{
+#ifdef USE_KEYFRAME_SPANNING
+		double selection_start = mwindow->edl->local_session->get_selectionstart(0);
+		double selection_end = mwindow->edl->local_session->get_selectionend(0);
+
+		Auto *first = 0;
+		mask_autos->get_prev_auto(track->to_units(selection_start, 0),
+			PLAY_FORWARD,
+			first,
+			1);
+		Auto *last = 0;
+		mask_autos->get_prev_auto(track->to_units(selection_end, 0),
+			PLAY_FORWARD,
+			last,
+			1);
+
+		if(last == first && (!mwindow->edl->session->auto_keyframes))
+			use_interpolated = 0;
+		else
+// If keyframe spanning occurs, use the interpolated points.
+// If new keyframe is generated, use the interpolated points.
+			use_interpolated = 1;
+		
+#else
+		if(mwindow->edl->session->auto_keyframes)
+			use_interpolated = 1;
+#endif
+	}
+	else
+		use_interpolated = 1;
+
+	if(use_interpolated)
+	{
+// Interpolate the points to get exactly what is being rendered at this position.
+		mask_autos->get_points(&points, 
+			mwindow->edl->session->cwindow_mask,
+			position, 
+			PLAY_FORWARD);
+	}
+	else
+// Use the prev mask
+	{
+		Auto *prev = 0;
+		mask_autos->get_prev_auto(position,
+			PLAY_FORWARD,
+			prev,
+			1);
+		((MaskAuto*)prev)->get_points(&points, 
+			mwindow->edl->session->cwindow_mask);
+	}
 
 // Projector zooms relative to the center of the track output.
 	float half_track_w = (float)track->track_w / 2;
@@ -1332,20 +1716,34 @@ int CWindowCanvas::do_mask(int &redraw,
 	if(button_press && !result)
 	{
 		gui->affected_track = gui->cwindow->calculate_affected_track();
-// Get current keyframe
-		if(gui->affected_track)
-			gui->affected_keyframe = 
-				gui->cwindow->calculate_affected_auto(
-					gui->affected_track->automation->autos[AUTOMATION_MASK],
-					1);
 
-		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
-		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
+// Get keyframe outside the EDL to edit.  This must be rendered
+// instead of the EDL keyframes when it exists.  Then it must be
+// applied to the EDL keyframes on buttonrelease.
+		if(gui->affected_track)
+		{
+#ifdef USE_KEYFRAME_SPANNING
+// Make copy of current parameters in local keyframe
+			gui->mask_keyframe = 
+				(MaskAuto*)gui->cwindow->calculate_affected_auto(
+					mask_autos,
+					0);
+			gui->orig_mask_keyframe->copy_data(gui->mask_keyframe);
+#else
+
+			gui->mask_keyframe = 
+				(MaskAuto*)gui->cwindow->calculate_affected_auto(
+					mask_autos,
+					1);
+#endif
+		}
+		SubMask *mask = gui->mask_keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 
 
 // Translate entire keyframe
 		if(gui->alt_down() && mask->points.total)
 		{
+			mwindow->undo->update_undo_before(_("mask translate"), 0);
 			gui->current_operation = CWINDOW_MASK_TRANSLATE;
 			gui->affected_point = 0;
 		}
@@ -1353,6 +1751,7 @@ int CWindowCanvas::do_mask(int &redraw,
 // Existing point or control point was selected
 		if(selected_point >= 0)
 		{
+			mwindow->undo->update_undo_before(_("mask adjust"), 0);
 			gui->affected_point = selected_point;
 
 			if(selected_control_point == 0)
@@ -1367,6 +1766,7 @@ int CWindowCanvas::do_mask(int &redraw,
 // No existing point or control point was selected so create a new one
 		if(!gui->shift_down() && !gui->alt_down())
 		{
+			mwindow->undo->update_undo_before(_("mask point"), 0);
 // Create the template
 			MaskPoint *point = new MaskPoint;
 			point->x = mask_cursor_x;
@@ -1399,6 +1799,15 @@ int CWindowCanvas::do_mask(int &redraw,
 // Append to end of list
 			if(labs(shortest_point1 - shortest_point2) > 1)
 			{
+#ifdef USE_KEYFRAME_SPANNING
+
+				MaskPoint *new_point = new MaskPoint;
+				points.append(new_point);
+				*new_point = *point;
+				gui->affected_point = points.total - 1;
+
+#else
+
 // Need to apply the new point to every keyframe
 				for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
 					current; )
@@ -1412,14 +1821,34 @@ int CWindowCanvas::do_mask(int &redraw,
 					else
 						current = (MaskAuto*)NEXT;
 				}
-
 				gui->affected_point = mask->points.total - 1;
+#endif
+
 				result = 1;
 			}
 			else
 // Insert between 2 points, shifting back point 2
 			if(shortest_point1 >= 0 && shortest_point2 >= 0)
 			{
+
+#ifdef USE_KEYFRAME_SPANNING
+// In case the keyframe point count isn't synchronized with the rest of the keyframes,
+// avoid a crash.
+				if(points.total >= shortest_point2)
+				{
+					MaskPoint *new_point = new MaskPoint;
+					points.append(0);
+					for(int i = points.total - 1; 
+						i > shortest_point2; 
+						i--)
+						points.values[i] = points.values[i - 1];
+					points.values[shortest_point2] = new_point;
+
+					*new_point = *point;
+				}
+
+#else
+
 				for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
 					current; )
 				{
@@ -1444,6 +1873,7 @@ int CWindowCanvas::do_mask(int &redraw,
 					else
 						current = (MaskAuto*)NEXT;
 				}
+#endif
 
 
 				gui->affected_point = shortest_point2;
@@ -1458,10 +1888,15 @@ int CWindowCanvas::do_mask(int &redraw,
 
 
 
-// Create the first point.
 			if(!result)
 			{
 //printf("CWindowCanvas::do_mask 1\n");
+// Create the first point.
+#ifdef USE_KEYFRAME_SPANNING
+				MaskPoint *new_point = new MaskPoint;
+				points.append(new_point);
+				*new_point = *point;
+#else
 				for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
 					current; )
 				{
@@ -1474,11 +1909,24 @@ int CWindowCanvas::do_mask(int &redraw,
 					else
 						current = (MaskAuto*)NEXT;
 				}
+#endif
 
 //printf("CWindowCanvas::do_mask 2\n");
 // Create a second point if none existed before
+#ifdef USE_KEYFRAME_SPANNING
+				if(points.total < 2)
+				{
+
+					MaskPoint *new_point = new MaskPoint;
+					points.append(new_point);
+					*new_point = *point;
+				}
+
+				gui->affected_point = points.total - 1;
+#else
 				if(mask->points.total < 2)
 				{
+
 					for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
 						current; )
 					{
@@ -1492,7 +1940,10 @@ int CWindowCanvas::do_mask(int &redraw,
 							current = (MaskAuto*)NEXT;
 					}
 				}
+
 				gui->affected_point = mask->points.total - 1;
+#endif
+
 //printf("CWindowCanvas::do_mask 3 %d\n", mask->points.total);
 			}
 
@@ -1501,9 +1952,6 @@ int CWindowCanvas::do_mask(int &redraw,
 			gui->current_operation = mwindow->edl->session->cwindow_operation;
 // Delete the template
 			delete point;
-//printf("CWindowGUI::do_mask 1\n");
-			mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
-//printf("CWindowGUI::do_mask 10\n");
 
 		}
 
@@ -1514,8 +1962,17 @@ int CWindowCanvas::do_mask(int &redraw,
 
 	if(button_press && result)
 	{
-		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
-		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
+#ifdef USE_KEYFRAME_SPANNING
+		MaskPoint *point = points.values[gui->affected_point];
+		gui->center_x = point->x;
+		gui->center_y = point->y;
+		gui->control_in_x = point->control_x1;
+		gui->control_in_y = point->control_y1;
+		gui->control_out_x = point->control_x2;
+		gui->control_out_y = point->control_y2;
+		gui->tool_panel->raise_window();
+#else
+		SubMask *mask = gui->mask_keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 		MaskPoint *point = mask->points.values[gui->affected_point];
 		gui->center_x = point->x;
 		gui->center_y = point->y;
@@ -1523,16 +1980,32 @@ int CWindowCanvas::do_mask(int &redraw,
 		gui->control_in_y = point->control_y1;
 		gui->control_out_x = point->control_x2;
 		gui->control_out_y = point->control_y2;
+		gui->tool_panel->raise_window();
+#endif
 	}
 
 //printf("CWindowCanvas::do_mask 8\n");
 	if(cursor_motion)
 	{
-		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
-		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
+
+#ifdef USE_KEYFRAME_SPANNING
+// Must update the reference keyframes for every cursor motion
+			gui->mask_keyframe = 
+				(MaskAuto*)gui->cwindow->calculate_affected_auto(
+					mask_autos,
+					0);
+			gui->orig_mask_keyframe->copy_data(gui->mask_keyframe);
+#endif
+
+		SubMask *mask = gui->mask_keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 		if(gui->affected_point < mask->points.total)
 		{
-			MaskPoint *point = mask->points.values[gui->affected_point];
+//			mwindow->undo->update_undo_before(_("mask point"), this);
+#ifdef USE_KEYFRAME_SPANNING
+			MaskPoint *point = points.get(gui->affected_point);
+#else
+			MaskPoint *point = mask->points.get(gui->affected_point);
+#endif
 // 			float cursor_x = get_cursor_x();
 // 			float cursor_y = get_cursor_y();
 // 			canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
@@ -1566,11 +2039,19 @@ int CWindowCanvas::do_mask(int &redraw,
 					break;
 
 				case CWINDOW_MASK_TRANSLATE:
+#ifdef USE_KEYFRAME_SPANNING
+					for(int i = 0; i < points.total; i++)
+					{
+						points.values[i]->x += cursor_x - gui->x_origin;
+						points.values[i]->y += cursor_y - gui->y_origin;
+					}
+#else
 					for(int i = 0; i < mask->points.total; i++)
 					{
 						mask->points.values[i]->x += cursor_x - gui->x_origin;
 						mask->points.values[i]->y += cursor_y - gui->y_origin;
 					}
+#endif
 					gui->x_origin = cursor_x;
 					gui->y_origin = cursor_y;
 					break;
@@ -1592,6 +2073,22 @@ int CWindowCanvas::do_mask(int &redraw,
 	}
 //printf("CWindowCanvas::do_mask 2 %d %d %d\n", result, rerender, redraw);
 
+
+#ifdef USE_KEYFRAME_SPANNING
+// Must commit change after operation.
+	if(rerender && track)
+	{
+// Swap EDL keyframe with original.
+// Apply new values to keyframe span
+		MaskAuto temp_keyframe(mwindow->edl, mask_autos);
+		temp_keyframe.copy_data(gui->mask_keyframe);
+// Apply interpolated points back to keyframe
+		temp_keyframe.set_points(&points, mwindow->edl->session->cwindow_mask);
+		gui->mask_keyframe->copy_data(gui->orig_mask_keyframe);
+		mask_autos->update_parameter(&temp_keyframe);
+	}
+#endif
+
 	points.remove_all_objects();
 //printf("CWindowCanvas::do_mask 20\n");
 	return result;
@@ -1608,10 +2105,12 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 	if(button_press)
 	{
 		gui->current_operation = CWINDOW_EYEDROP;
+		gui->tool_panel->raise_window();
 	}
 
 	if(gui->current_operation == CWINDOW_EYEDROP)
 	{
+		mwindow->undo->update_undo_before(_("Eyedrop"), this);
 		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
 
 // Get color out of frame.
@@ -1693,6 +2192,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 // Can't rerender since the color value is from the output of any effect it
 // goes into.
 //		rerender = 1;
+		mwindow->undo->update_undo_after(_("Eyedrop"), LOAD_SESSION);
 	}
 
 	return result;
@@ -1754,6 +2254,10 @@ void CWindowCanvas::draw_overlays()
 
 		case CWINDOW_MASK:
 			do_mask(temp1, temp2, 0, 0, 1);
+			break;
+		
+		case CWINDOW_RULER:
+			do_ruler(1, 0, 0, 0);
 			break;
 	}
 }
@@ -1919,6 +2423,7 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		gui->crop_handle = handle_selected;
 		gui->x_origin = cursor_x;
 		gui->y_origin = cursor_y;
+		gui->tool_panel->raise_window();
 		result = 1;
 
 		if(handle_selected < 0 && !gui->crop_translate) 
@@ -2018,7 +2523,7 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			!EQUIV(mwindow->edl->session->crop_y1, y1) ||
 			!EQUIV(mwindow->edl->session->crop_y2, y2))
 		{
-			if (x1 > x2) 
+			if (x1 > x2)
 			{
 				float tmp = x1;
 				x1 = x2;
@@ -2031,8 +2536,8 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 					case 3:	gui->crop_handle = 2; break;
 					default: break;
 				}
-
 			}
+
 			if (y1 > y2) 
 			{
 				float tmp = y1;
@@ -2273,8 +2778,8 @@ int CWindowCanvas::test_bezier(int button_press,
 						gui->affected_z->value = new_z;
 						gui->affected_z->control_in_value = 0;
 						gui->affected_z->control_out_value = 0;
-						gui->affected_z->control_in_position = 0;
-						gui->affected_z->control_out_position = 0;
+//						gui->affected_z->control_in_position = 0;
+//						gui->affected_z->control_out_position = 0;
 						redraw_canvas = 1;
 					}
 				}
@@ -2302,8 +2807,8 @@ int CWindowCanvas::test_bezier(int button_press,
 						gui->affected_x->value = new_x;
 						gui->affected_x->control_in_value = 0;
 						gui->affected_x->control_out_value = 0;
-						gui->affected_x->control_in_position = 0;
-						gui->affected_x->control_out_position = 0;
+//						gui->affected_x->control_in_position = 0;
+//						gui->affected_x->control_out_position = 0;
 						redraw_canvas = 1;
 					}
 					gui->affected_y = 
@@ -2314,8 +2819,8 @@ int CWindowCanvas::test_bezier(int button_press,
 						gui->affected_y->value = new_y;
 						gui->affected_y->control_in_value = 0;
 						gui->affected_y->control_out_value = 0;
-						gui->affected_y->control_in_position = 0;
-						gui->affected_y->control_out_position = 0;
+//						gui->affected_y->control_in_position = 0;
+//						gui->affected_y->control_out_position = 0;
 						redraw_canvas = 1;
 					}
 				}
@@ -2387,8 +2892,14 @@ int CWindowCanvas::test_bezier(int button_press,
 
 		if(gui->affected_track)
 		{
+			if(gui->current_operation == CWINDOW_CAMERA)
+				mwindow->undo->update_undo_before(_("camera"), this);
+			else
+				mwindow->undo->update_undo_before(_("projector"), this);
+
 			gui->current_operation = 
 				mwindow->edl->session->cwindow_operation;
+			gui->tool_panel->raise_window();
 			result = 1;
 		}
 	}
@@ -2506,6 +3017,7 @@ int CWindowCanvas::cursor_enter_event()
 			set_cursor(ARROW_CURSOR);
 			break;
 		case CWINDOW_MASK:
+		case CWINDOW_RULER:
 			set_cursor(CROSS_CURSOR);
 			break;
 		case CWINDOW_EYEDROP:
@@ -2547,6 +3059,10 @@ int CWindowCanvas::cursor_motion_event()
 			break;
 		}
 
+		case CWINDOW_RULER:
+			result = do_ruler(0, 1, 0, 0);
+			break;
+
 		case CWINDOW_CAMERA:
 			result = test_bezier(0, redraw, redraw_canvas, rerender, 1);
 			break;
@@ -2587,6 +3103,9 @@ int CWindowCanvas::cursor_motion_event()
 			case CWINDOW_CROP:
 				result = test_crop(0, redraw);
 				break;
+			case CWINDOW_RULER:
+				result = do_ruler(0, 1, 0, 0);
+				break;
 		}
 	}
 
@@ -2603,14 +3122,20 @@ int CWindowCanvas::cursor_motion_event()
 
 	if(redraw_canvas)
 	{
+		gui->unlock_window();
+	
+	
 		mwindow->gui->lock_window("CWindowCanvas::cursor_motion_event 1");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
+		
+		gui->lock_window("CWindowCanvas::cursor_motion_event 1");
 	}
 
 	if(rerender)
 	{
+		gui->unlock_window();
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
@@ -2618,6 +3143,7 @@ int CWindowCanvas::cursor_motion_event()
 			mwindow->edl,
 			1);
 		if(!redraw) gui->update_tool();
+		gui->lock_window("CWindowCanvas::cursor_motion_event 2");
 	}
 	return result;
 }
@@ -2652,6 +3178,10 @@ int CWindowCanvas::button_press_event()
 	{
 		switch(mwindow->edl->session->cwindow_operation)
 		{
+			case CWINDOW_RULER:
+				result = do_ruler(0, 0, 1, 0);
+				break;
+		
 			case CWINDOW_CAMERA:
 				result = test_bezier(1, redraw, redraw_canvas, rerender, 1);
 				break;
@@ -2682,12 +3212,23 @@ int CWindowCanvas::button_press_event()
 	if(redraw)
 	{
 		draw_refresh();
+		gui->unlock_window();
+	
+	
+		mwindow->gui->lock_window("CWindowCanvas::button_press_event 1");
+		mwindow->gui->canvas->draw_overlays();
+		mwindow->gui->canvas->flash();
+		mwindow->gui->unlock_window();
 		gui->update_tool();
+		
+		gui->lock_window("CWindowCanvas::button_press_event 1");
 	}
 
 // rerendering can also be caused by press event
 	if(rerender) 
 	{
+		gui->unlock_window();
+
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
@@ -2695,6 +3236,7 @@ int CWindowCanvas::button_press_event()
 			mwindow->edl,
 			1);
 		if(!redraw) gui->update_tool();
+		gui->lock_window("CWindowCanvas::button_press_event 2");
 	}
 	return result;
 }
@@ -2708,20 +3250,26 @@ int CWindowCanvas::button_release_event()
 		case CWINDOW_SCROLL:
 			result = 1;
 			break;
+			
+		case CWINDOW_RULER:
+			do_ruler(0, 0, 0, 1);
+			break;
 
 		case CWINDOW_CAMERA:
-			mwindow->undo->update_undo(_("camera"), LOAD_AUTOMATION);
+			mwindow->undo->update_undo_after(_("camera"), LOAD_AUTOMATION);
 			break;
 
 		case CWINDOW_PROJECTOR:
-			mwindow->undo->update_undo(_("projector"), LOAD_AUTOMATION);
+			mwindow->undo->update_undo_after(_("projector"), LOAD_AUTOMATION);
 			break;
 
 		case CWINDOW_MASK:
 		case CWINDOW_MASK_CONTROL_IN:
 		case CWINDOW_MASK_CONTROL_OUT:
 		case CWINDOW_MASK_TRANSLATE:
-			mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
+// Finish mask operation
+			gui->mask_keyframe = 0;
+			mwindow->undo->update_undo_after(_("mask"), LOAD_AUTOMATION);
 			break;
 
 	}

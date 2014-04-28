@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/denoisemjpeg.o
 
-OUTPUT = ../$(OBJDIR)/denoisemjpeg.plugin
+OUTPUT = $(PLUGIN_DIR)/denoisemjpeg.plugin
 
 include ../../plugin_config
 

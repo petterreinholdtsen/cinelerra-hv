@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -59,14 +80,14 @@ public:
 };
 
 
-class MotionBlurWindow : public BC_Window
+class MotionBlurWindow : public PluginClientWindow
 {
 public:
-	MotionBlurWindow(MotionBlurMain *plugin, int x, int y);
+	MotionBlurWindow(MotionBlurMain *plugin);
 	~MotionBlurWindow();
 
-	int create_objects();
-	int close_event();
+	void create_objects();
+
 
 	MotionBlurSize *steps, *radius;
 	MotionBlurMain *plugin;
@@ -74,7 +95,7 @@ public:
 
 
 
-PLUGIN_THREAD_HEADER(MotionBlurMain, MotionBlurThread, MotionBlurWindow)
+
 
 
 class MotionBlurMain : public PluginVClient
@@ -91,7 +112,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS(MotionBlurConfig, MotionBlurThread)
+	PLUGIN_CLASS_MEMBERS(MotionBlurConfig)
 
 	void delete_tables();
 	VFrame *input, *output, *temp;
@@ -207,20 +228,17 @@ void MotionBlurConfig::interpolate(MotionBlurConfig &prev,
 
 
 
-PLUGIN_THREAD_OBJECT(MotionBlurMain, MotionBlurThread, MotionBlurWindow)
 
 
 
-MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
+
+MotionBlurWindow::MotionBlurWindow(MotionBlurMain *plugin)
+ : PluginClientWindow(plugin,
 	260, 
 	120, 
 	260, 
 	120, 
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin; 
 }
@@ -229,7 +247,7 @@ MotionBlurWindow::~MotionBlurWindow()
 {
 }
 
-int MotionBlurWindow::create_objects()
+void MotionBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -243,10 +261,9 @@ int MotionBlurWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(MotionBlurWindow)
+
 
 
 
@@ -280,7 +297,7 @@ int MotionBlurSize::handle_event()
 MotionBlurMain::MotionBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -291,24 +308,19 @@ MotionBlurMain::MotionBlurMain(PluginServer *server)
 
 MotionBlurMain::~MotionBlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
 	if(temp) delete temp;
 }
 
-char* MotionBlurMain::plugin_title() { return N_("Motion Blur"); }
+const char* MotionBlurMain::plugin_title() { return N_("Motion Blur"); }
 int MotionBlurMain::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(MotionBlurMain)
-
-SHOW_GUI_MACRO(MotionBlurMain, MotionBlurThread)
-
-SET_STRING_MACRO(MotionBlurMain)
-
-RAISE_WINDOW_MACRO(MotionBlurMain)
+NEW_WINDOW_MACRO(MotionBlurMain, MotionBlurWindow)
 
 LOAD_CONFIGURATION_MACRO(MotionBlurMain, MotionBlurConfig)
 
@@ -461,8 +473,8 @@ void MotionBlurMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->radius->update(config.radius);
-		thread->window->steps->update(config.steps);
+		((MotionBlurWindow*)thread->window)->radius->update(config.radius);
+		((MotionBlurWindow*)thread->window)->steps->update(config.steps);
 		thread->window->unlock_window();
 	}
 }
@@ -499,7 +511,7 @@ void MotionBlurMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("MOTIONBLUR");
 
 	output.tag.set_property("RADIUS", config.radius);
@@ -512,7 +524,7 @@ void MotionBlurMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

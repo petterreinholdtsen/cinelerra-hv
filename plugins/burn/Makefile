@@ -7,7 +7,7 @@ OBJS = $(OBJDIR)/burn.o  \
 	$(OBJDIR)/effecttv.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/burn.plugin
+OUTPUT = $(PLUGIN_DIR)/burn.plugin
 
 include ../../plugin_config
 

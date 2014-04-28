@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -83,14 +104,13 @@ public:
 };
 
 
-class DecimateWindow : public BC_Window
+class DecimateWindow : public PluginClientWindow
 {
 public:
-	DecimateWindow(Decimate *plugin, int x, int y);
+	DecimateWindow(Decimate *plugin);
 	~DecimateWindow();
 
 	void create_objects();
-	int close_event();
 
 	ArrayList<BC_ListBoxItem*> frame_rates;
 	Decimate *plugin;
@@ -102,7 +122,6 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(Decimate, DecimateThread, DecimateWindow)
 
 
 
@@ -112,20 +131,16 @@ public:
 	Decimate(PluginServer *server);
 	~Decimate();
 
+	PLUGIN_CLASS_MEMBERS(DecimateConfig)
+
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	int load_configuration();
-	int set_string();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
 	void update_gui();
 	void render_gui(void *data);
 
@@ -156,9 +171,6 @@ public:
 // Last requested position
 	int64_t last_position;
 
-	DecimateThread *thread;
-	DecimateConfig config;
-	BC_Hash *defaults;
 };
 
 
@@ -199,17 +211,13 @@ int DecimateConfig::equivalent(DecimateConfig *config)
 
 
 
-DecimateWindow::DecimateWindow(Decimate *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+DecimateWindow::DecimateWindow(Decimate *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -264,7 +272,6 @@ void DecimateWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(DecimateWindow)
 
 
 
@@ -374,7 +381,6 @@ int DecimateRateMenu::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(Decimate, DecimateThread, DecimateWindow)
 
 
 
@@ -395,7 +401,7 @@ REGISTER_PLUGIN(Decimate)
 Decimate::Decimate(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	bzero(frames, sizeof(VFrame*) * TOTAL_FRAMES);
 	for(int i = 0; i < TOTAL_FRAMES; i++)
 		differences[i] = -1;
@@ -408,7 +414,7 @@ Decimate::Decimate(PluginServer *server)
 
 Decimate::~Decimate()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(frames[0])
 	{
 		for(int i = 0; i < TOTAL_FRAMES; i++)
@@ -740,16 +746,12 @@ int Decimate::process_buffer(VFrame *frame,
 
 
 
-char* Decimate::plugin_title() { return N_("Decimate"); }
+const char* Decimate::plugin_title() { return N_("Decimate"); }
 int Decimate::is_realtime() { return 1; }
 
-NEW_PICON_MACRO(Decimate) 
+NEW_PICON_MACRO(Decimate)
+NEW_WINDOW_MACRO(Decimate, DecimateWindow)
 
-SHOW_GUI_MACRO(Decimate, DecimateThread)
-
-RAISE_WINDOW_MACRO(Decimate)
-
-SET_STRING_MACRO(Decimate);
 
 int Decimate::load_configuration()
 {
@@ -792,7 +794,7 @@ void Decimate::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("DECIMATE");
 	output.tag.set_property("INPUT_RATE", config.input_rate);
 //	output.tag.set_property("AVERAGED_FRAMES", config.averaged_frames);
@@ -805,7 +807,7 @@ void Decimate::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -827,11 +829,11 @@ void Decimate::update_gui()
 	{
 		if(load_configuration())
 		{
-			thread->window->lock_window("Decimate::update_gui");
-			thread->window->rate->update((float)config.input_rate);
-//  		thread->window->difference->update(config.least_difference);
-//  		thread->window->avg_difference->update(config.averaged_frames);
-			thread->window->unlock_window();
+			((DecimateWindow*)thread->window)->lock_window("Decimate::update_gui");
+			((DecimateWindow*)thread->window)->rate->update((float)config.input_rate);
+//  		((DecimateWindow*)thread->window)->difference->update(config.least_difference);
+//  		((DecimateWindow*)thread->window)->avg_difference->update(config.averaged_frames);
+			((DecimateWindow*)thread->window)->unlock_window();
 		}
 	}
 }
@@ -840,15 +842,15 @@ void Decimate::render_gui(void *data)
 {
 	if(thread)
 	{
-		thread->window->lock_window("Decimate::render_gui");
+		((DecimateWindow*)thread->window)->lock_window("Decimate::render_gui");
 
 		int dropped = *(int*)data;
 		char string[BCTEXTLEN];
 
 		sprintf(string, "%d", dropped);
-		thread->window->last_dropped->update(string);
+		((DecimateWindow*)thread->window)->last_dropped->update(string);
 
-		thread->window->unlock_window();
+		((DecimateWindow*)thread->window)->unlock_window();
 	}
 }
 

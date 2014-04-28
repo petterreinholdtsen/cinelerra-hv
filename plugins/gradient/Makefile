@@ -5,7 +5,7 @@ OBJS = \
 	$(OBJDIR)/gradient.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/gradient.plugin
+OUTPUT = $(PLUGIN_DIR)/gradient.plugin
 
 include ../../plugin_config
 

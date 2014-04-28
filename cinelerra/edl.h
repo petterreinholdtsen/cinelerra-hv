@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef EDL_H
 #define EDL_H
 
@@ -50,7 +71,7 @@ public:
 	EDL(EDL *parent_edl = 0);
 	~EDL();
 
-	int create_objects();
+	void create_objects();
 	EDL& operator=(EDL &edl);
 
 // Load configuration and track counts
@@ -65,7 +86,7 @@ public:
 		uint32_t load_flags);
 	int save_xml(ArrayList<PluginServer*> *plugindb,
 		FileXML *xml, 
-		char *output_path,
+		const char *output_path,
 		int is_clip,
 		int is_vwindow);
     int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
@@ -101,7 +122,7 @@ public:
 // If they're completely equivalent, -1 is returned;
 // This is used by BRender.
 	double equivalent_output(EDL *edl);
-// Set project path for saving a backup
+// Set project path for filename prefixes in the assets
 	void set_project_path(char *path);
 // Set points and labels
 	void set_inpoint(double position);
@@ -115,7 +136,7 @@ public:
 	int dump();
 	static int next_id();
 // Create a new folder if it doesn't exist already
-	void new_folder(char *folder);
+	void new_folder(const char *folder);
 	void delete_folder(char *folder);
 	void modify_edithandles(double oldposition, 
 		double newposition, 
@@ -142,7 +163,7 @@ public:
 		FileXML *file, 
 		int all, 
 		ArrayList<PluginServer*> *plugindb,
-		char *output_path);
+		const char *output_path);
 	int copy(double start, 
 		double end, 
 		int all,   // Ignore recordable status of tracks for saving
@@ -150,7 +171,7 @@ public:
 		int is_vwindow,
 		FileXML *file, 
 		ArrayList<PluginServer*> *plugindb,
-		char *output_path,
+		const char *output_path,
 		int rewind_it);     // Rewind EDL for easy pasting
 	void paste_silence(double start, 
 		double end, 
@@ -172,8 +193,14 @@ public:
 // Add a copy of EDL* to the clip array.  Returns the copy.
 	EDL* add_clip(EDL *edl);
 
-	void get_shared_plugins(Track *source, ArrayList<SharedLocation*> *plugin_locations);
-	void get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_locations);
+	void get_shared_plugins(Track *source, 
+		ArrayList<SharedLocation*> *plugin_locations,
+		int omit_recordable,
+		int data_type);
+	void get_shared_tracks(Track *track, 
+		ArrayList<SharedLocation*> *module_locations,
+		int omit_recordable,
+		int data_type);
 
 
     int get_tracks_height(Theme *theme);

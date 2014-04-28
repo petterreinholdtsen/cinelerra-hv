@@ -212,7 +212,7 @@ MotionMain::~MotionMain()
 	delete rotate_target_dst;
 }
 
-char* MotionMain::plugin_title() { return N_("Motion"); }
+const char* MotionMain::plugin_title() { return N_("Motion"); }
 int MotionMain::is_realtime() { return 1; }
 int MotionMain::is_multichannel() { return 1; }
 
@@ -341,7 +341,7 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("MOTION");
 
 	output.tag.set_property("BLOCK_COUNT", config.block_count);
@@ -371,7 +371,7 @@ void MotionMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

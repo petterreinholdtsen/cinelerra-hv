@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "filexml.h"
 #include "blur.h"
 #include "blurwindow.h"
@@ -85,18 +106,18 @@ BlurMain::BlurMain(PluginServer *server)
  : PluginVClient(server)
 {
 	defaults = 0;
-	temp = 0;
+//	temp = 0;
 	need_reconfigure = 1;
 	engine = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 BlurMain::~BlurMain()
 {
 //printf("BlurMain::~BlurMain 1\n");
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
-	if(temp) delete temp;
+//	if(temp) delete temp;
 	if(engine)
 	{
 		for(int i = 0; i < (get_project_smp() + 1); i++)
@@ -105,31 +126,32 @@ BlurMain::~BlurMain()
 	}
 }
 
-char* BlurMain::plugin_title() { return N_("Blur"); }
+const char* BlurMain::plugin_title() { return N_("Blur"); }
 int BlurMain::is_realtime() { return 1; }
 
 
+NEW_WINDOW_MACRO(BlurMain, BlurWindow)
 NEW_PICON_MACRO(BlurMain)
-
-SHOW_GUI_MACRO(BlurMain, BlurThread)
-
-SET_STRING_MACRO(BlurMain)
-
-RAISE_WINDOW_MACRO(BlurMain)
 
 LOAD_CONFIGURATION_MACRO(BlurMain, BlurConfig)
 
 
 
 
-int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int BlurMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	int i, j, k, l;
 	unsigned char **input_rows, **output_rows;
 
-	this->input = input_ptr;
-	this->output = output_ptr;
 	need_reconfigure |= load_configuration();
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		0);
 
 
 //printf("BlurMain::process_realtime 1 %d %d\n", need_reconfigure, config.radius);
@@ -143,8 +165,8 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int i = 0; i < (get_project_smp() + 1); i++)
 			{
 				engine[i] = new BlurEngine(this, 
-					input->get_h() * i / (get_project_smp() + 1), 
-					input->get_h() * (i + 1) / (get_project_smp() + 1));
+					frame->get_h() * i / (get_project_smp() + 1), 
+					frame->get_h() * (i + 1) / (get_project_smp() + 1));
 				engine[i]->start();
 			}
 		}
@@ -155,31 +177,14 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 
-	if(temp && 
-		(temp->get_w() != input_ptr->get_w() ||
-		temp->get_h() != input_ptr->get_h()))
-	{
-		delete temp;
-		temp = 0;
-	}
-
-	if(!temp)
-		temp = new VFrame(0,
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
-
-	input_rows = input_ptr->get_rows();
-	output_rows = output_ptr->get_rows();
+	PluginVClient::new_temp(frame->get_w(),
+			frame->get_h(),
+			frame->get_color_model());
 
 	if(config.radius < 2 || 
 		(!config.vertical && !config.horizontal))
 	{
-// Data never processed so copy if necessary
-		if(input_rows[0] != output_rows[0])
-		{
-			output_ptr->copy_from(input_ptr);
-		}
+// Data never processed
 	}
 	else
 	{
@@ -189,7 +194,7 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // horizontally to the output in 2 discrete passes.
 		for(i = 0; i < (get_project_smp() + 1); i++)
 		{
-			engine[i]->start_process_frame(output_ptr, input_ptr);
+			engine[i]->start_process_frame(frame);
 		}
 
 		for(i = 0; i < (get_project_smp() + 1); i++)
@@ -206,16 +211,20 @@ void BlurMain::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->horizontal->update(config.horizontal);
-		thread->window->vertical->update(config.vertical);
-		thread->window->radius->update(config.radius);
-		thread->window->a->update(config.a);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->unlock_window();
+		int reconfigure = load_configuration();
+		if(reconfigure) 
+		{
+			((BlurWindow*)thread->window)->lock_window("BlurMain::update_gui");
+			((BlurWindow*)thread->window)->horizontal->update(config.horizontal);
+			((BlurWindow*)thread->window)->vertical->update(config.vertical);
+			((BlurWindow*)thread->window)->radius->update(config.radius);
+			((BlurWindow*)thread->window)->radius_text->update((int64_t)config.radius);
+			((BlurWindow*)thread->window)->a->update(config.a);
+			((BlurWindow*)thread->window)->r->update(config.r);
+			((BlurWindow*)thread->window)->g->update(config.g);
+			((BlurWindow*)thread->window)->b->update(config.b);
+			((BlurWindow*)thread->window)->unlock_window();
+		}
 	}
 }
 
@@ -261,7 +270,7 @@ void BlurMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("BLUR");
 	output.tag.set_property("VERTICAL", config.vertical);
 	output.tag.set_property("HORIZONTAL", config.horizontal);
@@ -278,7 +287,7 @@ void BlurMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -293,7 +302,7 @@ void BlurMain::read_data(KeyFrame *keyframe)
 				config.vertical = input.tag.get_property("VERTICAL", config.vertical);
 				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
 				config.radius = input.tag.get_property("RADIUS", config.radius);
-//printf("BlurMain::read_data 1 %d %d %s\n", get_source_position(), keyframe->position, keyframe->data);
+//printf("BlurMain::read_data 1 %d %d %s\n", get_source_position(), keyframe->position, keyframe->get_data());
 				config.r = input.tag.get_property("R", config.r);
 				config.g = input.tag.get_property("G", config.g);
 				config.b = input.tag.get_property("B", config.b);
@@ -314,8 +323,8 @@ void BlurMain::read_data(KeyFrame *keyframe)
 BlurEngine::BlurEngine(BlurMain *plugin, int start_out, int end_out)
  : Thread()
 {
-	int size = plugin->input->get_w() > plugin->input->get_h() ? 
-		plugin->input->get_w() : plugin->input->get_h();
+	int size = plugin->get_input()->get_w() > plugin->get_input()->get_h() ? 
+		plugin->get_input()->get_w() : plugin->get_input()->get_h();
 	this->plugin = plugin;
 	this->start_out = start_out;
 	this->end_out = end_out;
@@ -336,10 +345,9 @@ BlurEngine::~BlurEngine()
 	join();
 }
 
-int BlurEngine::start_process_frame(VFrame *output, VFrame *input)
+int BlurEngine::start_process_frame(VFrame *frame)
 {
-	this->output = output;
-	this->input = input;
+	this->frame = frame;
 	input_lock.unlock();
 	return 0;
 }
@@ -368,11 +376,11 @@ void BlurEngine::run()
 		start_in = start_out - plugin->config.radius;
 		end_in = end_out + plugin->config.radius;
 		if(start_in < 0) start_in = 0;
-		if(end_in > plugin->input->get_h()) end_in = plugin->input->get_h();
+		if(end_in > frame->get_h()) end_in = frame->get_h();
 		strip_size = end_in - start_in;
-		color_model = input->get_color_model();
-		int w = input->get_w();
-		int h = input->get_h();
+		color_model = frame->get_color_model();
+		int w = frame->get_w();
+		int h = frame->get_h();
 
 
 
@@ -380,8 +388,8 @@ void BlurEngine::run()
 
 #define BLUR(type, max, components) \
 { \
-	type **input_rows = (type **)input->get_rows(); \
-	type **output_rows = (type **)output->get_rows(); \
+	type **input_rows = (type **)frame->get_rows(); \
+	type **output_rows = (type **)frame->get_rows(); \
 	type **current_input = input_rows; \
 	type **current_output = output_rows; \
 	vmax = max; \
@@ -391,7 +399,7 @@ void BlurEngine::run()
 /* Vertical pass */ \
 		if(plugin->config.horizontal) \
 		{ \
-			current_output = (type **)plugin->temp->get_rows(); \
+			current_output = (type **)plugin->get_temp()->get_rows(); \
 		} \
  \
 		for(j = 0; j < w; j++) \
@@ -470,20 +478,25 @@ void BlurEngine::run()
 			case BC_YUV888:
 				BLUR(unsigned char, 0xff, 3);
 				break;
+
 			case BC_RGB_FLOAT:
 				BLUR(float, 1.0, 3);
 				break;
+
 			case BC_RGBA8888:
 			case BC_YUVA8888:
 				BLUR(unsigned char, 0xff, 4);
 				break;
+
 			case BC_RGBA_FLOAT:
 				BLUR(float, 1.0, 4);
 				break;
+
 			case BC_RGB161616:
 			case BC_YUV161616:
 				BLUR(uint16_t, 0xffff, 3);
 				break;
+
 			case BC_RGBA16161616:
 			case BC_YUVA16161616:
 				BLUR(uint16_t, 0xffff, 4);

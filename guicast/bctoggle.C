@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bcsignals.h"
@@ -13,7 +34,7 @@
 BC_Toggle::BC_Toggle(int x, int y, 
 		VFrame **data, 
 		int value, 
-		char *caption,
+		const char *caption,
 		int bottom_justify, 
 		int font,
 		int color)
@@ -51,7 +72,7 @@ int BC_Toggle::initialize()
 // Get the image
 	set_images(data);
 	calculate_extents(this,
-		BC_WindowBase::get_resources()->checkbox_images,
+		data ? data : BC_WindowBase::get_resources()->checkbox_images,
 		bottom_justify,
 		&text_line,
 		&w,
@@ -85,7 +106,7 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 	int *text_y, 
 	int *text_w,
 	int *text_h, 
-	char *caption)
+	const char *caption)
 {
 	BC_Resources *resources = get_resources();
 	VFrame *frame = images[0];
@@ -128,9 +149,12 @@ void BC_Toggle::calculate_extents(BC_WindowBase *gui,
 		*w = *text_x + *text_w;
 	}
 
-
 }
 
+void BC_Toggle::set_radial(int value)
+{
+	is_radial = value;
+}
 
 int BC_Toggle::set_images(VFrame **data)
 {
@@ -432,7 +456,7 @@ int BC_Toggle::has_caption()
 BC_Radial::BC_Radial(int x, 
 	int y, 
 	int value, 
-	char *caption, 
+	const char *caption, 
 	int font,
 	int color)
  : BC_Toggle(x, 
@@ -450,7 +474,7 @@ BC_Radial::BC_Radial(int x,
 BC_CheckBox::BC_CheckBox(int x, 
 	int y, 
 	int value, 
-	char *caption, 
+	const char *caption, 
 	int font,
 	int color)
  : BC_Toggle(x, 
@@ -468,7 +492,7 @@ BC_CheckBox::BC_CheckBox(int x,
 BC_CheckBox::BC_CheckBox(int x, 
 	int y, 
 	int *value, 
-	char *caption, 
+	const char *caption, 
 	int font,
 	int color)
  : BC_Toggle(x, 

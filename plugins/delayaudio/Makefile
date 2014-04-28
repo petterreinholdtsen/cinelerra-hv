@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/delayaudio.o
 
-OUTPUT = ../$(OBJDIR)/delayaudio.plugin
+OUTPUT = $(PLUGIN_DIR)/delayaudio.plugin
 
 include ../../plugin_config
 

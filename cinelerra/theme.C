@@ -1,9 +1,31 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "awindowgui.h"
 #include "clip.h"
 #include "colors.h"
 #include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "keyframegui.h"
 #include "language.h"
 #include "levelwindowgui.h"
 #include "loadmode.h"
@@ -17,6 +39,7 @@
 #include "overlayframe.h"
 #include "patchbay.h"
 #include "playtransport.h"
+#include "presetsgui.h"
 #include "recordgui.h"
 #include "recordmonitor.h"
 #include "resourcepixmap.h"
@@ -33,12 +56,11 @@
 #include <string.h>
 
 
-
-
-
 Theme::Theme()
  : BC_Theme()
 {
+	window_border = 10;
+	widget_border = 5;
 	this->mwindow = 0;
 	theme_title = DEFAULT_THEME;
 	data_buffer = 0;
@@ -46,6 +68,7 @@ Theme::Theme()
 	last_image = 0;
 	mtransport_margin = 0;
 	toggle_margin = 0;
+	control_pixels = 50;
 
 	BC_WindowBase::get_resources()->bg_color = BLOND;
 	BC_WindowBase::get_resources()->button_up = 0xffc000;
@@ -135,6 +158,7 @@ void Theme::build_menus()
 	frame_sizes.append(new BC_ListBoxItem("320x240"));
 	frame_sizes.append(new BC_ListBoxItem("360x240"));
 	frame_sizes.append(new BC_ListBoxItem("400x300"));
+	frame_sizes.append(new BC_ListBoxItem("424x318"));
 	frame_sizes.append(new BC_ListBoxItem("512x384"));
 	frame_sizes.append(new BC_ListBoxItem("640x480"));
 	frame_sizes.append(new BC_ListBoxItem("720x480"));
@@ -208,7 +232,7 @@ void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 						for(int j = 0; j < w; j++)
 						{
 							int opacity = in_row[3];
-							int transparency = 0xff - opacity;
+							int transparency = out_row[3] * (0xff - opacity) / 0xff;
 							out_row[0] = (in_row[0] * opacity + out_row[0] * transparency) / 0xff;
 							out_row[1] = (in_row[1] * opacity + out_row[1] * transparency) / 0xff;
 							out_row[2] = (in_row[2] * opacity + out_row[2] * transparency) / 0xff;
@@ -592,7 +616,7 @@ void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
 	int w, 
 	int h)
 {
-	batchrender_x1 = 5;
+	batchrender_x1 = 10;
 	batchrender_x2 = 300;
 	batchrender_x3 = 400;
 }
@@ -621,6 +645,145 @@ void Theme::get_plugindialog_sizes()
 	plugindialog_moduleattach_x = plugindialog_module_x + 20;
 	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
 }
+
+// void Theme::get_presetdialog_sizes(PresetsWindow *gui)
+// {
+// 	int x = window_border;
+// 	int y = window_border + BC_Title::calculate_h(gui, "P") + widget_border;
+// 
+// 	presets_list_x = x;
+// 	presets_list_y = y;
+// 	presets_list_w = mwindow->session->presetdialog_w / 2;
+// 	presets_list_h = mwindow->session->presetdialog_h - 
+// 		BC_OKButton::calculate_h() - 
+// 		presets_list_y -
+// 		widget_border -
+// 		window_border;
+// 	presets_text_x = presets_list_x + presets_list_w + widget_border;
+// 	presets_text_y = y;
+// 	presets_text_w = mwindow->session->presetdialog_w - presets_text_x - window_border;
+// 	y += BC_TextBox::calculate_h(gui, 
+// 		MEDIUMFONT, 
+// 		1, 
+// 		1) + widget_border;
+// 
+// 	presets_delete_x = presets_text_x;
+// 	presets_delete_y = y;
+// 	y += BC_GenericButton::calculate_h() + widget_border;
+// 
+// 	presets_save_x = presets_text_x;
+// 	presets_save_y = y;
+// 	y += BC_GenericButton::calculate_h() + widget_border;
+// 
+// 	presets_apply_x = presets_text_x;
+// 	presets_apply_y = y;
+// 	y += BC_GenericButton::calculate_h();
+// }
+
+void Theme::get_keyframedialog_sizes(KeyFrameWindow *gui)
+{
+	int x = window_border;
+	int y = window_border + 
+		BC_Title::calculate_h(gui, "P", LARGEFONT) + 
+		widget_border;
+
+	presets_list_x = x;
+	presets_list_y = y;
+#ifdef EDIT_KEYFRAME
+	presets_list_w = mwindow->session->keyframedialog_w / 2 - 
+		widget_border - 
+		window_border;
+#else
+	presets_list_w = mwindow->session->keyframedialog_w - 
+		presets_list_x -
+		window_border;
+#endif
+	presets_list_h = mwindow->session->keyframedialog_h - 
+		BC_OKButton::calculate_h() - 
+		presets_list_y -
+		widget_border -
+		widget_border -
+		BC_Title::calculate_h(gui, "P") - 
+		widget_border -
+		BC_TextBox::calculate_h(gui, 
+			MEDIUMFONT, 
+			1, 
+			1) -
+		widget_border -
+		(BC_GenericButton::calculate_h() + widget_border) * 3 - 
+		window_border;
+	y += presets_list_h + widget_border + widget_border + BC_Title::calculate_h(gui, "P");
+	presets_text_x = x;
+	presets_text_y = y;
+	presets_text_w = presets_list_w;
+	y += BC_TextBox::calculate_h(gui, 
+		MEDIUMFONT, 
+		1, 
+		1) + widget_border;
+
+	presets_delete_x = presets_text_x;
+	presets_delete_y = y;
+	y += BC_GenericButton::calculate_h() + widget_border;
+
+	presets_save_x = presets_text_x;
+	presets_save_y = y;
+	y += BC_GenericButton::calculate_h() + widget_border;
+
+	presets_apply_x = presets_text_x;
+	presets_apply_y = y;
+	y += BC_GenericButton::calculate_h();
+
+#ifdef EDIT_KEYFRAME
+	x = mwindow->session->keyframedialog_w / 2 + widget_border;
+	y = window_border + 
+		BC_Title::calculate_h(gui, "P", LARGEFONT) + 
+		widget_border;
+
+	keyframe_list_x = x;
+	keyframe_list_y = y;
+	keyframe_list_w = mwindow->session->keyframedialog_w / 2 - 
+		widget_border - 
+		window_border;
+	keyframe_list_h = mwindow->session->keyframedialog_h - 
+		keyframe_list_y -
+		widget_border -
+		widget_border -
+		BC_Title::calculate_h(gui, "P") -
+		widget_border - 
+		BC_TextBox::calculate_h(gui,
+			MEDIUMFONT,
+			1,
+			1) -
+		widget_border - 
+		BC_Title::calculate_h(gui, "P") -
+		widget_border -
+		BC_OKButton::calculate_h() - 
+		window_border;
+// 	keyframe_text_x = keyframe_list_x + keyframe_list_w + widget_border;
+// 	keyframe_text_y = y;
+// 	keyframe_text_w = mwindow->session->keyframedialog_w - keyframe_text_x - window_border;
+// 	y += BC_TextBox::calculate_h(gui, 
+// 		MEDIUMFONT, 
+// 		1, 
+// 		1) + widget_border;
+// 
+
+ 	y += keyframe_list_h + BC_Title::calculate_h(gui, "P") + widget_border + widget_border;
+	keyframe_value_x = keyframe_list_x;
+	keyframe_value_y = y;
+	keyframe_value_w = keyframe_list_w;
+	y += BC_TextBox::calculate_h(gui, 
+		MEDIUMFONT, 
+		1, 
+		1) + widget_border;
+
+	keyframe_all_x = keyframe_value_x;
+	keyframe_all_y = y;
+
+#endif
+
+}
+
 
 void Theme::get_menueffect_sizes(int use_list)
 {

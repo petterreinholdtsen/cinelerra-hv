@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "channeldb.h"
 #include "channelpicker.h"
@@ -152,13 +173,9 @@ int VDevicePrefs::initialize(int creation)
 
 int VDevicePrefs::delete_objects()
 {
-SET_TRACE
 	delete output_title;
-SET_TRACE
 	delete channel_picker;
-SET_TRACE
 	delete buz_swap_channels;
-SET_TRACE
 	delete device_title;
 	delete device_text;
 
@@ -168,22 +185,13 @@ SET_TRACE
 	delete number_title;
 	delete device_number;
 
-SET_TRACE
-SET_TRACE
 	if(firewire_port) delete firewire_port;
-SET_TRACE
 	if(channel_title) delete channel_title;
-SET_TRACE
 	if(firewire_channel) delete firewire_channel;
-SET_TRACE
-SET_TRACE
 	if(firewire_path) delete firewire_path;
-SET_TRACE
 	if(syt_title) delete syt_title;
-SET_TRACE
 	if(firewire_syt) delete firewire_syt;
 
-SET_TRACE
 	reset_objects();
 	driver = -1;
 	return 0;
@@ -497,7 +505,7 @@ char* VDriverMenu::driver_to_string(int driver)
 	return string;
 }
 
-int VDriverMenu::create_objects()
+void VDriverMenu::create_objects()
 {
 	if(do_input)
 	{
@@ -524,11 +532,10 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, PLAYBACK_DV1394_TITLE, PLAYBACK_DV1394));
 		add_item(new VDriverItem(this, PLAYBACK_IEC61883_TITLE, PLAYBACK_IEC61883));
 	}
-	return 0;
 }
 
 
-VDriverItem::VDriverItem(VDriverMenu *popup, char *text, int driver)
+VDriverItem::VDriverItem(VDriverMenu *popup, const char *text, int driver)
  : BC_MenuItem(text)
 {
 	this->popup = popup;

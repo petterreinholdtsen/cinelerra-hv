@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #define GL_GLEXT_PROTOTYPES
 
 #include "bcsignals.h"
@@ -29,7 +50,7 @@
 // These should be passed to VFrame::make_shader to construct shaders.
 // Can't hard code sampler2D
 
-static char *yuv_to_rgb_frag = 
+static const char *yuv_to_rgb_frag = 
 	"uniform sampler2D tex;\n"
 	"void main()\n"
 	"{\n"
@@ -42,7 +63,7 @@ static char *yuv_to_rgb_frag =
 	"	gl_FragColor = vec4(yuv_to_rgb_matrix * yuv, 1);\n"
 	"}\n";
 
-static char *yuva_to_rgba_frag = 
+static const char *yuva_to_rgba_frag = 
 	"uniform sampler2D tex;\n"
 	"void main()\n"
 	"{\n"
@@ -55,7 +76,7 @@ static char *yuva_to_rgba_frag =
 	"	gl_FragColor = vec4(yuv_to_rgb_matrix * yuva.rgb, yuva.a);\n"
 	"}\n";
 
-static char *blend_add_frag = 
+static const char *blend_add_frag = 
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"void main()\n"
@@ -69,7 +90,7 @@ static char *blend_add_frag =
 	"	gl_FragColor.a = max(gl_FragColor.a, canvas.a);\n"
 	"}\n";
 
-static char *blend_max_frag = 
+static const char *blend_max_frag = 
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"void main()\n"
@@ -85,7 +106,7 @@ static char *blend_max_frag =
 	"	gl_FragColor.a = max(gl_FragColor.a, canvas.a);\n"
 	"}\n";
 
-static char *blend_subtract_frag = 
+static const char *blend_subtract_frag = 
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"void main()\n"
@@ -99,7 +120,7 @@ static char *blend_subtract_frag =
 	"	gl_FragColor.a = max(gl_FragColor.a, canvas.a);\n"
 	"}\n";
 
-static char *blend_multiply_frag = 
+static const char *blend_multiply_frag = 
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"void main()\n"
@@ -113,7 +134,7 @@ static char *blend_multiply_frag =
 	"	gl_FragColor.a = max(gl_FragColor.a, canvas.a);\n"
 	"}\n";
 
-static char *blend_divide_frag = 
+static const char *blend_divide_frag = 
 	"uniform sampler2D tex2;\n"
 	"uniform vec2 tex2_dimensions;\n"
 	"void main()\n"
@@ -130,20 +151,20 @@ static char *blend_divide_frag =
 	"	gl_FragColor = vec4(result, max(gl_FragColor.a, canvas.a));\n"
 	"}\n";
 
-static char *multiply_alpha_frag = 
+static const char *multiply_alpha_frag = 
 	"void main()\n"
 	"{\n"
 	"	gl_FragColor.rgb *= vec3(gl_FragColor.a, gl_FragColor.a, gl_FragColor.a);\n"
 	"}\n";
 
-static char *read_texture_frag = 
+static const char *read_texture_frag = 
 	"uniform sampler2D tex;\n"
 	"void main()\n"
 	"{\n"
 	"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
 	"}\n";
 
-static char *multiply_mask4_frag = 
+static const char *multiply_mask4_frag = 
 	"uniform sampler2D tex;\n"
 	"uniform sampler2D tex1;\n"
 	"uniform float scale;\n"
@@ -153,7 +174,7 @@ static char *multiply_mask4_frag =
 	"	gl_FragColor.a *= texture2D(tex1, gl_TexCoord[0].st / vec2(scale, scale)).r;\n"
 	"}\n";
 
-static char *multiply_mask3_frag = 
+static const char *multiply_mask3_frag = 
 	"uniform sampler2D tex;\n"
 	"uniform sampler2D tex1;\n"
 	"uniform float scale;\n"
@@ -165,7 +186,7 @@ static char *multiply_mask3_frag =
 	"	gl_FragColor.rgb *= vec3(a, a, a);\n"
 	"}\n";
 
-static char *multiply_yuvmask3_frag = 
+static const char *multiply_yuvmask3_frag = 
 	"uniform sampler2D tex;\n"
 	"uniform sampler2D tex1;\n"
 	"uniform float scale;\n"
@@ -178,7 +199,7 @@ static char *multiply_yuvmask3_frag =
 	"	gl_FragColor.gb += vec2(0.5, 0.5);\n"
 	"}\n";
 
-static char *fade_rgba_frag =
+static const char *fade_rgba_frag =
 	"uniform sampler2D tex;\n"
 	"uniform float alpha;\n"
 	"void main()\n"
@@ -187,7 +208,7 @@ static char *fade_rgba_frag =
 	"	gl_FragColor.a *= alpha;\n"
 	"}\n";
 
-static char *fade_yuv_frag =
+static const char *fade_yuv_frag =
 	"uniform sampler2D tex;\n"
 	"uniform float alpha;\n"
 	"void main()\n"
@@ -867,7 +888,7 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 		}
 
 
-		char *shader_stack[3] = { 0, 0, 0 };
+		const char *shader_stack[3] = { 0, 0, 0 };
 		int total_shaders = 0;
 
 		VFrame::init_screen(canvas_w, canvas_h);
@@ -1117,23 +1138,27 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		int w = command->frame->get_w();
 		int h = command->frame->get_h();
 		command->frame->init_screen();
+		int value = command->keyframe_set->get_value(command->start_position_project,
+			PLAY_FORWARD);
+		float feather = command->keyframe_set->get_feather(command->start_position_project,
+			PLAY_FORWARD);
 
 // Clear screen
 		glDisable(GL_TEXTURE_2D);
 		if(command->default_auto->mode == MASK_MULTIPLY_ALPHA)
 		{
 			glClearColor(0.0, 0.0, 0.0, 0.0);
-			glColor4f((float)command->keyframe->value / 100, 
-				(float)command->keyframe->value / 100, 
-				(float)command->keyframe->value / 100, 
+			glColor4f((float)value / 100, 
+				(float)value / 100, 
+				(float)value / 100, 
 				1.0);
 		}
 		else
 		{
 			glClearColor(1.0, 1.0, 1.0, 1.0);
-			glColor4f((float)1.0 - (float)command->keyframe->value / 100, 
-				(float)1.0 - (float)command->keyframe->value / 100, 
-				(float)1.0 - (float)command->keyframe->value / 100, 
+			glColor4f((float)1.0 - (float)value / 100, 
+				(float)1.0 - (float)value / 100, 
+				(float)1.0 - (float)value / 100, 
 				1.0);
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1152,7 +1177,7 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		int total_submasks = command->keyframe_set->total_submasks(
 			command->start_position_project, 
 			PLAY_FORWARD);
-		float scale = command->keyframe->feather + 1;
+		float scale = feather + 1;
  		int display_list = glGenLists(1);
  		glNewList(display_list, GL_COMPILE);
 		for(int k = 0; k < total_submasks; k++)

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "colormodels.h"
@@ -15,9 +36,6 @@ REGISTER_PLUGIN(InterpolatePixelsMain)
 
 
 
-PLUGIN_THREAD_OBJECT(InterpolatePixelsMain, 
-	InterpolatePixelsThread, 
-	InterpolatePixelsWindow)
 
 
 
@@ -55,17 +73,13 @@ int InterpolatePixelsOffset::handle_event()
 
 
 
-InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client, int x, int y)
- : BC_Window(client->gui_string, 
-	x,
-	y,
+InterpolatePixelsWindow::InterpolatePixelsWindow(InterpolatePixelsMain *client)
+ : PluginClientWindow(client,
 	200, 
 	100, 
 	200, 
 	100, 
-	0, 
-	0,
-	1)
+	0)
 { 
 	this->client = client; 
 }
@@ -74,7 +88,7 @@ InterpolatePixelsWindow::~InterpolatePixelsWindow()
 {
 }
 
-int InterpolatePixelsWindow::create_objects()
+void InterpolatePixelsWindow::create_objects()
 {
 	int x = 10, y = 10;
 	
@@ -93,11 +107,10 @@ int InterpolatePixelsWindow::create_objects()
 	y += MAX(y_offset->get_h(), title->get_h()) + 5;
 
 	show_window();
-	return 0;
 }
 
 
-WINDOW_CLOSE_EVENT(InterpolatePixelsWindow)
+
 
 
 
@@ -145,25 +158,21 @@ void InterpolatePixelsConfig::interpolate(InterpolatePixelsConfig &prev,
 InterpolatePixelsMain::InterpolatePixelsMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 }
 
 InterpolatePixelsMain::~InterpolatePixelsMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	delete engine;
 }
 
-char* InterpolatePixelsMain::plugin_title() { return N_("Interpolate Pixels"); }
+const char* InterpolatePixelsMain::plugin_title() { return N_("Interpolate Pixels"); }
 int InterpolatePixelsMain::is_realtime() { return 1; }
 
 
-SHOW_GUI_MACRO(InterpolatePixelsMain, InterpolatePixelsThread)
-
-SET_STRING_MACRO(InterpolatePixelsMain)
-
-RAISE_WINDOW_MACRO(InterpolatePixelsMain)
+NEW_WINDOW_MACRO(InterpolatePixelsMain, InterpolatePixelsWindow)
 
 NEW_PICON_MACRO(InterpolatePixelsMain)
 
@@ -175,8 +184,8 @@ void InterpolatePixelsMain::update_gui()
 		if(changed)
 		{
 			thread->window->lock_window("InterpolatePixelsMain::update_gui");
-			thread->window->x_offset->update(config.x);
-			thread->window->y_offset->update(config.y);
+			((InterpolatePixelsWindow*)thread->window)->x_offset->update(config.x);
+			((InterpolatePixelsWindow*)thread->window)->y_offset->update(config.y);
 			thread->window->unlock_window();
 		}
 	}
@@ -213,7 +222,7 @@ void InterpolatePixelsMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("INTERPOLATEPIXELS");
 	output.tag.set_property("X", config.x);
 	output.tag.set_property("Y", config.y);
@@ -225,7 +234,7 @@ void InterpolatePixelsMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	float new_threshold;

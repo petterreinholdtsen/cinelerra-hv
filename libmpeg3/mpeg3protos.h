@@ -157,7 +157,8 @@ int mpeg3_pcm_check(unsigned char *header);
 /* These return the size of the next frame including the header */
 /* or 0 if it wasn't a header. */
 /* Decode a layer header */
-int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data);
+/* This is used directly in Quicktime */
+int mpeg3_layer_header(mpeg3_layer_t *layer_data, unsigned char *data);
 
 
 /* Decode an AC3 header */

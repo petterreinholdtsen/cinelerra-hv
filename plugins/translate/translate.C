@@ -1,15 +1,34 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "translate.h"
 #include "translatewin.h"
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
 
 
 REGISTER_PLUGIN(TranslateMain)
@@ -81,12 +100,12 @@ TranslateMain::TranslateMain(PluginServer *server)
 {
 	temp_frame = 0;
 	overlayer = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 TranslateMain::~TranslateMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(temp_frame) delete temp_frame;
 	temp_frame = 0;
@@ -94,7 +113,7 @@ TranslateMain::~TranslateMain()
 	overlayer = 0;
 }
 
-char* TranslateMain::plugin_title() { return N_("Translate"); }
+const char* TranslateMain::plugin_title() { return N_("Translate"); }
 int TranslateMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(TranslateMain)
@@ -140,7 +159,7 @@ void TranslateMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 // Store data
 	output.tag.set_title("TRANSLATE");
@@ -162,7 +181,7 @@ void TranslateMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -258,12 +277,7 @@ int TranslateMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 
-
-SHOW_GUI_MACRO(TranslateMain, TranslateThread)
-
-RAISE_WINDOW_MACRO(TranslateMain)
-
-SET_STRING_MACRO(TranslateMain)
+NEW_WINDOW_MACRO(TranslateMain, TranslateWin)
 
 void TranslateMain::update_gui()
 {
@@ -272,14 +286,14 @@ void TranslateMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window();
-			thread->window->in_x->update(config.in_x);
-			thread->window->in_y->update(config.in_y);
-			thread->window->in_w->update(config.in_w);
-			thread->window->in_h->update(config.in_h);
-			thread->window->out_x->update(config.out_x);
-			thread->window->out_y->update(config.out_y);
-			thread->window->out_w->update(config.out_w);
-			thread->window->out_h->update(config.out_h);
+			((TranslateWin*)thread->window)->in_x->update(config.in_x);
+			((TranslateWin*)thread->window)->in_y->update(config.in_y);
+			((TranslateWin*)thread->window)->in_w->update(config.in_w);
+			((TranslateWin*)thread->window)->in_h->update(config.in_h);
+			((TranslateWin*)thread->window)->out_x->update(config.out_x);
+			((TranslateWin*)thread->window)->out_y->update(config.out_y);
+			((TranslateWin*)thread->window)->out_w->update(config.out_w);
+			((TranslateWin*)thread->window)->out_h->update(config.out_h);
 			thread->window->unlock_window();
 		}
 	}

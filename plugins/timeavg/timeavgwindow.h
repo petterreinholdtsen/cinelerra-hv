@@ -1,37 +1,65 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef TIMEAVGWINDOW_H
 #define TIMEAVGWINDOW_H
 
 
 class TimeAvgThread;
 class TimeAvgWindow;
-class TimeAvgAccum;
 class TimeAvgAvg;
-class TimeAvgOr;
+class TimeAvgAccum;
+class TimeAvgReplace;
+class TimeAvgGreater;
+class TimeAvgLess;
 class TimeAvgParanoid;
 class TimeAvgNoSubtract;
+class TimeThresholdSlider;
+class TimeBorderSlider;
 
 #include "guicast.h"
 #include "mutex.h"
 #include "timeavg.h"
 
-PLUGIN_THREAD_HEADER(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
 
 class TimeAvgSlider;
 
-class TimeAvgWindow : public BC_Window
+class TimeAvgWindow : public PluginClientWindow
 {
 public:
-	TimeAvgWindow(TimeAvgMain *client, int x, int y);
+	TimeAvgWindow(TimeAvgMain *client);
 	~TimeAvgWindow();
 	
-	int create_objects();
-	int close_event();
-	
+	void create_objects();
+	void update_toggles();
+
 	TimeAvgMain *client;
 	TimeAvgSlider *total_frames;
-	TimeAvgAccum *accum;
+	TimeThresholdSlider *threshold;
+	TimeBorderSlider *border;
 	TimeAvgAvg *avg;
-	TimeAvgOr *inclusive_or;
+	TimeAvgAccum *accum;
+	TimeAvgReplace *replace;
+	TimeAvgGreater *greater;
+	TimeAvgLess *less;
 	TimeAvgParanoid *paranoid;
 	TimeAvgNoSubtract *no_subtract;
 };
@@ -46,13 +74,24 @@ public:
 	TimeAvgMain *client;
 };
 
-class TimeAvgAccum : public BC_Radial
+class TimeThresholdSlider : public BC_ISlider
 {
 public:
-	TimeAvgAccum(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y);
+	TimeThresholdSlider(TimeAvgMain *client, int x, int y);
+	~TimeThresholdSlider();
 	int handle_event();
+
 	TimeAvgMain *client;
-	TimeAvgWindow *gui;
+};
+
+class TimeBorderSlider : public BC_ISlider
+{
+public:
+	TimeBorderSlider(TimeAvgMain *client, int x, int y);
+	~TimeBorderSlider();
+	int handle_event();
+
+	TimeAvgMain *client;
 };
 
 class TimeAvgAvg : public BC_Radial
@@ -64,10 +103,37 @@ public:
 	TimeAvgWindow *gui;
 };
 
-class TimeAvgOr : public BC_Radial
+class TimeAvgAccum : public BC_Radial
 {
 public:
-	TimeAvgOr(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y);
+	TimeAvgAccum(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y);
+	int handle_event();
+	TimeAvgMain *client;
+	TimeAvgWindow *gui;
+};
+
+class TimeAvgReplace : public BC_Radial
+{
+public:
+	TimeAvgReplace(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y);
+	int handle_event();
+	TimeAvgMain *client;
+	TimeAvgWindow *gui;
+};
+
+class TimeAvgGreater : public BC_Radial
+{
+public:
+	TimeAvgGreater(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y);
+	int handle_event();
+	TimeAvgMain *client;
+	TimeAvgWindow *gui;
+};
+
+class TimeAvgLess : public BC_Radial
+{
+public:
+	TimeAvgLess(TimeAvgMain *client, TimeAvgWindow *gui, int x, int y);
 	int handle_event();
 	TimeAvgMain *client;
 	TimeAvgWindow *gui;

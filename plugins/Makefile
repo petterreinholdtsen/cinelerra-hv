@@ -44,16 +44,17 @@ DIRS = \
 	gain \
 	gamma \
 	gradient \
+	graphic \
 	histogram \
 	holo \
 	huesaturation \
-	interpolate \
 	interpolateaudio \
 	interpolatevideo \
 	invertaudio \
 	invertvideo \
 	irissquare \
 	ivtc \
+	lens \
 	level \
 	linearblur \
 	liveaudio \
@@ -61,6 +62,7 @@ DIRS = \
 	loopaudio \
 	loopvideo \
 	motion \
+	motion2point \
 	motionblur \
 	normalize \
 	oilpainting \
@@ -79,12 +81,14 @@ DIRS = \
 	rgb601 \
 	rotate \
 	scale \
+	shapewipe \
 	sharpen \
 	shiftinterlace \
 	slide \
 	spectrogram \
 	suv \
 	swapchannels \
+	swapframes \
 	synthesizer \
 	threshold \
 	timeavg \
@@ -126,13 +130,14 @@ wc:
 
 # Can't strip the themes so instead the plugins strip themselves
 install:
-#	strip $(OBJDIR)/*.plugin
-	rm -rf $(PLUGINDIR)
-	mkdir -p $(PLUGINDIR)
-	cp $(OBJDIR)/*.plugin $(PLUGINDIR)
-	mkdir -p $(PLUGINDIR)/fonts
-	cp titler/fonts/* $(PLUGINDIR)/fonts
-	cp ../mjpegtools*/mpeg2enc/mpeg2enc $(PLUGINDIR)/mpeg2enc.plugin
+#	strip ../bin/*.plugin
+#	rm -rf ../bin/*.plugin
+#	cp $(OBJDIR)/*.plugin ../bin/
+	mkdir -p ../bin/fonts
+	cp fonts/* ../bin/fonts
+	mkdir -p ../bin/shapes
+	cp shapes/* ../bin/shapes
+	cp ../thirdparty/mjpegtools*/mpeg2enc/mpeg2enc ../bin/mpeg2enc.plugin
 
 
 

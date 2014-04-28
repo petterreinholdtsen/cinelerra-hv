@@ -31,7 +31,7 @@ void quicktime_esds_samplerate(quicktime_stsd_table_t *table,
 		static int samplerate_table[] = 
 		{
              96000, 88200, 64000, 48000, 44100, 32000, 
-             24000, 22050, 16000, 12000, 11025, 8000,
+             24000, 22050, 16000, 12000, 11025, 8000, 
              7350, 0, 0, 0
         };
 
@@ -228,13 +228,16 @@ void quicktime_write_esds(quicktime_t *file,
 
 void quicktime_esds_dump(quicktime_esds_t *esds)
 {
-	printf("       elementary stream description\n");
-	printf("        mpeg4_header_size=0x%x\n", esds->mpeg4_header_size);
-	printf("        mpeg4_header=");
-	int i;
-	for(i = 0; i < esds->mpeg4_header_size; i++)
-		printf("%02x ", (unsigned char)esds->mpeg4_header[i]);
-	printf("\n");
+	if(esds->mpeg4_header_size)
+	{
+		printf("       elementary stream description\n");
+		printf("        mpeg4_header_size=0x%x\n", esds->mpeg4_header_size);
+		printf("        mpeg4_header=");
+		int i;
+		for(i = 0; i < esds->mpeg4_header_size; i++)
+			printf("%02x ", (unsigned char)esds->mpeg4_header[i]);
+		printf("\n");
+	}
 }
 
 

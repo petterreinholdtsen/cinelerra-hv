@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assetedit.h"
 #include "awindow.h"
@@ -160,7 +181,7 @@ AssetEditWindow::~AssetEditWindow()
 
 
 
-int AssetEditWindow::create_objects()
+void AssetEditWindow::create_objects()
 {
 	int y = 10, x = 10, x1 = 10, x2 = 150;
 	char string[BCTEXTLEN];
@@ -169,6 +190,7 @@ int AssetEditWindow::create_objects()
 	FileSystem fs;
 	BC_Title *title;
 
+	lock_window("AssetEditWindow::create_objects");
 	if(allow_edits) 
 		vmargin = 30;
 	else
@@ -428,7 +450,7 @@ int AssetEditWindow::create_objects()
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	flush();
-	return 0;
+	unlock_window();
 }
 
 AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow, 
@@ -557,8 +579,22 @@ int AssetEditPathText::handle_event()
 	return 1;
 }
 
-AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, BC_TextBox *textbox, int y, char *text, char *window_title, char *window_caption)
- : BrowseButton(mwindow, fwindow, textbox, 310, y, text, window_title, window_caption, 0) 
+AssetEditPath::AssetEditPath(MWindow *mwindow, 
+	AssetEditWindow *fwindow, 
+	BC_TextBox *textbox, 
+	int y, 
+	const char *text, 
+	const char *window_title, 
+	const char *window_caption)
+ : BrowseButton(mwindow, 
+ 	fwindow, 
+	textbox, 
+	310, 
+	y, 
+	text, 
+	window_title, 
+	window_caption, 
+	0) 
 { 
 	this->fwindow = fwindow; 
 }

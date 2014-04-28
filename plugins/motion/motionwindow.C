@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "language.h"
@@ -9,20 +30,17 @@
 
 
 
-PLUGIN_THREAD_OBJECT(MotionMain, MotionThread, MotionWindow)
 
 
 
-MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
-	600, 
+
+MotionWindow::MotionWindow(MotionMain *plugin)
+ : PluginClientWindow(plugin,
+ 	600, 
 	650, 
 	600,
 	650,
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin; 
 }
@@ -31,7 +49,7 @@ MotionWindow::~MotionWindow()
 {
 }
 
-int MotionWindow::create_objects()
+void MotionWindow::create_objects()
 {
 	int x1 = 10, x = 10, y = 10;
 	int x2 = 310;
@@ -128,6 +146,11 @@ int MotionWindow::create_objects()
 		x + title->get_w() + 10 + block_x->get_w() + 10, 
 		y + 10));
 
+	add_subwindow(title = new BC_Title(x2, y, _("Rotation center:")));
+	add_subwindow(rotation_center = new RotationCenter(plugin,
+		x2 + title->get_w() + 10,
+		y));
+
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
 	add_subwindow(block_y = new MotionBlockY(plugin, 
@@ -218,7 +241,6 @@ int MotionWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
 void MotionWindow::update_mode()
@@ -238,7 +260,7 @@ void MotionWindow::update_mode()
 }
 
 
-WINDOW_CLOSE_EVENT(MotionWindow)
+
 
 
 
@@ -297,6 +319,27 @@ int RotationRange::handle_event()
 
 
 
+RotationCenter::RotationCenter(MotionMain *plugin, 
+	int x, 
+	int y)
+ : BC_IPot(x, 
+		y, 
+		(int64_t)plugin->config.rotation_center,
+		(int64_t)-MAX_ROTATION,
+		(int64_t)MAX_ROTATION)
+{
+	this->plugin = plugin;
+}
+
+
+int RotationCenter::handle_event()
+{
+	plugin->config.rotation_center = (int)get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
 
 
 
@@ -349,6 +392,8 @@ GlobalSearchPositions::GlobalSearchPositions(MotionMain *plugin,
 }
 void GlobalSearchPositions::create_objects()
 {
+	add_item(new BC_MenuItem("16"));
+	add_item(new BC_MenuItem("32"));
 	add_item(new BC_MenuItem("64"));
 	add_item(new BC_MenuItem("128"));
 	add_item(new BC_MenuItem("256"));

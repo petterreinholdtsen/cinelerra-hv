@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef SHARPEN_H
 #define SHARPEN_H
 
@@ -44,32 +65,23 @@ public:
 	~SharpenMain();
 
 // required for all realtime plugins
+	PLUGIN_CLASS_MEMBERS(SharpenConfig) 
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
 	void update_gui();
-	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int load_defaults();
 	int save_defaults();
-	VFrame* new_picon();
 
 // parameters needed for sharpness
 	int row_step;
 
-// a thread for the GUI
-	SharpenThread *thread;
 	int pos_lut[0x10000], neg_lut[0x10000];
-	SharpenConfig config;
 	VFrame *output, *input;
 
 private:
 	int get_luts(int *pos_lut, int *neg_lut, int color_model);
-	BC_Hash *defaults;
 	SharpenEngine **engine;
 	int total_engines;
 };

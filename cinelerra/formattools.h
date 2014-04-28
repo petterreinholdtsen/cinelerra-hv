@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef FORMATTOOLS_H
 #define FORMATTOOLS_H
 
@@ -30,7 +51,7 @@ public:
 				Asset *asset);
 	virtual ~FormatTools();
 
-	int create_objects(int &init_x, 
+	void create_objects(int &init_x, 
 						int &init_y, 
 						int do_audio,    // Include tools for audio
 						int do_video,   // Include tools for video
@@ -60,6 +81,7 @@ public:
 
 	int set_audio_options();
 	int set_video_options();
+	void set_w(int w);
 	int get_w();
 
 	BC_WindowBase *window;
@@ -153,9 +175,11 @@ public:
 	~FormatAThread();
 	
 	void run();
+	void start();
 
 	FormatTools *format;
 	File *file;
+	int joined;
 };
 
 class FormatVThread : public Thread
@@ -165,9 +189,11 @@ public:
 	~FormatVThread();
 	
 	void run();
+	void start();
 
 	FormatTools *format;
 	File *file;
+	int joined;
 };
 
 class FormatAudio : public BC_CheckBox

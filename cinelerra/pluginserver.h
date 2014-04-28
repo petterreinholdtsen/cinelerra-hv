@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef PLUGINSERVER_H
 #define PLUGINSERVER_H
 
@@ -67,7 +88,7 @@ public:
 	void render_stop();
 
 // queries
-	void set_title(char *string);
+	void set_title(const char *string);
 // Generate title for display
 	void generate_display_title(char *string);
 // Get keyframes for configuration.  Position is always relative to EDL rate.
@@ -83,6 +104,10 @@ public:
 // Get or create keyframe for writing, depending on whether auto keyframes
 // is enabled.  Called by PluginClient::send_configure_change
 	KeyFrame* get_keyframe();
+// Apply new settings from the plugin GUI.  Called by PluginClient::send_configure_change
+// Used in keyframe spanning mode.
+	void apply_keyframe(KeyFrame *src);
+
 // Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
 // Get theme being used by Cinelerra currently.  Used by all plugins.
@@ -104,6 +129,7 @@ public:
 // cause the plugin to show the GUI
 // Called by MWindow::show_plugin
 	void show_gui();          
+	void hide_gui();
 // Update GUI with keyframe settings
 	void update_gui();
 	void update_title();

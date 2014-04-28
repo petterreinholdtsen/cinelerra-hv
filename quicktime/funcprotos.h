@@ -176,6 +176,12 @@ void quicktime_set_avcc_header(quicktime_avcc_t *avcc,
 	unsigned char *data, 
 	int size);
 
+void quicktime_delete_frma(quicktime_frma_t *frma);
+int quicktime_read_frma(quicktime_t *file, 
+	quicktime_atom_t *parent_atom,
+	quicktime_atom_t *leaf_atom,
+	quicktime_frma_t *frma);
+void quicktime_frma_dump(quicktime_frma_t *frma);
 
 
 
@@ -254,6 +260,11 @@ void quicktime_read_ix(quicktime_t *file,
 
 
 
+void quicktime_write_moov(quicktime_t *file, 
+	quicktime_moov_t *moov,
+	int rewind);
+
+
 /* compression_id is for AVI reading */
 int quicktime_trak_init_audio(quicktime_t *file, 
 							quicktime_trak_t *trak, 
@@ -273,6 +284,7 @@ int quicktime_delete_trak(quicktime_moov_t *moov);
 int quicktime_read_trak(quicktime_t *file, quicktime_trak_t *trak, quicktime_atom_t *trak_atom);
 int quicktime_write_trak(quicktime_t *file, quicktime_trak_t *trak, long moov_time_scale);
 int64_t quicktime_track_end(quicktime_trak_t *trak);
+
 
 
 /* the total number of samples in the track depending on the access mode */
@@ -305,13 +317,15 @@ int quicktime_chunk_bytes(quicktime_t *file,
 
 
 /* total bytes between the two samples */
-int64_t quicktime_sample_range_size(quicktime_trak_t *trak, long chunk_sample, long sample);
+int64_t quicktime_sample_range_size(quicktime_trak_t *trak, 
+	long chunk_sample, 
+	long sample);
 
 
 int quicktime_chunk_of_sample(int64_t *chunk_sample, 
 	int64_t *chunk, 
 	quicktime_trak_t *trak, 
-	long sample);
+	int64_t sample);
 
 
 
@@ -350,15 +364,6 @@ int quicktime_write_vbr_frame(quicktime_t *file,
 	int samples);
 /* update all the tables after writing a buffer */
 /* set sample_size to 0 if no sample size should be set */
-/*
- * int quicktime_update_tables(quicktime_t *file, 
- * 							quicktime_trak_t *trak, 
- * 							int64_t offset, 
- * 							int64_t chunk, 
- * 							int64_t sample, 
- * 							int64_t samples, 
- * 							int64_t sample_size);
- */
 void quicktime_update_stco(quicktime_stco_t *stco, long chunk, int64_t offset);
 void quicktime_update_stsz(quicktime_stsz_t *stsz, long sample, long sample_size);
 int quicktime_update_stsc(quicktime_stsc_t *stsc, long chunk, long samples);
@@ -481,6 +486,9 @@ void quicktime_shift_vbr(quicktime_audio_map_t *atrack, int bytes);
 // counters
 void quicktime_store_vbr_float(quicktime_audio_map_t *atrack,
 	float *samples,
+	int sample_count);
+void quicktime_store_vbr_int16(quicktime_audio_map_t *atrack,
+	int16_t *samples,
 	int sample_count);
 
 void quicktime_copy_vbr_float(quicktime_vbr_t *vbr,

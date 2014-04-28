@@ -146,6 +146,8 @@ int main(int argc, char *argv[])
 		}
 
 		fprintf(out, "};\n\n#endif\n");
+
 		fclose(out);
+		fclose(in);
 	}
 }

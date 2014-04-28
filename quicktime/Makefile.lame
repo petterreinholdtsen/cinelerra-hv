@@ -1,4 +1,4 @@
-LAME_DIR := lame-3.93.1
+LAME_DIR := $(shell expr thirdparty/lame* )
 
 
 LAME_OBJS := \

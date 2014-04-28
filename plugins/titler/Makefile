@@ -7,25 +7,11 @@ OBJS = $(OBJDIR)/title.o  \
 
 
 
-OUTPUT_PLUGIN = ../$(OBJDIR)/titler.plugin
-FREETYPE_DIR = ../../freetype-2.1.4
-CFLAGS += -I$(FREETYPE_DIR)/include -I../../
-
-
-$(OUTPUT_PLUGIN): $(OBJS)
-	$(LDLINKER) -o $(OUTPUT_PLUGIN) \
-		$(OBJS) \
-		$(FREETYPE_DIR)/$(OBJDIR)/libfreetype.a
-	strip $(OUTPUT_PLUGIN)
+OUTPUT = $(PLUGIN_DIR)/titler.plugin
+CFLAGS += -I$(FREETYPE_DIR)/include -I../../thirdparty/
+LFLAGS += $(FREETYPE_DIR)/$(OBJDIR)/libfreetype.a
 
 include ../../plugin_config
-
-inst:
-	cp $(OUTPUT_PLUGIN) $(PLUGINDIR)
-	mkdir -p $(PLUGINDIR)/fonts
-	cp fonts/* $(PLUGINDIR)/fonts
-
-
 
 
 

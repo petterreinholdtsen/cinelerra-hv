@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-
+static FILE *test_file = 0;
 
 #define PUT_INT32(x) \
 { \
@@ -350,7 +350,9 @@ if(debug) printf("mpeg3_read_toc 11\n");
 // Detect Blu-Ray
 if(debug) printf("mpeg3_read_toc 11 position=%x\n", position);
 				ext = strrchr(string, '.');
-				if(ext && !strncasecmp(ext, ".m2ts", 5))
+				if(ext && 
+					(!strncasecmp(ext, ".m2ts", 5) || 
+					!strncasecmp(ext, ".mts", 4)))
 					file->is_bd = 1;
 if(debug) printf("mpeg3_read_toc 12\n");
 
@@ -458,7 +460,7 @@ if(debug) printf("mpeg3_read_toc 30\n");
 					file->palette[i * 4 + 2] = (unsigned char)buffer[position++];
 					file->palette[i * 4 + 3] = (unsigned char)buffer[position++];
 /*
- * printf("color %02d: 0x%02x 0x%02x 0x%02x 0x%02x\n", 
+ * printf("mpeg3_read_toc: color %02d: 0x%02x 0x%02x 0x%02x 0x%02x\n", 
  * i,
  * file->palette[i * 4 + 0], 
  * file->palette[i * 4 + 1], 
@@ -607,6 +609,11 @@ int mpeg3_update_index(mpeg3_t *file,
 	mpeg3_atrack_t *atrack = file->atrack[track_number];
 	mpeg3_index_t *index = file->indexes[track_number];
 
+/*
+ * printf("mpeg3_update_index %d atrack->audio->output_size=%d\n", 
+ * __LINE__, 
+ * atrack->audio->output_size);
+ */
 
 	while((flush && atrack->audio->output_size) ||
 		(!flush && atrack->audio->output_size > MPEG3_AUDIO_CHUNKSIZE))
@@ -752,12 +759,16 @@ static int handle_audio(mpeg3_t *file,
 			file->demuxer->data_buffer,
 			file->demuxer->data_size);
 
-/*
- * if(file->demuxer->pid == 0x1100) printf("handle_audio %p %d %d\n", 
- * file->demuxer->pid,
- * file->demuxer->audio_size, 
- * file->demuxer->data_size);
- */
+
+
+
+// printf("handle_audio %d pid=%p audio_size=%d data_size=%d\n", 
+// __LINE__,
+// file->demuxer->pid,
+// file->demuxer->audio_size, 
+// file->demuxer->data_size);
+
+
 
 /*
  * if(atrack->pid == 0x1100)
@@ -794,6 +805,20 @@ static int handle_video(mpeg3_t *file,
 
 // Assume last packet of stream
 	vtrack->video_eof = mpeg3demux_tell_byte(file->demuxer);
+/*
+ * printf("handle_video %d %d %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+ * file->demuxer->video_size,
+ * file->demuxer->data_size,
+ * file->demuxer->video_buffer[0],
+ * file->demuxer->video_buffer[1],
+ * file->demuxer->video_buffer[2],
+ * file->demuxer->video_buffer[3],
+ * file->demuxer->video_buffer[4],
+ * file->demuxer->video_buffer[5],
+ * file->demuxer->video_buffer[6],
+ * file->demuxer->video_buffer[7]
+ * );
+ */
 
 // Append demuxed data to track buffer
 	if(file->demuxer->video_size)
@@ -807,6 +832,7 @@ static int handle_video(mpeg3_t *file,
 			file->demuxer->data_size);
 
 
+// Not enough data
 	if(vtrack->demuxer->data_size - vtrack->demuxer->data_position <
 		MPEG3_VIDEO_STREAM_SIZE) return 0;
 
@@ -817,6 +843,7 @@ static int handle_video(mpeg3_t *file,
 		vtrack->demuxer->data_position];
 	uint32_t code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 	ptr += 4;
+
 
 	while(vtrack->demuxer->data_size - vtrack->demuxer->data_position > 
 		MPEG3_VIDEO_STREAM_SIZE)
@@ -832,23 +859,47 @@ static int handle_video(mpeg3_t *file,
 // handle_video.
 			if(!mpeg3video_get_header(video, 0))
 			{
+/*
+ * printf("handle_video 1 %d %d %d\n", 
+ * vtrack->demuxer->data_position, 
+ * video->pict_struct, 
+ * video->pict_type);
+ */
 				if(video->pict_struct == BOTTOM_FIELD ||
 					video->pict_struct == FRAME_PICTURE ||
 					!video->pict_struct)
 				{
-					int is_keyframe = (video->pict_type == I_TYPE);
+					vtrack->got_keyframe |= (video->pict_type == I_TYPE);
 
 // Add entry for every repeat count.
-					mpeg3_append_frame(vtrack, vtrack->prev_frame_offset, is_keyframe);
+/*
+ * printf("handle_video %d %d 0x%llx %d\n", 
+ * __LINE__, 
+ * vtrack->total_frame_offsets, 
+ * vtrack->prev_frame_offset,
+ * vtrack->got_keyframe);
+ */
+					mpeg3_append_frame(vtrack, vtrack->prev_frame_offset, vtrack->got_keyframe);
 					video->current_repeat += 100;
 					while(video->repeat_count - video->current_repeat >= 100)
 					{
-						mpeg3_append_frame(vtrack, vtrack->prev_frame_offset, is_keyframe);
+						mpeg3_append_frame(vtrack, vtrack->prev_frame_offset, vtrack->got_keyframe);
 						video->current_repeat += 100;
 					}
 
+/*
+ * printf("handle_video 10\n");
+ * if(!test_file) test_file = fopen("/tmp/test.m2v", "w");
+ * if(vtrack->demuxer->data_position > 0)
+ * fwrite(vtrack->demuxer->data_buffer,
+ * vtrack->demuxer->data_position,
+ * 1,
+ * test_file);
+ */
+
 // Shift out data from before frame
-					mpeg3demux_shift_data(vtrack->demuxer, vtrack->demuxer->data_position);
+					mpeg3demux_shift_data(vtrack->demuxer, 
+						vtrack->demuxer->data_position);
 
 // Reset pointer
 					ptr = &vtrack->demuxer->data_buffer[
@@ -857,22 +908,27 @@ static int handle_video(mpeg3_t *file,
 					ptr += 4;
 
 					vtrack->prev_frame_offset = -1;
+					vtrack->got_top = 0;
+					vtrack->got_keyframe = 0;
 				}
 				else
 				{
-/*
- * // Shift out data from before frame
- * 					vtrack->demuxer->data_position++;
- * 					mpeg3demux_shift_data(vtrack->demuxer, vtrack->demuxer->data_position);
- * 
- * // Reset pointer
- * 					ptr = &vtrack->demuxer->data_buffer[
- * 						vtrack->demuxer->data_position];
- * 					code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
- * 					ptr += 4;
- * 
- * 					vtrack->prev_frame_offset = -1;
- */
+// This was a TOP FIELD
+// Shift out data from this field
+					vtrack->got_keyframe = (video->pict_type == I_TYPE);
+					vtrack->got_top = 1;
+					vtrack->demuxer->data_position++;
+				    mpeg3demux_shift_data(vtrack->demuxer, 
+						vtrack->demuxer->data_position);
+
+// Reset pointer
+					ptr = &vtrack->demuxer->data_buffer[
+						vtrack->demuxer->data_position];
+					code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
+					ptr += 4;
+
+					vtrack->prev_frame_offset = -1;
+					video->current_repeat += 100;
 					break;
 				}
 			}
@@ -891,8 +947,28 @@ static int handle_video(mpeg3_t *file,
 			code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);  
 		}
 	}
-//printf("handle_video 20\n");
+
 	vtrack->demuxer->data_position -= 4;
+
+/*
+ * printf("handle_video 20 %d %02x %02x %02x %02x %02x %02x %02x %02x\n",
+ * vtrack->demuxer->data_position,
+ * vtrack->demuxer->data_buffer[0],
+ * vtrack->demuxer->data_buffer[1],
+ * vtrack->demuxer->data_buffer[2],
+ * vtrack->demuxer->data_buffer[3],
+ * vtrack->demuxer->data_buffer[4],
+ * vtrack->demuxer->data_buffer[5],
+ * vtrack->demuxer->data_buffer[6],
+ * vtrack->demuxer->data_buffer[7]
+ * );
+ * if(!test_file) test_file = fopen("/tmp/test.m2v", "w");
+ * if(vtrack->demuxer->data_position > 0)
+ * fwrite(vtrack->demuxer->data_buffer,
+ * vtrack->demuxer->data_position,
+ * 1,
+ * test_file);
+ */
 	mpeg3demux_shift_data(vtrack->demuxer, vtrack->demuxer->data_position);
 
 
@@ -941,17 +1017,19 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 
 	start_byte = mpeg3demux_tell_byte(file->demuxer);
 
-//printf("mpeg3_do_toc 1\n");
+// printf("mpeg3_do_toc %d offset=%llx file->is_audio_stream=%d\n", 
+// __LINE__, 
+// start_byte,
+// file->is_audio_stream);
 	int result = mpeg3_read_next_packet(file->demuxer);
-//printf("mpeg3_do_toc 10\n");
+//printf("mpeg3_do_toc %d %d %llx\n", __LINE__, result, mpeg3demux_tell_byte(file->demuxer));
 
 // Determine program interleaving for current packet.
 	int program = mpeg3demux_tell_program(file->demuxer);
 
 
+//if(start_byte > 0x1b0000 && start_byte < 0x1c0000)
 /*
- * if(start_byte > 0x1b0000 &&
- * start_byte < 0x1c0000)
  * printf("mpeg3_do_toc 1 start_byte=%llx custum_id=%x got_audio=%d got_video=%d audio_size=%d video_size=%d data_size=%d\n", 
  * start_byte, 
  * file->demuxer->custom_id,
@@ -989,11 +1067,6 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 				mpeg3_atrack_t *atrack = file->atrack[i];
 				if(custom_id == atrack->pid)
 				{
-/*
- * printf("mpeg3_do_toc 2 offset=0x%llx pid=0x%x\n", 
- * start_byte, 
- * atrack->pid);
- */
 // Update an audio track
 					handle_audio(file, i);
 					atrack->prev_offset = start_byte;

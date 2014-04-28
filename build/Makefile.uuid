@@ -1,6 +1,6 @@
 include global_config
 
-DIR := uuid
+DIR := thirdparty/uuid
 
 OBJS := \
 	$(DIR)/$(OBJDIR)/clear.o	   \
@@ -20,7 +20,7 @@ OBJS := \
 
 OUTPUT = $(DIR)/$(OBJDIR)/libuuid.a
 
-CFLAGS += -I$(DIR) -I.
+CFLAGS += -I$(DIR) -Ithirdparty -I.
 
 $(shell sh -c 'mkdir -p $(DIR)/$(OBJDIR)' )
 $(shell echo $(CFLAGS) > $(DIR)/$(OBJDIR)/c_flags)

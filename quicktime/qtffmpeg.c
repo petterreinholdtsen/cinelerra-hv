@@ -20,7 +20,66 @@ pthread_mutex_t ffmpeg_lock = PTHREAD_MUTEX_INITIALIZER;
 
 
 
+static void dump_context(void *ptr)
+{
+	AVCodecContext *context = (AVCodecContext*)ptr;
 
+	printf("dump_context %d\n", __LINE__);
+	printf("    bit_rate=%d\n", context->bit_rate);
+	printf("    bit_rate_tolerance=%d\n", context->bit_rate_tolerance);
+	printf("    flags=%d\n", context->flags);
+	printf("    sub_id=%d\n", context->sub_id);
+	printf("    me_method=%d\n", context->me_method);
+	printf("    extradata_size=%d\n", context->extradata_size);
+	printf("    time_base.num=%d\n", context->time_base.num);
+	printf("    time_base.den=%d\n", context->time_base.den);
+	printf("    width=%d\n", context->width);
+	printf("    height=%d\n", context->height);
+	printf("    gop_size=%d\n", context->gop_size);
+	printf("    pix_fmt=%d\n", context->pix_fmt);
+	printf("    rate_emu=%d\n", context->rate_emu);
+	printf("    sample_rate=%d\n", context->sample_rate);
+	printf("    channels=%d\n", context->channels);
+	printf("    sample_fmt=%d\n", context->sample_fmt);
+	printf("    frame_size=%d\n", context->frame_size);
+	printf("    frame_number=%d\n", context->frame_number);
+	printf("    real_pict_num=%d\n", context->real_pict_num);
+	printf("    delay=%d\n", context->delay);
+	printf("    qcompress=%d\n", context->qcompress);
+	printf("    qblur=%d\n", context->qblur);
+	printf("    qmin=%d\n", context->qmin);
+	printf("    qmax=%d\n", context->qmax);
+	printf("    max_qdiff=%d\n", context->max_qdiff);
+	printf("    max_b_frames=%d\n", context->max_b_frames);
+	printf("    b_quant_factor=%d\n", context->b_quant_factor);
+	printf("    b_frame_strategy=%d\n", context->b_frame_strategy);
+	printf("    hurry_up=%d\n", context->hurry_up);
+	printf("    rtp_payload_size=%d\n", context->rtp_payload_size);
+	printf("    codec_id=%d\n", context->codec_id);
+	printf("    codec_tag=%d\n", context->codec_tag);
+	printf("    workaround_bugs=%d\n", context->workaround_bugs);
+	printf("    error_resilience=%d\n", context->error_resilience);
+	printf("    has_b_frames=%d\n", context->has_b_frames);
+	printf("    block_align=%d\n", context->block_align);
+	printf("    parse_only=%d\n", context->parse_only);
+	printf("    idct_algo=%d\n", context->idct_algo);
+	printf("    slice_count=%d\n", context->slice_count);
+	printf("    slice_offset=%p\n", context->slice_offset);
+	printf("    error_concealment=%d\n", context->error_concealment);
+	printf("    dsp_mask=%p\n", context->dsp_mask);
+	printf("    bits_per_sample=%d\n", context->bits_per_sample);
+	printf("    slice_flags=%d\n", context->slice_flags);
+	printf("    xvmc_acceleration=%d\n", context->xvmc_acceleration);
+	printf("    antialias_algo=%d\n", context->antialias_algo);
+	printf("    thread_count=%d\n", context->thread_count);
+	printf("    skip_top=%d\n", context->skip_top);
+	printf("    profile=%d\n", context->profile);
+	printf("    level=%d\n", context->level);
+	printf("    lowres=%d\n", context->lowres);
+	printf("    coded_width=%d\n", context->coded_width);
+	printf("    coded_height=%d\n", context->coded_height);
+	printf("    request_channels=%d\n", context->request_channels);
+}
 
 quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	int fields,
@@ -38,7 +97,9 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	ptr->width = w;
 	ptr->height = h;
 	ptr->ffmpeg_id = ffmpeg_id;
-//printf("quicktime_new_ffmpeg 1 %d\n", ptr->ffmpeg_id);
+
+
+//printf("quicktime_new_ffmpeg 1 ffmpeg_id=%d\n", ptr->ffmpeg_id);
 	if(ffmpeg_id == CODEC_ID_SVQ1)
 	{
 		ptr->width_i = quicktime_quantize32(ptr->width);
@@ -69,7 +130,11 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 		}
 
 		AVCodecContext *context = ptr->decoder_context[i] = avcodec_alloc_context();
-		static char fake_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		static char fake_data[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+// 		static unsigned char extra_data[] = 
+// 		{
+// 			0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x20, 0x00, 0xc8, 0x88, 0xba, 0x98, 0x60, 0xfa, 0x67, 0x80, 0x91, 0x02, 0x83, 0x1f
+// 		};
 		context->width = ptr->width_i;
 		context->height = ptr->height_i;
 //		context->width = w;
@@ -86,11 +151,14 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			context->extradata = avcc->data;
 			context->extradata_size = avcc->data_size;
 		}
+
 		if(cpus > 1)
 		{
 			avcodec_thread_init(context, cpus);
-			context->thread_count = cpus;
+// Not exactly user friendly.
+//			context->thread_count = cpus;
 		}
+
 		if(avcodec_open(context, 
 			ptr->decoder[i]) < 0)
 		{
@@ -149,7 +217,6 @@ static int decode_wrapper(quicktime_t *file,
 	quicktime_trak_t *trak = vtrack->track;
 	quicktime_stsd_table_t *stsd_table = &trak->mdia.minf.stbl.stsd.table[0];
 
-//printf("decode_wrapper %d\n", frame_number);
 	quicktime_set_video_position(file, frame_number, track);
 
 	bytes = quicktime_frame_size(file, frame_number, track); 
@@ -168,13 +235,21 @@ static int decode_wrapper(quicktime_t *file,
 	if(header_bytes)
 		memcpy(ffmpeg->work_buffer, stsd_table->esds.mpeg4_header, header_bytes);
 
+//printf("decode_wrapper %d frame_number=%d field=%d offset=0x%llx bytes=%d header_bytes=%d\n", 
+//__LINE__, frame_number, current_field, quicktime_ftell(file), bytes, header_bytes);
 	if(!quicktime_read_data(file, 
 		ffmpeg->work_buffer + header_bytes, 
 		bytes))
 		result = -1;
- 
- 
-	if(!result) 
+
+/*
+ * static FILE *out = 0;
+ * if(!out) out = fopen("/tmp/debug", "w");
+ * fwrite(ffmpeg->work_buffer, bytes + header_bytes, 1, out);
+ * 
+ */
+
+	if(!result)
 	{ 
 
 
@@ -184,11 +259,51 @@ static int decode_wrapper(quicktime_t *file,
 			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_NONREF /* AVDISCARD_BIDIR */;
 		else
 			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_DEFAULT;
+		avcodec_get_frame_defaults(&ffmpeg->picture[current_field]);
+
+/*
+ * printf("decode_wrapper %d frame_number=%d decoder_context=%p picture=%p buffer=%p bytes=%d\n", 
+ * __LINE__,
+ * frame_number,
+ * ffmpeg->decoder_context[current_field],
+ * &ffmpeg->picture[current_field],
+ * ffmpeg->work_buffer,
+ * bytes + header_bytes);
+ */
+
+
+/*
+ * if(frame_number >= 200 && frame_number < 280)
+ * {
+ * char string[1024];
+ * sprintf(string, "/tmp/debug%03d", frame_number);
+ * FILE *out = fopen(string, "w");
+ * fwrite(ffmpeg->work_buffer, bytes, 1, out);
+ * fclose(out);
+ * }
+ */
+
+
+/*
+ * dump_context(ffmpeg->decoder_context[current_field]);
+ * ffmpeg->decoder_context[current_field]->bit_rate = 64000;
+ * ffmpeg->decoder_context[current_field]->bit_rate_tolerance = 4000000;
+ * ffmpeg->decoder_context[current_field]->codec_tag = 1482049860;
+ */
+
+		ffmpeg->decoder_context[current_field]->workaround_bugs =  FF_BUG_NO_PADDING;
+
+// For ffmpeg.080508 you must add
+// s->workaround_bugs =  FF_BUG_NO_PADDING;
+// in h263dec.c to get MPEG-4 to work.
+// Also must compile using -O2 instead of -O3 on gcc 4.1
+
 		result = avcodec_decode_video(ffmpeg->decoder_context[current_field], 
 			&ffmpeg->picture[current_field], 
 			&got_picture, 
 			ffmpeg->work_buffer, 
 			bytes + header_bytes);
+//printf("decode_wrapper %d\n", __LINE__);
 
 
 
@@ -218,6 +333,9 @@ static int get_chroma_factor(quicktime_ffmpeg_t *ffmpeg, int current_field)
 	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
 	{
 		case PIX_FMT_YUV420P:
+			return 4;
+			break;
+		case PIX_FMT_YUVJ420P:
 			return 4;
 			break;
 		case PIX_FMT_YUV422:
@@ -344,7 +462,12 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 
 			first_frame = frame1;
 
-//printf("quicktime_ffmpeg_decode 2 %d\n", ffmpeg->last_frame[current_field]);
+/*
+ * printf("quicktime_ffmpeg_decode 2 last_frame=%d frame1=%d frame2=%d\n", 
+ * ffmpeg->last_frame[current_field],
+ * frame1,
+ * frame2);
+ */
 			while(frame1 <= frame2)
 			{
 				result = decode_wrapper(file, 
@@ -419,6 +542,10 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 		case PIX_FMT_YUV420P:
 			input_cmodel = BC_YUV420P;
 			break;
+// It's not much of a decoder library
+		case PIX_FMT_YUVJ420P:
+			input_cmodel = BC_YUV420P;
+			break;
 		case PIX_FMT_YUV422:
 			input_cmodel = BC_YUV422;
 			break;
@@ -432,7 +559,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			fprintf(stderr, 
 				"quicktime_ffmpeg_decode: unrecognized color model %d\n", 
 				ffmpeg->decoder_context[current_field]->pix_fmt);
-			input_cmodel = BC_YUV420P;
+			input_cmodel = 0;
 			break;
 	}
 
@@ -473,6 +600,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 			ffmpeg->picture[current_field].linesize[0],       /* For planar use the luma rowspan */
 			ffmpeg->width);
+
 		free(input_rows);
 	}
 

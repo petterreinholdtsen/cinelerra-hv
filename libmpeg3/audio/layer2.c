@@ -385,7 +385,7 @@ int mpeg3audio_dolayer2(mpeg3_layer_t *audio,
 	int scale[192];
 	int single = audio->single;
 	int output_position = 0;
-
+//printf("mpeg3audio_dolayer2 1\n");
 
 	frame += 4;
 /* Set up bitstream to use buffer */

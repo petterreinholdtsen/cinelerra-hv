@@ -4,7 +4,7 @@ OBJS = $(OBJDIR)/brightness.o  \
 	$(OBJDIR)/brightnesswindow.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/brightness.plugin
+OUTPUT = $(PLUGIN_DIR)/brightness.plugin
 
 include ../../plugin_config
 

@@ -7,23 +7,48 @@
 int main(int argc, char *argv[])
 {
 	mpeg3_t *file;
+	int64_t frame_number;
+	int error = 0;
+
 	if(argc < 3)
 	{
 		printf("Usage: mpeg3peek <table of contents> <frame number>\n");
-		printf("Print the byte offset of a given frame.\n");
-		printf("Only works for video.  Requires table of contents.\n");
+		printf("       mpeg3peek <table of contents> <sample number>\n");
+		printf("Print the byte offset of a given frame or sample.\n");
+		printf("If the file has no video, the sample number is located.\n");
+		printf("Requires table of contents.\n");
 		printf("Example: mpeg3peek heroine.toc 123\n");
 		exit(1);
 	}
 
-	int error = 0;
+	sscanf(argv[2], "%lld", &frame_number);
+	if(frame_number < 0) frame_number = 0;
+
 	file = mpeg3_open(argv[1], &error);
 	if(file)
 	{
 		if(!mpeg3_total_vstreams(file))
 		{
-			printf("Need a video stream.\n");
-			exit(1);
+			if(!mpeg3_total_astreams(file))
+			{
+				printf("Need a video stream.\n");
+				exit(1);
+			}
+			
+			
+			if(!file->atrack[0]->total_sample_offsets)
+			{
+				printf("Zero length track.  Did you load a table of contents?\n");
+				exit(1);
+			}
+			
+			int64_t chunk_number = frame_number / MPEG3_AUDIO_CHUNKSIZE;
+			if(chunk_number >= file->atrack[0]->total_sample_offsets)
+				chunk_number = file->atrack[0]->total_sample_offsets - 1;
+			printf("sample=%lld offset=0x%llx\n",
+				frame_number,
+				file->atrack[0]->sample_offsets[chunk_number]);
+			exit(0);
 		}
 
 		if(!file->vtrack[0]->total_frame_offsets)
@@ -32,11 +57,9 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		int frame_number = atoi(argv[2]);
-		if(frame_number < 0) frame_number = 0;
-		if(frame_number > file->vtrack[0]->total_frame_offsets)
+		if(frame_number >= file->vtrack[0]->total_frame_offsets)
 			frame_number = file->vtrack[0]->total_frame_offsets - 1;
-		printf("frame=%d offset=0x%llx\n", 
+		printf("frame=%lld offset=0x%llx\n", 
 			frame_number,
 			file->vtrack[0]->frame_offsets[frame_number]);
 	}

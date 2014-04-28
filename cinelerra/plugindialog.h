@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef PLUGINDIALOG_H
 #define PLUGINDIALOG_H
 
@@ -7,26 +28,26 @@ class PluginDialogNew;
 class PluginDialogShared;
 class PluginDialogModules;
 class PluginDialogAttachNew;
-class PluginDialogAttachShared;
-class PluginDialogAttachModule;
 class PluginDialogChangeNew;
-class PluginDialogChangeShared;
-class PluginDialogChangeModule;
 class PluginDialogIn;
 class PluginDialogOut;
 class PluginDialogThru;
+class PluginDialogSingle;
 class PluginDialog;
 
+#include "bcdialog.h"
 #include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "plugin.inc"
+#include "pluginserver.inc"
 #include "sharedlocation.h"
 #include "thread.h"
+#include "track.inc"
 #include "transition.inc"
 
-class PluginDialogThread : public Thread
+class PluginDialogThread : public BC_DialogThread
 {
 public:
 	PluginDialogThread(MWindow *mwindow);
@@ -35,9 +56,12 @@ public:
 // Set up parameters for a transition menu.
 	void start_window(Track *track,
 		Plugin *plugin, 
-		char *title);
-	int set_dialog(Transition *transition, char *title);
-	void run();
+		const char *title,
+		int is_mainmenu,
+		int data_type);
+	BC_Window* new_gui();
+	void handle_done_event(int result);
+	void handle_close_event(int result);
 
 
 
@@ -45,12 +69,11 @@ public:
 	Track *track;
 	int data_type;
 	Transition *transition;
-	PluginDialog *window;
 // Plugin being modified if there is one
 	Plugin *plugin;
-	Condition *completion;
-	Mutex *window_lock;
 	char window_title[BCTEXTLEN];
+// If attaching from main menu
+	int is_mainmenu;
 
 
 // type of attached plugin
@@ -61,6 +84,9 @@ public:
 
 // Title of attached plugin if new
 	char plugin_title[BCTEXTLEN];
+// For the main menu invocation, 
+// attach 1 standalone on the first track and share it with other tracks
+	int single_standalone;
 };
 
 class PluginDialog : public BC_Window
@@ -68,12 +94,12 @@ class PluginDialog : public BC_Window
 public:
 	PluginDialog(MWindow *mwindow, 
 		PluginDialogThread *thread, 
-		char *title,
+		const char *title,
 		int x,
 		int y);
 	~PluginDialog();
 
-	int create_objects();
+	void create_objects();
 
 	int attach_new(int number);
 	int attach_shared(int number);
@@ -87,17 +113,8 @@ public:
 	PluginDialogShared *shared_list;
 	BC_Title *module_title;
 	PluginDialogModules *module_list;
+	PluginDialogSingle *single_standalone;
 
-/*
- * 
- * 	PluginDialogAttachNew *standalone_attach;
- * 	PluginDialogAttachShared *shared_attach;
- * 	PluginDialogAttachModule *module_attach;
- * 
- * 	PluginDialogChangeNew *standalone_change;
- * 	PluginDialogChangeShared *shared_change;
- * 	PluginDialogChangeModule *module_change;
- */
 
 	PluginDialogThru *thru;
 	
@@ -114,8 +131,6 @@ public:
 	int selected_shared;
 	int selected_modules;
 
-	int inoutthru;         // flag for button slide
-	int new_value;         // value for button slide
 	MWindow *mwindow;
 };
 
@@ -214,6 +229,15 @@ public:
 	int selection_changed();
 	PluginDialog *dialog;
 };
+
+class PluginDialogSingle : public BC_CheckBox
+{
+public:
+	PluginDialogSingle(PluginDialog *dialog, int x, int y);
+	int handle_event();
+	PluginDialog *dialog;
+};
+
 
 /*
  * class PluginDialogAttachShared : public BC_GenericButton

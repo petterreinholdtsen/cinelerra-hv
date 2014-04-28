@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef GRADIENT_H
 #define GRADIENT_H
 
@@ -171,14 +192,13 @@ public:
 
 
 
-class GradientWindow : public BC_Window
+class GradientWindow : public PluginClientWindow
 {
 public:
-	GradientWindow(GradientMain *plugin, int x, int y);
+	GradientWindow(GradientMain *plugin);
 	~GradientWindow();
 	
-	int create_objects();
-	int close_event();
+	void create_objects();
 	void update_in_color();
 	void update_out_color();
 	void update_shape();
@@ -206,7 +226,8 @@ public:
 
 
 
-PLUGIN_THREAD_HEADER(GradientMain, GradientThread, GradientWindow)
+
+
 
 
 class GradientMain : public PluginVClient
@@ -227,7 +248,7 @@ public:
 	int is_synthesis();
 	int handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(GradientConfig, GradientThread)
+	PLUGIN_CLASS_MEMBERS(GradientConfig)
 
 	int need_reconfigure;
 

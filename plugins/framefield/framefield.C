@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "bchash.h"
@@ -21,10 +42,6 @@ class FrameField;
 class FrameFieldWindow;
 
 
-
-// 601 to RGB expansion is provided as a convenience for OpenGL users since
-// frame bobbing is normally done during playback together with 601 to RGB expansion.
-// It's not optimized for software.
 
 
 class FrameFieldConfig
@@ -85,19 +102,17 @@ public:
 	FrameFieldWindow *gui;
 };
 
-class FrameFieldWindow : public BC_Window
+class FrameFieldWindow : public PluginClientWindow
 {
 public:
-	FrameFieldWindow(FrameField *plugin, int x, int y);
+	FrameFieldWindow(FrameField *plugin);
 	void create_objects();
-	int close_event();
 	FrameField *plugin;
 	FrameFieldTop *top;
 	FrameFieldBottom *bottom;
 };
 
 
-PLUGIN_THREAD_HEADER(FrameField, FrameFieldThread, FrameFieldWindow)
 
 
 
@@ -107,7 +122,7 @@ public:
 	FrameField(PluginServer *server);
 	~FrameField();
 
-	PLUGIN_CLASS_MEMBERS(FrameFieldConfig, FrameFieldThread);
+	PLUGIN_CLASS_MEMBERS(FrameFieldConfig);
 
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
@@ -173,17 +188,13 @@ int FrameFieldConfig::equivalent(FrameFieldConfig &src)
 
 
 
-FrameFieldWindow::FrameFieldWindow(FrameField *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+FrameFieldWindow::FrameFieldWindow(FrameField *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -198,8 +209,6 @@ void FrameFieldWindow::create_objects()
 	show_window();
 	flush();
 }
-
-WINDOW_CLOSE_EVENT(FrameFieldWindow)
 
 
 
@@ -264,7 +273,6 @@ int FrameFieldBottom::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(FrameField, FrameFieldThread, FrameFieldWindow)
 
 
 
@@ -284,7 +292,7 @@ PLUGIN_THREAD_OBJECT(FrameField, FrameFieldThread, FrameFieldWindow)
 FrameField::FrameField(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	field_number = 0;
 	src_frame = 0;
 	src_frame_number = -1;
@@ -297,7 +305,7 @@ FrameField::FrameField(PluginServer *server)
 
 FrameField::~FrameField()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(src_frame) delete src_frame;
 	if(src_texture) delete src_texture;
@@ -557,16 +565,11 @@ void FrameField::average_rows(int offset, VFrame *frame)
 
 
 
-char* FrameField::plugin_title() { return N_("Frames to fields"); }
+const char* FrameField::plugin_title() { return N_("Frames to fields"); }
 int FrameField::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(FrameField) 
-
-SHOW_GUI_MACRO(FrameField, FrameFieldThread)
-
-RAISE_WINDOW_MACRO(FrameField)
-
-SET_STRING_MACRO(FrameField);
+NEW_WINDOW_MACRO(FrameField, FrameFieldWindow)
 
 int FrameField::load_configuration()
 {
@@ -605,7 +608,7 @@ void FrameField::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("FRAME_FIELD");
 	output.tag.set_property("DOMINANCE", config.field_dominance);
 	output.append_tag();
@@ -616,7 +619,7 @@ void FrameField::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -636,8 +639,8 @@ void FrameField::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window();
-			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
-			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
+			((FrameFieldWindow*)thread->window)->top->update(config.field_dominance == TOP_FIELD_FIRST);
+			((FrameFieldWindow*)thread->window)->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
 			thread->window->unlock_window();
 		}
 	}

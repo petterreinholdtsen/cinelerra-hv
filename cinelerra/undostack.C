@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "bctimer.h"
 #include "clip.h"
@@ -71,6 +92,18 @@ UndoStackItem* UndoStack::pull_next()
 	return current;
 }
 
+
+void UndoStack::dump()
+{
+	printf("UndoStack::dump\n");
+	UndoStackItem *current = first;
+	int i = 0;
+	while(current)
+	{
+		printf("  %d %p %s %c\n", i++, current, current->get_description(), current == this->current ? '*' : ' ');
+		current = NEXT;
+	}
+}
 
 
 
@@ -600,12 +633,14 @@ UndoStackItem::UndoStackItem()
 	data_size = 0;
 	key = 0;
 	creator = 0;
+	session_filename = 0;
 }
 
 UndoStackItem::~UndoStackItem()
 {
 	delete [] description;
 	delete [] data;
+	delete [] session_filename;
 }
 
 void UndoStackItem::set_description(char *description)
@@ -616,9 +651,24 @@ void UndoStackItem::set_description(char *description)
 	strcpy(this->description, description);
 }
 
-char* UndoStackItem::get_description()
+void UndoStackItem::set_filename(char *filename)
 {
-	return description;
+	delete [] this->session_filename;
+	this->session_filename = strdup(filename);
+}
+
+char* UndoStackItem::get_filename()
+{
+	return session_filename;
+}
+
+
+const char* UndoStackItem::get_description()
+{
+	if(description)
+		return description;
+	else
+		return "";
 }
 
 int UndoStackItem::has_data()

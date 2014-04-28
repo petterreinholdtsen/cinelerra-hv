@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -26,7 +47,7 @@
 #define MPEG_YUV422 1
 
 
-#define MJPEG_EXE PLUGIN_DIR "/mpeg2enc.plugin"
+#define MJPEG_EXE "/mpeg2enc.plugin"
 
 
 
@@ -156,15 +177,14 @@ int FileMPEG::reset_parameters_derived()
 }
 
 
-// Just create the Quicktime objects since this routine is also called
-// for reopening.
 int FileMPEG::open_file(int rd, int wr)
 {
-SET_TRACE
 	int result = 0;
 	this->rd = rd;
 	this->wr = wr;
 
+const int debug = 0;
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 	if(rd)
 	{
 		int error = 0;
@@ -211,7 +231,10 @@ SET_TRACE
 				}
 				if(!asset->sample_rate)
 					asset->sample_rate = mpeg3_sample_rate(fd, 0);
-				asset->audio_length = mpeg3_audio_samples(fd, 0); 
+				asset->audio_length = mpeg3_audio_samples(fd, 0);
+				if(!asset->channels || 
+					!asset->sample_rate)
+					result = 1;
 			}
 
 			asset->video_data = mpeg3_has_video(fd);
@@ -258,7 +281,9 @@ SET_TRACE
 				if(asset->aspect_ratio > 0)
 				{
 					append_vcommand_line("-a");
-					if(EQUIV(asset->aspect_ratio, 1))
+// Square pixels
+					if(EQUIV((double)asset->width / asset->height,
+						asset->aspect_ratio))
 						append_vcommand_line("1");
 					else
 					if(EQUIV(asset->aspect_ratio, 1.333))
@@ -300,7 +325,11 @@ SET_TRACE
 // mjpegtools encoder
 		{
 			char string[BCTEXTLEN];
-			sprintf(mjpeg_command, MJPEG_EXE);
+			sprintf(mjpeg_command, 
+				"%s%s", 
+				file->preferences->plugin_dir,
+				MJPEG_EXE);
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 // Must disable interlacing if MPEG-1
 			switch (asset->vmpeg_preset)
@@ -310,6 +339,7 @@ SET_TRACE
 				case 2: asset->vmpeg_progressive = 1; break;
 			}
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 
 // The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
@@ -325,6 +355,7 @@ SET_TRACE
 			strcat(mjpeg_command, string);
 
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 
 
@@ -342,6 +373,13 @@ SET_TRACE
 					}
 				}
 			}
+
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
+
+// Square pixels
+			if(EQUIV((double)asset->width / asset->height, asset->aspect_ratio))
+				aspect_ratio_code = 1;
+			
 			if(aspect_ratio_code < 0)
 			{
 				printf("FileMPEG::open_file: Unsupported aspect ratio %f\n", asset->aspect_ratio);
@@ -353,33 +391,44 @@ SET_TRACE
 
 
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 
 // Frame rate
 			int frame_rate_code = -1;
-    		for(int i = 1; sizeof(frame_rate_codes) / sizeof(double); ++i)
+    		for(int i = 1; i < sizeof(frame_rate_codes) / sizeof(double); ++i)
 			{
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				if(EQUIV(asset->frame_rate, frame_rate_codes[i]))
 				{
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 					frame_rate_code = i;
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 					break;
 				}
 			}
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			if(frame_rate_code < 0)
 			{
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				frame_rate_code = 4;
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				printf("FileMPEG::open_file: Unsupported frame rate %f\n", asset->frame_rate);
 			}
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			sprintf(string, " -F %d", frame_rate_code);
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			strcat(mjpeg_command, string);
 
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 
 
 			strcat(mjpeg_command, 
 				asset->vmpeg_progressive ? " -I 0" : " -I 1");
 			
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 
 			sprintf(string, " -M %d", file->cpus);
@@ -391,24 +440,30 @@ SET_TRACE
 				strcat(mjpeg_command, asset->vmpeg_field_order ? " -z b" : " -z t");
 			}
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			sprintf(string, " -f %d", asset->vmpeg_preset);
 			strcat(mjpeg_command, string);
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			sprintf(string, " -g %d -G %d", asset->vmpeg_iframe_distance, asset->vmpeg_iframe_distance);
 			strcat(mjpeg_command, string);
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			if(asset->vmpeg_seq_codes) strcat(mjpeg_command, " -s");
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			sprintf(string, " -R %d", CLAMP(asset->vmpeg_pframe_distance, 0, 2));
 			strcat(mjpeg_command, string);
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			sprintf(string, " -o '%s'", asset->path);
 			strcat(mjpeg_command, string);
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 
 			printf("FileMPEG::open_file: Running %s\n", mjpeg_command);
@@ -416,9 +471,11 @@ SET_TRACE
 			{
 				perror("FileMPEG::open_file");
 			}
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			video_out = new FileMPEGVideo(this);
 			video_out->start();
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 		}
 	}
 	else
@@ -438,6 +495,7 @@ SET_TRACE
 			append_acommand_line("-m");
 			append_acommand_line((asset->channels >= 2) ? "j" : "m");
 			sprintf(string, "%f", (float)asset->sample_rate / 1000);
+//			sprintf(string, "%f", (float)asset->sample_rate);
 			append_acommand_line("-s");
 			append_acommand_line(string);
 			sprintf(string, "%d", asset->ampeg_bitrate);
@@ -453,7 +511,8 @@ SET_TRACE
 		if(asset->ampeg_derivative == 3)
 		{
 			lame_global = lame_init();
-			lame_set_brate(lame_global, asset->ampeg_bitrate / 1000);
+//			lame_set_brate(lame_global, asset->ampeg_bitrate / 1000);
+			lame_set_brate(lame_global, asset->ampeg_bitrate);
 			lame_set_quality(lame_global, 0);
 			lame_set_in_samplerate(lame_global, 
 				asset->sample_rate);
@@ -492,9 +551,9 @@ SET_TRACE
 		
 	}
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 //asset->dump();
-SET_TRACE
 	return result;
 }
 
@@ -525,6 +584,9 @@ int FileMPEG::create_index()
 	sprintf(ptr, ".toc");
 
 	int need_toc = 1;
+
+	if(fd) mpeg3_close(fd);
+	fd = 0;
 
 // Test existing copy of TOC
 	if((fd = mpeg3_open(index_filename, &error)))
@@ -959,6 +1021,8 @@ int FileMPEG::write_samples(double **buffer, int64_t len)
 int FileMPEG::write_frames(VFrame ***frames, int len)
 {
 	int result = 0;
+	const int debug = 0;
+if(debug) printf("FileMPEG::write_frames %d\n", __LINE__);
 
 	if(video_out)
 	{
@@ -1028,17 +1092,17 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 							frame->get_v(),
 							0,
 							0,
-							asset->width,
-							asset->height,
+							frame->get_w(),
+							frame->get_h(),
 							0,
 							0,
-							asset->width,
-							asset->height,
+							temp_frame->get_w(),
+							temp_frame->get_h(),
 							frame->get_color_model(), 
 							temp_frame->get_color_model(),
 							0, 
 							frame->get_w(),
-							temp_w);
+							temp_frame->get_w());
 
 						mpeg2enc_set_input_buffers(0, 
 							(char*)temp_frame->get_y(),
@@ -1049,6 +1113,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 				else
 				{
 // MJPEG uses the same dimensions as the input
+//printf("FileMPEG::write_frames %d\n", __LINE__);sleep(1);
 					if(frame->get_color_model() == output_cmodel)
 					{
 						mjpeg_y = frame->get_y();
@@ -1057,6 +1122,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 					}
 					else
 					{
+//printf("FileMPEG::write_frames %d\n", __LINE__);sleep(1);
 						if(!temp_frame)
 						{
 							temp_frame = new VFrame(0, 
@@ -1065,6 +1131,16 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 								output_cmodel);
 						}
 
+// printf("FileMPEG::write_frames %d temp_frame=%p %p %p %p frame=%p %p %p %p color_model=%p %p\n", 
+// __LINE__,
+// temp_frame,
+// temp_frame->get_w(),
+// temp_frame->get_h(),
+// frame,
+// frame->get_w(),
+// frame->get_h(),
+// temp_frame->get_color_model(),
+// frame->get_color_model()); sleep(1);
 						cmodel_transfer(temp_frame->get_rows(), 
 							frame->get_rows(),
 							temp_frame->get_y(),
@@ -1075,17 +1151,18 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 							frame->get_v(),
 							0,
 							0,
-							asset->width,
-							asset->height,
+							frame->get_w(),
+							frame->get_h(),
 							0,
 							0,
-							asset->width,
-							asset->height,
+							temp_frame->get_w(),
+							temp_frame->get_h(),
 							frame->get_color_model(), 
 							temp_frame->get_color_model(),
 							0, 
 							frame->get_w(),
-							temp_w);
+							temp_frame->get_w());
+//printf("FileMPEG::write_frames %d\n", __LINE__);sleep(1);
 
 						mjpeg_y = temp_frame->get_y();
 						mjpeg_u = temp_frame->get_u();
@@ -1109,6 +1186,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 	}
 
 
+if(debug) printf("FileMPEG::write_frames %d\n", __LINE__);
 
 	return result;
 }
@@ -1118,10 +1196,9 @@ int FileMPEG::read_frame(VFrame *frame)
 	if(!fd) return 1;
 	int result = 0;
 	int src_cmodel;
+	const int debug = 0;
 
-// printf("FileMPEG::read_frame\n");
-// frame->dump_stacks();
-// frame->dump_params();
+if(debug) printf("FileMPEG::read_frame %d\n", __LINE__);
 
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV420P)
 		src_cmodel = BC_YUV420P;
@@ -1137,7 +1214,6 @@ int FileMPEG::read_frame(VFrame *frame)
 		case MPEG3_RGB888:
 		case MPEG3_RGBA8888:
 		case MPEG3_RGBA16161616:
-SET_TRACE
 			mpeg3_read_frame(fd, 
 					frame->get_rows(), /* Array of pointers to the start of each output row */
 					0,                    /* Location in input frame to take picture */
@@ -1148,7 +1224,6 @@ SET_TRACE
 					asset->height, 
 					frame->get_color_model(),             /* One of the color model #defines */
 					file->current_layer);
-SET_TRACE
 			break;
 
 // Use Temp
@@ -1156,7 +1231,7 @@ SET_TRACE
 // Read these directly
 			if(frame->get_color_model() == src_cmodel)
 			{
-SET_TRACE
+if(debug) printf("FileMPEG::read_frame %d\n", __LINE__);
 				mpeg3_read_yuvframe(fd,
 					(char*)frame->get_y(),
 					(char*)frame->get_u(),
@@ -1166,19 +1241,19 @@ SET_TRACE
 					asset->width,
 					asset->height,
 					file->current_layer);
-SET_TRACE
+if(debug) printf("FileMPEG::read_frame %d\n", __LINE__);
 			}
 			else
 // Process through temp frame
 			{
 				char *y, *u, *v;
-SET_TRACE
+if(debug) printf("FileMPEG::read_frame %d\n", __LINE__);
 				mpeg3_read_yuvframe_ptr(fd,
 					&y,
 					&u,
 					&v,
 					file->current_layer);
-SET_TRACE
+if(debug) printf("FileMPEG::read_frame %d\n", __LINE__);
 				if(y && u && v)
 				{
 					cmodel_transfer(frame->get_rows(), 
@@ -1203,11 +1278,11 @@ SET_TRACE
 						asset->width,
 						frame->get_w());
 				}
+if(debug) printf("FileMPEG::read_frame %d\n", __LINE__);
 			}
 			break;
 	}
 
-SET_TRACE
 	return result;
 }
 
@@ -1254,12 +1329,12 @@ int FileMPEG::read_samples(double *buffer, int64_t len)
 	return 0;
 }
 
-char* FileMPEG::strtocompression(char *string)
+const char* FileMPEG::strtocompression(char *string)
 {
 	return "";
 }
 
-char* FileMPEG::compressiontostr(char *string)
+const char* FileMPEG::compressiontostr(char *string)
 {
 	return "";
 }
@@ -1304,7 +1379,9 @@ void FileMPEGVideo::run()
 	{
 		while(1)
 		{
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			file->next_frame_lock->lock("FileMPEGVideo::run");
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			if(file->mjpeg_eof) 
 			{
 				file->next_frame_done->unlock();
@@ -1313,6 +1390,7 @@ void FileMPEGVideo::run()
 
 
 
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 // YUV4 sequence header
 			if(!file->wrote_header)
 			{
@@ -1329,6 +1407,7 @@ void FileMPEGVideo::run()
 					sprintf(interlace_string, "p");
 				}
 
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 				fprintf(file->mjpeg_out, "YUV4MPEG2 W%d H%d F%d:%d I%s A%d:%d C%s\n",
 					file->asset->width,
 					file->asset->height,
@@ -1338,21 +1417,29 @@ void FileMPEGVideo::run()
 					(int)(file->asset->aspect_ratio * 1000),
 					1000,
 					"420mpeg2");
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			}
 
 // YUV4 frame header
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			fprintf(file->mjpeg_out, "FRAME\n");
 
 // YUV data
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			if(!fwrite(file->mjpeg_y, file->asset->width * file->asset->height, 1, file->mjpeg_out))
 				file->mjpeg_error = 1;
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			if(!fwrite(file->mjpeg_u, file->asset->width * file->asset->height / 4, 1, file->mjpeg_out))
 				file->mjpeg_error = 1;
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			if(!fwrite(file->mjpeg_v, file->asset->width * file->asset->height / 4, 1, file->mjpeg_out))
 				file->mjpeg_error = 1;
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			fflush(file->mjpeg_out);
 
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 			file->next_frame_done->unlock();
+//printf("FileMPEGVideo::run %d\n", __LINE__);
 		}
 		pclose(file->mjpeg_out);
 		file->mjpeg_out = 0;
@@ -1422,17 +1509,18 @@ MPEGConfigAudio::~MPEGConfigAudio()
 {
 }
 
-int MPEGConfigAudio::create_objects()
+void MPEGConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = 150;
 	MPEGLayer *layer;
 
-
+	lock_window("MPEGConfigAudio::create_objects");
 	if(asset->format == FILE_MPEG)
 	{
 		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
-		return 0;
+		unlock_window();
+		return;
 	}
 
 
@@ -1449,7 +1537,7 @@ int MPEGConfigAudio::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-	return 0;
+	unlock_window();
 }
 
 int MPEGConfigAudio::close_event()
@@ -1618,16 +1706,18 @@ MPEGConfigVideo::~MPEGConfigVideo()
 {
 }
 
-int MPEGConfigVideo::create_objects()
+void MPEGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = x + 150;
 	int x2 = x + 300;
 
+	lock_window("MPEGConfigVideo::create_objects");
 	if(asset->format == FILE_MPEG)
 	{
 		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
-		return 0;
+		unlock_window();
+		return;
 	}
 
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
@@ -1640,7 +1730,7 @@ int MPEGConfigVideo::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-	return 0;
+	unlock_window();
 }
 
 int MPEGConfigVideo::close_event()

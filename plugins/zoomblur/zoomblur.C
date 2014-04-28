@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -75,14 +96,13 @@ public:
 	int *output;
 };
 
-class ZoomBlurWindow : public BC_Window
+class ZoomBlurWindow : public PluginClientWindow
 {
 public:
-	ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y);
+	ZoomBlurWindow(ZoomBlurMain *plugin);
 	~ZoomBlurWindow();
 
-	int create_objects();
-	int close_event();
+	void create_objects();
 
 	ZoomBlurSize *x, *y, *radius, *steps;
 	ZoomBlurToggle *r, *g, *b, *a;
@@ -91,7 +111,6 @@ public:
 
 
 
-PLUGIN_THREAD_HEADER(ZoomBlurMain, ZoomBlurThread, ZoomBlurWindow)
 
 
 // Output coords for a layer of blurring
@@ -120,7 +139,7 @@ public:
 	void update_gui();
 	int handle_opengl();
 
-	PLUGIN_CLASS_MEMBERS(ZoomBlurConfig, ZoomBlurThread)
+	PLUGIN_CLASS_MEMBERS(ZoomBlurConfig)
 
 	void delete_tables();
 	VFrame *input, *output, *temp;
@@ -247,20 +266,16 @@ void ZoomBlurConfig::interpolate(ZoomBlurConfig &prev,
 
 
 
-PLUGIN_THREAD_OBJECT(ZoomBlurMain, ZoomBlurThread, ZoomBlurWindow)
 
 
 
-ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
+ZoomBlurWindow::ZoomBlurWindow(ZoomBlurMain *plugin)
+ : PluginClientWindow(plugin,
 	230, 
 	340, 
 	230, 
 	340, 
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin; 
 }
@@ -269,7 +284,7 @@ ZoomBlurWindow::~ZoomBlurWindow()
 {
 }
 
-int ZoomBlurWindow::create_objects()
+void ZoomBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -300,15 +315,9 @@ int ZoomBlurWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
-int ZoomBlurWindow::close_event()
-{
-// Set result to 1 to indicate a plugin side close
-	set_done(1);
-	return 1;
-}
+
 
 
 
@@ -373,7 +382,7 @@ int ZoomBlurSize::handle_event()
 ZoomBlurMain::ZoomBlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
@@ -386,24 +395,20 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 
 ZoomBlurMain::~ZoomBlurMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(engine) delete engine;
 	delete_tables();
 	if(accum) delete [] accum;
 	if(temp) delete temp;
 }
 
-char* ZoomBlurMain::plugin_title() { return N_("Zoom Blur"); }
+const char* ZoomBlurMain::plugin_title() { return N_("Zoom Blur"); }
 int ZoomBlurMain::is_realtime() { return 1; }
 
 
 NEW_PICON_MACRO(ZoomBlurMain)
 
-SHOW_GUI_MACRO(ZoomBlurMain, ZoomBlurThread)
-
-SET_STRING_MACRO(ZoomBlurMain)
-
-RAISE_WINDOW_MACRO(ZoomBlurMain)
+NEW_WINDOW_MACRO(ZoomBlurMain, ZoomBlurWindow)
 
 LOAD_CONFIGURATION_MACRO(ZoomBlurMain, ZoomBlurConfig)
 
@@ -588,14 +593,14 @@ void ZoomBlurMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->x->update(config.x);
-		thread->window->y->update(config.y);
-		thread->window->radius->update(config.radius);
-		thread->window->steps->update(config.steps);
-		thread->window->r->update(config.r);
-		thread->window->g->update(config.g);
-		thread->window->b->update(config.b);
-		thread->window->a->update(config.a);
+		((ZoomBlurWindow*)thread->window)->x->update(config.x);
+		((ZoomBlurWindow*)thread->window)->y->update(config.y);
+		((ZoomBlurWindow*)thread->window)->radius->update(config.radius);
+		((ZoomBlurWindow*)thread->window)->steps->update(config.steps);
+		((ZoomBlurWindow*)thread->window)->r->update(config.r);
+		((ZoomBlurWindow*)thread->window)->g->update(config.g);
+		((ZoomBlurWindow*)thread->window)->b->update(config.b);
+		((ZoomBlurWindow*)thread->window)->a->update(config.a);
 		thread->window->unlock_window();
 	}
 }
@@ -644,7 +649,7 @@ void ZoomBlurMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("ZOOMBLUR");
 
 	output.tag.set_property("X", config.x);
@@ -663,7 +668,7 @@ void ZoomBlurMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

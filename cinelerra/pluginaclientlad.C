@@ -1,18 +1,35 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "data/lad_picon_png.h"
 #include "bchash.h"
 #include "filexml.h"
+#include "language.h"
 #include "pluginaclientlad.h"
 #include "pluginserver.h"
 #include "vframe.h"
 
 #include <ctype.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -314,18 +331,13 @@ int PluginACLientFreq::handle_event()
 
 
 
-PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin, 
-	int x, 
-	int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
-	500, 
+PluginAClientWindow::PluginAClientWindow(PluginAClientLAD *plugin)
+ : PluginClientWindow(plugin, 
+ 	500, 
 	plugin->config.total_ports * 30 + 60, 
 	500, 
 	plugin->config.total_ports * 30 + 60, 
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -335,7 +347,7 @@ PluginAClientWindow::~PluginAClientWindow()
 }
 
 
-int PluginAClientWindow::create_objects()
+void PluginAClientWindow::create_objects()
 {
 	PluginServer *server = plugin->server;
 	char string[BCTEXTLEN];
@@ -462,11 +474,6 @@ int PluginAClientWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, string));
 }
 
-int PluginAClientWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
 
 
 
@@ -478,8 +485,6 @@ int PluginAClientWindow::close_event()
 
 
 
-
-PLUGIN_THREAD_OBJECT(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
 
 
 
@@ -488,7 +493,6 @@ PLUGIN_THREAD_OBJECT(PluginAClientLAD, PluginAClientThread, PluginAClientWindow)
 PluginAClientLAD::PluginAClientLAD(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	in_buffers = 0;
 	total_inbuffers = 0;
 	out_buffers = 0;
@@ -499,10 +503,11 @@ PluginAClientLAD::PluginAClientLAD(PluginServer *server)
 
 PluginAClientLAD::~PluginAClientLAD()
 {
-	PLUGIN_DESTRUCTOR_MACRO
 	delete_buffers();
 	delete_plugin();
 }
+
+NEW_WINDOW_MACRO(PluginAClientLAD, PluginAClientWindow)
 
 int PluginAClientLAD::is_realtime()
 {
@@ -540,7 +545,7 @@ int PluginAClientLAD::get_outchannels()
 }
 
 
-char* PluginAClientLAD::plugin_title()
+const char* PluginAClientLAD::plugin_title()
 {
 	return (char*)server->lad_descriptor->Name;
 }
@@ -560,16 +565,13 @@ VFrame* PluginAClientLAD::new_picon()
 	return new VFrame(lad_picon_png);
 }
 
-SHOW_GUI_MACRO(PluginAClientLAD, PluginAClientThread)
-RAISE_WINDOW_MACRO(PluginAClientLAD)
-SET_STRING_MACRO(PluginAClientLAD)
 LOAD_CONFIGURATION_MACRO(PluginAClientLAD, PluginAClientConfig)
 
 void PluginAClientLAD::update_gui()
 {
 }
 
-char* PluginAClientLAD::lad_to_string(char *string, char *input)
+char* PluginAClientLAD::lad_to_string(char *string, const char *input)
 {
 	strcpy(string, input);
 	for(int j = 0; j < strlen(string); j++)
@@ -581,7 +583,7 @@ char* PluginAClientLAD::lad_to_string(char *string, char *input)
 	return string;
 }
 
-char* PluginAClientLAD::lad_to_upper(char *string, char *input)
+char* PluginAClientLAD::lad_to_upper(char *string, const char *input)
 {
 	lad_to_string(string, input);
 	for(int j = 0; j < strlen(string); j++)
@@ -658,7 +660,7 @@ void PluginAClientLAD::save_data(KeyFrame *keyframe)
 	char string[BCTEXTLEN];
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title(lad_to_upper(string, plugin_title()));
 
 	int current_port = 0;
@@ -687,7 +689,7 @@ void PluginAClientLAD::read_data(KeyFrame *keyframe)
 	FileXML input;
 	char string[BCTEXTLEN];
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 	config.initialize(server);
 
 	int result = 0;

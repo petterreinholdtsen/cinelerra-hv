@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assets.h"
 #include "bcsignals.h"
@@ -210,9 +231,9 @@ int CICache::age()
 	{
 		memory_usage = get_memory_usage(1);
 		
+//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
 		if(memory_usage > preferences->cache_size)
 		{
-//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
 			result = delete_oldest();
 		}
 		prev_memory_usage = memory_usage;
@@ -274,9 +295,9 @@ int CICache::delete_oldest()
 
 	if(oldest)
 	{
-// Got the oldest file.  Try requesting cache purge.
+// Got the oldest file.  Try requesting cache purge from it.
 
-		if(!oldest->file || oldest->file->purge_cache())
+		if(!oldest->file || (oldest->file->purge_cache() && total() > 1))
 		{
 
 // Delete the file if cache already empty and not checked out.
@@ -298,7 +319,7 @@ int CICache::delete_oldest()
 	else
 	{
 		total_lock->unlock();
-// nothing was old enough to delete
+// nothing was old enough to delete or only 1 file
 		return 1;   
 	}
 }

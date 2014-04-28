@@ -4,7 +4,7 @@ OBJS = $(OBJDIR)/colorbalance.o  \
 	$(OBJDIR)/colorbalancewindow.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/colorbalance.plugin
+OUTPUT = $(PLUGIN_DIR)/colorbalance.plugin
 
 include ../../plugin_config
 

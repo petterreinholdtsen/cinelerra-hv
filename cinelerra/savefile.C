@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "confirmsave.h"
 #include "bchash.h"
 #include "edl.h"
@@ -52,10 +73,9 @@ Save::Save(MWindow *mwindow) : BC_MenuItem(_("Save"), "s", 's')
 	quit_now = 0; 
 }
 
-int Save::create_objects(SaveAs *saveas)
+void Save::create_objects(SaveAs *saveas)
 {
 	this->saveas = saveas;
-	return 0;
 }
 
 int Save::handle_event()
@@ -143,7 +163,9 @@ void SaveAs::run()
 		SaveFileWindow *window;
 
 		window = new SaveFileWindow(mwindow, directory);
+		window->lock_window("SaveAs::run");
 		window->create_objects();
+		window->unlock_window();
 		result = window->run_window();
 		mwindow->defaults->update("DIRECTORY", window->get_submitted_path());
 		strcpy(filename, window->get_submitted_path());
@@ -169,12 +191,14 @@ void SaveAs::run()
 
 // save it
 	FileXML file;
+	mwindow->gui->lock_window("SaveAs::run 1");
 	mwindow->set_filename(filename);      // update the project name
 	mwindow->edl->save_xml(mwindow->plugindb, 
 		&file, 
 		filename,
 		0,
 		0);
+	mwindow->gui->unlock_window();
 	file.terminate_string();
 
 	if(file.write_to_file(filename))
@@ -194,7 +218,7 @@ void SaveAs::run()
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, _("\"%s\" %dC written"), filename, strlen(file.string));
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("SaveAs::run 2");
 		mwindow->gui->show_message(string);
 		mwindow->gui->unlock_window();
 	}

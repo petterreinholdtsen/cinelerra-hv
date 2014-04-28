@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCTOGGLE_H
 #define BCTOGGLE_H
 
@@ -14,7 +35,7 @@ public:
 	BC_Toggle(int x, int y, 
 		VFrame **data,
 		int value, 
-		char *caption = "",
+		const char *caption = "",
 		int bottom_justify = 0,
 		int font = MEDIUMFONT,
 		int color = -1);
@@ -22,6 +43,7 @@ public:
 
 	virtual int handle_event() { return 0; };
 	int get_value();
+	void set_radial(int value);
 	int set_value(int value, int draw = 1);
 	void set_select_drag(int value);
 	int update(int value, int draw = 1);
@@ -41,7 +63,7 @@ public:
 		int *text_y, 
 		int *text_w,
 		int *text_h, 
-		char *caption);
+		const char *caption);
 
 	int initialize();
 	int set_images(VFrame **data);
@@ -51,7 +73,7 @@ public:
 // In select drag mode these 3 need to be overridden and called back to.
 	virtual int button_press_event();
 	virtual int button_release_event();
-	int cursor_motion_event();
+	virtual int cursor_motion_event();
 	int repeat_event(int64_t repeat_id);
 	int draw_face();
 
@@ -98,7 +120,7 @@ public:
 	BC_Radial(int x, 
 		int y, 
 		int value, 
-		char *caption = "", 
+		const char *caption = "", 
 		int font = MEDIUMFONT,
 		int color = -1);
 };
@@ -109,13 +131,13 @@ public:
 	BC_CheckBox(int x, 
 		int y, 
 		int value, 
-		char *caption = "", 
+		const char *caption = "", 
 		int font = MEDIUMFONT,
 		int color = -1);
 	BC_CheckBox(int x, 
 		int y, 
 		int *value, 
-		char *caption = "", 
+		const char *caption = "", 
 		int font = MEDIUMFONT,
 		int color = -1);
 	virtual int handle_event();

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "assets.h"
 #include "bccapture.h"
 #include "bcsignals.h"
@@ -331,6 +352,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 			{
 				int size_change = (bitmap->get_w() != output->get_canvas()->get_w() ||
 					bitmap->get_h() != output->get_canvas()->get_h());
+printf("VDeviceX11::new_output_buffer 1\n");
 				delete bitmap;
 				delete output_frame;
 				bitmap = 0;
@@ -467,12 +489,6 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 					device->out_w,
 					device->out_h,
 					colormodel);
-// printf("VDeviceX11::new_outout_buffer %p %d %d %d %p\n", 
-// device,
-// device->out_w,
-// device->out_h,
-// colormodel,
-// output_frame->get_rows());
 //BUFFER2(output_frame->get_rows()[0], "VDeviceX11::new_output_buffer 2");
 				bitmap_type = BITMAP_TEMP;
 			}
@@ -492,12 +508,11 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 		}
 	}
 
-
 	*result = output_frame;
+//printf("VDeviceX11::new_output_buffer 10 %d\n", output->get_canvas()->get_window_lock());
 
 	output->get_canvas()->unlock_window();
 	output->unlock_canvas();
-//printf("VDeviceX11::new_output_buffer 10\n");
 }
 
 
@@ -523,6 +538,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	int i = 0;
 	output->lock_canvas("VDeviceX11::write_buffer");
 	output->get_canvas()->lock_window("VDeviceX11::write_buffer 1");
+
 
 
 //printf("VDeviceX11::write_buffer %d\n", output->get_canvas()->get_video_on());

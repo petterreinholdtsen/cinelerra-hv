@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef FILEBASE_H
 #define FILEBASE_H
 
@@ -13,6 +34,9 @@
 #include "vframe.inc"
 
 #include <sys/types.h>
+
+// Number of samples saved before the current read position
+#define HISTORY_MAX 0x10000
 
 // inherited by every file interpreter
 class FileBase
@@ -60,7 +84,7 @@ public:
 
 // Subclass should call this to add the base class allocation.
 // Only used in read mode.
-	virtual int64_t get_memory_usage() { return 0; };
+	virtual int64_t get_memory_usage();
 
 	virtual int write_samples(double **buffer, 
 		int64_t len) { return 0; };
@@ -79,6 +103,23 @@ public:
 // This file can copy compressed frames directly from the asset
 	virtual int can_copy_from(Edit *edit, int64_t position) { return 0; }; 
 	virtual int get_render_strategy(ArrayList<int>* render_strategies) { return VRENDER_VPIXEL; };
+
+// Manages an audio history buffer
+	void update_pcm_history(int64_t len);
+// Returns history_start + history_size
+	int64_t get_history_sample();
+// contiguous float
+	void append_history(float **new_data, int len);
+// Interleaved short
+	void append_history(short *new_data, int len);
+	void read_history(double *dst,
+		int64_t start_sample, 
+		int channel,
+		int64_t len);
+	void allocate_history(int len);
+
+// For static functions to access it
+	Asset *asset;
 
 protected:
 // Return 1 if the render_strategy is present on the list.
@@ -122,14 +163,12 @@ protected:
 // allocate a buffer for translating video to VFrame
 	int get_video_buffer(unsigned char **buffer, int depth); // video
 	int get_row_pointers(unsigned char *buffer, unsigned char ***pointers, int depth);
-	static int match4(char *in, char *out);   // match 4 bytes for a quicktime type
+	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type
 
 	int64_t ima4_samples_to_bytes(int64_t samples, int channels);
 	int64_t ima4_bytes_to_samples(int64_t bytes, int channels);
 
-	char *audio_buffer_in, *audio_buffer_out;    // for raw audio reads and writes
 	float *float_buffer;          // for floating point feathering
-	unsigned char *video_buffer_in, *video_buffer_out;
 	unsigned char **row_pointers_in, **row_pointers_out;
 	int64_t prev_buffer_position;  // for audio determines if reading raw data is necessary
 	int64_t prev_frame_position;   // for video determines if reading raw video data is necessary
@@ -137,17 +176,29 @@ protected:
 	int64_t prev_len;
 	int prev_track;
 	int prev_layer;
-	Asset *asset;
 	int wr, rd;
 	int dither;
 	int internal_byte_order;
 	File *file;
 
+// ================================= Audio compression
+	double **pcm_history;
+	int64_t history_allocated;
+	int64_t history_size;
+	int64_t history_start;
+	int history_channels;
+// Range to decode to fill history buffer.  Maintained by FileBase.
+	int64_t decode_start;
+	int64_t decode_len;
+// End of last decoded sample.  Maintained by user for seeking.
+	int64_t decode_end;
+
+
 private:
 
 
 
-// ================================= Audio compression
+
 // ULAW
 	float ulawtofloat(char ulaw);
 	char floattoulaw(float value);

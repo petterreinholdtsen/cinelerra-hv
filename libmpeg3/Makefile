@@ -5,8 +5,8 @@ USE_CSS = 1
 A52DIR := $(shell expr a52dec* )
 
 
-ifeq ("$(PREFIX)", "")
-PREFIX=/usr
+ifeq ("$(DST)", "")
+DST=/usr/bin
 endif
 
 ifeq ($(origin CFLAGS), environment)
@@ -149,7 +149,7 @@ UTILS = $(OBJDIR)/mpeg3dump $(OBJDIR)/mpeg3peek $(OBJDIR)/mpeg3toc  $(OBJDIR)/mp
 
 LIBS = -lm -lpthread
 
-$(shell if ! test -d $(OBJDIR) \; then mkdir -p $(OBJDIR) \; fi )
+$(shell mkdir -p $(OBJDIR) )
 
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(A52CFLAGS) > $(OBJDIR)/a52_flags)
@@ -191,9 +191,7 @@ $(OBJDIR)/mpeg2qt: $(OUTPUT)
 		-ldl
 
 install: 
-	cp $(UTILS) $(PREFIX)/bin
-#	cp $(OUTPUT) $(PREFIX)/lib
-#	cp libmpeg3.h mpeg3private.h $(PREFIX)/include
+	cp $(UTILS) $(DST)
 
 clean:
 	rm -rf $(OBJDIR)

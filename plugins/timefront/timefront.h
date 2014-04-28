@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef TIMEFRONT_H
 #define TIMEFRONT_H
 
@@ -177,14 +198,13 @@ public:
 };
 
 
-class TimeFrontWindow : public BC_Window
+class TimeFrontWindow : public PluginClientWindow
 {
 public:
-	TimeFrontWindow(TimeFrontMain *plugin, int x, int y);
+	TimeFrontWindow(TimeFrontMain *plugin);
 	~TimeFrontWindow();
 	
-	int create_objects();
-	int close_event();
+	void create_objects();
 	void update_shape();
 
 	TimeFrontMain *plugin;
@@ -210,7 +230,7 @@ public:
 
 
 
-PLUGIN_THREAD_HEADER(TimeFrontMain, TimeFrontThread, TimeFrontWindow)
+
 
 
 class TimeFrontMain : public PluginVClient
@@ -219,7 +239,6 @@ public:
 	TimeFrontMain(PluginServer *server);
 	~TimeFrontMain();
 
-//	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int process_buffer(VFrame **frame,
 		int64_t start_position,
 		double frame_rate);
@@ -233,7 +252,7 @@ public:
 	void update_gui();
 	int is_synthesis();
 
-	PLUGIN_CLASS_MEMBERS(TimeFrontConfig, TimeFrontThread)
+	PLUGIN_CLASS_MEMBERS(TimeFrontConfig)
 
 	int need_reconfigure;
 

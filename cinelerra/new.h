@@ -1,7 +1,29 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef NEW_H
 #define NEW_H
 
 #include "assets.inc"
+#include "bcdialog.h"
 #include "edl.inc"
 #include "file.inc"
 #include "filexml.inc"
@@ -9,7 +31,6 @@
 #include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"
-#include "thread.h"
 
 class NewThread;
 class NewWindow;
@@ -19,28 +40,29 @@ class New : public BC_MenuItem
 {
 public:
 	New(MWindow *mwindow);
-	int create_objects();
+	void create_objects();
 
 	int handle_event();
 	int run_script(FileXML *script);
 	int create_new_project();
+	void create_new_edl();
 
 	MWindow *mwindow;
 	NewThread *thread;
 	EDL *new_edl;
 
 private:
-	void create_new_edl();
 	FileXML *script;
 };
 
-class NewThread : public Thread
+class NewThread : public BC_DialogThread
 {
 public:
 	NewThread(MWindow *mwindow, New *new_project);
 	~NewThread();
 	
-	void run();
+	BC_Window* new_gui();
+	void handle_close_event(int result);
 
 	int load_defaults();
 	int save_defaults();
@@ -50,7 +72,6 @@ public:
 	NewWindow *nwindow;
 	MWindow *mwindow;
 	New *new_project;
-	Mutex *window_lock;
 };
 
 class NewWindow : public BC_Window
@@ -59,7 +80,7 @@ public:
 	NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y);
 	~NewWindow();
 	
-	int create_objects();
+	void create_objects();
 	int update();
 
 	MWindow *mwindow;
@@ -100,7 +121,7 @@ public:
 class NewATracks : public BC_TextBox
 {
 public:
-	NewATracks(NewWindow *nwindow, char *text, int x, int y);
+	NewATracks(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -117,7 +138,7 @@ public:
 class NewAChannels : public BC_TextBox
 {
 public:
-	NewAChannels(NewWindow *nwindow, char *text, int x, int y);
+	NewAChannels(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -134,7 +155,7 @@ public:
 class NewSampleRate : public BC_TextBox
 {
 public:
-	NewSampleRate(NewWindow *nwindow, char *text, int x, int y);
+	NewSampleRate(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -159,7 +180,7 @@ public:
 class NewVTracks : public BC_TextBox
 {
 public:
-	NewVTracks(NewWindow *nwindow, char *text, int x, int y);
+	NewVTracks(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -176,7 +197,7 @@ public:
 class NewVChannels : public BC_TextBox
 {
 public:
-	NewVChannels(NewWindow *nwindow, char *text, int x, int y);
+	NewVChannels(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -193,7 +214,7 @@ public:
 class NewFrameRate : public BC_TextBox
 {
 public:
-	NewFrameRate(NewWindow *nwindow, char *text, int x, int y);
+	NewFrameRate(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -265,7 +286,7 @@ public:
 class NewAspectW : public BC_TextBox
 {
 public:
-	NewAspectW(NewWindow *nwindow, char *text, int x, int y);
+	NewAspectW(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -273,7 +294,7 @@ public:
 class NewAspectH : public BC_TextBox
 {
 public:
-	NewAspectH(NewWindow *nwindow, char *text, int x, int y);
+	NewAspectH(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -295,7 +316,7 @@ public:
 class ColormodelItem : public BC_ListBoxItem
 {
 public:
-	ColormodelItem(char *text, int value);
+	ColormodelItem(const char *text, int value);
 	int value;
 };
 
@@ -308,7 +329,7 @@ public:
 		int x, 
 		int y);
 	int handle_event();
-	char* colormodel_to_text();
+	const char* colormodel_to_text();
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;

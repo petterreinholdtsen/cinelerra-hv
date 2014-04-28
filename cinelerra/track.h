@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef TRACK_H
 #define TRACK_H
 
@@ -38,7 +59,7 @@ public:
 	Track();
 	virtual ~Track();
 
-	int create_objects();
+	void create_objects();
 	int get_id();
 	virtual int load_defaults(BC_Hash *defaults);
 	int load(FileXML *file, int track_offset, uint32_t load_flags);
@@ -69,20 +90,24 @@ public:
 		double length, 
 		double position, 
 		int track_number);
-	Plugin* insert_effect(char *title, 
+	Plugin* insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		KeyFrame *keyframe,
 		PluginSet *plugin_set,
 		double start,
 		double length,
 		int plugin_type);
-	void insert_plugin_set(Track *track, double position);
+	void insert_plugin_set(Track *track, 
+		int64_t position,
+		int64_t min_length);
 	void detach_effect(Plugin *plugin);
 // Insert a track from another EDL
 	void insert_track(Track *track, 
 		double position, 
 		int replace_default,
-		int edit_plugins);
+		int edit_plugins,
+// Pad pasted sections to a minimum of this length.
+		double edl_length);
 // Optimize editing
 	void optimize();
 	int is_muted(int64_t position, int direction);  // Test muting status
@@ -142,14 +167,15 @@ public:
 
 
 	virtual int copy_settings(Track *track);
-	void shift_keyframes(double position, double length, int convert_units);
-	void shift_effects(double position, double length, int convert_units);
+	void shift_keyframes(int64_t position, int64_t length);
+	void shift_effects(int64_t position, int64_t length);
 	void change_plugins(SharedLocation &old_location, 
 		SharedLocation &new_location, 
 		int do_swap);
 	void change_modules(int old_location, 
 		int new_location, 
 		int do_swap);
+	int plugin_exists(Plugin *plugin);
 
 	EDL *edl;
 	Tracks *tracks;
@@ -206,7 +232,7 @@ public:
 	int copy(double start, 
 		double end, 
 		FileXML *file, 
-		char *output_path = "");
+		const char *output_path = "");
 	int copy_assets(double start, 
 		double end, 
 		ArrayList<Asset*> *asset_list);
@@ -225,8 +251,9 @@ public:
 		double selectionend, 
 		int shift_autos   /* = 1 */,
 		int default_only  /* = 0 */);
-	void straighten_automation(double selectionstart, 
-		double selectionend);
+	void set_automation_mode(double selectionstart, 
+		double selectionend,
+		int mode);
 	virtual int clear_automation_derived(AutoConf *auto_conf, 
 		double selectionstart, 
 		double selectionend, 
@@ -238,7 +265,7 @@ public:
 		double selectionend, 
 		FileXML *file,
 		int default_only,
-		int autos_only);
+		int active_only);
 	virtual int copy_automation_derived(AutoConf *auto_conf, 
 		double selectionstart, 
 		double selectionend, 
@@ -248,7 +275,8 @@ public:
 		double frame_rate,
 		int64_t sample_rate,
 		FileXML *file,
-		int default_only);
+		int default_only,
+		int active_only);
 	virtual int paste_automation_derived(double selectionstart, 
 		double selectionend, 
 		double total_length, 

@@ -26,6 +26,17 @@ void mpeg3_delete_strack(mpeg3_strack_t *ptr)
 
 void mpeg3_delete_subtitle(mpeg3_subtitle_t *subtitle)
 {
+/*
+ * printf("mpeg3_delete_subtitle subtitle=%p subtitle->data=%p %d %d %p %p %p %p\n", 
+ * subtitle, 
+ * subtitle->data, 
+ * subtitle->size,
+ * subtitle->bytes_read,
+ * subtitle->image_y, 
+ * subtitle->image_u, 
+ * subtitle->image_v, 
+ * subtitle->image_a);
+ */
 	if(subtitle->data) free(subtitle->data);
 	if(subtitle->image_y) free(subtitle->image_y);
 	if(subtitle->image_u) free(subtitle->image_u);

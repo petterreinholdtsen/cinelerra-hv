@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "cache.h"
@@ -66,14 +87,14 @@ int VEdit::read_frame(VFrame *video_out,
 		file->set_video_position(input_position - startproject + startsource, edl->session->frame_rate);
 		if(use_cache) file->set_cache_frames(use_cache);
 		result = file->read_frame(video_out);
+
 		if(use_cache) file->set_cache_frames(0);
 
 		cache->check_in(asset);
 	}
 	else
 		result = 1;
-	
-//for(int i = 0; i < video_out->get_w() * 3 * 20; i++) video_out->get_rows()[0][i] = 128;
+
 	return result;
 }
 

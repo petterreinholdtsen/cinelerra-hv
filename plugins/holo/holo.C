@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "colormodels.h"
 #include "effecttv.h"
@@ -41,12 +62,12 @@ HoloMain::HoloMain(PluginServer *server)
 	bgimage = 0;
 	do_reconfigure = 1;
 	yuv = new YUV;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 HoloMain::~HoloMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 
 	if(effecttv)
@@ -60,8 +81,10 @@ HoloMain::~HoloMain()
 	delete yuv;
 }
 
-char* HoloMain::plugin_title() { return N_("HolographicTV"); }
+const char* HoloMain::plugin_title() { return N_("HolographicTV"); }
 int HoloMain::is_realtime() { return 1; }
+
+NEW_WINDOW_MACRO(HoloMain, HoloWindow)
 
 VFrame* HoloMain::new_picon()
 {
@@ -78,8 +101,9 @@ int HoloMain::save_defaults()
 	return 0;
 }
 
-void HoloMain::load_configuration()
+int HoloMain::load_configuration()
 {
+	return 0;
 }
 
 
@@ -266,28 +290,6 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	return 0;
 }
 
-int HoloMain::show_gui()
-{
-	load_configuration();
-	thread = new HoloThread(this);
-	thread->start();
-	return 0;
-}
-
-int HoloMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void HoloMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
 
 
 

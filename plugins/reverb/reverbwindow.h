@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef REVERBWINDOW_H
 #define REVERBWINDOW_H
 
@@ -13,7 +34,7 @@ class ReverbWindow;
 
 
 
-PLUGIN_THREAD_HEADER(Reverb, ReverbThread, ReverbWindow)
+
 
 
 class ReverbLevelInit;
@@ -26,14 +47,13 @@ class ReverbLowPass1;
 class ReverbLowPass2;
 class ReverbMenu;
 
-class ReverbWindow : public BC_Window
+class ReverbWindow : public PluginClientWindow
 {
 public:
-	ReverbWindow(Reverb *reverb, int x, int y);
+	ReverbWindow(Reverb *reverb);
 	~ReverbWindow();
 	
-	int create_objects();
-	int close_event();
+	void create_objects();
 	
 	Reverb *reverb;
 	ReverbLevelInit *level_init;
@@ -132,7 +152,7 @@ public:
 	ReverbMenu(Reverb *reverb, ReverbWindow *window);
 	~ReverbMenu();
 	
-	int create_objects(BC_Hash *defaults);
+	void create_objects(BC_Hash *defaults);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
 // most recent loads

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -48,7 +69,7 @@ REGISTER_PLUGIN(HistogramMain)
 HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
@@ -67,7 +88,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 
 HistogramMain::~HistogramMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	for(int i = 0; i < HISTOGRAM_MODES;i++)
 	{
 		delete [] lookup[i];
@@ -79,18 +100,14 @@ HistogramMain::~HistogramMain()
 	delete engine;
 }
 
-char* HistogramMain::plugin_title() { return N_("Histogram"); }
+const char* HistogramMain::plugin_title() { return N_("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 
 #include "picon_png.h"
 NEW_PICON_MACRO(HistogramMain)
 
-SHOW_GUI_MACRO(HistogramMain, HistogramThread)
-
-SET_STRING_MACRO(HistogramMain)
-
-RAISE_WINDOW_MACRO(HistogramMain)
+NEW_WINDOW_MACRO(HistogramMain, HistogramWindow)
 
 LOAD_CONFIGURATION_MACRO(HistogramMain, HistogramConfig)
 
@@ -98,53 +115,45 @@ void HistogramMain::render_gui(void *data)
 {
 	if(thread)
 	{
-SET_TRACE
 // Process just the RGB values to determine the automatic points or
 // all the points if manual
 		if(!config.automatic)
 		{
 // Generate curves for value histogram
 // Lock out changes to curves
-			thread->window->lock_window("HistogramMain::render_gui 1");
+			((HistogramWindow*)thread->window)->lock_window("HistogramMain::render_gui 1");
 			tabulate_curve(HISTOGRAM_RED, 0);
 			tabulate_curve(HISTOGRAM_GREEN, 0);
 			tabulate_curve(HISTOGRAM_BLUE, 0);
-			thread->window->unlock_window();
+			((HistogramWindow*)thread->window)->unlock_window();
 		}
 
 		calculate_histogram((VFrame*)data, !config.automatic);
 
-SET_TRACE
 
 		if(config.automatic)
 		{
-SET_TRACE
 			calculate_automatic((VFrame*)data);
 
-SET_TRACE
 // Generate curves for value histogram
 // Lock out changes to curves
-			thread->window->lock_window("HistogramMain::render_gui 1");
+			((HistogramWindow*)thread->window)->lock_window("HistogramMain::render_gui 1");
 			tabulate_curve(HISTOGRAM_RED, 0);
 			tabulate_curve(HISTOGRAM_GREEN, 0);
 			tabulate_curve(HISTOGRAM_BLUE, 0);
-			thread->window->unlock_window();
+			((HistogramWindow*)thread->window)->unlock_window();
 
-SET_TRACE
 // Need a second pass to get the luminance values.
 			calculate_histogram((VFrame*)data, 1);
-SET_TRACE
 		}
 
-SET_TRACE
-		thread->window->lock_window("HistogramMain::render_gui 2");
-		thread->window->update_canvas();
+		((HistogramWindow*)thread->window)->lock_window("HistogramMain::render_gui 2");
+		((HistogramWindow*)thread->window)->update_canvas();
 		if(config.automatic)
 		{
-			thread->window->update_input();
+			((HistogramWindow*)thread->window)->update_input();
 		}
-		thread->window->unlock_window();
-SET_TRACE
+		((HistogramWindow*)thread->window)->unlock_window();
 	}
 }
 
@@ -152,17 +161,17 @@ void HistogramMain::update_gui()
 {
 	if(thread)
 	{
-		thread->window->lock_window("HistogramMain::update_gui");
+		((HistogramWindow*)thread->window)->lock_window("HistogramMain::update_gui");
 		int reconfigure = load_configuration();
 		if(reconfigure) 
 		{
-			thread->window->update(0);
+			((HistogramWindow*)thread->window)->update(0);
 			if(!config.automatic)
 			{
-				thread->window->update_input();
+				((HistogramWindow*)thread->window)->update_input();
 			}
 		}
-		thread->window->unlock_window();
+		((HistogramWindow*)thread->window)->unlock_window();
 	}
 }
 
@@ -264,7 +273,7 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("HISTOGRAM");
 
 	char string[BCTEXTLEN];
@@ -326,7 +335,7 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	int current_input_mode = 0;
@@ -619,11 +628,9 @@ int HistogramMain::process_buffer(VFrame *frame,
 	int64_t start_position,
 	double frame_rate)
 {
-SET_TRACE
 	int need_reconfigure = load_configuration();
+//printf("HistogramMain::process_buffer 1 %d\n", need_reconfigure);
 
-
-SET_TRACE
 	int use_opengl = calculate_use_opengl();
 
 //printf("%d\n", use_opengl);
@@ -645,7 +652,6 @@ SET_TRACE
 // Always plot to set the curves if automatic
 	if(config.plot || config.automatic) send_render_gui(frame);
 
-SET_TRACE
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
@@ -655,18 +661,15 @@ SET_TRACE
 		!linear[0] || 
 		config.automatic)
 	{
-SET_TRACE
 // Calculate new curves
 		if(config.automatic)
 		{
 			calculate_automatic(input);
 		}
-SET_TRACE
 
 // Generate transfer tables with value function for integer colormodels.
 		for(int i = 0; i < 3; i++)
 			tabulate_curve(i, 1);
-SET_TRACE
 	}
 
 
@@ -674,7 +677,6 @@ SET_TRACE
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input, 0);
 
-SET_TRACE
 
 	return 0;
 }
@@ -840,7 +842,7 @@ int HistogramMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 	int aggregate_interpolation = 0;
 	int aggregate_gamma = 0;
@@ -945,12 +947,12 @@ int HistogramMain::handle_opengl()
 		shader_stack[15],
 		0);
 
-printf("HistogramMain::handle_opengl %d %d %d %d shader=%d\n", 
-aggregate_interpolation, 
-aggregate_gamma,
-aggregate_colorbalance,
-current_shader,
-shader);
+// printf("HistogramMain::handle_opengl %d %d %d %d shader=%d\n", 
+// aggregate_interpolation, 
+// aggregate_gamma,
+// aggregate_colorbalance,
+// current_shader,
+// shader);
 
 	float input_min_r[2] = { 0, 0 };
 	float input_min_g[2] = { 0, 0 };

@@ -5,7 +5,7 @@ OBJS = $(OBJDIR)/dot.o  \
 	../burn/$(OBJDIR)/effecttv.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/dot.plugin
+OUTPUT = $(PLUGIN_DIR)/dot.plugin
 CFLAGS += -I../burn
 
 

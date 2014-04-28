@@ -3,7 +3,7 @@ include ../../global_config
 OBJS := $(OBJDIR)/interpolateaudio.o
 
 
-OUTPUT := ../$(OBJDIR)/interpolateaudio.plugin
+OUTPUT := $(PLUGIN_DIR)/interpolateaudio.plugin
 
 include ../../plugin_config
 

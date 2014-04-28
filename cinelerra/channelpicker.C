@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "batch.h"
 #include "bcsignals.h"
 #include "channel.h"
@@ -445,7 +466,7 @@ BC_WindowBase* ChannelPicker::get_subwindow()
 
 
 
-int ChannelPicker::create_objects()
+void ChannelPicker::create_objects()
 {
 	channel_text = 0;
 	update_channel_list();
@@ -459,7 +480,6 @@ int ChannelPicker::create_objects()
 	get_subwindow()->add_subwindow(channel_button = new ChannelButton(this, 
 		x, 
 		y - 1));
-	return 0;
 }
 
 int ChannelPicker::reposition()
@@ -479,7 +499,7 @@ int ChannelPicker::close_threads()
 	return 0;
 }
 
-char* ChannelPicker::get_source_name(Channel *channel)
+const char* ChannelPicker::get_source_name(Channel *channel)
 {
 	if(channel->entry < chanlists[channel->freqtable].count)
 		return chanlists[channel->freqtable].list[channel->entry].name;
@@ -487,7 +507,7 @@ char* ChannelPicker::get_source_name(Channel *channel)
 		return chanlists[channel->freqtable].list[0].name;
 }
 
-char* ChannelPicker::current_channel_name()
+const char* ChannelPicker::current_channel_name()
 {
 	if(get_current_channel_struct())
 	{

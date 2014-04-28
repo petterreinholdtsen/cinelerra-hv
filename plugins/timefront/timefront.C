@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -96,19 +117,15 @@ void TimeFrontConfig::interpolate(TimeFrontConfig &prev,
 
 
 
-PLUGIN_THREAD_OBJECT(TimeFrontMain, TimeFrontThread, TimeFrontWindow)
 
 
-TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x,
-	y,
+TimeFrontWindow::TimeFrontWindow(TimeFrontMain *plugin)
+ : PluginClientWindow(plugin,
 	350, 
 	290, 
 	350, 
 	290, 
-	0, 
-	1)
+	0)
 {
 	this->plugin = plugin;
 	angle = 0;
@@ -132,7 +149,7 @@ TimeFrontWindow::~TimeFrontWindow()
 {
 }
 
-int TimeFrontWindow::create_objects()
+void TimeFrontWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -160,7 +177,6 @@ int TimeFrontWindow::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
 void TimeFrontWindow::update_shape()
@@ -318,12 +334,7 @@ void TimeFrontWindow::update_shape()
 
 }
 
-int TimeFrontWindow::close_event()
-{
-// Set result to 1 to indicate a plugin side close
-	set_done(1);
-	return 1;
-}
+
 
 
 
@@ -619,7 +630,7 @@ int TimeFrontShowGrayscale::handle_event()
 TimeFrontMain::TimeFrontMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	need_reconfigure = 1;
 	gradient = 0;
 	engine = 0;
@@ -628,25 +639,21 @@ TimeFrontMain::TimeFrontMain(PluginServer *server)
 
 TimeFrontMain::~TimeFrontMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(gradient) delete gradient;
 	if(engine) delete engine;
 	if(overlayer) delete overlayer;
 }
 
-char* TimeFrontMain::plugin_title() { return N_("TimeFront"); }
+const char* TimeFrontMain::plugin_title() { return N_("TimeFront"); }
 int TimeFrontMain::is_realtime() { return 1; }
 int TimeFrontMain::is_multichannel() { return 1; }
 
 
 NEW_PICON_MACRO(TimeFrontMain)
 
-SHOW_GUI_MACRO(TimeFrontMain, TimeFrontThread)
-
-SET_STRING_MACRO(TimeFrontMain)
-
-RAISE_WINDOW_MACRO(TimeFrontMain)
+NEW_WINDOW_MACRO(TimeFrontMain, TimeFrontWindow)
 
 LOAD_CONFIGURATION_MACRO(TimeFrontMain, TimeFrontConfig)
 
@@ -1054,27 +1061,27 @@ void TimeFrontMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("TimeFrontMain::update_gui");
-			thread->window->frame_range->update(config.frame_range);
-			thread->window->shape->set_text(TimeFrontShape::to_text(config.shape));
-			thread->window->show_grayscale->update(config.show_grayscale);
-			thread->window->invert->update(config.invert);
-			thread->window->shape->set_text(TimeFrontShape::to_text(config.shape));
-			if (thread->window->rate)
-				thread->window->rate->set_text(TimeFrontRate::to_text(config.rate));
-			if (thread->window->in_radius)
-				thread->window->in_radius->update(config.in_radius);
-			if (thread->window->out_radius)
-				thread->window->out_radius->update(config.out_radius);
-			if (thread->window->track_usage)
-				thread->window->track_usage->set_text(TimeFrontTrackUsage::to_text(config.track_usage));
-			if(thread->window->angle)
-				thread->window->angle->update(config.angle);
-			if(thread->window->center_x)
-				thread->window->center_x->update(config.center_x);
-			if(thread->window->center_y)
-				thread->window->center_y->update(config.center_y);
+			((TimeFrontWindow*)thread->window)->frame_range->update(config.frame_range);
+			((TimeFrontWindow*)thread->window)->shape->set_text(TimeFrontShape::to_text(config.shape));
+			((TimeFrontWindow*)thread->window)->show_grayscale->update(config.show_grayscale);
+			((TimeFrontWindow*)thread->window)->invert->update(config.invert);
+			((TimeFrontWindow*)thread->window)->shape->set_text(TimeFrontShape::to_text(config.shape));
+			if (((TimeFrontWindow*)thread->window)->rate)
+				((TimeFrontWindow*)thread->window)->rate->set_text(TimeFrontRate::to_text(config.rate));
+			if (((TimeFrontWindow*)thread->window)->in_radius)
+				((TimeFrontWindow*)thread->window)->in_radius->update(config.in_radius);
+			if (((TimeFrontWindow*)thread->window)->out_radius)
+				((TimeFrontWindow*)thread->window)->out_radius->update(config.out_radius);
+			if (((TimeFrontWindow*)thread->window)->track_usage)
+				((TimeFrontWindow*)thread->window)->track_usage->set_text(TimeFrontTrackUsage::to_text(config.track_usage));
+			if(((TimeFrontWindow*)thread->window)->angle)
+				((TimeFrontWindow*)thread->window)->angle->update(config.angle);
+			if(((TimeFrontWindow*)thread->window)->center_x)
+				((TimeFrontWindow*)thread->window)->center_x->update(config.center_x);
+			if(((TimeFrontWindow*)thread->window)->center_y)
+				((TimeFrontWindow*)thread->window)->center_y->update(config.center_y);
 			
-			thread->window->update_shape();
+			((TimeFrontWindow*)thread->window)->update_shape();
 			thread->window->unlock_window();
 		}
 	}
@@ -1135,7 +1142,7 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("TIMEFRONT");
 
 	output.tag.set_property("ANGLE", config.angle);
@@ -1157,7 +1164,7 @@ void TimeFrontMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 

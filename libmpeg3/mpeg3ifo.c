@@ -281,10 +281,11 @@ static int program_map(mpeg3_t *file, char *pgc, unsigned char **ptr)
 	{
 		for(i = 0; i < 16; i++)
 		{
-			int r = (int)*(*ptr)++;
-			int g = (int)*(*ptr)++;
-			int b = (int)*(*ptr)++;
+			int b = (int)*(*ptr)++ * 2;
+			int g = (int)*(*ptr)++ * 2;
+			int r = (int)*(*ptr)++ * 2;
 			(*ptr)++;
+//printf("program_map: color %02d: 0x%02x 0x%02x 0x%02x\n", i, r, g, b);
 
 			int y = (int)(0.29900 * r  + 0.58700 * g  + 0.11400 * b);
 			int u = (int)(-0.16874 * r + -0.33126 * g + 0.50000 * b + 0x80);
@@ -296,7 +297,6 @@ static int program_map(mpeg3_t *file, char *pgc, unsigned char **ptr)
 			file->palette[i * 4] = y;
 			file->palette[i * 4 + 1] = u;
 			file->palette[i * 4 + 2] = v;
-//printf("color %02d: 0x%02x 0x%02x 0x%02x\n", i, y, u, v);
 		}
 
 		file->have_palette = 1;
@@ -534,7 +534,7 @@ static void cellplayinfo(mpeg3_t *file, ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 // Skip CLUT
 // Skip PGC commands
 // Program map
-		if(program_map(file, cell_hdr_start, &cell_hdr))
+		if(program_map(file, cell_hdr_start, (unsigned char**)&cell_hdr))
 			;
 
 // Cell Positions

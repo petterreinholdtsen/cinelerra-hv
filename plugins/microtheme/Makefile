@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/microtheme.o
 
-OUTPUT_THEME = ../$(OBJDIR)/microtheme.plugin
+OUTPUT_THEME = $(PLUGIN_DIR)/microtheme.plugin
 
 OUTPUT_THEME: $(OBJS)
 	$(LDLINKER) -o $(OUTPUT_THEME) $(OBJS)

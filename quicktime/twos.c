@@ -134,7 +134,11 @@ static int decode(quicktime_t *file,
 			{
 				for(i = 0, j = channel; i < samples; i++)
 				{
-					output_i[i] = ((int16_t)codec->work_buffer[j]) << 8;
+					if(file->use_avi)
+						output_i[i] = (int16_t)(((unsigned char)codec->work_buffer[j]) << 8) - 
+							0x7fff;
+					else
+						output_i[i] = ((int16_t)codec->work_buffer[j]) << 8;
 					j += step;
 				}
 			}
@@ -143,7 +147,11 @@ static int decode(quicktime_t *file,
 			{
 				for(i = 0, j = channel; i < samples; i++)
 				{
-					output_f[i] = ((float)codec->work_buffer[j]) / 0x7f;
+					if(file->use_avi)
+						output_f[i] = ((float)((unsigned char)codec->work_buffer[j]) - 0x7f) / 
+							0x7f;
+					else
+						output_f[i] = ((float)codec->work_buffer[j]) / 0x7f;
 					j += step;
 				}
 			}

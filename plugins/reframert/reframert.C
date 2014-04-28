@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -64,20 +85,18 @@ public:
 	ReframeRTWindow *gui;
 };
 
-class ReframeRTWindow : public BC_Window
+class ReframeRTWindow : public PluginClientWindow
 {
 public:
-	ReframeRTWindow(ReframeRT *plugin, int x, int y);
+	ReframeRTWindow(ReframeRT *plugin);
 	~ReframeRTWindow();
 	void create_objects();
-	int close_event();
 	ReframeRT *plugin;
 	ReframeRTScale *scale;
 	ReframeRTStretch *stretch;
 	ReframeRTDownsample *downsample;
 };
 
-PLUGIN_THREAD_HEADER(ReframeRT, ReframeRTThread, ReframeRTWindow)
 
 class ReframeRT : public PluginVClient
 {
@@ -85,7 +104,7 @@ public:
 	ReframeRT(PluginServer *server);
 	~ReframeRT();
 
-	PLUGIN_CLASS_MEMBERS(ReframeRTConfig, ReframeRTThread)
+	PLUGIN_CLASS_MEMBERS(ReframeRTConfig)
 
 	int load_defaults();
 	int save_defaults();
@@ -153,17 +172,13 @@ void ReframeRTConfig::boundaries()
 
 
 
-ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+ReframeRTWindow::ReframeRTWindow(ReframeRT *plugin)
+ : PluginClientWindow(plugin, 
 	210, 
 	160, 
 	200, 
 	160, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -198,10 +213,7 @@ void ReframeRTWindow::create_objects()
 	flush();
 }
 
-WINDOW_CLOSE_EVENT(ReframeRTWindow)
 
-
-PLUGIN_THREAD_OBJECT(ReframeRT, ReframeRTThread, ReframeRTWindow)
 
 
 
@@ -276,27 +288,23 @@ int ReframeRTDownsample::handle_event()
 ReframeRT::ReframeRT(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 
 ReframeRT::~ReframeRT()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
+const char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
 int ReframeRT::is_realtime() { return 1; }
 int ReframeRT::is_synthesis() { return 1; }
 
 #include "picon_png.h"
 NEW_PICON_MACRO(ReframeRT)
 
-SHOW_GUI_MACRO(ReframeRT, ReframeRTThread)
-
-RAISE_WINDOW_MACRO(ReframeRT)
-
-SET_STRING_MACRO(ReframeRT)
+NEW_WINDOW_MACRO(ReframeRT, ReframeRTWindow)
 
 LOAD_CONFIGURATION_MACRO(ReframeRT, ReframeRTConfig)
 
@@ -389,7 +397,7 @@ void ReframeRT::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("REFRAMERT");
 	output.tag.set_property("SCALE", config.scale);
 	output.tag.set_property("STRETCH", config.stretch);
@@ -401,7 +409,7 @@ void ReframeRT::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -424,9 +432,9 @@ void ReframeRT::update_gui()
 		if(changed)
 		{
 			thread->window->lock_window("ReframeRT::update_gui");
-			thread->window->scale->update((float)config.scale);
-			thread->window->stretch->update(config.stretch);
-			thread->window->downsample->update(!config.stretch);
+			((ReframeRTWindow*)thread->window)->scale->update((float)config.scale);
+			((ReframeRTWindow*)thread->window)->stretch->update(config.stretch);
+			((ReframeRTWindow*)thread->window)->downsample->update(!config.stretch);
 			thread->window->unlock_window();
 		}
 	}

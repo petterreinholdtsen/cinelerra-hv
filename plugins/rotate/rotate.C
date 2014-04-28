@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "../motion/affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
@@ -52,7 +73,7 @@ public:
 		int x, 
 		int y, 
 		int value, 
-		char *string);
+		const char *string);
 	int handle_event();
 
 	RotateEffect *plugin;
@@ -132,13 +153,13 @@ public:
     RotateWindow *window;
 };
 
-class RotateWindow : public BC_Window
+class RotateWindow : public PluginClientWindow
 {
 public:
-	RotateWindow(RotateEffect *plugin, int x, int y);
+	RotateWindow(RotateEffect *plugin);
 
-	int create_objects();
-	int close_event();
+	void create_objects();
+
 	int update();
 	int update_fine();
 	int update_text();
@@ -158,7 +179,6 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(RotateEffect, RotateThread, RotateWindow)
 
 
 class RotateEffect : public PluginVClient
@@ -167,27 +187,19 @@ public:
 	RotateEffect(PluginServer *server);
 	~RotateEffect();
 	
+	PLUGIN_CLASS_MEMBERS(RotateConfig)
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void raise_window();
 	void update_gui();
-	int set_string();
-	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int handle_opengl();
 
-	RotateConfig config;
 	AffineEngine *engine;
-	RotateThread *thread;
-	BC_Hash *defaults;
 	int need_reconfigure;
 };
 
@@ -273,7 +285,7 @@ RotateToggle::RotateToggle(RotateWindow *window,
 	int x, 
 	int y, 
 	int value, 
-	char *string)
+	const char *string)
  : BC_Radial(x, y, init_value, string)
 {
 	this->value = value;
@@ -428,24 +440,20 @@ int RotateY::handle_event()
 
 
 
-RotateWindow::RotateWindow(RotateEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
-	x,
-	y,
+RotateWindow::RotateWindow(RotateEffect *plugin)
+ : PluginClientWindow(plugin,
 	250, 
 	230, 
 	250, 
 	230, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
 
 #define RADIUS 30
 
-int RotateWindow::create_objects()
+void RotateWindow::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -518,10 +526,9 @@ int RotateWindow::create_objects()
 
 
 
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(RotateWindow)
+
 
 int RotateWindow::update()
 {
@@ -570,7 +577,7 @@ int RotateWindow::update_toggles()
 
 
 
-PLUGIN_THREAD_OBJECT(RotateEffect, RotateThread, RotateWindow)
+
 
 
 
@@ -594,27 +601,23 @@ RotateEffect::RotateEffect(PluginServer *server)
 {
 	engine = 0;
 	need_reconfigure = 1;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 RotateEffect::~RotateEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(engine) delete engine;
 }
 
 
 
-char* RotateEffect::plugin_title() { return N_("Rotate"); }
+const char* RotateEffect::plugin_title() { return N_("Rotate"); }
 int RotateEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(RotateEffect)
 
-SET_STRING_MACRO(RotateEffect)
-
-SHOW_GUI_MACRO(RotateEffect, RotateThread)
-
-RAISE_WINDOW_MACRO(RotateEffect)
+NEW_WINDOW_MACRO(RotateEffect, RotateWindow)
 
 
 void RotateEffect::update_gui()
@@ -623,7 +626,7 @@ void RotateEffect::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->update();
+		((RotateWindow*)thread->window)->update();
 		thread->window->unlock_window();
 	}
 }
@@ -666,7 +669,7 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("ROTATE");
 	output.tag.set_property("ANGLE", (float)config.angle);
 	output.tag.set_property("PIVOT_X", (float)config.pivot_x);
@@ -682,7 +685,7 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 
@@ -847,13 +850,11 @@ int RotateEffect::handle_opengl()
 	{
 		int w = get_output()->get_w();
 		int h = get_output()->get_h();
-		int center_x = (int)(config.pivot_x * w / 100); \
-		int center_y = (int)(config.pivot_y * h / 100); \
+		int center_x = (int)(config.pivot_x * w / 100);
+		int center_y = (int)(config.pivot_y * h / 100);
 		
 		glDisable(GL_TEXTURE_2D);
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		glLogicOp(GL_XOR);
-		glEnable(GL_COLOR_LOGIC_OP);
+		glColor4f(0.0, 0.0, 0.0, 1.0);
 		glBegin(GL_LINES);
 		glVertex3f(center_x, -h + center_y - CENTER_H / 2, 0.0);
 		glVertex3f(center_x, -h + center_y + CENTER_H / 2, 0.0);
@@ -862,7 +863,15 @@ int RotateEffect::handle_opengl()
 		glVertex3f(center_x - CENTER_W / 2, -h + center_y, 0.0);
 		glVertex3f(center_x + CENTER_W / 2, -h + center_y, 0.0);
 		glEnd();
-		glDisable(GL_COLOR_LOGIC_OP);
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3f(center_x - 1, -h + center_y - CENTER_H / 2 - 1, 0.0);
+		glVertex3f(center_x - 1, -h + center_y + CENTER_H / 2 - 1, 0.0);
+		glEnd();
+		glBegin(GL_LINES);
+		glVertex3f(center_x - CENTER_W / 2 - 1, -h + center_y - 1, 0.0);
+		glVertex3f(center_x + CENTER_W / 2 - 1, -h + center_y - 1, 0.0);
+		glEnd();
 	}
 #endif
 }

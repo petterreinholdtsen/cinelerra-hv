@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "720to480.h"
 #include "clip.h"
 #include "bchash.h"
@@ -49,7 +70,7 @@ _720to480Window::~_720to480Window()
 {
 }
 
-int _720to480Window::create_objects()
+void _720to480Window::create_objects()
 {
 	int x = 10, y = 10;
 
@@ -67,28 +88,29 @@ int _720to480Window::create_objects()
 
 	show_window();
 	flush();
-	return 0;
 }
 
-WINDOW_CLOSE_EVENT(_720to480Window)
+int _720to480Window::close_event()
+{
+	set_done(0);
+	return 1;
+}
 
-int _720to480Window::set_first_field(int first_field)
+void _720to480Window::set_first_field(int first_field)
 {
 	odd_first->update(first_field == 1);
 	even_first->update(first_field == 0);
 
 	client->config.first_field = first_field;
-	return 0;
 }
 
-int _720to480Window::set_direction(int direction)
+void _720to480Window::set_direction(int direction)
 {
 	forward->update(direction == FORWARD);
 	reverse->update(direction == REVERSE);
 
 
 	client->config.direction = direction;
-	return 0;
 }
 
 
@@ -160,18 +182,15 @@ _720to480Main::_720to480Main(PluginServer *server)
  : PluginVClient(server)
 {
 	temp = 0;
-	load_defaults();
 }
 
 _720to480Main::~_720to480Main()
 {
-	save_defaults();
-	delete defaults;
 
 	if(temp) delete temp;
 }
 
-char* _720to480Main::plugin_title() { return N_("720 to 480"); }
+const char* _720to480Main::plugin_title() { return N_("720 to 480"); }
 int _720to480Main::is_realtime() { return 0; }
 
 double _720to480Main::get_framerate()
@@ -345,7 +364,7 @@ int _720to480Main::process_loop(VFrame *output)
 void _720to480Main::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("720TO480");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.tag.set_property("DIRECTION", config.direction);
@@ -356,7 +375,7 @@ void _720to480Main::save_data(KeyFrame *keyframe)
 void _720to480Main::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while(!input.read_tag())
 	{

@@ -648,52 +648,61 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->height = height_i;
 			context->gop_size = codec->gop_size;
 			context->pix_fmt = PIX_FMT_YUV420P;
-			context->bit_rate = codec->bitrate / codec->total_fields;
-			context->bit_rate_tolerance = codec->bitrate_tolerance;
-			context->rc_eq = video_rc_eq;
-        	context->rc_max_rate = 0;
-        	context->rc_min_rate = 0;
-        	context->rc_buffer_size = 0;
-			context->qmin = 
-				(!codec->fix_bitrate ? codec->quantizer : 2);
-			context->qmax = 
-				(!codec->fix_bitrate ? codec->quantizer : 31);
-			context->lmin = 2 * FF_QP2LAMBDA;
-			context->lmax = 31 * FF_QP2LAMBDA;
-			context->mb_lmin = 2 * FF_QP2LAMBDA;
-			context->mb_lmax = 31 * FF_QP2LAMBDA;
-			context->max_qdiff = 3;
-			context->qblur = 0.5;
-			context->qcompress = 0.5;
+			context->bit_rate = codec->bitrate / codec->total_fields / 1000;
+			context->bit_rate_tolerance = codec->bitrate_tolerance / 1000;
+//			context->rc_eq = video_rc_eq;
+//      	context->rc_max_rate = context->bit_rate * 2;
+//       	context->rc_min_rate = 0;
+//        	context->rc_buffer_size = 10000000;
+			if(!codec->fix_bitrate)
+			{
+				context->qmin = codec->quantizer;
+				context->qmax = codec->quantizer;
+			}
+
+
+// printf("encode %d %d %d\n", 
+// __LINE__, 
+// context->bit_rate, 
+// context->bit_rate_tolerance);
+
+
+//			context->lmin = 2 * FF_QP2LAMBDA;
+//			context->lmax = 31 * FF_QP2LAMBDA;
+//			context->mb_lmin = 2 * FF_QP2LAMBDA;
+//			context->mb_lmax = 31 * FF_QP2LAMBDA;
+//			context->max_qdiff = 3;
+//			context->qblur = 0.5;
+//			context->qcompress = 0.5;
 // It needs the time per frame, not the frame rate.
 			context->time_base.den = quicktime_frame_rate_n(file, track);
 			context->time_base.num = quicktime_frame_rate_d(file, track);
 
-        	context->b_quant_factor = 1.25;
-        	context->b_quant_offset = 1.25;
-			context->error_resilience = FF_ER_CAREFUL;
-			context->error_concealment = 3;
-			context->frame_skip_cmp = FF_CMP_DCTMAX;
-			context->ildct_cmp = FF_CMP_VSAD;
-			context->intra_dc_precision = 0;
-        	context->intra_quant_bias = FF_DEFAULT_QUANT_BIAS;
-        	context->inter_quant_bias = FF_DEFAULT_QUANT_BIAS;
-        	context->i_quant_factor = -0.8;
-        	context->i_quant_offset = 0.0;
-			context->mb_decision = FF_MB_DECISION_SIMPLE;
-			context->mb_cmp = FF_CMP_SAD;
-			context->me_sub_cmp = FF_CMP_SAD;
-			context->me_cmp = FF_CMP_SAD;
-			context->me_pre_cmp = FF_CMP_SAD;
-			context->me_method = ME_EPZS;
-			context->me_subpel_quality = 8;
-			context->me_penalty_compensation = 256;
-			context->me_range = 0;
-			context->me_threshold = 0;
-			context->mb_threshold = 0;
-			context->nsse_weight= 8;
+//        	context->b_quant_factor = 1.25;
+//        	context->b_quant_offset = 1.25;
+//			context->error_resilience = FF_ER_CAREFUL;
+//			context->error_concealment = 3;
+//			context->frame_skip_cmp = FF_CMP_DCTMAX;
+//			context->ildct_cmp = FF_CMP_VSAD;
+//			context->intra_dc_precision = 0;
+//        	context->intra_quant_bias = FF_DEFAULT_QUANT_BIAS;
+//        	context->inter_quant_bias = FF_DEFAULT_QUANT_BIAS;
+//        	context->i_quant_factor = -0.8;
+//        	context->i_quant_offset = 0.0;
+//			context->mb_decision = FF_MB_DECISION_SIMPLE;
+//			context->mb_cmp = FF_CMP_SAD;
+//			context->me_sub_cmp = FF_CMP_SAD;
+//			context->me_cmp = FF_CMP_SAD;
+//			context->me_pre_cmp = FF_CMP_SAD;
+//			context->me_method = ME_EPZS;
+//			context->me_subpel_quality = 8;
+//			context->me_penalty_compensation = 256;
+//			context->me_range = 0;
+//			context->me_threshold = 0;
+//			context->mb_threshold = 0;
+//			context->nsse_weight= 8;
         	context->profile= FF_PROFILE_UNKNOWN;
-			context->rc_buffer_aggressivity = 1.0;
+//			context->rc_buffer_aggressivity = 1.0;
         	context->level= FF_LEVEL_UNKNOWN;
 			context->flags |= CODEC_FLAG_H263P_UMV;
 			context->flags |= CODEC_FLAG_AC_PRED;
@@ -704,7 +713,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			if(file->cpus > 1)
 			{
 				avcodec_thread_init(context, file->cpus);
-				context->thread_count = file->cpus;
+//				context->thread_count = file->cpus;
 			}
 
 			if(!codec->fix_bitrate)
@@ -1120,6 +1129,7 @@ static quicktime_mpeg4_codec_t* init_common(quicktime_video_map_t *vtrack,
 
 // Set defaults
 	codec->bitrate = 1000000;
+	codec->bitrate_tolerance = 1000000;
 	codec->rc_period = 50;
 	codec->rc_reaction_ratio = 45;
 	codec->rc_reaction_period = 10;

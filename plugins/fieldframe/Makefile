@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/fieldframe.o
 
-OUTPUT = ../$(OBJDIR)/fieldframe.plugin
+OUTPUT = $(PLUGIN_DIR)/fieldframe.plugin
 
 include ../../plugin_config
 

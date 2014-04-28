@@ -266,14 +266,17 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 	int i = 0;
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_t *file = (mpeg3_t*)video->file;
+	const int debug = 0;
 
-//printf("mpeg3video_read_frame_backend 1\n");
+if(debug) printf("mpeg3video_read_frame_backend %d\n", __LINE__);
 
 	do
 	{
 		if(mpeg3bits_eof(video->vstream)) result = 1;
+if(debug) printf("mpeg3video_read_frame_backend %d\n", __LINE__);
 
 		if(!result) result = mpeg3video_get_header(video, 0);
+if(debug) printf("mpeg3video_read_frame_backend %d\n", __LINE__);
 
 
 /* skip_bframes is the number of bframes we can skip successfully. */
@@ -300,6 +303,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		{
 			got_top = got_bottom = 1;
 		}
+if(debug) printf("mpeg3video_read_frame_backend %d\n", __LINE__);
 
 		i++;
 	}while(i < 2 && 
@@ -311,7 +315,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 
 
 
-//printf("mpeg3video_read_frame_backend 10\n");
+if(debug) printf("mpeg3video_read_frame_backend %d\n", __LINE__);
 
 // Composite subtitles
 	mpeg3_decode_subtitle(video);
@@ -324,7 +328,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		video->last_number = video->framenum;
 		video->framenum++;
 	}
-//printf("mpeg3video_read_frame_backend 100\n");
+if(debug) printf("mpeg3video_read_frame_backend %d\n", __LINE__);
 
 	return result;
 }
@@ -510,8 +514,12 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 		}
 		else
 		{
+/* No header found */
+#ifdef TODO
+fprintf(stderr, "mpeg3video_new: no header found.\n");
 			mpeg3video_delete(video);
 			video = 0;
+#endif
 		}
 	}
 
@@ -761,6 +769,7 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 {
 	int result = 0;
 	mpeg3_vtrack_t *track = video->track;
+	const int debug = 0;
 
 	video->want_yvu = 1;
 
@@ -768,8 +777,10 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 
 	unsigned char *y, *u, *v;
 	int frame_number = video->frame_seek >= 0 ? video->frame_seek : video->framenum;
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 	if(mpeg3_cache_get_frame(track->frame_cache, frame_number, &y, &u, &v))
 	{
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 		*y_output = (char*)y;
 		*u_output = (char*)u;
 		*v_output = (char*)v;
@@ -780,6 +791,7 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 		else
 		if(frame_number == video->frame_seek)
 			video->frame_seek = ++frame_number;
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 	}
 	else
 // Only decode if it's a different frame
@@ -787,8 +799,11 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 		video->last_number < 0 ||
 		video->frame_seek != video->last_number)
 	{
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 		if(!result) result = mpeg3video_seek(video);
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 		if(!result) result = mpeg3video_read_frame_backend(video, 0);
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 
         if(video->output_src[0])
         {
@@ -796,9 +811,11 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
             *u_output = (char*)video->output_src[1];
             *v_output = (char*)video->output_src[2];
         }
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 	}
 	else
 	{
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 		video->framenum = video->frame_seek + 1;
 		video->last_number = video->frame_seek;
 		video->frame_seek = -1;
@@ -809,8 +826,10 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
             *u_output = (char*)video->output_src[1];
             *v_output = (char*)video->output_src[2];
         }
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 	}
 
+if(debug) printf("mpeg3video_read_yuvframe_ptr %d\n", __LINE__);
 
 	video->want_yvu = 0;
 // Caching not used if byte seek

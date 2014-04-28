@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "confirmsave.h"
 #include "bchash.h"
@@ -38,12 +59,12 @@ Reverb::Reverb(PluginServer *server)
 	lowpass_in1 = 0;
 	lowpass_in2 = 0;
 	initialized = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 Reverb::~Reverb()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(initialized)
 	{
@@ -75,7 +96,7 @@ Reverb::~Reverb()
 	}
 }
 
-char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); }
+const char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }
@@ -242,11 +263,7 @@ int Reverb::process_realtime(int64_t size,
 
 NEW_PICON_MACRO(Reverb)
 
-SHOW_GUI_MACRO(Reverb, ReverbThread)
-
-SET_STRING_MACRO(Reverb)
-
-RAISE_WINDOW_MACRO(Reverb)
+NEW_WINDOW_MACRO(Reverb, ReverbWindow)
 
 int Reverb::load_defaults()
 {
@@ -302,7 +319,7 @@ void Reverb::save_data(KeyFrame *keyframe)
 //printf("Reverb::save_data 1\n");
 
 // cause xml file to store data directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 //printf("Reverb::save_data 1\n");
 
 	output.tag.set_title("REVERB");
@@ -330,7 +347,7 @@ void Reverb::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 // cause xml file to read directly from text
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 	int result = 0;
 
 	result = input.read_tag();
@@ -356,14 +373,14 @@ void Reverb::update_gui()
 	if(thread)
 	{
 		thread->window->lock_window();
-		thread->window->level_init->update(config.level_init);
-		thread->window->delay_init->update(config.delay_init);
-		thread->window->ref_level1->update(config.ref_level1);
-		thread->window->ref_level2->update(config.ref_level2);
-		thread->window->ref_total->update(config.ref_total);
-		thread->window->ref_length->update(config.ref_length);
-		thread->window->lowpass1->update(config.lowpass1);
-		thread->window->lowpass2->update(config.lowpass2);
+		((ReverbWindow*)thread->window)->level_init->update(config.level_init);
+		((ReverbWindow*)thread->window)->delay_init->update(config.delay_init);
+		((ReverbWindow*)thread->window)->ref_level1->update(config.ref_level1);
+		((ReverbWindow*)thread->window)->ref_level2->update(config.ref_level2);
+		((ReverbWindow*)thread->window)->ref_total->update(config.ref_total);
+		((ReverbWindow*)thread->window)->ref_length->update(config.ref_length);
+		((ReverbWindow*)thread->window)->lowpass1->update(config.lowpass1);
+		((ReverbWindow*)thread->window)->lowpass2->update(config.lowpass2);
 		thread->window->unlock_window();
 	}
 }

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "autoconf.h"
 #include "automation.h"
 #include "edl.h"
@@ -40,9 +61,9 @@ VPatchGUI::~VPatchGUI()
 	if(mode) delete mode;
 }
 
-int VPatchGUI::create_objects()
+void VPatchGUI::create_objects()
 {
-	return update(x, y);
+	update(x, y);
 }
 
 int VPatchGUI::reposition(int x, int y)
@@ -179,13 +200,14 @@ float VFadePatch::update_edl()
 	Autos *fade_autos = patch->vtrack->automation->autos[AUTOMATION_FADE];
 	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
+	mwindow->undo->update_undo_before(_("fade"), need_undo ? 0 : this);
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
 	float result = get_value() - current->value;
 	current->value = get_value();
 
-	mwindow->undo->update_undo(_("fade"), LOAD_AUTOMATION, need_undo ? 0 : this);
+	mwindow->undo->update_undo_after(_("fade"), LOAD_AUTOMATION);
 
 	return result;
 }
@@ -202,7 +224,7 @@ int VFadePatch::handle_event()
 
 	float change = update_edl();
 
-	if(patch->track->gang) 
+	if(patch->track->gang && patch->track->record) 
 		patch->patchbay->synchronize_faders(change, TRACK_VIDEO, patch->track);
 
 	patch->change_source = 0;
@@ -271,11 +293,12 @@ int VModePatch::handle_event()
 	Autos *mode_autos = patch->vtrack->automation->autos[AUTOMATION_MODE];
 	int need_undo = !mode_autos->auto_exists_for_editing(position);
 
+	mwindow->undo->update_undo_before(_("mode"), need_undo ? 0 : this);
 
 	current = (IntAuto*)mode_autos->get_auto_for_editing(position);
 	current->value = mode;
 
-	mwindow->undo->update_undo(_("mode"), LOAD_AUTOMATION, need_undo ? 0 : this);
+	mwindow->undo->update_undo_after(_("mode"), LOAD_AUTOMATION);
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
@@ -302,7 +325,7 @@ IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 }
 
 
-int VModePatch::create_objects()
+void VModePatch::create_objects()
 {
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_NORMAL), TRANSFER_NORMAL));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_ADDITION), TRANSFER_ADDITION));
@@ -311,7 +334,6 @@ int VModePatch::create_objects()
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
-	return 0;
 }
 
 void VModePatch::update(int mode)
@@ -325,7 +347,7 @@ void VModePatch::update(int mode)
 }
 
 
-char* VModePatch::mode_to_text(int mode)
+const char* VModePatch::mode_to_text(int mode)
 {
 	switch(mode)
 	{
@@ -369,7 +391,7 @@ char* VModePatch::mode_to_text(int mode)
 
 
 
-VModePatchItem::VModePatchItem(VModePatch *popup, char *text, int mode)
+VModePatchItem::VModePatchItem(VModePatch *popup, const char *text, int mode)
  : BC_MenuItem(text)
 {
 	this->popup = popup;

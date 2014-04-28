@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "confirmsave.h"
 #include "bchash.h"
@@ -53,21 +74,19 @@ void GainConfig::interpolate(GainConfig &prev,
 Gain::Gain(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 Gain::~Gain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* Gain::plugin_title() { return N_("Gain"); }
+const char* Gain::plugin_title() { return N_("Gain"); }
 int Gain::is_realtime() { return 1; }
 
 
-SHOW_GUI_MACRO(Gain, GainThread)
-SET_STRING_MACRO(Gain)
-RAISE_WINDOW_MACRO(Gain)
+NEW_WINDOW_MACRO(Gain, GainWindow)
 NEW_PICON_MACRO(Gain)
 LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
 
@@ -117,7 +136,7 @@ void Gain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause xml file to store data directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("GAIN");
 	output.tag.set_property("LEVEL", config.level);
@@ -130,7 +149,7 @@ void Gain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 // cause xml file to read directly from text
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 	int result = 0;
 
 	result = input.read_tag();
@@ -150,7 +169,7 @@ void Gain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->level->update(config.level);
+		((GainWindow*)thread->window)->level->update(config.level);
 		thread->window->unlock_window();
 	}
 }

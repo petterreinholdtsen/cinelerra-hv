@@ -1,23 +1,34 @@
 #!/bin/sh
 
-# configuration is being done in a script because starting with GCC-3.2
-# the compiler flags are changing too much between minor releases to detect
-# with Makefile scripts alone.  For now it just tells you if you have the
-# prerequisite compilers.
+
+
+# For Ubuntbunt, you need:
+# yasm
+# nasm
+# libc6-dev
+# g++
+# build-essential
+# libz-dev
+# texinfo
+# libpng-dev
+# libglut-dev
+# libxv-dev
+# libasound2-dev
+# libbz2-dev 
 
 ERROR=0
 
 # test for nasm
-OBJDIR=`arch`
+OBJDIR=`uname -m`
 TOPDIR=`pwd`
 
-if [ `arch` == i686 ];
+if [ $OBJDIR = i686 ];
 then
 
 	if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then HAVE_NASM=y; else HAVE_NASM=n; fi
 
-	if [ "$HAVE_NASM" == "n" ]; 
-	then echo " *** Nasm is required.  Download it from nasm.sourceforge.net"; 
+	if [ "$HAVE_NASM" = "n" ]; 
+	then echo " *** Nasm is required."; 
 	ERROR=1
 	fi
 
@@ -25,10 +36,15 @@ fi
 
 if [ -x /usr/bin/yasm -o -x /usr/local/bin/yasm ]; then HAVE_YASM=y; else HAVE_YASM=n; fi
 
-if [ $HAVE_YASM == n ]; 
-then echo " *** Yasm is required.  Download it from www.tortall.net/projects/yasm/"; 
+if [ $HAVE_YASM = n ]; 
+then echo " *** Yasm is required."; 
 ERROR=1
 fi
+
+# should test for the following packages
+# libpng, zlib, X11 development packages
+# texinfo, libasound2-dev, libbz2-dev
+# libxcb-1.1 with LIBXCB_ALLOW_SLOPPY_LOCK
 
 
 # test for videodev2.h
@@ -44,7 +60,7 @@ int main()
 }
 EOF
 
-gcc conftest.c >& /dev/null
+gcc conftest.c > /dev/null 2>&1
 
 if [ -x a.out ]; then HAVE_VIDEO4LINUX2=y; else HAVE_VIDEO4LINUX2=n; fi
 
@@ -61,7 +77,7 @@ int main()
 }
 EOF
 
-gcc conftest.c >& /dev/null
+gcc conftest.c > /dev/null 2>&1
 
 if [ -x a.out ]; then HAVE_DVB=y; else HAVE_DVB=n; fi
 
@@ -80,13 +96,13 @@ int main()
 }
 EOF
 
-gcc -msse conftest.c >& /dev/null
+gcc -msse conftest.c > /dev/null 2>&1
 
 if [ -x a.out ]; then HAVE_GCC=y; else HAVE_GCC=n; fi
 
 rm -f a.out conftest.c
 
-if [ $HAVE_GCC == n ]; 
+if [ $HAVE_GCC = n ]; 
 then echo " *** GCC 3.2.2 or greater is required.  Download it from gcc.gnu.org"; 
 ERROR=1
 fi
@@ -109,7 +125,7 @@ int main()
 }
 EOF
 
-gcc conftest.c -lGL -lGLU >& /dev/null
+gcc conftest.c -lGL -lGLU > /dev/null 2>&1
 
 if [ -x a.out ]; then HAVE_GL=y; else HAVE_GL=n; fi
 
@@ -122,7 +138,7 @@ rm -f a.out conftest.c
 
 
 
-if [ $ERROR == 1 ];
+if [ $ERROR = 1 ];
 then echo "Giving up and going to a movie."
 exit 1
 fi
@@ -139,40 +155,59 @@ echo CONFIGURING LIBMPEG3
 cd libmpeg3* && ./configure && cd ..
 
 echo CONFIGURING FFTW
-cd fftw* && CFLAGS=-fPIC ./configure && cd ..
+cd thirdparty/fftw* && CFLAGS=-fPIC ./configure --disable-fortran && cd ../..
 
 echo CONFIGURING MJPEGTOOLS
-cd mjpegtools* && ./configure --enable-shared=no && cd ..
+cd thirdparty/mjpegtools* && \
+CFLAGS="-I$TOPDIR/quicktime/thirdparty/jpeg -L$TOPDIR/quicktime/thirdparty/jpeg -L/usr/lib/X11" \
+./configure --enable-shared=no && \
+cd ../..
 
 
 
 echo CONFIGURING SNDFILE
-cd libsndfile* && chmod a+x ./configure && ./configure && cd ..
+cd thirdparty/libsndfile* && chmod a+x ./configure && ./configure && \
+cd ../..
 
 echo CONFIGURING RAW1394
-cd libraw1394* && \
+cd thirdparty/libraw1394* && \
 ./configure --enable-shared=no && \
 ln -sf src libraw1394 && \
-cd ..
+cd ../..
 
 echo CONFIGURING AVC1394
-cd libavc1394* && \
-RAW1394_PATH=`expr $TOPDIR/libraw1394*` && \
+cd thirdparty/libavc1394* && \
+RAW1394_PATH=`expr $TOPDIR/thirdparty/libraw1394*` && \
 PKG_CONFIG_PATH=$RAW1394_PATH CFLAGS=-I$RAW1394_PATH/ LDFLAGS=-L$RAW1394_PATH/src/.libs ./configure --enable-shared=no && \
-cd ..
+cd ../..
 
 echo CONFIGURING IEC61883
-cd libiec61883* && \
-RAW1394_PATH=`expr $TOPDIR/libraw1394*` && \
+RAW1394_PATH=`expr $TOPDIR/thirdparty/libraw1394*` && \
+cd thirdparty/libiec61883* && \
 PKG_CONFIG_PATH=$RAW1394_PATH CFLAGS=-I$RAW1394_PATH/ LDFLAGS=-L$RAW1394_PATH/src/.libs ./configure --enable-shared=no && \
-cd ..
+cd ../..
 
 echo CONFIGURING THEORA
-LIBOGG_PATH=`expr $TOPDIR/quicktime/libogg*` && \
-LIBVORBIS_PATH=`expr $TOPDIR/quicktime/libvorbis*` && \
-cd libtheora* && \
+LIBOGG_PATH=`expr $TOPDIR/quicktime/thirdparty/libogg*` && \
+LIBVORBIS_PATH=`expr $TOPDIR/quicktime/thirdparty/libvorbis*` && \
+cd thirdparty/libtheora* && \
 PKG_CONFIG_PATH=$LIBOGG_PATH:$LIBVORBIS_PATH CFLAGS="-I$LIBOGG_PATH/include -L$LIBOGG_PATH/src -I$LIBVORBIS_PATH/include -L$LIBVORBIS_PATH/lib" ./configure --enable-shared=no && \
-cd ..
+cd ../..
+
+echo CONFIGURING FLAC
+cd thirdparty/flac* && \
+./configure && \
+cd ../..
+
+echo CONFIGURING ILMBASE
+cd thirdparty/ilmbase* && \
+PTHREAD_LIBS=-lpthread CFLAGS=-lpthread ./configure --prefix=$TOPDIR/thirdparty/ && \
+cd ../..
+
+echo CONFIGURING EXR
+cd thirdparty/openexr* && \
+PTHREAD_LIBS=-lpthread CFLAGS=-lpthread PKG_CONFIG_PATH=$TOPDIR/thirdparty/lib/pkgconfig LD_LIBRARY_PATH=$TOPDIR/thirdparty/lib/ ./configure --prefix=$TOPDIR/thirdparty/ --disable-ilmbasetest && \
+cd ../..
 
 
 
@@ -182,7 +217,7 @@ cat > hvirtual_config.h << EOF
 // Configuration file made by configure.  Don't edit.
 EOF
 
-if [ "$HAVE_VIDEO4LINUX2" == "y" ];
+if [ "$HAVE_VIDEO4LINUX2" = "y" ];
 then 
 	echo "#define HAVE_VIDEO4LINUX2" >> hvirtual_config.h
 	echo "Have Video4Linux 2"
@@ -190,7 +225,7 @@ else
 	echo "Don't have Video4Linux 2"
 fi
 
-if [ "$HAVE_DVB" == "y" ];
+if [ "$HAVE_DVB" = "y" ];
 then 
 	echo "#define HAVE_DVB" >> hvirtual_config.h
 	echo "Have DVB"
@@ -199,7 +234,7 @@ else
 fi
 
 
-if [ "$HAVE_GL" == "y" ];
+if [ "$HAVE_GL" = "y" ];
 then 
 cat >> hvirtual_config.h << EOF 
 #ifndef HAVE_GL
@@ -215,8 +250,11 @@ fi
 
 
 # success
-if [ "$ERROR" == "0" ];
-then echo "Configured successfully.  Type 'make' to build it.";
+if [ "$ERROR" = "0" ];
+then 
+	echo "Configured successfully.  Type 'make' to build me.";
+else
+	echo "Error in configuration."
 fi
 
 

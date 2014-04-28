@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef DIFFKEY_H
 #define DIFFKEY_H
 
@@ -65,15 +86,14 @@ public:
 
 
 
-class DiffKeyGUI : public BC_Window
+class DiffKeyGUI : public PluginClientWindow
 {
 public:
-	DiffKeyGUI(DiffKey *plugin, int x, int y);
+	DiffKeyGUI(DiffKey *plugin);
 	~DiffKeyGUI();
 
 
 	void create_objects();
-	int close_event();
 
 
 	DiffKeyThreshold *threshold;
@@ -82,8 +102,6 @@ public:
 	DiffKey *plugin;
 };
 
-
-PLUGIN_THREAD_HEADER(DiffKey, DiffKeyThread, DiffKeyGUI)
 
 
 
@@ -138,7 +156,7 @@ public:
 
 
 
-	PLUGIN_CLASS_MEMBERS(DiffKeyConfig, DiffKeyThread)
+	PLUGIN_CLASS_MEMBERS(DiffKeyConfig)
 
 	DiffKeyEngine *engine;
 	VFrame *top_frame;
@@ -254,17 +272,13 @@ int DiffKeyDoValue::handle_event()
 
 
 
-DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
- : BC_Window(plugin->gui_string,
- 	x,
-	y,
+DiffKeyGUI::DiffKeyGUI(DiffKey *plugin)
+ : PluginClientWindow(plugin,
 	320,
 	100,
 	320,
 	100,
-	0,
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -295,34 +309,28 @@ void DiffKeyGUI::create_objects()
 	show_window();
 }
 
-WINDOW_CLOSE_EVENT(DiffKeyGUI)
-
-
-PLUGIN_THREAD_OBJECT(DiffKey, DiffKeyThread, DiffKeyGUI)
 
 
 
 DiffKey::DiffKey(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 }
 
 DiffKey::~DiffKey()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	delete engine;
 }
 
-SHOW_GUI_MACRO(DiffKey, DiffKeyThread)
-RAISE_WINDOW_MACRO(DiffKey)
-SET_STRING_MACRO(DiffKey)
+NEW_WINDOW_MACRO(DiffKey, DiffKeyGUI)
 #include "picon_png.h"
 NEW_PICON_MACRO(DiffKey)
 LOAD_CONFIGURATION_MACRO(DiffKey, DiffKeyConfig)
 
-char* DiffKey::plugin_title() { return N_("Difference key"); }
+const char* DiffKey::plugin_title() { return N_("Difference key"); }
 int DiffKey::is_realtime() { return 1; }
 int DiffKey::is_multichannel() { return 1; }
 
@@ -354,7 +362,7 @@ int DiffKey::save_defaults()
 void DiffKey::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("DIFFKEY");
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.tag.set_property("SLOPE", config.slope);
@@ -367,7 +375,7 @@ void DiffKey::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while(!input.read_tag())
 	{
@@ -387,9 +395,9 @@ void DiffKey::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("DiffKey::update_gui");
-			thread->window->threshold->update(config.threshold);
-			thread->window->slope->update(config.slope);
-			thread->window->do_value->update(config.do_value);
+			((DiffKeyGUI*)thread->window)->threshold->update(config.threshold);
+			((DiffKeyGUI*)thread->window)->slope->update(config.slope);
+			((DiffKeyGUI*)thread->window)->do_value->update(config.do_value);
 			thread->window->unlock_window();
 		}
 	}
@@ -439,6 +447,11 @@ int DiffKey::process_buffer(VFrame **frame,
 
 	return 0;
 }
+
+#define DIFFKEY_VARS(plugin) \
+	float threshold = plugin->config.threshold / 100; \
+	float pad = plugin->config.slope / 100; \
+	float threshold_pad = threshold + pad; \
 
 
 int DiffKey::handle_opengl()
@@ -517,10 +530,6 @@ int DiffKey::handle_opengl()
 	}
 
 
-#define DIFFKEY_VARS(plugin) \
-	float threshold = plugin->config.threshold / 100; \
-	float pad = plugin->config.slope / 100; \
-	float threshold_pad = threshold + pad; \
 
 	DIFFKEY_VARS(this)
 

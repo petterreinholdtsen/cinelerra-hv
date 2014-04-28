@@ -1,0 +1,15 @@
+include ../../global_config
+
+OBJS := \
+	../motion/$(OBJDIR)/affine.o \
+	../downsample/$(OBJDIR)/downsampleengine.o \
+	../motion/$(OBJDIR)/motionscan.o \
+	$(OBJDIR)/motion.o \
+	$(OBJDIR)/motionwindow.o
+
+OUTPUT := $(PLUGIN_DIR)/motion2.plugin
+
+include ../../plugin_config
+
+$(OBJDIR)/motion.o: motion.C
+$(OBJDIR)/motionwindow.o: motionwindow.C

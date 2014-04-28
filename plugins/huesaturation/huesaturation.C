@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -72,19 +93,18 @@ public:
 	char string[BCTEXTLEN];
 };
 
-class HueWindow : public BC_Window
+class HueWindow : public PluginClientWindow
 {
 public:
-	HueWindow(HueEffect *plugin, int x, int y);
+	HueWindow(HueEffect *plugin);
 	void create_objects();
-	int close_event();
 	HueEffect *plugin;
 	HueSlider *hue;
 	SaturationSlider *saturation;
 	ValueSlider *value;
 };
 
-PLUGIN_THREAD_HEADER(HueEffect, HueThread, HueWindow)
+
 
 class HueEngine : public LoadServer
 {
@@ -118,27 +138,20 @@ public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
 	
+	
+	PLUGIN_CLASS_MEMBERS(HueConfig);
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int show_gui();
-	int set_string();
-	void raise_window();
 	void update_gui();
 	int handle_opengl();
 
-	HueConfig config;
 	VFrame *input, *output;
-	BC_Hash *defaults;
-	HueThread *thread;
 	HueEngine *engine;
 };
 
@@ -289,17 +302,13 @@ char* ValueSlider::get_caption()
 
 
 
-HueWindow::HueWindow(HueEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
-			x,
-			y,
+HueWindow::HueWindow(HueEffect *plugin)
+ : PluginClientWindow(plugin,
 			310, 
 			100, 
 			310, 
 			100, 
-			0,
-			0, 
-			1)
+			0)
 {
 	this->plugin = plugin;
 }
@@ -319,7 +328,6 @@ void HueWindow::create_objects()
 }
 
 
-WINDOW_CLOSE_EVENT(HueWindow)
 
 
 
@@ -328,7 +336,6 @@ WINDOW_CLOSE_EVENT(HueWindow)
 
 
 
-PLUGIN_THREAD_OBJECT(HueEffect, HueThread, HueWindow)
 
 HueEngine::HueEngine(HueEffect *plugin, int cpus)
  : LoadServer(cpus, cpus)
@@ -527,11 +534,11 @@ HueEffect::HueEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 HueEffect::~HueEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	if(engine) delete engine;
 }
 
@@ -569,13 +576,11 @@ int HueEffect::process_buffer(VFrame *frame,
 	return 0;
 }
 
-char* HueEffect::plugin_title() { return N_("Hue saturation"); }
+const char* HueEffect::plugin_title() { return N_("Hue saturation"); }
 int HueEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(HueEffect)
-SHOW_GUI_MACRO(HueEffect, HueThread)
-SET_STRING_MACRO(HueEffect)
-RAISE_WINDOW_MACRO(HueEffect)
+NEW_WINDOW_MACRO(HueEffect, HueWindow)
 LOAD_CONFIGURATION_MACRO(HueEffect, HueConfig)
 
 int HueEffect::load_defaults()
@@ -600,7 +605,7 @@ int HueEffect::save_defaults()
 void HueEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("HUESATURATION");
 	output.tag.set_property("HUE", config.hue);
 	output.tag.set_property("SATURATION", config.saturation);
@@ -611,7 +616,7 @@ void HueEffect::save_data(KeyFrame *keyframe)
 void HueEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("HUESATURATION"))
@@ -626,12 +631,12 @@ void HueEffect::update_gui()
 {
 	if(thread)
 	{
-		thread->window->lock_window();
+		((HueWindow*)thread->window)->lock_window();
 		load_configuration();
-		thread->window->hue->update(config.hue);
-		thread->window->saturation->update(config.saturation);
-		thread->window->value->update(config.value);
-		thread->window->unlock_window();
+		((HueWindow*)thread->window)->hue->update(config.hue);
+		((HueWindow*)thread->window)->saturation->update(config.saturation);
+		((HueWindow*)thread->window)->value->update(config.value);
+		((HueWindow*)thread->window)->unlock_window();
 	}
 }
 

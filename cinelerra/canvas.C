@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "canvas.h"
 #include "clip.h"
@@ -71,7 +92,7 @@ void Canvas::reset()
 	cursor_inside = 0;
 }
 
-void Canvas::lock_canvas(char *location)
+void Canvas::lock_canvas(const char *location)
 {
 	canvas_lock->lock(location);
 }
@@ -636,7 +657,7 @@ int Canvas::get_buttonpress()
 }
 
 
-int Canvas::create_objects(EDL *edl)
+void Canvas::create_objects(EDL *edl)
 {
 	view_x = x;
 	view_y = y;
@@ -644,7 +665,9 @@ int Canvas::create_objects(EDL *edl)
 	view_h = h;
 	get_scrollbars(edl, view_x, view_y, view_w, view_h);
 
+	subwindow->unlock_window();
 	create_canvas();
+	subwindow->lock_window("Canvas::create_objects");
 
 	subwindow->add_subwindow(canvas_menu = new CanvasPopup(this));
 	canvas_menu->create_objects();
@@ -652,7 +675,6 @@ int Canvas::create_objects(EDL *edl)
 	subwindow->add_subwindow(fullscreen_menu = new CanvasFullScreenPopup(this));
 	fullscreen_menu->create_objects();
 
-	return 0;
 }
 
 int Canvas::button_press_event()
@@ -717,28 +739,27 @@ void Canvas::stop_fullscreen()
 void Canvas::create_canvas()
 {
 	int video_on = 0;
-SET_TRACE
 	lock_canvas("Canvas::create_canvas");
-SET_TRACE
 
 
 	if(!get_fullscreen())
+// Enter windowed
 	{
-SET_TRACE
+
 		if(canvas_fullscreen)
 		{
 			video_on = canvas_fullscreen->get_video_on();
 			canvas_fullscreen->stop_video();
 		}
-SET_TRACE
+
 
 		if(canvas_fullscreen)
 		{
+			canvas_fullscreen->lock_window("Canvas::create_canvas 2");
 			canvas_fullscreen->hide_window();
-//			delete canvas_fullscreen;
-//			canvas_fullscreen = 0;
+			canvas_fullscreen->unlock_window();
 		}
-SET_TRACE
+
 
 		if(!canvas_subwindow)
 		{
@@ -748,18 +769,18 @@ SET_TRACE
 				view_w, 
 				view_h));
 		}
-SET_TRACE
+
 	}
 	else
+// Enter fullscreen
 	{
+
 		if(canvas_subwindow)
 		{
 			video_on = canvas_subwindow->get_video_on();
 			canvas_subwindow->stop_video();
-
-//			delete canvas_subwindow;
-//			canvas_subwindow = 0;
 		}
+
 
 		if(!canvas_fullscreen)
 		{
@@ -769,15 +790,23 @@ SET_TRACE
 		}
 		else
 		{
+			canvas_fullscreen->reposition_window(subwindow->get_root_x(0), 
+				subwindow->get_root_y(0));
 			canvas_fullscreen->show_window();
 		}
-	}
-SET_TRACE
 
-	if(!video_on) draw_refresh();
-SET_TRACE
+	}
+
+
+	if(!video_on)
+	{
+		get_canvas()->lock_window("Canvas::create_canvas 1");
+		draw_refresh();
+		get_canvas()->unlock_window();
+	}
+
 	if(video_on) get_canvas()->start_video();
-SET_TRACE
+
 	unlock_canvas();
 }
 

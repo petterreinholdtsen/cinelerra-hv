@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/overlay.o
 
-OUTPUT = ../$(OBJDIR)/overlay.plugin
+OUTPUT = $(PLUGIN_DIR)/overlay.plugin
 
 include ../../plugin_config
 

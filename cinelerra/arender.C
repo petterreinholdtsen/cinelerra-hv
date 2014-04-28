@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "amodule.h"
 #include "arender.h"
 #include "atrack.h"
@@ -5,6 +26,7 @@
 #include "audiodevice.h"
 #include "auto.h"
 #include "autos.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "condition.h"
 #include "edit.h"
@@ -164,8 +186,10 @@ int ARender::process_buffer(double **buffer_out,
 	int reconfigure = 0;
 	current_position = input_position;
 
+SET_TRACE
 	while(fragment_position < input_len)
 	{
+SET_TRACE
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 			if(buffer_out[i])
@@ -173,28 +197,35 @@ int ARender::process_buffer(double **buffer_out,
 			else
 				this->audio_out[i] = 0;
 		}
+SET_TRACE
 
 		fragment_len = input_len;
 		if(fragment_position + fragment_len > input_len)
 			fragment_len = input_len - fragment_position;
+SET_TRACE
 
 		reconfigure = vconsole->test_reconfigure(input_position, 
 			fragment_len,
 			last_playback);
+SET_TRACE
 
 //printf("ARender::process_buffer 1 %lld %d\n", input_position, reconfigure);
 
 		if(reconfigure) restart_playback();
+SET_TRACE
 
 		result = process_buffer(fragment_len, input_position);
+SET_TRACE
 
 		fragment_position += fragment_len;
 		input_position += fragment_len;
 		current_position = input_position;
 	}
+SET_TRACE
 
 // Don't delete audio_out on completion
 	bzero(this->audio_out, sizeof(double*) * MAXCHANNELS);
+SET_TRACE
 
 
 
@@ -253,11 +284,12 @@ void ARender::run()
 {
 	int64_t current_input_length;
 	int reconfigure = 0;
+const int debug = 0;
 
 	first_buffer = 1;
 
 	start_lock->unlock();
-//printf("ARender::run 1 %d\n", Thread::calculate_realtime());
+if(debug) printf("ARender::run 1 %d\n", Thread::calculate_realtime());
 
 	while(!done && !interrupt && !last_playback)
 	{
@@ -265,7 +297,7 @@ void ARender::run()
 
 		get_boundaries(current_input_length);
 
-//printf("ARender::run 10 %lld %lld\n", current_position, current_input_length);
+if(debug) printf("ARender::run 10 %lld %lld\n", current_position, current_input_length);
 		if(current_input_length)
 		{
 			reconfigure = vconsole->test_reconfigure(current_position, 
@@ -273,7 +305,7 @@ void ARender::run()
 				last_playback);
 			if(reconfigure) restart_playback();
 		}
-//printf("ARender::run 20 %lld %lld\n", current_position, current_input_length);
+if(debug) printf("ARender::run 20 %lld %lld\n", current_position, current_input_length);
 
 
 // Update tracking if no video is playing.
@@ -296,17 +328,16 @@ void ARender::run()
 		}
 
 
-
-//printf("ARender::run 30 %lld\n", current_input_length);
+if(debug) printf("ARender::run 30 %lld\n", current_input_length);
 
 
 
 		process_buffer(current_input_length, current_position);
-//printf("ARender::run 40\n");
+if(debug) printf("ARender::run 40\n");
 
 
 		advance_position(get_render_length(current_input_length));
-//printf("ARender::run 50\n");
+if(debug) printf("ARender::run 50\n");
 
 
 		if(vconsole->interrupt) interrupt = 1;

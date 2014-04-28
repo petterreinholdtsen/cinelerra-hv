@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "byteorderpopup.h"
 #include "file.h"
 
@@ -21,7 +42,7 @@ ByteOrderPopup::~ByteOrderPopup()
 		delete byteorder_items.values[i];
 }
 
-int ByteOrderPopup::create_objects()
+void ByteOrderPopup::create_objects()
 {
 	byteorder_items.append(new BC_ListBoxItem(File::byteorder_to_str(0)));
 	byteorder_items.append(new BC_ListBoxItem(File::byteorder_to_str(1)));
@@ -29,7 +50,6 @@ int ByteOrderPopup::create_objects()
 	parent_window->add_subwindow(textbox = new ByteOrderText(this, x, y));
 	x += textbox->get_w();
 	parent_window->add_subwindow(menu = new ByteOrderList(this, x, y));
-	return 0;
 }
 
 ByteOrderList::ByteOrderList(ByteOrderPopup *popup, int x, int y)

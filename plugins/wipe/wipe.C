@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "edl.inc"
@@ -70,27 +91,19 @@ int WipeRight::handle_event()
 
 
 
-WipeWindow::WipeWindow(WipeMain *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+WipeWindow::WipeWindow(WipeMain *plugin)
+ : PluginClientWindow(plugin, 
 	320, 
 	50, 
 	320, 
 	50, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
 
 
-int WipeWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+
 
 void WipeWindow::create_objects()
 {
@@ -113,7 +126,6 @@ void WipeWindow::create_objects()
 
 
 
-PLUGIN_THREAD_OBJECT(WipeMain, WipeThread, WipeWindow)
 
 
 
@@ -124,22 +136,20 @@ WipeMain::WipeMain(PluginServer *server)
  : PluginVClient(server)
 {
 	direction = 0;
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 WipeMain::~WipeMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* WipeMain::plugin_title() { return N_("Wipe"); }
+const char* WipeMain::plugin_title() { return N_("Wipe"); }
 int WipeMain::is_video() { return 1; }
 int WipeMain::is_transition() { return 1; }
 int WipeMain::uses_gui() { return 1; }
 
-SHOW_GUI_MACRO(WipeMain, WipeThread);
-SET_STRING_MACRO(WipeMain)
-RAISE_WINDOW_MACRO(WipeMain)
+NEW_WINDOW_MACRO(WipeMain, WipeWindow)
 
 
 VFrame* WipeMain::new_picon()
@@ -171,7 +181,7 @@ int WipeMain::save_defaults()
 void WipeMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("WIPE");
 	output.tag.set_property("DIRECTION", direction);
 	output.append_tag();
@@ -182,7 +192,7 @@ void WipeMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	while(!input.read_tag())
 	{
@@ -193,9 +203,10 @@ void WipeMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void WipeMain::load_configuration()
+int WipeMain::load_configuration()
 {
 	read_data(get_prev_keyframe(get_source_position()));
+	return 1;
 }
 
 

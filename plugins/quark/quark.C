@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "colormodels.h"
 #include "filexml.h"
 #include "picon_png.h"
@@ -164,7 +185,7 @@ void SharpenMain::load_configuration()
 	prev_keyframe = get_prev_keyframe(-1);
 	next_keyframe = get_next_keyframe(-1);
 // Must also switch between interpolation between keyframes and using first keyframe
-//printf("BlurMain::load_configuration %s\n", prev_keyframe->data);
+//printf("BlurMain::load_configuration %s\n", prev_keyframe->get_data());
 	read_data(prev_keyframe);
 }
 
@@ -193,7 +214,7 @@ void SharpenMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("SHARPNESS");
 	output.tag.set_property("VALUE", sharpness);
 	output.append_tag();
@@ -222,7 +243,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	int new_interlace = 0;

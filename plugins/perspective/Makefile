@@ -4,7 +4,7 @@ OBJS = \
 	../motion/$(OBJDIR)/affine.o \
 	$(OBJDIR)/perspective.o
 
-OUTPUT = ../$(OBJDIR)/perspective.plugin
+OUTPUT = $(PLUGIN_DIR)/perspective.plugin
 
 include ../../plugin_config
 

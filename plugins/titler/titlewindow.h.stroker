@@ -50,7 +50,7 @@ public:
 	TitleWindow(TitleMain *client, int x, int y);
 	~TitleWindow();
 	
-	int create_objects();
+	void create_objects();
 	int close_event();
 	int resize_event(int w, int h);
 	void update_color();

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "edit.h"
@@ -108,7 +129,7 @@ N_("RGBA uncompressed")
 #define TGA_RGB_NAME "RGB uncompressed"
 #define TGA_RGBA_NAME "RGBA uncompressed"
 
-char* FileTGA::compression_to_str(char *compression)
+const char* FileTGA::compression_to_str(const char *compression)
 {
 	if(!strcasecmp(compression, TGA_RGB_RLE)) return _(TGA_RGB_RLE_NAME);
 	if(!strcasecmp(compression, TGA_RGBA_RLE)) return _(TGA_RGBA_RLE_NAME);
@@ -117,7 +138,7 @@ char* FileTGA::compression_to_str(char *compression)
 	return TGA_RGB_NAME;
 }
 
-char* FileTGA::str_to_compression(char *string)
+const char* FileTGA::str_to_compression(const char *string)
 {
 	if(!strcasecmp(compression_to_str(TGA_RGB_RLE), string)) return TGA_RGB_RLE;
 	if(!strcasecmp(compression_to_str(TGA_RGBA_RLE), string)) return TGA_RGBA_RLE;
@@ -902,10 +923,10 @@ TGAConfigVideo::~TGAConfigVideo()
 	compression_items.remove_all_objects();
 }
 
-int TGAConfigVideo::create_objects()
+void TGAConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
-
+	lock_window("TGAConfigVideo::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	TGACompression *textbox = new TGACompression(this, 
 		x + 110, 
@@ -914,7 +935,7 @@ int TGAConfigVideo::create_objects()
 		&compression_items);
 	textbox->create_objects();
 	add_subwindow(new BC_OKButton(this));
-	return 0;
+	unlock_window();
 }
 
 int TGAConfigVideo::close_event()

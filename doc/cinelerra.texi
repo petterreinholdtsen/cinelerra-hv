@@ -3,21 +3,21 @@
 
 
 @setfilename cinelerra.info
-@settitle Secrets of Cinelerra
-
-
-@titlepage
-@center @title Secrets of Cinelerra
-@subtitle Version 2.1.0
-@author Heroine Virtual Ltd.
-@page
-Copyright @copyright{} 2006 Heroine Virtual Ltd.
-@end titlepage
-
+@settitle SECRETS OF CINELERRA
 
 
 @node TOP
 @top
+
+@center 
+
+Version 4
+
+by Adam Williams
+
+Copyright @copyright{} 2008
+
+
 
 @chapter SHORT CONTENTS
 
@@ -56,29 +56,16 @@ Copyright @copyright{} 2006 Heroine Virtual Ltd.
 @node ABOUT CINELERRA
 @chapter ABOUT CINELERRA
 
-For years some people have wanted a way to edit their audio and video
-in one place as fluidly as writing text.  Cinelerra tries to be a
-single location for all your audio and video editing needs.  All the
-recording, editing, and playback are handled here.  It can be used as
-an audio player.  It can be used to record audio or video.  It can even
-be used as a photo retoucher.
-
-There are two types of moviegoers: producers who create new content,
-going back over their content at future points for further refinement,
-and consumers who want to acquire the content and watch it.  Cinelerra
-is not intended for consumers.  Cinelerra has many features for
-uncompressed content, high resolution processing, and compositing, with
-very few shortcuts.  Producers need these features because of the need
-to retouch many generations of footage with alterations to the format,
-which makes Cinelerra very complex. There are many more standard tools
-for consumers like MainActor, Kino, or Moxy, which you should consider
-before using Cinelerra.
+@b{BROADCAST 1.0}
 
 In 1996 our first editor came out: Broadcast 1.0.  It was just a window
 with a waveform in it, it could cut and paste stereo audio waveforms on
 a UNIX box, except unlike other audio editors it could handle files up
 to 2 gigabytes with only 64 megs of RAM.  That was a feature normally
 only accessible to the highest end professional audio houses.
+
+
+@b{BROADCAST 2.0}
 
 In 1997 Broadcast 1.0 was replaced by Broadcast 2.0.  This time the
 window had a menubar, patchbay, console, and transport control. 
@@ -89,6 +76,8 @@ performed as the audio was playing back, in realtime.  A user could mix
 unlimited numbers of tracks, adjust fade, pan, and EQ, and hear the
 result instantly.   Amazingly this real time tweeking is still
 unavailable on most audio programs.
+
+@b{BROADCAST 2000}
 
 But Broadcast 2.0 still didn't handle video and it wasn't very graceful
 at audio either.  In 1999 video broke into the story with Broadcast
@@ -102,6 +91,9 @@ lot of processing and editing on video and audio that would otherwise
 involve many hours setting up command line sequences and writing to
 disk. For a time it seemed as if the original dream of immersive movie
 making for everyone regardless of income level had arrived.
+
+@b{CINELERRA}
+
 
 Later on Broadcast 2000 began to come short.  Its audio and video was
 graceful if you knew how to use it efficiently, but quality issues and
@@ -119,7 +111,20 @@ become a clone.  It's interface would be designed for video from the
 ground up, while supplementing that with the Broadcast audio
 interface.  As always, quality improvements would happen.
 
+@b{LINUX DERIVATIVES}
 
+Linux became more and more fragmented after corporations adopted it. 
+Threading once worked the same on all derivatives.  Today there are more
+threading models than days of the week.  We try to focus on 1 of the
+most popular Linux derivatives at any moment.  The threading model is
+ported to that Linux derivative shortly before a release, but Linux
+derivatives quickly evolve to new threading models and everything
+breaks.
+
+Also, there is no consistent behaviour for sound and video drivers.  The
+situation with video capture has improved in that modern video sources
+can all be mounted like disk drives.  The audio capture drivers have
+been a bit more reliable.
 
 
 
@@ -133,11 +138,9 @@ interface.  As always, quality improvements would happen.
 @node ABOUT THIS MANUAL
 @section ABOUT THIS MANUAL
 
-This manual is relevant only for the heroinewarrior.com version of
-Cinelerra.  If you are using the cinelerra.org fork, you should use the
-manual for that version.  The behavior of different forks is highly
-variable.  This manual has been copied and translated into many
-languages.
+This is the original manual for Cinelerra.  This manual has been copied
+and translated into many languages on many websites in varying degrees
+of completeness.
 
 Organizing information in the easiest manner for users to find out what
 they need to know is sort of like cataloging the internet.  They've
@@ -1905,6 +1908,8 @@ Supported file formats are currently:
 @itemize
 @item
 WAV
+@item
+FLAC
 @item
 PCM
 @item
@@ -3714,6 +3719,7 @@ applied using the same procedure.
 * RENDERED EFFECTS::
 * TRANSITIONS::
 * LADSPA EFFECTS::
+* EFFECT PRESETS::
 @end menu
 
 
@@ -3724,6 +3730,8 @@ applied using the same procedure.
 These are layered under the track they apply to.  They process the
 track when the track is played back, with no permanent storage of the
 output except when the project is rendered.
+
+@b{APPLYING REALTIME EFFECTS}
 
 All the realtime effects are listed in the resource window, divided
 into two groups: audio effects and video effects.  Audio effects should
@@ -3745,15 +3753,37 @@ track is played back, effects are processed from top to bottom.  The
 output of the top effect becomes the input of the bottom effect and so
 on and so forth.
 
-In addition to dragging from the resource window, effects may be
-applied to a track by a popup menu.  Right click on a track and select
-@b{Attach effect} from the popup.  The attach effect dialog gives
-you more control than pure dragging and dropping.  For one thing, the
-attach effect dialog lets you attach two more types of effects: shared
-effects and shared tracks.  Select a plugin from the @b{Plugins}
-column and hit @b{Attach} under the plugins column to attach it. 
-The effect is the same as if the effect was dragged from the resource
-window.
+In addition to dragging from the resource window, there are 2 other
+methods of applying them:
+
+@itemize
+@item
+@b{APPLYING FROM THE TRACK POPUP MENU:}
+
+Right click on a track and select @b{Attach effect} from the popup.  The attach effect
+dialog gives you more control than pure dragging and dropping.  For one
+thing, the attach effect dialog lets you attach two more types of
+effects: shared effects and shared tracks.  Select a plugin from the
+@b{Plugins} column and hit @b{Attach} under the plugins column to attach
+it.  The effect is the same as if the effect was dragged from the
+resource window.
+
+@item
+@b{APPLYING FROM THE AUDIO AND VIDEO MENUS:}
+
+Select @b{Audio->Attach effect...} or @b{Video->Attach effect} to attach
+a realtime effect to all the recordable tracks simultaneously.  The
+advantage with this is most of the time you want to attach the same
+effect to all the audio tracks and the other two methods require
+repeating the same work for every track.
+
+The menu interface has an option called  @b{Attach single standalone and
+share others}.  Enable this to make the first track get a standalone
+effect and to have the other tracks share the standalone effect.  Most
+of the time, you want this to be on.
+
+@end itemize
+
 
 When an effect exists under a track, it most often needs to be
 configured.  Go to the effect and right click on it to bring up the
@@ -4085,6 +4115,18 @@ them in the @b{/usr/lib/cinelerra} directory.
 
 
 
+
+
+@node EFFECT PRESETS
+@section EFFECT PRESETS
+
+Save and recall all the settings for an effect by using the @b{presets}
+window.  Bring up the effect context menu by right clicking on the
+effect on the timeline.  Go to @b{Presets...} to bring up the window. 
+Save all the settings to a preset by entering a title in @b{Preset
+title} and clicking @b{save}.  Recall the settings in a preset by
+highlighting it and clicking @b{Apply}.  Delete a preset by highlighting
+it and clicking @b{Delete}.
 
 
 
@@ -4668,11 +4710,15 @@ Keyframes come in many forms: curves, toggles, modes, and so on.
 How to handle the different types of keyframes is described here.
 
 @menu
-* CURVE KEYFRAMES::
+* CURVE KEYFRAMES::  Using rubber band curves
+* CHANGING BEZIER & LINEAR MODE::  Change curves from linear to curved
+* SNAPPING TO NEIGHBOR KEYFRAMES::  
+* NAVIGATING CURVE KEYFRAMES::
 * TOGGLE KEYFRAMES::
 * AUTOMATIC KEYFRAMES::
-* COMPOSITOR KEYFRAMES::
-* EDITING KEYFRAMES::
+* COMPOSITOR KEYFRAMES::  
+* EDITING KEYFRAMES::   Moving keyframes around
+* KEYFRAME SPANNING::   How to change 1 parameter in many keyframes simultaneously
 @end menu
 
 
@@ -4680,7 +4726,7 @@ How to handle the different types of keyframes is described here.
 @node CURVE KEYFRAMES
 @section CURVE KEYFRAMES
 
-Many parameters are stored in bezier curves.  Go to @b{view->fade} or
+Many parameters are stored in rubber band curves.  Go to @b{view->fade} or
 @b{view->...zoom} to show curves on the timeline for those parameters. 
 In either arrow editing mode or i-beam editing mode, move the cursor
 over the curves in the timeline until it changes shape.  Then merely by
@@ -4689,26 +4735,58 @@ position.
 
 After the keyframe is created, click drag on it again to reposition
 it.  When you click-drag a second keyframe on the curve, it creates a
-smooth ramp.  @b{ctrl-dragging} on a keyframe changes the value of
-either the input control or the output control.  This affects the
-sharpness of the curve.  While the input control and the output control
-can be moved horizontally as well as vertically, the horizontal
-movement is purely for legibility and isn't used in the curve value.
+smooth ramp.
 
-You may remember that The Gimp and the Compositing masks all use
-@b{shift} to select control points so why does the timeline use
-@b{ctrl}?  When you @b{shift-drag} on a timeline curve, the
-keyframe snaps to the value of either the next or previous keyframe,
-depending on which exists.  This lets you set a constant curve value
-without having to copy the next or previous keyframe.
+@node CHANGING BEZIER & LINEAR MODE
+@section CHANGING BEZIER & LINEAR MODE
 
-@menu
-* NAVIGATING CURVE KEYFRAMES::
-@end menu
+The curve keyframes have bezier and linear modes.  In linear mode, the
+keyframe looks like a square and the lines emanating from it are
+straight.  In bezier mode, the keyframe is rounded and has 2 control
+lines in addition to the rubber band curve lines.
+
+These are keyframes in linear mode.
+
+@image{linear}
+
+These are keyframes in bezier mode.
+
+@image{bezier}
+
+Change the mode of an existing keyframe by right clicking on it to bring
+up the context menu and selecting @b{make linear} or @b{make bezier}.
+
+
+Change the mode of several keyframes by highlighting the entire region of the
+timeline and selecting @b{Keyframes->change to linear} or
+@b{Keyframes->change to bezier}.
+
+When keyframes are created, they can be linear or bezier by default. 
+Change the default mode by checking or unchecking @b{Keyframes->create
+bezier}.
+
+
+For bezier keyframes, @b{ctrl-dragging} on the control lines of a
+keyframe changes the value of either the input control or the output
+control.  Without @b{ctrl} the cursor only affects the central
+keyframe.  This affects the sharpness of the curve.  The input and
+output controls can only be moved vertically.
+
+If the control lines aren't visible, @b{ctrl-drag} on the left or right
+of the keyframe.
+
+@node SNAPPING TO NEIGHBOR KEYFRAMES
+@section SNAPPING TO NEIGHBOR KEYFRAMES
+
+@b{shift-drag} on a curve keyframe to make the keyframe snap to the
+value of either the next or previous keyframe, depending on which
+exists.  This lets you set a constant curve value without having to copy
+the next or previous keyframe.
+
 
 
 @node NAVIGATING CURVE KEYFRAMES
-@subsection NAVIGATING CURVE KEYFRAMES
+@section NAVIGATING CURVE KEYFRAMES
 
 There isn't much room on the timeline for a wide range of curve
 values.  You need to zoom the curves in and out vertically to have any
@@ -4887,6 +4965,26 @@ Finally, there is a convenient way to delete keyframes besides
 selecting a region and calling @b{keyframes->clear keyframes}. 
 Merely click-drag a keyframe before its preceeding keyframe or after
 its following keyframe on the track.
+
+
+
+@node KEYFRAME SPANNING
+@section KEYFRAME SPANNING
+
+
+
+To change a single parameter in multiple keyframes without changing the
+other parameters, highlight a region on the timeline and adjust the
+parameter.  Instead of a new keyframe being created, the existing
+keyframes are modified and only the changed parameter is modified.
+
+It doesn't matter if @image{autokeyframe} auto keyframe is enabled.  It
+only works when the keyframe stores multiple parameters.  Only mask and
+effect keyframes do this.  Other types of keyframes are generated as usual.
+
+
+
+
 
 
 
@@ -6000,16 +6098,20 @@ ifogen -T -o dvd
 mkisofs -dvd-video -udf -o dvd.iso dvd/
 @end example
 
+Chapters may be set with the following:
+
+ifogen -o dvd --chapters=0021.788,0047.447,0077.043 final.mpg
+
+Replace the chapter times.
+
 dvd.iso can be burned directly to a DVD with the following:
 
 @example
-dvdrecord -ignsize -dao -v dev=0,0,0 fs=67108864 dvd.iso
+dvdrecord -ignsize -dao -v dev=/dev/hdc fs=67108864 dvd.iso
 @end example
 
-The argument to dev= is determined by running @b{dvdrecord -scanbus}
-and picking the right 3 digit device number.  This also requires
-interfacing the DVD drive through the scsi modules @b{ide-scsi, cdrom,
-sg}.
+The argument to dev= is the IDE device of the DVD drive.  Burning DVD's
+through SCSI is currently not supported.
 
 
 
@@ -6152,17 +6254,20 @@ utilize fully by mere experimentation.
 * HISTOGRAM::         How to change the mapping of different brightness values.
 * INVERSE TELECINE::  How to convert pulled down frames to progressive frames.
 * INTERPOLATE VIDEO:: How to create the illusion of higher framerates.
+* LENS::              Correcting spherical aberration
 * LINEARIZE::         Fix gamma in raw camera images
 * LIVE AUDIO::        Pass audio from the soundcard directly to the timeline.
 * LIVE VIDEO::        Pass video from the capture card directly to the timeline.
 * LOOP::              How to loop regions of the timeline.
-* MOTION::            The art of motion tracking.
+* MOTION::            Motion tracking with rotation.
+* MOTION 2 POINT::    Motion and rotation tracking from translation only.
 * REFRAMERT::         Changing the number of frames in a sequence.
 * REFRAME::           Changing the number of frames in a sequence with rendering.
 * RESAMPLE::          Change the number of samples in a sequence with rendering.
 * REVERSE VIDEO/AUDIO:: How to play regions in reverse.
+* SWAP FRAMES::       Fixing temporal field order
 * THRESHOLD::         How to get monochrome out of a region of the image.
-* TIME AVERAGE::      How to add trail patterns or increase still image quality.
+* TIME AVERAGE::      How to stack images.
 * TITLER::            How to add text to a track from inside Cinelerra.
 * VIDEO SCOPE::       How to view the dynamic range of intensity and hue.
 @end menu
@@ -6612,6 +6717,64 @@ rate and you just create keyframes wherever you want to specify an
 input frame.
 
 
+@node LENS
+@section LENS
+
+The lens affect stretches or shrinks to convert lens distorted images to
+rectilinear images.  The most common use is converting fish eye lenses
+to rectilinear lenses.  It is also useful for star tracking.
+
+@b{R, G, B, A Field of view:} These determine how much the image is
+stretched in each channel.
+
+@b{Lock:} This causes changes to 1 channel to affect all the channels. 
+This is normally the desired behavior.
+
+@b{Aspect Ratio:} This changes the amount of stretching done in the X
+axis vs the Y axis.  To crop less data from stretched images, this
+allows more stretching to be done on 1 axis without creating black
+borders in the other axis.
+
+@b{Radius:} This determines the size of the stretched region.  While
+adjusting the @b{field of view}, black borders may appear.  Adjust the
+@b{radius} to shrink or expand the output so black borders are out of
+frame.
+
+@b{Center X, Y:} The center of the stretched region.  This is only
+useful if the image was previously translated by the software so the
+center of the lens is now off center.
+
+@b{Draw center:} This is a visual aid when adjusting the @b{Center X, Y}
+but doesn't affect the results.
+
+@b{Mode:} The type of stretching algorithm.
+
+@itemize
+@item
+@b{Sphere shrink:} This is for making an image look like it's mapped to a sphere.
+
+@item
+@b{Sphere expand:} This is for unmapping an image mapped to a sphere and
+flattening it.
+
+@item
+@b{Rectilinear Stretch:} This is for flattening a fish eye lens.
+
+@item
+@b{Rectilinear Shrink:} This is for making something flat look like it
+was taken by a fish eye lens.
+
+
+@end itemize
+
+
+
+
+
+
+
+
+
 
 
 @node LINEARIZE
@@ -6841,17 +7004,25 @@ visible at all times.
 
 @item 
 
-@b{Maximum absolute offset:} The amount of motion detected by the
-motion  tracker is unlimited if this is 100.  If it's under 100 the
-amount of motion is limited by that percentage of the image size.
+@b{Maximum absolute offset:} In @b{track previous frame} and @b{previous
+frame same block} modes, the motion detected between every frame is
+accumulated to form an absolute motion vector for the entire sequence. 
+The amount of motion detected by the motion tracker is unlimited if this
+is 100.  If it's under 100 the amount of motion is limited to that
+percentage of the image size.  The value must be smaller for larger
+@b{translation block sizes} so there is enough area under the block to
+sense motion with.
 
 @item
 
-@b{Settling speed:} The motion detected between every frame can be
-accumulated to form an absolute motion vector.  If the settling speed
-is 100 the absolute vector is added to the next frame.  If the settling
-speed is less than 100 the absolute vector is downscaled by the
-settling amount before being added to the next frame.
+@b{Settling speed} In @b{track previous frame} and @b{previous frame
+same block} modes, the motion detected between every frame is
+accumulated to form an absolute motion vector for the entire sequence. 
+To keep the absolute motion from exceeding limits, it can be
+automatically reset over time by the settling speed.  If the settling
+speed is 100 the absolute vector resets to 0 after every frame.  If the
+settling speed is less than 100 the absolute vector is reduced slightly
+before the next frame is added.
 
 @item
 
@@ -6971,6 +7142,8 @@ subpixels by changing the action setting.
 * 2 PASS MOTION TRACKING::
 * USING BLUR TO IMPROVE MOTION TRACKING::
 * USING HISTOGRAM TO IMPROVE MOTION TRACKING::
+* INTERPOLATING MOTION BETWEEN FRAMES::
+* FILLING IN THE BLACK AREAS::
 @end menu
 
 
@@ -7059,6 +7232,115 @@ apply the histogram just to the @b{master layer}.
 
 
 
+@node INTERPOLATING MOTION BETWEEN FRAMES
+@subsection INTERPOLATING MOTION BETWEEN FRAMES
+
+The motion tracker can simulate higher frame rates than the media frame
+rate by interpolating the motion.  Interpolation is enabled with the
+@b{maximum absolute offset} and @b{settling speed} options.
+
+First, go to @b{Settings->Format} in the main window and set the
+@b{video frame rate} to a number higher than the media frame rate.
+
+In the @b{Motion} window, select a tracking option which accumulates
+motion.  This is either @b{Track previous frame} or @b{Previous frame
+same block}.  These cause the @b{maximum absolute offset} and
+@b{settling speed} options to take effect.
+
+@b{maximum absolute offset} must be set to the maximum motion to be
+accumulated as a percentage of the video size.  A value of 50 limits the
+motion to 50% of the video size.  50 works well.  The value must be
+smaller for larger @b{translation block sizes} so there is enough area
+under the block to sense motion with.
+
+@b{settling speed} must be set to the rate at which the accumulated
+motion resets to 0 over time.  The reset happens whether or not any
+motion was detected, so when the project frame rate is higher than the
+media frame rate, the frames between media frames regress towards the
+center.  For interpolated motion, the @b{settling speed} value should be
+small, so the movement is smooth.  3 works well.
+
+
+
+
+
+
+
+
+
+@node FILLING IN THE BLACK AREAS
+@subsection FILLING IN THE BLACK AREAS
+
+Stabilization always creates black borders in the track resolution.  One
+solution is to shrink the project resolution so the borders are always
+cropped off the output.  Another solution is to apply a @b{Time Average}
+effect after stabilization.
+
+Configure @b{Time Average} the following way:
+
+@itemize
+@item
+@b{Frame count:} 1
+@item
+@b{Accumulate sequence again:} No
+@item
+@b{Replace:} Yes
+@item
+@b{Threshold:} 1
+@item
+@b{Border:} 4
+@end itemize
+
+This makes new frames replace only the pixels in the previous frames
+where there is new data.  The black areas in new frames don't replace
+previous data so the previous data shows through and fills them in.
+
+
+
+
+
+
+
+
+
+
+
+
+@node MOTION 2 POINT
+@section MOTION 2 POINT
+
+
+The 2 point motion tracker is the same as using 2 of the translation
+motion trackers to track 2 points.  It doesn't have a rotation tracker. 
+Instead, it uses the angle between the 2 translation points to
+determine  rotation.  The 2 points can be enabled separately.
+
+If 1 point is enabled, only translation is tracked.  
+
+If 2 points are enabled, translation is tracked by point 1 and rotation
+is tracked by point 2.  Stabilization is performed with point 1 as the center.
+
+The other parameters for the 2 point tracker are the same as the single
+point tracker.  In addition, the 2 point tracker supports @b{TRANSLATION
+SEARCH OFFSET}.
+
+@b{TRANSLATION SEARCH OFFSET} forces the motion search to look in a
+region other than directly next to the translation block position.  The
+@b{translation search offset} is added to the new search result, giving
+contiguous motion results throughout any changes in translation search area.
+
+This is useful if the camera position changed in the middle of a
+sequence of images but the subject stayed the same.  Offset the
+translation search area when the camera position changes and the
+detected motion stays contiguous through the entire sequence.
+
+2 point tracking works best if the points don't change shape between
+frames.  It is more prone to rotation errors than single point motion
+tracking if the points change shape.  2 point tracking is mainly used
+for tracking stars.
+
+Use the smallest search blocks possible since larger blocks are harder
+to compare when they're rotated.
 
 
 
@@ -7178,6 +7460,23 @@ timeline doesn't reflect the actual reversed output.
 
 
 
+@node SWAP FRAMES
+@section SWAP FRAMES
+
+This is normally used on interlaced video which has been converted to
+fields.  One set of lines becomes one frame and the other set of lines
+becomes the next frame.  Now the frame rate is double and is showing
+fields of the original video sequentially.  The fields may be out of
+order, which is what @b{SWAP FRAMES} can correct.
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7222,32 +7521,55 @@ best applied by first disabling playback for the track, dropping the
 time average in it, configuring time average for the desired number of
 frames, and re-enabling playback for the track.
 
-@b{Frames to average:} This determines the number of frames to be
-accumulated in the accumulation buffer.  For extremely large
-integrations it's easier to edit the EDL in a text editor and put in
-the number of frames.
+@b{Frames count:} This determines the number of frames to be accumulated
+in the accumulation buffer.  For extremely large integrations it's
+easier to edit the EDL in a text editor and put in the number of frames.
 
-@b{Accumulate:} This outputs the accumulation buffer without dividing it.
-
-@b{Average:} This causes the accumulation buffer to be divided before
-being output.  This results in the average of all the frames.
-
-@b{Inclusive Or:} This causes the accumulation buffer to be replaced by
-any pixels which aren't transparent.  In combination with motion
-tracking it allows entire sequences to be combined to form panoramas.
-
-@b{Reprocess frame again:} If an effect before the time average is
+@b{Accumulate sequence again:} If an effect before the time average is
 adjusted the time average normally doesn't reread the accumulation
 buffer to get the change.  This forces it to reread the accumulation
-buffer when other effects change.
+buffer when any other effects change.
 
-@b{Disable subtraction:} In order to represent the accumulation of only
-the specified number of frames, the time average retains all the
-previous frames in memory and subtracts them out as it plays forward. 
-It would run out of memory if it had to accumulate thousands of
-frames.  By disabling subtraction the previous frames are not stored in
-memory and only the average function is affected by the frame count.
 
+@b{Average:} This causes the accumulation buffer to be divided before
+being output.  The result is the average of all the frames.
+
+@b{Accumulate:} This outputs the accumulation buffer without dividing
+it.  The result is the sum of all the frames.
+
+@b{Accumulate only:}
+
+In order to accumulate only the specified number of frames, the time
+average retains all the previous frames in memory and subtracts them out
+as it plays forward.  @b{Accumulate only:} causes the history buffer to
+not be used in @b{averaging} and @b{accumulating}.  Without the history
+buffer, frames are added endlessly without ever being subtracted.  It's
+the same as an infinitely long accumulation buffer.  The only difference
+is for @b{Average} mode, the output is still divided by the @b{Frame
+count}.  @b{Accumulate only} is used where the number of frames in the
+accumulation would be too big to fit in memory.
+
+@b{Replace:} This causes the accumulation buffer to be replaced by only
+pixels which aren't transparent.  This allows black borders from motion
+tracking to be filled in.
+
+@b{Threshold:} The value a pixel must be before it replaces the previous
+pixel.  If alpha channels are enabled, the alpha is the value compared. 
+If there is no alpha channel, the brightness is the value compared.
+
+@b{Border:} The number of pixels on the border of the image to never
+replace.  This hides errors in the replacement operation from the
+output, since errors occur at the transition between the replaced area
+and the ignored area.
+
+@b{Greater:} Pixels are replaced if their value is greater than the
+previous pixel.  Use this to create star trails in stacks of many night
+sky photos or paint many copies of an object from its motion if it is
+lighter than the background.
+
+@b{Less:} Pixels are replaced if their value is less than the previous
+pixel.  Use this to paint copies of an object from its motion if it is
+darker than the background.
 
 
 
@@ -7289,15 +7611,25 @@ keep the border always visible.
 In addition to the scrolling, @b{Fade in/Fade out} are a second type of
 animation.  If the fade seconds are 0, no fading is done.
 
-@b{Color} picks the color to draw the text in.  Usually white is the
+@b{Outline} draws an outline on the characters if it's greater than 0. 
+Set the outline size by changing the number.  Set the outline color with
+the @b{OUTLINE COLOR} button.  If no outline is visible, make sure the
+alpha in @b{OUTLINE COLOR} is nonzero.  To get pure outline characters,
+set @b{COLOR} alpha to 0.
+
+@b{COLOR} picks the color to draw the text in.  Usually white is the
 only practical color.
+
+@b{OUTLINE COLOR} picks the color to draw the text outline in.
 
 @b{Stamp timecode} replaces the text with the current position on the
 timeline in seconds and frames.
 
+@b{SECRETS OF THE TITLER}
 @menu
 * ADDING FONTS TO THE TITLER:: How to add fonts to the titler
 * THE TITLE-SAFE REGION::      How to keep text visible on output
+* MAKING TITLES LOOK GOOD::    How to make your titles look good.
 @end menu
 
 @node ADDING FONTS TO THE TITLER
@@ -7326,6 +7658,46 @@ to be cropped by 5% on each side.  Moreover, text which is too close to
 the edge looks sloppy.  Make sure when adding titles to have the
 @b{title-safe} @image{titlesafe} tool active in the @b{compositor} window.
 The text shouldn't cross the inner rectangle.
+
+
+@node MAKING TITLES LOOK GOOD
+@subsection MAKING TITLES LOOK GOOD
+
+No-one else is going to tell you this, but to make good looking titles,
+ignore most of the features of the titler.  The best settings are:
+
+@itemize
+@item
+Font: @b{Arial}
+@item
+Italic: @b{off}
+@item
+Motion: @b{No motion}
+@item
+Bold: @b{on or off}
+@item
+Fade in: @b{0}
+@item
+Fade out: @b{0}
+@item
+Color: @b{white}
+@item
+Outline color: @b{black}
+@item
+Drop Shadow or outline: @b{use either to improve contrast but not both}
+@end itemize
+
+
+Don't waste the audience's time with fading & crawls.  Use crawls only
+if there's too much text to fit on the screen.  The title should be
+legible enough to take the least amount of time to read.  You're
+supposed to show the story, not write it.  If they wanted to read a
+story, they would be reading a book instead of watching video.
+
+
+
+
+
 
 
 
@@ -7368,7 +7740,7 @@ The GUI is not abstracted from the programmer.  This allows the
 programmer to use whatever toolkit they want and allows more
 flexibility in appearance but it costs more.
 
-There are several types of plugins, each with a common procedure of
+There are several types of plugins, each with a common method of
 implementation and specific changes for that particular type.  The
 easiest way to implement a plugin is to take the simplest existing one
 out of the group and rename the symbols.  
@@ -7473,22 +7845,15 @@ the plugin.
 
 @item
 
-@b{User interface object} - This is defined according to the programmer's
-discretion.  It can either use Cinelerra's toolkit or another toolkit. 
-It shows data on the screen and collects parameters from the user.
+@b{User interface object} - This is a subclass of
+@b{PluginClientWindow}.  It shows data on the screen and collects
+parameters from the user.
 
-Using Cinelerra's toolkit, the only user interface object a developer
-needs to worry about is the Window.  The window has pointers to a
-number of widgets, a few initialization methods, and a back pointer to
-the plugin's processing object.  The documentation refers to the usage
-of Cinelerra's toolkit.
+The window has pointers to a number of widgets, a few initialization
+methods, and a back pointer to the plugin's processing object.  The GUI
+uses Cinelerra's toolkit.  The plugin abstraction layer handles creating
+a thread for the GUI.
 
-Depending on the user interface toolkit, a user interface thread may be
-created to run the user interface asynchronous of everything else. 
-Synchronizing the user interface to changes in the plugin's
-configuration is the most complicated aspect of the plugin, so the user
-interface thread and object are heavily supported by macros if you use
-Cinelerra's toolkit.
 
 
 @item
@@ -7527,22 +7892,7 @@ REGISTER_PLUGIN(MyPlugin)
 @end example
 
 
-The constructor should contain 
 
-@example
-PLUGIN_CONSTRUCTOR_MACRO
-@end example
-
-to initialize the most common variables.
-
-
-The processing object should have a destructor containing
-
-@example
-PLUGIN_DESTRUCTOR_MACRO
-@end example
-
-to delete the most common variables.
 
 Another function which is useful but not mandatory is
 
@@ -7643,40 +7993,13 @@ void MyPlugin::update_gui()
 
 to handle concurrency and conditions of no GUI.
 
-@item
-int show_gui();
-
-Instantiate the GUI and switch the plugin to GUI mode.  This is implemented with
-
-@example
-SHOW_GUI_MACRO(plugin_class, thread_class)
-@end example
-
-@item
-int set_string();
-
-Changes the title of the GUI window to a certain string.  This is implemented with
-
-@example
-SET_STRING_MACRO(plugin_class)
-@end example
-
-
-@item
-void raise_window();
-
-Raises the GUI window to the top of the stack.  This is implemented with
-
-@example
-RAISE_WINDOW_MACRO(plugin_class)
-@end example
 
 
 
 @end itemize
 
 
-Iimportant functions the processing object must define are the
+Important functions the processing object must define are the
 functions which load and save configuration data from keyframes.  These
 functions are called by the macros so all you need to worry about is
 accessing the keyframe data.
@@ -7708,9 +8031,10 @@ configuration.  The BC_Hash object stores configurations in a discrete
 file on disk for each plugin but doesn't isolate different
 configurations for different projects.
 
-The function overriding @b{load_defaults} also needs to create the
-BC_Hash object.  See any existing plugin to see the usage of
-BC_Hash.
+The function overriding @b{load_defaults} also needs to call @b{defaults
+= new BC_Hash(path);} with the configuration path.  See any existing
+plugin to see the usage of BC_Hash.   The function overriding
+@b{save_defaults} does not create @b{defaults}.
 
 Other standard members may be defined in the processing object,
 depending on the plugin type.
@@ -7836,27 +8160,14 @@ drivers can't play fragments of 1 sample.
 @subsection THE USER INTERFACE OBJECT
 
 
-The user interface object at the very least consists of a pointer to a
-window and pointers to all the widgets in the window.  Using
-Cinelerra's toolkit, it consists of a @b{BCWindow} derivative and a
-@b{Thread} derivative.  The Thread derivative is declared in the plugin
-header using
+The user interface object is derived from @b{PluginClientWindow}.  The
+user must call @b{NEW_WINDOW_MACRO} in the processing object to create
+the @b{PluginClientWindow}.  This system is used in realtime plugins but
+not in nonrealtime plugins.
 
-@example
-PLUGIN_THREAD_HEADER(plugin_class, thread_class, window_class)
-@end example
-
-Then it is defined using
-
-@example
-PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class)
-@end example
-
-This, in combination with the SHOW_GUI macro does all the work in
-instantiating the Window.  This two class system is used in realtime
-plugins but not in nonrealtime plugins.  Nonrealtime plugins create and
-destroy their GUI in their @b{get_parameters} function and there's no
-need for a Thread.
+Nonrealtime plugins create and destroy their own GUI in their
+@b{get_parameters} function and there's no need for a
+@b{PluginClientWindow} subclass.
 
 Now the window class must be declared in the plugin header.  It's
 easiest to implement the window by copying an existing plugin and
@@ -7868,20 +8179,24 @@ appropriate arguments.
 
 #include "guicast.h"
 
-class MyPluginWindow : public BC_Window
+MyWindow::MyWindow(MyPlugin *plugin)
+ : PluginClientWindow(plugin, 
+	440, 
+	500, 
+	440, 
+	500, 
+	0)
 @{
-public:
-	MyPluginWindow(MyPluginMain *plugin, int x, int y);
 
 @end example
 
-This becomes a window on the screen, positioned at x and y.
+This becomes a window on the screen with the size given by the arguments
+to @b{PluginClientWindow}.
 
 It needs two methods
 
 @example
-	int create_objects();
-	int close_event();
+	void create_objects();
 @end example
 
 and a back pointer to the plugin
@@ -7891,27 +8206,19 @@ and a back pointer to the plugin
 @end example
 
 
-The constructor's definition should contain extents and flags causing
-the window to be hidden when first created.  The create_objects member
-puts widgets in the window according to GuiCast's syntax.  A pointer to
-each widget which you want to synchronize to a configuration parameter
-is stored in the window class.  These are updated in the @b{update_gui}
-function you earlier defined for the plugin.  The widgets are usually
-derivatives of a GuiCast widget and they override functions in GuiCast
-to handle events.  Finally create_objects calls 
+The create_objects member puts widgets in the window according to
+GuiCast's syntax.  A pointer to each widget which you want to
+synchronize to a configuration parameter is stored in the window class. 
+These are updated in the @b{update_gui} function you earlier defined for
+the plugin.  The widgets are usually derivatives of a GuiCast widget and
+they override functions in GuiCast to handle events.  Finally
+create_objects calls 
 
 @example
 	show_window();
-	flush();
 @end example
 
 to make the window appear all at once.
-
-The close_event member should be implemented using
-
-@example
-WINDOW_CLOSE_EVENT(window_class)
-@end example
 
 Every widget in the GUI needs to detect when its value changes.  In
 GuiCast the @b{handle_event} method is called whenever the value
@@ -8123,13 +8430,14 @@ selects OK or Cancel.
 @item
 int load_defaults();
 
-This should create a defaults object and load parameters from the
-defaults object into plugin variables.
+This should set the @b{defaults} variable to a new @b{Defaults} object
+and load parameters from the defaults object into plugin variables.
 
 @item
 int save_defaults();
 
-This should save plugin variables to the defaults object.
+This should save plugin variables to the defaults object.  It should not
+create the defaults object.
 
 
 @item

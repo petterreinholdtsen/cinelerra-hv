@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef TRACKCANVAS_H
 #define TRACKCANVAS_H
 
@@ -27,7 +48,7 @@ public:
 	TrackCanvas(MWindow *mwindow, MWindowGUI *gui);
 	~TrackCanvas();
 
-	int create_objects();
+	void create_objects();
 	void resize_event();
 	int drag_start_event();
 	int drag_motion_event();
@@ -55,6 +76,12 @@ public:
 		int64_t &w, 
 		int64_t &h, 
 		int side);
+	int get_drag_values(float *percentage, 
+		int64_t *position,
+		int do_clamp,
+		int cursor_x,
+		int cursor_y,
+		Auto *current);
 	void draw_title(Edit *edit, 
 		int64_t edit_x, 
 		int64_t edit_y, 
@@ -66,8 +93,7 @@ public:
 		int x, 
 		int y, 
 		int center_pixel, 
-		int zoom_track,
-		int color);
+		int zoom_track);
 	void draw_floatauto(Auto *current, 
 		int x, 
 		int y, 
@@ -76,8 +102,7 @@ public:
 		int out_x,
 		int out_y,
 		int center_pixel, 
-		int zoom_track,
-		int color);
+		int zoom_track);
 	int test_auto(Auto *current, 
 		int x, 
 		int y, 
@@ -108,8 +133,7 @@ public:
 		int ax,
 		int ay,
 		int ax2,
-		int ay2,
-		int color);
+		int ay2);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
 		double unit_start,
@@ -124,8 +148,7 @@ public:
 		int ax,
 		int ay,
 		int ax2,
-		int ay2,
-		int color);
+		int ay2);
 	int test_toggleline(Autos *autos,
 		int center_pixel, 
 		int x1,
@@ -149,16 +172,20 @@ public:
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
+		int x_offset,
+		int y_offset,
 		int color,
-        Auto * &auto_instance);
-	int do_toggle_autos(Track *track, 
+        Auto* &auto_instance);
+	int do_int_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
+		int x_offset,
+		int y_offset,
 		int color,
-        Auto * &auto_instance);
+        Auto* &auto_instance);
 	int do_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
@@ -166,7 +193,8 @@ public:
 		int draw, 
 		int buttonpress,
 		BC_Pixmap *pixmap,
-        Auto * &auto_instance);
+        Auto* &auto_instance,
+		int &rerender);
 	int do_plugin_autos(Track *track,
 		int cursor_x, 
 		int cursor_y, 
@@ -267,6 +295,12 @@ public:
 		int button_press,
 		int &new_cursor,
 		int &update_cursor);
+	void draw_cropped_line(int x1, 
+		int y1, 
+		int x2, 
+		int y2, 
+		int min_y,
+		int max_y);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();

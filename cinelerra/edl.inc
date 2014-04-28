@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef EDL_INC
 #define EDL_INC
 
@@ -57,19 +78,20 @@ class EDL;
 // Active tool in CWindow corresponds to a member of the CPanel array
 // and the current drag operation
 
-#define CPANEL_OPERATIONS 9
+#define CPANEL_OPERATIONS 10
 
 
 #define CWINDOW_NONE -1
 #define CWINDOW_PROTECT     0
 #define CWINDOW_ZOOM        1
 #define CWINDOW_MASK        2
-#define CWINDOW_CAMERA      3
-#define CWINDOW_PROJECTOR   4
-#define CWINDOW_CROP        5
-#define CWINDOW_EYEDROP     6
-#define CWINDOW_TOOL_WINDOW 7
-#define CWINDOW_TITLESAFE   8
+#define CWINDOW_RULER       3
+#define CWINDOW_CAMERA      4
+#define CWINDOW_PROJECTOR   5
+#define CWINDOW_CROP        6
+#define CWINDOW_EYEDROP     7
+#define CWINDOW_TOOL_WINDOW 8
+#define CWINDOW_TITLESAFE   9
 
 // Current dragging operations not available in the CPanel
 #define CWINDOW_SCROLL 0x10

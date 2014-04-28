@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef DELAYVIDEO_H
 #define DELAYVIDEO_H
 
@@ -47,14 +68,13 @@ public:
 };
 
 
-class DelayVideoWindow : public BC_Window
+class DelayVideoWindow : public PluginClientWindow
 {
 public:
-	DelayVideoWindow(DelayVideo *plugin, int x, int y);
+	DelayVideoWindow(DelayVideo *plugin);
 	~DelayVideoWindow();
 	
 	void create_objects();
-	int close_event();
 	void update_gui();
 	
 	DelayVideo *plugin;
@@ -62,7 +82,6 @@ public:
 };
 
 
-PLUGIN_THREAD_HEADER(DelayVideo, DelayVideoThread, DelayVideoWindow)
 
 
 
@@ -73,21 +92,16 @@ public:
 	DelayVideo(PluginServer *server);
 	~DelayVideo();
 	
+	PLUGIN_CLASS_MEMBERS(DelayVideoConfig);
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	VFrame* new_picon();
 	void reset();
 	void reconfigure();
 
 
 
-	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	void update_gui();
@@ -95,10 +109,7 @@ public:
 
 	int need_reconfigure;
 	int allocation;
-	DelayVideoConfig config;
-	DelayVideoThread *thread;
 	VFrame **buffer;
-	BC_Hash *defaults;
 	VFrame *input, *output;
 };
 

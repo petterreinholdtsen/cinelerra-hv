@@ -1,12 +1,39 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCWINDOWBASE_H
 #define BCWINDOWBASE_H
 
-// Window types
 
-#define HAVE_LIBXXF86VM
+//#define HAVE_LIBXXF86VM
+// Use single thread for all windows.
+// This is a bad idea because it's very slow.  Windows which share the same
+// display must be locked in their create_objects routines.
+//#define SINGLE_THREAD
+
+// Window types
 #define MAIN_WINDOW 0
 #define SUB_WINDOW 1
 #define POPUP_WINDOW 2
+
 #ifdef HAVE_LIBXXF86VM
 #define VIDMODE_SCALED_WINDOW 3
 #endif
@@ -20,6 +47,7 @@
 #include "bcbutton.inc"
 #include "bccapture.inc"
 #include "bcclipboard.inc"
+#include "bcdisplay.inc"
 #include "bcdragwindow.inc"
 #include "bcfilebox.inc"
 #include "bclistbox.inc"
@@ -98,6 +126,7 @@ public:
 	friend class BC_GenericButton;
 	friend class BC_Capture;
 	friend class BC_Clipboard;
+	friend class BC_Display;
 	friend class BC_DragWindow;
 	friend class BC_FileBox;
 	friend class BC_FullScreen;
@@ -141,6 +170,7 @@ public:
 	virtual int cursor_leave_event();
 	virtual int cursor_enter_event();
 	virtual int keypress_event() { return 0; };
+	virtual int keyrelease_event() { return 0; };
 	virtual int translation_event() { return 0; };
 	virtual int drag_start_event() { return 0; };
 	virtual int drag_motion_event() { return 0; };
@@ -148,7 +178,10 @@ public:
 	virtual int uses_text() { return 0; };
 // Only if opengl is enabled
 	virtual int expose_event() { return 0; };
+	virtual void create_objects() { return; };
 
+// Wait until event loop is running
+	void init_wait();
 // Check if a hardware accelerated colormodel is available and reserve it
 	int accel_available(int color_model, int lock_it); 
 // Get color model adjusted for byte order and pixel size
@@ -190,13 +223,17 @@ public:
 	void flush();
 	void sync_display();
 // Lock out other threads
-	int lock_window(char *location = 0);
+	int lock_window(const char *location = 0);
 	int unlock_window();
 	int get_window_lock();
 
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);
 	BC_WindowBase* add_tool(BC_WindowBase *subwindow);
+// Use this to get events for the popup window.
+// Events are not propagated to the popup window.
+	BC_WindowBase* add_popup(BC_WindowBase *window);
+	void remove_popup(BC_WindowBase *window);
 
 	static BC_Resources* get_resources();
 // User must create synchronous object first
@@ -209,6 +246,8 @@ public:
 	virtual int get_y();
 	int get_root_w(int ignore_dualhead = 0, int lock_display = 0);
 	int get_root_h(int lock_display);
+	int get_root_x(int lock_display);
+	int get_root_y(int lock_display);
 // Get current position
 	int get_abs_cursor_x(int lock_window);
 	int get_abs_cursor_y(int lock_window);
@@ -247,7 +286,7 @@ public:
 	int get_text_ascent(int font);
 	int get_text_descent(int font);
 	int get_text_height(int font, char *text = 0);
-	int get_text_width(int font, char *text, int length = -1);
+	int get_text_width(int font, const char *text, int length = -1);
 	BC_Clipboard* get_clipboard();
 	void set_dragging(int value);
 	int set_w(int w);
@@ -297,7 +336,7 @@ public:
 	void draw_box(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
-	void draw_text(int x, int y, char *text, int length = -1, BC_Pixmap *pixmap = 0);
+	void draw_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_xft_text(int x, 
 		int y, 
 		char *text, 
@@ -311,6 +350,7 @@ public:
 	void draw_center_text(int x, int y, char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
+	void fill_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
 	void draw_rectangle(int x, int y, int w, int h);
 	void draw_3segment(int x, 
 		int y, 
@@ -418,7 +458,7 @@ public:
 	void set_inverse();
 	void set_background(VFrame *bitmap);
 // Change the window title.  The title is translated internally.
-	void set_title(char *text);
+	void set_title(const char *text);
 	char* get_title();
 	void start_video();
 	void stop_video();
@@ -487,7 +527,7 @@ public:
 	int set_repeat(int64_t duration);
 // Stop a repeat event from being dispatched.
 	int unset_repeat(int64_t duration);
-	int set_tooltip(char *text);
+	int set_tooltip(const char *text);
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
 	int set_icon(VFrame *data);
@@ -508,7 +548,7 @@ public:
 private:
 // Create a window
 	virtual int create_window(BC_WindowBase *parent_window,
-				char *title, 
+				const char *title, 
 				int x,
 				int y,
 				int w, 
@@ -519,12 +559,12 @@ private:
 				int private_color, 
 				int hide,
 				int bg_color,
-				char *display_name,
+				const char *display_name,
 				int window_type,
 				BC_Pixmap *bg_pixmap,
 				int group_it);
 
-	static Display* init_display(char *display_name);
+	static Display* init_display(const char *display_name);
 // Get display from top level
 	Display* get_display();
 	int get_screen();
@@ -538,7 +578,7 @@ private:
 	int create_color(int color);
 	int create_shared_colors();
 // Get width of a single line.  Used by get_text_width
-	int get_single_text_width(int font, char *text, int length);
+	int get_single_text_width(int font, const char *text, int length);
 	int allocate_color_table();
 	int init_gc();
 	int init_fonts();
@@ -554,8 +594,8 @@ private:
 	Cursor get_cursor_struct(int cursor);
     XFontSet get_fontset(int font);
     XFontSet get_curr_fontset(void);
-    void set_fontset(int font);	
-	int dispatch_event();
+    void set_fontset(int font);
+	int dispatch_event(XEvent *event);
 
 	int get_key_masks(XEvent *event);
 
@@ -579,6 +619,7 @@ private:
 	int dispatch_focus_out();
 	int dispatch_motion_event();
 	int dispatch_keypress_event();
+	int dispatch_keyrelease_event();
 	int dispatch_repeat_event(int64_t duration);
 	int dispatch_repeat_event_master(int64_t duration);
 	int dispatch_button_press();
@@ -611,6 +652,7 @@ private:
 	BC_WindowBase* parent_window;
 // list of window bases in this window
 	BC_SubWindowList* subwindows;
+	ArrayList<BC_WindowBase*> popups;
 // Position of window
 	int x, y, w, h;
 // Default colors
@@ -672,9 +714,10 @@ private:
 	int has_focus;
 
 	static BC_Resources resources;
+#ifndef SINGLE_THREAD
 // Array of repeaters for multiple repeating objects.
 	ArrayList<BC_Repeater*> repeaters;
-//	int64_t next_repeat_id;
+#endif
 // Text for tooltip if one exists
 	char tooltip_text[BCTEXTLEN];
 // If the current window's tooltip is visible
@@ -719,10 +762,10 @@ private:
  	Window event_win, drag_win;
 	Visual *vis;
 	Colormap cmap;
+// Name of display
+	char display_name[BCTEXTLEN];
 // Display for all synchronous operations
 	Display *display;
-// Display to send events on
-	Display *event_display;
  	Window win;
 #ifdef HAVE_GL
 // The first context to be created and the one whose texture id 
@@ -774,13 +817,20 @@ private:
 // Temporary
 	BC_Bitmap *temp_bitmap;
 // Clipboard
+#ifndef SINGLE_THREAD
 	BC_Clipboard *clipboard;
+#endif
+
 #ifdef HAVE_LIBXXF86VM
 // Mode switch information.
    int vm_switched;
    XF86VidModeModeInfo orig_modeline;
 #endif
 
+
+
+
+#ifndef SINGLE_THREAD
 // Common events coming from X server and repeater.
 	ArrayList<XEvent*> common_events;
 // Locks for common events
@@ -789,6 +839,16 @@ private:
 // 2) event_lock
 	Mutex *event_lock;
 	Condition *event_condition;
+#else
+	Condition *completion_lock;
+#endif
+
+// Lock that waits until the event handler is running
+	Condition *init_lock;
+
+	int dump_windows();
+
+
 	BC_WindowEvents *event_thread;
 	int is_deleting;
 // Hide cursor when video is enabled

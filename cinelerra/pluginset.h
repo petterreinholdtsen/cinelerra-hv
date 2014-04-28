@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef PLUGINSET_H
 #define PLUGINSET_H
 
@@ -34,13 +55,13 @@ public:
 	void copy_keyframes(int64_t start, 
 		int64_t end, 
 		FileXML *file, 
-		int default_only,
-		int autos_only);
-	static void paste_keyframes(int64_t start, 
+		int use_default,
+		int active_only);
+	void paste_keyframes(int64_t start, 
 		int64_t length, 
 		FileXML *file, 
-		int default_only,
-		Track *track);
+		int use_default,
+		int active_only);
 // Return the nearest boundary of any kind in the plugin edits
 	int64_t plugin_change_duration(int64_t input_position, 
 		int64_t input_length, 
@@ -58,7 +79,7 @@ public:
 	int optimize();
 
 // Insert a new plugin
-	Plugin* insert_plugin(char *title, 
+	Plugin* insert_plugin(const char *title, 
 		int64_t unit_position, 
 		int64_t unit_length,
 		int plugin_type,

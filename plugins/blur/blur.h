@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BLUR_H
 #define BLUR_H
 
@@ -15,10 +36,10 @@ class BlurEngine;
 
 typedef struct
 {
-	float r;
-    float g;
-    float b;
-    float a;
+	double r;
+    double g;
+    double b;
+    double a;
 } pixel_f;
 
 class BlurConfig
@@ -47,7 +68,9 @@ public:
 	~BlurMain();
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
@@ -55,12 +78,9 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 
-	PLUGIN_CLASS_MEMBERS(BlurConfig, BlurThread)
+	PLUGIN_CLASS_MEMBERS(BlurConfig)
 
 	int need_reconfigure;
-
-// a thread for the GUI
-	VFrame *temp, *input, *output;
 
 private:
 	BlurEngine **engine;
@@ -74,7 +94,7 @@ public:
 	~BlurEngine();
 
 	void run();
-	int start_process_frame(VFrame *output, VFrame *input);
+	int start_process_frame(VFrame *frame);
 	int wait_process_frame();
 
 // parameters needed for blur
@@ -87,13 +107,13 @@ public:
 	int blur_strip4(int &size);
 
 	int color_model;
-	float vmax;
+	double vmax;
 	pixel_f *val_p, *val_m, *vp, *vm;
 	pixel_f *sp_p, *sp_m;
-    float n_p[5], n_m[5];
-    float d_p[5], d_m[5];
-    float bd_p[5], bd_m[5];
-    float std_dev;
+    double n_p[5], n_m[5];
+    double d_p[5], d_m[5];
+    double bd_p[5], bd_m[5];
+    double std_dev;
 	pixel_f *src, *dst;
     pixel_f initial_p;
     pixel_f initial_m;
@@ -102,7 +122,7 @@ public:
 // A margin is introduced between the input and output to give a seemless transition between blurs
 	int start_in, start_out;
 	int end_in, end_out;
-	VFrame *output, *input;
+	VFrame *frame;
 	int last_frame;
 	Mutex input_lock, output_lock;
 };

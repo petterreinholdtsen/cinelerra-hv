@@ -1,8 +1,30 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "errorbox.h"
 #include "bcdisplayinfo.h"
 #include "cdripper.h"
 #include "cdripwindow.h"
 #include "bchash.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "mwindow.inc"
 
@@ -11,10 +33,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 PluginClient* new_plugin(PluginServer *server)
 {
@@ -25,16 +43,13 @@ PluginClient* new_plugin(PluginServer *server)
 CDRipMain::CDRipMain(PluginServer *server)
  : PluginAClient(server)
 {
-	load_defaults();
 }
 
 CDRipMain::~CDRipMain()
 {
-	save_defaults();
-	delete defaults;
 }
 
-char* CDRipMain::plugin_title() { return N_("CD Ripper"); }
+const char* CDRipMain::plugin_title() { return N_("CD Ripper"); }
 int CDRipMain::is_realtime() { return 0; }
 int CDRipMain::is_multichannel() { return 1; }
 
@@ -298,7 +313,7 @@ int CDRipMain::stop_loop()
 int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 {
 	int result = 0;
-//printf("CDRipMain::process_loop 1\n");
+printf("CDRipMain::process_loop 1\n");
 
 // render it
 	if(arg.addr.lba < endlba && !endofselection)
@@ -309,7 +324,7 @@ int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 			fragment_length *= NFRAMES * FRAMESIZE;
 			endofselection = 1;
 		}
-//printf("CDRipMain::process_loop 2 %d %d\n", arg.addr.lba, endlba);
+printf("CDRipMain::process_loop 2 %d %d\n", arg.addr.lba, endlba);
 
 		for(i = 0; i < fragment_length; 
 			i += NFRAMES * FRAMESIZE,
@@ -326,7 +341,7 @@ int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 				if(attempts == 2 && !previewing) printf("Can't read CD audio.\n");
 			}
 		}
-//printf("CDRipMain::process_loop 3\n");
+printf("CDRipMain::process_loop 3\n");
 
 		if(arg.addr.lba > startlba)
 		{
@@ -345,22 +360,22 @@ int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 
 			write_length = fragment_samples;
 		}
-//printf("CDRipMain::process_loop 5 %d\n", interactive);
+printf("CDRipMain::process_loop 5 %d\n", interactive);
 
 		currentlength++;
 		if(interactive)
 		{
 			if(!result) result = progress->update(currentlength);
 		}
-//printf("CDRipMain::process_loop 6\n");
+printf("CDRipMain::process_loop 6\n");
 	}
 	else
 	{
-//printf("CDRipMain::process_loop 7\n");
+printf("CDRipMain::process_loop 7\n");
 		endofselection = 1;
 		write_length = 0;
 	}
 
-//printf("CDRipMain::process_loop 8 %d %d\n", endofselection, result);
+printf("CDRipMain::process_loop 8 %d %d\n", endofselection, result);
 	return endofselection || result;
 }

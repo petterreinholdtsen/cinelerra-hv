@@ -8,7 +8,7 @@ FREEVERBOBJS := \
 	$(OBJDIR)/Components/comb.o \
 	$(OBJDIR)/Components/revmodel.o	
 
-OUTPUT := ../$(OBJDIR)/freeverb.plugin
+OUTPUT := $(PLUGIN_DIR)/freeverb.plugin
 
 CFLAGS += -fPIC \
 	-I../ \
@@ -20,7 +20,7 @@ CFLAGS += -fPIC \
 
 DIRS := $(OBJDIR)/Components
 
-$(shell echo $(CFLAGS) > ../$(OBJDIR)/c_flags)
+$(shell echo $(CFLAGS) > $(PLUGIN_DIR)/c_flags)
 $(shell echo $(OBJS) $(FREEVERBOBJS) > $(OBJDIR)/objs)
 
 
@@ -39,10 +39,10 @@ install:
 	cp $(OUTPUT) $(PLUGINDIR)
 
 $(OBJS):
-	$(CC) -c `cat ../$(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) -c `cat $(PLUGIN_DIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(FREEVERBOBJS):
-	$(CC) -c `cat ../$(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.cpp) -o $*.o
+	$(CC) -c `cat $(PLUGIN_DIR)/c_flags` $(subst $(OBJDIR)/,, $*.cpp) -o $*.o
 
 
 

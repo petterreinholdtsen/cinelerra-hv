@@ -1,8 +1,30 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "language.h"
 #include "leveleffect.h"
 #include "picon_png.h"
 #include "units.h"
@@ -13,10 +35,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -90,17 +108,13 @@ int SoundLevelDuration::handle_event()
 
 
 
-SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+SoundLevelWindow::SoundLevelWindow(SoundLevelEffect *plugin)
+ : PluginClientWindow(plugin, 
 	350, 
 	120, 
 	350, 
 	120,
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -125,7 +139,6 @@ void SoundLevelWindow::create_objects()
 //printf("SoundLevelWindow::create_objects 2\n");
 }
 
-WINDOW_CLOSE_EVENT(SoundLevelWindow)
 
 
 
@@ -137,7 +150,8 @@ WINDOW_CLOSE_EVENT(SoundLevelWindow)
 
 
 
-PLUGIN_THREAD_OBJECT(SoundLevelEffect, SoundLevelThread, SoundLevelWindow)
+
+
 
 
 
@@ -156,24 +170,21 @@ PLUGIN_THREAD_OBJECT(SoundLevelEffect, SoundLevelThread, SoundLevelWindow)
 SoundLevelEffect::SoundLevelEffect(PluginServer *server)
  : PluginAClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	reset();
 }
 
 SoundLevelEffect::~SoundLevelEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
 NEW_PICON_MACRO(SoundLevelEffect)
 
 LOAD_CONFIGURATION_MACRO(SoundLevelEffect, SoundLevelConfig)
 
-SHOW_GUI_MACRO(SoundLevelEffect, SoundLevelThread)
+NEW_WINDOW_MACRO(SoundLevelEffect, SoundLevelWindow)
 
-RAISE_WINDOW_MACRO(SoundLevelEffect)
-
-SET_STRING_MACRO(SoundLevelEffect)
 
 
 void SoundLevelEffect::reset()
@@ -183,14 +194,14 @@ void SoundLevelEffect::reset()
 	accum_size = 0;
 }
 
-char* SoundLevelEffect::plugin_title() { return N_("SoundLevel"); }
+const char* SoundLevelEffect::plugin_title() { return N_("SoundLevel"); }
 int SoundLevelEffect::is_realtime() { return 1; }
 
 
 void SoundLevelEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	while(!result)
@@ -210,7 +221,7 @@ void SoundLevelEffect::read_data(KeyFrame *keyframe)
 void SoundLevelEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("SOUNDLEVEL");
 	output.tag.set_property("DURATION", config.duration);
@@ -244,7 +255,7 @@ void SoundLevelEffect::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->duration->update(config.duration);
+		((SoundLevelWindow*)thread->window)->duration->update(config.duration);
 		thread->window->unlock_window();
 	}
 //printf("SoundLevelEffect::update_gui 2\n");
@@ -285,9 +296,9 @@ void SoundLevelEffect::render_gui(void *data, int size)
 		char string[BCTEXTLEN];
 		double *arg = (double*)data;
 		sprintf(string, "%.2f", DB::todb(arg[0]));
-		thread->window->soundlevel_max->update(string);
+		((SoundLevelWindow*)thread->window)->soundlevel_max->update(string);
 		sprintf(string, "%.2f", DB::todb(arg[1]));
-		thread->window->soundlevel_rms->update(string);
+		((SoundLevelWindow*)thread->window)->soundlevel_rms->update(string);
 		thread->window->flush();
 		thread->window->unlock_window();
 	}

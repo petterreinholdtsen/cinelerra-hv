@@ -1,19 +1,36 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "denoise.h"
+#include "language.h"
 #include "picon_png.h"
 #include "units.h"
 #include "vframe.h"
 
 #include <math.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -32,12 +49,12 @@ DenoiseEffect::DenoiseEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 
 DenoiseEffect::~DenoiseEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 	delete_dsp();
 }
 
@@ -45,11 +62,7 @@ NEW_PICON_MACRO(DenoiseEffect)
 
 LOAD_CONFIGURATION_MACRO(DenoiseEffect, DenoiseConfig)
 
-SHOW_GUI_MACRO(DenoiseEffect, DenoiseThread)
-
-RAISE_WINDOW_MACRO(DenoiseEffect)
-
-SET_STRING_MACRO(DenoiseEffect)
+NEW_WINDOW_MACRO(DenoiseEffect, DenoiseWindow)
 
 void DenoiseEffect::delete_dsp()
 {
@@ -114,7 +127,7 @@ void DenoiseEffect::reset()
 	iterations = 1;
 }
 
-char* DenoiseEffect::plugin_title() { return N_("Denoise"); }
+const char* DenoiseEffect::plugin_title() { return N_("Denoise"); }
 int DenoiseEffect::is_realtime() { return 1; }
 
 
@@ -122,7 +135,7 @@ int DenoiseEffect::is_realtime() { return 1; }
 void DenoiseEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	while(!result)
@@ -142,7 +155,7 @@ void DenoiseEffect::read_data(KeyFrame *keyframe)
 void DenoiseEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 
 	output.tag.set_title("DENOISE");
 	output.tag.set_property("LEVEL", config.level);
@@ -177,9 +190,9 @@ void DenoiseEffect::update_gui()
 {
 	if(thread)
 	{
-		thread->window->lock_window();
-		thread->window->update();
-		thread->window->unlock_window();
+		((DenoiseWindow*)thread->window)->lock_window();
+		((DenoiseWindow*)thread->window)->update();
+		((DenoiseWindow*)thread->window)->unlock_window();
 	}
 }
 
@@ -750,7 +763,6 @@ void DenoiseConfig::interpolate(DenoiseConfig &prev,
 
 
 
-PLUGIN_THREAD_OBJECT(DenoiseEffect, DenoiseThread, DenoiseWindow)
 
 
 
@@ -760,18 +772,13 @@ PLUGIN_THREAD_OBJECT(DenoiseEffect, DenoiseThread, DenoiseWindow)
 
 
 
-
-DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+DenoiseWindow::DenoiseWindow(DenoiseEffect *plugin)
+ : PluginClientWindow(plugin, 
 	150, 
 	50, 
 	150, 
 	50,
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -787,12 +794,7 @@ void DenoiseWindow::create_objects()
 	flush();
 }
 
-int DenoiseWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+
 
 void DenoiseWindow::update()
 {

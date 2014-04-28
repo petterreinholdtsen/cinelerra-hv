@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "histogramconfig.h"
 #include "units.h"
@@ -19,7 +40,8 @@ HistogramPoint::~HistogramPoint()
 
 int HistogramPoint::equivalent(HistogramPoint *src)
 {
-	return EQUIV(x, src->x) && EQUIV(y, src->y);
+// EQUIV isn't precise enough to detect changes in points
+	return x == src->x && y == src->y;
 }
 
 
@@ -193,11 +215,12 @@ void HistogramConfig::boundaries()
 
 int HistogramConfig::equivalent(HistogramConfig &that)
 {
+// EQUIV isn't precise enough to detect changes in points
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
 		if(!points[i].equivalent(&that.points[i]) ||
-			!EQUIV(output_min[i], that.output_min[i]) ||
-			!EQUIV(output_max[i], that.output_max[i])) return 0;
+			output_min[i] != that.output_min[i] ||
+			output_max[i] != that.output_max[i]) return 0;
 	}
 
 	if(automatic != that.automatic ||

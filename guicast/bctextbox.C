@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcclipboard.h"
 #include "bclistboxitem.h"
 #include "bcresources.h"
@@ -23,7 +44,7 @@ BC_TextBox::BC_TextBox(int x,
 	int y, 
 	int w, 
 	int rows, 
-	char *text, 
+	const char *text, 
 	int has_border, 
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
@@ -174,7 +195,7 @@ void BC_TextBox::set_selection(int char1, int char2, int ibeam)
 	draw();
 }
 
-int BC_TextBox::update(char *text)
+int BC_TextBox::update(const char *text)
 {
 //printf("BC_TextBox::update 1 %d %s %s\n", strcmp(text, this->text), text, this->text);
 	int text_len = strlen(text);
@@ -1487,9 +1508,9 @@ void BC_TextBox::set_ibeam_letter(int number, int redraw)
 	}
 }
 
-void BC_TextBox::set_separators(char *separators)
+void BC_TextBox::set_separators(const char *separators)
 {
-	this->separators = separators;
+	this->separators = (char*)separators;
 }
 
 
@@ -1570,7 +1591,7 @@ char* BC_ScrollTextBox::get_text()
 	return text->get_text();
 }
 
-void BC_ScrollTextBox::update(char *text)
+void BC_ScrollTextBox::update(const char *text)
 {
 	this->text->update(text);
 	yscroll->update_length(this->text->get_text_rows(),
@@ -1729,7 +1750,7 @@ int BC_PopupTextBoxList::handle_event()
 
 BC_PopupTextBox::BC_PopupTextBox(BC_WindowBase *parent_window, 
 		ArrayList<BC_ListBoxItem*> *list_items,
-		char *default_text,
+		const char *default_text,
 		int x, 
 		int y, 
 		int text_w,
@@ -1738,7 +1759,7 @@ BC_PopupTextBox::BC_PopupTextBox(BC_WindowBase *parent_window,
 	this->x = x;
 	this->y = y;
 	this->list_h = list_h;
-	this->default_text = default_text;
+	this->default_text = (char*)default_text;
 	this->text_w = text_w;
 	this->parent_window = parent_window;
 	this->list_items = list_items;
@@ -1763,7 +1784,7 @@ int BC_PopupTextBox::create_objects()
 	return 0;
 }
 
-void BC_PopupTextBox::update(char *text)
+void BC_PopupTextBox::update(const char *text)
 {
 	textbox->update(text);
 }
@@ -2047,7 +2068,7 @@ char* BC_TumbleTextBox::get_text()
 	return textbox->get_text();
 }
 
-int BC_TumbleTextBox::update(char *value)
+int BC_TumbleTextBox::update(const char *value)
 {
 	textbox->update(value);
 	return 0;

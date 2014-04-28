@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "aedit.h"
 #include "asset.h"
 #include "assets.h"
@@ -113,12 +134,13 @@ void Edits::insert_asset(Asset *asset,
 	}
 }
 
-void Edits::insert_edits(Edits *source_edits, int64_t position)
+void Edits::insert_edits(Edits *source_edits, 
+	int64_t position,
+	int64_t min_length)
 {
-	int64_t clipboard_length = 
-		track->to_units(source_edits->edl->local_session->clipboard_length, 1);
-	int64_t clipboard_end = position + clipboard_length;
-
+	int64_t clipboard_end = position + min_length;
+// Length pasted so far
+	int64_t source_len = 0;
 
 // Fill region between end of edit table and beginning of pasted segment
 // with silence.  Can't call from insert_new_edit because it's recursive.
@@ -158,14 +180,18 @@ void Edits::insert_edits(Edits *source_edits, int64_t position)
 			future_edit->startproject += dest_edit->length;
 			future_edit->shift_keyframes(dest_edit->length);
 		}
+		
+		source_len += source_edit->length;
+	}
 
-// Fill clipboard length with silence
-		if(!source_edit->next && 
-			dest_edit->startproject + dest_edit->length < clipboard_end)
-		{
-			paste_silence(dest_edit->startproject + dest_edit->length,
-				clipboard_end);
-		}
+
+
+
+// Fill remaining clipboard length with silence
+	if(source_len < min_length)
+	{
+//printf("Edits::insert_edits %d\n", __LINE__);
+		paste_silence(position + source_len, position + min_length);
 	}
 }
 
@@ -226,7 +252,7 @@ Edit* Edits::split_edit(int64_t position)
 	return new_edit;
 }
 
-int Edits::save(FileXML *xml, char *output_path)
+int Edits::save(FileXML *xml, const char *output_path)
 {
 	copy(0, length(), xml, output_path);
 	return 0;
@@ -449,7 +475,7 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 		{
 			if(file->tag.title_is("FILE"))
 			{
-				char filename[1024];
+				char filename[BCTEXTLEN];
 				sprintf(filename, SILENCE);
 				file->tag.get_property("SRC", filename);
 // Extend path
@@ -579,7 +605,7 @@ Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 
 
 
-int Edits::copy(int64_t start, int64_t end, FileXML *file, char *output_path)
+int Edits::copy(int64_t start, int64_t end, FileXML *file, const char *output_path)
 {
 	Edit *current_edit;
 
@@ -719,8 +745,7 @@ int Edits::clear_handle(double start,
 // Lengthen effects
 					if(edit_plugins)
 						track->shift_effects(current_edit->next->startproject, 
-							length,
-							0);
+							length);
 
 					for(current_edit = current_edit->next; current_edit; current_edit = current_edit->next)
 					{
@@ -875,11 +900,11 @@ Edit* Edits::shift(int64_t position, int64_t difference)
 
 void Edits::shift_keyframes_recursive(int64_t position, int64_t length)
 {
-	track->shift_keyframes(position, length, 0);
+	track->shift_keyframes(position, length);
 }
 
 void Edits::shift_effects_recursive(int64_t position, int64_t length)
 {
-	track->shift_effects(position, length, 0);
+	track->shift_effects(position, length);
 }
 

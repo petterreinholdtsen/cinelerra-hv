@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "automation.h"
 #include "bcsignals.h"
 #include "cplayback.h"
@@ -62,9 +83,9 @@ PatchGUI::~PatchGUI()
 	if(nudge) delete nudge;
 }
 
-int PatchGUI::create_objects()
+void PatchGUI::create_objects()
 {
-	return update(x, y);
+	update(x, y);
 }
 
 int PatchGUI::reposition(int x, int y)
@@ -276,7 +297,6 @@ void PatchGUI::toggle_behavior(int type,
 			mwindow->restart_brender();
 			mwindow->sync_parameters(CHANGE_EDL);
 			mwindow->gui->lock_window("PatchGUI::toggle_behavior 1");
-			mwindow->undo->update_undo(_("play patch"), LOAD_PATCHES);
 			break;
 
 		case Tracks::MUTE:
@@ -284,26 +304,21 @@ void PatchGUI::toggle_behavior(int type,
 			mwindow->restart_brender();
 			mwindow->sync_parameters(CHANGE_PARAMS);
 			mwindow->gui->lock_window("PatchGUI::toggle_behavior 2");
-			mwindow->undo->update_undo(_("mute patch"), LOAD_PATCHES);
 			break;
 
 // Update affected tracks in cwindow
 		case Tracks::RECORD:
 			mwindow->cwindow->update(0, 1, 1);
-			mwindow->undo->update_undo(_("record patch"), LOAD_PATCHES);
 			break;
 
 		case Tracks::GANG:
-			mwindow->undo->update_undo(_("gang patch"), LOAD_PATCHES);
 			break;
 
 		case Tracks::DRAW:
-			mwindow->undo->update_undo(_("draw patch"), LOAD_PATCHES);
 			mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
 			break;
 
 		case Tracks::EXPAND:
-			mwindow->undo->update_undo(_("expand patch"), LOAD_PATCHES);
 			break;
 	}
 }
@@ -375,6 +390,7 @@ int PlayPatch::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		mwindow->undo->update_undo_before();
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		patch->toggle_behavior(Tracks::PLAY,
@@ -389,8 +405,9 @@ int PlayPatch::button_press_event()
 int PlayPatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
+	if(patch->patchbay->drag_operation == Tracks::PLAY)
 	{
+		mwindow->undo->update_undo_after(_("play patch"), LOAD_PATCHES);
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
@@ -426,6 +443,7 @@ int RecordPatch::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		mwindow->undo->update_undo_before();
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		patch->toggle_behavior(Tracks::RECORD,
@@ -440,8 +458,9 @@ int RecordPatch::button_press_event()
 int RecordPatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
+	if(patch->patchbay->drag_operation == Tracks::RECORD)
 	{
+		mwindow->undo->update_undo_after(_("record patch"), LOAD_PATCHES);
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
@@ -476,6 +495,7 @@ int GangPatch::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		mwindow->undo->update_undo_before();
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		patch->toggle_behavior(Tracks::GANG,
@@ -490,8 +510,9 @@ int GangPatch::button_press_event()
 int GangPatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
+	if(patch->patchbay->drag_operation == Tracks::GANG)
 	{
+		mwindow->undo->update_undo_after(_("gang patch"), LOAD_PATCHES);
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
@@ -526,6 +547,7 @@ int DrawPatch::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		mwindow->undo->update_undo_before();
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		patch->toggle_behavior(Tracks::DRAW,
@@ -540,8 +562,9 @@ int DrawPatch::button_press_event()
 int DrawPatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
+	if(patch->patchbay->drag_operation == Tracks::DRAW)
 	{
+		mwindow->undo->update_undo_after(_("draw patch"), LOAD_PATCHES);
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
@@ -575,6 +598,7 @@ int MutePatch::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		mwindow->undo->update_undo_before();
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		IntAuto *current;
@@ -591,7 +615,6 @@ int MutePatch::button_press_event()
 			&current->value);
 
 
-		mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
 		if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
 		{
@@ -606,8 +629,9 @@ int MutePatch::button_press_event()
 int MutePatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
+	if(patch->patchbay->drag_operation == Tracks::MUTE)
 	{
+		mwindow->undo->update_undo_after(_("mute patch"), LOAD_PATCHES);
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
@@ -655,6 +679,7 @@ int ExpandPatch::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		mwindow->undo->update_undo_before();
 		set_status(BC_Toggle::TOGGLE_DOWN);
 		update(!get_value());
 		patch->toggle_behavior(Tracks::EXPAND,
@@ -670,8 +695,9 @@ int ExpandPatch::button_press_event()
 int ExpandPatch::button_release_event()
 {
 	int result = BC_Toggle::button_release_event();
-	if(patch->patchbay->drag_operation != Tracks::NONE)
+	if(patch->patchbay->drag_operation == Tracks::EXPAND)
 	{
+		mwindow->undo->update_undo_after(_("expand patch"), LOAD_PATCHES);
 		patch->patchbay->drag_operation = Tracks::NONE;
 	}
 	return result;
@@ -694,11 +720,12 @@ TitlePatch::TitlePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 
 int TitlePatch::handle_event()
 {
+	mwindow->undo->update_undo_before(_("track title"), this);
 	strcpy(patch->track->title, get_text());
 	mwindow->update_plugin_titles();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
-	mwindow->undo->update_undo(_("track title"), LOAD_PATCHES);
+	mwindow->undo->update_undo_after(_("track title"), LOAD_PATCHES);
 	return 1;
 }
 
@@ -734,12 +761,13 @@ int NudgePatch::handle_event()
 
 void NudgePatch::set_value(int64_t value)
 {
+	mwindow->undo->update_undo_before(_("nudge"), this);
 	patch->track->nudge = value;
 
-	if(patch->track->gang)
+	if(patch->track->gang && patch->track->record)
 		patch->patchbay->synchronize_nudge(patch->track->nudge, patch->track);
 
-	mwindow->undo->update_undo("nudge", LOAD_AUTOMATION, this);
+	mwindow->undo->update_undo_after(_("nudge"), LOAD_PATCHES);
 
 	mwindow->gui->unlock_window();
 	if(patch->track->data_type == TRACK_VIDEO)

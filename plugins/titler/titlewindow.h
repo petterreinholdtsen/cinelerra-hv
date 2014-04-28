@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef TITLEWINDOW_H
 #define TITLEWINDOW_H
 
@@ -13,7 +34,6 @@ class TitleInterlace;
 #include "title.h"
 
 
-PLUGIN_THREAD_HEADER(TitleMain, TitleThread, TitleWindow)
 
 
 
@@ -23,9 +43,6 @@ class TitleBold;
 class TitleSize;
 class TitleEncoding;
 class TitleColorButton;
-class TitleColorStrokeButton;
-class TitleStroke;
-class TitleStrokeW;
 class TitleDropShadow;
 class TitleMotion;
 class TitleLoop;
@@ -40,18 +57,17 @@ class TitleRight;class TitleTop;
 class TitleMid;
 class TitleBottom;
 class TitleColorThread;
-class TitleColorStrokeThread;
 class TitleSpeed;
 class TitleTimecode;
+class TitleOutline;
 
-class TitleWindow : public BC_Window
+class TitleWindow : public PluginClientWindow
 {
 public:
-	TitleWindow(TitleMain *client, int x, int y);
+	TitleWindow(TitleMain *client);
 	~TitleWindow();
 	
-	int create_objects();
-	int close_event();
+	void create_objects();
 	int resize_event(int w, int h);
 	void update_color();
 	void update_justification();
@@ -70,26 +86,23 @@ public:
 	TitleY *title_y;
 	BC_Title *dropshadow_title;
 	TitleDropShadow *dropshadow;
+	BC_Title *outline_title;
+	TitleOutline *outline;
 	BC_Title *style_title;
 	TitleItalic *italic;
 	TitleBold *bold;
 
-#ifdef USE_OUTLINE
-	TitleStroke *stroke;
-	TitleColorStrokeButton *color_stroke_button;
-	TitleColorStrokeThread *color_stroke_thread;
-	BC_Title *strokewidth_title;
-	TitleStrokeW *stroke_width;
-	int color_stroke_x, color_stroke_y;
-#endif
 
 	int color_x, color_y;
+	int outline_color_x, outline_color_y;
 	BC_Title *size_title;
 	BC_Title *encoding_title;
 	TitleSize *size;
 	TitleEncoding *encoding;
 	TitleColorButton *color_button;
 	TitleColorThread *color_thread;
+	TitleColorButton *outline_color_button;
+	TitleColorThread *outline_color_thread;
 	BC_Title *motion_title;
 	TitleMotion *motion;
 	TitleLoop *loop;
@@ -147,15 +160,6 @@ public:
 	TitleWindow *window;
 };
 
-class TitleStroke : public BC_CheckBox
-{
-public:
-	TitleStroke(TitleMain *client, TitleWindow *window, int x, int y);
-	int handle_event();
-	TitleMain *client;
-	TitleWindow *window;
-};
-
 
 class TitleSize : public BC_PopupTextBox
 {
@@ -179,19 +183,28 @@ public:
 class TitleColorButton : public BC_GenericButton
 {
 public:
-	TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y);
+	TitleColorButton(TitleMain *client, 
+		TitleWindow *window, 
+		int x, 
+		int y, 
+		int is_outline);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
+	int is_outline;
 };
-class TitleColorStrokeButton : public BC_GenericButton
+
+class TitleColorThread : public ColorThread
 {
 public:
-	TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y);
-	int handle_event();
+	TitleColorThread(TitleMain *client, TitleWindow *window, int is_outline);
+	virtual int handle_new_color(int output, int alpha);
 	TitleMain *client;
 	TitleWindow *window;
+	int is_outline;
 };
+
+
 class TitleMotion : public BC_PopupTextBox
 {
 public:
@@ -262,18 +275,20 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
-class TitleStrokeW : public BC_TumbleTextBox
-{
-public:
-	TitleStrokeW(TitleMain *client, TitleWindow *window, int x, int y);
-	int handle_event();
-	TitleMain *client;
-	TitleWindow *window;
-};
+
 class TitleDropShadow : public BC_TumbleTextBox
 {
 public:
 	TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+
+class TitleOutline : public BC_TumbleTextBox
+{
+public:
+	TitleOutline(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
@@ -333,24 +348,6 @@ class TitleBottom : public BC_Radial
 public:
 	TitleBottom(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
-	TitleMain *client;
-	TitleWindow *window;
-};
-
-class TitleColorThread : public ColorThread
-{
-public:
-	TitleColorThread(TitleMain *client, TitleWindow *window);
-	virtual int handle_new_color(int output, int alpha);
-	TitleMain *client;
-	TitleWindow *window;
-};
-
-class TitleColorStrokeThread : public ColorThread
-{
-public:
-	TitleColorStrokeThread(TitleMain *client, TitleWindow *window);
-	int handle_event(int output);
 	TitleMain *client;
 	TitleWindow *window;
 };

@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/reframert.o
 
-OUTPUT = ../$(OBJDIR)/reframert.plugin
+OUTPUT = $(PLUGIN_DIR)/reframert.plugin
 
 include ../../plugin_config
 

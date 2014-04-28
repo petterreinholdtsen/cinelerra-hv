@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assets.h"
 #include "bcsignals.h"
@@ -211,16 +232,12 @@ int FileSndFile::open_file(int rd, int wr)
 // Doesn't calculate the length
 			if(fd) format_to_asset();
 		}
-SET_TRACE
 	}
 	else
 	if(wr)
 	{
-printf("FileSNDFile::open 1\n");
 		asset_to_format();
-printf("FileSNDFile::open 1\n");
 		fd = sf_open(asset->path, SFM_WRITE, &fd_config);
-printf("FileSNDFile::open 10 %p\n", fd);
 	}
 
 	if(!fd) 
@@ -366,10 +383,11 @@ SndFileConfig::~SndFileConfig()
 {
 	if(bits_popup) delete bits_popup;
 }
-int SndFileConfig::create_objects()
+void SndFileConfig::create_objects()
 {
 	int x = 10, y = 10;
 
+	lock_window("SndFileConfig::create_objects");
 	bits_popup = 0;
 	switch(asset->format)
 	{
@@ -400,7 +418,7 @@ int SndFileConfig::create_objects()
 		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
 	}
 	add_subwindow(new BC_OKButton(this));
-	return 0;
+	unlock_window();
 }
 
 int SndFileConfig::close_event()

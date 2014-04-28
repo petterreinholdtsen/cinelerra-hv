@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/dbx.o
 
-OUTPUT = ../$(OBJDIR)/dbx.plugin
+OUTPUT = $(PLUGIN_DIR)/dbx.plugin
 
 include ../../plugin_config
 

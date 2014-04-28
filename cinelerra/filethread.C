@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "condition.h"
@@ -82,6 +103,9 @@ void FileThread::create_objects(File *file,
 
 void FileThread::delete_objects()
 {
+	for(int i = 0; i < MAX_READ_FRAMES; i++)
+		delete read_frames[i];
+
 	if(output_lock)
 	{
 		for(int i = 0; i < ring_buffers; i++)
@@ -155,6 +179,7 @@ void FileThread::run()
 			local_total_frames = total_frames;
 			local_frame = read_frames[local_total_frames];
 			local_layer = layer;
+			local_frame->valid = 0;
 			frame_lock->unlock();
 
 // Read frame
@@ -185,7 +210,7 @@ void FileThread::run()
 				}
 
 // Read it
-//printf("FileThread::run %lld\n", local_position);
+//printf("FileThread::run position=%lld supported_colormodel=%d\n", local_position, supported_colormodel);
 				file->read_frame(local_frame->frame, 1);
 				local_frame->position = local_position;
 				local_frame->layer = local_layer;
@@ -197,6 +222,7 @@ void FileThread::run()
 				FileThreadFrame *old_frame = read_frames[total_frames];
 				read_frames[local_total_frames] = old_frame;
 				read_frames[total_frames++] = local_frame;
+				local_frame->valid = 1;
 				frame_lock->unlock();
 
 // Que the user
@@ -464,6 +490,8 @@ int FileThread::set_video_position(int64_t position)
 		Thread::join();
 
 		total_frames = 0;
+		for(int i = 0; i < MAX_READ_FRAMES; i++)
+			read_frames[i]->valid = 0;
 		this->start_position = position;
 	}
 	else
@@ -519,7 +547,8 @@ int FileThread::read_frame(VFrame *frame)
 			if(local_frame->position == read_position &&
 				local_frame->layer == layer &&
 				local_frame->frame &&
-				local_frame->frame->equal_stacks(frame))
+				local_frame->frame->equal_stacks(frame) &&
+				local_frame->valid)
 			{
 				got_it = 1;
 				number = i;
@@ -539,28 +568,41 @@ int FileThread::read_frame(VFrame *frame)
 
 	if(got_it)
 	{
+// printf("FileThread::read_frame 1 color_model=%d disable_read=%d\n", 
+// frame->get_color_model(), 
+// disable_read);
 // Copy image
-		cmodel_transfer(frame->get_rows(), 
-			local_frame->frame->get_rows(),
-			frame->get_y(),
-			frame->get_u(),
-			frame->get_v(),
-			local_frame->frame->get_y(),
-			local_frame->frame->get_u(),
-			local_frame->frame->get_v(),
-			0, 
-			0, 
-			local_frame->frame->get_w(), 
-			local_frame->frame->get_h(),
-			0, 
-			0, 
-			frame->get_w(), 
-			frame->get_h(),
-			local_frame->frame->get_color_model(), 
-			frame->get_color_model(),
-			0,
-			local_frame->frame->get_w(),
-			frame->get_w());
+		if(frame->get_color_model() != local_frame->frame->get_color_model() ||
+			frame->get_w() != local_frame->frame->get_w() ||
+			frame->get_h() != local_frame->frame->get_h())
+		{
+			cmodel_transfer(frame->get_rows(), 
+				local_frame->frame->get_rows(),
+				frame->get_y(),
+				frame->get_u(),
+				frame->get_v(),
+				local_frame->frame->get_y(),
+				local_frame->frame->get_u(),
+				local_frame->frame->get_v(),
+				0, 
+				0, 
+				local_frame->frame->get_w(), 
+				local_frame->frame->get_h(),
+				0, 
+				0, 
+				frame->get_w(), 
+				frame->get_h(),
+				local_frame->frame->get_color_model(), 
+				frame->get_color_model(),
+				0,
+				local_frame->frame->get_w(),
+				frame->get_w());
+		}
+		else
+		{
+			frame->copy_from(local_frame->frame);
+		}
+
 // Can't copy stacks because the stack is needed by the plugin requestor.
 		frame->copy_params(local_frame->frame);
 
@@ -589,14 +631,15 @@ int FileThread::read_frame(VFrame *frame)
 	}
 	else
 	{
-// printf("FileThread::read_frame 1 color_model=%d disable_read=%d\n", 
+// printf("FileThread::read_frame 2 color_model=%d disable_read=%d\n", 
 // frame->get_color_model(), 
 // disable_read);
 // Use traditional read function
 		file->set_video_position(read_position, -1, 1);
 		file->set_layer(layer, 1);
 		read_position++;
-		return file->read_frame(frame, 1);
+		int result = file->read_frame(frame, 1);
+		return result;
 	}
 //printf("FileThread::read_frame 100\n");
 }

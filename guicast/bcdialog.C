@@ -1,4 +1,26 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdialog.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "mutex.h"
 
@@ -30,7 +52,7 @@ BC_DialogThread::~BC_DialogThread()
 	delete window_lock;
 }
 
-void BC_DialogThread::lock_window(char *location)
+void BC_DialogThread::lock_window(const char *location)
 {
 	window_lock->lock(location);
 }
@@ -38,6 +60,11 @@ void BC_DialogThread::lock_window(char *location)
 void BC_DialogThread::unlock_window()
 {
 	window_lock->unlock();
+}
+
+int BC_DialogThread::is_running()
+{
+	return Thread::running();
 }
 
 void BC_DialogThread::start()
@@ -80,6 +107,17 @@ void BC_DialogThread::run()
 	handle_close_event(result);
 }
 
+void BC_DialogThread::lock_gui(char *location)
+{
+	window_lock->lock(location);
+}
+
+void BC_DialogThread::unlock_gui()
+{
+	window_lock->unlock();
+}
+
+
 BC_Window* BC_DialogThread::new_gui()
 {
 	printf("BC_DialogThread::new_gui called\n");
@@ -97,6 +135,18 @@ void BC_DialogThread::handle_done_event(int result)
 
 void BC_DialogThread::handle_close_event(int result)
 {
+}
+
+void BC_DialogThread::close_window()
+{
+	lock_window("BC_DialogThread::close_window");
+	if(gui)
+	{
+		gui->lock_window("BC_DialogThread::close_window");
+		gui->set_done(1);
+		gui->unlock_window();
+	}
+	unlock_window();
 }
 
 

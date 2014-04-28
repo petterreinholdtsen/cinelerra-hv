@@ -5,7 +5,7 @@ OBJS = $(OBJDIR)/holo.o  \
 	../burn/$(OBJDIR)/effecttv.o \
 	../colors/$(OBJDIR)/plugincolors.o
 
-OUTPUT = ../$(OBJDIR)/holo.plugin
+OUTPUT = $(PLUGIN_DIR)/holo.plugin
 
 CFLAGS += -I../burn 
 

@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/loopaudio.o
 
-OUTPUT = ../$(OBJDIR)/loopaudio.plugin
+OUTPUT = $(PLUGIN_DIR)/loopaudio.plugin
 
 include ../../plugin_config
 

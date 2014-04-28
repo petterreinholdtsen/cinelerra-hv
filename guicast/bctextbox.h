@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCTEXTBOX_H
 #define BCTEXTBOX_H
 
@@ -18,7 +39,7 @@ public:
 		int y, 
 		int w, 
 		int rows, 
-		char *text, 
+		const char *text, 
 		int has_border = 1, 
 		int font = MEDIUMFONT);
 	BC_TextBox(int x, 
@@ -50,7 +71,7 @@ public:
 // Whenever the position of the text changes
 	virtual int motion_event() { return 0; };
 	void set_selection(int char1, int char2, int ibeam);
-	int update(char *text);
+	int update(const char *text);
 	int update(int64_t value);
 	int update(float value);
 	void disable();
@@ -91,7 +112,7 @@ public:
 // Table of separators to skip.  Used by time textboxes
 // The separator format is "0000:0000".  Things not alnum are considered
 // separators.  The alnums are replaced by user text.
-	void set_separators(char *separators);
+	void set_separators(const char *separators);
 
 private:
 	int reset_parameters(int rows, int has_border, int font);
@@ -163,7 +184,7 @@ public:
 	virtual int handle_event();
 	
 	char* get_text();
-	void update(char *text);
+	void update(const char *text);
 	void reposition_window(int x, int y, int w, int rows);
 	int get_x();
 	int get_y();
@@ -212,7 +233,7 @@ class BC_PopupTextBox
 public:
 	BC_PopupTextBox(BC_WindowBase *parent_window, 
 		ArrayList<BC_ListBoxItem*> *list_items,
-		char *default_text,
+		const char *default_text,
 		int x, 
 		int y, 
 		int text_w,
@@ -226,7 +247,7 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
-	void update(char *text);
+	void update(const char *text);
 	void update_list(ArrayList<BC_ListBoxItem*> *data);
 	void reposition_window(int x, int y);
 
@@ -293,7 +314,7 @@ public:
 	void reset();
 	virtual int handle_event();
 	char* get_text();
-	int update(char *value);
+	int update(const char *value);
 	int update(int64_t value);
 	int update(float value);
 	int get_x();

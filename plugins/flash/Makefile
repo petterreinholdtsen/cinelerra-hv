@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/flash.o
 
-OUTPUT = ../$(OBJDIR)/flash.plugin
+OUTPUT = $(PLUGIN_DIR)/flash.plugin
 
 include ../../plugin_config
 

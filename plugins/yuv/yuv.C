@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -41,40 +62,32 @@ public:
 	float *output;
 };
 
-class YUVWindow : public BC_Window
+class YUVWindow : public PluginClientWindow
 {
 public:
-	YUVWindow(YUVEffect *plugin, int x, int y);
+	YUVWindow(YUVEffect *plugin);
 	void create_objects();
-	int close_event();
 	YUVLevel *y, *u, *v;
 	YUVEffect *plugin;
 };
 
-PLUGIN_THREAD_HEADER(YUVEffect, YUVThread, YUVWindow)
+
 
 class YUVEffect : public PluginVClient
 {
 public:
 	YUVEffect(PluginServer *server);
 	~YUVEffect();
+
+
+	PLUGIN_CLASS_MEMBERS(YUVConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
-	int show_gui();
-	void raise_window();
-	int set_string();
-	int load_configuration();
-
-	YUVConfig config;
-	YUVThread *thread;
-	BC_Hash *defaults;
 };
 
 
@@ -151,17 +164,13 @@ int YUVLevel::handle_event()
 }
 
 
-YUVWindow::YUVWindow(YUVEffect *plugin, int x, int y)
- : BC_Window(plugin->gui_string, 
- 	x, 
-	y, 
+YUVWindow::YUVWindow(YUVEffect *plugin)
+ : PluginClientWindow(plugin, 
 	260, 
 	100, 
 	260, 
 	100, 
-	0, 
-	0,
-	1)
+	0)
 {
 	this->plugin = plugin;
 }
@@ -182,18 +191,8 @@ void YUVWindow::create_objects()
 	flush();
 }
 
-int YUVWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
 
 
-
-
-
-PLUGIN_THREAD_OBJECT(YUVEffect, YUVThread, YUVWindow)
 
 
 
@@ -203,21 +202,19 @@ PLUGIN_THREAD_OBJECT(YUVEffect, YUVThread, YUVWindow)
 YUVEffect::YUVEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 }
 YUVEffect::~YUVEffect()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 }
 
-char* YUVEffect::plugin_title() { return N_("YUV"); }
+const char* YUVEffect::plugin_title() { return N_("YUV"); }
 int YUVEffect::is_realtime() { return 1; } 
 
 
 NEW_PICON_MACRO(YUVEffect)
-SHOW_GUI_MACRO(YUVEffect, YUVThread)
-RAISE_WINDOW_MACRO(YUVEffect)
-SET_STRING_MACRO(YUVEffect)
+NEW_WINDOW_MACRO(YUVEffect, YUVWindow)
 LOAD_CONFIGURATION_MACRO(YUVEffect, YUVConfig)
 
 void YUVEffect::update_gui()
@@ -226,9 +223,9 @@ void YUVEffect::update_gui()
 	{
 		thread->window->lock_window();
 		load_configuration();
-		thread->window->y->update(config.y);
-		thread->window->u->update(config.u);
-		thread->window->v->update(config.v);
+		((YUVWindow*)thread->window)->y->update(config.y);
+		((YUVWindow*)thread->window)->u->update(config.u);
+		((YUVWindow*)thread->window)->v->update(config.v);
 		thread->window->unlock_window();
 	}
 }
@@ -257,7 +254,7 @@ int YUVEffect::save_defaults()
 void YUVEffect::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("YUV");
 	output.tag.set_property("Y", config.y);
 	output.tag.set_property("U", config.u);
@@ -269,7 +266,7 @@ void YUVEffect::save_data(KeyFrame *keyframe)
 void YUVEffect::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 	while(!input.read_tag())
 	{
 		if(input.tag.title_is("YUV"))

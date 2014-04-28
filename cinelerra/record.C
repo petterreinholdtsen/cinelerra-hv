@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "assets.h"
 #include "audiodevice.h"
@@ -138,6 +159,7 @@ Record::~Record()
 
 int Record::load_defaults()
 {
+
 	char string[BCTEXTLEN];
 	BC_Hash *defaults = mwindow->defaults;
 
@@ -544,6 +566,7 @@ SET_TRACE
 
 		if(new_edls.total)
 		{
+			mwindow->undo->update_undo_before();
 
 // For pasting, clear the active region
 			if(load_mode == LOAD_PASTE)
@@ -563,7 +586,7 @@ SET_TRACE
 //printf("Record::run 8\n");
 
 			mwindow->save_backup();
-			mwindow->undo->update_undo(_("record"), LOAD_ALL);
+			mwindow->undo->update_undo_after(_("record"), LOAD_ALL);
 			mwindow->restart_brender();
 			mwindow->update_plugin_guis();
 			mwindow->gui->update(1, 
@@ -852,7 +875,7 @@ Batch* Record::get_editing_batch()
 		return 0;
 }
 
-char* Record::current_mode()
+const char* Record::current_mode()
 {
 	return Batch::mode_to_text(get_current_batch()->record_mode);
 }
@@ -902,12 +925,12 @@ double Record::current_display_position()
 	return 0;
 }
 
-char* Record::current_source()
+const char* Record::current_source()
 {
 	return get_current_batch()->get_source_text();
 }
 
-char* Record::current_news()
+const char* Record::current_news()
 {
 	return batches.values[current_batch]->news;
 }

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
@@ -148,7 +169,8 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 			else
 				end_position = edl->local_session->get_selectionend(1);
 // this prevents a crash if start position is after the loop when playing forwards
- 		    if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)  
+ 		    if (edl->local_session->loop_playback && 
+				start_position > edl->local_session->loop_end)  
  			{
 				    start_position = edl->local_session->loop_start;
 			}
@@ -162,10 +184,11 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 				start_position = 0;
 			else
 				start_position = edl->local_session->get_selectionstart(1);
+
 // this prevents a crash if start position is before the loop when playing backwards
-			if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start)
+			if (edl->local_session->loop_playback && 
+				end_position <= edl->local_session->loop_start)
 			{
-					start_position = edl->local_session->loop_end;
 					end_position = edl->local_session->loop_end;
 			}
 			break;

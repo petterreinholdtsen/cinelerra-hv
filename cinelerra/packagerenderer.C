@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "arender.h"
 #include "asset.h"
 #include "auto.h"
@@ -171,7 +192,9 @@ void PackageRenderer::create_output()
 void PackageRenderer::create_engine()
 {
 	int current_achannel = 0, current_vchannel = 0;
+// Fix audio buffers to 1 second
 	audio_read_length = command->get_edl()->session->sample_rate;
+	command->get_edl()->session->playback_config->aconfig->fragment_size = audio_read_length;
 
 	aconfig->fragment_size = audio_read_length;
 
@@ -240,7 +263,7 @@ void PackageRenderer::create_engine()
 				command->get_edl()->session->output_h, 
  				mwindow->cwindow->gui->canvas,
 				0);
-			video_device->start_playback();
+//			video_device->start_playback();
 		}
 	}
 
@@ -257,7 +280,6 @@ void PackageRenderer::create_engine()
 
 void PackageRenderer::do_audio()
 {
-//printf("PackageRenderer::do_audio 1\n");
 // Do audio data
 	if(asset->audio_data)
 	{
@@ -277,7 +299,6 @@ void PackageRenderer::do_audio()
 			audio_position,
 			0);
 
-//printf("PackageRenderer::do_audio 3\n");
 
 
 // Fix buffers for preroll
@@ -467,7 +488,7 @@ void PackageRenderer::stop_output()
 		if(!error) file->stop_video_thread();
 		if(mwindow)
 		{
-			video_device->stop_playback();
+//			video_device->stop_playback();
 			video_device->close_all();
 			delete video_device;
 		}
@@ -579,13 +600,16 @@ int PackageRenderer::render_package(RenderPackage *package)
 			if(need_audio && !result) do_audio();
 
 
+//PRINT_TRACE
 			if(!result) set_progress(samples_rendered);
+//PRINT_TRACE
 
 
 
 
 
 			if(!result && progress_cancelled()) result = 1;
+//PRINT_TRACE
 
 // printf("PackageRenderer::render_package 10 %d %d %d %d\n", 
 // audio_read_length, video_read_length, samples_rendered, result);
@@ -595,25 +619,25 @@ int PackageRenderer::render_package(RenderPackage *package)
 				result = get_result();
 		}
 
-//printf("PackageRenderer::render_package 20\n");
+//PRINT_TRACE
 		stop_engine();
-//printf("PackageRenderer::render_package 30\n");
+//PRINT_TRACE
 
 		stop_output();
-//printf("PackageRenderer::render_package 40\n");
+//PRINT_TRACE
 
 
 	}
 
 
+//PRINT_TRACE
 
-//printf("PackageRenderer::render_package 50\n");
 	close_output();
-//printf("PackageRenderer::render_package 60\n");
 
+//PRINT_TRACE
 
 	set_result(result);
-//printf("PackageRenderer::render_package 70\n");
+//PRINT_TRACE
 
 
 

@@ -2,6 +2,9 @@
 #include "quicktime.h"
 
 
+// This is the main file that converts the AVI tables to Quicktime tables.
+
+
 void quicktime_read_riff(quicktime_t *file, quicktime_atom_t *parent_atom)
 {
 	quicktime_riff_t *riff = quicktime_new_riff(file);
@@ -221,6 +224,7 @@ void quicktime_import_avi(quicktime_t *file)
 		if(track_number < file->moov.total_tracks)
 		{
 			quicktime_trak_t *trak = file->moov.trak[track_number];
+			quicktime_strl_t *strl = first_riff->hdrl.strl[track_number];
 			int is_audio = trak->mdia.minf.is_audio;
 			int is_video = trak->mdia.minf.is_video;
 
@@ -277,6 +281,7 @@ void quicktime_import_avi(quicktime_t *file)
 			else
 			if(is_audio)
 			{
+				strl->total_bytes += idx1table->size;
 /* Set samples per chunk if PCM */
 				if(stsd->table[0].sample_size > 0)
 				{
@@ -340,6 +345,7 @@ void quicktime_import_avi(quicktime_t *file)
 						else
 						if(strl->is_audio)
 						{
+							strl->total_bytes += ixtable->size;
 							if(stsd->table[0].sample_size > 0)
 							{
 								quicktime_update_stsc(stsc, 
@@ -372,14 +378,30 @@ void quicktime_import_avi(quicktime_t *file)
 		quicktime_stsc_t *stsc = &trak->mdia.minf.stbl.stsc;
 		quicktime_stco_t *stco = &trak->mdia.minf.stbl.stco;
 		quicktime_stts_t *stts = &trak->mdia.minf.stbl.stts;
+		quicktime_stsd_t *stsd = &trak->mdia.minf.stbl.stsd;
 
 		if(trak->mdia.minf.is_audio)
 		{
  			quicktime_stsc_table_t *stsc_table = stsc->table;
-			long total_entries = stsc->total_entries;
-			long chunk = stco->total_entries;
-			long sample = 0;
+			quicktime_strl_t *strl = first_riff->hdrl.strl[i];
+			int64_t total_entries = stsc->total_entries;
+			int64_t chunk = stco->total_entries;
+			int64_t sample = 0;
 
+//printf("quicktime_import_avi %lld %lld %lld\n", 
+//strl->total_bytes, strl->bytes_per_second, (int)stsd->table[0].sample_rate);
+// Derive stsc from bitrate for some MP3 files
+			if(!total_entries)
+			{
+				quicktime_update_stsc(stsc, 
+					++total_entries, 
+					strl->total_bytes / 
+						strl->bytes_per_second * 
+						(int)stsd->table[0].sample_rate);
+			}
+
+
+// Derive total samples from samples per chunk table
 			if(chunk > 0)
 			{
 				sample = quicktime_sample_of_chunk(trak, chunk) + 

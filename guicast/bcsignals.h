@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef BCSIGNALS_H
 #define BCSIGNALS_H
 
@@ -26,8 +47,8 @@
 typedef struct 
 {
 	void *ptr;
-	char *title;
-	char *location;
+	const char *title;
+	const char *location;
 	int is_owner;
 	int id;
 } bc_locktrace_t;
@@ -120,7 +141,7 @@ public:
 
 
 
-	static int set_lock(void *ptr, char *title, char *location);
+	static int set_lock(void *ptr, const char *title, const char *location);
 	static void set_lock2(int table_id);
 	static void set_lock2_condition(int table_id);
 	static void unset_lock2(int table_id);
@@ -128,13 +149,13 @@ public:
 // Used in lock destructors so takes away all references
 	static void unset_all_locks(void *ptr);
 
-	static void new_trace(char *text);
+	static void new_trace(const char *text);
 	static void new_trace(const char *file, const char *function, int line);
 	static void delete_traces();
 
 	static void enable_memory();
 	static void disable_memory();
-	static void set_buffer(int size, void *ptr, char* location);
+	static void set_buffer(int size, void *ptr, const char* location);
 // This one returns 1 if the buffer wasn't found.
 	static int unset_buffer(void *ptr);
 
@@ -143,7 +164,7 @@ public:
 	static void dump_buffers();
 
 // Convert signum to text
-	static char* sig_to_str(int number);
+	static const char* sig_to_str(int number);
 
 	static BC_Signals *global_signals;
 };

@@ -1,4 +1,25 @@
 
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+
 #include "asset.h"
 #include "assets.h"
 #include "bchash.h"
@@ -580,7 +601,7 @@ int Asset::read_index(FileXML *file)
 	return 0;
 }
 
-int Asset::write_index(char *path, int data_bytes)
+int Asset::write_index(const char *path, int data_bytes)
 {
 	FILE *file;
 	if(!(file = fopen(path, "wb")))
@@ -615,6 +636,7 @@ int Asset::write_index(char *path, int data_bytes)
 	}
 
 // Force reread of header
+//printf("Asset::write_index\n");
 	index_status = INDEX_NOTTESTED;
 //	index_status = INDEX_READY;
 	index_end = audio_length;
@@ -627,7 +649,7 @@ int Asset::write_index(char *path, int data_bytes)
 
 int Asset::write(FileXML *file, 
 	int include_index, 
-	char *output_path)
+	const char *output_path)
 {
 	char new_path[BCTEXTLEN];
 	char asset_directory[BCTEXTLEN];
@@ -783,7 +805,9 @@ int Asset::write_index(FileXML *file)
 
 
 
-char* Asset::construct_param(char *param, char *prefix, char *return_value)
+const char* Asset::construct_param(const char *param, 
+	const char *prefix, 
+	char *return_value)
 {
 	if(prefix)
 		sprintf(return_value, "%s%s", prefix, param);
@@ -796,7 +820,7 @@ char* Asset::construct_param(char *param, char *prefix, char *return_value)
 #define GET_DEFAULT(x, y) defaults->get(construct_param(x, prefix, string), y);
 
 void Asset::load_defaults(BC_Hash *defaults, 
-	char *prefix, 
+	const char *prefix, 
 	int do_format,
 	int do_compression,
 	int do_path,
@@ -910,7 +934,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 
-	char *prefix,
+	const char *prefix,
 	int do_format,
 	int do_compression,
 	int do_path,

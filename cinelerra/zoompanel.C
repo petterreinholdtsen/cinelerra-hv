@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -136,7 +157,7 @@ void ZoomPanel::set_tumbler_images(VFrame **data)
 	this->tumbler_images = data;
 }
 
-int ZoomPanel::create_objects()
+void ZoomPanel::create_objects()
 {
 	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, 
 		this, 
@@ -148,7 +169,6 @@ int ZoomPanel::create_objects()
 		x, 
 		y));
 	calculate_menu();
-	return 0;
 }
 
 void ZoomPanel::reposition_window(int x, int y)
@@ -174,7 +194,7 @@ char* ZoomPanel::get_text()
 	return zoom_text->get_text();
 }
 
-void ZoomPanel::set_text(char *text)
+void ZoomPanel::set_text(const char *text)
 {
 	zoom_text->set_text(text);
 }
@@ -185,7 +205,7 @@ void ZoomPanel::update(double value)
 	zoom_text->set_text(value_to_text(value));
 }
 
-void ZoomPanel::update(char *value)
+void ZoomPanel::update(const char *value)
 {
 	zoom_text->set_text(value);
 }

@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/denoisevideo.o
 
-OUTPUT = ../$(OBJDIR)/denoisevideo.plugin
+OUTPUT = $(PLUGIN_DIR)/denoisevideo.plugin
 
 include ../../plugin_config
 

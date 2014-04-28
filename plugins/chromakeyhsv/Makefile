@@ -7,7 +7,7 @@ OBJS := \
 
 SHADER := $(OBJDIR)/chromakey_sl.o
 
-OUTPUT_ = ../$(OBJDIR)/chromakeyhsv.plugin
+OUTPUT_ = $(PLUGIN_DIR)/chromakeyhsv.plugin
 
 $(OUTPUT_): $(OBJS) $(SHADER)
 	$(LDLINKER) -o $(OUTPUT_) $(OBJS) $(SHADER)

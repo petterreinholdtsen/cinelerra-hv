@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "byteorder.h"
@@ -326,7 +347,7 @@ int FileOGG::open_file(int rd, int wr)
 			}
 
 			vorbis_comment_init (&tf->vc); // comment is cleared lateron 
-			vorbis_comment_add_tag (&tf->vc, "ENCODER", PACKAGE_STRING);
+			vorbis_comment_add_tag (&tf->vc, (char*)"ENCODER", (char*)PACKAGE_STRING);
 			/* set up the analysis state and auxiliary encoding storage */
 			vorbis_analysis_init (&tf->vd, &tf->vi);
 			vorbis_block_init (&tf->vd, &tf->vb);
@@ -351,7 +372,7 @@ int FileOGG::open_file(int rd, int wr)
 
 			/* create the remaining theora headers */
 			theora_comment_init (&tf->tc);
-			theora_comment_add_tag (&tf->tc, "ENCODER", PACKAGE_STRING);
+			theora_comment_add_tag (&tf->tc, (char*)"ENCODER", (char*)PACKAGE_STRING);
 			theora_encode_comment (&tf->tc, &tf->op);
 			ogg_stream_packetin (&tf->to, &tf->op);
 			theora_comment_clear(&tf->tc);
@@ -1994,7 +2015,7 @@ OGGConfigAudio::~OGGConfigAudio()
 
 }
 
-int OGGConfigAudio::create_objects()
+void OGGConfigAudio::create_objects()
 {
 //	add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
 
@@ -2002,6 +2023,7 @@ int OGGConfigAudio::create_objects()
 	int x1 = 150;
 	char string[BCTEXTLEN];
 
+	lock_window("OGGConfigAudio::create_objects");
 	add_tool(fixed_bitrate = new OGGVorbisFixedBitrate(x, y, this));
 	add_tool(variable_bitrate = new OGGVorbisVariableBitrate(x1, y, this));
 
@@ -2024,10 +2046,7 @@ int OGGConfigAudio::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	show_window();
 	flush();
-	return 0;
-
-
-
+	unlock_window();
 }
 
 int OGGConfigAudio::close_event()
@@ -2124,13 +2143,14 @@ OGGConfigVideo::~OGGConfigVideo()
 
 }
 
-int OGGConfigVideo::create_objects()
+void OGGConfigVideo::create_objects()
 {
 //	add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
 	int x = 10, y = 10;
 	int x1 = x + 150;
 	int x2 = x + 300;
 
+	lock_window("OGGConfigVideo::create_objects");
 	add_subwindow(new BC_Title(x, y + 5, _("Bitrate:")));
 	add_subwindow(new OGGTheoraBitrate(x1, y, this));
 	add_subwindow(fixed_bitrate = new OGGTheoraFixedBitrate(x2, y, this));
@@ -2173,7 +2193,7 @@ int OGGConfigVideo::create_objects()
 	
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
+	unlock_window();
 }
 
 

@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "clip.h"
 #include "confirmsave.h"
@@ -68,9 +89,10 @@ MenuEffectPacket::~MenuEffectPacket()
 
 
 
-MenuEffectThread::MenuEffectThread(MWindow *mwindow)
+MenuEffectThread::MenuEffectThread(MWindow *mwindow, MenuEffects *menu_item)
 {
 	this->mwindow = mwindow;
+	this->menu_item = menu_item;
 	sprintf(title, "");
 }
 
@@ -82,7 +104,7 @@ MenuEffectThread::~MenuEffectThread()
 
 
 
-int MenuEffectThread::set_title(char *title)
+int MenuEffectThread::set_title(const char *title)
 {
 	strcpy(this->title, title);
 }
@@ -479,6 +501,7 @@ void MenuEffectThread::run()
 	{
 		mwindow->gui->lock_window("MenuEffectThread::run");
 
+		mwindow->undo->update_undo_before("", 0);
 		if(load_mode == LOAD_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(&assets,
@@ -491,7 +514,7 @@ void MenuEffectThread::run()
 
 
 		mwindow->save_backup();
-		mwindow->undo->update_undo(title, LOAD_ALL);
+		mwindow->undo->update_undo_after(title, LOAD_ALL);
 
 
 
@@ -513,6 +536,9 @@ void MenuEffectThread::run()
 	assets.remove_all();
 	Garbage::delete_object(default_asset);
 }
+
+
+
 
 
 
@@ -558,21 +584,27 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	this->plugin_list = plugin_list; 
 	this->asset = asset;
 	this->mwindow = mwindow;
+	file_title = 0;
+	format_tools = 0;
+	loadmode = 0;
 }
 
 MenuEffectWindow::~MenuEffectWindow()
 {
+	lock_window("MenuEffectWindow::~MenuEffectWindow");
 	delete format_tools;
+	unlock_window();
 }
 
 
 
-int MenuEffectWindow::create_objects()
+void MenuEffectWindow::create_objects()
 {
 	int x, y;
 	result = -1;
 	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
 
+	lock_window("MenuEffectWindow::create_objects");
 // only add the list if needed
 	if(plugin_list)
 	{
@@ -587,7 +619,8 @@ int MenuEffectWindow::create_objects()
 			plugin_list));
 	}
 
-	add_subwindow(file_title = new BC_Title(mwindow->theme->menueffect_file_x, 
+	add_subwindow(file_title = new BC_Title(
+		mwindow->theme->menueffect_file_x, 
 		mwindow->theme->menueffect_file_y, 
 		(char*)((menueffects->strategy == FILE_PER_LABEL  || menueffects->strategy == FILE_PER_LABEL_FARM) ? 
 			_("Select the first file to render to:") : 
@@ -623,7 +656,7 @@ int MenuEffectWindow::create_objects()
 	add_subwindow(new MenuEffectWindowCancel(this));
 	show_window();
 	flush();
-	return 0;
+	unlock_window();
 }
 
 int MenuEffectWindow::resize_event(int w, int h)
@@ -642,12 +675,12 @@ int MenuEffectWindow::resize_event(int w, int h)
 			mwindow->theme->menueffect_list_h - list_title->get_h() - 5);
 	}
 
-	file_title->reposition_window(mwindow->theme->menueffect_file_x, 
+	if(file_title) file_title->reposition_window(mwindow->theme->menueffect_file_x, 
 		mwindow->theme->menueffect_file_y);
 	int x = mwindow->theme->menueffect_tools_x;
 	int y = mwindow->theme->menueffect_tools_y;
-	format_tools->reposition_window(x, y);
-	loadmode->reposition_window(x, y);
+	if(format_tools) format_tools->reposition_window(x, y);
+	if(loadmode) loadmode->reposition_window(x, y);
 }
 
 
@@ -750,7 +783,7 @@ int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
 }
 
 
-int MenuEffectPrompt::create_objects()
+void MenuEffectPrompt::create_objects()
 {
 	int x = 10, y = 10;
 	BC_Title *title;
@@ -760,6 +793,5 @@ int MenuEffectPrompt::create_objects()
 	show_window();
 	raise_window();
 	flush();
-	return 0;
 }
 

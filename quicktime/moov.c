@@ -222,7 +222,9 @@ int quicktime_read_moov(quicktime_t *file,
 	return 0;
 }
 
-void quicktime_write_moov(quicktime_t *file, quicktime_moov_t *moov)
+void quicktime_write_moov(quicktime_t *file, 
+	quicktime_moov_t *moov,
+	int rewind)
 {
 	quicktime_atom_t atom;
 	int i;
@@ -268,8 +270,10 @@ void quicktime_write_moov(quicktime_t *file, quicktime_moov_t *moov)
 	/*quicktime_write_ctab(file, &(moov->ctab)); */
 
 	quicktime_atom_write_footer(file, &atom);
-// Rewind to end of mdat
-	quicktime_set_position(file, file->mdat.atom.end);
+
+// Rewind to end of mdat.  Breaks make_streamable
+// This probably allows the file to be extended after writing the moov.
+	if(rewind) quicktime_set_position(file, file->mdat.atom.end);
 }
 
 void quicktime_update_durations(quicktime_moov_t *moov)

@@ -49,13 +49,16 @@ int quicktime_read_avcc(quicktime_t *file,
 
 void quicktime_avcc_dump(quicktime_avcc_t *avcc)
 {
-	int i;
-	printf("       h264 description\n");
-	printf("        data_size=0x%x\n", avcc->data_size);
-	printf("        data=");
-	for(i = 0; i < avcc->data_size; i++)
+	if(avcc->data_size)
 	{
-		printf("0x%02x ", (unsigned char)avcc->data[i]);
+		int i;
+		printf("       h264 description\n");
+		printf("        data_size=0x%x\n", avcc->data_size);
+		printf("        data=");
+		for(i = 0; i < avcc->data_size; i++)
+		{
+			printf("0x%02x ", (unsigned char)avcc->data[i]);
+		}
+		printf("\n");
 	}
-	printf("\n");
 }

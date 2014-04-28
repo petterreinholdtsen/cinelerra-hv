@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "condition.h"
 #include "bcfilebox.h"
 #include "bcnewfolder.h"
@@ -33,9 +54,10 @@ BC_NewFolder::~BC_NewFolder()
 }
 
 
-int BC_NewFolder::create_objects()
+void BC_NewFolder::create_objects()
 {
 	int x = 10, y = 10;
+	lock_window("BC_NewFolder::create_objects");
 	add_tool(new BC_Title(x, y, _("Enter the name of the folder:")));
 	y += 20;
 	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, _("Untitled")));
@@ -44,7 +66,7 @@ int BC_NewFolder::create_objects()
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	return 0;
+	unlock_window();
 }
 
 char* BC_NewFolder::get_text()

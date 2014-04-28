@@ -1,9 +1,11 @@
 include ../../global_config
 
-OBJS = ../parametric/$(OBJDIR)/fourier.o \
+OBJS = \
+	../colors/$(OBJDIR)/plugincolors.o \
+	../parametric/$(OBJDIR)/fourier.o \
 	$(OBJDIR)/spectrogram.o
 
-OUTPUT = ../$(OBJDIR)/spectrogram.plugin
+OUTPUT = $(PLUGIN_DIR)/spectrogram.plugin
 
 include ../../plugin_config
 

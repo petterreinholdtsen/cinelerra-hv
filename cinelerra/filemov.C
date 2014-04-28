@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "bcsignals.h"
 #include "bitspopup.h"
@@ -178,31 +199,41 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 
+SET_TRACE
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
 		printf(_("FileMOV::open_file %s: No such file or directory\n"), asset->path);
 		return 1;
 	}
+SET_TRACE
 
 	quicktime_set_cpus(fd, file->cpus);
+SET_TRACE
 
 	if(rd) format_to_asset();
+SET_TRACE
 
 	if(wr) asset_to_format();
+SET_TRACE
 
 // Set decoding parameter
 	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
+SET_TRACE
 
 	return 0;
 }
 
 int FileMOV::close_file()
 {
+SET_TRACE
 //printf("FileMOV::close_file 1 %s\n", asset->path);
 	if(fd)
 	{
+SET_TRACE
 		if(wr) quicktime_set_framerate(fd, asset->frame_rate);
+SET_TRACE
 		quicktime_close(fd);
+SET_TRACE
 	}
 
 //printf("FileMOV::close_file 1\n");
@@ -405,6 +436,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_2VUY)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
+			if(match4(asset->vcodec, QUICKTIME_MJPG)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
@@ -424,6 +456,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 				match4(asset->vcodec, QUICKTIME_2VUY) ||
 				match4(asset->vcodec, QUICKTIME_JPEG) ||
 				match4(asset->vcodec, QUICKTIME_MJPA) ||
+				match4(asset->vcodec, QUICKTIME_MJPG) ||
 				match4(asset->vcodec, QUICKTIME_DV) ||
 				match4(asset->vcodec, QUICKTIME_DVCP) ||
 				match4(asset->vcodec, QUICKTIME_DVSD) ||
@@ -628,21 +661,25 @@ int FileMOV::write_samples(double **buffer, int64_t len)
 
 int FileMOV::write_frames(VFrame ***frames, int len)
 {
-//printf("FileMOV::write_frames 1\n");
 	int i, j, k, result = 0;
 	int default_compressor = 1;
+	const int debug = 0;
+if(debug) printf("FileMOV::write_frames %d\n", __LINE__);
 	if(!fd) return 0;
+if(debug) printf("FileMOV::write_frames %d\n", __LINE__);
 
 	for(i = 0; i < asset->layers && !result; i++)
 	{
 
 
+if(debug) printf("FileMOV::write_frames %d\n", __LINE__);
 
 
 
 // Fix direct copy cases for format conversions.
 		if(frames[i][0]->get_color_model() == BC_COMPRESSED)
 		{
+if(debug) printf("FileMOV::write_frames %d len=%d\n", __LINE__, len);
 			default_compressor = 0;
 			for(j = 0; j < len && !result; j++)
 			{
@@ -708,10 +745,17 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 						quicktime_insert_keyframe(fd, file->current_frame + j, i);
 
 // Write frame
+if(debug) printf("FileMOV::write_frames %d result=%d data=%p size=%d\n", 
+__LINE__, 
+result,
+frame->get_data(),
+frame->get_compressed_size());
 						result = quicktime_write_frame(fd,
 							frame->get_data(),
 							frame->get_compressed_size(),
 							i);
+
+if(debug) printf("FileMOV::write_frames %d result=%d\n", __LINE__, result);
 				}
 				else
 				if(!strcmp(asset->vcodec, QUICKTIME_DIV3))
@@ -774,6 +818,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 				
 				
 			}
+if(debug) printf("FileMOV::write_frames %d result=%d\n", __LINE__, result);
 		}
 		else
 		if(match4(asset->vcodec, QUICKTIME_YUV420) ||
@@ -885,7 +930,9 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 				}
 				else
 				{
+if(debug) printf("FileMOV::write_frames 1\n");
 					result = quicktime_encode_video(fd, frame->get_rows(), i);
+if(debug) printf("FileMOV::write_frames 10\n");
 				}
 			}
 		}
@@ -893,7 +940,6 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	}
 
 
-//printf("FileMOV::write_frames 100 %d\n", result);
 	return result;
 }
 
@@ -903,7 +949,9 @@ int FileMOV::read_frame(VFrame *frame)
 {
 	if(!fd) return 1;
 	int result = 0;
+	const int debug = 0;
 
+//printf("FileMOV::read_frame %lld\n", file->current_frame);
 	switch(frame->get_color_model())
 	{
 		case BC_COMPRESSED:
@@ -940,7 +988,6 @@ int FileMOV::read_frame(VFrame *frame)
 			result = quicktime_decode_video(fd, 
 				frame->get_rows(),
 				file->current_layer);
-//for(int i = 0; i < 10000; i++) frame->get_rows()[0][i] = 0xff;
 			break;
 	}
 
@@ -1059,7 +1106,7 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 }
 
 
-char* FileMOV::strtocompression(char *string)
+const char* FileMOV::strtocompression(char *string)
 {
 	if(!strcasecmp(string, _(DIVX_NAME))) return QUICKTIME_DIVX;
 	if(!strcasecmp(string, _(H264_NAME))) return QUICKTIME_H264;
@@ -1099,7 +1146,7 @@ char* FileMOV::strtocompression(char *string)
 	return QUICKTIME_RAW;
 }
 
-char* FileMOV::compressiontostr(char *string)
+const char* FileMOV::compressiontostr(char *string)
 {
 	if(match4(string, QUICKTIME_H263)) return _(H263_NAME);
 	if(match4(string, QUICKTIME_H264)) return _(H264_NAME);
@@ -1299,9 +1346,11 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 
 MOVConfigAudio::~MOVConfigAudio()
 {
+	lock_window("MOVConfigAudio::~MOVConfigAudio");
 	if(compression_popup) delete compression_popup;
 	if(bits_popup) delete bits_popup;
 	compression_items.remove_all_objects();
+	unlock_window();
 }
 
 
@@ -1319,10 +1368,10 @@ void MOVConfigAudio::reset()
 	mp4a_quantqual = 0;
 }
 
-int MOVConfigAudio::create_objects()
+void MOVConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
-
+	lock_window("MOVConfigAudio::create_objects");
 
 	if(asset->format == FILE_MOV)
 	{
@@ -1350,7 +1399,7 @@ int MOVConfigAudio::create_objects()
 	update_parameters();
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
+	unlock_window();
 }
 
 void MOVConfigAudio::update_parameters()
@@ -1400,7 +1449,7 @@ void MOVConfigAudio::update_parameters()
 			x, 
 			y, 
 			&asset->mp3_bitrate);
-		mp3_bitrate->set_increment(1000);
+		mp3_bitrate->set_increment(64000);
 		mp3_bitrate->create_objects();
 	}
 	else
@@ -1451,7 +1500,7 @@ void MOVConfigAudio::update_parameters()
 			x, 
 			y, 
 			&asset->mp4a_bitrate);
-		mp4a_bitrate->set_increment(1000);
+		mp4a_bitrate->set_increment(64000);
 		mp4a_bitrate->create_objects();
 
 		y += 30;
@@ -1589,13 +1638,16 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 
 MOVConfigVideo::~MOVConfigVideo()
 {
+	lock_window("MOVConfigVideo::~MOVConfigVideo");
 	if(compression_popup) delete compression_popup;
 	compression_items.remove_all_objects();
+	unlock_window();
 }
 
-int MOVConfigVideo::create_objects()
+void MOVConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
+	lock_window("MOVConfigVideo::create_objects");
 
 	if(asset->format == FILE_MOV)
 	{
@@ -1657,7 +1709,7 @@ int MOVConfigVideo::create_objects()
 	update_parameters();
 
 	add_subwindow(new BC_OKButton(this));
-	return 0;
+	unlock_window();
 }
 
 int MOVConfigVideo::close_event()

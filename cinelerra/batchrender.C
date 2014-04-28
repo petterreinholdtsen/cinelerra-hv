@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "asset.h"
 #include "batchrender.h"
 #include "bcsignals.h"
@@ -25,7 +46,7 @@
 
 
 
-static char *list_titles[] = 
+static const char *list_titles[] = 
 {
 	"Enabled", 
 	"Output",
@@ -199,21 +220,14 @@ BatchRenderThread::BatchRenderThread()
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
-TRACE("BatchRenderThread::handle_close_event 1");
+
 	char path[BCTEXTLEN];
-TRACE("BatchRenderThread::handle_close_event 1");
 	path[0] = 0;
-TRACE("BatchRenderThread::handle_close_event 1");
 	save_jobs(path);
-TRACE("BatchRenderThread::handle_close_event 1");
 	save_defaults(mwindow->defaults);
-TRACE("BatchRenderThread::handle_close_event 1");
 	delete default_job;
-TRACE("BatchRenderThread::handle_close_event 1");
 	default_job = 0;
-TRACE("BatchRenderThread::handle_close_event 1");
 	jobs.remove_all_objects();
-TRACE("BatchRenderThread::handle_close_event 100");
 }
 
 BC_Window* BatchRenderThread::new_gui()
@@ -642,12 +656,15 @@ BatchRenderGUI::BatchRenderGUI(MWindow *mwindow,
 
 BatchRenderGUI::~BatchRenderGUI()
 {
+	lock_window("BatchRenderGUI::~BatchRenderGUI");
 	delete format_tools;
+	unlock_window();
 }
 
 
 void BatchRenderGUI::create_objects()
 {
+	lock_window("BatchRenderGUI::create_objects");
 	mwindow->theme->get_batchrender_sizes(this, get_w(), get_h());
 	create_list(0);
 
@@ -665,6 +682,7 @@ void BatchRenderGUI::create_objects()
 	format_tools = new BatchFormat(mwindow,
 					this, 
 					thread->get_current_asset());
+	format_tools->set_w(get_w() / 2);
 	format_tools->create_objects(x, 
 						y, 
 						1, 
@@ -748,6 +766,7 @@ void BatchRenderGUI::create_objects()
 		y));
 
 	show_window();
+	unlock_window();
 }
 
 int BatchRenderGUI::resize_event(int w, int h)

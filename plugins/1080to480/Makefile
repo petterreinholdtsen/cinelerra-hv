@@ -2,7 +2,7 @@ include ../../global_config
 
 OBJS = $(OBJDIR)/1080to480.o
 
-OUTPUT = ../$(OBJDIR)/1080to480.plugin
+OUTPUT = $(PLUGIN_DIR)/1080to480.plugin
 
 include ../../plugin_config
 

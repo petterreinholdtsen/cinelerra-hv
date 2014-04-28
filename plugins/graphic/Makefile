@@ -3,7 +3,7 @@ include ../../global_config
 OBJS = ../parametric/$(OBJDIR)/fourier.o \
 	$(OBJDIR)/graphic.o
 
-OUTPUT = ../$(OBJDIR)/graphic.plugin
+OUTPUT = $(PLUGIN_DIR)/graphic.plugin
 
 include ../../plugin_config
 

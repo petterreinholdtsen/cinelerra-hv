@@ -1,23 +1,49 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef CLIPEDIT_H
 #define CLIPEDIT_H
 
 #include "awindow.inc"
+#include "bcdialog.h"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
-#include "thread.h"
 #include "vwindow.inc"
 
+class ClipEditWindow;
 
-class ClipEdit : public Thread
+class ClipEdit : public BC_DialogThread
 {
 public:
 	ClipEdit(MWindow *mwindow, AWindow *awindow, VWindow *vwindow);
 	~ClipEdit();
 
-	void run();
 	void edit_clip(EDL *clip);
 	void create_clip(EDL *clip);
+// After the window is closed and deleted, this is called.
+	void handle_close_event(int result);
+
+// User creates the window and initializes it here.
+	BC_Window* new_gui();
 
 // If it is being created or edited
 	MWindow *mwindow;
@@ -26,6 +52,8 @@ public:
 
 
 	EDL *clip;
+	EDL *original;
+	ClipEditWindow *window;
 	int create_it;
 };
 
@@ -41,8 +69,6 @@ public:
 	void create_objects();
 
 
-// Use this copy of the pointer in ClipEdit since multiple windows are possible	
-	EDL *clip;
 	int create_it;
 	MWindow *mwindow;
 	ClipEdit *thread;

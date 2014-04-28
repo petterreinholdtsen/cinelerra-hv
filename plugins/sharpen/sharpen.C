@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #include "clip.h"
 #include "colormodels.h"
 #include "condition.h"
@@ -69,13 +90,13 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
+	
 	engine = 0;
 }
 
 SharpenMain::~SharpenMain()
 {
-	PLUGIN_DESTRUCTOR_MACRO
+	
 
 	if(engine)
 	{
@@ -87,17 +108,13 @@ SharpenMain::~SharpenMain()
 	}
 }
 
-SHOW_GUI_MACRO(SharpenMain, SharpenThread)
-
-SET_STRING_MACRO(SharpenMain)
-
-RAISE_WINDOW_MACRO(SharpenMain)
+NEW_WINDOW_MACRO(SharpenMain, SharpenWindow)
 
 NEW_PICON_MACRO(SharpenMain)
 
 LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
 
-char* SharpenMain::plugin_title() { return N_("Sharpen"); }
+const char* SharpenMain::plugin_title() { return N_("Sharpen"); }
 int SharpenMain::is_realtime() { return 1; }
 
 
@@ -153,11 +170,11 @@ void SharpenMain::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
-		thread->window->sharpen_slider->update((int)config.sharpness);
-		thread->window->sharpen_interlace->update(config.interlace);
-		thread->window->sharpen_horizontal->update(config.horizontal);
-		thread->window->sharpen_luminance->update(config.luminance);
+		thread->window->lock_window("SharpenMain::update_gui");
+		((SharpenWindow*)thread->window)->sharpen_slider->update((int)config.sharpness);
+		((SharpenWindow*)thread->window)->sharpen_interlace->update(config.interlace);
+		((SharpenWindow*)thread->window)->sharpen_horizontal->update(config.horizontal);
+		((SharpenWindow*)thread->window)->sharpen_luminance->update(config.luminance);
 		thread->window->unlock_window();
 	}
 }
@@ -218,7 +235,7 @@ void SharpenMain::save_data(KeyFrame *keyframe)
 	FileXML output;
 
 // cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("SHARPNESS");
 	output.tag.set_property("VALUE", config.sharpness);
 	output.append_tag();
@@ -247,7 +264,7 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
 
 	int result = 0;
 	int new_interlace = 0;

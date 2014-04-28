@@ -1,3 +1,24 @@
+
+/*
+ * CINELERRA
+ * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
 #ifndef MENUEFFECTS_H
 #define MENUEFFECTS_H
 
@@ -46,11 +67,11 @@ public:
 class MenuEffectThread : public Thread
 {
 public:
-	MenuEffectThread(MWindow *mwindow);
+	MenuEffectThread(MWindow *mwindow, MenuEffects *menu_item);
 	virtual ~MenuEffectThread();
 
 	void run();
-	int set_title(char *text);  // set the effect to be run by a menuitem
+	int set_title(const char *text);  // set the effect to be run by a menuitem
 	virtual int get_recordable_tracks(Asset *asset) { return 0; };
 	virtual int get_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual int save_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
@@ -60,8 +81,9 @@ public:
 	int test_existence(Asset *asset);
 
 	MWindow *mwindow;
-	char title[1024];
-	int dither, realtime, load_mode;
+	MenuEffects *menu_item;
+	char title[BCTEXTLEN];
+	int realtime, load_mode;
 	int strategy;
 };
 
@@ -95,7 +117,7 @@ public:
 		Asset *asset);
 	virtual ~MenuEffectWindow();
 
-	int create_objects();
+	void create_objects();
 	int resize_event(int w, int h);
 
 	BC_Title *list_title;
@@ -159,7 +181,7 @@ public:
 
 	static int calculate_w(BC_WindowBase *gui);
 	static int calculate_h(BC_WindowBase *gui);	
-	int create_objects();
+	void create_objects();
 
 	MenuEffectPromptOK *ok;
 	MenuEffectPromptCancel *cancel;

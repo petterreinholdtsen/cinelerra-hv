@@ -1,8 +1,8 @@
-yuv4mpeg_ratio.lo yuv4mpeg_ratio.o: yuv4mpeg_ratio.c ../config.h \
-  /usr/include/string.h /usr/include/features.h /usr/include/sys/cdefs.h \
+yuv4mpeg_ratio.lo: yuv4mpeg_ratio.c ../config.h /usr/include/string.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h \
   /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
+  /usr/include/gnu/stubs-32.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
   /usr/include/xlocale.h yuv4mpeg.h /usr/include/stdlib.h \
   /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
   /usr/include/endian.h /usr/include/bits/endian.h \
@@ -29,9 +29,9 @@ yuv4mpeg_ratio.lo yuv4mpeg_ratio.o: yuv4mpeg_ratio.c ../config.h \
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-64.h:
+/usr/include/gnu/stubs-32.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
 
 /usr/include/xlocale.h:
 

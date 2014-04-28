@@ -24,10 +24,6 @@
 
 
 //#define HAVE_LIBXXF86VM
-// Use single thread for all windows.
-// This is a bad idea because it's very slow.  Windows which share the same
-// display must be locked in their create_objects routines.
-//#define SINGLE_THREAD
 
 // Window types
 #define MAIN_WINDOW 0

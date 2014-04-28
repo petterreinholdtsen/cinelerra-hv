@@ -63,6 +63,10 @@ void FileCR2::reset()
 
 int FileCR2::check_sig(Asset *asset)
 {
+	char *ptr = strstr(asset->path, ".pcm");
+	if(ptr) return 0;
+
+
 	cr2_mutex.lock("FileCR2::check_sig");
 	char string[BCTEXTLEN];
 	int argc = 3;

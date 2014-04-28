@@ -27,6 +27,7 @@
 #include "filethread.inc"  // RING_BUFFERS
 #include "maxchannels.h"
 #include "plugin.inc"
+#include "samples.inc"
 #include "units.h"
 #include "virtualnode.h"
 
@@ -49,28 +50,28 @@ public:
 
 // Called by VirtualAConsole::process_buffer to process exit_nodes.
 // read_data recurses down the tree.
-	int render(double *output_temp,
+	int render(Samples *output_temp,
+		int64_t size,
 		int64_t start_position,
-		int64_t len,
 		int64_t sample_rate);
 
 // Read data from whatever comes before this node.
 // Calls render in either the parent node or the module for the track.
-	int read_data(double *output_temp,
+	int read_data(Samples *output_temp,
+		int64_t size,
 		int64_t start_position,
-		int64_t len,
 		int64_t sample_rate);
 
 private:
 // need *arender for peak updating
-	int render_as_module(double **audio_out, 
-					double *output_temp,
-					int64_t start_position,
-					int64_t len, 
-					int64_t sample_rate);
-	void render_as_plugin(double *output_temp,
+	int render_as_module(Samples **audio_out, 
+		Samples *output_temp,
+		int64_t size,
+		int64_t start_position,
+		int64_t sample_rate);
+	void render_as_plugin(Samples *output_temp,
+		int64_t size,
 		int64_t start_position, 
-		int64_t len,
 		int64_t sample_rate);
 
 	int render_fade(double *buffer,

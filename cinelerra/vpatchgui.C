@@ -334,6 +334,7 @@ void VModePatch::create_objects()
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MIN), TRANSFER_MIN));
 }
 
 void VModePatch::update(int mode)
@@ -377,6 +378,10 @@ const char* VModePatch::mode_to_text(int mode)
 
 		case TRANSFER_MAX:
 			return _("Max");
+			break;
+
+		case TRANSFER_MIN:
+			return _("Min");
 			break;
 
 		default:

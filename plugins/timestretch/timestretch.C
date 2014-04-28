@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "resample.h"
+#include "samples.h"
 #include "timestretch.h"
 #include "timestretchengine.h"
 #include "transportque.inc"
@@ -180,50 +181,57 @@ PitchEngine::~PitchEngine()
 
 int PitchEngine::read_samples(int64_t output_sample, 
 	int samples, 
-	double *buffer)
+	Samples *buffer)
 {
-	while(input_size < samples)
-	{
-		if(!temp) temp = new double[INPUT_SIZE];
+	plugin->resample->resample(buffer,
+		samples,
+		1000000,
+		(int)(1000000 * plugin->scale),
+		output_sample,
+		PLAY_FORWARD);
 
-		plugin->read_samples(temp, 
-			0, 
-			plugin->get_source_start() + current_position, 
-			INPUT_SIZE);
-		current_position +=INPUT_SIZE;
-
-		plugin->resample->resample_chunk(temp,
-			INPUT_SIZE,
-			1000000,
-			(int)(1000000 * plugin->scale),
-			0);
-
-		int fragment_size = plugin->resample->get_output_size(0);
-
-		if(input_size + fragment_size > input_allocated)
-		{
-			int new_allocated = input_size + fragment_size;
-			double *new_buffer = new double[new_allocated];
-			if(input_buffer)
-			{
-				memcpy(new_buffer, input_buffer, input_size * sizeof(double));
-				delete [] input_buffer;
-			}
-			input_buffer = new_buffer;
-			input_allocated = new_allocated;
-		}
-
-
-		plugin->resample->read_output(input_buffer + input_size,
-			0,
-			fragment_size);
-		input_size += fragment_size;
-	}
-	memcpy(buffer, input_buffer, samples * sizeof(int64_t));
-	memcpy(input_buffer, 
-		input_buffer + samples, 
-		sizeof(int64_t) * (input_size - samples));
-	input_size -= samples;
+// 	while(input_size < samples)
+// 	{
+// 		if(!temp) temp = new double[INPUT_SIZE];
+// 
+// 		plugin->read_samples(temp, 
+// 			0, 
+// 			plugin->get_source_start() + current_position, 
+// 			INPUT_SIZE);
+// 		current_position += INPUT_SIZE;
+// 
+// 		plugin->resample->resample(buffer,
+// 			INPUT_SIZE,
+// 			1000000,
+// 			(int)(1000000 * plugin->scale),
+// 			0);
+// 
+// 		int fragment_size = plugin->resample->get_output_size(0);
+// 
+// 		if(input_size + fragment_size > input_allocated)
+// 		{
+// 			int new_allocated = input_size + fragment_size;
+// 			double *new_buffer = new double[new_allocated];
+// 			if(input_buffer)
+// 			{
+// 				memcpy(new_buffer, input_buffer, input_size * sizeof(double));
+// 				delete [] input_buffer;
+// 			}
+// 			input_buffer = new_buffer;
+// 			input_allocated = new_allocated;
+// 		}
+// 
+// 
+// 		plugin->resample->read_output(input_buffer + input_size,
+// 			0,
+// 			fragment_size);
+// 		input_size += fragment_size;
+// 	}
+// 	memcpy(buffer, input_buffer, samples * sizeof(int64_t));
+// 	memcpy(input_buffer, 
+// 		input_buffer + samples, 
+// 		sizeof(int64_t) * (input_size - samples));
+// 	input_size -= samples;
 	return 0;
 }
 
@@ -286,6 +294,26 @@ int PitchEngine::signal_process()
 
 
 
+TimeStretchResample::TimeStretchResample(TimeStretch *plugin)
+{
+	this->plugin = plugin;
+}
+
+
+int TimeStretchResample::read_samples(Samples *buffer, 
+	int64_t start, 
+	int64_t len)
+{
+	return plugin->read_samples(buffer, 
+		0, 
+		start + plugin->get_source_start(), 
+		len);
+}
+
+
+
+
+
 
 
 
@@ -307,7 +335,7 @@ TimeStretch::TimeStretch(PluginServer *server)
 TimeStretch::~TimeStretch()
 {
 	if(temp) delete [] temp;
-	if(input) delete [] input;
+	if(input) delete input;
 	if(pitch) delete pitch;
 	if(resample) delete resample;
 	if(stretch) delete stretch;
@@ -354,7 +382,7 @@ int TimeStretch::start_loop()
 	{
 		pitch = new PitchEngine(this);
 		pitch->initialize(WINDOW_SIZE);
-		resample = new Resample(0, 1);
+		resample = new TimeStretchResample(this);
 	}
 	else
 // The windowing case
@@ -379,7 +407,7 @@ int TimeStretch::stop_loop()
 	return 0;
 }
 
-int TimeStretch::process_loop(double *buffer, int64_t &write_length)
+int TimeStretch::process_loop(Samples *buffer, int64_t &write_length)
 {
 	int result = 0;
 	int64_t predicted_total = (int64_t)((double)get_total_len() * scale + 0.5);
@@ -414,8 +442,8 @@ int TimeStretch::process_loop(double *buffer, int64_t &write_length)
 
 		if(input_allocated < size)
 		{
-			if(input) delete [] input;
-			input = new double[size];
+			if(input) delete input;
+			input = new Samples(size);
 			input_allocated = size;
 		}
 

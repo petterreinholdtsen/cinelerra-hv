@@ -33,7 +33,6 @@
 #include "pluginset.inc"
 #include "pluginpopup.inc"
 #include "pluginserver.inc"
-#include "renderengine.inc"
 #include "sharedlocation.h"
 #include "virtualnode.inc"
 
@@ -66,8 +65,7 @@ public:
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
-	int is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
+	int is_synthesis(int64_t position, 
 		int direction);
 
 	virtual int operator==(Plugin& that);

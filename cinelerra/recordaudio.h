@@ -31,6 +31,7 @@
 #include "record.inc"
 #include "recordgui.inc"
 #include "recordthread.inc"
+#include "samples.inc" 
 #include "thread.h"
 
 
@@ -70,7 +71,7 @@ private:
 	RecordThread *record_thread;
 	double *max;
 	int *over;
-	double **input;
+	Samples **input;
 	RecordGUI *gui;
 	int buffer_size, fragment_size;
 	int64_t fragment_position;

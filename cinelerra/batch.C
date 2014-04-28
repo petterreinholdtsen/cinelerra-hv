@@ -64,10 +64,10 @@ Batch::Batch(MWindow *mwindow, Record *record)
 Batch::~Batch()
 {
 	for(int i = 0; i < assets.total; i++)
-		Garbage::delete_object(assets.values[i]);
+		assets.values[i]->Garbage::remove_user();
 	assets.remove_all();
 	delete labels;
-	if(edl) delete edl;
+	if(edl) edl->Garbage::remove_user();
 }
 
 void Batch::create_objects()

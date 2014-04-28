@@ -37,6 +37,8 @@ FileSndFile::FileSndFile(Asset *asset, File *file)
 	temp_allocated = 0;
 	fd_config.format = 0;
 	fd = 0;
+// 	if(asset->format == FILE_UNKNOWN)
+// 		asset->format = FILE_PCM;
 }
 
 FileSndFile::~FileSndFile()
@@ -381,8 +383,14 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
 
 SndFileConfig::~SndFileConfig()
 {
-	if(bits_popup) delete bits_popup;
+	if(bits_popup)
+	{
+		lock_window("SndFileConfig::~SndFileConfig");
+		delete bits_popup;
+		unlock_window();
+	}
 }
+
 void SndFileConfig::create_objects()
 {
 	int x = 10, y = 10;

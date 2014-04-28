@@ -416,13 +416,14 @@ void RecordGUI::create_objects()
 	y += batch_list->get_h() + 5;
 
 // Controls
-	int loadmode_w = LoadMode::calculate_w(this, mwindow->theme, 1);
+	int loadmode_w = LoadMode::calculate_w(this, mwindow->theme, 1, 0);
 	load_mode = new LoadMode(mwindow,
 		this, 
 		get_w() / 2 - loadmode_w / 2, 
 		y, 
 		&record->load_mode, 
-		1);
+		1,
+		0);
 	load_mode->create_objects();
 	y += load_mode->get_h() + 5;
 

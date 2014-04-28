@@ -1,11 +1,12 @@
-ppmtoy4m.o ppmtoy4m.o: ppmtoy4m.c ../config.h /usr/include/stdio.h \
+ppmtoy4m.o: ppmtoy4m.c ../config.h /usr/include/stdio.h \
   /usr/include/features.h /usr/include/sys/cdefs.h \
   /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
+  /usr/include/gnu/stubs-32.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
   /usr/include/bits/types.h /usr/include/bits/typesizes.h \
   /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h \
+  /usr/include/bits/wchar.h /usr/include/gconv.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stdarg.h \
   /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
   /usr/include/unistd.h /usr/include/bits/posix_opt.h \
   /usr/include/bits/environments.h /usr/include/bits/confname.h \
@@ -22,9 +23,8 @@ ppmtoy4m.o ppmtoy4m.o: ppmtoy4m.c ../config.h /usr/include/stdio.h \
   /usr/include/sys/stat.h /usr/include/bits/stat.h ../utils/yuv4mpeg.h \
   /usr/include/stdlib.h /usr/include/bits/waitflags.h \
   /usr/include/bits/waitstatus.h /usr/include/alloca.h \
-  ../utils/mjpeg_types.h /usr/include/stdint.h /usr/include/bits/wchar.h \
-  /usr/include/inttypes.h ../utils/mjpeg_logging.h ../utils/mpegconsts.h \
-  subsample.h colorspace.h
+  ../utils/mjpeg_types.h /usr/include/stdint.h /usr/include/inttypes.h \
+  ../utils/mjpeg_logging.h ../utils/mpegconsts.h subsample.h colorspace.h
 
 ../config.h:
 
@@ -38,9 +38,9 @@ ppmtoy4m.o ppmtoy4m.o: ppmtoy4m.c ../config.h /usr/include/stdio.h \
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-64.h:
+/usr/include/gnu/stubs-32.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
 
 /usr/include/bits/types.h:
 
@@ -52,7 +52,11 @@ ppmtoy4m.o ppmtoy4m.o: ppmtoy4m.c ../config.h /usr/include/stdio.h \
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h:
+/usr/include/bits/wchar.h:
+
+/usr/include/gconv.h:
+
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
@@ -129,8 +133,6 @@ ppmtoy4m.o ppmtoy4m.o: ppmtoy4m.c ../config.h /usr/include/stdio.h \
 ../utils/mjpeg_types.h:
 
 /usr/include/stdint.h:
-
-/usr/include/bits/wchar.h:
 
 /usr/include/inttypes.h:
 

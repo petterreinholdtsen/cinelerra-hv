@@ -33,6 +33,7 @@
 #include "mwindow.inc"
 #include "patchbay.inc"
 #include "pluginpopup.inc"
+#include "renderengine.inc"
 #include "zoombar.inc"
 #include "samplescroll.inc"
 #include "statusbar.inc"
@@ -91,6 +92,11 @@ public:
 	static int visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2);
 
 	MWindow *mwindow;
+
+// For drawing nested EDL's
+	RenderEngine *render_engine;
+// ID of nested EDL last drawn.
+	int render_engine_id;
 
 // Popup menus
 	EditPopup *edit_menu;

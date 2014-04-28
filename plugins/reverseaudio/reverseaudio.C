@@ -25,6 +25,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
+#include "samples.h"
 #include "transportque.h"
 
 #include <string.h>
@@ -77,7 +78,7 @@ public:
 	void update_gui();
 	int is_realtime();
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 
@@ -183,7 +184,7 @@ NEW_WINDOW_MACRO(ReverseAudio, ReverseAudioWindow)
 
 
 int ReverseAudio::process_buffer(int64_t size, 
-	double *buffer,
+	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -193,26 +194,36 @@ int ReverseAudio::process_buffer(int64_t size,
 		load_configuration();
 		if(config.enabled)
 		{
-			read_samples(buffer + i,
+			int offset = buffer->get_offset();
+			buffer->set_offset(offset + i);
+			read_samples(buffer,
 				0,
 				sample_rate,
 				input_position,
 				fragment_size);
+			buffer->set_offset(offset);
+
 			for(int start = i, end = i + fragment_size - 1;
 				end > start; 
 				start++, end--)
 			{
-				double temp = buffer[start];
-				buffer[start] = buffer[end];
-				buffer[end] = temp;
+				double temp = buffer->get_data()[start];
+				buffer->get_data()[start] = buffer->get_data()[end];
+				buffer->get_data()[end] = temp;
 			}
 		}
 		else
-			read_samples(buffer + i,
+		{
+			int offset = buffer->get_offset();
+			buffer->set_offset(offset + i);
+			read_samples(buffer,
 				0,
 				sample_rate,
 				start_position,
 				fragment_size);
+			buffer->set_offset(offset);
+		}
+
 		if(get_direction() == PLAY_FORWARD)
 			start_position += fragment_size;
 		else

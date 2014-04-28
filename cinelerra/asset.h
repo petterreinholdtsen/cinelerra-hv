@@ -27,7 +27,8 @@
 #include "bcwindowbase.inc"
 #include "bchash.inc"
 #include "filexml.inc"
-#include "garbage.h"
+#include "indexable.h"
+#include "indexfile.inc"
 #include "linklist.h"
 #include "pluginserver.inc"
 
@@ -35,12 +36,9 @@
 #include <stdint.h>
 
 
-// Asset can be one of the following:
-// 1) a pure media file
-// 2) an EDL
-// 3) a log
-// The EDL can reference itself if it contains a media file
-class Asset : public ListItem<Asset>, public GarbageObject
+// zero all pointers in FileFork or just use aggregate types.
+
+class Asset : public ListItem<Asset>, public Indexable
 {
 public:
 	Asset();
@@ -90,6 +88,7 @@ public:
 	Asset& operator=(Asset &asset);
 	int operator==(Asset &asset);
 	int operator!=(Asset &asset);
+// Return 1 if the paths match
 	int test_path(const char *path);
 	int test_plugin_title(const char *path);
 	int read(FileXML *file, int expand_relative = 1);
@@ -106,17 +105,26 @@ public:
 	int write_index(const char *path, int data_bytes);
 
 
+// For Indexable
+	int get_audio_channels();
+	int get_sample_rate();
+	int64_t get_audio_samples();
+	int have_audio();
+	int have_video();
+	int get_w();
+	int get_h();
+	double get_frame_rate();
+	int get_video_layers();
+	int64_t get_video_frames();
+
+
 // Necessary for renderfarm to get encoding parameters
 	int write_audio(FileXML *xml);
 	int write_video(FileXML *xml);
 	int write_index(FileXML *xml);
 	int update_path(char *new_path);
 
-// Path to file
-	char path[BCTEXTLEN];
 
-// Folder in resource manager
-	char folder[BCTEXTLEN];
 
 // Format of file.  An enumeration from file.inc.
 	int format;
@@ -155,7 +163,7 @@ public:
 // String or FourCC describing compression
 	char vcodec[BCTEXTLEN];
 
-// Length in units of asset
+// Length in frames
 	int64_t video_length;
 
 
@@ -276,25 +284,6 @@ public:
 	int use_header;
 
 
-
-// Edits store data for the transition
-
-// index info
-	int index_status;     // Macro from assets.inc
-	int64_t index_zoom;      // zoom factor of index data
-	int64_t index_start;     // byte start of index data in the index file
-// Total bytes in source file when the index was buillt
-	int64_t index_bytes;
-	int64_t index_end, old_index_end;    // values for index build
-// offsets of channels in index buffer in floats
-	int64_t *index_offsets;
-// Sizes of channels in index buffer in floats.  This allows
-// variable channel size.
-	int64_t *index_sizes;
-// [ index channel      ][ index channel      ]
-// [high][low][high][low][high][low][high][low]
-	float *index_buffer;  
-	int id;
 };
 
 

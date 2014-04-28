@@ -19,9 +19,13 @@
  * 
  */
 
+
+
+#include "arender.h"
 #include "aedit.h"
 #include "asset.h"
 #include "asset.inc"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "colormodels.h"
@@ -37,11 +41,15 @@
 #include "language.h"
 #include "localsession.h"
 #include "mwindow.h"
+#include "mwindowgui.h"
+#include "renderengine.h"
 #include "resourcethread.h"
 #include "resourcepixmap.h"
+#include "samples.h"
 #include "theme.h"
 #include "track.h"
 #include "trackcanvas.h"
+#include "transportque.h"
 #include "vedit.h"
 #include "vframe.h"
 #include "wavecache.h"
@@ -60,9 +68,19 @@ ResourcePixmap::ResourcePixmap(MWindow *mwindow,
 	this->canvas = canvas;
 	startsource = edit->startsource;
 	data_type = edit->track->data_type;
-	source_framerate = edit->asset->frame_rate;
+	if(edit->asset)
+	{
+		source_framerate = edit->asset->frame_rate;
+		source_samplerate = edit->asset->sample_rate;
+	}
+	else
+	if(edit->nested_edl)
+	{
+		source_framerate = edit->nested_edl->session->frame_rate;
+		source_samplerate = edit->nested_edl->session->sample_rate;
+	}
+	
 	project_framerate = edit->edl->session->frame_rate;
-	source_samplerate = edit->asset->sample_rate;
 	project_samplerate = edit->edl->session->sample_rate;
 	edit_id = edit->id;
 }
@@ -115,15 +133,18 @@ void ResourcePixmap::draw_data(Edit *edit,
 	Track *track = edit->edits->track;
 
 
-// If index can't be drawn, don't do anything.
+// If want indexes only & index can't be drawn, don't do anything.
 	int need_redraw = 0;
 	int64_t index_zoom = 0;
-	if(indexes_only)
+	Indexable *indexable = 0;
+	if(edit->asset) indexable = edit->asset;
+	if(edit->nested_edl) indexable = edit->nested_edl;
+	if(indexable && indexes_only)
 	{
-		IndexFile indexfile(mwindow);
-		if(!indexfile.open_index(edit->asset))
+		IndexFile indexfile(mwindow, indexable);
+		if(!indexfile.open_index())
 		{
-			index_zoom = edit->asset->index_zoom;
+			index_zoom = indexable->index_state->index_zoom;
 			indexfile.close_index();
 		}
 
@@ -131,7 +152,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		{
 			if(data_type == TRACK_AUDIO)
 			{
-				double asset_over_session = (double)edit->asset->sample_rate / 
+				double asset_over_session = (double)indexable->get_sample_rate() / 
 					mwindow->edl->session->sample_rate;
 					asset_over_session;
 				if(index_zoom <= mwindow->edl->local_session->zoom_sample *
@@ -146,23 +167,20 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 
 // Redraw everything
-	if(edit->startsource != this->startsource ||
 /* Incremental drawing is not possible with resource thread */
-		(data_type == TRACK_AUDIO /* && 
-			edit->asset->sample_rate != source_samplerate*/ ) ||
-		(data_type == TRACK_VIDEO /* && 
-			!EQUIV(edit->asset->frame_rate, source_framerate) */ ) ||
-		mwindow->edl->session->sample_rate != project_samplerate ||
-		mwindow->edl->session->frame_rate != project_framerate ||
-		mwindow->edl->local_session->zoom_sample != zoom_sample || 
-		mwindow->edl->local_session->zoom_track != zoom_track ||
-		this->pixmap_h != pixmap_h ||
-		(data_type == TRACK_AUDIO && 
-			mwindow->edl->local_session->zoom_y != zoom_y) ||
-		(mode == 2) ||
-		need_redraw)
+	if(1)
+// 		edit->startsource != this->startsource ||
+// 		mwindow->edl->session->sample_rate != project_samplerate ||
+// 		!EQUIV(mwindow->edl->session->frame_rate, project_framerate) ||
+// 		mwindow->edl->local_session->zoom_sample != zoom_sample || 
+// 		mwindow->edl->local_session->zoom_track != zoom_track ||
+// 		this->pixmap_h != pixmap_h ||
+// 		(data_type == TRACK_AUDIO && 
+// 			mwindow->edl->local_session->zoom_y != zoom_y) ||
+// 		(mode == 2) ||
+// 		need_redraw)
 	{
-// Shouldn't draw at all if zoomed in below index zoom.
+// Redraw the whole thing.
 		refresh_x = 0;
 		refresh_w = pixmap_w;
 	}
@@ -336,8 +354,19 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Update pixmap settings
 	this->edit_id = edit->id;
 	this->startsource = edit->startsource;
-	this->source_framerate = edit->asset->frame_rate;
-	this->source_samplerate = edit->asset->sample_rate;
+
+	if(edit->asset)
+		this->source_framerate = edit->asset->frame_rate;
+	else
+	if(edit->nested_edl)
+		this->source_framerate = edit->nested_edl->session->frame_rate;
+
+	if(edit->asset)
+		this->source_samplerate = edit->asset->sample_rate;
+	else
+	if(edit->nested_edl)
+		this->source_samplerate = edit->nested_edl->session->sample_rate;
+
 	this->project_framerate = edit->edl->session->frame_rate;
 	this->project_samplerate = edit->edl->session->sample_rate;
 	this->edit_x = edit_x;
@@ -350,7 +379,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 
 
-// Draw in new background
+// Draw background image
 	if(refresh_w > 0)
 		mwindow->theme->draw_resource_bg(canvas,
 			this, 
@@ -364,7 +393,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 //printf("ResourcePixmap::draw_data 70\n");
 
 
-// Draw media
+// Draw media which already exists
 	if(track->draw)
 	{
 		switch(track->data_type)
@@ -387,8 +416,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 	}
 
 // Draw title
+SET_TRACE
 	if(mwindow->edl->session->show_titles)
 		draw_title(edit, edit_x, edit_w, pixmap_x, pixmap_w);
+SET_TRACE
 }
 
 void ResourcePixmap::draw_title(Edit *edit,
@@ -417,29 +448,45 @@ void ResourcePixmap::draw_title(Edit *edit,
 		mwindow->theme->get_image("title_bg_data"),
 		this);
 
-	if(total_x > -BC_INFINITY)
+//	if(total_x > -BC_INFINITY)
 	{
-		char title[BCTEXTLEN], channel[BCTEXTLEN];
+		char title[BCTEXTLEN];
+		char channel[BCTEXTLEN];
+		title[0] = 0;
+		channel[0] = 0;
 		FileSystem fs;
 
 		if(edit->user_title[0])
 			strcpy(title, edit->user_title);
 		else
+		if(edit->nested_edl)
+		{
+//printf("ResourcePixmap::draw_title %s\n", edit->nested_edl->project_path);
+			fs.extract_name(title, edit->nested_edl->path);
+
+// EDLs only have 1 video output
+			if(edit->track->data_type == TRACK_AUDIO)
+			{
+				sprintf(channel, " #%d", edit->channel + 1);
+				strcat(title, channel);
+			}
+		}
+		else
+		if(edit->asset)
 		{
 			fs.extract_name(title, edit->asset->path);
-
 			sprintf(channel, " #%d", edit->channel + 1);
 			strcat(title, channel);
 		}
 
 		canvas->set_color(mwindow->theme->title_color);
 		canvas->set_font(mwindow->theme->title_font);
-//printf("ResourcePixmap::draw_title 1 %d\n", total_x + 10);
 		
 // Justify the text on the left boundary of the edit if it is visible.
 // Otherwise justify it on the left side of the screen.
 		int text_x = total_x + left_margin;
 		text_x = MAX(left_margin, text_x);
+//printf("ResourcePixmap::draw_title 1 %d\n", text_x);
 		canvas->draw_text(text_x, 
 			canvas->get_text_ascent(MEDIUMFONT_3D) + 2, 
 			title,
@@ -453,12 +500,26 @@ void ResourcePixmap::draw_title(Edit *edit,
 void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 {
 	if(w <= 0) return;
-	double asset_over_session = (double)edit->asset->sample_rate / 
+	if(!edit->asset && !edit->nested_edl) return;
+	Indexable *indexable = 0;
+	if(edit->asset) indexable = edit->asset;
+	if(edit->nested_edl) indexable = edit->nested_edl;
+// printf("ResourcePixmap::draw_audio_resource %d x=%d w=%d\n",
+// __LINE__,
+// x,
+// w);
+SET_TRACE
+
+	IndexState *index_state = indexable->index_state;
+	double asset_over_session = (double)indexable->get_sample_rate() / 
 		mwindow->edl->session->sample_rate;
 
 // Develop strategy for drawing
-//	printf("ResourcePixmap::draw_audio_resource %d %d\n", __LINE__, edit->asset->index_status);
-	switch(edit->asset->index_status)
+// printf("ResourcePixmap::draw_audio_resource %d %p %d\n", 
+// __LINE__, 
+// index_state,
+// index_state->index_status);
+	switch(index_state->index_status)
 	{
 		case INDEX_NOTTESTED:
 			return;
@@ -470,18 +531,24 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 		case INDEX_BUILDING:
 		case INDEX_READY:
 		{
-			IndexFile indexfile(mwindow);
-			if(!indexfile.open_index(edit->asset))
+			IndexFile indexfile(mwindow, indexable);
+			if(!indexfile.open_index())
 			{
-				if(edit->asset->index_zoom > 
+				if(index_state->index_zoom > 
 						mwindow->edl->local_session->zoom_sample * 
 						asset_over_session)
 				{
 					draw_audio_source(edit, x, w);
 				}
 				else
+				{
+SET_TRACE
 					indexfile.draw_index(this, edit, x, w);
+SET_TRACE
+				}
+
 				indexfile.close_index();
+SET_TRACE
 			}
 			break;
 		}
@@ -507,17 +574,9 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
-	File *source = mwindow->audio_cache->check_out(edit->asset,
-		mwindow->edl);
-
-	if(!source)
-	{
-		printf(_("ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"), edit->asset->path);
-		return;
-	}
-
 	w++;
-	double asset_over_session = (double)edit->asset->sample_rate / 
+	Indexable *indexable = edit->get_source();
+	double asset_over_session = (double)indexable->get_sample_rate() / 
 		mwindow->edl->session->sample_rate;
 	int source_len = w * mwindow->edl->local_session->zoom_sample;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
@@ -532,24 +591,87 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		double oldsample, newsample;
 		int total_source_samples = (int)((double)(source_len + 1) * 
 			asset_over_session);
-		double *buffer = new double[total_source_samples];
-
-		source->set_audio_position(source_start, 
-			edit->asset->sample_rate);
-		source->set_channel(edit->channel);
+		Samples *buffer = new Samples(total_source_samples);
+		int result = 0;
 		canvas->set_color(mwindow->theme->audio_color);
 
-		if(!source->read_samples(buffer, 
-			total_source_samples, 
-			edit->asset->sample_rate))
+		if(indexable->is_asset)
 		{
-			oldsample = newsample = *buffer;
+			File *source = mwindow->audio_cache->check_out(edit->asset, mwindow->edl);
+
+			if(!source)
+			{
+				printf(_("ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"), edit->asset->path);
+				return;
+			}
+
+
+			source->set_audio_position(source_start);
+			source->set_channel(edit->channel);
+			result = source->read_samples(buffer, total_source_samples);
+			mwindow->audio_cache->check_in(edit->asset);
+		}
+		else
+		{
+			if(mwindow->gui->render_engine && 
+				mwindow->gui->render_engine_id != indexable->id)
+			{
+				delete mwindow->gui->render_engine;
+				mwindow->gui->render_engine = 0;
+			}
+
+			if(!mwindow->gui->render_engine)
+			{
+				TransportCommand command;
+				command.command = NORMAL_FWD;
+				command.get_edl()->copy_all(edit->nested_edl);
+				command.change_type = CHANGE_ALL;
+				command.realtime = 0;
+				mwindow->gui->render_engine = new RenderEngine(0,
+					mwindow->preferences,
+					0,
+					0,
+					0);
+				mwindow->gui->render_engine_id == edit->nested_edl->id;
+				mwindow->gui->render_engine->set_acache(mwindow->audio_cache);
+				mwindow->gui->render_engine->arm_command(&command);
+			}
+
+			Samples *temp_buffer[MAX_CHANNELS];
+			bzero(temp_buffer, MAX_CHANNELS * sizeof(double*));
+			for(int i = 0; i < indexable->get_audio_channels(); i++)
+			{
+				temp_buffer[i] = new Samples(total_source_samples);
+			}
+
+			if(mwindow->gui->render_engine->arender)
+			{
+				mwindow->gui->render_engine->arender->process_buffer(
+					temp_buffer, 
+					total_source_samples,
+					source_start);
+				memcpy(buffer->get_data(), 
+					temp_buffer[edit->channel]->get_data(), 
+					total_source_samples * sizeof(double));
+			}
+
+			for(int i = 0; i < indexable->get_audio_channels(); i++)
+			{
+				delete temp_buffer[i];
+			}
+		}
+		
+		
+		
+		if(!result)
+		{
+			oldsample = newsample = *buffer->get_data();
 			for(int x1 = x, x2 = x + w, i = 0; 
 				x1 < x2; 
 				x1++, i++)
 			{
 				oldsample = newsample;
-				newsample = buffer[(int)(i * asset_over_session)];
+				newsample = buffer->get_data()[(int)(i * asset_over_session)];
 				canvas->draw_line(x1 - 1, 
 					(int)(center_pixel - oldsample * mwindow->edl->local_session->zoom_y / 2),
 					x1,
@@ -558,7 +680,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			}
 		}
 
-		delete [] buffer;
+		delete buffer;
 		canvas->test_timer();
 	}
 	else
@@ -569,10 +691,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		int prev_y2 = -1;
 		int y1;
 		int y2;
+		int x2 = x + w;
 
 		canvas->set_color(mwindow->theme->audio_color);
 // Draw each pixel from the cache
-		while(x < w)
+//printf("ResourcePixmap::draw_audio_source %d x=%d w=%d\n", __LINE__, x, w);
+		while(x < x2)
 		{
 // Starting sample of pixel relative to asset rate.
 			int64_t source_start = (int64_t)(((pixmap_x - edit_x + x) * 
@@ -581,12 +705,13 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			int64_t source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
 				mwindow->edl->local_session->zoom_sample + edit->startsource) *
 				asset_over_session);
-			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
+			WaveCacheItem *item = mwindow->wave_cache->get_wave(indexable->id,
 					edit->channel,
 					source_start,
 					source_end);
 			if(item)
 			{
+//printf("ResourcePixmap::draw_audio_source %d\n", __LINE__);
 				y1 = (int)(center_pixel - 
 					item->low * mwindow->edl->local_session->zoom_y / 2);
 				y2 = (int)(center_pixel - 
@@ -613,9 +738,10 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			}
 			else
 			{
+//printf("ResourcePixmap::draw_audio_source %d\n", __LINE__);
 				first_pixel = 1;
 				canvas->resource_thread->add_wave(this,
-					edit->asset,
+					indexable,
 					x,
 					edit->channel,
 					source_start,
@@ -626,7 +752,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		}
 	}
 
-	mwindow->audio_cache->check_in(edit->asset);
 }
 
 
@@ -724,24 +849,32 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	{
 		int64_t source_frame = project_frame + edit->startsource;
 		VFrame *picon_frame = 0;
+		Indexable *indexable = edit->get_source();
 		int use_cache = 0;
+		int id = -1;
 
-		if((picon_frame = mwindow->frame_cache->get_frame_ptr(source_frame,
-			edit->channel,
-			mwindow->edl->session->frame_rate,
-			BC_RGB888,
-			picon_w,
-			picon_h,
-			edit->asset->id)) != 0)
+		id = indexable->id;
+
+		if(id >= 0)
+		{
+			picon_frame = mwindow->frame_cache->get_frame_ptr(source_frame,
+				edit->channel,
+				mwindow->edl->session->frame_rate,
+				BC_RGB888,
+				picon_w,
+				picon_h,
+				id);
+		}
+
+		if(picon_frame != 0)
 		{
 			use_cache = 1;
 		}
 		else
 		{
-// Set picon thread to display from file
+// Set picon thread to draw in background
 			if(mode != 3)
 			{
-
 				canvas->resource_thread->add_picon(this, 
 					x, 
 					y, 
@@ -750,7 +883,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 					mwindow->edl->session->frame_rate,
 					source_frame,
 					edit->channel,
-					edit->asset);
+					indexable);
 			}
 		}
 

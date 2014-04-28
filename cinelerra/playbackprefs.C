@@ -28,6 +28,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "overlayframe.inc"
 #include "playbackprefs.h"
@@ -249,9 +250,9 @@ int PlaybackPrefs::get_buffer_bytes()
 
 int PlaybackPrefs::draw_framerate()
 {
-//printf("PlaybackPrefs::draw_framerate 1 %f\n", pwindow->thread->edl->session->actual_frame_rate);
+//printf("PlaybackPrefs::draw_framerate 1 %f\n", mwindow->session->actual_frame_rate);
 	char string[BCTEXTLEN];
-	sprintf(string, "%.4f", pwindow->thread->edl->session->actual_frame_rate);
+	sprintf(string, "%.4f", mwindow->session->actual_frame_rate);
 	framerate_title->update(string);
 	return 0;
 }

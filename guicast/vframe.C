@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <sys/shm.h>
 
 #include "bchash.h"
 #include "bcpbuffer.h"
+#include "bcresources.h"
 #include "bcsignals.h"
 #include "bcsynchronous.h"
 #include "bctexture.h"
@@ -70,12 +72,38 @@ VFrame::VFrame(VFrame &frame)
 {
 	reset_parameters(1);
 	params = new BC_Hash;
-	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
+	allocate_data(0, 
+		0,
+		0, 
+		0, 
+		0, 
+		frame.w, 
+		frame.h, 
+		frame.color_model, 
+		frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
 	copy_stacks(&frame);
 }
 
+VFrame::VFrame(int w, 
+	int h, 
+	int color_model)
+{
+	reset_parameters(1);
+	params = new BC_Hash;
+	allocate_data(data, 
+		-1,
+		0, 
+		0, 
+		0, 
+		w, 
+		h, 
+		color_model, 
+		-1);
+}
+
 VFrame::VFrame(unsigned char *data, 
+	int shmid,
 	int w, 
 	int h, 
 	int color_model, 
@@ -83,10 +111,19 @@ VFrame::VFrame(unsigned char *data,
 {
 	reset_parameters(1);
 	params = new BC_Hash;
-	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
+	allocate_data(data, 
+		shmid,
+		0, 
+		0, 
+		0, 
+		w, 
+		h, 
+		color_model, 
+		bytes_per_line);
 }
 
 VFrame::VFrame(unsigned char *data, 
+		int shmid,
 		long y_offset,
 		long u_offset,
 		long v_offset, 
@@ -98,6 +135,7 @@ VFrame::VFrame(unsigned char *data,
 	reset_parameters(1);
 	params = new BC_Hash;
 	allocate_data(data, 
+		shmid,
 		y_offset, 
 		u_offset, 
 		v_offset, 
@@ -160,20 +198,20 @@ int VFrame::data_matches(VFrame *frame)
 	return 0;
 }
 
-long VFrame::set_shm_offset(long offset)
+// long VFrame::set_shm_offset(long offset)
+// {
+// 	shm_offset = offset;
+// 	return 0;
+// }
+// 
+// long VFrame::get_shm_offset()
+// {
+// 	return shm_offset;
+// }
+// 
+int VFrame::get_memory_type()
 {
-	shm_offset = offset;
-	return 0;
-}
-
-long VFrame::get_shm_offset()
-{
-	return shm_offset;
-}
-
-int VFrame::get_shared()
-{
-	return shared;
+	return memory_type;
 }
 
 int VFrame::params_match(int w, int h, int color_model)
@@ -187,8 +225,10 @@ int VFrame::params_match(int w, int h, int color_model)
 int VFrame::reset_parameters(int do_opengl)
 {
 	field2_offset = -1;
-	shared = 0;
-	shm_offset = 0;
+	memory_type = VFrame::PRIVATE;
+//	shm_offset = 0;
+	shmid = -1;
+	use_shm = 1;
 	bytes_per_line = 0;
 	data = 0;
 	rows = 0;
@@ -230,14 +270,29 @@ int VFrame::clear_objects(int do_opengl)
 	}
 
 // Delete data
-	if(!shared)
+	switch(memory_type)
 	{
-
+		case VFrame::PRIVATE:
 // Memory check
 // if(this->w * this->h > 1500 * 1100)
 // printf("VFrame::clear_objects 2 this=%p data=%p\n", this, data);   
-		if(data) delete [] data;
-		data = 0;
+			if(data)
+			{
+				if(shmid > 0) 
+					shmdt(data);
+				else
+					delete [] data;
+			}
+
+			data = 0;
+			shmid = -1;
+			break;
+		
+		case VFrame::SHMGET:
+			if(data) shmdt(data);
+			data = 0;
+			shmid = -1;
+			break;
 	}
 
 // Delete row pointers
@@ -249,6 +304,7 @@ int VFrame::clear_objects(int do_opengl)
 
 		default:
 			delete [] rows;
+			rows = 0;
 			break;
 	}
 
@@ -340,6 +396,7 @@ void VFrame::create_row_pointers()
 }
 
 int VFrame::allocate_data(unsigned char *data, 
+	int shmid,
 	long y_offset,
 	long u_offset,
 	long v_offset,
@@ -354,6 +411,7 @@ int VFrame::allocate_data(unsigned char *data,
 	this->bytes_per_pixel = calculate_bytes_per_pixel(color_model);
 	this->y_offset = this->u_offset = this->v_offset = 0;
 
+
 	if(bytes_per_line >= 0)
 	{
 		this->bytes_per_line = bytes_per_line;
@@ -364,20 +422,47 @@ int VFrame::allocate_data(unsigned char *data,
 // Allocate data + padding for MMX
 	if(data)
 	{
-		shared = 1;
+//printf("VFrame::allocate_data %d %p\n", __LINE__, this->data);
+		memory_type = VFrame::SHARED;
 		this->data = data;
+		this->shmid = -1;
+		this->y_offset = y_offset;
+		this->u_offset = u_offset;
+		this->v_offset = v_offset;
+	}
+	else
+	if(shmid > 0)
+	{
+//printf("VFrame::allocate_data %d %d\n", __LINE__, shmid);
+		memory_type = VFrame::SHMGET;
+		this->data = (unsigned char*)shmat(shmid, NULL, 0);
+		this->shmid = shmid;
 		this->y_offset = y_offset;
 		this->u_offset = u_offset;
 		this->v_offset = v_offset;
 	}
 	else
 	{
-		shared = 0;
+		memory_type = VFrame::PRIVATE;
 		int size = calculate_data_size(this->w, 
 			this->h, 
 			this->bytes_per_line, 
 			this->color_model);
-		this->data = new unsigned char[size];
+		if(BC_WindowBase::get_resources()->vframe_shm && use_shm)
+		{
+			this->shmid = shmget(IPC_PRIVATE, 
+				size, 
+				IPC_CREAT | 0777);
+			this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
+
+//printf("VFrame::allocate_data %d %p\n", __LINE__, this->data);
+// This causes it to automatically delete when the program exits.
+			shmctl(this->shmid, IPC_RMID, 0);
+		}
+		else
+		{
+			this->data = (unsigned char*)malloc(size);
+		}
 
 // Memory check
 // if(this->w * this->h > 1500 * 1100)
@@ -385,9 +470,9 @@ int VFrame::allocate_data(unsigned char *data,
 // this, this->w, this->h, this->data);   
 
 		if(!this->data)
-		printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
+			printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
 
-//printf("VFrame::allocate_data %p %d %d\n", this, this->w, this->h);
+//printf("VFrame::allocate_data %d %p data=%p %d %d\n", __LINE__, this, this->data, this->w, this->h);
 //if(size > 1000000) printf("VFrame::allocate_data %d\n", size);
 	}
 
@@ -397,46 +482,79 @@ int VFrame::allocate_data(unsigned char *data,
 }
 
 void VFrame::set_memory(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset)
+	int shmid,
+	long y_offset,
+	long u_offset,
+	long v_offset)
 {
-	shared = 1;
-	this->data = data;
-	this->y_offset = y_offset;
-	this->u_offset = u_offset;
-	this->v_offset = v_offset;
+	clear_objects(0);
+
+	if(data)
+	{
+		memory_type = VFrame::SHARED;
+		this->data = data;
+		this->shmid = -1;
+		this->y_offset = y_offset;
+		this->u_offset = u_offset;
+		this->v_offset = v_offset;
+	}
+	else
+	if(shmid > 0)
+	{
+		memory_type = VFrame::SHMGET;
+		this->data = (unsigned char*)shmat(shmid, NULL, 0);
+		this->shmid = shmid;
+	}
+	
 	y = this->data + this->y_offset;
 	u = this->data + this->u_offset;
 	v = this->data + this->v_offset;
+
 	create_row_pointers();
 }
 
 void VFrame::set_compressed_memory(unsigned char *data,
+	int shmid,
 	int data_size,
 	int data_allocated)
 {
 	clear_objects(0);
-	shared = 1;
-	this->data = data;
+
+	if(data)
+	{
+		memory_type = VFrame::SHARED;
+		this->data = data;
+		this->shmid = -1;
+	}
+	else
+	if(shmid > 0)
+	{
+		memory_type = VFrame::SHMGET;
+		this->data = (unsigned char*)shmat(shmid, NULL, 0);
+		this->shmid = shmid;
+	}
+
 	this->compressed_allocated = data_allocated;
 	this->compressed_size = data_size;
 }
 
 
 // Reallocate uncompressed buffer with or without alpha
-int VFrame::reallocate(unsigned char *data, 
-		long y_offset,
-		long u_offset,
-		long v_offset,
-		int w, 
-		int h, 
-		int color_model, 
-		long bytes_per_line)
+int VFrame::reallocate(
+	unsigned char *data, 
+	int shmid,
+	long y_offset,
+	long u_offset,
+	long v_offset,
+	int w, 
+	int h, 
+	int color_model, 
+	long bytes_per_line)
 {
 	clear_objects(0);
-	reset_parameters(0);
+//	reset_parameters(0);
 	allocate_data(data, 
+		shmid,
 		y_offset, 
 		u_offset, 
 		v_offset, 
@@ -454,17 +572,57 @@ int VFrame::allocate_compressed_data(long bytes)
 // Want to preserve original contents
 	if(data && compressed_allocated < bytes)
 	{
-		unsigned char *new_data = new unsigned char[bytes];
+		int new_shmid = -1;
+		unsigned char *new_data = 0;
+		if(BC_WindowBase::get_resources()->vframe_shm && use_shm)
+		{
+			new_shmid = shmget(IPC_PRIVATE, 
+				bytes, 
+				IPC_CREAT | 0777);
+			new_data = (unsigned char*)shmat(new_shmid, NULL, 0);
+			shmctl(new_shmid, IPC_RMID, 0);
+		}
+		else
+		{
+			new_data = (unsigned char*)malloc(bytes);
+		}
+
 		bcopy(data, new_data, compressed_allocated);
 UNBUFFER(data);
-		delete [] data;
+
+		if(memory_type == VFrame::PRIVATE)
+		{
+			if(shmid > 0) 
+				if(data) shmdt(data);
+			else
+				delete [] data;
+		}
+		else
+		if(memory_type == VFrame::SHMGET)
+		{
+			if(data) shmdt(data);
+		}
+
 		data = new_data;
+		shmid = new_shmid;
 		compressed_allocated = bytes;
 	}
 	else
 	if(!data)
 	{
-		data = new unsigned char[bytes];
+		if(BC_WindowBase::get_resources()->vframe_shm && use_shm)
+		{
+			shmid = shmget(IPC_PRIVATE, 
+				bytes, 
+				IPC_CREAT | 0777);
+			data = (unsigned char*)shmat(shmid, NULL, 0);
+			shmctl(shmid, IPC_RMID, 0);
+		}
+		else
+		{
+			data = (unsigned char*)malloc(bytes);
+		}
+
 		compressed_allocated = bytes;
 		compressed_size = 0;
 	}
@@ -474,6 +632,7 @@ UNBUFFER(data);
 
 int VFrame::read_png(unsigned char *data)
 {
+
 // Test for RAW format
 	if(data[4] == 'R' && 
 		data[5] == 'A' &&
@@ -513,6 +672,7 @@ int VFrame::read_png(unsigned char *data)
 // Can't use shared data for theme since button constructions overlay the
 // images directly.
 		reallocate(NULL, 
+			0,
 			0, 
 			0, 
 			0, 
@@ -521,6 +681,7 @@ int VFrame::read_png(unsigned char *data)
 			new_color_model,
 			-1);
 		memcpy(get_data(), data + 20, w * h * components);
+
 	}
 	else
 	if(data[4] == 0x89 &&
@@ -528,9 +689,11 @@ int VFrame::read_png(unsigned char *data)
 		data[6] == 'N' &&
 		data[7] == 'G')
 	{
+
 		png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 		png_infop info_ptr = png_create_info_struct(png_ptr);
 		int new_color_model;
+
 
 		image_offset = 0;
 		image = data + 4;
@@ -540,6 +703,7 @@ int VFrame::read_png(unsigned char *data)
 			(unsigned char)data[3];
 		png_set_read_fn(png_ptr, this, PngReadFunction::png_read_function);
 		png_read_info(png_ptr, info_ptr);
+
 
 		w = png_get_image_width(png_ptr, info_ptr);
 		h = png_get_image_height(png_ptr, info_ptr);
@@ -559,7 +723,9 @@ int VFrame::read_png(unsigned char *data)
 				break;
 		}
 
+
 		reallocate(NULL, 
+			0,
 			0, 
 			0, 
 			0, 
@@ -568,7 +734,9 @@ int VFrame::read_png(unsigned char *data)
 			new_color_model,
 			-1);
 
+
 		png_read_image(png_ptr, get_rows());
+
 
 
 
@@ -592,7 +760,9 @@ int VFrame::read_png(unsigned char *data)
 			}
 		}
 
+
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
 	}
 	else
 	{
@@ -604,6 +774,21 @@ int VFrame::read_png(unsigned char *data)
 			data[7]);
 	}
 	return 0;
+}
+
+int VFrame::get_shmid()
+{
+	return shmid;
+}
+
+void VFrame::set_use_shm(int value)
+{
+	this->use_shm = value;
+}
+
+int VFrame::get_use_shm()
+{
+	return use_shm;
 }
 
 unsigned char* VFrame::get_data()
@@ -658,6 +843,7 @@ int VFrame::equals(VFrame *frame)
 
 int VFrame::clear_frame()
 {
+//printf("VFrame::clear_frame %d %p\n", __LINE__, data);
 	switch(color_model)
 	{
 		case BC_COMPRESSED:
@@ -1057,6 +1243,53 @@ void VFrame::dump_params()
 {
 	params->dump();
 }
+
+int VFrame::filefork_size()
+{
+	return sizeof(int) * 10;
+}
+
+
+void VFrame::to_filefork(unsigned char *buffer)
+{
+	*(int*)(buffer + 0) = shmid;
+	*(int*)(buffer + 4) = y_offset;
+	*(int*)(buffer + 8) = u_offset;
+	*(int*)(buffer + 12) = v_offset;
+	*(int*)(buffer + 16) = w;
+	*(int*)(buffer + 20) = h;
+	*(int*)(buffer + 24) = color_model;
+	*(int*)(buffer + 28) = bytes_per_line;
+	*(int*)(buffer + 32) = compressed_allocated;
+	*(int*)(buffer + 36) = compressed_size;
+}
+
+
+void VFrame::from_filefork(unsigned char *buffer)
+{
+// This frame will always be preallocated shared memory
+	if(*(int*)(buffer + 24) == BC_COMPRESSED)
+	{
+		set_compressed_memory(0,
+			*(int*)(buffer + 0), // shmid
+			*(int*)(buffer + 36), // compressed_size
+			*(int*)(buffer + 32)); // compressed_allocated
+	}
+	else
+	{
+		reallocate(0,
+			*(int*)(buffer + 0), // shmid
+			*(int*)(buffer + 4), // y_offset
+			*(int*)(buffer + 8), // u_offset
+			*(int*)(buffer + 12), // v_offset
+			*(int*)(buffer + 16), // w
+			*(int*)(buffer + 20), // h
+			*(int*)(buffer + 24), // colormodel
+			*(int*)(buffer + 28)); // bytes per line
+	}
+}
+
+
 
 
 

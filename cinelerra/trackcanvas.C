@@ -37,6 +37,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "indexstate.h"
 #include "intauto.h"
 #include "keyframe.h"
 #include "keyframepopup.h"
@@ -619,13 +620,18 @@ void TrackCanvas::test_timer()
 }
 
 
-void TrackCanvas::draw_indexes(Asset *asset)
+void TrackCanvas::draw_indexes(Indexable *indexable)
 {
 // Don't redraw raw samples
-	if(asset->index_zoom > mwindow->edl->local_session->zoom_sample)
+	IndexState *index_state = 0;
+	index_state = indexable->index_state;
+
+
+	if(index_state->index_zoom > mwindow->edl->local_session->zoom_sample)
 		return;
 
-	draw_resources(0, 1, asset);
+
+	draw_resources(0, 1, indexable);
 
 	draw_overlays();
 	draw_automation();
@@ -635,9 +641,10 @@ void TrackCanvas::draw_indexes(Asset *asset)
 
 void TrackCanvas::draw_resources(int mode, 
 	int indexes_only, 
-	Asset *index_asset)
+	Indexable *indexable)
 {
 	if(!mwindow->edl->session->show_assets) return;
+
 
 	if(mode != 3 && !indexes_only)
 		resource_thread->stop_draw(!indexes_only);
@@ -660,12 +667,18 @@ void TrackCanvas::draw_resources(int mode,
 	{
 		for(Edit *edit = current->edits->first; edit; edit = edit->next)
 		{
-			if(!edit->asset) continue;
+			if(!edit->asset && !edit->nested_edl) continue;
 			if(indexes_only)
 			{
 				if(edit->track->data_type != TRACK_AUDIO) continue;
-				if(!edit->asset->test_path(index_asset->path)) continue;
+
+				if(edit->nested_edl && 
+					strcmp(indexable->path, edit->nested_edl->path)) continue;
+					
+				if(edit->asset &&
+					strcmp(indexable->path, edit->asset->path)) continue;
 			}
+
 
 			int64_t edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
@@ -729,6 +742,7 @@ void TrackCanvas::draw_resources(int mode,
 						pixmap->pixmap_w,
 						edit_h);
 				}
+
 			}
 		}
 	}
@@ -772,12 +786,13 @@ ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit,
 
 	if(!result)
 	{
-//printf("TrackCanvas::create_pixmap 2\n");
+//SET_TRACE
 		result = new ResourcePixmap(mwindow, 
 			this, 
 			edit, 
 			pixmap_w, 
 			pixmap_h);
+//SET_TRACE
 		resource_pixmaps.append(result);
 	}
 
@@ -906,17 +921,17 @@ void TrackCanvas::draw_paste_destination()
 			mwindow->session->drag_edits->total))
 	{
 
-		Asset *asset = 0;
+		Indexable *indexable = 0;
 		EDL *clip = 0;
 		int draw_box = 0;
 
 		if(mwindow->session->current_operation == DRAG_ASSET &&
-			mwindow->session->drag_assets->total)
-			asset = mwindow->session->drag_assets->values[0];
+			mwindow->session->drag_assets->size())
+			indexable = mwindow->session->drag_assets->get(0);
 
 		if(mwindow->session->current_operation == DRAG_ASSET &&
-			mwindow->session->drag_clips->total)
-			clip = mwindow->session->drag_clips->values[0];
+			mwindow->session->drag_clips->size())
+			clip = mwindow->session->drag_clips->get(0);
 
 // Get destination track
 		for(Track *dest = mwindow->session->track_highlighted; 
@@ -951,10 +966,10 @@ void TrackCanvas::draw_paste_destination()
 
 				if(dest->data_type == TRACK_AUDIO)
 				{
-					if(asset && current_atrack < asset->channels)
+					if(indexable && current_atrack < indexable->get_audio_channels())
 					{
-						w = Units::to_int64((double)asset->audio_length /
-							asset->sample_rate *
+						w = Units::to_int64((double)indexable->get_audio_samples() /
+							indexable->get_sample_rate() *
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
 						current_atrack++;
@@ -993,10 +1008,10 @@ void TrackCanvas::draw_paste_destination()
 				if(dest->data_type == TRACK_VIDEO)
 				{
 //printf("draw_paste_destination 1\n");
-					if(asset && current_vtrack < asset->layers)
+					if(indexable && current_vtrack < indexable->get_video_layers())
 					{
-						w = Units::to_int64((double)asset->video_length / 
-							asset->frame_rate *
+						w = Units::to_int64((double)indexable->get_video_frames() / 
+							indexable->get_frame_rate() *
 							mwindow->edl->session->sample_rate /
 							mwindow->edl->local_session->zoom_sample);
 						current_vtrack++;
@@ -5049,9 +5064,7 @@ int TrackCanvas::button_press_event()
 // Highlight selection
 				else
 				{
-SET_TRACE
 					rerender = start_selection(position);
-SET_TRACE
 					mwindow->session->current_operation = SELECT_REGION;
 					update_cursor = 1;
 				}
@@ -5061,7 +5074,6 @@ SET_TRACE
 		}
 
 
-SET_TRACE
 		if(rerender)
 		{
 			gui->unlock_window();
@@ -5073,14 +5085,12 @@ SET_TRACE
 			gui->patchbay->update();
 		}
 
-SET_TRACE
 		if(update_overlay)
 		{
 			draw_overlays();
 			flash();
 		}
 
-SET_TRACE
 		if(update_cursor)
 		{
 			gui->timebar->update_highlights();
@@ -5091,7 +5101,6 @@ SET_TRACE
 			result = 1;
 		}
 
-SET_TRACE
 
 
 	}

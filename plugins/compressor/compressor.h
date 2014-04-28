@@ -28,6 +28,7 @@
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
+#include "samples.inc"
 #include "vframe.inc"
 
 class CompressorEffect;
@@ -212,7 +213,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_buffer(int64_t size, 
-		double **buffer,
+		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
 	double calculate_gain(double input);
@@ -230,7 +231,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(CompressorConfig)
 
 // The raw input data for each channel with readahead
-	double **input_buffer;
+	Samples **input_buffer;
 // Number of samples in the input buffer 
 	int64_t input_size;
 // Number of samples allocated in the input buffer

@@ -35,7 +35,7 @@
 // It handles the network connection to the DVB tuner.
 
 
-class DeviceDVBInput : public GarbageObject
+class DeviceDVBInput : public Garbage
 {
 public:
 	DeviceDVBInput(MWindow *mwindow, 

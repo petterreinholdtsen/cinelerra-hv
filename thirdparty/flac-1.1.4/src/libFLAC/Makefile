@@ -65,7 +65,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_triplet = x86_64-unknown-linux-gnu
+host_triplet = i686-redhat-linux-gnu
 ACLOCAL = ${SHELL} /root/hvirtual/thirdparty/flac-1.1.4/missing --run aclocal-1.7
 ACLOCAL_AMFLAGS = -I m4
 AMDEP_FALSE = #
@@ -76,7 +76,7 @@ AS = gas
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/flac-1.1.4/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/flac-1.1.4/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/flac-1.1.4/missing --run automake-1.7
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCAS = $(CC)
 CCASFLAGS = $(CFLAGS)
@@ -93,20 +93,20 @@ DEBUG_FALSE =
 DEBUG_TRUE = #
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-DOCBOOK_TO_MAN = 
-DOXYGEN = 
+DOCBOOK_TO_MAN = docbook2man
+DOXYGEN = doxygen
 ECHO = echo
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
 EGREP = grep -E
 EXEEXT = 
-F77 = 
-FFLAGS = 
+F77 = f95
+FFLAGS = -g -O2
 FLAC__TEST_LEVEL = 1
 FLAC__TEST_WITH_VALGRIND = no
-FLaC__CPU_IA32_FALSE = 
-FLaC__CPU_IA32_TRUE = #
+FLaC__CPU_IA32_FALSE = #
+FLaC__CPU_IA32_TRUE = 
 FLaC__CPU_PPC_FALSE = 
 FLaC__CPU_PPC_TRUE = #
 FLaC__CPU_SPARC_FALSE = 
@@ -115,18 +115,18 @@ FLaC__HAS_AS_FALSE =
 FLaC__HAS_AS_TRUE = #
 FLaC__HAS_AS__TEMPORARILY_DISABLED_FALSE = 
 FLaC__HAS_AS__TEMPORARILY_DISABLED_TRUE = #
-FLaC__HAS_DOCBOOK_TO_MAN_FALSE = 
-FLaC__HAS_DOCBOOK_TO_MAN_TRUE = #
-FLaC__HAS_DOXYGEN_FALSE = 
-FLaC__HAS_DOXYGEN_TRUE = #
+FLaC__HAS_DOCBOOK_TO_MAN_FALSE = #
+FLaC__HAS_DOCBOOK_TO_MAN_TRUE = 
+FLaC__HAS_DOXYGEN_FALSE = #
+FLaC__HAS_DOXYGEN_TRUE = 
 FLaC__HAS_GAS_FALSE = #
 FLaC__HAS_GAS_TRUE = 
 FLaC__HAS_GAS__TEMPORARILY_DISABLED_FALSE = 
 FLaC__HAS_GAS__TEMPORARILY_DISABLED_TRUE = #
-FLaC__HAS_NASM_FALSE = 
-FLaC__HAS_NASM_TRUE = #
-FLaC__HAS_OGG_FALSE = 
-FLaC__HAS_OGG_TRUE = #
+FLaC__HAS_NASM_FALSE = #
+FLaC__HAS_NASM_TRUE = 
+FLaC__HAS_OGG_FALSE = #
+FLaC__HAS_OGG_TRUE = 
 FLaC__HAS_XMMS_FALSE = 
 FLaC__HAS_XMMS_TRUE = #
 FLaC__INSTALL_XMMS_PLUGIN_LOCALLY_FALSE = 
@@ -160,11 +160,11 @@ MAINT = #
 MAINTAINER_MODE_FALSE = 
 MAINTAINER_MODE_TRUE = #
 MAKEINFO = ${SHELL} /root/hvirtual/thirdparty/flac-1.1.4/missing --run makeinfo
-NASM = 
+NASM = nasm
 OBJEXT = o
 OBJ_FORMAT = elf
 OGG_CFLAGS = 
-OGG_LIBS = 
+OGG_LIBS =  -logg
 PACKAGE = flac
 PACKAGE_BUGREPORT = 
 PACKAGE_NAME = 
@@ -174,7 +174,7 @@ PACKAGE_VERSION =
 PATH_SEPARATOR = :
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.1.4
 XMMS_CFLAGS = 
@@ -191,7 +191,7 @@ XMMS_VISUALIZATION_PLUGIN_DIR =
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
-ac_ct_F77 = 
+ac_ct_F77 = f95
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
 am__fastdepCC_FALSE = #
@@ -202,18 +202,18 @@ am__include = include
 am__leading_dot = .
 am__quote = 
 bindir = ${exec_prefix}/bin
-build = x86_64-unknown-linux-gnu
+build = i686-redhat-linux-gnu
 build_alias = 
-build_cpu = x86_64
+build_cpu = i686
 build_os = linux-gnu
-build_vendor = unknown
+build_vendor = redhat
 datadir = ${prefix}/share
 exec_prefix = ${prefix}
-host = x86_64-unknown-linux-gnu
+host = i686-redhat-linux-gnu
 host_alias = 
-host_cpu = x86_64
+host_cpu = i686
 host_os = linux-gnu
-host_vendor = unknown
+host_vendor = redhat
 includedir = ${prefix}/include
 infodir = ${prefix}/info
 install_sh = /root/hvirtual/thirdparty/flac-1.1.4/install-sh
@@ -242,14 +242,14 @@ lib_LTLIBRARIES = libFLAC.la
 AM_CFLAGS = $(DEBUGCFLAGS) $(CPUCFLAGS) 
 #ARCH_SUBDIRS = ppc
 
-##ARCH_SUBDIRS = ia32
-##LOCAL_EXTRA_LIBADD = ia32/libFLAC-asm.la
+ARCH_SUBDIRS = ia32
+LOCAL_EXTRA_LIBADD = ia32/libFLAC-asm.la
 ##LOCAL_EXTRA_LIBADD = ppc/as/libFLAC-asm.la
 ##LOCAL_EXTRA_LIBADD = ppc/gas/libFLAC-asm.la
 ##LOCAL_EXTRA_LDFLAGS = "-Wl,-read_only_relocs,warning"
 ##LOCAL_EXTRA_LDFLAGS = ""
 
-libFLAC_la_LIBADD = $(LOCAL_EXTRA_LIBADD) 
+libFLAC_la_LIBADD = $(LOCAL_EXTRA_LIBADD)  -logg
 
 SUBDIRS = $(ARCH_SUBDIRS) include .
 
@@ -267,11 +267,11 @@ EXTRA_DIST = \
 	libFLAC.m4
 
 
-#extra_ogg_sources = \
-#	ogg_decoder_aspect.c \
-#	ogg_encoder_aspect.c \
-#	ogg_helper.c \
-#	ogg_mapping.c
+extra_ogg_sources = \
+	ogg_decoder_aspect.c \
+	ogg_encoder_aspect.c \
+	ogg_helper.c \
+	ogg_mapping.c
 
 # see 'http://www.gnu.org/software/libtool/manual.html#Libtool-versioning' for numbering convention
 libFLAC_la_LDFLAGS = -version-info 8:1:0 -lm $(LOCAL_EXTRA_LDFLAGS)
@@ -302,99 +302,99 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = flac.pc
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
-#libFLAC_la_DEPENDENCIES =
-libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES =
-#libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES =
-#libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES =
 #libFLAC_la_DEPENDENCIES =
+####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES =
 ####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES =
-#libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES =
+#####libFLAC_la_DEPENDENCIES =
+####libFLAC_la_DEPENDENCIES =
+####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES = \
-##	ppc/gas/libFLAC-asm.la
+####libFLAC_la_DEPENDENCIES =
+###libFLAC_la_DEPENDENCIES =
+###libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES =
+#####libFLAC_la_DEPENDENCIES =
+####libFLAC_la_DEPENDENCIES = \
+####	ppc/gas/libFLAC-asm.la
 ####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES = \
 ###	ppc/gas/libFLAC-asm.la
-###libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES = \
-##	ppc/as/libFLAC-asm.la
+#####libFLAC_la_DEPENDENCIES =
+####libFLAC_la_DEPENDENCIES = \
+####	ppc/as/libFLAC-asm.la
 ####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES = \
 ###	ppc/as/libFLAC-asm.la
-####libFLAC_la_DEPENDENCIES =
-###libFLAC_la_DEPENDENCIES = \
-###	ppc/as/libFLAC-asm.la
+######libFLAC_la_DEPENDENCIES =
+#####libFLAC_la_DEPENDENCIES = \
+#####	ppc/as/libFLAC-asm.la
 #####libFLAC_la_DEPENDENCIES =
 ####libFLAC_la_DEPENDENCIES = \
 ####	ppc/as/libFLAC-asm.la
 ##libFLAC_la_DEPENDENCIES =
 #libFLAC_la_DEPENDENCIES =
+#libFLAC_la_DEPENDENCIES =
+libFLAC_la_DEPENDENCIES = \
+	ia32/libFLAC-asm.la
+###libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES =
+#libFLAC_la_DEPENDENCIES = \
+#	ia32/libFLAC-asm.la
+###libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES =
+#libFLAC_la_DEPENDENCIES = \
+#	ia32/libFLAC-asm.la
+####libFLAC_la_DEPENDENCIES =
+###libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES = \
 ##	ia32/libFLAC-asm.la
 ###libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES =
-####libFLAC_la_DEPENDENCIES =
-###libFLAC_la_DEPENDENCIES = \
-###	ia32/libFLAC-asm.la
-###libFLAC_la_DEPENDENCIES =
 ##libFLAC_la_DEPENDENCIES =
-####libFLAC_la_DEPENDENCIES =
-###libFLAC_la_DEPENDENCIES = \
-###	ia32/libFLAC-asm.la
-####libFLAC_la_DEPENDENCIES =
-###libFLAC_la_DEPENDENCIES =
-#####libFLAC_la_DEPENDENCIES =
-####libFLAC_la_DEPENDENCIES = \
-####	ia32/libFLAC-asm.la
-###libFLAC_la_DEPENDENCIES =
-##libFLAC_la_DEPENDENCIES =
-####libFLAC_la_DEPENDENCIES =
-###libFLAC_la_DEPENDENCIES = \
-###	ia32/libFLAC-asm.la
+#libFLAC_la_DEPENDENCIES = \
+#	ia32/libFLAC-asm.la
 ####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES = \
 ###	ppc/gas/libFLAC-asm.la
-#####libFLAC_la_DEPENDENCIES =
-####libFLAC_la_DEPENDENCIES = \
-####	ia32/libFLAC-asm.la \
-####	ppc/gas/libFLAC-asm.la
+###libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES = \
+##	ia32/libFLAC-asm.la \
+##	ppc/gas/libFLAC-asm.la
 ####libFLAC_la_DEPENDENCIES =
 ###libFLAC_la_DEPENDENCIES = \
 ###	ppc/as/libFLAC-asm.la
+###libFLAC_la_DEPENDENCIES =
+##libFLAC_la_DEPENDENCIES = \
+##	ia32/libFLAC-asm.la \
+##	ppc/as/libFLAC-asm.la
 #####libFLAC_la_DEPENDENCIES =
 ####libFLAC_la_DEPENDENCIES = \
-####	ia32/libFLAC-asm.la \
 ####	ppc/as/libFLAC-asm.la
-#####libFLAC_la_DEPENDENCIES =
-####libFLAC_la_DEPENDENCIES = \
-####	ppc/as/libFLAC-asm.la
-######libFLAC_la_DEPENDENCIES =
-#####libFLAC_la_DEPENDENCIES = \
-#####	ia32/libFLAC-asm.la \
-#####	ppc/as/libFLAC-asm.la
+####libFLAC_la_DEPENDENCIES =
+###libFLAC_la_DEPENDENCIES = \
+###	ia32/libFLAC-asm.la \
+###	ppc/as/libFLAC-asm.la
 am__libFLAC_la_SOURCES_DIST = bitmath.c bitreader.c bitwriter.c cpu.c \
 	crc.c fixed.c float.c format.c lpc.c md5.c memory.c \
 	metadata_iterators.c metadata_object.c stream_decoder.c \
 	stream_encoder.c stream_encoder_framing.c window.c \
 	ogg_decoder_aspect.c ogg_encoder_aspect.c ogg_helper.c \
 	ogg_mapping.c
-#am__objects_1 = ogg_decoder_aspect.lo \
-#	ogg_encoder_aspect.lo ogg_helper.lo \
-#	ogg_mapping.lo
+am__objects_1 = ogg_decoder_aspect.lo \
+	ogg_encoder_aspect.lo ogg_helper.lo \
+	ogg_mapping.lo
 am_libFLAC_la_OBJECTS = bitmath.lo bitreader.lo bitwriter.lo cpu.lo \
 	crc.lo fixed.lo float.lo format.lo lpc.lo md5.lo memory.lo \
 	metadata_iterators.lo metadata_object.lo stream_decoder.lo \

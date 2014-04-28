@@ -27,14 +27,14 @@
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "virtualconsole.h"
+#include "intautos.h"
 #include "module.h"
 #include "mutex.h"
 #include "playabletracks.h"
 #include "renderengine.h"
-#include "intautos.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "virtualconsole.h"
 #include "virtualnode.h"
 
 
@@ -49,6 +49,7 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 	playable_tracks = 0;
 	entry_nodes = 0;
 	debug_tree = 0;
+//printf("VirtualConsole::VirtualConsole\n");
 }
 
 
@@ -57,6 +58,7 @@ VirtualConsole::~VirtualConsole()
 	delete_virtual_console();
 
 	delete playable_tracks;
+//printf("VirtualConsole::~VirtualConsole\n");
 }
 
 
@@ -66,7 +68,7 @@ void VirtualConsole::create_objects()
 	done = 0;
 
 	get_playable_tracks();
-	total_exit_nodes = playable_tracks->total;
+	total_exit_nodes = playable_tracks->size();
 	build_virtual_console(1);
 //dump();
 }
@@ -97,7 +99,7 @@ Module* VirtualConsole::module_number(int track_number)
 // the tracks with matching data type but virtual modules only exist for
 // the matching data type.
 // Convert from absolute track number to data type track number.
-	Track *current = renderengine->edl->tracks->first;
+	Track *current = renderengine->get_edl()->tracks->first;
 	int data_type_number = 0, number = 0;
 
 	for( ; current; current = NEXT, number++)
@@ -122,10 +124,17 @@ void VirtualConsole::build_virtual_console(int persistent_plugins)
 	{
 		entry_nodes = new VirtualNode*[total_exit_nodes];
 
+// printf("VirtualConsole::build_virtual_console %d total_exit_nodes=%d\n", 
+// __LINE__,
+// total_exit_nodes);
 		for(int i = 0; i < total_exit_nodes; i++)
 		{
-			entry_nodes[i] = new_entry_node(playable_tracks->values[i], 
-				module_of(playable_tracks->values[i]), 
+// printf("VirtualConsole::build_virtual_console %d track=%p module=%p\n",
+// __LINE__,
+// playable_tracks->get(i),
+// module_of(playable_tracks->get(i)));
+			entry_nodes[i] = new_entry_node(playable_tracks->get(i), 
+				module_of(playable_tracks->get(i)), 
 				i);
 
 // Expand the trees
@@ -172,15 +181,15 @@ void VirtualConsole::dump()
 
 
 int VirtualConsole::test_reconfigure(int64_t position, 
-	int64_t &length, 
-	int &last_playback)
+	int64_t &length)
 {
 	int result = 0;
 	Track *current_track;
 	Module *module;
+	int direction = renderengine->command->get_direction();
 
 // Test playback status against virtual console for current position.
-	for(current_track = renderengine->edl->tracks->first;
+	for(current_track = renderengine->get_edl()->tracks->first;
 		current_track && !result;
 		current_track = current_track->next)
 	{
@@ -189,6 +198,7 @@ int VirtualConsole::test_reconfigure(int64_t position,
 // Playable status changed
 			if(playable_tracks->is_playable(current_track, 
 				commonrender->current_position,
+				direction,
 				1))
 			{
 				if(!playable_tracks->is_listed(current_track))
@@ -219,7 +229,6 @@ int VirtualConsole::test_reconfigure(int64_t position,
 
 
 
-	int direction = renderengine->command->get_direction();
 // GCC 3.2 requires this or optimization error results.
 	int64_t longest_duration1;
 	int64_t longest_duration2;
@@ -227,7 +236,7 @@ int VirtualConsole::test_reconfigure(int64_t position,
 
 // Length of time until next transition, edit, or effect change.
 // Why do we need the edit change?  Probably for changing to and from silence.
-	for(current_track = renderengine->edl->tracks->first;
+	for(current_track = renderengine->get_edl()->tracks->first;
 		current_track;
 		current_track = current_track->next)
 	{
@@ -261,17 +270,14 @@ int VirtualConsole::test_reconfigure(int64_t position,
 			if(longest_duration1 < length)
 			{
 				length = longest_duration1;
-				last_playback = 0;
 			}
 			if(longest_duration2 < length)
 			{
 				length = longest_duration2;
-				last_playback = 0;
 			}
 			if(longest_duration3 < length)
 			{
 				length = longest_duration3;
-				last_playback = 0;
 			}
 
 		}

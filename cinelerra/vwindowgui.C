@@ -409,15 +409,15 @@ int VWindowGUI::drag_stop()
 		mwindow->session->vcanvas_highlighted = 0;
 		canvas->draw_refresh();
 
-		Asset *asset = mwindow->session->drag_assets->total ?
-			mwindow->session->drag_assets->values[0] :
+		Indexable *indexable = mwindow->session->drag_assets->size() ?
+			mwindow->session->drag_assets->get(0) :
 			0;
-		EDL *edl = mwindow->session->drag_clips->total ?
-			mwindow->session->drag_clips->values[0] :
+		EDL *edl = mwindow->session->drag_clips->size() ?
+			mwindow->session->drag_clips->get(0) :
 			0;
 		
-		if(asset)
-			vwindow->change_source(asset);
+		if(indexable)
+			vwindow->change_source(indexable);
 		else
 		if(edl)
 			vwindow->change_source(edl);
@@ -639,7 +639,6 @@ void VWindowEditing::to_clip()
 			0,
 			0,
 			&file,
-			mwindow->plugindb,
 			"",
 			1);
 
@@ -648,7 +647,7 @@ void VWindowEditing::to_clip()
 
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->create_objects();
-		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
+		new_edl->load_xml(&file, LOAD_ALL);
 		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
 		new_edl->local_session->set_selectionstart(0);
 		new_edl->local_session->set_selectionend(0);

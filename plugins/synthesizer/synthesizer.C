@@ -25,6 +25,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "synthesizer.h"
 #include "vframe.h"
 
@@ -369,7 +370,7 @@ double Synth::function_triangle(double x)
 	return (x < .5) ? 1 - x * 4 : -3 + x * 4;
 }
 
-int Synth::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int Synth::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 {
 	need_reconfigure |= load_configuration();
 // Mute if a certain frequency
@@ -380,7 +381,7 @@ int Synth::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 	if(EQUIV(config.wetness, INFINITYGAIN)) wetness = 0;
 
 	for(int j = 0; j < size; j++)
-		output_ptr[j] = input_ptr[j] * wetness;
+		output_ptr->get_data()[j] = input_ptr->get_data()[j] * wetness;
 
 	int64_t fragment_len;
 	for(int64_t i = 0; i < size; i += fragment_len)
@@ -389,7 +390,10 @@ int Synth::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 		if(i + fragment_len > size) fragment_len = size - i;
 
 //printf("Synth::process_realtime 1 %d %d %d\n", i, fragment_len, size);
-		fragment_len = overlay_synth(i, fragment_len, input_ptr, output_ptr);
+		fragment_len = overlay_synth(i, 
+			fragment_len, 
+			input_ptr->get_data(), 
+			output_ptr->get_data());
 //printf("Synth::process_realtime 2\n");
 	}
 	

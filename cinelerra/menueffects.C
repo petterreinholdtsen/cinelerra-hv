@@ -124,7 +124,7 @@ void MenuEffectThread::run()
 // Default configuration
 	Asset *default_asset = new Asset;
 // Output
-	ArrayList<Asset*> assets;
+	ArrayList<Indexable*> assets;
 
 
 // check for recordable tracks
@@ -134,7 +134,7 @@ void MenuEffectThread::run()
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();
-		Garbage::delete_object(default_asset);
+		default_asset->Garbage::remove_user();
 		return;
 	}
 
@@ -145,7 +145,7 @@ void MenuEffectThread::run()
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();
-		Garbage::delete_object(default_asset);
+		default_asset->Garbage::remove_user();
 		return;
 	}
 
@@ -154,7 +154,7 @@ void MenuEffectThread::run()
 // used after completion
 	get_derived_attributes(default_asset, defaults);
 //	to_tracks = defaults->get("RENDER_EFFECT_TO_TRACKS", 1);
-	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOAD_PASTE);
+	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOADMODE_PASTE);
 	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
 
 // get plugin information
@@ -167,7 +167,7 @@ void MenuEffectThread::run()
 // generate a list of plugins for the window
 	if(need_plugin)
 	{
-		mwindow->create_plugindb(default_asset->audio_data, 
+		mwindow->search_plugindb(default_asset->audio_data, 
 			default_asset->video_data, 
 			-1, 
 			0,
@@ -447,9 +447,7 @@ void MenuEffectThread::run()
 			if(file->open_file(mwindow->preferences, 
 				asset, 
 				0, 
-				1, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->frame_rate))
+				1))
 			{
 // open failed
 				sprintf(string, _("Couldn't open %s"), asset->path);
@@ -461,7 +459,8 @@ void MenuEffectThread::run()
 			else
 			{
 				mwindow->sighandler->push_file(file);
-				IndexFile::delete_index(mwindow->preferences, asset);
+				IndexFile::delete_index(mwindow->preferences, 
+					asset);
 			}
 		}
 
@@ -497,12 +496,12 @@ void MenuEffectThread::run()
 	packets.remove_all_objects();
 
 // paste output to tracks
-	if(!result && load_mode != LOAD_NOTHING)
+	if(!result && load_mode != LOADMODE_NOTHING)
 	{
 		mwindow->gui->lock_window("MenuEffectThread::run");
 
 		mwindow->undo->update_undo_before("", 0);
-		if(load_mode == LOAD_PASTE)
+		if(load_mode == LOADMODE_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(&assets,
 			-1,
@@ -532,9 +531,10 @@ void MenuEffectThread::run()
 	}
 
 	for(int i = 0; i < assets.total; i++)
-		Garbage::delete_object(assets.values[i]);
+		assets.values[i]->Garbage::remove_user();
 	assets.remove_all();
-	Garbage::delete_object(default_asset);
+
+	default_asset->Garbage::remove_user();
 }
 
 
@@ -649,7 +649,8 @@ void MenuEffectWindow::create_objects()
 		x, 
 		y, 
 		&menueffects->load_mode, 
-		1);
+		1,
+		0);
 	loadmode->create_objects();
 
 	add_subwindow(new MenuEffectWindowOK(this));

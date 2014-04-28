@@ -31,6 +31,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
+#include "samples.h"
 #include "transportque.inc"
 #include "vframe.h"
 
@@ -79,7 +80,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(LiveAudioConfig);
 
 	int process_buffer(int64_t size, 
-		double **buffer,
+		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
 	int is_realtime();
@@ -93,7 +94,7 @@ public:
 	void render_stop();
 
 	AudioDevice *adevice;
-	double **history;
+	Samples **history;
 	int history_ptr;
 	int history_channels;
 	int64_t history_position;
@@ -199,7 +200,7 @@ LiveAudio::~LiveAudio()
 	if(history)
 	{
 		for(int i = 0; i < history_channels; i++)
-			delete [] history[i];
+			delete history[i];
 		delete [] history;
 	}
 	
@@ -208,7 +209,7 @@ LiveAudio::~LiveAudio()
 
 
 int LiveAudio::process_buffer(int64_t size, 
-	double **buffer,
+	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -238,11 +239,11 @@ int LiveAudio::process_buffer(int64_t size,
 	if(!history)
 	{
 		history_channels = get_total_buffers();
-		history = new double*[history_channels];
+		history = new Samples*[history_channels];
 		for(int i = 0; i < history_channels; i++)
 		{
-			history[i] = new double[HISTORY_SAMPLES];
-			bzero(history[i], sizeof(double) * HISTORY_SAMPLES);
+			history[i] = new Samples(HISTORY_SAMPLES);
+			bzero(history[i]->get_data(), sizeof(double) * HISTORY_SAMPLES);
 		}
 	}
 
@@ -314,8 +315,8 @@ SET_TRACE
 			if(buffer_position + fragment > size)
 				fragment = size - buffer_position;
 			for(int i = 0; i < get_total_buffers(); i++)
-				memcpy(buffer[i] + buffer_position, 
-					history[i] + history_buffer_ptr,
+				memcpy(buffer[i]->get_data() + buffer_position, 
+					history[i]->get_data() + history_buffer_ptr,
 					sizeof(double) * fragment);
 			history_buffer_ptr += fragment;
 			if(history_buffer_ptr >= HISTORY_SAMPLES)

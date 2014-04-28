@@ -27,6 +27,7 @@
 #include "ladspa.h"
 #include "pluginaclient.h"
 #include "pluginaclientlad.inc"
+#include "samples.inc"
 
 
 class PluginAClientConfig
@@ -144,11 +145,11 @@ public:
 	~PluginAClientLAD();
 
 	int process_realtime(int64_t size, 
-		double *input_ptr, 
-		double *output_ptr);
+		Samples *input_ptr, 
+		Samples *output_ptr);
 	int process_realtime(int64_t size, 
-		double **input_ptr, 
-		double **output_ptr);
+		Samples **input_ptr, 
+		Samples **output_ptr);
 // Update output pointers as well
 	void update_gui();
 	int is_realtime();

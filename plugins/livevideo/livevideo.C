@@ -459,9 +459,11 @@ int LiveVideo::process_buffer(VFrame *frame,
 			if(!temp)
 			{
 				temp = new VFrame(0, 
+					-1,
 					session->vconfig_in->w,
 					session->vconfig_in->h,
-					input_cmodel);
+					input_cmodel,
+					-1);
 			}
 			input = temp;
 		}

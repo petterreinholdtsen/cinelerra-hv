@@ -76,7 +76,7 @@ public:
 	DB db;
 // required for all realtime/multichannel plugins
 	PLUGIN_CLASS_MEMBERS(ReverbConfig);
-	int process_realtime(int64_t size, double **input_ptr, double **output_ptr);
+	int process_realtime(int64_t size, Samples **input_ptr, Samples **output_ptr);
 	int is_realtime();
 	int is_synthesis();
 	int is_multichannel();

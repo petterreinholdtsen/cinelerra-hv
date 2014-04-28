@@ -311,7 +311,13 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->top = 9;
 			glyph->freetype_index = 0;
 			glyph->advance_w = 8;
-			glyph->data = new VFrame(0,
+			glyph->data = new VFrame;
+			glyph->data->set_use_shm(0);
+			glyph->data->reallocate(0,
+				-1,
+				0,
+				0,
+				0,
 				8,
 				8,
 				BC_A8,
@@ -331,7 +337,13 @@ void GlyphUnit::process_package(LoadPackage *package)
 //	glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_w, glyph->freetype_index);
 
 //printf("GlyphUnit::process_package 1\n");
-			glyph->data = new VFrame(0,
+			glyph->data = new VFrame;
+			glyph->data->set_use_shm(0);
+			glyph->data->reallocate(0,
+				-1,
+				0,
+				0,
+				0,
 				glyph->width,
 				glyph->height,
 				BC_A8,
@@ -1686,10 +1698,17 @@ int TitleMain::draw_mask()
 		int color_model = BC_RGBA8888;
 		if(cmodel_is_yuv(get_output()->get_color_model()))
 			color_model = BC_YUVA8888;
-		text_mask = new VFrame(0,
+		text_mask = new VFrame;
+		text_mask->set_use_shm(0);
+		text_mask->reallocate(0,
+			-1,
+			0,
+			0,
+			0,
 			text_w,
 			text_h,
-			color_model);
+			color_model,
+			-1);
 		need_redraw = 1;
 	}
 
@@ -1736,10 +1755,17 @@ int TitleMain::draw_mask()
 
 			if(!outline_mask)
 			{
-				outline_mask = new VFrame(0,
+				outline_mask = new VFrame;
+				outline_mask->set_use_shm(0);
+				outline_mask->reallocate(0,
+					-1,
+					0,
+					0,
+					0,
 					text_mask->get_w(),
 					text_mask->get_h(),
-					text_mask->get_color_model());
+					text_mask->get_color_model(),
+					-1);
 			}
 
 			if(!outline_engine) outline_engine = 

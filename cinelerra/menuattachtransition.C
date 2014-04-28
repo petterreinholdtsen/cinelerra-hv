@@ -64,7 +64,7 @@ void TransitionDialogThread::start()
 	{
 // Construct listbox names	
 		ArrayList<PluginServer*> plugindb;
-		mwindow->create_plugindb(data_type == TRACK_AUDIO, 
+		mwindow->search_plugindb(data_type == TRACK_AUDIO, 
 			data_type == TRACK_VIDEO, 
 			0, 
 			1,

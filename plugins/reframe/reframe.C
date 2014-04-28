@@ -187,14 +187,14 @@ ReFrameWindow::~ReFrameWindow()
 void ReFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
+	lock_window("ReFrameWindow::create_objects");
 	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
 	y += 20;
 	add_subwindow(new ReFrameOutput(plugin, x, y));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
-
 	show_window();
-	flush();
+	unlock_window();
 }
 
 int ReFrameWindow::close_event()

@@ -244,9 +244,11 @@ int _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 	if(!temp)
 	{
 		temp = new VFrame(0,
+			-1,
 			input->get_w(),
 			input->get_h(),
-			input->get_color_model());
+			input->get_color_model(),
+			-1);
 		temp->clear_frame();
 	}
 

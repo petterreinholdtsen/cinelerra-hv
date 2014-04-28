@@ -24,10 +24,12 @@
 #include "assets.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "indexstate.h"
 #include "quicktime.h"
 
 #include <stdio.h>
@@ -35,43 +37,40 @@
 
 
 Asset::Asset()
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>(), Indexable(1)
 {
 	init_values();
 }
 
 Asset::Asset(Asset &asset)
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>(), Indexable(1)
 {
 	init_values();
-	*this = asset;
+	this->copy_from(&asset, 1);
 }
 
 Asset::Asset(const char *path)
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>(), Indexable(1)
 {
 	init_values();
 	strcpy(this->path, path);
 }
 
 Asset::Asset(const int plugin_type, const char *plugin_title)
- : ListItem<Asset>(), GarbageObject("Asset")
+ : ListItem<Asset>(), Indexable(1)
 {
 	init_values();
 }
 
 Asset::~Asset()
 {
-	delete [] index_offsets;
-	delete [] index_sizes;
-// Don't delete index buffer since it is shared with the index thread.
 }
 
 
 int Asset::init_values()
 {
+
 	path[0] = 0;
-	strcpy(folder, MEDIA_FOLDER);
 //	format = FILE_MOV;
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
@@ -95,7 +94,7 @@ int Asset::init_values()
 	strcpy(acodec, QUICKTIME_TWOS);
 	jpeg_quality = 100;
 	aspect_ratio = -1;
-	
+
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
 
@@ -176,14 +175,7 @@ int Asset::init_values()
 
 int Asset::reset_index()
 {
-	index_status = INDEX_NOTTESTED;
-	index_start = old_index_end = index_end = 0;
-	index_offsets = 0;
-	index_sizes = 0;
-	index_zoom = 0;
-	index_bytes = 0;
-	index_buffer = 0;
-	return 0;
+	index_state->reset();
 }
 
 void Asset::copy_from(Asset *asset, int do_index)
@@ -301,18 +293,12 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 int64_t Asset::get_index_offset(int channel)
 {
-	if(channel < channels && index_offsets)
-		return index_offsets[channel];
-	else
-		return 0;
+	return index_state->get_index_offset(channel);
 }
 
 int64_t Asset::get_index_size(int channel)
 {
-	if(channel < channels && index_sizes)
-		return index_sizes[channel];
-	else
-		return 0;
+	return index_state->get_index_size(channel);
 }
 
 
@@ -350,6 +336,7 @@ char* Asset::get_compression_text(int audio, int video)
 
 Asset& Asset::operator=(Asset &asset)
 {
+printf("Asset::operator=\n");
 	copy_location(&asset);
 	copy_format(&asset, 1);
 	return *this;
@@ -542,7 +529,7 @@ int Asset::read_video(FileXML *file)
 	layers = file->tag.get_property("LAYERS", layers);
 // This is loaded from the index file after the EDL but this 
 // should be overridable in the EDL.
-	if(!frame_rate) frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
+	if(EQUIV(frame_rate, 0)) frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 	vcodec[0] = 0;
 	file->tag.get_property("VCODEC", vcodec);
 
@@ -553,95 +540,13 @@ int Asset::read_video(FileXML *file)
 
 int Asset::read_index(FileXML *file)
 {
-	delete [] index_offsets;
-	index_offsets = new int64_t[channels];
-	delete [] index_sizes;
-	index_sizes = new int64_t[channels];
-	for(int i = 0; i < channels; i++) 
-	{
-		index_offsets[i] = 0;
-		index_sizes[i] = 0;
-	}
-
-	int current_offset = 0;
-	int current_size = 0;
-	int result = 0;
-
-	index_zoom = file->tag.get_property("ZOOM", 1);
-	index_bytes = file->tag.get_property("BYTES", (int64_t)0);
-
-	while(!result)
-	{
-		result = file->read_tag();
-		if(!result)
-		{
-			if(file->tag.title_is("/INDEX"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("OFFSET"))
-			{
-				if(current_offset < channels)
-				{
-					index_offsets[current_offset++] = file->tag.get_property("FLOAT", 0);
-//printf("Asset::read_index %d %d\n", current_offset - 1, index_offsets[current_offset - 1]);
-				}
-			}
-			else
-			if(file->tag.title_is("SIZE"))
-			{
-				if(current_size < channels)
-				{
-					index_sizes[current_size++] = file->tag.get_property("FLOAT", 0);
-				}
-			}
-		}
-	}
+	index_state->read_xml(file, channels);
 	return 0;
 }
 
 int Asset::write_index(const char *path, int data_bytes)
 {
-	FILE *file;
-	if(!(file = fopen(path, "wb")))
-	{
-// failed to create it
-		printf(_("Asset::write_index Couldn't write index file %s to disk.\n"), path);
-	}
-	else
-	{
-		FileXML xml;
-// Pad index start position
-		fwrite((char*)&(index_start), sizeof(int64_t), 1, file);
-
-		index_status = INDEX_READY;
-// Write encoding information
-		write(&xml, 
-			1, 
-			"");
-		xml.write_to_file(file);
-		index_start = ftell(file);
-		fseek(file, 0, SEEK_SET);
-// Write index start
-		fwrite((char*)&(index_start), sizeof(int64_t), 1, file);
-		fseek(file, index_start, SEEK_SET);
-
-// Write index data
-		fwrite(index_buffer, 
-			data_bytes, 
-			1, 
-			file);
-		fclose(file);
-	}
-
-// Force reread of header
-//printf("Asset::write_index\n");
-	index_status = INDEX_NOTTESTED;
-//	index_status = INDEX_READY;
-	index_end = audio_length;
-	old_index_end = 0;
-	index_start = 0;
+	index_state->write_index(path, data_bytes, this, audio_length);
 }
 
 // Output path is the path of the output file if name truncation is desired.
@@ -699,9 +604,11 @@ int Asset::write(FileXML *file,
 // But the only way to know if an asset doesn't have audio or video data 
 // is to not write the block.
 // So change the block name if the asset doesn't have the data.
-	/* if(audio_data) */ write_audio(file);
-	/* if(video_data) */ write_video(file);
-	if(index_status == 0 && include_index) write_index(file);  // index goes after source
+	write_audio(file);
+	write_video(file);
+// index goes after source
+	if(index_state->index_status == INDEX_READY && include_index) 
+		write_index(file);  
 
 	file->tag.set_title("/ASSET");
 	file->append_tag();
@@ -776,29 +683,7 @@ int Asset::write_video(FileXML *file)
 
 int Asset::write_index(FileXML *file)
 {
-	file->tag.set_title("INDEX");
-	file->tag.set_property("ZOOM", index_zoom);
-	file->tag.set_property("BYTES", index_bytes);
-	file->append_tag();
-	file->append_newline();
-
-	if(index_offsets)
-	{
-		for(int i = 0; i < channels; i++)
-		{
-			file->tag.set_title("OFFSET");
-			file->tag.set_property("FLOAT", index_offsets[i]);
-			file->append_tag();
-			file->tag.set_title("SIZE");
-			file->tag.set_property("FLOAT", index_sizes[i]);
-			file->append_tag();
-		}
-	}
-
-	file->append_newline();
-	file->tag.set_title("/INDEX");
-	file->append_tag();
-	file->append_newline();
+	index_state->write_xml(file);
 	return 0;
 }
 
@@ -1063,41 +948,15 @@ int Asset::update_path(char *new_path)
 
 void Asset::update_index(Asset *asset)
 {
-//printf("Asset::update_index 1 %d\n", index_status);
-	index_status = asset->index_status;
-	index_zoom = asset->index_zoom; 	 // zoom factor of index data
-	index_start = asset->index_start;	 // byte start of index data in the index file
-	index_bytes = asset->index_bytes;	 // Total bytes in source file for comparison before rebuilding the index
-	index_end = asset->index_end;
-	old_index_end = asset->old_index_end;	 // values for index build
-
-	delete [] index_offsets;
-	delete [] index_sizes;
-	index_offsets = 0;
-	index_sizes = 0;
-	
-	if(asset->index_offsets)
-	{
-		index_offsets = new int64_t[asset->channels];
-		index_sizes = new int64_t[asset->channels];
-
-		int i;
-		for(i = 0; i < asset->channels; i++)
-		{
-// offsets of channels in index file in floats
-			index_offsets[i] = asset->index_offsets[i];  
-			index_sizes[i] = asset->index_sizes[i];
-		}
-	}
-	index_buffer = asset->index_buffer;    // pointer
+	index_state->copy_from(asset->index_state);
 }
 
 
 int Asset::dump()
 {
 	printf("  asset::dump\n");
-	printf("   %p %s\n", this, path);
-	printf("   index_status %d\n", index_status);
+	printf("   this=%p path=%s\n", this, path);
+	printf("   index_status %d\n", index_state->index_status);
 	printf("   format %d\n", format);
 	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3]);
@@ -1109,3 +968,54 @@ int Asset::dump()
 }
 
 
+// For Indexable
+int Asset::get_audio_channels()
+{
+	return channels;
+}
+
+int Asset::get_sample_rate()
+{
+	return sample_rate;
+}
+
+int64_t Asset::get_audio_samples()
+{
+	return audio_length;
+}
+
+int Asset::have_audio()
+{
+	return audio_data;
+}
+
+int Asset::have_video()
+{
+	return video_data;
+}
+
+int Asset::get_w()
+{
+	return width;
+}
+
+int Asset::get_h()
+{
+	return height;
+}
+
+double Asset::get_frame_rate()
+{
+	return frame_rate;
+}
+
+
+int Asset::get_video_layers()
+{
+	return layers;
+}
+
+int64_t Asset::get_video_frames()
+{
+	return video_length;
+}

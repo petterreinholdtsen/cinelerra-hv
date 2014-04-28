@@ -11,7 +11,7 @@
 // This generates our own header using fixed parameters
 //#define MANUAL_HEADER
 
-// For the working version
+// For the working version of x264
 #define GOOD_VERSION
 
 typedef struct

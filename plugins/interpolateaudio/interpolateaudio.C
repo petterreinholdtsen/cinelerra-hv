@@ -27,6 +27,7 @@
 #include "language.h"
 #include "mainprogress.h"
 #include "pluginaclient.h"
+#include "samples.h"
 #include "transportque.h"
 
 #include <string.h>
@@ -52,14 +53,14 @@ public:
 	const char* plugin_title();
 
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 	int is_realtime();
 
 #define FRAGMENT_SIZE 4096
-	double *start_fragment;
-	double *end_fragment;
+	Samples *start_fragment;
+	Samples *end_fragment;
 	double start_sample;
 	double end_sample;
 	int64_t range_start;
@@ -86,8 +87,8 @@ InterpolateAudioEffect::InterpolateAudioEffect(PluginServer *server)
 
 InterpolateAudioEffect::~InterpolateAudioEffect()
 {
-	if(start_fragment) delete [] start_fragment;
-	if(end_fragment) delete [] end_fragment;
+	if(start_fragment) delete start_fragment;
+	if(end_fragment) delete end_fragment;
 }
 
 
@@ -111,15 +112,15 @@ NEW_PICON_MACRO(InterpolateAudioEffect)
 
 
 int InterpolateAudioEffect::process_buffer(int64_t size, 
-	double *buffer,
+	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
 	double slope;
 	double intercept;
 
-	if(!start_fragment) start_fragment = new double[FRAGMENT_SIZE];
-	if(!end_fragment) end_fragment = new double[FRAGMENT_SIZE];
+	if(!start_fragment) start_fragment = new Samples(FRAGMENT_SIZE);
+	if(!end_fragment) end_fragment = new Samples(FRAGMENT_SIZE);
 
 	if(get_direction() == PLAY_FORWARD)
 	{
@@ -136,13 +137,13 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 				sample_rate,
 				range_start - FRAGMENT_SIZE,
 				FRAGMENT_SIZE);
-			start_sample = start_fragment[FRAGMENT_SIZE - 1];
+			start_sample = start_fragment->get_data()[FRAGMENT_SIZE - 1];
 			read_samples(end_fragment,
 				0,
 				sample_rate,
 				range_end - FRAGMENT_SIZE,
 				FRAGMENT_SIZE);
-			end_sample = end_fragment[FRAGMENT_SIZE - 1];
+			end_sample = end_fragment->get_data()[FRAGMENT_SIZE - 1];
 		}
 
 
@@ -153,7 +154,7 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 			double start_fraction = 1.0 - end_fraction;
 			double out_sample = start_sample * start_fraction + 
 				end_sample * end_fraction;
-			buffer[i] = out_sample;
+			buffer->get_data()[i] = out_sample;
 		}
 	}
 	else
@@ -170,13 +171,13 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 				sample_rate,
 				range_start,
 				FRAGMENT_SIZE);
-			start_sample = start_fragment[0];
+			start_sample = start_fragment->get_data()[0];
 			read_samples(end_fragment,
 				0,
 				sample_rate,
 				range_end,
 				FRAGMENT_SIZE);
-			end_sample = end_fragment[0];
+			end_sample = end_fragment->get_data()[0];
 		}
 
 
@@ -187,7 +188,7 @@ int InterpolateAudioEffect::process_buffer(int64_t size,
 			double end_fraction = 1.0 - start_fraction;
 			double out_sample = start_sample * start_fraction + 
 				end_sample * end_fraction;
-			buffer[i] = out_sample;
+			buffer->get_data()[i] = out_sample;
 		}
 	}
 	return 0;

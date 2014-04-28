@@ -58,6 +58,14 @@ public:
 	virtual int restart_playback();
 	virtual void run();
 
+// convert to and from the native units of the render engine
+	virtual int64_t tounits(double position, int round);
+	virtual double fromunits(int64_t position);
+// test region against loop boundaries
+	int get_boundaries(int64_t &current_render_length);
+// advance the buffer position depending on the loop status
+	int advance_position(int64_t current_render_length);
+
 	RenderEngine *renderengine;
 // Virtual console
 	VirtualConsole *vconsole;
@@ -68,8 +76,6 @@ public:
 	int done;       
 // Flag for interrupted playback
 	int interrupt;
-// flag for last buffer to be played back
-	int last_playback;  
 // if this media type is being rendered asynchronously by threads
 	int asynchronous;     
 // Module for every track to dispatch plugins in whether the track is
@@ -85,43 +91,6 @@ public:
 
 	
 
-
-
-
-
-
-	CommonRender(MWindow *mwindow, RenderEngine *renderengine);
-
-// clean up rendering
-	int virtual stop_rendering() {};
-	int wait_for_completion();
-	virtual int wait_device_completion() {};
-// renders to a device when there's a device
-	virtual int process_buffer(int64_t input_len, int64_t input_position) {};
-
-	virtual int get_datatype() {};
-// test region against loop boundaries
-	int get_boundaries(int64_t &current_render_length);
-// test region for playback automation changes
-	int get_automation(int64_t &current_render_length, int data_type);
-// advance the buffer position depending on the loop status
-	int advance_position(int64_t current_render_length);
-
-// convert to and from the native units of the render engine
-	virtual int64_t tounits(double position, int round);
-	virtual double fromunits(int64_t position);
-	virtual int64_t get_render_length(int64_t current_render_length) {};
-
-	MWindow *mwindow;
-
-	int64_t input_length;           // frames/samples to read from disk at a time
-
-protected:
-// make sure automation agrees with playable tracks
-// automatically tests direction of playback
-// return 1 if it doesn't
-	int test_automation_before(int64_t &current_render_length, int data_type);
-	int test_automation_after(int64_t &current_render_length, int data_type);
 };
 
 

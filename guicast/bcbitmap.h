@@ -98,6 +98,7 @@ public:
 	int get_h();
 // Data pointers for current ring buffer
 	unsigned char* get_data();
+	int get_shmid();
 	unsigned char* get_y_plane();
 	unsigned char* get_u_plane();
 	unsigned char* get_v_plane();
@@ -106,7 +107,7 @@ public:
 	int hardware_scaling();
 	unsigned char** get_row_pointers();
 	int get_bytes_per_line();
-	long get_shm_id();
+	long get_shm_id(int buffer);
 	long get_shm_size();
 // Offset of current ringbuffer in shared memory
 	long get_shm_offset();
@@ -161,7 +162,7 @@ private:
 	Drawable last_pixmap;
 	XImage *ximage[BITMAP_RING];
 	XvImage *xv_image[BITMAP_RING];
-	XShmSegmentInfo shm_info;
+	XShmSegmentInfo shm_info[BITMAP_RING];
 };
 
 

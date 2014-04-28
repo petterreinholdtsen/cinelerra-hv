@@ -1,14 +1,13 @@
-iso.lo iso.o: iso.c ../config.h /usr/include/errno.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h /usr/include/bits/errno.h \
-  /usr/include/linux/errno.h /usr/include/asm/errno.h \
-  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
-  /usr/include/unistd.h /usr/include/bits/posix_opt.h \
-  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
-  /usr/include/bits/confname.h /usr/include/getopt.h \
-  /usr/include/string.h /usr/include/bits/string.h \
+iso.lo: iso.c ../config.h /usr/include/errno.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
+  /usr/include/bits/errno.h /usr/include/linux/errno.h \
+  /usr/include/asm/errno.h /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/errno-base.h /usr/include/unistd.h \
+  /usr/include/bits/posix_opt.h /usr/include/bits/types.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
+  /usr/include/bits/typesizes.h /usr/include/bits/confname.h \
+  /usr/include/getopt.h /usr/include/string.h /usr/include/bits/string.h \
   /usr/include/bits/string2.h /usr/include/endian.h \
   /usr/include/bits/endian.h /usr/include/stdlib.h /usr/include/fcntl.h \
   /usr/include/bits/fcntl.h /usr/include/sys/types.h /usr/include/time.h \
@@ -23,8 +22,7 @@ iso.lo iso.o: iso.c ../config.h /usr/include/errno.h \
   kernel-raw1394.h /usr/include/asm/types.h ieee1394-ioctl.h \
   /usr/include/linux/ioctl.h /usr/include/linux/types.h \
   /usr/include/linux/posix_types.h /usr/include/linux/stddef.h \
-  /usr/include/asm/posix_types.h /usr/include/asm/posix_types_64.h \
-  raw1394_private.h
+  /usr/include/asm/posix_types.h raw1394_private.h
 
 ../config.h:
 
@@ -38,7 +36,7 @@ iso.lo iso.o: iso.c ../config.h /usr/include/errno.h \
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-64.h:
+/usr/include/gnu/stubs-32.h:
 
 /usr/include/bits/errno.h:
 
@@ -56,9 +54,9 @@ iso.lo iso.o: iso.c ../config.h /usr/include/errno.h \
 
 /usr/include/bits/types.h:
 
-/usr/include/bits/typesizes.h:
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/include/bits/typesizes.h:
 
 /usr/include/bits/confname.h:
 
@@ -133,7 +131,5 @@ ieee1394-ioctl.h:
 /usr/include/linux/stddef.h:
 
 /usr/include/asm/posix_types.h:
-
-/usr/include/asm/posix_types_64.h:
 
 raw1394_private.h:

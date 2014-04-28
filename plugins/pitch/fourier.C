@@ -25,6 +25,7 @@
 
 #include "clip.h"
 #include "fourier.h"
+#include "samples.h"
 #include "transportque.inc"
 
 #define HALF_WINDOW (window_size / 2)
@@ -264,7 +265,7 @@ int CrossfadeFFT::reset()
 
 int CrossfadeFFT::delete_fft()
 {
-	if(input_buffer) delete [] input_buffer;
+	if(input_buffer) delete input_buffer;
 	if(output_buffer) delete [] output_buffer;
 	if(freq_real) delete [] freq_real;
 	if(freq_imag) delete [] freq_imag;
@@ -315,7 +316,7 @@ int CrossfadeFFT::reconfigure()
 
 int CrossfadeFFT::process_buffer(int64_t output_sample, 
 	long size, 
-	double *output_ptr,
+	Samples *output_ptr,
 	int direction)
 {
 	if(oversample > 0)
@@ -369,7 +370,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	// Fill output buffer by overlap_size at a time until size samples are available
 		while(samples_ready < total_size)
 		{
-			if(!input_buffer) input_buffer = new double[window_size];
+			if(!input_buffer) input_buffer = new Samples(window_size);
 			if(!fftw_data) fftw_data = (fftw_complex *)fftw_malloc(window_size * sizeof(fftw_complex));
 
 	// Fill enough input to make a window starting at output_sample
@@ -391,7 +392,8 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 				{
 					read_start = this->input_sample + window_size - overlap_size;
 					write_pos = window_size - overlap_size;
-				} else 
+				} 
+				else 
 				{
 					read_start = this->input_sample - window_size;
 					write_pos = 0;
@@ -401,30 +403,37 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 
 			if (read_start < 0)
 			{
-	// completely outside the track	
-				memset (input_buffer + write_pos, 0, read_len * sizeof(double));
+// completely outside the track	
+				memset (input_buffer->get_data() + write_pos, 0, read_len * sizeof(double));
 				result = 1;
-			} else
-			if (read_start + read_len *step < 0)
+			} 
+			else
+			if (read_start + read_len * step < 0)
 			{
-	// special case for reading before the track - in general it would be sensible that this behaviour is done by read_samples()
-				memset (input_buffer, 0, (read_len - read_start) * sizeof(double));
+// special case for reading before the track - in general it would be sensible that this behaviour is done by read_samples()
+				memset (input_buffer->get_data(), 0, (read_len - read_start) * sizeof(double));
+				input_buffer->set_offset(read_len * step + read_start + write_pos);
 				result = read_samples(read_start,
 					read_start,
-					input_buffer + read_len *step + read_start + write_pos);
-			} else
+					input_buffer);
+				input_buffer->set_offset(0);
+			} 
+			
+			else
 			{
-	//printf("Readstart: %lli, read len: %i, write pos: %i\n", read_start, read_len, write_pos);
+//printf("Readstart: %lli, read len: %i, write pos: %i\n", read_start, read_len, write_pos);
+				input_buffer->set_offset(write_pos);
 				result = read_samples(read_start,
 					read_len,
-					input_buffer + write_pos);
+					input_buffer);
+				input_buffer->set_offset(0);
 			}
 
 
-	// apply Hanning window to input samples
+// apply Hanning window to input samples
 			for (int i = 0; i< window_size; i++) 
 			{
-				fftw_data[i][0] = input_buffer[i] * pre_window[i];
+				fftw_data[i][0] = input_buffer->get_data()[i] * pre_window[i];
 				fftw_data[i][1] = 0;
 			}
 
@@ -454,11 +463,15 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 			}
 
 
-	// Shift input buffer
+// Shift input buffer
 			if (step == 1) 
-				memmove(input_buffer, input_buffer + overlap_size, (window_size - overlap_size) * sizeof(double));
+				memmove(input_buffer->get_data(), 
+					input_buffer->get_data() + overlap_size, 
+					(window_size - overlap_size) * sizeof(double));
 			else
-				memmove(input_buffer + overlap_size, input_buffer, (window_size - overlap_size) * sizeof(double));
+				memmove(input_buffer->get_data() + overlap_size, 
+					input_buffer->get_data(), 
+					(window_size - overlap_size) * sizeof(double));
 
 			this->input_sample += step * overlap_size;
 
@@ -506,7 +519,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	// Fill output buffer half a window at a time until size samples are available
 		while(output_size < size)
 		{
-			if(!input_buffer) input_buffer = new double[window_size];
+			if(!input_buffer) input_buffer = new Samples(window_size);
 			if(!freq_real) freq_real = new double[window_size];
 			if(!freq_imag) freq_imag = new double[window_size];
 			if(!temp_real) temp_real = new double[window_size];
@@ -518,16 +531,20 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 					window_size,
 					input_buffer);
 			else
+			{
+				input_buffer->set_offset(HALF_WINDOW);
 				result = read_samples(this->input_sample + step * HALF_WINDOW,
 					HALF_WINDOW,
 					input_buffer + HALF_WINDOW);
+				input_buffer->set_offset(0);
+			}
 
 			input_size = window_size;
 
 			if(!result)
 				do_fft(window_size,   // must be a power of 2
     				0,                // 0 = forward FFT, 1 = inverse
-    				input_buffer,     // array of input's real samples
+    				input_buffer->get_data(),     // array of input's real samples
     				0,                // array of input's imag samples
     				freq_real,        // array of output's reals
     				freq_imag);
@@ -587,7 +604,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 				i < input_size;
 				i++, j++)
 			{
-				input_buffer[j] = input_buffer[i];
+				input_buffer->get_data()[j] = input_buffer->get_data()[i];
 			}
 			input_size = HALF_WINDOW;
 			this->input_sample += step * HALF_WINDOW;
@@ -598,8 +615,9 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	// Transfer output buffer
 		if(output_ptr)
 		{
-			memcpy(output_ptr, output_buffer, sizeof(double) * size);
+			memcpy(output_ptr->get_data(), output_buffer, sizeof(double) * size);
 		}
+
 		for(int i = 0, j = size; j < output_size + HALF_WINDOW; i++, j++)
 			output_buffer[i] = output_buffer[j];
 		this->output_sample += step * size;
@@ -644,7 +662,7 @@ void smbFft(double *fftBuffer, long fftFrameSize, long sign);
 
 int CrossfadeFFT::read_samples(int64_t output_sample, 
 		int samples, 
-		double *buffer)
+		Samples *buffer)
 {
 	return 1;
 }

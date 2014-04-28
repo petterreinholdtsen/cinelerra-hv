@@ -40,6 +40,10 @@ public:
 	int is_video();
 	const char* plugin_title();
 	VFrame* new_picon();
+	int handle_opengl();
+	
+	int is_before;
+	float fraction;
 };
 
 #endif

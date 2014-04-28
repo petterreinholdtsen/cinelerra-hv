@@ -129,6 +129,8 @@ public:
 // action
 		TRACK,
 		STABILIZE,
+		TRACK_PIXEL,
+		STABILIZE_PIXEL,
 		NOTHING,
 // calculation
 		RECALCULATE,

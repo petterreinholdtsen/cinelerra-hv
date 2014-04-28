@@ -43,6 +43,7 @@
 #include "formatcheck.h"
 #include "formatpopup.h"
 #include "formattools.h"
+#include "indexable.h"
 #include "labels.h"
 #include "language.h"
 #include "loadmode.h"
@@ -86,7 +87,9 @@ RenderItem::RenderItem(MWindow *mwindow)
 
 int RenderItem::handle_event() 
 {
+	mwindow->gui->unlock_window();
 	mwindow->render->start_interactive();
+	mwindow->gui->lock_window("RenderItem::handle_event");
 	return 1;
 }
 
@@ -229,10 +232,9 @@ int MainPackageRenderer::progress_cancelled()
 
 
 Render::Render(MWindow *mwindow)
- : Thread(0, 0, 0)
+ : BC_DialogThread()
 {
 	this->mwindow = mwindow;
-	if(mwindow) plugindb = mwindow->plugindb;
 	in_progress = 0;
 	progress = 0;
 	preferences = 0;
@@ -241,6 +243,9 @@ Render::Render(MWindow *mwindow)
 	counter_lock = new Mutex("Render::counter_lock");
 	completion = new Condition(0, "Render::completion");
 	progress_timer = new Timer;
+	thread = new RenderThread(mwindow, this);
+	asset = 0;
+	result = 0;
 }
 
 Render::~Render()
@@ -248,19 +253,19 @@ Render::~Render()
 	delete package_lock;
 	delete counter_lock;
 	delete completion;
-	if(preferences) delete preferences;
+// May be owned by someone else
+//	delete preferences;
 	delete progress_timer;
+	asset->Garbage::remove_user();
+	delete thread;
 }
 
 void Render::start_interactive()
 {
-	if(!Thread::running())
+	if(!thread->running())
 	{
 		mode = Render::INTERACTIVE;
-		this->jobs = 0;
-		batch_cancelled = 0;
-		completion->reset();
-		Thread::start();
+		BC_DialogThread::start();
 	}
 	else
 	{
@@ -273,42 +278,96 @@ void Render::start_interactive()
 	}
 }
 
+
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 {
-	batch_cancelled = 0;
-	if(!Thread::running())
+	if(!thread->running())
 	{
 		mode = Render::BATCH;
 		this->jobs = jobs;
 		completion->reset();
-		Thread::start();
-	}
-	else
-	{
-		ErrorBox error_box(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
-		error_box.create_objects("Already rendering");
-		error_box.raise_window();
-		error_box.run_window();
+		start_render();
 	}
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
 	BC_Hash *boot_defaults,
-	Preferences *preferences,
-	ArrayList<PluginServer*> *plugindb)
+	Preferences *preferences)
 {
 	mode = Render::BATCH;
 	batch_cancelled = 0;
 	this->jobs = jobs;
 	this->preferences = preferences;
-	this->plugindb = plugindb;
 
 	completion->reset();
-	run();
+PRINT_TRACE
+	thread->run();
+PRINT_TRACE
 	this->preferences = 0;
 }
+
+
+BC_Window* Render::new_gui()
+{
+	this->jobs = 0;
+	batch_cancelled = 0;
+	format_error = 0;
+	result = 0;
+	completion->reset();
+	RenderWindow *window = 0;
+	
+	if(mode == Render::INTERACTIVE)
+	{
+// Fix the asset for rendering
+		if(!asset) asset = new Asset;
+		load_defaults(asset);
+		check_asset(mwindow->edl, *asset);
+
+// Get format from user
+		window = new RenderWindow(mwindow, 
+			this, 
+			asset,
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
+		window->create_objects();
+	}
+	else
+	{
+		;
+	}
+
+	return window;
+}
+
+
+void Render::handle_close_event(int result)
+{
+	int format_error = 0;
+	const int debug = 0;
+
+	if(!result)
+	{
+		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+// Check the asset format for errors.
+		FormatCheck format_check(asset);
+		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+		format_error = format_check.check_format();
+		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+	}
+
+	if(!format_error && !result)
+	{
+		save_defaults(asset);
+		mwindow->save_defaults();
+		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+
+		if(!result) start_render();
+		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+
+	}
+}
+
+
 
 void Render::stop_operation()
 {
@@ -321,134 +380,6 @@ void Render::stop_operation()
 	}
 }
 
-
-void Render::run()
-{
-	int format_error;
-	const int debug = 0;
-
-	result = 0;
-
-	if(mode == Render::INTERACTIVE)
-	{
-// Fix the asset for rendering
-if(debug) printf("Render::run %d\n%", __LINE__);
-		Asset *asset = new Asset;
-		load_defaults(asset);
-if(debug) printf("Render::run %d\n%", __LINE__);
-		check_asset(mwindow->edl, *asset);
-if(debug) printf("Render::run %d\n%", __LINE__);
-
-// Get format from user
-		if(!result)
-		{
-if(debug) printf("Render::run %d\n%", __LINE__);
-			do
-			{
-				format_error = 0;
-				result = 0;
-
-				{
-if(debug) printf("Render::run %d\n%", __LINE__);
-					RenderWindow window(mwindow, 
-						this, 
-						asset,
-						mwindow->gui->get_abs_cursor_x(1),
-						mwindow->gui->get_abs_cursor_y(1));
-if(debug) printf("Render::run %d\n%", __LINE__);
-					window.create_objects();
-if(debug) printf("Render::run %d\n%", __LINE__);
-					result = window.run_window();
-if(debug) printf("Render::run %d\n%", __LINE__);
-				}
-
-
-				if(!result)
-				{
-if(debug) printf("Render::run %d\n%", __LINE__);
-// Check the asset format for errors.
-					FormatCheck format_check(asset);
-if(debug) printf("Render::run %d\n%", __LINE__);
-					format_error = format_check.check_format();
-if(debug) printf("Render::run %d\n%", __LINE__);
-				}
-			}while(format_error && !result);
-		}
-if(debug) printf("Render::run %d\n%", __LINE__);
-
-		save_defaults(asset);
-		mwindow->save_defaults();
-if(debug) printf("Render::run %d\n%", __LINE__);
-
-		if(!result) render(1, asset, mwindow->edl, strategy);
-if(debug) printf("Render::run %d\n%", __LINE__);
-
-		Garbage::delete_object(asset);
-if(debug) printf("Render::run %d\n%", __LINE__);
-	}
-	else
-	if(mode == Render::BATCH)
-	{
-		for(int i = 0; i < jobs->total && !result; i++)
-		{
-			BatchRenderJob *job = jobs->values[i];
-			if(job->enabled)
-			{
-				if(mwindow)
-				{
-					mwindow->batch_render->update_active(i);
-				}
-				else
-				{
-					printf("Render::run: %s\n", job->edl_path);
-				}
-
-
-				FileXML *file = new FileXML;
-				EDL *edl = new EDL;
-				edl->create_objects();
-				file->read_from_file(job->edl_path);
-				if(!plugindb && mwindow)
-					plugindb = mwindow->plugindb;
-				edl->load_xml(plugindb, file, LOAD_ALL);
-
-				render(0, job->asset, edl, job->strategy);
-
-				delete edl;
-				delete file;
-				if(!result)
-				{
-					if(mwindow)
-						mwindow->batch_render->update_done(i, 1, elapsed_time);
-					else
-					{
-						char string[BCTEXTLEN];
-						elapsed_time = 
-							(double)progress_timer->get_scaled_difference(1);
-						Units::totext(string,
-							elapsed_time,
-							TIME_HMS2);
-						printf("Render::run: done in %s\n", string);
-					}
-				}
-				else
-				{
-					if(mwindow)
-						mwindow->batch_render->update_active(-1);
-					else
-						printf("Render::run: failed\n");
-				}
-			}
-		}
-
-		if(mwindow)
-		{
-			mwindow->batch_render->update_active(-1);
-			mwindow->batch_render->update_done(-1, 0, 0);
-		}
-	}
-if(debug) printf("Render::run %d\n%", __LINE__);
-}
 
 
 
@@ -561,344 +492,9 @@ void Render::stop_progress()
 
 
 
-int Render::render(int test_overwrite, 
-	Asset *asset,
-	EDL *edl,
-	int strategy)
+void Render::start_render()
 {
-	char string[BCTEXTLEN];
-// Total length in seconds
-	double total_length;
-	int last_audio_buffer;
-	RenderFarmServer *farm_server = 0;
-	FileSystem fs;
-	int total_digits;      // Total number of digits including padding the user specified.
-	int number_start;      // Character in the filename path at which the number begins
-	int current_number;    // The number the being injected into the filename.
-// Pointer from file
-// (VFrame*)(VFrame array [])(Channel [])
-	VFrame ***video_output;
-// Pointer to output buffers
-	VFrame *video_output_ptr[MAX_CHANNELS];
-	double *audio_output_ptr[MAX_CHANNELS];
-	int done = 0;
-	in_progress = 1;
-
-
-	this->default_asset = asset;
-	progress = 0;
-	result = 0;
-
-	if(mwindow)
-	{
-		if(!preferences)
-			preferences = new Preferences;
-
-		preferences->copy_from(mwindow->preferences);
-	}
-
-
-// Create rendering command
-	command = new TransportCommand;
-	command->command = NORMAL_FWD;
-	command->get_edl()->copy_all(edl);
-	command->change_type = CHANGE_ALL;
-// Get highlighted playback range
-	command->set_playback_range();
-// Adjust playback range with in/out points
-	command->adjust_playback_range();
-	packages = new PackageDispatcher;
-
-
-// Configure preview monitor
-	VideoOutConfig vconfig;
-	PlaybackConfig *playback_config = new PlaybackConfig;
-
-// Create caches
-	audio_cache = new CICache(preferences, plugindb);
-	video_cache = new CICache(preferences, plugindb);
-
-	default_asset->frame_rate = command->get_edl()->session->frame_rate;
-	default_asset->sample_rate = command->get_edl()->session->sample_rate;
-
-// Conform asset to EDL.  Find out if any tracks are playable.
-	result = check_asset(command->get_edl(), *default_asset);
-
-	if(!result)
-	{
-// Get total range to render
-		total_start = command->start_position;
-		total_end = command->end_position;
-		total_length = total_end - total_start;
-
-// Nothing to render
-		if(EQUIV(total_length, 0))
-		{
-			result = 1;
-		}
-	}
-
-
-
-
-
-
-
-// Generate packages
-	if(!result)
-	{
-// Stop background rendering
-		if(mwindow) mwindow->stop_brender();
-
-		fs.complete_path(default_asset->path);
-		strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
-
-		result = packages->create_packages(mwindow,
-			command->get_edl(),
-			preferences,
-			strategy, 
-			default_asset, 
-			total_start, 
-			total_end,
-			test_overwrite);
-	}
-
-
-
-
-
-
-
-
-
-
-	done = 0;
-	total_rendered = 0;
-	frames_per_second = 0;
-
-	if(!result)
-	{
-// Start dispatching external jobs
-		if(mwindow)
-		{
-			mwindow->gui->lock_window("Render::render 1");
-			mwindow->gui->show_message(_("Starting render farm"));
-			mwindow->gui->start_hourglass();
-			mwindow->gui->unlock_window();
-		}
-		else
-		{
-			printf("Render::render: starting render farm\n");
-		}
-
-		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
-		{
-			farm_server = new RenderFarmServer(plugindb, 
-				packages,
-				preferences, 
-				1,
-				&result,
-				&total_rendered,
-				counter_lock,
-				default_asset,
-				command->get_edl(),
-				0);
-			result = farm_server->start_clients();
-
-			if(result)
-			{
-				if(mwindow)
-				{
-					mwindow->gui->lock_window("Render::render 2");
-					mwindow->gui->show_message(_("Failed to start render farm"),
-						mwindow->theme->message_error);
-					mwindow->gui->stop_hourglass();
-					mwindow->gui->unlock_window();
-				}
-				else
-				{
-					printf("Render::render: Failed to start render farm\n");
-				}
-			}
-		}
-	}
-
-
-
-
-// Perform local rendering
-
-
-	if(!result)
-	{
-		start_progress();
-	
-
-
-
-		MainPackageRenderer package_renderer(this);
-		result = package_renderer.initialize(mwindow,
-				command->get_edl(),   // Copy of master EDL
-				preferences, 
-				default_asset,
-				plugindb);
-
-
-
-
-
-
-
-		while(!result)
-		{
-// Get unfinished job
-			RenderPackage *package;
-
-			if(strategy == SINGLE_PASS_FARM)
-			{
-				package = packages->get_package(frames_per_second, -1, 1);
-			}
-			else
-			{
-				package = packages->get_package(0, -1, 1);
-			}
-
-// Exit point
-			if(!package) 
-			{
-				done = 1;
-				break;
-			}
-
-
-
-			Timer timer;
-			timer.update();
-
-			if(package_renderer.render_package(package))
-				result = 1;
-
-// Result is also set directly by the RenderFarm.
-
-			frames_per_second = (double)(package->video_end - package->video_start) / 
-				(double)(timer.get_difference() / 1000);
-
-
-		} // file_number
-
-
-
-printf("Render::run: Session finished.\n");
-
-
-
-
-
-		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
-		{
-			farm_server->wait_clients();
-		}
-
-printf("Render::render 90\n");
-
-// Notify of error
-		if(result && 
-			(!progress || !progress->is_cancelled()) &&
-			!batch_cancelled)
-		{
-			if(mwindow)
-			{
-				ErrorBox error_box(PROGRAM_NAME ": Error",
-					mwindow->gui->get_abs_cursor_x(1),
-					mwindow->gui->get_abs_cursor_y(1));
-				error_box.create_objects(_("Error rendering data."));
-				error_box.raise_window();
-				error_box.run_window();
-			}
-			else
-			{
-				printf("Render::render: Error rendering data\n");
-			}
-		}
-printf("Render::render 91\n");
-
-// Delete the progress box
-		stop_progress();
-
-printf("Render::render 100\n");
-
-
-
-
-	}
-
-
-// Paste all packages into timeline if desired
-
-	if(!result && 
-		load_mode != LOAD_NOTHING && 
-		mwindow &&
-		mode != Render::BATCH)
-	{
-		mwindow->gui->lock_window("Render::render 3");
-
-		mwindow->undo->update_undo_before();
-
-
-
-		ArrayList<Asset*> *assets = packages->get_asset_list();
-		if(load_mode == LOAD_PASTE)
-			mwindow->clear(0);
-		mwindow->load_assets(assets, 
-			-1, 
-			load_mode,
-			0,
-			0,
-			mwindow->edl->session->labels_follow_edits,
-			mwindow->edl->session->plugins_follow_edits);
-		delete assets;
-
-
-		mwindow->save_backup();
-		mwindow->undo->update_undo_after(_("render"), LOAD_ALL);
-		mwindow->update_plugin_guis();
-		mwindow->gui->update(1, 
-			2,
-			1,
-			1,
-			1,
-			1,
-			0);
-		mwindow->sync_parameters(CHANGE_ALL);
-		mwindow->gui->unlock_window();
-	}
-
-printf("Render::render 110\n");
-
-// Disable hourglass
-	if(mwindow)
-	{
-		mwindow->gui->lock_window("Render::render 3");
-		mwindow->gui->stop_hourglass();
-		mwindow->gui->unlock_window();
-	}
-
-//printf("Render::render 110\n");
-// Need to restart because brender always stops before render.
-	if(mwindow)
-		mwindow->restart_brender();
-	if(farm_server) delete farm_server;
-	delete command;
-	delete playback_config;
-	delete audio_cache;
-	delete video_cache;
-// Must delete packages after server
-	delete packages;
-	in_progress = 0;
-	completion->unlock();
-printf("Render::render 120\n");
-
-	return result;
+	thread->start();
 }
 
 
@@ -987,7 +583,7 @@ void Render::get_starting_number(char *path,
 int Render::load_defaults(Asset *asset)
 {
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
-	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOAD_NEW_TRACKS);
+	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOADMODE_NEW_TRACKS);
 
 
 	asset->load_defaults(mwindow->defaults, 
@@ -1024,6 +620,459 @@ int Render::save_defaults(Asset *asset)
 
 
 
+
+
+
+
+
+RenderThread::RenderThread(MWindow *mwindow, Render *render)
+ : Thread(0, 0, 0)
+{
+	this->mwindow = mwindow;
+	this->render = render;
+}
+
+RenderThread::~RenderThread()
+{
+}
+
+
+void RenderThread::render_single(int test_overwrite, 
+	Asset *asset,
+	EDL *edl,
+	int strategy)
+{
+	char string[BCTEXTLEN];
+// Total length in seconds
+	double total_length;
+	int last_audio_buffer;
+	RenderFarmServer *farm_server = 0;
+	FileSystem fs;
+	int total_digits;      // Total number of digits including padding the user specified.
+	int number_start;      // Character in the filename path at which the number begins
+	int current_number;    // The number the being injected into the filename.
+	int done = 0;
+	const int debug = 0;
+
+	render->in_progress = 1;
+
+
+	render->default_asset = asset;
+	render->progress = 0;
+	render->result = 0;
+
+	if(mwindow)
+	{
+		if(!render->preferences)
+			render->preferences = new Preferences;
+
+		render->preferences->copy_from(mwindow->preferences);
+	}
+
+
+// Create rendering command
+	TransportCommand *command = new TransportCommand;
+	command->command = NORMAL_FWD;
+	command->get_edl()->copy_all(edl);
+	command->change_type = CHANGE_ALL;
+// Get highlighted playback range
+	command->set_playback_range();
+// Adjust playback range with in/out points
+	command->adjust_playback_range();
+	render->packages = new PackageDispatcher;
+
+
+// Configure preview monitor
+	VideoOutConfig vconfig;
+	PlaybackConfig *playback_config = new PlaybackConfig;
+
+// Create caches
+	CICache *audio_cache = new CICache(render->preferences);
+	CICache *video_cache = new CICache(render->preferences);
+
+	render->default_asset->frame_rate = command->get_edl()->session->frame_rate;
+	render->default_asset->sample_rate = command->get_edl()->session->sample_rate;
+
+// Conform asset to EDL.  Find out if any tracks are playable.
+	render->result = render->check_asset(command->get_edl(), 
+		*render->default_asset);
+
+	if(!render->result)
+	{
+// Get total range to render
+		render->total_start = command->start_position;
+		render->total_end = command->end_position;
+		total_length = render->total_end - render->total_start;
+
+// Nothing to render
+		if(EQUIV(total_length, 0))
+		{
+			render->result = 1;
+		}
+	}
+
+
+
+
+
+
+
+// Generate packages
+	if(!render->result)
+	{
+// Stop background rendering
+		if(mwindow) mwindow->stop_brender();
+
+		fs.complete_path(render->default_asset->path);
+		strategy = Render::fix_strategy(strategy, render->preferences->use_renderfarm);
+
+		render->result = render->packages->create_packages(mwindow,
+			command->get_edl(),
+			render->preferences,
+			strategy, 
+			render->default_asset, 
+			render->total_start, 
+			render->total_end,
+			test_overwrite);
+	}
+
+
+
+
+
+
+
+
+
+
+	done = 0;
+	render->total_rendered = 0;
+	render->frames_per_second = 0;
+
+	if(!render->result)
+	{
+// Start dispatching external jobs
+		if(mwindow)
+		{
+			mwindow->gui->lock_window("Render::render 1");
+			mwindow->gui->show_message(_("Starting render farm"));
+			mwindow->gui->start_hourglass();
+			mwindow->gui->unlock_window();
+		}
+		else
+		{
+			printf("Render::render: starting render farm\n");
+		}
+
+		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
+		{
+			farm_server = new RenderFarmServer(render->packages,
+				render->preferences, 
+				1,
+				&render->result,
+				&render->total_rendered,
+				render->counter_lock,
+				render->default_asset,
+				command->get_edl(),
+				0);
+			render->result = farm_server->start_clients();
+
+			if(render->result)
+			{
+				if(mwindow)
+				{
+					mwindow->gui->lock_window("Render::render 2");
+					mwindow->gui->show_message(_("Failed to start render farm"),
+						mwindow->theme->message_error);
+					mwindow->gui->stop_hourglass();
+					mwindow->gui->unlock_window();
+				}
+				else
+				{
+					printf("Render::render: Failed to start render farm\n");
+				}
+			}
+		}
+	}
+
+
+
+
+// Perform local rendering
+
+
+	if(!render->result)
+	{
+		render->start_progress();
+	
+
+
+
+		MainPackageRenderer package_renderer(render);
+		render->result = package_renderer.initialize(mwindow,
+				command->get_edl(),   // Copy of master EDL
+				render->preferences, 
+				render->default_asset);
+
+
+
+
+
+
+
+		while(!render->result)
+		{
+// Get unfinished job
+			RenderPackage *package;
+
+			if(strategy == SINGLE_PASS_FARM)
+			{
+				package = render->packages->get_package(render->frames_per_second, -1, 1);
+			}
+			else
+			{
+				package = render->packages->get_package(0, -1, 1);
+			}
+
+// Exit point
+			if(!package) 
+			{
+				done = 1;
+				break;
+			}
+
+
+
+			Timer timer;
+			timer.update();
+
+			if(package_renderer.render_package(package))
+				render->result = 1;
+
+// Result is also set directly by the RenderFarm.
+
+			render->frames_per_second = (double)(package->video_end - package->video_start) / 
+				(double)(timer.get_difference() / 1000);
+
+
+		} // file_number
+
+
+
+printf("Render::render_single: Session finished.\n");
+
+
+
+
+
+		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
+		{
+			farm_server->wait_clients();
+		}
+
+if(debug) printf("Render::render %d\n", __LINE__);
+
+// Notify of error
+		if(render->result && 
+			(!render->progress || !render->progress->is_cancelled()) &&
+			!render->batch_cancelled)
+		{
+			if(mwindow)
+			{
+				ErrorBox error_box(PROGRAM_NAME ": Error",
+					mwindow->gui->get_abs_cursor_x(1),
+					mwindow->gui->get_abs_cursor_y(1));
+				error_box.create_objects(_("Error rendering data."));
+				error_box.raise_window();
+				error_box.run_window();
+			}
+			else
+			{
+				printf("Render::render: Error rendering data\n");
+			}
+		}
+if(debug) printf("Render::render %d\n", __LINE__);
+
+// Delete the progress box
+		render->stop_progress();
+
+if(debug) printf("Render::render %d\n", __LINE__);
+
+
+
+
+	}
+
+
+// Paste all packages into timeline if desired
+
+	if(!render->result && 
+		render->load_mode != LOADMODE_NOTHING && 
+		mwindow &&
+		render->mode != Render::BATCH)
+	{
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->gui->lock_window("Render::render 3");
+if(debug) printf("Render::render %d\n", __LINE__);
+
+		mwindow->undo->update_undo_before();
+
+if(debug) printf("Render::render %d\n", __LINE__);
+
+
+		ArrayList<Indexable*> *assets = render->packages->get_asset_list();
+if(debug) printf("Render::render %d\n", __LINE__);
+		if(render->load_mode == LOADMODE_PASTE)
+			mwindow->clear(0);
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->load_assets(assets, 
+			-1, 
+			render->load_mode,
+			0,
+			0,
+			mwindow->edl->session->labels_follow_edits,
+			mwindow->edl->session->plugins_follow_edits);
+if(debug) printf("Render::render %d\n", __LINE__);
+		for(int i = 0; i < assets->size(); i++)
+			assets->get(i)->Garbage::remove_user();
+		delete assets;
+if(debug) printf("Render::render %d\n", __LINE__);
+
+
+		mwindow->save_backup();
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->undo->update_undo_after(_("render"), LOAD_ALL);
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->update_plugin_guis();
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->gui->update(1, 
+			2,
+			1,
+			1,
+			1,
+			1,
+			0);
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->sync_parameters(CHANGE_ALL);
+if(debug) printf("Render::render %d\n", __LINE__);
+		mwindow->gui->unlock_window();
+if(debug) printf("Render::render %d\n", __LINE__);
+	}
+
+if(debug) printf("Render::render %d\n", __LINE__);
+
+// Disable hourglass
+	if(mwindow)
+	{
+		mwindow->gui->lock_window("Render::render 3");
+		mwindow->gui->stop_hourglass();
+		mwindow->gui->unlock_window();
+	}
+
+//printf("Render::render 110\n");
+// Need to restart because brender always stops before render.
+	if(mwindow)
+		mwindow->restart_brender();
+	if(farm_server) delete farm_server;
+	delete command;
+	delete playback_config;
+	delete audio_cache;
+	delete video_cache;
+// Must delete packages after server
+	delete render->packages;
+
+	render->packages = 0;
+	render->in_progress = 0;
+	render->completion->unlock();
+if(debug) printf("Render::render %d\n", __LINE__);
+}
+
+void RenderThread::run()
+{
+	if(render->mode == Render::INTERACTIVE)
+	{
+		render_single(1, render->asset, mwindow->edl, render->strategy);
+	}
+	else
+	if(render->mode == Render::BATCH)
+	{
+PRINT_TRACE
+printf("RenderThread::run %d %d %d\n", 
+__LINE__, 
+render->jobs->total, 
+render->result);
+		for(int i = 0; i < render->jobs->total && !render->result; i++)
+		{
+PRINT_TRACE
+			BatchRenderJob *job = render->jobs->values[i];
+PRINT_TRACE
+			if(job->enabled)
+			{
+				if(mwindow)
+				{
+					mwindow->batch_render->update_active(i);
+				}
+				else
+				{
+					printf("Render::run: %s\n", job->edl_path);
+				}
+
+PRINT_TRACE
+
+				FileXML *file = new FileXML;
+				EDL *edl = new EDL;
+				edl->create_objects();
+				file->read_from_file(job->edl_path);
+				edl->load_xml(file, LOAD_ALL);
+
+PRINT_TRACE
+				render_single(0, job->asset, edl, job->strategy);
+
+PRINT_TRACE
+				edl->Garbage::remove_user();
+				delete file;
+				if(!render->result)
+				{
+					if(mwindow)
+						mwindow->batch_render->update_done(i, 1, render->elapsed_time);
+					else
+					{
+						char string[BCTEXTLEN];
+						render->elapsed_time = 
+							(double)render->progress_timer->get_scaled_difference(1);
+						Units::totext(string,
+							render->elapsed_time,
+							TIME_HMS2);
+						printf("Render::run: done in %s\n", string);
+					}
+				}
+				else
+				{
+					if(mwindow)
+						mwindow->batch_render->update_active(-1);
+					else
+						printf("Render::run: failed\n");
+				}
+			}
+PRINT_TRACE
+		}
+
+		if(mwindow)
+		{
+			mwindow->batch_render->update_active(-1);
+			mwindow->batch_render->update_done(-1, 0, 0);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
 #define WIDTH 410
 #define HEIGHT 360
 
@@ -1051,11 +1100,15 @@ RenderWindow::RenderWindow(MWindow *mwindow,
 
 RenderWindow::~RenderWindow()
 {
+SET_TRACE
 	lock_window("RenderWindow::~RenderWindow");
+SET_TRACE
 	delete format_tools;
-//printf("RenderWindow::~RenderWindow %d\n", __LINE__);
+SET_TRACE
 	delete loadmode;
+SET_TRACE
 	unlock_window();
+SET_TRACE
 }
 
 
@@ -1088,7 +1141,13 @@ void RenderWindow::create_objects()
 		&render->strategy,
 		0);
 
-	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
+	loadmode = new LoadMode(mwindow, 
+		this, 
+		x, 
+		y, 
+		&render->load_mode, 
+		1,
+		0);
 	loadmode->create_objects();
 
 	add_subwindow(new BC_OKButton(this));

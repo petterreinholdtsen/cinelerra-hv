@@ -22,15 +22,6 @@ Private plugin data storage in the track.
 Double click -> select edit -> drag to expand selection by edit
 Embedded sequences
 Remove unused files from project and disk.
-Documentation
-* - motion
-* - motion 2 point
-* - lens
-* - swap frames
-* - menu effect attach
-* - title outlines
-* - presets
-* - keyframe spanning
 clear button in error dialog
 WMV 9 & 3
 AVI with AC3 audio has audio ID 0x2000
@@ -55,19 +46,40 @@ undo menu showing previous 20 steps to undo
  - or page in resources window
 Page in resources window for overlays
 Common service for audio and video drivers.
-Embedded sequences
+
+Editing nested sequences:
+ - use clips as sequences
+ - need audio & video tracks for each sequence channel
+ - use tabs or asset window to bring up sequences in main window
+ - use multiple main windows & VWindows to edit clips
+ - need clip icon for top sequence
  - pulldown menu of sequences
- - tabs for sequences
+ - tabs & separate instances for sequences
  - sequence naming
+ - want to synchronize sequences automatically
+ - edit popup menu with edit sequence as an option
+ - widgets to go up or down a sequence
+
+Rendering nested sequences:
+ - A RenderEngine must be created for every embedded sequence
+ - The nested edls must be shared by multiple tracks for audio.
+ - The Module has the pointer to the RenderEngine when the edit is a 
+    nested sequence.
+ - VModule::import_frame or AModule::import_samples renders the embedded 
+    RenderEngine.
+ - If the embedded output is the same size as the track &
+    there is no translation, the output goes into import_frame's PBuffer.  
+	Otherwise it needs a new PBuffer & an overlay operation.
 
 time stretch rubber band
  - before or after effects
 
 Music synthesis
- - track type, asset or effect
+ - all roads lead to having just audio & video tracks
+ - asset or effect
 
 Image synthesis
- - track type, asset or effect
+ - asset or effect
  - particle system
  - track motion of every pixel, determine Z for every pixel
  - track motion for successively smaller macroblocks

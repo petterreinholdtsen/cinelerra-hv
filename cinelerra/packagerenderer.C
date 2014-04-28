@@ -46,6 +46,7 @@
 #include "render.h"
 #include "renderengine.h"
 #include "renderfarmfsserver.h"
+#include "samples.h"
 #include "sighandler.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -103,8 +104,7 @@ PackageRenderer::~PackageRenderer()
 int PackageRenderer::initialize(MWindow *mwindow,
 		EDL *edl, 
 		Preferences *preferences, 
-		Asset *default_asset,
-		ArrayList<PluginServer*> *plugindb)
+		Asset *default_asset)
 {
 	int result = 0;
 
@@ -112,7 +112,6 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	this->edl = edl;
 	this->preferences = preferences;
 	this->default_asset = default_asset;
-	this->plugindb = plugindb;
 
 
 //printf("PackageRenderer::initialize %d\n", preferences->processors);
@@ -128,8 +127,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 		command->get_edl()->session->aspect_h;
 	result = Render::check_asset(edl, *default_asset);
 
-	audio_cache = new CICache(preferences, plugindb);
-	video_cache = new CICache(preferences, plugindb);
+	audio_cache = new CICache(preferences);
+	video_cache = new CICache(preferences);
 
 	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	aconfig = new AudioOutConfig(0);
@@ -164,9 +163,7 @@ void PackageRenderer::create_output()
 	result = file->open_file(preferences, 
 					asset, 
 					0, 
-					1, 
-					command->get_edl()->session->sample_rate, 
-					command->get_edl()->session->frame_rate);
+					1);
 //printf("PackageRenderer::create_output 10 %d\n", result);
 
 	if(result && mwindow)
@@ -201,13 +198,12 @@ void PackageRenderer::create_engine()
 
 	render_engine = new RenderEngine(0,
 		preferences,
-		command,
 		0,
-		plugindb,
+		0,
 		0);
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);
-	render_engine->arm_command(command, current_achannel, current_vchannel);
+	render_engine->arm_command(command);
 
 	if(package->use_brender)
 	{
@@ -268,8 +264,9 @@ void PackageRenderer::create_engine()
 	}
 
 
-	playable_tracks = new PlayableTracks(render_engine, 
+	playable_tracks = new PlayableTracks(render_engine->get_edl(), 
 		video_position, 
+		PLAY_FORWARD,
 		TRACK_VIDEO,
 		1);
 
@@ -286,18 +283,19 @@ void PackageRenderer::do_audio()
 		audio_output = file->get_audio_buffer();
 // Zero unused channels in output vector
 		for(int i = 0; i < MAX_CHANNELS; i++)
+		{
 			audio_output_ptr[i] = (i < asset->channels) ? 
 				audio_output[i] : 
 				0;
-
+		}
 
 
 
 // Call render engine
+		
 		result = render_engine->arender->process_buffer(audio_output_ptr, 
-			audio_read_length, 
-			audio_position,
-			0);
+			audio_read_length,
+			audio_position);
 
 
 
@@ -313,10 +311,13 @@ void PackageRenderer::do_audio()
 				for(int i = 0; i < MAX_CHANNELS; i++)
 				{
 					if(audio_output_ptr[i])
+					{
+						double *data = audio_output_ptr[i]->get_data();
 						for(int j = 0; j < output_length; j++)
 						{
-							audio_output_ptr[i][j] = audio_output_ptr[i][j + audio_read_length - output_length];
+							data[j] = data[j + audio_read_length - output_length];
 						}
+					}
 				}
 			}
 //printf("PackageRenderer::do_audio 4\n");
@@ -382,7 +383,7 @@ void PackageRenderer::do_video()
  				if(!result)
 					result = render_engine->vrender->process_buffer(
 						video_output_ptr, 
-						video_position, 
+						video_position,
 						0);
 
 
@@ -502,7 +503,7 @@ void PackageRenderer::close_output()
 		mwindow->sighandler->pull_file(file);
 	file->close_file();
 	delete file;
-	Garbage::delete_object(asset);
+	asset->Garbage::remove_user();
 }
 
 // Aborts and returns 1 if an error is encountered.
@@ -741,7 +742,10 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 	{
 		if(current_track->data_type == TRACK_VIDEO)
 		{
-			if(playable_tracks->is_playable(current_track, current_position, 1))
+			if(playable_tracks->is_playable(current_track, 
+				current_position, 
+				PLAY_FORWARD,
+				1))
 			{
 				playable_track = current_track;
 				total_playable_tracks++;
@@ -754,6 +758,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 //printf("Render::direct_copy_possible 2 %d\n", result);
 
 // Edit must have a source file
+// TODO: descend into nested EDL's
 	if(result)
 	{
 //printf("Render::direct_copy_possible 3 %d\n", result);

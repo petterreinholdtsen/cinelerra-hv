@@ -23,6 +23,7 @@
 #include "bcresources.h"
 #include "bctextbox.h"
 #include "bctumble.h"
+#include "vframe.h"
 
 
 #define TUMBLE_UP 0
@@ -48,6 +49,16 @@ BC_Tumbler::~BC_Tumbler()
 		delete images[i];
 }
 
+
+int BC_Tumbler::calculate_w()
+{
+	return BC_WindowBase::get_resources()->tumble_data[0]->get_w();
+}
+
+int BC_Tumbler::calculate_h()
+{
+	return BC_WindowBase::get_resources()->tumble_data[0]->get_h();
+}
 
 
 int BC_Tumbler::initialize()

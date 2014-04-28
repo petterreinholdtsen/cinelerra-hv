@@ -120,7 +120,7 @@ void SetFormatThread::run()
 	}
 
 	mwindow->defaults->update("AUTOASPECT", auto_aspect);
-	delete new_settings;
+	new_settings->Garbage::remove_user();
 }
 
 void SetFormatThread::apply_changes()
@@ -633,9 +633,11 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 	active_channel = -1;
 	box_r = mwindow->theme->channel_position_data->get_w() / 2;
 	temp_picon = new VFrame(0, 
+		-1,
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h(),
-		mwindow->theme->channel_position_data->get_color_model());
+		mwindow->theme->channel_position_data->get_color_model(),
+		-1);
 	rotater = new RotateFrame(mwindow->preferences->processors,
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h());

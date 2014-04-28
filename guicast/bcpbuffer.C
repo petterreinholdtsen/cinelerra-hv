@@ -78,6 +78,7 @@ void BC_PBuffer::new_pbuffer(int w, int h)
 
 		if(pbuffer)
 		{
+//printf("BC_PBuffer::new_pbuffer this=%p pbuffer=%p\n", this, pbuffer);
 			return;
 		}
 

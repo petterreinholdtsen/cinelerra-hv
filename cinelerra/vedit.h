@@ -39,7 +39,10 @@ public:
 	
 	
 	
-	
+// Functions for direct copying
+	Asset* get_nested_asset(int64_t *source_position,
+		int64_t position,
+		int direction);
 	int read_frame(VFrame *video_out, 
 			int64_t input_position, 
 			int direction,

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "atrack.inc"
 #include "commonrender.h"
 #include "maxchannels.h"
+#include "samples.inc"
 
 class ARender : public CommonRender
 {
@@ -33,6 +34,8 @@ public:
 	~ARender();
 
 	void arm_command();
+	void allocate_buffers(int samples);
+// Used by realtime rendering
 	void init_output_buffers();
 	VirtualConsole* new_vconsole_object();
 	int get_total_tracks();
@@ -45,20 +48,39 @@ public:
 				int64_t playback_buffer, 
 				int64_t output_length);
 	int wait_for_startup();
-	int64_t tounits(double position, int round);
-	double fromunits(int64_t position);
+
+// process a buffer
+// renders into buffer_out argument when no audio device
+// handles playback autos
+	int process_buffer(Samples **buffer_out, 
+		int64_t input_len,
+		int64_t input_position);
+// renders to a device when there's a device
+	int process_buffer(int64_t input_len, int64_t input_position);
 
 	void run();
+
+	void send_last_buffer();
+	int wait_device_completion();
+
 // Calculate number of samples in each meter fragment and how many
 // meter fragments to buffer.
 	int calculate_history_size();
 // Get subscript of history entry corresponding to sample
 	int get_history_number(int64_t *table, int64_t position);
 
-// output buffers for audio device
-	double *audio_out[MAXCHANNELS];
+	int64_t tounits(double position, int round);
+	double fromunits(int64_t position);
+
+// pointers to output buffers for VirtualConsole
+	Samples *audio_out[MAXCHANNELS];
+// allocated memory for output
+	Samples *buffer[MAXCHANNELS];
+// allocated buffer sizes for nested EDL rendering
+	int buffer_allocated[MAXCHANNELS];
 // information for meters
 	int get_next_peak(int current_peak);
+	int init_meters();
 // samples to use for one meter update.  Must be multiple of fragment_len
 	int64_t meter_render_fragment;
 // Level history of output buffers
@@ -71,48 +93,6 @@ public:
 	int current_level[MAXCHANNELS];
 // Make VirtualAConsole block before the first buffer until video is ready
 	int first_buffer;
-
-
-
-
-
-
-
-// get the data type for certain commonrender routines
-	int get_datatype();
-
-// handle playback autos and transitions
-//	int restart_playback();
-//	int send_reconfigure_buffer();
-
-// process a buffer
-// renders into buffer_out argument when no audio device
-// handles playback autos
-	int process_buffer(double **buffer_out, int64_t input_len, int64_t input_position, int last_buffer);
-// renders to a device when there's a device
-	int process_buffer(int64_t input_len, int64_t input_position);
-
-	void send_last_buffer();
-	int wait_device_completion();
-
-// reverse the data in a buffer	
-	int reverse_buffer(double *buffer, int64_t len);
-// advance the buffer count
-	int swap_current_buffer();
-	int64_t get_render_length(int64_t current_render_length);
-
-//	int64_t playback_buffer;            // maximum length to send to audio device
-//	int64_t output_length;              // maximum length to send to audio device after speed
-
-
-	int64_t source_length;  // Total number of frames to render for transitions
-
-
-private:
-// initialize buffer_out
-	int init_meters();
-// Samples since start of playback
-	int64_t session_position;
 };
 
 

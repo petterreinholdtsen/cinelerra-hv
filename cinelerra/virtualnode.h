@@ -32,6 +32,7 @@
 #include "patch.h"
 #include "plugin.inc"
 #include "pluginserver.inc"
+#include "renderengine.inc"
 #include "track.inc"
 #include "transition.inc"
 #include "virtualconsole.inc"

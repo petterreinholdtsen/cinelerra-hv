@@ -58,7 +58,7 @@ public:
 
 // User can get the GUI here.  Call lock_gui
 // if not the same thread.  get_gui returns 0 if it doesn't exist.
-	void lock_gui(char *location);
+	void lock_gui(const char *location);
 	void unlock_gui();
 	BC_Window* get_gui();
 

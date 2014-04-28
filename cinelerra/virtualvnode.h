@@ -78,14 +78,16 @@ private:
 
 	int render_projector(VFrame *input,
 			VFrame *output,
-			int64_t start_position,
-			double frame_rate);  // Start of input fragment in project if forward.  End of input fragment if reverse.
+			int64_t start_position,  // Start of input fragment in project if forward.  End of input fragment if reverse.
+			double frame_rate,
+			int use_opengl);
 
 	int render_fade(VFrame *output,        // start of output fragment
 			int64_t start_position,  // start of input fragment in project if forward / end of input fragment if reverse
 			double frame_rate, 
 			Autos *autos,
-			int direction);
+			int direction,
+			int use_opengl);
 
 	void render_mask(VFrame *output_temp,
 		int64_t start_position_project,

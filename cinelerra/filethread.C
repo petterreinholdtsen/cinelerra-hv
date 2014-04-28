@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "file.h"
 #include "filethread.h"
 #include "mutex.h"
+#include "samples.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
@@ -185,7 +186,7 @@ void FileThread::run()
 // Read frame
 			if(local_frame)
 			{
-				file->set_video_position(local_position, -1, 1);
+				file->set_video_position(local_position, 1);
 				file->set_layer(local_layer, 1);
 		 		int supported_colormodel = 
 					file->get_best_colormodel(PLAYBACK_ASYNCHRONOUS);
@@ -204,9 +205,11 @@ void FileThread::run()
 				if(!local_frame->frame)
 				{
 					local_frame->frame = new VFrame(0,
+						-1,
 						file->asset->width,
 						file->asset->height,
-						supported_colormodel);
+						supported_colormodel,
+						-1);
 				}
 
 // Read it
@@ -247,7 +250,8 @@ void FileThread::run()
 					file_lock->lock("FileThread::run 2");
 					if(do_audio)
 					{
-							result = file->write_samples(audio_buffer[local_buffer], 
+						result = file->write_samples(
+							audio_buffer[local_buffer],
 							output_size[local_buffer]);
 					}
 					else
@@ -313,7 +317,7 @@ int FileThread::stop_writing()
 			for(buffer = 0; buffer < ring_buffers; buffer++)
 			{
 				for(i = 0; i < file->asset->channels; i++)
-					delete [] audio_buffer[buffer][i];
+					delete audio_buffer[buffer][i];
 				delete [] audio_buffer[buffer];
 			}
 			delete [] audio_buffer;
@@ -389,14 +393,14 @@ int FileThread::start_writing(long buffer_size,
 
 	if(do_audio)
 	{
-		audio_buffer = new double**[ring_buffers];
+		audio_buffer = new Samples**[ring_buffers];
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
-			audio_buffer[buffer] = new double*[file->asset->channels];
+			audio_buffer[buffer] = new Samples*[file->asset->channels];
 
 			for(int channel = 0; channel < file->asset->channels; channel++)
 			{
-				audio_buffer[buffer][channel] = new double[buffer_size];
+				audio_buffer[buffer][channel] = new Samples(buffer_size);
 			}
 		}
 	}
@@ -429,9 +433,11 @@ int FileThread::start_writing(long buffer_size,
 					{
 						video_buffer[buffer][layer][frame] = 
 							new VFrame(0, 
+								-1,
 								file->asset->width, 
 								file->asset->height, 
-								color_model);
+								color_model,
+								-1);
 // printf("FileThread::start_writing 4 %d %d %d %p\n", 
 // buffer, 
 // layer, 
@@ -635,7 +641,7 @@ int FileThread::read_frame(VFrame *frame)
 // frame->get_color_model(), 
 // disable_read);
 // Use traditional read function
-		file->set_video_position(read_position, -1, 1);
+		file->set_video_position(read_position, 1);
 		file->set_layer(layer, 1);
 		read_position++;
 		int result = file->read_frame(frame, 1);
@@ -656,7 +662,7 @@ int64_t FileThread::get_memory_usage()
 }
 
 
-double** FileThread::get_audio_buffer()
+Samples** FileThread::get_audio_buffer()
 {
 	swap_buffer();
 

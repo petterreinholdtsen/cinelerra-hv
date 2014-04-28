@@ -57,11 +57,13 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 		if(audio->flags & A52_LFE)
 			audio->channels++;
 
+
 /*
  * printf("mpeg3_ac3_header %08x %08x\n", 
  * audio->flags & A52_LFE, 
  * audio->flags & A52_CHANNEL_MASK);
  */
+
 		switch(audio->flags & A52_CHANNEL_MASK)
 		{
 			case A52_CHANNEL:

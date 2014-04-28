@@ -30,17 +30,38 @@ class AModuleInv;
 class AModuleMute;
 class AModuleReset;
 
+#include "aedit.inc"
 #include "amodule.inc"
 #include "aplugin.inc"
+#include "asset.inc"
 #include "datatype.h"
 #include "edl.inc"
+#include "file.inc"
 #include "filexml.inc"
 #include "floatautos.inc"
 #include "maxchannels.h"
 #include "module.h"
+#include "resample.h"
+#include "samples.inc"
 #include "sharedlocation.inc"
 #include "track.inc"
 #include "units.h"
+
+class AModuleResample : public Resample
+{
+public:
+	AModuleResample(AModule *module);
+	~AModuleResample();
+
+// All positions are in source sample rate
+	int read_samples(Samples *buffer, int64_t start, int64_t len);
+	
+	AModule *module;
+// output for nested EDL if resampled
+	Samples *nested_output[MAX_CHANNELS];
+// number of samples allocated
+	int nested_allocation;
+};
 
 class AModule : public Module
 {
@@ -53,13 +74,23 @@ public:
 
 	void create_objects();
 	CICache* get_cache();
-	int render(double *buffer, 
+
+	int import_samples(AEdit *playable_edit, 
+		int64_t start_project,
+		int64_t edit_startproject,
+		int64_t edit_startsource,
+		int direction,
+		int sample_rate,
+		Samples *buffer,
+		int64_t fragment_len);
+
+
+	int render(Samples *buffer, 
+		int64_t input_len,
 		int64_t input_position,
-		int input_len, 
 		int direction,
 		int sample_rate,
 		int use_nudge);
-	void reverse_buffer(double *buffer, int64_t len);
 	int get_buffer_size();
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
@@ -77,8 +108,26 @@ public:
 	int current_level;
 
 // Temporary buffer for rendering transitions
-	double *transition_temp;
+	Samples *transition_temp;
 	int transition_temp_alloc;
+
+// Pointer to an asset for the resampler
+	Asset *asset;
+// Channel to import from the source
+	int channel;
+// File being read if source is a file.
+	File *file;
+
+// Temporary buffer for rendering a nested audio EDL.
+// Sharing nested output between modules wouldn't work because if the 
+// segment was cut inside input_len, the shared channels would have to 
+// initialize their EDL's at different starting points and botch their 
+// starting states.
+	Samples *nested_output[MAX_CHANNELS];
+// number of samples allocated
+	int nested_allocation;
+// resampling for nested output
+	AModuleResample *resample;
 };
 
 

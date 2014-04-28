@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,9 +36,12 @@
 #include "pluginarray.inc"
 #include "pluginserver.inc"
 #include "pluginset.inc"
+#include "preferences.inc"
 #include "renderengine.inc"
 #include "sharedlocation.inc"
 #include "track.inc"
+#include "transportque.inc"
+#include "virtualconsole.inc"
 
 class Module
 {
@@ -75,17 +78,23 @@ public:
 // If direction is REVERSE, the object before current_position is tested.
 	void update_transition(int64_t current_position, int direction);
 	EDL* get_edl();
+	Preferences* get_preferences();
 
-// CICache used during effect
+// CICache used during effect & nested EDL
 	CICache *cache;
-// EDL used during effect
+// If the cache was allocated by the module
+	int private_cache;
+// Parent EDL of this module when used for effect rendering.
+// Used by APluginArray.
 	EDL *edl;
 // Not available in menu effects
 	CommonRender *commonrender;
+// Top level render engine for this module
 // Not available in menu effects
 	RenderEngine *renderengine;
 // Not available in realtime playback
 	PluginArray *plugin_array;
+// Track related to this module
 	Track *track;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;       
@@ -94,6 +103,13 @@ public:
 	Plugin *transition;
 // PluginServer for transition
 	PluginServer *transition_server;
+
+// RenderEngine for nested EDL
+	RenderEngine *nested_renderengine;
+// Pointer to nested EDL currently being rendered in the parent EDL.
+	EDL *nested_edl;
+// Command for nested renderengine
+	TransportCommand *nested_command;
 
 // Currently active plugins.
 // Use one AttachmentPoint for every pluginset to allow shared plugins to create

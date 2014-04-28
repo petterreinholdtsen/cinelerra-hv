@@ -73,7 +73,6 @@ public:
 // AWindow column widths
 	int asset_columns[ASSET_COLUMNS];
 	AutoConf *auto_conf;
-	float actual_frame_rate;
 // Aspect ratio for video
     float aspect_w;
     float aspect_h;
@@ -197,13 +196,10 @@ public:
 // number of frames to write to disk at a time during video recording.
 	int video_write_length;
 	int view_follows_playback;
-// Source item for VWindow
-// Uniquely identify vwindow clip without pointers
-	char vwindow_folder[BCTEXTLEN];
-	int vwindow_source;
 // Use the vwindow meter or not
 	int vwindow_meter;
 	float vwindow_zoom;
+
 // Global ID counter
 	static int current_id;
 	PlaybackConfig* playback_config;

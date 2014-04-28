@@ -30,6 +30,7 @@
 #include "edits.inc"
 #include "edl.inc"
 #include "guicast.h"
+#include "indexable.inc"
 #include "mainsession.inc"
 #include "maxchannels.h"
 #include "mwindow.inc"
@@ -77,7 +78,7 @@ public:
 	Plugin *drag_plugin;
 // When trim should only affect the selected edits or plugins
 	Edits *trim_edits;
-	ArrayList<Asset*> *drag_assets;
+	ArrayList<Indexable*> *drag_assets;
 	ArrayList<EDL*> *drag_clips;
 	Auto *drag_auto;
 	ArrayList<Auto*> *drag_auto_gang;
@@ -151,6 +152,9 @@ public:
 	int cwindow_fullscreen;
 	int rwindow_fullscreen;
 	int vwindow_fullscreen;
+
+
+	double actual_frame_rate;
 
 // Tip of the day
 	int current_tip;

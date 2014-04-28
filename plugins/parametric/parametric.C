@@ -27,6 +27,7 @@
 #include "language.h"
 #include "parametric.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -602,7 +603,7 @@ int ParametricFFT::signal_process()
 
 int ParametricFFT::read_samples(int64_t output_sample, 
 	int samples, 
-	double *buffer)
+	Samples *buffer)
 {
 	return plugin->read_samples(buffer,
 		0,
@@ -810,7 +811,7 @@ double ParametricEQ::gauss(double sigma, double center, double x)
 
 
 int ParametricEQ::process_buffer(int64_t size, 
-	double *buffer, 
+	Samples *buffer, 
 	int64_t start_position,
 	int sample_rate)
 {
@@ -818,7 +819,10 @@ int ParametricEQ::process_buffer(int64_t size,
 	if(need_reconfigure) reconfigure();
 	
 	
-	fft->process_buffer(start_position, size, buffer, get_direction());
+	fft->process_buffer(start_position, 
+		size, 
+		buffer, 
+		get_direction());
 
 
 

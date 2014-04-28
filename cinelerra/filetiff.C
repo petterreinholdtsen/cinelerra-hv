@@ -129,10 +129,10 @@ const char* FileTIFF::cmodel_to_str(int value)
 }
 
 
-int FileTIFF::can_copy_from(Edit *edit, int64_t position)
+int FileTIFF::can_copy_from(Asset *asset, int64_t position)
 {
-	if(edit->asset->format == FILE_TIFF_LIST ||
-		edit->asset->format == FILE_TIFF)
+	if(asset->format == FILE_TIFF_LIST ||
+		asset->format == FILE_TIFF)
 		return 1;
 	
 	return 0;
@@ -507,9 +507,11 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 		if(!tiff_unit->temp)
 		{
 			tiff_unit->temp = new VFrame(0,
+				-1,
 				asset->width,
 				asset->height,
-				color_model);
+				color_model,
+				-1);
 		}
 
 		cmodel_transfer(tiff_unit->temp->get_rows(), 

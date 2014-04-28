@@ -46,6 +46,7 @@
 #include "menuattacheffect.h"
 #include "menuattachtransition.h"
 #include "menuaeffects.h"
+#include "menueditlength.h"
 #include "menutransitionlength.h"
 #include "menuveffects.h"
 #include "mwindowgui.h"
@@ -130,6 +131,7 @@ void MainMenu::create_objects()
 	editmenu->add_item(new TrimSelection(mwindow));
 	editmenu->add_item(new SelectAll(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
+	editmenu->add_item(new MenuEditLength(mwindow));
 	editmenu->add_item(new MenuTransitionLength(mwindow));
 	editmenu->add_item(new DetachTransitions(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));

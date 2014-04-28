@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "edlsession.h"
 #include "pluginaclient.h"
 #include "pluginserver.h"
+#include "samples.h"
 
 #include <string.h>
 
@@ -84,21 +85,21 @@ int PluginAClient::init_realtime_parameters()
 }
 
 int PluginAClient::process_realtime(int64_t size, 
-	double **input_ptr, 
-	double **output_ptr)
+	Samples **input_ptr, 
+	Samples **output_ptr)
 {
 	return 0;
 }
 
 int PluginAClient::process_realtime(int64_t size, 
-	double *input_ptr, 
-	double *output_ptr)
+	Samples *input_ptr, 
+	Samples *output_ptr)
 {
 	return 0;
 }
 
 int PluginAClient::process_buffer(int64_t size, 
-	double **buffer,
+	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -113,7 +114,7 @@ int PluginAClient::process_buffer(int64_t size,
 }
 
 int PluginAClient::process_buffer(int64_t size, 
-	double *buffer,
+	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -166,7 +167,7 @@ int64_t PluginAClient::edl_to_local(int64_t position)
 }
 
 
-int PluginAClient::plugin_process_loop(double **buffers, int64_t &write_length)
+int PluginAClient::plugin_process_loop(Samples **buffers, int64_t &write_length)
 {
 	write_length = 0;
 
@@ -176,7 +177,7 @@ int PluginAClient::plugin_process_loop(double **buffers, int64_t &write_length)
 		return process_loop(buffers[0], write_length);
 }
 
-int PluginAClient::read_samples(double *buffer, 
+int PluginAClient::read_samples(Samples *buffer, 
 	int channel, 
 	int64_t start_position, 
 	int64_t total_samples)
@@ -187,7 +188,7 @@ int PluginAClient::read_samples(double *buffer,
 		total_samples);
 }
 
-int PluginAClient::read_samples(double *buffer, 
+int PluginAClient::read_samples(Samples *buffer, 
 	int64_t start_position, 
 	int64_t total_samples)
 {
@@ -197,7 +198,7 @@ int PluginAClient::read_samples(double *buffer,
 		total_samples);
 }
 
-int PluginAClient::read_samples(double *buffer,
+int PluginAClient::read_samples(Samples *buffer,
 		int channel,
 		int sample_rate,
 		int64_t start_position,

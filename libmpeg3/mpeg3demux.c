@@ -904,6 +904,17 @@ if(debug) fprintf(stderr, "handle_subtitle %d\n", __LINE__);
 		if(subtitle->size > 0)
 		{
 			int fragment = MIN(subtitle->size - subtitle->bytes_read, bytes - i);
+/*
+ * fprintf(stderr, "handle_subtitle %d subtitle->size=%d subtitle->bytes_read=%d bytes=%d i=%d fragment=%d\n", 
+ * __LINE__, 
+ * subtitle->size,
+ * subtitle->bytes_read, 
+ * bytes,
+ * i,
+ * fragment);
+ */
+			if(fragment < 0) fragment = 1;
+
 			memcpy(subtitle->data + subtitle->bytes_read, 
 				demuxer->subtitle_buffer + i,
 				fragment);

@@ -158,9 +158,11 @@ int VDeviceX11::close_all()
 		if(!output->refresh_frame)
 		{
 			output->refresh_frame = new VFrame(0,
+				-1,
 				device->out_w,
 				device->out_h,
-				best_color_model);
+				best_color_model,
+				-1);
 		}
 
 		if(use_opengl)
@@ -328,9 +330,11 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 		if(!output_frame)
 		{
 			output_frame = new VFrame(0, 
+				-1,
 				device->out_w, 
 				device->out_h, 
-				colormodel);
+				colormodel,
+				-1);
 //BUFFER2(output_frame->get_rows()[0], "VDeviceX11::new_output_buffer 1");
 		}
 
@@ -352,7 +356,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 			{
 				int size_change = (bitmap->get_w() != output->get_canvas()->get_w() ||
 					bitmap->get_h() != output->get_canvas()->get_h());
-printf("VDeviceX11::new_output_buffer 1\n");
+printf("VDeviceX11::new_output_buffer %d\n", __LINE__);
 				delete bitmap;
 				delete output_frame;
 				bitmap = 0;
@@ -370,11 +374,13 @@ printf("VDeviceX11::new_output_buffer 1\n");
 // Update the ring buffer
 			if(bitmap_type == BITMAP_PRIMARY)
 			{
+//printf("VDeviceX11::new_output_buffer %d\n", __LINE__);
 
-				output_frame->set_memory((unsigned char*)bitmap->get_data() /* + bitmap->get_shm_offset() */,
-							bitmap->get_y_offset(),
-							bitmap->get_u_offset(),
-							bitmap->get_v_offset());
+				output_frame->set_memory(0 /* (unsigned char*)bitmap->get_data() */,
+					bitmap->get_shmid(),
+					bitmap->get_y_offset(),
+					bitmap->get_u_offset(),
+					bitmap->get_v_offset());
 			}
 		}
 
@@ -394,13 +400,16 @@ printf("VDeviceX11::new_output_buffer 1\n");
 							device->out_h,
 							best_colormodel,
 							1);
-						output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
+						output_frame = new VFrame(
+							0 /* (unsigned char*)bitmap->get_data() + bitmap->get_shm_offset() */, 
+							bitmap->get_shmid(),
 							bitmap->get_y_offset(),
 							bitmap->get_u_offset(),
 							bitmap->get_v_offset(),
 							device->out_w,
 							device->out_h,
-							best_colormodel);
+							best_colormodel,
+							-1);
 						bitmap_type = BITMAP_PRIMARY;
 					}
 					break;
@@ -415,13 +424,16 @@ printf("VDeviceX11::new_output_buffer 1\n");
 							device->out_h,
 							best_colormodel,
 							1);
-						output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
+						output_frame = new VFrame(
+							0 /* (unsigned char*)bitmap->get_data() + bitmap->get_shm_offset() */, 
+							bitmap->get_shmid(),
 							bitmap->get_y_offset(),
 							bitmap->get_u_offset(),
 							bitmap->get_v_offset(),
 							device->out_w,
 							device->out_h,
-							best_colormodel);
+							best_colormodel,
+							-1);
 						bitmap_type = BITMAP_PRIMARY;
 					}
 					else
@@ -447,13 +459,16 @@ printf("VDeviceX11::new_output_buffer 1\n");
 							device->out_h,
 							best_colormodel,
 							1);
-						output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
+						output_frame = new VFrame(
+							0 /* (unsigned char*)bitmap->get_data() + bitmap->get_shm_offset() */, 
+							bitmap->get_shmid(),
 							bitmap->get_y_offset(),
 							bitmap->get_u_offset(),
 							bitmap->get_v_offset(),
 							device->out_w,
 							device->out_h,
-							best_colormodel);
+							best_colormodel,
+							-1);
 						bitmap_type = BITMAP_PRIMARY;
 					}
 					else
@@ -486,25 +501,15 @@ printf("VDeviceX11::new_output_buffer 1\n");
 			{
 // Intermediate frame
 				output_frame = new VFrame(0, 
+					-1,
 					device->out_w,
 					device->out_h,
-					colormodel);
+					colormodel,
+					-1);
 //BUFFER2(output_frame->get_rows()[0], "VDeviceX11::new_output_buffer 2");
 				bitmap_type = BITMAP_TEMP;
 			}
 			color_model_selected = 1;
-		}
-
-// Fill arguments
-		if(bitmap_type == BITMAP_PRIMARY)
-		{
-// Only useful if the primary is RGB888 which XFree86 never uses.
-			output_frame->set_shm_offset(bitmap->get_shm_offset());
-		}
-		else
-		if(bitmap_type == BITMAP_TEMP)
-		{
-			output_frame->set_shm_offset(0);
 		}
 	}
 
@@ -721,6 +726,13 @@ void VDeviceX11::clear_input(VFrame *frame)
 	this->output->mwindow->playback_3d->clear_input(this->output, frame);
 }
 
+void VDeviceX11::convert_cmodel(VFrame *output, int dst_cmodel)
+{
+	this->output->mwindow->playback_3d->convert_cmodel(this->output,
+		output, 
+		dst_cmodel);
+}
+
 void VDeviceX11::do_camera(VFrame *output,
 	VFrame *input,
 	float in_x1, 
@@ -778,7 +790,8 @@ void VDeviceX11::overlay(VFrame *output_frame,
 		float out_y2, 
 		float alpha,        // 0 - 1
 		int mode,
-		EDL *edl)
+		EDL *edl,
+		int is_nested)
 {
 	int interpolation_type = edl->session->interpolation_type;
 
@@ -794,28 +807,9 @@ void VDeviceX11::overlay(VFrame *output_frame,
 // out_x2,
 // out_y2);
 // Convert node coords to canvas coords in here
-	output->lock_canvas("VDeviceX11::overlay");
-	output->get_canvas()->lock_window("VDeviceX11::overlay");
 
-// This is the transfer from output frame to canvas
-	output->get_transfers(edl, 
-		output_x1, 
-		output_y1, 
-		output_x2, 
-		output_y2, 
-		canvas_x1, 
-		canvas_y1, 
-		canvas_x2, 
-		canvas_y2,
-		-1,
-		-1);
-
-	output->get_canvas()->unlock_window();
-	output->unlock_canvas();
-
-
-// If single frame playback, use full sized PBuffer as output.
-	if(device->single_frame)
+// If single frame playback or nested EDL, use full sized PBuffer as output.
+	if(device->single_frame || is_nested)
 	{
 		output->mwindow->playback_3d->overlay(output, 
 			input,
@@ -830,7 +824,8 @@ void VDeviceX11::overlay(VFrame *output_frame,
 			alpha,  	  // 0 - 1
 			mode,
 			interpolation_type,
-			output_frame);
+			output_frame,
+			is_nested);
 // printf("VDeviceX11::overlay 1 %p %d %d %d\n", 
 // output_frame, 
 // output_frame->get_w(),
@@ -839,6 +834,25 @@ void VDeviceX11::overlay(VFrame *output_frame,
 	}
 	else
 	{
+		output->lock_canvas("VDeviceX11::overlay");
+		output->get_canvas()->lock_window("VDeviceX11::overlay");
+
+// This is the transfer from output frame to canvas
+		output->get_transfers(edl, 
+			output_x1, 
+			output_y1, 
+			output_x2, 
+			output_y2, 
+			canvas_x1, 
+			canvas_y1, 
+			canvas_x2, 
+			canvas_y2,
+			-1,
+			-1);
+
+		output->get_canvas()->unlock_window();
+		output->unlock_canvas();
+
 
 // Get transfer from track to canvas
 		float track_xscale = (out_x2 - out_x1) / (in_x2 - in_x1);
@@ -902,7 +916,8 @@ void VDeviceX11::overlay(VFrame *output_frame,
 				canvas_y2,
 				alpha,  	  // 0 - 1
 				mode,
-				interpolation_type);
+				interpolation_type,
+				0);
 		}
 	}
 }

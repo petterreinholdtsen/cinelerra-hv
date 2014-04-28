@@ -25,6 +25,7 @@
 
 #include "clip.h"
 #include "fourier.h"
+#include "samples.h"
 #include "transportque.inc"
 
 #define HALF_WINDOW (window_size / 2)
@@ -211,7 +212,7 @@ int CrossfadeFFT::reset()
 
 int CrossfadeFFT::delete_fft()
 {
-	if(input_buffer) delete [] input_buffer;
+	if(input_buffer) delete input_buffer;
 	if(output_buffer) delete [] output_buffer;
 	if(freq_real) delete [] freq_real;
 	if(freq_imag) delete [] freq_imag;
@@ -387,7 +388,7 @@ int CrossfadeFFT::reconfigure()
 
 int CrossfadeFFT::process_buffer(int64_t output_sample, 
 	long size, 
-	double *output_ptr,
+	Samples *output_ptr,
 	int direction)
 {
 	int result = 0;
@@ -406,7 +407,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 // Fill output buffer half a window at a time until size samples are available
 	while(output_size < size)
 	{
-		if(!input_buffer) input_buffer = new double[window_size];
+		if(!input_buffer) input_buffer = new Samples(window_size);
 		if(!freq_real) freq_real = new double[window_size];
 		if(!freq_imag) freq_imag = new double[window_size];
 		if(!temp_real) temp_real = new double[window_size];
@@ -418,21 +419,26 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 				window_size,
 				input_buffer);
 		else
+		{
+			input_buffer->set_offset(HALF_WINDOW);
 			result = read_samples(this->input_sample + step * HALF_WINDOW,
 				HALF_WINDOW,
-				input_buffer + HALF_WINDOW);
+				input_buffer);
+			input_buffer->set_offset(0);
+		}
 
 		input_size = window_size;
 
 		if(!result)
 			do_fft(window_size,   // must be a power of 2
     			0,                // 0 = forward FFT, 1 = inverse
-    			input_buffer,     // array of input's real samples
+    			input_buffer->get_data(),     // array of input's real samples
     			0,                // array of input's imag samples
     			freq_real,        // array of output's reals
     			freq_imag);
 		if(!result)
 			result = signal_process();
+
 		if(!result)
 			do_fft(window_size,  // must be a power of 2
     			1,               // 0 = forward FFT, 1 = inverse
@@ -480,6 +486,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 				sizeof(double) * HALF_WINDOW);
 		}
 
+
 		output_size += HALF_WINDOW;
 
 // Shift input buffer
@@ -487,8 +494,9 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 			i < input_size;
 			i++, j++)
 		{
-			input_buffer[j] = input_buffer[i];
+			input_buffer->get_data()[j] = input_buffer->get_data()[i];
 		}
+
 		input_size = HALF_WINDOW;
 		this->input_sample += step * HALF_WINDOW;
 	}
@@ -498,10 +506,11 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 // Transfer output buffer
 	if(output_ptr)
 	{
-		memcpy(output_ptr, output_buffer, sizeof(double) * size);
+		memcpy(output_ptr->get_data(), output_buffer, sizeof(double) * size);
 	}
 	for(int i = 0, j = size; j < output_size + HALF_WINDOW; i++, j++)
 		output_buffer[i] = output_buffer[j];
+
 	this->output_sample += step * size;
 	this->output_size -= size;
 
@@ -511,7 +520,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 
 int CrossfadeFFT::read_samples(int64_t output_sample, 
 		int samples, 
-		double *buffer)
+		Samples *buffer)
 {
 	return 1;
 }

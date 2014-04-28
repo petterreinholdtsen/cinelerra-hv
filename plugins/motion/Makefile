@@ -7,7 +7,7 @@ OBJS := \
 	$(OBJDIR)/motionscan.o \
 	$(OBJDIR)/motionwindow.o
 
-OUTPUT := $(PLUGIN_DIR)/motion.plugin
+OUTPUT = $(PLUGIN_DIR)/motion.plugin
 
 include ../../plugin_config
 

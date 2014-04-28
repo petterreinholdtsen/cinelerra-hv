@@ -41,7 +41,7 @@ TransportCommand::TransportCommand()
 
 TransportCommand::~TransportCommand()
 {
-	delete edl;
+	edl->Garbage::remove_user();
 }
 
 void TransportCommand::reset()
@@ -64,7 +64,7 @@ EDL* TransportCommand::get_edl()
 
 void TransportCommand::delete_edl()
 {
-	delete edl;
+	edl->Garbage::remove_user();
 	edl = 0;
 }
 

@@ -24,6 +24,7 @@
 
 class PackageRenderer;
 class Render;
+class RenderThread;
 class RenderItem;
 class RenderJob;
 
@@ -39,3 +40,5 @@ class RenderJob;
 
 
 #endif
+
+

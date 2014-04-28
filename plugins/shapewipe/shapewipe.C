@@ -119,72 +119,7 @@ int ShapeWipePreserveAspectRatio::handle_event()
 	return 0;
 }
 
-// ShapeWipeFilename::ShapeWipeFilename(
-// 	ShapeWipeMain *plugin,
-// 	ShapeWipeWindow *window,
-// 	char *value,
-// 	int x,
-// 	int y)
-//  : BC_TextBox(x,y,180,1, value)
-// {
-// 	this->plugin = plugin;
-// 	this->window = window;
-// 	this->value = value;
-// }
-// 
-// int ShapeWipeFilename::handle_event()
-// {
-// 	value = get_text();
-// 	strcpy(plugin->filename, get_text());
-// 	plugin->send_configure_change();
-// 	return 0;
-// }
-// 
-// ShapeWipeBrowseButton::ShapeWipeBrowseButton(
-// 	ShapeWipeMain *plugin,
-// 	ShapeWipeWindow *window,
-// 	ShapeWipeFilename *filename,
-// 	int x,
-// 	int y)
-//  : BC_GenericButton(x,y,_("Browse..."))
-// {
-// 	this->plugin = plugin;
-// 	this->window = window;
-// 	this->filename = filename;
-// }
-// 
-// int ShapeWipeBrowseButton::handle_event()
-// {
-// 	int result;
-// 	ShapeWipeLoad window(filename, filename->get_text());
-// 	window.create_objects();
-// 	window.update_filter("*.png");
-// 	result = window.run_window();
-// 
-// 	if (!result)
-// 	{
-// 		filename->update(window.get_submitted_path());
-// 		strcpy(plugin->filename, window.get_submitted_path());
-// 		plugin->send_configure_change();
-// 	}
-// 
-// 	return 0;
-// }
-// 
-// ShapeWipeLoad::ShapeWipeLoad(
-// 	ShapeWipeFilename *filename, 
-// 	char *init_directory)
-//  : BC_FileBox(
-// 	1,
-// 	1,
-// 	init_directory, 
-// 	_("Choose Shape"), 
-// 	_("Choose a Wipe Shape"))
-// {
-//    this->filename = filename;
-// }
-// 
-// 
+
 
 
 
@@ -270,6 +205,7 @@ ShapeWipeWindow::~ShapeWipeWindow()
 void ShapeWipeWindow::create_objects()
 {
 	BC_Title *title = 0;
+	lock_window("ShapeWipeWindow::create_objects");
 	int widget_border = plugin->get_theme()->widget_border;
 	int window_border = plugin->get_theme()->window_border;
 	int x = window_border, y = window_border;
@@ -343,6 +279,7 @@ void ShapeWipeWindow::create_objects()
 	y += aspect_ratio->get_h() + widget_border;
 
 	show_window();
+	unlock_window();
 }
 
 void ShapeWipeWindow::next_shape()
@@ -412,10 +349,7 @@ int ShapeWipeMain::uses_gui() { return 1; }
 NEW_WINDOW_MACRO(ShapeWipeMain, ShapeWipeWindow);
 
 
-VFrame* ShapeWipeMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(ShapeWipeMain)
 
 int ShapeWipeMain::load_defaults()
 {

@@ -25,7 +25,6 @@
 #include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
-#include "garbage.h"
 #include "language.h"
 #include "loadfile.inc"
 #include "mainmenu.h"
@@ -93,7 +92,6 @@ int main(int argc, char *argv[])
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
-	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
 
@@ -225,7 +223,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
-		"(C)2008 Adam Williams\n\n"
+		"(C)2009 Adam Williams\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
@@ -300,6 +298,8 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 			mwindow.create_objects(1, 
 				!filenames.total,
 				config_path);
+
+
 //SET_TRACE
 
 // load the initial files on seperate tracks
@@ -308,7 +308,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 //SET_TRACE
 				mwindow.gui->lock_window("main");
 //SET_TRACE
-				mwindow.load_filenames(&filenames, LOAD_REPLACE);
+				mwindow.load_filenames(&filenames, LOADMODE_REPLACE);
 //SET_TRACE
 				if(filenames.total == 1)
 					mwindow.gui->mainmenu->add_load(filenames.values[0]);

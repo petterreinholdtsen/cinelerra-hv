@@ -32,7 +32,6 @@
 
 // Files given as arguments must outlive the cache.
 
-#include "arraylist.h"
 #include "asset.inc"
 #include "cache.inc"
 #include "condition.inc"
@@ -41,12 +40,11 @@
 #include "garbage.h"
 #include "linklist.h"
 #include "mutex.inc"
-#include "pluginserver.inc"
 #include "preferences.inc"
 
 #include <stdint.h>
 
-class CICacheItem : public ListItem<CICacheItem>, public GarbageObject
+class CICacheItem : public ListItem<CICacheItem>, public Garbage
 {
 public:
 	CICacheItem(CICache *cache, EDL *edl, Asset *asset);
@@ -66,8 +64,7 @@ private:
 class CICache : public List<CICacheItem>
 {
 public:
-	CICache(Preferences *preferences,
-		ArrayList<PluginServer*> *plugindb);
+	CICache(Preferences *preferences);
 	~CICache();
 
 	friend class CICacheItem;
@@ -110,7 +107,6 @@ public:
 
 	int dump();
 
-	ArrayList<PluginServer*> *plugindb;
 
 private:
 

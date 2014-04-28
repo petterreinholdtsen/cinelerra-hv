@@ -12,6 +12,14 @@ IMAGES = \
 	fitautos.png \
 	ibeam.png \
 	left_justify.png \
+	loadmode_cat.png \
+	loadmode_new.png \
+	loadmode_nested.png \
+	loadmode_newcat.png \
+	loadmode_newtracks.png \
+	loadmode_none.png \
+	loadmode_paste.png \
+	loadmode_resource.png \
 	magnify.png \
 	mask.png \
 	mutepatch_up.png \

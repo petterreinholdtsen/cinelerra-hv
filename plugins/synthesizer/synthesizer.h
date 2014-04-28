@@ -610,7 +610,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int save_defaults();
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr);
 
 
 

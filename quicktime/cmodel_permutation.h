@@ -1726,6 +1726,20 @@ static inline void transfer_YUVA8888_to_VYU888(unsigned char *(*output), unsigne
 	*(*output)++ = u;
 }
 
+static inline void transfer_YUVA8888_to_YUV888(unsigned char *(*output), unsigned char *input)
+{
+	int y, u, v, a, anti_a;
+	a = input[3];
+	anti_a = 0xff - a;
+	y = ((uint32_t)input[0] * a) / 0xff;
+	u = ((uint32_t)input[1] * a + 0x80 * anti_a) / 0xff;
+	v = ((uint32_t)input[2] * a + 0x80 * anti_a) / 0xff;
+	
+	*(*output)++ = y;
+	*(*output)++ = u;
+	*(*output)++ = v;
+}
+
 
 static inline void transfer_YUVA8888_to_YUVA8888(unsigned char *(*output), unsigned char *input)
 {

@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 /* Print cell offsets */
 	int print_offsets = 0;
 	int print_pids = 1;
+	int print_second_offsets = 1;
 
 	outfile[0] = 0;
 	if(argc < 2)
@@ -147,6 +148,19 @@ int main(int argc, char *argv[])
 					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
 				}
 				fprintf(stderr, "\n");
+			}
+
+			if(print_second_offsets)
+			{
+				fprintf(stderr, "\n\n\n");
+				int step = (int)(mpeg3_frame_rate(file, i) + 1);
+				int64_t prev_offset = 0;
+				for(j = 0; j < file->vtrack[i]->total_frame_offsets; j += step)
+				{
+					int64_t current_offset = file->vtrack[i]->frame_offsets[j];
+					fprintf(stderr, "%lld\n", current_offset - prev_offset);
+					prev_offset = current_offset;
+				}
 			}
 		}
 

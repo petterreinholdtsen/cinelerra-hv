@@ -21,6 +21,7 @@
 
 #include "bcdisplay.h"
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "clip.h"
 
@@ -73,7 +74,6 @@ void BC_DisplayInfo::test_window(int &x_out,
 	XSetWindowAttributes attr;
 	XSizeHints size_hints;
 
-//printf("BC_DisplayInfo::test_window 1\n");
 	x_out = 0;
 	y_out = 0;
 	x_out2 = 0;
@@ -131,6 +131,7 @@ void BC_DisplayInfo::test_window(int &x_out,
 	int last_h = 0;
 	int state = 0;
 
+
 	do
 	{
 		XNextEvent(display, &event);
@@ -168,6 +169,7 @@ void BC_DisplayInfo::test_window(int &x_out,
 		}
  	}while(state != 3);
 
+
 	XDestroyWindow(display, win);
 	XFlush(display);
 	XSync(display, 0);
@@ -176,7 +178,8 @@ void BC_DisplayInfo::test_window(int &x_out,
 	y_out = MAX(0, y_out);
 	x_out = MIN(x_out, 30);
 	y_out = MIN(y_out, 30);
-//printf("BC_DisplayInfo::test_window 2\n");
+
+
 #ifdef SINGLE_THREAD
 	BC_Display::unlock_display();
 #endif

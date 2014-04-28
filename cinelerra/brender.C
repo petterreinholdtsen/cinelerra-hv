@@ -334,7 +334,7 @@ BRenderCommand::BRenderCommand()
 BRenderCommand::~BRenderCommand()
 {
 // EDL should be zeroed if copied
-	if(edl) delete edl;
+	if(edl) edl->Garbage::remove_user();
 }
 
 void BRenderCommand::copy_from(BRenderCommand *src)
@@ -593,8 +593,7 @@ end_frame);
 
 //sleep(1);
 //printf("BRenderThread::start 3 %d\n", result);
-		farm_server = new RenderFarmServer(mwindow->plugindb, 
-			packages,
+		farm_server = new RenderFarmServer(packages,
 			preferences,
 			0,
 			&farm_result,

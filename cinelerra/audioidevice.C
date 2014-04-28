@@ -25,6 +25,7 @@
 #include "bctimer.h"
 #include "condition.h"
 #include "dcoffset.h"
+#include "samples.h"
 #include "mutex.h"
 
 #include <string.h>
@@ -95,8 +96,8 @@ if(over_count < 3) over_count = 0;
 #define GET_32BIT_SAMPLE_MACRO2       \
 sample /= 0x7fffffff;
 
-int AudioDevice::read_buffer(double **input, 
-	int samples, 
+int AudioDevice::read_buffer(Samples **input, 
+	int samples,
 	int *over, 
 	double *max, 
 	int input_offset)
@@ -207,7 +208,7 @@ int AudioDevice::read_buffer(double **input,
 
 			for(i = 0; i < get_ichannels(); i++)
 			{
-				input_channel = &input[i][input_offset];
+				input_channel = input[i]->get_data() + input_offset;
 
 // device is set to little endian
 				switch(bits)

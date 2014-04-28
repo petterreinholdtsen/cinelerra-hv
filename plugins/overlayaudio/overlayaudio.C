@@ -25,6 +25,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
+#include "samples.h"
 #include <string.h>
 
 
@@ -86,7 +87,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_buffer(int64_t size, 
-		double **buffer,
+		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
 	int load_defaults();
@@ -309,7 +310,7 @@ LOAD_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
 
 int OverlayAudio::process_buffer(int64_t size, 
-	double **buffer,
+	Samples **buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -328,12 +329,12 @@ int OverlayAudio::process_buffer(int64_t size,
 		size);
 
 // Add remaining tracks
-	double *output_buffer = buffer[output_track];
+	Samples *output_buffer = buffer[output_track];
 	for(int i = 0; i < get_total_buffers(); i++)
 	{
 		if(i != output_track)
 		{
-			double *input_buffer = buffer[i];
+			Samples *input_buffer = buffer[i];
 			read_samples(buffer[i],
 				i,
 				sample_rate,
@@ -341,7 +342,7 @@ int OverlayAudio::process_buffer(int64_t size,
 				size);
 			for(int j = 0; j < size; j++)
 			{
-				output_buffer[j] += input_buffer[j];
+				output_buffer->get_data()[j] += input_buffer->get_data()[j];
 			}
 		}
 	}

@@ -27,6 +27,7 @@
 #include "language.h"
 #include "mainprogress.h"
 #include "mwindow.inc"
+#include "samples.h"
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -310,7 +311,7 @@ int CDRipMain::stop_loop()
 	return 0;
 }
 
-int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
+int CDRipMain::process_loop(Samples **plugin_buffer, int64_t &write_length)
 {
 	int result = 0;
 printf("CDRipMain::process_loop 1\n");
@@ -350,7 +351,7 @@ printf("CDRipMain::process_loop 3\n");
 			for(j = 0; j < 2 && j < PluginClient::total_in_buffers; j++)
 			{
 				buffer_channel = (int16_t*)buffer + j;
-				output_buffer = plugin_buffer[j];
+				output_buffer = plugin_buffer[j]->get_data();
 				for(k = 0, l = 0; l < fragment_samples; k += 2, l++)
 				{
 					output_buffer[l] = buffer_channel[k];

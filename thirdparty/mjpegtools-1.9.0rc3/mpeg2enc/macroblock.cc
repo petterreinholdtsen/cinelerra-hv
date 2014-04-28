@@ -19,6 +19,7 @@
  *
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <cassert>
 
@@ -50,6 +51,10 @@ void MacroBlock::MotionEstimate()
 		FieldME();
 	}
 }
+
+#ifndef INT_MAX
+#define INT_MAX 0x7fffffffLL
+#endif
 
 void MacroBlock::SelectCodingModeOnVariance()
 {

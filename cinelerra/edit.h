@@ -27,6 +27,7 @@
 #include "guicast.h"
 #include "edits.inc"
 #include "filexml.inc"
+#include "indexable.inc"
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "track.inc"
@@ -46,10 +47,15 @@ public:
 	virtual ~Edit();
 
 	void reset();
+	
+	Indexable* get_source();
+// Copy from different EDL
 	virtual void copy_from(Edit *edit);
+// Compare with edit in same EDL
 	virtual int identical(Edit &edit);
 	virtual Edit& operator=(Edit& edit);
-// Called by Edits and PluginSet
+// Called by Edits and PluginSet.
+// Compare with edit in different EDL
 	virtual void equivalent_output(Edit *edit, int64_t *result);
 	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
@@ -123,7 +129,6 @@ public:
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition
 	Transition *transition;
-	EDL *edl;
 
 	Edits *edits;
 
@@ -132,8 +137,11 @@ public:
 // Asset is 0 if silence, otherwise points an object in edl->assets
 	Asset *asset;
 
+// points to an object in edl->clips if a nested clip
+	EDL *nested_edl;
 
-
+// Parent EDL of this edit
+	EDL *edl;
 
 
 

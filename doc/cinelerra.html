@@ -3,7 +3,7 @@
 <title>SECRETS OF CINELERRA</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name="description" content="SECRETS OF CINELERRA">
-<meta name="generator" content="makeinfo 4.11">
+<meta name="generator" content="makeinfo 4.8">
 <link title="Top" rel="top" href="#Top">
 <link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
 <meta http-equiv="Content-Style-Type" content="text/css">
@@ -32,11 +32,11 @@ Up:&nbsp;<a rel="up" accesskey="u" href="#dir">(dir)</a>
 
 <div align="center"></div>
 
-   <p>Version 4
+   <p>Version 4.1
 
    <p>by Adam Williams
 
-   <p>Copyright &copy; 2008
+   <p>Copyright &copy; 2009
 
 <h2 class="chapter">1 SHORT CONTENTS</h2>
 
@@ -2699,40 +2699,58 @@ created in the timeline.
 
    <p>But Cinelerra lets you change what happens when you load a file.
 
-   <p>In the file selection box go to the <b>Insertion strategy</b> box and
-select it.  Each of these options loads the file a different way.
+   <p>In the file selection box there is a range of options for <b>Insertion
+strategy</b>.  Each of these options loads the file a different way.
+
+   <div class="block-image"><img src="insertion_strategy.png" alt="insertion_strategy.png"></div>
 
      <ul>
-<li>Replace current project
+<li><b>Replace current project</b>
+<img src="loadmode_new.png" alt="loadmode_new.png">
 
      <p>All tracks in the current project are deleted and new tracks are
 created to match the source.  Project attributes are only changed when
 loading XML.  If multiple files are selected it adds new tracks for
 every file.
 
-     <li>Replace current project and concatenate tracks
+     <li><b>Replace current project and concatenate tracks</b>
+<img src="loadmode_newcat.png" alt="loadmode_newcat.png">
 
      <p>Same as replace current project except if multiple files are selected
 it concatenates the tracks of every file after the first.
 
-     <li>Append in new tracks
+     <li><b>Append in new tracks</b>
+<img src="loadmode_newtracks.png" alt="loadmode_newtracks.png">
 
      <p>The current project is not deleted and new tracks are created for the
 source.
 
-     <li>Concatenate to existing tracks
+     <li><b>Concatenate to existing tracks</b>
+<img src="loadmode_cat.png" alt="loadmode_cat.png">
 
      <p>The current project is not deleted and new files are concatenated to
 the existing tracks.
 
-     <li>Paste at insertion point
+     <li><b>Paste at insertion point</b>
+<img src="loadmode_paste.png" alt="loadmode_paste.png">
 
      <p>The file is pasted in like a normal paste operation.
 
-     <li>Create new resources only
+     <li><b>Create new resources only</b>
+<img src="loadmode_resource.png" alt="loadmode_resource.png">
 
      <p>The timeline is unchanged and new resources are created in the Resource
 Window.
+
+     <li><b>Nested EDL</b>
+<img src="loadmode_nested.png" alt="loadmode_nested.png">
+
+     <p>If the file is an EDL, the output of the EDL is pasted in like a media
+file.  Nested EDLs have 1 video track &amp; a number of audio tracks
+corresponding to the number of output channels.  They allow larger
+sequences composed of many smaller sequences, transitions to be applied
+to the output of another EDL, &amp; global processing on the output of an
+EDL without having to manipulate each track.
 
    </ul>
 
@@ -8577,7 +8595,7 @@ simpler.
 position.  The class definition for load_configuration should contain
 
      <pre class="example">          LOAD_CONFIGURATION_MACRO(plugin_class, config_class)
-</pre>
+     </pre>
      <p>to implement the default behavior for load_configuration.  This stores
 whatever the current configuration is inside the plugin's configuration
 object and returns 1 if the new configuration differs from the previous
@@ -8593,7 +8611,7 @@ PLUGIN_CLASS_MEMBERS.
 
      <pre class="example">          #include "picon_png.h"
           NEW_PICON_MACRO(plugin_class)
-</pre>
+     </pre>
      <p>to implement new_picon.  In addition, the user should create a
 <b>picon_png.h</b> header file from a PNG image using <b>pngtoh</b>. 
 <b>pngtoh</b> is compiled in the <b>guicast/ARCH</b> directory.
@@ -8624,7 +8642,7 @@ have a format like
           		}
           	}
           }
-</pre>
+     </pre>
      <p>to handle concurrency and conditions of no GUI.
 
    </ul>
@@ -9039,7 +9057,7 @@ instantiate the progress object with a line like
           progress = start_progress("MyPlugin progress...",
           	PluginClient::get_total_len());
           
-</pre>
+     </pre>
      <p>The usage of <b>start_progress</b> depends on whether the plugin is
 multichannel or single channel.  If it's multichannel you always call
 start_progress.  If it's single channel, you first need to know whether
@@ -9073,7 +9091,7 @@ contain the number of samples generated if it's audio.
 update the progress bar if it's 1.
 
      <pre class="example">          progress-&gt;update(total_written);
-</pre>
+     </pre>
      <p>returns 1 or 0 if the progress bar was cancelled.  If it's 1,
 process_loop should return 1 to indicate a cancellation.  In addition
 to progress bar cancellation, <b>process_loop</b> should return 1 when the
@@ -9623,16 +9641,35 @@ should set the opengl state to RAM or TEXTURE if they do.
 
    <p><b>Colormodels in OpenGL</b>
 
-   <p>The colormodel exposed to OpenGL routines is always floating point
-since that is what OpenGL uses, but it may be YUV or RGB depending on
-the project settings.  If it's YUV, it's offset by 0.5 just like in
+   <p>The colormodel exposed to OpenGL routines is always floating point since
+that is what OpenGL uses, but it may be YUV or RGB depending on the
+project settings.  If it's YUV, the U &amp; V are offset by 0.5 just like in
 software.  Passing YUV colormodels to plugins was necessary for speed. 
-The other option was to convert YUV to RGB in the first step that
-needed OpenGL.  Every effect and rendering step would have needed a YUV
-to RGB routine.  With the YUV retained, only the final compositing step
-needs a YUV to RGB routine.
+The other option was to convert YUV to RGB in the first step that needed
+OpenGL.  Every effect and rendering step would have needed a YUV to RGB
+routine.  With the YUV retained, only the final compositing step needs a
+YUV to RGB routine.
 
-<div class="node">
+   <p>The OpenGL mode differentiates between alpha &amp; flat colormodels even
+though OpenGL always has an alpha channel.  For RGB colormodels, you
+must multiply the alpha component by the RGB &amp; set the alpha component
+to 1 whenever the colormodel has no alpha to ensure consistency with the
+software mode.
+
+<pre class="example">     Rout = Rin * Ain
+     Gout = Gin * Ain
+     Bout = Bin * Ain
+     Aout = 1
+</pre>
+   <p>For YUV colormodels, you must multiply the alpha using the following
+formula.
+
+<pre class="example">     Yout = Yin * Ain
+     Uout = Uin * Ain + 0.5 * (1 - Ain)
+     Vout = Vin * Ain + 0.5 * (1 - Ain)
+     Aout = 1
+</pre>
+   <div class="node">
 <p><hr>
 <a name="USING-SHADERS"></a>
 Next:&nbsp;<a rel="next" accesskey="n" href="#AGGREGATING-PLUGINS">AGGREGATING PLUGINS</a>,
@@ -9644,10 +9681,11 @@ Up:&nbsp;<a rel="up" accesskey="u" href="#USING-OPENGL">USING OPENGL</a>
 <h4 class="subsection">19.10.3 USING SHADERS</h4>
 
 <p>Very few effects can do anything useful with just a straight drawing of
-the texture on the PBuffer.  They normally define a shader.  The shader
-is a C program which runs on the graphics card.  Since the graphics
-card is optimized for graphics, it can be much faster than running it
-on the CPU.
+the texture on the PBuffer.  It's also not easy to figure out exactly
+what math is being used by the different OpenGL blending macros. 
+Normally you'll use shaders.  The shader is a C program which runs on
+the graphics card.  Since the graphics card is optimized for graphics,
+it can be much faster than running it on the CPU.
 
    <p>Shaders are written in OpenGL Shading Language.  The shader source code
 is contained in a string.  The normal sequence for using a shader comes

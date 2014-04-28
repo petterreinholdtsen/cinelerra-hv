@@ -45,6 +45,7 @@
  *
  */
 
+#include <stdlib.h>
 
 #include "config.h"
 #include "encoderparams.hh"
@@ -53,7 +54,6 @@
 #include "macroblock.hh"
 #include "quantize.hh"
 
-#include <stdlib.h>
 
 /********************
  * 

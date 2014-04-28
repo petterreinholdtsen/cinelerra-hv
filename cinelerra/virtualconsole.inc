@@ -19,8 +19,8 @@
  * 
  */
 
-#ifndef COMMONRENDERTHREAD_INC
-#define COMMONRENDERTHREAD_INC
+#ifndef VIRTUALCONSOLE_INC
+#define VIRTUALCONSOLE_INC
 
 class VirtualConsole;
 

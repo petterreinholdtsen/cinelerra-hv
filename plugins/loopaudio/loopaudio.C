@@ -26,6 +26,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "pluginaclient.h"
+#include "samples.h"
 #include "transportque.h"
 
 #include <string.h>
@@ -78,7 +79,7 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 };
@@ -191,7 +192,7 @@ NEW_WINDOW_MACRO(LoopAudio, LoopAudioWindow)
 
 
 int LoopAudio::process_buffer(int64_t size, 
-	double *buffer,
+	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -272,11 +273,14 @@ int LoopAudio::process_buffer(int64_t size,
 
 // printf("LoopAudio::process_buffer 100 %lld %lld %lld %d\n", 
 // current_position, current_loop_position, current_loop_end, fragment_size);
+		int offset = buffer->get_offset();
+		buffer->set_offset(offset + i);
 		read_samples(buffer + i,
 			0,
 			sample_rate,
 			current_loop_position,
 			fragment_size);
+		buffer->set_offset(offset);
 
 
 		current_position += step * fragment_size;

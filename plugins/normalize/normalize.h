@@ -50,7 +50,7 @@ public:
 	int is_multichannel();
 	int get_parameters();
 	int start_loop();
-	int process_loop(double **buffer, int64_t &write_length);
+	int process_loop(Samples **buffer, int64_t &write_length);
 	int stop_loop();
 
 	int load_defaults();  

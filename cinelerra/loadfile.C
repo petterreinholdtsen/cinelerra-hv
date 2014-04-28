@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ BC_Window* LoadFileThread::new_gui()
 
 	sprintf(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
-	load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
+	load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 	mwindow->gui->lock_window("LoadFileThread::new_gui");
 	window = new LoadFileWindow(mwindow, this, default_path);
@@ -193,10 +193,10 @@ void LoadFileWindow::create_objects()
 	BC_FileBox::create_objects();
 
 	int x = get_w() / 2 - 
-		LoadMode::calculate_w(this, mwindow->theme, 0) / 2;
+		LoadMode::calculate_w(this, mwindow->theme, 0, 1) / 2;
 	int y = get_cancel_button()->get_y() - 
 		LoadMode::calculate_h(this, mwindow->theme);
-	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
+	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0, 1);
 	loadmode->create_objects();
 	unlock_window();
 
@@ -260,20 +260,18 @@ int LoadPrevious::handle_event()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char *out_path;
-	int load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
+	int load_mode = mwindow->defaults->get("LOAD_MODE", LOADMODE_REPLACE);
 
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
 
-//	mwindow->undo->update_undo_before(_("load previous"), 0);
-	mwindow->load_filenames(&path_list, LOAD_REPLACE);
+	mwindow->load_filenames(&path_list, LOADMODE_REPLACE);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	path_list.remove_all_objects();
 
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);
-//	mwindow->undo->update_undo_after(_("load previous"), LOAD_ALL);
 	mwindow->save_backup();
 	return 1;
 }
@@ -320,14 +318,12 @@ int LoadBackup::handle_event()
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 	
-//	mwindow->undo->update_undo_before(_("load backup"), 0);
-	mwindow->load_filenames(&path_list, LOAD_REPLACE, 0);
+	mwindow->load_filenames(&path_list, LOADMODE_REPLACE, 0);
 	mwindow->edl->local_session->clip_title[0] = 0;
 // This is unique to backups since the path of the backup is different than the
 // path of the project.
-	mwindow->set_filename(mwindow->edl->project_path);
+	mwindow->set_filename(mwindow->edl->path);
 	path_list.remove_all_objects();
-//	mwindow->undo->update_undo_after(_("load backup"), LOAD_ALL, 0);
 	mwindow->save_backup();
 
 	return 1;

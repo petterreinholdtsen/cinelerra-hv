@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,11 +42,100 @@
 #include "preferences.h"
 #include "renderengine.h"
 #include "mainsession.h"
+#include "samples.h"
 #include "sharedlocation.h"
 #include "theme.h"
 #include "transition.h"
 #include "transportque.h"
 #include <string.h>
+
+
+
+
+
+
+
+
+AModuleResample::AModuleResample(AModule *module)
+ : Resample()
+{
+	this->module = module;
+	bzero(nested_output, sizeof(Samples*) * MAX_CHANNELS);
+	nested_allocation = 0;
+}
+
+AModuleResample::~AModuleResample()
+{
+	for(int i = 0; i < MAX_CHANNELS; i++)
+		delete nested_output[i];
+}
+
+int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
+{
+	int result = 0;
+
+	
+	if(module->asset)
+	{
+// Files only read going forward.
+		if(get_direction() == PLAY_REVERSE)
+		{
+			start -= len;
+		}
+
+//printf("AModuleResample::read_samples start=%lld len=%lld\n", start, len);
+		module->file->set_audio_position(start);
+		module->file->set_channel(module->channel);
+		result = module->file->read_samples(buffer, len);
+
+// Reverse buffer so filter renders forward.
+		if(get_direction() == PLAY_REVERSE)
+			Resample::reverse_buffer(buffer->get_data(), len);
+	}
+	else
+	if(module->nested_edl)
+	{
+		
+
+// Nested EDL generates reversed buffer.
+		for(int i = 0; i < module->nested_edl->session->audio_channels; i++)
+		{
+			if(nested_allocation < len)
+			{
+				delete nested_output[i];
+				nested_output[i] = 0;
+			}
+
+			if(!nested_output[i])
+			{
+				nested_output[i] = new Samples(len);
+			}
+		}
+
+
+		result = module->nested_renderengine->arender->process_buffer(
+			nested_output, 
+			len,
+			start);
+// printf("AModuleResample::read_samples buffer=%p module=%p len=%d\n",
+// buffer,
+// module,
+// len);
+		memcpy(buffer->get_data(),
+			nested_output[module->channel]->get_data(),
+			len * sizeof(double));
+
+	}
+	return result;
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -61,6 +150,11 @@ AModule::AModule(RenderEngine *renderengine,
 	transition_temp_alloc = 0;
 	level_history = 0;
 	current_level = 0;
+	bzero(nested_output, sizeof(Samples*) * MAX_CHANNELS);
+	nested_allocation = 0;
+	resample = 0;
+	asset = 0;
+	file = 0;
 }
 
 
@@ -68,12 +162,22 @@ AModule::AModule(RenderEngine *renderengine,
 
 AModule::~AModule()
 {
-	if(transition_temp) delete [] transition_temp;
+	if(transition_temp) delete transition_temp;
 	if(level_history)
 	{
 		delete [] level_history;
 		delete [] level_samples;
 	}
+	
+	for(int i = 0; i < MAX_CHANNELS; i++)
+	{
+		if(nested_output[i])
+		{
+			delete nested_output[i];
+		}
+	}
+	
+	delete resample;
 }
 
 AttachmentPoint* AModule::new_attachment(Plugin *plugin)
@@ -108,19 +212,6 @@ int AModule::get_buffer_size()
 		return plugin_array->get_bufsize();
 }
 
-void AModule::reverse_buffer(double *buffer, int64_t len)
-{
-	int start, end;
-	double temp;
-
-	for(start = 0, end = len - 1; end > start; start++, end--)
-	{
-		temp = buffer[start];
-		buffer[start] = buffer[end];
-		buffer[end] = temp;
-	}
-}
-
 
 CICache* AModule::get_cache()
 {
@@ -130,54 +221,302 @@ CICache* AModule::get_cache()
 		return cache;
 }
 
-int AModule::render(double *buffer, 
-	int64_t input_position,
-	int input_len, 
+
+int AModule::import_samples(AEdit *edit, 
+	int64_t start_project,
+	int64_t edit_startproject,
+	int64_t edit_startsource,
+	int direction,
+	int sample_rate,
+	Samples *buffer,
+	int64_t fragment_len)
+{
+	int result = 0;
+	int64_t start_source = start_project - 
+		edit_startproject + 
+		edit_startsource;
+	const int debug = 0;
+
+if(debug) printf("AModule::import_samples %d edit=%p nested_edl=%p\n", 
+__LINE__,
+edit,
+nested_edl);
+	if(nested_edl && edit->channel >= nested_edl->session->audio_channels)
+		return 1;
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+
+	this->channel = edit->channel;
+if(debug) printf("AModule::import_samples %d edit->nested_edl=%p\n", 
+__LINE__,
+edit->nested_edl);
+
+// Source is a nested EDL
+	if(edit->nested_edl)
+	{
+		int command;
+		asset = 0;
+		
+		if(direction == PLAY_REVERSE)
+			command = NORMAL_REWIND;
+		else
+			command = NORMAL_FWD;
+
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+		if(!nested_edl || nested_edl->id != edit->nested_edl->id)
+		{
+			nested_edl = edit->nested_edl;
+			if(nested_renderengine)
+			{
+				delete nested_renderengine;
+				nested_renderengine = 0;
+			}
+
+			if(!nested_command)
+			{
+				nested_command = new TransportCommand;
+			}
+
+
+			if(!nested_renderengine)
+			{
+				nested_command->command = command;
+				nested_command->get_edl()->copy_all(nested_edl);
+				nested_command->change_type = CHANGE_ALL;
+				nested_command->realtime = renderengine->command->realtime;
+				nested_renderengine = new RenderEngine(0,
+					get_preferences(), 
+					0,
+					renderengine ? renderengine->channeldb : 0,
+					1);
+				nested_renderengine->set_acache(get_cache());
+// Must use a private cache for the audio
+// 				if(!cache) 
+// 				{
+// 					cache = new CICache(get_preferences());
+// 					private_cache = 1;
+// 				}
+// 				nested_renderengine->set_acache(cache);
+				nested_renderengine->arm_command(nested_command);
+			}
+		}
+if(debug) printf("AModule::import_samples %d fragment_len=%d\n", __LINE__, fragment_len);
+
+// Allocate output buffers for all channels
+		for(int i = 0; i < nested_edl->session->audio_channels; i++)
+		{
+			if(nested_allocation < fragment_len)
+			{
+				delete nested_output[i];
+				nested_output[i] = 0;
+			}
+
+			if(!nested_output[i])
+			{
+				nested_output[i] = new Samples(fragment_len);
+			}
+		}
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+
+		if(nested_allocation < fragment_len)
+			nested_allocation = fragment_len;
+
+// Update direction command
+		nested_renderengine->command->command == command;
+
+// Render the segment
+		if(!nested_renderengine->arender)
+		{
+			bzero(buffer->get_data(), fragment_len * sizeof(double));
+		}
+		else
+		if(sample_rate != nested_edl->session->sample_rate)
+		{
+// Read through sample rate converter.
+			if(!resample)
+			{
+				resample = new AModuleResample(this);
+			}
+
+if(debug) printf("AModule::import_samples %d %d %d\n", 
+__LINE__,
+sample_rate,
+nested_edl->session->sample_rate);
+			result = resample->resample(buffer,
+				fragment_len,
+				nested_edl->session->sample_rate,
+				sample_rate,
+				start_source,
+				direction);
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+		}
+		else
+		{
+// Render without resampling
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+			result = nested_renderengine->arender->process_buffer(
+				nested_output, 
+				fragment_len,
+				start_source);
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+			memcpy(buffer->get_data(),
+				nested_output[edit->channel]->get_data(),
+				fragment_len * sizeof(double));
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+		}
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+
+
+// Reverse fragment so ::render can apply transitions going forward.
+		if(direction == PLAY_REVERSE)
+		{
+			Resample::reverse_buffer(buffer->get_data(), fragment_len);
+		}
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+	}
+	else
+// Source is an asset
+	if(edit->asset)
+	{
+		nested_edl = 0;
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+		asset = edit->asset;
+
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+		get_cache()->age();
+
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+		if(nested_renderengine)
+		{
+			delete nested_renderengine;
+			nested_renderengine = 0;
+		}
+
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+
+		if(!(file = get_cache()->check_out(
+			asset,
+			get_edl())))
+		{
+// couldn't open source file / skip the edit
+			printf(_("AModule::import_samples Couldn't open %s.\n"), asset->path);
+			result = 1;
+		}
+		else
+		{
+			result = 0;
+
+
+			if(sample_rate != asset->sample_rate)
+			{
+// Read through sample rate converter.
+				if(!resample)
+				{
+					resample = new AModuleResample(this);
+				}
+
+if(debug) printf("AModule::import_samples %d %d %d\n", 
+__LINE__,
+sample_rate,
+asset->sample_rate);
+				result = resample->resample(buffer,
+					fragment_len,
+					asset->sample_rate,
+					sample_rate,
+					start_source,
+					direction);
+			}
+			else
+			{
+
+if(debug) printf("AModule::import_samples %d %p\n", __LINE__, buffer);
+				file->set_audio_position(start_source);
+				file->set_channel(edit->channel);
+				result = file->read_samples(buffer, fragment_len);
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+			}
+
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+			get_cache()->check_in(asset);
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+			file = 0;
+		}
+	}
+	else
+	{
+		nested_edl = 0;
+		asset = 0;
+		bzero(buffer->get_data(), fragment_len * sizeof(double));
+	}
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
+
+	return result;
+}
+
+
+
+int AModule::render(Samples *buffer, 
+	int64_t input_len,
+	int64_t start_position,
 	int direction,
 	int sample_rate,
 	int use_nudge)
 {
 	int64_t edl_rate = get_edl()->session->sample_rate;
+
+
 	if(use_nudge) 
-		input_position += track->nudge * 
+		start_position += track->nudge * 
 			sample_rate /
 			edl_rate;
 	AEdit *playable_edit;
-	int64_t start_project = input_position;
-	int64_t end_project = input_position + input_len;
-	int64_t buffer_offset = 0;
+	int64_t end_position;
+	if(direction == PLAY_FORWARD)
+		end_position = start_position + input_len;
+	else
+		end_position = start_position - input_len;
+	int buffer_offset = 0;
 	int result = 0;
 
 
-// Flip range around so start_project < end_project
-	if(direction == PLAY_REVERSE)
-	{
-		start_project -= input_len;
-		end_project -= input_len;
-	}
+// // Flip range around so the source is always read forward.
+// 	if(direction == PLAY_REVERSE)
+// 	{
+// 		start_project -= input_len;
+// 		end_position -= input_len;
+// 	}
 
 
 // Clear buffer
-	bzero(buffer, input_len * sizeof(double));
+	bzero(buffer->get_data(), input_len * sizeof(double));
 
-// The EDL is normalized to the requested sample rate because the requested rate may
-// be the project sample rate and a sample rate 
+// The EDL is normalized to the requested sample rate because 
+// the requested rate may be the project sample rate and a sample rate 
 // might as well be directly from the source rate to the requested rate.
 // Get first edit containing the range
-	for(playable_edit = (AEdit*)track->edits->first; 
-		playable_edit;
-		playable_edit = (AEdit*)playable_edit->next)
+	if(direction == PLAY_FORWARD)
+		playable_edit = (AEdit*)track->edits->first;
+	else
+		playable_edit = (AEdit*)track->edits->last;
+
+	while(playable_edit)
 	{
 		int64_t edit_start = playable_edit->startproject;
 		int64_t edit_end = playable_edit->startproject + playable_edit->length;
+
 // Normalize to requested rate
 		edit_start = edit_start * sample_rate / edl_rate;
 		edit_end = edit_end * sample_rate / edl_rate;
 
-		if(start_project < edit_end && start_project + input_len > edit_start)
+		if(start_position < edit_end && 
+			start_position + input_len > edit_start)
 		{
 			break;
 		}
+
+		if(direction == PLAY_FORWARD)
+			playable_edit = (AEdit*)playable_edit->next;
+		else
+			playable_edit = (AEdit*)playable_edit->previous;
 	}
 
 
@@ -187,22 +526,31 @@ int AModule::render(double *buffer,
 
 
 // Fill output one fragment at a time
-	while(start_project < end_project)
+	while(start_position != end_position)
 	{
 		int64_t fragment_len = input_len;
 
-
-		if(fragment_len + start_project > end_project)
-			fragment_len = end_project - start_project;
+//printf("AModule::render %d %lld %lld\n", __LINE__, start_position, end_position);
+// Clamp fragment to end of input
+		if(direction == PLAY_FORWARD &&
+			start_position + fragment_len > end_position)
+			fragment_len = end_position - start_position;
+		else
+		if(direction == PLAY_REVERSE &&
+			start_position - fragment_len < end_position)
+			fragment_len = start_position - end_position;
+//printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
 // Normalize position here since update_transition is a boolean operation.
-		update_transition(start_project * 
+		update_transition(start_position * 
 				edl_rate / 
 				sample_rate, 
 			PLAY_FORWARD);
 
 		if(playable_edit)
 		{
+			AEdit *previous_edit = (AEdit*)playable_edit->previous;
+
 // Normalize EDL positions to requested rate
 			int64_t edit_startproject = playable_edit->startproject;
 			int64_t edit_endproject = playable_edit->startproject + playable_edit->length;
@@ -216,61 +564,52 @@ int AModule::render(double *buffer,
 
 
 
-// Trim fragment_len
-			if(fragment_len + start_project > edit_endproject)
-				fragment_len = edit_endproject - start_project;
-//printf("AModule::render 56 %lld\n", fragment_len);
+// Clamp fragment to end of edit
+			if(direction == PLAY_FORWARD &&
+				start_position + fragment_len > edit_endproject)
+				fragment_len = edit_endproject - start_position;
+			else
+			if(direction == PLAY_REVERSE &&
+				start_position - fragment_len < edit_startproject)
+				fragment_len = start_position - edit_startproject;
+//printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
-			if(playable_edit->asset)
+// Clamp to end of transition
+			int64_t transition_len = 0;
+			
+			if(transition &&
+				previous_edit)
 			{
-				File *source;
-				get_cache()->age();
-
-
-
-				if(!(source = get_cache()->check_out(playable_edit->asset,
-					get_edl())))
-				{
-// couldn't open source file / skip the edit
-					result = 1;
-					printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);
-				}
+				transition_len = transition->length * 
+					sample_rate / 
+					edl_rate;
+				if(direction == PLAY_FORWARD &&
+					start_position < edit_startproject + transition_len &&
+					start_position + fragment_len > edit_startproject + transition_len)
+					fragment_len = edit_startproject + transition_len - start_position;
 				else
-				{
-					int result = 0;
-
-
-					result = source->set_audio_position(start_project - 
-							edit_startproject + 
-							edit_startsource, 
-						sample_rate);
-
-// 					if(result) printf("AModule::render start_project=%d playable_edit->startproject=%d playable_edit->startsource=%d\n"
-// 						"source=%p playable_edit=%p edl=%p edlsession=%p sample_rate=%d\n",
-// 						start_project, playable_edit->startproject, playable_edit->startsource, 
-// 						source, playable_edit, get_edl(), get_edl()->session, get_edl()->session->sample_rate);
-
-					source->set_channel(playable_edit->channel);
-
-					source->read_samples(buffer + buffer_offset, 
-						fragment_len,
-						sample_rate);
-
-					get_cache()->check_in(playable_edit->asset);
-				}
+				if(direction == PLAY_REVERSE && 
+					start_position > edit_startproject + transition_len &&
+					start_position - fragment_len < edit_startproject + transition_len)
+					fragment_len = start_position - edit_startproject - transition_len;
 			}
 
-
+			Samples output(buffer);
+			output.set_offset(output.get_offset() + buffer_offset);
+			if(import_samples(playable_edit, 
+				start_position,
+				edit_startproject,
+				edit_startsource,
+				direction,
+				sample_rate,
+				&output,
+				fragment_len)) result = 1;
 
 
 
 // Read transition into temp and render
-			AEdit *previous_edit = (AEdit*)playable_edit->previous;
 			if(transition && previous_edit)
 			{
-				int64_t transition_len = transition->length * 
-					sample_rate / 
-					edl_rate;
 				int64_t previous_startproject = previous_edit->startproject *
 					sample_rate /
 					edl_rate;
@@ -278,99 +617,88 @@ int AModule::render(double *buffer,
 					sample_rate /
 					edl_rate;
 
+// Allocate transition temp size
+				int transition_fragment_len = fragment_len;
+				if(direction == PLAY_FORWARD &&
+					fragment_len + start_position > edit_startproject + transition_len)
+					fragment_len = edit_startproject + transition_len - start_position;
+
+
 // Read into temp buffers
 // Temp + master or temp + temp ? temp + master
 				if(transition_temp && transition_temp_alloc < fragment_len)
 				{
-					delete [] transition_temp;
+					delete transition_temp;
 					transition_temp = 0;
 				}
 
 				if(!transition_temp)
 				{
-					transition_temp = new double[fragment_len];
+					transition_temp = new Samples(fragment_len);
 					transition_temp_alloc = fragment_len;
 				}
 
-
-
-// Trim transition_len
-				int transition_fragment_len = fragment_len;
-				if(fragment_len + start_project > 
-					edit_startproject + transition_len)
-					fragment_len = edit_startproject + transition_len - start_project;
 //printf("AModule::render 54 %lld\n", fragment_len);
 
 				if(transition_fragment_len > 0)
 				{
-					if(previous_edit->asset)
+// Previous_edit is always the outgoing segment, regardless of direction
+					import_samples(previous_edit, 
+						start_position,
+						previous_startproject,
+						previous_startsource,
+						direction,
+						sample_rate,
+						transition_temp,
+						transition_fragment_len);
+					int64_t current_position;
+
+// Reverse buffers here so transitions always render forward.
+					if(direction == PLAY_REVERSE)
 					{
-						File *source;
-						get_cache()->age();
-						if(!(source = get_cache()->check_out(
-							previous_edit->asset,
-							get_edl())))
-						{
-// couldn't open source file / skip the edit
-							printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);
-							result = 1;
-						}
-						else
-						{
-							int result = 0;
-
-							result = source->set_audio_position(start_project - 
-									previous_startproject + 
-									previous_startsource, 
-								get_edl()->session->sample_rate);
-
-// 							if(result) printf("AModule::render start_project=%d playable_edit->startproject=%d playable_edit->startsource=%d\n"
-// 								"source=%p playable_edit=%p edl=%p edlsession=%p sample_rate=%d\n",
-// 								start_project, 
-// 								previous_edit->startproject, 
-// 								previous_edit->startsource, 
-// 								source, 
-// 								playable_edit, 
-// 								get_edl(), 
-// 								get_edl()->session, 
-// 								get_edl()->session->sample_rate);
-
-							source->set_channel(previous_edit->channel);
-
-							source->read_samples(transition_temp, 
-								transition_fragment_len,
-								sample_rate);
-
-							get_cache()->check_in(previous_edit->asset);
-						}
+						Resample::reverse_buffer(output.get_data(), transition_fragment_len);
+						Resample::reverse_buffer(transition_temp->get_data(), transition_fragment_len);
+						current_position = start_position - 
+							transition_fragment_len -
+							edit_startproject;
 					}
 					else
 					{
-						bzero(transition_temp, transition_fragment_len * sizeof(double));
+						current_position = start_position - edit_startproject;
 					}
 
-					double *output = buffer + buffer_offset;
 					transition_server->process_transition(
 						transition_temp,
-						output,
-						start_project - edit_startproject,
+						&output,
+						current_position,
 						transition_fragment_len,
 						transition->length);
+
+// Reverse output buffer here so transitions always render forward.
+					if(direction == PLAY_REVERSE)
+						Resample::reverse_buffer(output.get_data(), 
+							transition_fragment_len);
 				}
 			}
 
-			if(playable_edit && start_project + fragment_len >= edit_endproject)
-				playable_edit = (AEdit*)playable_edit->next;
+			if(direction == PLAY_REVERSE)
+			{
+				if(playable_edit && start_position - fragment_len <= edit_startproject)
+					playable_edit = (AEdit*)playable_edit->previous;
+			}
+			else
+			{
+				if(playable_edit && start_position + fragment_len >= edit_endproject)
+					playable_edit = (AEdit*)playable_edit->next;
+			}
 		}
 
 		buffer_offset += fragment_len;
-		start_project += fragment_len;
+		if(direction == PLAY_FORWARD)
+			start_position += fragment_len;
+		else
+			start_position -= fragment_len;
 	}
-
-
-// Reverse buffer here so plugins always render forward.
-	if(direction == PLAY_REVERSE)
-		reverse_buffer(buffer, input_len);
 
 
 	return result;

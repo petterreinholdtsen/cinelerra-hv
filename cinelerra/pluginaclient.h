@@ -26,6 +26,7 @@
 
 #include "maxbuffers.h"
 #include "pluginclient.h"
+#include "samples.inc"
 
 class PluginAClient : public PluginClient
 {
@@ -40,12 +41,12 @@ public:
 // These should return 1 if error or 0 if success.
 // Multichannel buffer process for backwards compatibility
 	virtual int process_realtime(int64_t size, 
-		double **input_ptr, 
-		double **output_ptr);
+		Samples **input_ptr, 
+		Samples **output_ptr);
 // Single channel buffer process for backwards compatibility and transitions
 	virtual int process_realtime(int64_t size, 
-		double *input_ptr, 
-		double *output_ptr);
+		Samples *input_ptr, 
+		Samples *output_ptr);
 
 // Process buffer using pull method.  By default this loads the input into the
 // buffer and calls process_realtime with input and output pointing to buffer.
@@ -53,18 +54,18 @@ public:
 //     to start of EDL.  End of buffer if reverse.
 // sample_rate - scale of start_position.
 	virtual int process_buffer(int64_t size, 
-		double **buffer,
+		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
 	virtual int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 
 
-	virtual int process_loop(double *buffer, int64_t &write_length) { return 1; };
-	virtual int process_loop(double **buffers, int64_t &write_length) { return 1; };
-	int plugin_process_loop(double **buffers, int64_t &write_length);
+	virtual int process_loop(Samples *buffer, int64_t &write_length) { return 1; };
+	virtual int process_loop(Samples **buffers, int64_t &write_length) { return 1; };
+	int plugin_process_loop(Samples **buffers, int64_t &write_length);
 
 	int plugin_start_loop(int64_t start, 
 		int64_t end, 
@@ -79,18 +80,18 @@ public:
 // start_position - start of samples in forward.  End of samples in reverse.
 //     Relative to start of EDL.  Scaled to sample_rate.
 // len - number of samples to read
-	int read_samples(double *buffer, 
+	int read_samples(Samples *buffer, 
 		int channel, 
 		int64_t start_position, 
 		int64_t len);
-	int read_samples(double *buffer, 
+	int read_samples(Samples *buffer, 
 		int64_t start_position, 
 		int64_t len);
 
 // Called by realtime plugin to read audio from previous entity
 // sample_rate - scale of start_position.  Provided so the client can get data
 //     at a higher fidelity than provided by the EDL.
-	int read_samples(double *buffer,
+	int read_samples(Samples *buffer,
 		int channel,
 		int sample_rate,
 		int64_t start_position,

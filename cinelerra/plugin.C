@@ -32,7 +32,6 @@
 #include "pluginpopup.h"
 #include "pluginset.h"
 #include "pluginserver.h"
-#include "renderengine.h"
 #include "track.h"
 #include "tracks.h"
 #include "virtualnode.h"
@@ -208,8 +207,7 @@ void Plugin::equivalent_output(Edit *edit, int64_t *result)
 
 
 
-int Plugin::is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
+int Plugin::is_synthesis(int64_t position, 
 		int direction)
 {
 	switch(plugin_type)
@@ -221,7 +219,7 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 				printf("Plugin::is_synthesis track not defined\n");
 				return 0;
 			}
-			PluginServer *plugin_server = renderengine->scan_plugindb(title,
+			PluginServer *plugin_server = MWindow::scan_plugindb(title,
 				track->data_type);
 			return plugin_server->synthesis;
 			break;
@@ -241,7 +239,7 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 				0);
 
 			if(plugin)
-				return plugin->is_synthesis(renderengine, position, direction);
+				return plugin->is_synthesis(position, direction);
 			break;
 		}
 
@@ -250,7 +248,7 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 		{
 			int real_module_number = shared_location.module;
 			Track *track = edl->tracks->number(real_module_number);
-			return track->is_synthesis(renderengine, position, direction);
+			return track->is_synthesis(position, direction);
 			break;
 		}
 	}

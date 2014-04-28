@@ -43,7 +43,7 @@
 #include "recordmonitor.h"
 #include "recordthread.h"
 #include "renderengine.h"
-
+#include "samples.h"
 
 
 RecordAudio::RecordAudio(MWindow *mwindow,
@@ -127,11 +127,11 @@ void RecordAudio::run()
 	else
 	{
 // Make up a fake buffer.
-		input = new double*[record_channels];
+		input = new Samples*[record_channels];
 
 		for(int i = 0; i < record_channels; i++)
 		{
-			input[i] = new double[buffer_size];
+			input[i] = new Samples(buffer_size);
 		}
 	}
 
@@ -157,7 +157,7 @@ void RecordAudio::run()
 // device needs to write buffer starting at fragment position
 //printf("RecordAudio::run 2.1\n");
 				grab_result = record->adevice->read_buffer(input, 
-					fragment_size, 
+					fragment_size,
 					over, 
 					max, 
 					fragment_position);
@@ -169,7 +169,7 @@ void RecordAudio::run()
 //printf("RecordAudio::run 1\n");
 //SET_TRACE
 				grab_result = record->adevice->read_buffer(input, 
-					fragment_size, 
+					fragment_size,
 					over, 
 					max, 
 					0);
@@ -280,11 +280,13 @@ void RecordAudio::run()
 	else
 	{
 // Delete the fake buffer.
+		record->record_monitor->window->lock_window("RecordAudio::run 3");
 		for(int i = 0; i < record_channels; i++)
 		{
 			record->record_monitor->window->meters->meters.values[i]->reset();
-			delete [] input[i];
+			delete input[i];
 		}
+		record->record_monitor->window->unlock_window();
 		delete [] input;
 		input = 0;
 	}

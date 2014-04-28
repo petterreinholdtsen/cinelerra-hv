@@ -58,7 +58,7 @@ static void dump_context(void *ptr)
 	printf("    codec_id=%d\n", context->codec_id);
 	printf("    codec_tag=%d\n", context->codec_tag);
 	printf("    workaround_bugs=%d\n", context->workaround_bugs);
-	printf("    error_resilience=%d\n", context->error_resilience);
+//	printf("    error_resilience=%d\n", context->error_resilience);
 	printf("    has_b_frames=%d\n", context->has_b_frames);
 	printf("    block_align=%d\n", context->block_align);
 	printf("    parse_only=%d\n", context->parse_only);
@@ -67,7 +67,7 @@ static void dump_context(void *ptr)
 	printf("    slice_offset=%p\n", context->slice_offset);
 	printf("    error_concealment=%d\n", context->error_concealment);
 	printf("    dsp_mask=%p\n", context->dsp_mask);
-	printf("    bits_per_sample=%d\n", context->bits_per_sample);
+//	printf("    bits_per_sample=%d\n", context->bits_per_sample);
 	printf("    slice_flags=%d\n", context->slice_flags);
 	printf("    xvmc_acceleration=%d\n", context->xvmc_acceleration);
 	printf("    antialias_algo=%d\n", context->antialias_algo);
@@ -78,7 +78,6 @@ static void dump_context(void *ptr)
 	printf("    lowres=%d\n", context->lowres);
 	printf("    coded_width=%d\n", context->coded_width);
 	printf("    coded_height=%d\n", context->coded_height);
-	printf("    request_channels=%d\n", context->request_channels);
 }
 
 quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
@@ -217,6 +216,11 @@ static int decode_wrapper(quicktime_t *file,
 	quicktime_trak_t *trak = vtrack->track;
 	quicktime_stsd_table_t *stsd_table = &trak->mdia.minf.stbl.stsd.table[0];
 
+// printf("decode_wrapper frame_number=%d current_field=%d drop_it=%d\n", 
+// frame_number, 
+// current_field,
+// drop_it);
+
 	quicktime_set_video_position(file, frame_number, track);
 
 	bytes = quicktime_frame_size(file, frame_number, track); 
@@ -242,12 +246,10 @@ static int decode_wrapper(quicktime_t *file,
 		bytes))
 		result = -1;
 
-/*
- * static FILE *out = 0;
- * if(!out) out = fopen("/tmp/debug", "w");
- * fwrite(ffmpeg->work_buffer, bytes + header_bytes, 1, out);
- * 
- */
+// static FILE *out = 0;
+// if(!out) out = fopen("/tmp/debug.m2v", "w");
+// fwrite(ffmpeg->work_buffer, bytes + header_bytes, 1, out);
+
 
 	if(!result)
 	{ 
@@ -303,7 +305,6 @@ static int decode_wrapper(quicktime_t *file,
 			&got_picture, 
 			ffmpeg->work_buffer, 
 			bytes + header_bytes);
-//printf("decode_wrapper %d\n", __LINE__);
 
 
 
@@ -317,6 +318,7 @@ static int decode_wrapper(quicktime_t *file,
 // sequence.
 			result = 1;
 		}
+//printf("decode_wrapper %d %d result=%d\n", __LINE__, frame_number, result);
 
 #ifdef ARCH_X86
 		asm("emms");
@@ -470,6 +472,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
  */
 			while(frame1 <= frame2)
 			{
+//printf("quicktime_ffmpeg_decode %d\n", __LINE__);
 				result = decode_wrapper(file, 
 					vtrack, 
 					ffmpeg, 
@@ -498,17 +501,18 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 
 // For some codecs,
 // may need to do the same frame twice if it is the first I frame.
-				if(do_i_frame)
-				{
-					result = decode_wrapper(file, 
-						vtrack, 
-						ffmpeg, 
-						frame1, 
-						current_field, 
-						track,
-						0);
-					do_i_frame = 0;
-				}
+// 				if(do_i_frame)
+// 				{
+// printf("quicktime_ffmpeg_decode %d\n", __LINE__);
+// 					result = decode_wrapper(file, 
+// 						vtrack, 
+// 						ffmpeg, 
+// 						frame1, 
+// 						current_field, 
+// 						track,
+// 						0);
+// 					do_i_frame = 0;
+// 				}
 				frame1 += ffmpeg->fields;
 			}
 
@@ -521,6 +525,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 // Same frame not requested
 			vtrack->current_position != ffmpeg->last_frame[current_field])
 		{
+//printf("quicktime_ffmpeg_decode %d\n", __LINE__);
 			result = decode_wrapper(file, 
 				vtrack, 
 				ffmpeg, 
@@ -563,6 +568,10 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			break;
 	}
 
+// printf("quicktime_ffmpeg_decode %d %lld ptr=%p\n", 
+// __LINE__, 
+// vtrack->current_position, 
+// ffmpeg->picture[current_field].data[0]);
 	if(ffmpeg->picture[current_field].data[0])
 	{
 		unsigned char **input_rows;

@@ -22,55 +22,79 @@
 #ifndef INDEXFILE_H
 #define INDEXFILE_H
 
-#include "asset.inc"
+#include "cache.inc"
 #include "edit.inc"
 #include "file.inc"
 #include "guicast.h"
+#include "indexable.inc"
+#include "indexstate.inc"
 #include "indexthread.inc"
 #include "mainprogress.inc"
 #include "mwindow.inc"
 #include "preferences.inc"
+#include "renderengine.inc"
 #include "resourcepixmap.inc"
+#include "samples.inc"
 #include "bctimer.inc"
 #include "tracks.inc"
+
+
 
 class IndexFile
 {
 public:
 	IndexFile(MWindow *mwindow);
-	IndexFile(MWindow *mwindow, Asset *asset);
+	IndexFile(MWindow *mwindow, Indexable *indexable);
 	~IndexFile();
 
-	int open_index(Asset *asset);
-	int open_index(MWindow *mwindow, Asset *asset);
-	int create_index(Asset *asset, MainProgressBar *progress);
-	int create_index(MWindow *mwindow, Asset *asset, MainProgressBar *progress);
+	void reset();
+
+// Get the index state object from the asset or the nested EDL
+	IndexState* get_state();
+	static const char* get_source_path(Indexable *indexable);
+
+	int open_index();
+	int create_index(MainProgressBar *progress);
 	int interrupt_index();
-	static void delete_index(Preferences *preferences, Asset *asset);
+	static void delete_index(Preferences *preferences, 
+		Indexable *indexable);
 	static int get_index_filename(char *source_filename, 
 		char *index_directory, 
 		char *index_filename, 
-		char *input_filename);
+		const char *input_filename);
 	void update_edl_asset();
 	int redraw_edits(int force);
 	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);
 	int close_index();
 	int remove_index();
-	int read_info(Asset *test_asset = 0);
+	int read_info(Indexable *indexable = 0);
 	int write_info();
 
 	MWindow *mwindow;
 	char index_filename[BCTEXTLEN], source_filename[BCTEXTLEN];
-	Asset *asset;
+// Object to create an index for
+	Indexable *indexable;
 	Timer *redraw_timer;
 
-private:
 	void update_mainasset();
 
 	int open_file();
-	int open_source(File *source);
-	int64_t get_required_scale(File *source);
-	FILE *file;
+	int open_source();
+	void close_source();
+	int64_t get_required_scale();
+// File descriptor for index file.
+	FILE *fd;
+// File object for source if an asset
+	File *source;
+// Render engine for source if the source is a nested EDL
+	RenderEngine *render_engine;
+// Audio cache for render engine
+	CICache *cache;
+// Number of samples in source.  Calculated in open_source.
+	int64_t source_length;
+// Number of channels in source.  Calculated in open_source.
+	int source_channels;
+	int source_samplerate;
 	int64_t file_length;   // Length of index file in bytes
 	int interrupt_flag;    // Flag set when index building is interrupted
 };

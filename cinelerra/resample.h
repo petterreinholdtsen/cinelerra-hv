@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,79 +19,87 @@
  * 
  */
 
+
+// Generic resampling module
+
 #ifndef RESAMPLE_H
 #define RESAMPLE_H
 
 #define BPC 160
 #define BLACKSIZE 25
 
-#include "file.inc"
+#include "resample.inc"
+#include "samples.inc"
+#include <stdint.h>
 
 class Resample
 {
 public:
-	Resample(File *file, int channels);
-	~Resample();
+	Resample();
+	virtual ~Resample();
 
+// All positions are in file sample rate
+// This must reverse the buffer during reverse playback
+// so the filter always renders forward.
+	virtual int read_samples(Samples *buffer, int64_t start, int64_t len);
+
+// Resample from the file handler and store in *output.
+// Returns 1 if the input reader failed.
+	int resample(Samples *samples,
+		int64_t out_len,
+		int in_rate,
+		int out_rate,
+// Starting sample in output samplerate
+// If reverse, the end of the buffer.
+		int64_t out_position,
+		int direction);
+
+	int get_direction();
+
+	static void reverse_buffer(double *buffer, int64_t len);
+
+
+private:
 // Reset after seeking
-	void reset(int channel = -1);
+	void reset();
 	double blackman(int i, double offset, double fcn, int l);
 // Query output temp
-	int get_output_size(int channel);
-	void read_output(double *output, int channel, int size);
+	int get_output_size();
+//	void read_output(Samples *output, int size);
 // Resamples input and dumps it to output_temp
-	void resample_chunk(double *input,
-		long in_len,
+	void resample_chunk(Samples *input,
+		int64_t in_len,
 		int in_rate,
-		int out_rate,
-		int channel);
-// Resample from the file handler and store in *output.
-// Returns the total samples read from the file handler.
-	int resample(double *output, 
-		long out_len,
-		int in_rate,
-		int out_rate,
-		int channel,
-		long in_position,      // Starting sample in input samplerate
-		long out_position);      // Starting sample in output samplerate
-	virtual void read_chunk(double *input, 
-		long len, 
-		int &reseek, 
-		int iteration);   // True once for every resample call
+		int out_rate);
+	int read_chunk(Samples *input, 
+		int64_t len);
 
 // History buffer for resampling.
-	double **old;
-	double *itime;
+	double *old;
+	double itime;
 
 
 
 // Unaligned resampled output
-	double **output_temp;
+	double *output_temp;
 
 
 // Total samples in unaligned output
-// Tied to each channel independantly
-	long *output_size;
+	int64_t output_size;
 
-
-// Sample start of output_temp in the resampled domain.
-	long *output_temp_start;
+	int direction;
 // Allocation of unaligned output
-	long output_allocation;
+	int64_t output_allocation;
 // input chunk
-	double *input;
-// Sample end of input chunks in the input domain.
-	long *input_chunk_end;
-	long input_size;
-	int channels;
-	int *resample_init;
+	Samples *input;
+// Position of source in source sample rate.
+	int64_t input_position;
+	int64_t input_size;
+	int64_t output_position;
+	int resample_init;
 // Last sample ratio configured to
 	double last_ratio;
 	double blackfilt[2 * BPC + 1][BLACKSIZE];
-	File *file;
-// Determine whether to reset after a seek
-// Sample end of last buffer read for each channel
-	long *last_out_end;
 };
 
 #endif

@@ -83,13 +83,13 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			int w = outgoing->get_w();
 			int h = outgoing->get_h(); 
 			for(int i = 0; i < h; i++) 
-			{ 
+			{
 				uint8_t* alpha_chan = data_rows[i] + 3; 
 				for(int j = 0; j < w; j++) 
 				{
 					*alpha_chan = (uint8_t) (*alpha_chan * (1-fade));
 					alpha_chan+=4;
-				} 
+				}
 			}
 			break;
 		}
@@ -98,7 +98,7 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
 			int w = outgoing->get_w();
 			int h = outgoing->get_h(); 
-			for(int i = 0; i < h; i++) 
+			for(int i = 0; i < h; i++)
 			{ 
 				uint16_t* alpha_chan = data_rows[i] + 3; // 3 since this is uint16_t
 				for(int j = 0; j < w; j++) 

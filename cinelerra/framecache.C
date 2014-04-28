@@ -19,10 +19,11 @@
  * 
  */
 
-#include "asset.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "edl.h"
 #include "framecache.h"
+#include "indexable.h"
 #include "mutex.h"
 #include "vframe.h"
 
@@ -81,7 +82,7 @@ int FrameCache::get_frame(VFrame *frame,
 	int64_t position,
 	int layer,
 	double frame_rate,
-	int asset_id)
+	int source_id)
 {
 	lock->lock("FrameCache::get_frame");
 	FrameCacheItem *result = 0;
@@ -91,7 +92,7 @@ int FrameCache::get_frame(VFrame *frame,
 		layer,
 		frame_rate,
 		&result,
-		asset_id))
+		source_id))
 	{
 		if(result->data) 
 		{
@@ -139,7 +140,7 @@ VFrame* FrameCache::get_frame_ptr(int64_t position,
 	int color_model,
 	int w,
 	int h,
-	int asset_id)
+	int source_id)
 {
 	lock->lock("FrameCache::get_frame_ptr");
 	FrameCacheItem *result = 0;
@@ -150,7 +151,7 @@ VFrame* FrameCache::get_frame_ptr(int64_t position,
 		w,
 		h,
 		&result,
-		asset_id))
+		source_id))
 	{
 		result->age = get_age();
 		return result->data;
@@ -168,16 +169,18 @@ void FrameCache::put_frame(VFrame *frame,
 	int layer,
 	double frame_rate,
 	int use_copy,
-	Asset *asset)
+	Indexable *indexable)
 {
 	lock->lock("FrameCache::put_frame");
 	FrameCacheItem *item = 0;
+	int source_id = -1;
+	if(indexable) source_id = indexable->id;
 	if(frame_exists(frame,
 		position, 
 		layer,
 		frame_rate,
 		&item,
-		asset ? asset->id : -1))
+		source_id))
 	{
 		item->age = get_age();
 		lock->unlock();
@@ -200,15 +203,10 @@ void FrameCache::put_frame(VFrame *frame,
 	item->position = position;
 	item->layer = layer;
 	item->frame_rate = frame_rate;
-	if(asset)
-	{
-		item->asset_id = asset->id;
-		item->path = strdup(asset->path);
-	}
-	else
-	{
-		item->asset_id = -1;
-	}
+	item->source_id = source_id;
+	if(indexable) 
+		item->path = strdup(indexable->path);
+
 	item->age = get_age();
 
 	put_item(item);
@@ -223,7 +221,7 @@ int FrameCache::frame_exists(VFrame *format,
 	int layer,
 	double frame_rate,
 	FrameCacheItem **item_return,
-	int asset_id)
+	int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
 	while(item && item->position == position)
@@ -234,8 +232,8 @@ int FrameCache::frame_exists(VFrame *format,
 // frame_rate,
 // item->layer,
 // layer,
-// item->asset_id,
-// asset_id,
+// item->source_id,
+// source_id,
 // format->equivalent(item->data, 1),
 // item->data);
 // format->dump_params();
@@ -246,7 +244,7 @@ int FrameCache::frame_exists(VFrame *format,
 		if(EQUIV(item->frame_rate, frame_rate) &&
 			layer == item->layer &&
 			format->equivalent(item->data, 0) &&
-			(asset_id == -1 || item->asset_id == -1 || asset_id == item->asset_id))
+			(source_id == -1 || item->source_id == -1 || source_id == item->source_id))
 		{
 			*item_return = item;
 			return 1;
@@ -264,7 +262,7 @@ int FrameCache::frame_exists(int64_t position,
 	int w,
 	int h,
 	FrameCacheItem **item_return,
-	int asset_id)
+	int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
 	while(item && item->position == position)
@@ -287,7 +285,7 @@ int FrameCache::frame_exists(int64_t position,
 			color_model == item->data->get_color_model() &&
 			w == item->data->get_w() &&
 			h == item->data->get_h() &&
-			(asset_id == -1 || item->asset_id == -1 || asset_id == item->asset_id))
+			(source_id == -1 || item->source_id == -1 || source_id == item->source_id))
 		{
 			*item_return = item;
 			return 1;

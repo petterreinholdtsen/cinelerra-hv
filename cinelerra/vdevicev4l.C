@@ -497,6 +497,7 @@ int VDeviceV4L::frame_to_vframe(VFrame *frame, unsigned char *input)
 	else
 	{
 		VFrame *in_frame = new VFrame(input, 
+			-1,
 			inwidth, 
 			inheight, 
 			colormodel, 

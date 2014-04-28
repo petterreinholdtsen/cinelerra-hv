@@ -45,7 +45,9 @@ public:
 	virtual ~Tracks();
 
 	Tracks& operator=(Tracks &tracks);
-	int load(FileXML *xml, int &track_offset, uint32_t load_flags);
+	int load(FileXML *xml, 
+		int &track_offset, 
+		uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
 		double position,
@@ -228,6 +230,7 @@ public:
 	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, int64_t start, int64_t end);
 
 	void clear_transitions(double start, double end);
+	void set_edit_length(double start, double end, double length);
 	void set_transition_length(double start, double end, double length);
 	void set_transition_length(Transition *transition, double length);
 	void paste_transitions(double start, double end, int track_type, char* title);

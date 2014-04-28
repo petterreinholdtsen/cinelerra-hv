@@ -44,9 +44,9 @@ public:
 
 	virtual int get_size();
 
-// asset_id - supplied by user if the cache is not part of a file.
+// source_id - supplied by user if the cache is not part of a file.
 // Used for fast accesses.
-	int asset_id;
+	int source_id;
 // path is needed since the item may need to be deleted based on file.
 // Used for deletion.
 	char *path;

@@ -465,9 +465,11 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	if(frame->get_color_model() != native_cmodel)
 	{
 		if(!exr_unit->temp_frame) exr_unit->temp_frame = new VFrame(0,
+			-1,
 			asset->width,
 			asset->height,
-			native_cmodel);
+			native_cmodel,
+			-1);
 		cmodel_transfer(exr_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
 			frame->get_rows(),
 			exr_unit->temp_frame->get_y(), /* Leave NULL if non existent */

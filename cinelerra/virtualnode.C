@@ -55,6 +55,8 @@ VirtualNode::VirtualNode(RenderEngine *renderengine,
 	this->real_plugin = real_plugin;
 	this->track = track;
 	this->parent_node = parent_node;
+
+
 	render_count = 0;
 	plugin_type = 0;
 	waiting_real_plugin = 0;
@@ -100,9 +102,15 @@ void VirtualNode::dump(int indent)
 
 int VirtualNode::expand(int persistent_plugins, int64_t current_position)
 {
+	const int debug = 0;
 // module needs to know where the input data for the next process is
+if(debug) printf("VirtualNode::expand %d real_module=%p real_plugin=%p\n", 
+__LINE__,
+real_module,
+real_plugin);
 	if(real_module)
 	{
+if(debug) printf("VirtualNode::expand %d\n", __LINE__);
 		expand_as_module(persistent_plugins, current_position);
 	}
 	else
@@ -110,6 +118,7 @@ int VirtualNode::expand(int persistent_plugins, int64_t current_position)
 	{
 // attach to a real plugin for a plugin
 // plugin always takes data from input to output
+if(debug) printf("VirtualNode::expand %d\n", __LINE__);
 		expand_as_plugin(persistent_plugins);
 	}
 
@@ -120,6 +129,7 @@ int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 {
 	Transition *transition = 0;
 
+//printf("VirtualNode::expand_as_module %d\n", __LINE__);
 // create the plugins for this module
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
@@ -204,6 +214,7 @@ int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 
 
 	if(!parent_node) vconsole->append_exit_node(this);
+//printf("VirtualNode::expand_as_module %d parent_node=%p\n", __LINE__, parent_node);
 
 	return 0;
 }

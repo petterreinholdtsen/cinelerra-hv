@@ -32,6 +32,7 @@
 #include "filesystem.h"
 #include "guicast.h"
 #include "indexfile.h"
+#include "indexstate.h"
 #include "language.h"
 #include "mainerror.h"
 #include "mwindow.inc"
@@ -193,6 +194,7 @@ if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			char string[BCTEXTLEN];
 			if(error == MPEG3_INVALID_TOC_VERSION)
 			{
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				sprintf(string, 
 					"Couldn't open %s because it has an invalid table of contents version.\n"
 					"Rebuild the table of contents with mpeg3toc.",
@@ -202,6 +204,7 @@ if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			else
 			if(error == MPEG3_TOC_DATE_MISMATCH)
 			{
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				sprintf(string, 
 					"Couldn't open %s because the table of contents date differs from the source date.\n"
 					"Rebuild the table of contents with mpeg3toc.",
@@ -827,22 +830,24 @@ int FileMPEG::get_index(char *index_path)
 				2;
 		}
 
-		asset->index_buffer = new float[buffer_size];
+		IndexState *index_state = asset->index_state;
+		index_state->index_buffer = new float[buffer_size];
 
 // Size of index buffer in floats
 		int current_offset = 0;
 // Current asset channel
 		int current_channel = 0;
-		asset->index_zoom = mpeg3_index_zoom(fd);
-		asset->index_offsets = new int64_t[asset->channels];
-		asset->index_sizes = new int64_t[asset->channels];
+		index_state->channels = asset->channels;
+		index_state->index_zoom = mpeg3_index_zoom(fd);
+		index_state->index_offsets = new int64_t[index_state->channels];
+		index_state->index_sizes = new int64_t[index_state->channels];
 		for(int i = 0; i < mpeg3_index_tracks(fd); i++)
 		{
 			for(int j = 0; j < mpeg3_index_channels(fd, i); j++)
 			{
-				asset->index_offsets[current_channel] = current_offset;
-				asset->index_sizes[current_channel] = mpeg3_index_size(fd, i) * 2;
-				memcpy(asset->index_buffer + current_offset,
+				index_state->index_offsets[current_channel] = current_offset;
+				index_state->index_sizes[current_channel] = mpeg3_index_size(fd, i) * 2;
+				memcpy(index_state->index_buffer + current_offset,
 					mpeg3_index_data(fd, i, j),
 					mpeg3_index_size(fd, i) * sizeof(float) * 2);
 
@@ -852,10 +857,13 @@ int FileMPEG::get_index(char *index_path)
 		}
 
 		FileSystem fs;
-		asset->index_bytes = fs.get_size(asset->path);
+		index_state->index_bytes = fs.get_size(asset->path);
 
-		asset->write_index(index_path, buffer_size * sizeof(float));
-		delete [] asset->index_buffer;
+		index_state->write_index(index_path, 
+			buffer_size * sizeof(float),
+			asset,
+			asset->audio_length);
+		delete [] index_state->index_buffer;
 
 		return 0;
 	}
@@ -864,7 +872,7 @@ int FileMPEG::get_index(char *index_path)
 }
 
 
-int FileMPEG::can_copy_from(Edit *edit, int64_t position)
+int FileMPEG::can_copy_from(Asset *asset, int64_t position)
 {
 	if(!fd) return 0;
 	return 0;
@@ -1077,9 +1085,11 @@ if(debug) printf("FileMPEG::write_frames %d\n", __LINE__);
 						if(!temp_frame)
 						{
 							temp_frame = new VFrame(0, 
+								-1,
 								temp_w, 
 								temp_h, 
-								output_cmodel);
+								output_cmodel,
+								-1);
 						}
 
 						cmodel_transfer(temp_frame->get_rows(), 
@@ -1126,9 +1136,11 @@ if(debug) printf("FileMPEG::write_frames %d\n", __LINE__);
 						if(!temp_frame)
 						{
 							temp_frame = new VFrame(0, 
+								-1,
 								asset->width, 
 								asset->height, 
-								output_cmodel);
+								output_cmodel,
+								-1);
 						}
 
 // printf("FileMPEG::write_frames %d temp_frame=%p %p %p %p frame=%p %p %p %p color_model=%p %p\n", 

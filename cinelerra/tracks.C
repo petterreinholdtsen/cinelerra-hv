@@ -66,7 +66,6 @@ Tracks::~Tracks()
 
 
 
-
 void Tracks::equivalent_output(Tracks *tracks, double *result)
 {
 	if(total_playable_vtracks() != tracks->total_playable_vtracks())
@@ -183,7 +182,9 @@ printf("Tracks::operator= 1\n");
 	return *this;
 }
 
-int Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
+int Tracks::load(FileXML *xml, 
+	int &track_offset, 
+	uint32_t load_flags)
 {
 // add the appropriate type of track
 	char string[BCTEXTLEN];
@@ -276,10 +277,14 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 Track* Tracks::add_video_track(int above, Track *dst_track)
 {
 	int pixel;
+const int debug = 0;
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	VTrack* new_track = new VTrack(edl, this);
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	if(!dst_track)
 		dst_track = (above ? first : last);
 
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	if(above)
 	{
 		insert_before(dst_track, (Track*)new_track);
@@ -288,6 +293,7 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 	{
 		insert_after(dst_track, (Track*)new_track);
 	}
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 
 
 
@@ -299,10 +305,13 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 		change_modules(number_of(track) - 1, number_of(track), 0);
 	}
 
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 
 
 	new_track->create_objects();
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	new_track->set_default_title();
+if(debug) printf("Tracks::add_video_track %d\n", __LINE__);
 	return new_track;
 }
 

@@ -28,6 +28,7 @@
 #include "picon_png.h"
 #include "gain.h"
 #include "gainwindow.h"
+#include "samples.h"
 
 #include "vframe.h"
 
@@ -90,7 +91,7 @@ NEW_WINDOW_MACRO(Gain, GainWindow)
 NEW_PICON_MACRO(Gain)
 LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
 
-int Gain::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int Gain::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 {
 	load_configuration();
 
@@ -98,7 +99,7 @@ int Gain::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 
 	for(int64_t i = 0; i < size; i++)
 	{
-		output_ptr[i] = input_ptr[i] * gain;
+		output_ptr->get_data()[i] = input_ptr->get_data()[i] * gain;
 	}
 
 	return 0;

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -225,7 +225,7 @@ int Record::load_defaults()
 	}
 
 
-	load_mode = defaults->get("RECORD_LOADMODE", LOAD_PASTE);
+	load_mode = defaults->get("RECORD_LOADMODE", LOADMODE_PASTE);
 
 	monitor_audio = defaults->get("RECORD_MONITOR_AUDIO", 1);
 	monitor_video = defaults->get("RECORD_MONITOR_VIDEO", 1);
@@ -331,6 +331,8 @@ SET_TRACE
 
 void Record::configure_batches()
 {
+// printf("Record::configure_batches %d\n", __LINE__);
+// default_asset->dump();
 	strcpy(batches.values[0]->assets.values[0]->path, default_asset->path);
 	for(int i = 0; i < batches.total; i++)
 	{
@@ -437,42 +439,46 @@ void Record::run()
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
 
-SET_TRACE
+
 		window_lock->lock("Record::run 3");
-SET_TRACE
+
 		record_gui = new RecordGUI(mwindow, this);
 		record_gui->load_defaults();
 		record_gui->create_objects();
 
-SET_TRACE
+
 		record_monitor = new RecordMonitor(mwindow, this);
-SET_TRACE
+
 		record_monitor->create_objects();
-SET_TRACE
+
 		record_gui->update_batch_sources();
 
-SET_TRACE
+
 		menu_item->current_state = RECORD_CAPTURING;
 		record_engine = new RecordThread(mwindow, this);
 		record_engine->create_objects();
 		monitor_engine = new RecordThread(mwindow, this);
 		monitor_engine->create_objects();
 
-SET_TRACE
 
+
+		record_gui->lock_window("Record::run 4");
 		record_gui->show_window();
 		record_gui->flush();
+		record_gui->unlock_window();
 		if(video_window_open)
 		{
+			record_monitor->window->lock_window("Record::run 5");
 			record_monitor->window->show_window();
 			record_monitor->window->raise_window();
 			record_monitor->window->flush();
+			record_monitor->window->unlock_window();
 		}
 
-SET_TRACE
+
 		start_monitor();
 
-SET_TRACE
+
 		window_lock->unlock();
 
 		result = record_gui->run_window();
@@ -485,16 +491,17 @@ SET_TRACE
 		else
 			monitor_engine->record_audio->batch_done = 1;
 
-SET_TRACE
+
+
 //		stop_operation(0);
 // Need to stop everything this time
 		monitor_engine->stop_recording(0);
-SET_TRACE
+
 		record_engine->stop_recording(0);
-SET_TRACE
+
 
 		close_output_file();
-SET_TRACE
+
 
 		window_lock->lock("Record::run 4");
 
@@ -520,12 +527,13 @@ SET_TRACE
 		window_lock->unlock();
 
 SET_TRACE
-		delete edl;
+		edl->Garbage::remove_user();
 
 SET_TRACE
 	}
 
 	menu_item->current_state = RECORD_NOTHING;
+
 
 // Save everything again
 	save_defaults();
@@ -534,8 +542,9 @@ SET_TRACE
 
 
 
+
 // Paste into EDL
-	if(!result && load_mode != LOAD_NOTHING)
+	if(!result && load_mode != LOADMODE_NOTHING)
 	{
 		mwindow->gui->lock_window("Record::run");
 		ArrayList<EDL*> new_edls;
@@ -569,7 +578,7 @@ SET_TRACE
 			mwindow->undo->update_undo_before();
 
 // For pasting, clear the active region
-			if(load_mode == LOAD_PASTE)
+			if(load_mode == LOADMODE_PASTE)
 			{
 				mwindow->clear(0);
 			}
@@ -582,7 +591,9 @@ SET_TRACE
 				mwindow->edl->session->plugins_follow_edits);
 //printf("Record::run 7\n");
 
-			new_edls.remove_all_objects();
+			for(int i = 0; i < new_edls.size(); i++)
+				new_edls.get(i)->Garbage::remove_user();
+			new_edls.remove_all();
 //printf("Record::run 8\n");
 
 			mwindow->save_backup();
@@ -604,7 +615,9 @@ SET_TRACE
 // Delete everything
 	script = 0;
 	batches.remove_all_objects();
-	Garbage::delete_object(default_asset);
+
+	default_asset->Garbage::remove_user();
+
 }
 
 void Record::activate_batch(int number, int stop_operation)
@@ -725,9 +738,7 @@ int Record::open_output_file()
 		result = file->open_file(mwindow->preferences, 
 			batch->get_current_asset(), 
 			0, 
-			1, 
-			default_asset->sample_rate, 
-			default_asset->frame_rate);
+			1);
 
 		if(result)
 		{
@@ -777,9 +788,9 @@ void Record::rewind_file()
 	if(file)
 	{
 		if(default_asset->audio_data) 
-			file->set_audio_position(0, default_asset->frame_rate);
+			file->set_audio_position(0);
 		if(default_asset->video_data)
-			file->set_video_position(0, default_asset->frame_rate);
+			file->set_video_position(0, 0);
 	}
 
 	get_current_batch()->current_sample = 0;
@@ -890,7 +901,7 @@ int64_t Record::current_audio_position()
 {
 	if(file)
 	{
-		return (int64_t)(file->get_audio_position(default_asset->sample_rate) + 
+		return (int64_t)(file->get_audio_position() + 
 			get_current_batch()->file_offset + 0.5);
 	}
 	return 0;
@@ -900,7 +911,7 @@ int64_t Record::current_video_position()
 {
 	if(file)
 	{
-		return file->get_video_position(default_asset->frame_rate) + 
+		return file->get_video_position() + 
 			(int64_t)((double)get_current_batch()->file_offset / 
 				default_asset->sample_rate * 
 				default_asset->frame_rate + 

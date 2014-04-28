@@ -34,7 +34,7 @@ CacheItemBase::CacheItemBase()
  : ListItem<CacheItemBase>()
 {
 	age = 0;
-	asset_id = -1;
+	source_id = -1;
 	path = 0;
 }
 
@@ -104,7 +104,7 @@ void CacheBase::remove_asset(Asset *asset)
 	for(current_item = first; current_item; )
 	{
 		if(current_item->path && !strcmp(current_item->path, asset->path) ||
-			current_item->asset_id == asset->id)
+			current_item->source_id == asset->id)
 		{
 			CacheItemBase *next = current_item->next;
 			delete current_item;

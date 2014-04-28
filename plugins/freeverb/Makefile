@@ -8,7 +8,7 @@ FREEVERBOBJS := \
 	$(OBJDIR)/Components/comb.o \
 	$(OBJDIR)/Components/revmodel.o	
 
-OUTPUT := $(PLUGIN_DIR)/freeverb.plugin
+OUTPUT = $(PLUGIN_DIR)/freeverb.plugin
 
 CFLAGS += -fPIC \
 	-I../ \

@@ -50,10 +50,10 @@
 class BC_Display
 {
 public:
-	BC_Display(char *display_name);
+	BC_Display(const char *display_name);
 	~BC_Display();
 
-	static Display* get_display(char *name);
+	static Display* get_display(const char *name);
 	void new_window(BC_WindowBase *window);
 	void delete_window(BC_WindowBase *window);
 	int is_first(BC_WindowBase *window);
@@ -68,7 +68,7 @@ public:
 	void unlock_repeaters(int64_t duration);
 	void arm_repeat(int64_t duration);
 	void arm_completion(BC_WindowBase *window);
-	static void lock_display(char *location);
+	static void lock_display(const char *location);
 	static void unlock_display();
 	int get_display_locked();
 	void loop();
@@ -114,3 +114,6 @@ public:
 
 
 #endif
+
+
+

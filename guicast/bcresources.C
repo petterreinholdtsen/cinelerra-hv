@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,6 +116,7 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 BC_Resources::BC_Resources()
 {
 	synchronous = 0;
+	vframe_shm = 0;
 	display_info = new BC_DisplayInfo((char*)"", 0);
 	id_lock = new Mutex("BC_Resources::id_lock");
 	create_window_lock = new Mutex("BC_Resources::create_window_lock", 1);

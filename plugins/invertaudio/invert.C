@@ -22,6 +22,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
+#include "samples.h"
 #include "vframe.h"
 
 
@@ -48,10 +49,10 @@ public:
 	{
 		return 1;
 	};
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 	{
 		for(int i = 0; i < size; i++)
-			output_ptr[i] = -input_ptr[i];
+			output_ptr->get_data()[i] = -input_ptr->get_data()[i];
 		return 0;
 	};
 };

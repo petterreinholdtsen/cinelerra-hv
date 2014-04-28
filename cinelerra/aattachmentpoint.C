@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"
+#include "samples.h"
 #include "transportque.h"
 
 AAttachmentPoint::AAttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
@@ -47,7 +48,7 @@ void AAttachmentPoint::delete_buffer_vector()
 	if(buffer_vector)
 	{
 		for(int i = 0; i < virtual_plugins.total; i++)
-			delete [] buffer_vector[i];
+			delete buffer_vector[i];
 		delete [] buffer_vector;
 	}
 	buffer_vector = 0;
@@ -62,10 +63,10 @@ void AAttachmentPoint::new_buffer_vector(int total, int size)
 	if(!buffer_vector)
 	{
 		buffer_allocation = size;
-		buffer_vector = new double*[virtual_plugins.total];
+		buffer_vector = new Samples*[virtual_plugins.total];
 		for(int i = 0; i < virtual_plugins.total; i++)
 		{
-			buffer_vector[i] = new double[buffer_allocation];
+			buffer_vector[i] = new Samples(buffer_allocation);
 		}
 	}
 }
@@ -84,7 +85,7 @@ int AAttachmentPoint::get_buffer_size()
 // 		return fragment_size;
 }
 
-void AAttachmentPoint::render(double *output, 
+void AAttachmentPoint::render(Samples *output, 
 	int buffer_number,
 	int64_t start_position, 
 	int64_t len,
@@ -100,7 +101,9 @@ void AAttachmentPoint::render(double *output,
 			this->len == len && 
 			this->sample_rate == sample_rate)
 		{
-			memcpy(output, buffer_vector[buffer_number], sizeof(double) * len);
+			memcpy(output->get_data(), 
+				buffer_vector[buffer_number]->get_data(), 
+				sizeof(double) * len);
 			return;
 		}
 
@@ -114,7 +117,7 @@ void AAttachmentPoint::render(double *output,
 		new_buffer_vector(virtual_plugins.total, len);
 
 // Create temporary buffer vector with output argument substituted in
-		double **output_temp = new double*[virtual_plugins.total];
+		Samples **output_temp = new Samples*[virtual_plugins.total];
 		for(int i = 0; i < virtual_plugins.total; i++)
 		{
 			if(i == buffer_number)
@@ -130,7 +133,7 @@ void AAttachmentPoint::render(double *output,
 			sample_rate,
 			plugin->length *
 				sample_rate /
-				renderengine->edl->session->sample_rate,
+				renderengine->get_edl()->session->sample_rate,
 			renderengine->command->get_direction());
 
 // Delete temporary buffer vector
@@ -139,15 +142,21 @@ void AAttachmentPoint::render(double *output,
 	else
 	{
 // Process plugin
-		double *output_temp[1];
+		Samples *output_temp[1];
 		output_temp[0] = output;
+
+if(0) printf("AAttachmentPoint::render %d buffer_number=%d renderengine=%p plugin_server=%p\n", 
+__LINE__, 
+buffer_number,
+renderengine,
+plugin_servers.values[buffer_number]);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			len,
 			sample_rate,
 			plugin->length *
 				sample_rate /
-				renderengine->edl->session->sample_rate,
+				renderengine->get_edl()->session->sample_rate,
 			renderengine->command->get_direction());
 	}
 }

@@ -43,7 +43,7 @@
 
 
 DeviceDVBInput::DeviceDVBInput(MWindow *mwindow, VideoInConfig *config)
- : GarbageObject("DeviceDVBInput")
+ : Garbage("DeviceDVBInput")
 {
 	reset();
 	this->config = config;
@@ -89,7 +89,6 @@ DeviceDVBInput* DeviceDVBInput::get_input_thread(MWindow *mwindow)
 	{
 		input_thread = mwindow->dvb_input = 
 			new DeviceDVBInput(mwindow, mwindow->edl->session->vconfig_in);
-		input_thread->GarbageObject::add_user();
 
 
 	}
@@ -100,8 +99,7 @@ DeviceDVBInput* DeviceDVBInput::get_input_thread(MWindow *mwindow)
 void DeviceDVBInput::put_input_thread(MWindow *mwindow)
 {
 	mwindow->dvb_input_lock->lock("DeviceDVBInput::put_input_thread");
-	mwindow->dvb_input->GarbageObject::remove_user();
-	Garbage::delete_object(mwindow->dvb_input);
+	mwindow->dvb_input->Garbage::remove_user();
 	mwindow->dvb_input_lock->unlock();
 }
 

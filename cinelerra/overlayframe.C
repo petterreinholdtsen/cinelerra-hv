@@ -190,6 +190,30 @@ OverlayFrame::~OverlayFrame()
 			b = (b * opacity + output[2] * transparency) / max; \
 			break; \
 		} \
+		case TRANSFER_MIN: \
+		{ \
+			r = (temp_type)MIN(input1, output[0]); \
+			temp_type g1 = ((temp_type)input2 - chroma_offset); \
+			if(g1 < 0) g1 = -g1; \
+			temp_type g2 = ((temp_type)output[1] - chroma_offset); \
+			if(g2 < 0) g2 = -g2; \
+			if(g1 < g2) \
+				g = input2; \
+			else \
+				g = output[1]; \
+			temp_type b1 = ((temp_type)input3 - chroma_offset); \
+			if(b1 < 0) b1 = -b1; \
+			temp_type b2 = ((temp_type)output[2] - chroma_offset); \
+			if(b2 < 0) b2 = -b2; \
+			if(b1 < b2) \
+				b = input3; \
+			else \
+				b = output[2]; \
+			r = (r * opacity + output[0] * transparency) / max; \
+			g = (g * opacity + output[1] * transparency) / max; \
+			b = (b * opacity + output[2] * transparency) / max; \
+			break; \
+		} \
 		case TRANSFER_REPLACE: \
 			r = input1; \
 			g = input2; \
@@ -321,6 +345,31 @@ OverlayFrame::~OverlayFrame()
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
 			a = input4 > output4 ? input4 : output4; \
+			break; \
+		} \
+		case TRANSFER_MIN: \
+		{ \
+			r = (temp_type)MIN(input1, output1); \
+			temp_type g1 = ((temp_type)input2 - chroma_offset); \
+			if(g1 < 0) g1 = -g1; \
+			temp_type g2 = ((temp_type)output2 - chroma_offset); \
+			if(g2 < 0) g2 = -g2; \
+			if(g1 < g2) \
+				g = input2; \
+			else \
+				g = output2; \
+			temp_type b1 = ((temp_type)input3 - chroma_offset); \
+			if(b1 < 0) b1 = -b1; \
+			temp_type b2 = ((temp_type)output3 - chroma_offset); \
+			if(b2 < 0) b2 = -b2; \
+			if(b1 < b2) \
+				b = input3; \
+			else \
+				b = output3; \
+			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
+			a = input4 < output4 ? input4 : output4; \
 			break; \
 		} \
 		case TRANSFER_REPLACE: \
@@ -608,6 +657,7 @@ int OverlayFrame::overlay(VFrame *output,
 			if(!temp_frame)
 			{
 				temp_frame = new VFrame(0,
+					-1,
 					temp_w,
 					temp_h,
 					input->get_color_model(),

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
  * 
  */
 
+#include "arender.h"
 #include "asset.h"
 #include "bcsignals.h"
 #include "bctimer.h"
@@ -33,29 +34,35 @@
 #include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "renderengine.h"
 #include "resourcethread.h"
 #include "resourcepixmap.h"
+#include "samples.h"
 #include "trackcanvas.h"
+#include "transportque.h"
 #include "vframe.h"
+#include "vrender.h"
 #include "wavecache.h"
 
 
 ResourceThreadItem::ResourceThreadItem(ResourcePixmap *pixmap, 
-	Asset *asset,
+	Indexable *indexable,
 	int data_type,
 	int operation_count)
 {
 	this->data_type = data_type;
 	this->pixmap = pixmap;
-	this->asset = asset;
+	this->indexable = indexable;
+
+// Assets are garbage collected so they don't need to be replicated.
 	this->operation_count = operation_count;
-	asset->GarbageObject::add_user();
+	indexable->Garbage::add_user();
 	last = 0;
 }
 
 ResourceThreadItem::~ResourceThreadItem()
 {
-	asset->GarbageObject::remove_user();
+	indexable->Garbage::remove_user();
 }
 
 
@@ -72,9 +79,12 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	double frame_rate,
 	int64_t position,
 	int layer,
-	Asset *asset,
+	Indexable *indexable,
 	int operation_count)
- : ResourceThreadItem(pixmap, asset, TRACK_VIDEO, operation_count)
+ : ResourceThreadItem(pixmap, 
+ 	indexable, 
+	TRACK_VIDEO, 
+	operation_count)
 {
 	this->picon_x = picon_x;
 	this->picon_y = picon_y;
@@ -97,13 +107,16 @@ VResourceThreadItem::~VResourceThreadItem()
 
 
 AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap, 
-	Asset *asset,
+	Indexable *indexable,
 	int x,
 	int channel,
 	int64_t start,
 	int64_t end,
 	int operation_count)
- : ResourceThreadItem(pixmap, asset, TRACK_AUDIO, operation_count)
+ : ResourceThreadItem(pixmap, 
+ 	indexable, 
+	TRACK_AUDIO, 
+	operation_count)
 {
 	this->x = x;
 	this->channel = channel;
@@ -141,11 +154,14 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 //	interrupted_lock = new Condition(0, "ResourceThread::interrupted_lock", 0);
 	item_lock = new Mutex("ResourceThread::item_lock");
 	audio_buffer = 0;
+	for(int i = 0; i < MAXCHANNELS; i++)
+		temp_buffer[i] = 0;
 	timer = new Timer;
 	prev_x = -1;
 	prev_h = 0;
 	prev_l = 0;
 	operation_count = 0;
+	render_engine = 0;
 }
 
 ResourceThread::~ResourceThread()
@@ -155,8 +171,11 @@ ResourceThread::~ResourceThread()
 	delete item_lock;
 	delete temp_picon;
 	delete temp_picon2;
-	delete [] audio_buffer;
+	delete audio_buffer;
+	for(int i = 0; i < MAXCHANNELS; i++)
+		delete temp_buffer[i];
 	delete timer;
+	delete render_engine;
 }
 
 void ResourceThread::create_objects()
@@ -172,7 +191,7 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 	double frame_rate,
 	int64_t position,
 	int layer,
-	Asset *asset)
+	Indexable *indexable)
 {
 	item_lock->lock("ResourceThread::item_lock");
 
@@ -184,13 +203,13 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 		frame_rate,
 		position,
 		layer,
-		asset,
+		indexable,
 		operation_count));
 	item_lock->unlock();
 }
 
 void ResourceThread::add_wave(ResourcePixmap *pixmap,
-	Asset *asset,
+	Indexable *indexable,
 	int x,
 	int channel,
 	int64_t source_start,
@@ -199,7 +218,7 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	item_lock->lock("ResourceThread::item_lock");
 
 	items.append(new AResourceThreadItem(pixmap, 
-		asset,
+		indexable,
 		x,
 		channel,
 		source_start,
@@ -292,13 +311,66 @@ void ResourceThread::run()
 }
 
 
+void ResourceThread::open_render_engine(EDL *nested_edl, 
+	int do_audio, 
+	int do_video)
+{
+	if(render_engine && render_engine_id != nested_edl->id)
+	{
+		delete render_engine;
+		render_engine = 0;
+	}
 
+	if(!render_engine)
+	{
+		TransportCommand command;
+		if(do_audio)
+			command.command = NORMAL_FWD;
+		else
+			command.command = CURRENT_FRAME;
+		command.get_edl()->copy_all(nested_edl);
+		command.change_type = CHANGE_ALL;
+		command.realtime = 0;
+		render_engine = new RenderEngine(0,
+			mwindow->preferences,
+			0,
+			0,
+			0);
+		render_engine_id == nested_edl->id;
+		render_engine->set_vcache(mwindow->video_cache);
+		render_engine->set_acache(mwindow->audio_cache);
+		render_engine->arm_command(&command);
+	}
+}
 
 void ResourceThread::do_video(VResourceThreadItem *item)
 {
+	int source_w = 0;
+	int source_h = 0;
+	int source_id = -1;
+	int source_cmodel = -1;
+
+	if(item->indexable->is_asset)
+	{
+		Asset *asset = (Asset*)item->indexable;
+		source_w = asset->width;
+		source_h = asset->height;
+		source_id = asset->id;
+		source_cmodel = BC_RGB888;
+	}
+	else
+	{
+		EDL *nested_edl = (EDL*)item->indexable;
+		source_w = nested_edl->session->output_w;
+		source_h = nested_edl->session->output_h;
+		source_id = nested_edl->id;
+		source_cmodel = nested_edl->session->color_model;
+	}
+
 	if(temp_picon &&
-		(temp_picon->get_w() != item->asset->width ||
-		temp_picon->get_h() != item->asset->height))
+		(temp_picon->get_w() != source_w ||
+		temp_picon->get_h() != source_h ||
+		temp_picon->get_color_model() != source_cmodel))
 	{
 		delete temp_picon;
 		temp_picon = 0;
@@ -307,9 +379,11 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	if(!temp_picon)
 	{
 		temp_picon = new VFrame(0, 
-			item->asset->width, 
-			item->asset->height, 
-			BC_RGB888);
+			-1,
+			source_w, 
+			source_h, 
+			source_cmodel,
+			-1);
 	}
 
 // Get temporary to copy cached frame to
@@ -324,9 +398,11 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	if(!temp_picon2)
 	{
 		temp_picon2 = new VFrame(0, 
+			-1,
 			item->picon_w, 
 			item->picon_h, 
-			BC_RGB888);
+			BC_RGB888,
+			-1);
 	}
 
 
@@ -334,6 +410,9 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 // Search frame cache again.
 
 	VFrame *picon_frame = 0;
+	int need_conversion = 0;
+	EDL *nested_edl = 0;
+	Asset *asset = 0;
 
 	if((picon_frame = mwindow->frame_cache->get_frame_ptr(item->position,
 		item->layer,
@@ -341,15 +420,33 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		BC_RGB888,
 		item->picon_w,
 		item->picon_h,
-		item->asset->id)) != 0)
+		source_id)) != 0)
 	{
 		temp_picon2->copy_from(picon_frame);
 // Unlock the get_frame_ptr command
 		mwindow->frame_cache->unlock();
 	}
 	else
+	if(!item->indexable->is_asset)
 	{
-		File *source = mwindow->video_cache->check_out(item->asset,
+		nested_edl = (EDL*)item->indexable;
+		open_render_engine(nested_edl, 0, 1);
+
+		int64_t source_position = (int64_t)(item->position *
+			nested_edl->session->frame_rate /
+			item->frame_rate);
+		if(render_engine->vrender)
+			render_engine->vrender->process_buffer(
+				temp_picon, 
+				source_position,
+				0);
+
+		need_conversion = 1;
+	}
+	else
+	{
+		asset = (Asset*)item->indexable;
+		File *source = mwindow->video_cache->check_out(asset,
 			mwindow->edl);
 		if(!source) 
 		{
@@ -357,11 +454,25 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 		}
 
 		source->set_layer(item->layer);
-		source->set_video_position(item->position, 
+		int64_t normalized_position = (int64_t)(item->position *
+			asset->frame_rate /
 			item->frame_rate);
+		source->set_video_position(normalized_position, 
+			0);
 
 		source->read_frame(temp_picon);
-		picon_frame = new VFrame(0, item->picon_w, item->picon_h, BC_RGB888);
+		mwindow->video_cache->check_in(asset);
+		need_conversion = 1;
+	}
+
+	if(need_conversion)
+	{
+		picon_frame = new VFrame(0, 
+			-1,
+			item->picon_w, 
+			item->picon_h, 
+			BC_RGB888,
+			-1);
 		cmodel_transfer(picon_frame->get_rows(),
 			temp_picon->get_rows(),
 			0,
@@ -378,7 +489,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			0,
 			picon_frame->get_w(), 
 			picon_frame->get_h(),
-			BC_RGB888,
+			source_cmodel,
 			BC_RGB888,
 			0,
 			temp_picon->get_bytes_per_line(),
@@ -389,10 +500,8 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			item->layer,
 			mwindow->edl->session->frame_rate,
 			0,
-			item->asset);
-		mwindow->video_cache->check_in(item->asset);
+			item->indexable);
 	}
-
 
 // Allow escape here
 	if(interrupted) 
@@ -446,7 +555,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 	double high;
 	double low;
 	
-	if((wave_item = mwindow->wave_cache->get_wave(item->asset->id,
+	if((wave_item = mwindow->wave_cache->get_wave(item->indexable->id,
 		item->channel,
 		item->start,
 		item->end)))
@@ -468,7 +577,7 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 // Get value from previous buffer
 			if(audio_buffer && 
 				item->channel == audio_channel &&
-				item->asset->id == audio_asset_id &&
+				item->indexable->id == audio_asset_id &&
 				sample >= audio_start &&
 				sample < audio_start + audio_samples)
 			{
@@ -477,28 +586,72 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			else
 // Load new buffer
 			{
-				File *source = mwindow->audio_cache->check_out(item->asset,
-					mwindow->edl);
-				if(!source)
-					return;
-					
-				source->set_channel(item->channel);
-				source->set_audio_position(sample, item->asset->sample_rate);
-				int64_t total_samples = source->get_audio_length(-1);
-				if(!audio_buffer) audio_buffer = new double[BUFFERSIZE];
+				if(!audio_buffer) audio_buffer = new Samples(BUFFERSIZE);
+
+
+				int64_t total_samples = item->indexable->get_audio_samples();
 				int fragment = BUFFERSIZE;
 				if(fragment + sample > total_samples)
 					fragment = total_samples - sample;
-				source->read_samples(audio_buffer, fragment, item->asset->sample_rate);
+
+				if(!item->indexable->is_asset)
+				{
+					open_render_engine((EDL*)item->indexable, 1, 0);
+					if(render_engine->arender)
+					{
+						int source_channels = item->indexable->get_audio_channels();
+						for(int i = 0; i < MAXCHANNELS; i++)
+						{
+							if(i < source_channels &&
+								!temp_buffer[i])
+							{
+								temp_buffer[i] = new Samples(BUFFERSIZE);
+							}
+							else
+							if(i >= source_channels &&
+								temp_buffer[i])
+							{
+								delete temp_buffer[i];
+								temp_buffer[i] = 0;
+							}
+						}
+
+						
+						render_engine->arender->process_buffer(
+							temp_buffer, 
+							fragment,
+							sample);
+						memcpy(audio_buffer->get_data(), 
+							temp_buffer[item->channel]->get_data(),
+							fragment * sizeof(double));
+					}
+					else
+					{
+						bzero(audio_buffer->get_data(), sizeof(double) * fragment);
+					}
+				}
+				else
+				{
+					File *source = mwindow->audio_cache->check_out(
+						(Asset*)item->indexable,
+						mwindow->edl);
+					if(!source)
+						return;
+
+					source->set_channel(item->channel);
+					source->set_audio_position(sample);
+					source->read_samples(audio_buffer, fragment);
+					mwindow->audio_cache->check_in((Asset*)item->indexable);
+				}
+
+				audio_asset_id = item->indexable->id;
 				audio_channel = item->channel;
 				audio_start = sample;
 				audio_samples = fragment;
-				audio_asset_id = item->asset->id;
-				mwindow->audio_cache->check_in(item->asset);
 			}
 
 
-			value = audio_buffer[sample - audio_start];
+			value = audio_buffer->get_data()[sample - audio_start];
 			if(first_sample)
 			{
 				high = low = value;
@@ -514,7 +667,8 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			}
 		}
 
-		mwindow->wave_cache->put_wave(item->asset,
+// If it's a nested EDL, store all the channels
+		mwindow->wave_cache->put_wave(item->indexable,
 			item->channel,
 			item->start,
 			item->end,

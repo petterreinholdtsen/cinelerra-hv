@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define OVERRIDE_ALPHA
+#define USE_INTERLACE
+//#define SWAP_FIELDS
+#define FIELD_OFFSET1 3
+//#define FIELD_OFFSET1 1
+#define MONOCHROME
+
 static unsigned char get_nibble(unsigned char **ptr, int *nibble)
 {
 	if(*nibble)
@@ -133,10 +140,12 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 					subtitle->alpha[0] = ((*ptr++) & 0xf) * 255 / 15;
 					got_alpha = 1;
 //printf("subtitle alphas %d %d %d %d\n", subtitle->alpha[0], subtitle->alpha[1], subtitle->alpha[2], subtitle->alpha[3]);
+#ifdef OVERRIDE_ALPHA
 					subtitle->alpha[3] = 0xff;
 					subtitle->alpha[2] = 0x80;
 					subtitle->alpha[1] = 0x40;
 					subtitle->alpha[0] = 0x00;
+#endif
 					break;
 
 				case 0x05:
@@ -214,10 +223,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	ptr = data_start;
 	int first_pixel = 1;
 
-#define USE_INTERLACE
-//#define SWAP_FIELDS
-#define FIELD_OFFSET1 3
-//#define FIELD_OFFSET1 1
 	while(ptr < end && y < subtitle->h + 1 && x < subtitle->w)
 	{
 
@@ -418,6 +423,7 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 					else
 					{
 // Set new color in a 2x2 pixel block
+#ifdef MONOCHROME
 						if(h > threshold)
 						{
 							*y_color = 0xff;
@@ -429,6 +435,9 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 
 						*u_color = 0x80;
 						*v_color = 0x80;
+
+#endif
+
 						*a_color = 0xff;
 					}
 				}
@@ -511,17 +520,27 @@ void overlay_subtitle(mpeg3video_t *video, mpeg3_subtitle_t *subtitle)
 			x < subtitle->x2 && x < video->coded_picture_width; 
 			x++)
 		{
-			int opacity = *input_a;
-			int transparency = 0xff - opacity;
+			unsigned int opacity = *input_a;
+			unsigned int transparency = 0xff - opacity;
 			*output_y = (*input_y * opacity + *output_y * transparency) / 0xff;
 
+#ifdef MONOCHROME
 			if(!(y % 2) && !(x % 2))
+#endif
 			{
 				*output_u = (*input_u * opacity + *output_u * transparency) / 0xff;
 				*output_v = (*input_v * opacity + *output_v * transparency) / 0xff;
 
-				output_u++;
-				output_v++;
+#ifndef MONOCHROME
+				if(!(y % 2) && !(x % 2))
+				{
+#endif
+					output_u++;
+					output_v++;
+#ifndef MONOCHROME
+				}
+#endif
+
 			}
 
 			output_y++;

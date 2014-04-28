@@ -39,6 +39,7 @@
 //
 //-----------------------------------------------------------------------------
 
+#include <string.h>
 #include <makeCubeMap.h>
 #include <makeLatLongMap.h>
 #include <ImfEnvmap.h>

@@ -62,10 +62,12 @@ VDeviceBase* VirtualVConsole::get_vdriver()
 void VirtualVConsole::get_playable_tracks()
 {
 	if(!playable_tracks)
-		playable_tracks = new PlayableTracks(renderengine, 
+		playable_tracks = new PlayableTracks(renderengine->get_edl(), 
 			commonrender->current_position, 
+			renderengine->command->get_direction(),
 			TRACK_VIDEO,
 			1);
+//printf("VirtualVConsole::get_playable_tracks %d %d\n", __LINE__, playable_tracks->size());
 }
 
 VirtualNode* VirtualVConsole::new_entry_node(Track *track, 
@@ -81,7 +83,8 @@ VirtualNode* VirtualVConsole::new_entry_node(Track *track,
 }
 
 // start of buffer in project if forward / end of buffer if reverse
-int VirtualVConsole::process_buffer(int64_t input_position)
+int VirtualVConsole::process_buffer(int64_t input_position,
+	int use_opengl)
 {
 	int i, j, k;
 	int result = 0;
@@ -89,15 +92,14 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 
 
 // The use of single frame is determined in RenderEngine::arm_command
-	use_opengl = (renderengine->video && 
-		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
-// printf("VirtualVConsole::process_buffer %p %d %d\n", 
-// renderengine->video, 
-// renderengine->video->out_config->driver,
+// printf("VirtualVConsole::process_buffer %d this=%p %d\n", 
+// __LINE__,
+// this,
 // use_opengl);
 
 	if(debug_tree) 
-		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
+		printf("VirtualVConsole::process_buffer %d exit_nodes=%d\n", 
+			__LINE__,
 			exit_nodes.total);
 
 
@@ -153,9 +155,10 @@ Timer timer;
 		{
 // Texture is created on demand
 			output_temp = new VFrame(0, 
+				-1,
 				track->track_w, 
 				track->track_h, 
-				renderengine->edl->session->color_model,
+				renderengine->get_edl()->session->color_model,
 				-1);
 		}
 
@@ -169,13 +172,13 @@ Timer timer;
 		output_temp->clear_stacks();
 		result |= node->render(output_temp,
 			input_position + track->nudge,
-			renderengine->edl->session->frame_rate,
+			renderengine->get_edl()->session->frame_rate,
 			use_opengl);
 
 	}
 //printf("VirtualVConsole::process_buffer timer=%lld\n", timer.get_difference());
 
-	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
+	if(debug_tree) printf("VirtualVConsole::process_buffer %d\n", __LINE__);
 	return result;
 }
 

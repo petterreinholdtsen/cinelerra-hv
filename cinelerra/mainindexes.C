@@ -26,6 +26,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "indexstate.h"
 #include "condition.h"
 #include "language.h"
 #include "loadfile.h"
@@ -47,55 +48,60 @@ MainIndexes::MainIndexes(MWindow *mwindow)
 	this->mwindow = mwindow;
 	input_lock = new Condition(0, "MainIndexes::input_lock");
 	next_lock = new Mutex("MainIndexes::next_lock");
+	index_lock = new Mutex("MainIndexes::index_lock");
 	interrupt_lock = new Condition(1, "MainIndexes::interrupt_lock");
 	interrupt_flag = 0;
+	indexfile = 0;
 	done = 0;
-	indexfile = new IndexFile(mwindow);
 }
 
 MainIndexes::~MainIndexes()
 {
 	mwindow->mainprogress->cancelled = 1;
 	stop_loop();
-	delete indexfile;
 	delete next_lock;
 	delete input_lock;
 	delete interrupt_lock;
+	delete indexfile;
+	delete index_lock;
 }
 
-void MainIndexes::add_next_asset(File *file, Asset *asset)
+void MainIndexes::add_next_asset(File *file, Indexable *indexable)
 {
 	next_lock->lock("MainIndexes::add_next_asset");
 
 SET_TRACE
 // Test current asset
-	IndexFile indexfile(mwindow);
+	IndexFile indexfile(mwindow, indexable);
+	IndexState *index_state = 0;
+	index_state = indexable->index_state;
 
 SET_TRACE
 	int got_it = 0;
 
 SET_TRACE
-	if(!indexfile.open_index(asset))
+	if(!indexfile.open_index())
 	{
-		asset->index_status = INDEX_READY;
+		index_state->index_status = INDEX_READY;
 		indexfile.close_index();
 		got_it = 1;
 	}
 
+//printf("MainIndexes::add_next_asset %d %f\n", __LINE__, indexable->get_frame_rate());
+
 SET_TRACE
+// No index
 	if(!got_it)
 	{
 		File *this_file = file;
 
 SET_TRACE
-		if(!file)
+		if(!file && indexable->is_asset)
 		{
 			this_file = new File;
 			this_file->open_file(mwindow->preferences,
-				asset,
+				(Asset*)indexable,
 				1,
-				0,
-				0,
 				0);
 		}
 
@@ -107,53 +113,46 @@ SET_TRACE
 		IndexFile::get_index_filename(source_filename, 
 			mwindow->preferences->index_directory, 
 			index_filename, 
-			asset->path);
+			indexable->path);
+
 SET_TRACE
-		if(!this_file->get_index(index_filename))
+		if(this_file && !this_file->get_index(index_filename))
 		{
 SET_TRACE
-			if(!indexfile.open_index(asset))
+			if(!indexfile.open_index())
 			{
 SET_TRACE
 				indexfile.close_index();
 SET_TRACE
-				asset->index_status = INDEX_READY;
+				index_state->index_status = INDEX_READY;
 				got_it = 1;
 			}
 SET_TRACE
 		}
+
 SET_TRACE
-		if(!file) delete this_file;
+		if(this_file && !file) delete this_file;
 SET_TRACE
 	}
 SET_TRACE
 
+//printf("MainIndexes::add_next_asset %d %f\n", __LINE__, indexable->get_frame_rate());
 
-// Put copy of asset in stack, not the real thing.
+// Put source in stack
 	if(!got_it)
 	{
-//printf("MainIndexes::add_next_asset 3\n");
-SET_TRACE
-		Asset *new_asset = new Asset;
-SET_TRACE
-		*new_asset = *asset;
-// If the asset existed and was overwritten, the status will be READY.
-//printf("MainIndexes::add_next_asset 1\n");
-		new_asset->index_status = INDEX_NOTTESTED;
-SET_TRACE
-		next_assets.append(new_asset);
-SET_TRACE
+		index_state->index_status = INDEX_NOTTESTED;
+		next_indexables.append(indexable);
+		indexable->add_user();
 	}
-SET_TRACE
-
 	next_lock->unlock();
 }
 
-void MainIndexes::delete_current_assets()
+void MainIndexes::delete_current_sources()
 {
-	for(int i = 0; i < current_assets.total; i++)
-		Garbage::delete_object(current_assets.values[i]);
-	current_assets.remove_all();
+	for(int i = 0; i < current_indexables.size(); i++)
+		current_indexables.get(i)->Garbage::remove_user();
+	current_indexables.remove_all();
 }
 
 void MainIndexes::start_loop()
@@ -176,7 +175,7 @@ void MainIndexes::start_build()
 {
 //printf("MainIndexes::start_build 1\n");
 	interrupt_flag = 0;
-// Locked up when indexes were already being built and an asset was 
+// Locked up when indexes were already being built and an indexable was 
 // pasted.
 //	interrupt_lock.lock();
 	input_lock->unlock();
@@ -186,7 +185,9 @@ void MainIndexes::interrupt_build()
 {
 //printf("MainIndexes::interrupt_build 1\n");
 	interrupt_flag = 1;
-	indexfile->interrupt_index();
+	index_lock->lock("MainIndexes::interrupt_build");
+	if(indexfile) indexfile->interrupt_index();
+	index_lock->unlock();
 //printf("MainIndexes::interrupt_build 2\n");
 	interrupt_lock->lock("MainIndexes::interrupt_build");
 //printf("MainIndexes::interrupt_build 3\n");
@@ -194,17 +195,17 @@ void MainIndexes::interrupt_build()
 //printf("MainIndexes::interrupt_build 4\n");
 }
 
-void MainIndexes::load_next_assets()
+void MainIndexes::load_next_sources()
 {
-	delete_current_assets();
+	delete_current_sources();
 
 // Transfer from new list
-	next_lock->lock("MainIndexes::load_next_assets");
-	for(int i = 0; i < next_assets.total; i++)
-		current_assets.append(next_assets.values[i]);
+	next_lock->lock("MainIndexes::load_next_sources");
+	for(int i = 0; i < next_indexables.size(); i++)
+		current_indexables.append(next_indexables.get(i));
 
 // Clear pointers from new list only
-	next_assets.remove_all();
+	next_indexables.remove_all();
 	next_lock->unlock();
 }
 
@@ -213,11 +214,13 @@ void MainIndexes::run()
 {
 	while(!done)
 	{
-// Wait for new assets to be released
+// Wait for new indexables to be released
 		input_lock->lock("MainIndexes::run 1");
 		if(done) return;
+
+
 		interrupt_lock->lock("MainIndexes::run 2");
-		load_next_assets();
+		load_next_sources();
 		interrupt_flag = 0;
 
 
@@ -225,23 +228,34 @@ void MainIndexes::run()
 
 
 
-// test index of each asset
+// test index of each indexable
 		MainProgressBar *progress = 0;
-		for(int i = 0; i < current_assets.total && !interrupt_flag; i++)
+		int total_sources = current_indexables.size();
+		for(int i = 0; 
+			i < total_sources && !interrupt_flag; 
+			i++)
 		{
-			Asset *current_asset = current_assets.values[i];
-//printf("MainIndexes::run 3 %s %d %d\n", current_asset->path, current_asset->index_status, current_asset->audio_data);
+			Indexable *indexable = 0;
+// Take an indexable
+			indexable = current_indexables.get(i);
 
-			if(current_asset->index_status == INDEX_NOTTESTED && 
-				current_asset->audio_data)
+			IndexState *index_state = 0;
+			index_state = indexable->index_state;
+
+//printf("MainIndexes::run 3 %s %d %d\n", indexable->path, indexable->index_status, indexable->audio_data);
+
+			if(index_state->index_status == INDEX_NOTTESTED && 
+				indexable->have_audio())
 			{
 
 
-
+				index_lock->lock("MainIndexes::run 1");
+				indexfile = new IndexFile(mwindow, indexable);
+				index_lock->unlock();
 
 
 // Doesn't exist if this returns 1.
-				if(indexfile->open_index(current_asset))
+				if(indexfile->open_index())
 				{
 // Try to create index now.
 					if(!progress)
@@ -251,28 +265,28 @@ void MainIndexes::run()
 						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 
-//printf("MainIndexes::run 5 %p %s\n", current_asset, current_asset->path);
 
-					indexfile->create_index(current_asset, progress);
-//printf("MainIndexes::run 6 %p %s\n", current_asset, current_asset->path);
+					indexfile->create_index(progress);
 					if(progress->is_cancelled()) interrupt_flag = 1;
-//printf("MainIndexes::run 7 %p %s\n", current_asset, current_asset->path);
 				}
 				else
 // Exists.  Update real thing.
 				{
 //printf("MainIndexes::run 8\n");
-					if(current_asset->index_status == INDEX_NOTTESTED)
+					if(index_state->index_status == INDEX_NOTTESTED)
 					{
-						current_asset->index_status = INDEX_READY;
+						index_state->index_status = INDEX_READY;
 						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 2");
-						mwindow->edl->set_index_file(current_asset);
+						mwindow->edl->set_index_file(indexable);
 						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 					indexfile->close_index();
 				}
 
-
+				index_lock->lock("MainIndexes::run 2");
+				delete indexfile;
+				indexfile = 0;
+				index_lock->unlock();
 //printf("MainIndexes::run 8\n");
 			}
 //printf("MainIndexes::run 9\n");

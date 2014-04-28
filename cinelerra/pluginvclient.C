@@ -70,7 +70,7 @@ VFrame* PluginVClient::new_temp(int w, int h, int color_model)
 
 	if(!temp)
 	{
-		temp = new VFrame(0, w, h, color_model);
+		temp = new VFrame(0, -1, w, h, color_model, -1);
 	}
 
 	return temp;

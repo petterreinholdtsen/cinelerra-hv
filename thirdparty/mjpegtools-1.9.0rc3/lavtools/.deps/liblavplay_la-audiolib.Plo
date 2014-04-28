@@ -1,11 +1,12 @@
-liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
-  ../config.h /usr/include/stdio.h /usr/include/features.h \
-  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
-  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
+liblavplay_la-audiolib.lo: audiolib.c ../config.h /usr/include/stdio.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+  /usr/include/gnu/stubs-32.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
   /usr/include/bits/types.h /usr/include/bits/typesizes.h \
   /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h \
+  /usr/include/bits/wchar.h /usr/include/gconv.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stdarg.h \
   /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
   /usr/include/stdlib.h /usr/include/bits/waitflags.h \
   /usr/include/bits/waitstatus.h /usr/include/endian.h \
@@ -20,9 +21,10 @@ liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
   /usr/include/bits/confname.h /usr/include/getopt.h \
   /usr/include/signal.h /usr/include/bits/signum.h \
   /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h \
-  /usr/include/bits/sigcontext.h /usr/include/bits/sigstack.h \
-  /usr/include/sys/ucontext.h /usr/include/bits/sigthread.h \
-  /usr/include/string.h /usr/include/errno.h /usr/include/bits/errno.h \
+  /usr/include/bits/sigcontext.h /usr/include/asm/sigcontext.h \
+  /usr/include/bits/sigstack.h /usr/include/sys/ucontext.h \
+  /usr/include/bits/sigthread.h /usr/include/string.h \
+  /usr/include/errno.h /usr/include/bits/errno.h \
   /usr/include/linux/errno.h /usr/include/asm/errno.h \
   /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
   /usr/include/sys/soundcard.h /usr/include/linux/soundcard.h \
@@ -38,8 +40,8 @@ liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
   /usr/include/sys/shm.h /usr/include/bits/shm.h /usr/include/pthread.h \
   /usr/include/sched.h /usr/include/bits/sched.h \
   /usr/include/bits/setjmp.h ../utils/mjpeg_logging.h \
-  ../utils/mjpeg_types.h /usr/include/stdint.h /usr/include/bits/wchar.h \
-  /usr/include/inttypes.h audiolib.h
+  ../utils/mjpeg_types.h /usr/include/stdint.h /usr/include/inttypes.h \
+  audiolib.h
 
 ../config.h:
 
@@ -53,9 +55,9 @@ liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-64.h:
+/usr/include/gnu/stubs-32.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
 
 /usr/include/bits/types.h:
 
@@ -67,7 +69,11 @@ liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h:
+/usr/include/bits/wchar.h:
+
+/usr/include/gconv.h:
+
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
@@ -132,6 +138,8 @@ liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
 /usr/include/bits/sigaction.h:
 
 /usr/include/bits/sigcontext.h:
+
+/usr/include/asm/sigcontext.h:
 
 /usr/include/bits/sigstack.h:
 
@@ -210,8 +218,6 @@ liblavplay_la-audiolib.lo liblavplay_la-audiolib.o: audiolib.c \
 ../utils/mjpeg_types.h:
 
 /usr/include/stdint.h:
-
-/usr/include/bits/wchar.h:
 
 /usr/include/inttypes.h:
 

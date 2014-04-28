@@ -52,7 +52,6 @@ EDLSession::EDLSession(EDL *edl)
 
 	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
-	strcpy(vwindow_folder, "");
 	strcpy(current_folder, "");
 	strcpy(default_atransition, "");
 	strcpy(default_vtransition, "");
@@ -88,7 +87,7 @@ EDLSession::~EDLSession()
 	delete auto_conf;
 	delete vconfig_in;
 	delete playback_config;
-	Garbage::delete_object(recording_format);
+	recording_format->Garbage::remove_user();
 }
 
 
@@ -160,7 +159,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	}
 	aconfig_duplex->load_defaults(defaults);
 	aconfig_in->load_defaults(defaults);
-	actual_frame_rate = defaults->get("ACTUAL_FRAME_RATE", (float)-1);
 	assetlist_format = defaults->get("ASSETLIST_FORMAT", ASSETS_ICONS);
 	aspect_w = defaults->get("ASPECTW", (float)4);
 	aspect_h = defaults->get("ASPECTH", (float)3);
@@ -270,8 +268,6 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
 	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);
 
-	vwindow_folder[0] = 0;
-	vwindow_source = -1;
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
 	boundaries();
 
@@ -297,7 +293,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 		defaults->update(string, asset_columns[i]);
 	}
 	auto_conf->save_defaults(defaults);
-    defaults->update("ACTUAL_FRAME_RATE", actual_frame_rate);
     defaults->update("ASSETLIST_FORMAT", assetlist_format);
     defaults->update("ASPECTW", aspect_w);
     defaults->update("ASPECTH", aspect_h);
@@ -439,10 +434,6 @@ void EDLSession::boundaries()
 	
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
-//printf("EDLSession::boundaries 1 %p %p\n", edl->assets, edl->tracks);
-//	if(vwindow_source < 0 || vwindow_source >= edl->assets->total() + 1) vwindow_source = 0;
-//	if(cwindow_dest < 0 || cwindow_dest > edl->tracks->total()) cwindow_dest = 0;
-//printf("EDLSession::boundaries 2\n");
 }
 
 
@@ -552,8 +543,6 @@ int EDLSession::load_xml(FileXML *file,
 		nudge_seconds = file->tag.get_property("NUDGE_FORMAT", nudge_seconds);
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
-		file->tag.get_property("VWINDOW_FOLDER", vwindow_folder);
-		vwindow_source = file->tag.get_property("VWINDOW_SOURCE", vwindow_source);
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
 
 		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
@@ -616,8 +605,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("NUDGE_SECONDS", nudge_seconds);
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
-	file->tag.set_property("VWINDOW_FOLDER", vwindow_folder);
-	file->tag.set_property("VWINDOW_SOURCE", vwindow_source);
 	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
 
 
@@ -691,7 +678,6 @@ int EDLSession::copy(EDLSession *session)
 	}
 	aconfig_duplex->copy_from(session->aconfig_duplex);
 	aconfig_in->copy_from(session->aconfig_in);
-	actual_frame_rate = session->actual_frame_rate;
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		asset_columns[i] = session->asset_columns[i];
@@ -785,8 +771,6 @@ int EDLSession::copy(EDLSession *session)
 	video_write_length = session->video_write_length;	
 	view_follows_playback = session->view_follows_playback;
 	vwindow_meter = session->vwindow_meter;
-	strcpy(vwindow_folder, session->vwindow_folder);
-	vwindow_source = session->vwindow_source;
 	vwindow_zoom = session->vwindow_zoom;
 
 	subtitle_number = session->subtitle_number;

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "pluginarray.h"
 #include "pluginserver.inc"
 #include "recordableatracks.inc"
+#include "samples.inc"
 #include "track.inc"
 
 class APluginArray : public PluginArray
@@ -49,10 +50,10 @@ public:
 
 	RecordableATracks *tracks;
 // Pointers to plugin buffers for plugin output
-	double **buffer;         // Buffer for processing
+	Samples **buffer;         // Buffer for processing
 // Pointer to file output
-	double **output_buffer;
-	double **realtime_buffers;
+	Samples **output_buffer;
+	Samples **realtime_buffers;
 };
 
 #endif

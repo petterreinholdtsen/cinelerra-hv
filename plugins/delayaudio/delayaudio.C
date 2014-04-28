@@ -26,6 +26,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
+#include "samples.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -48,7 +49,7 @@ DelayAudio::~DelayAudio()
 {
 
 	
-	if(buffer) delete [] buffer;
+	if(buffer) delete buffer;
 }
 
 
@@ -145,8 +146,8 @@ void DelayAudio::reconfigure()
 {
 	input_start = (int64_t)(config.length * PluginAClient::project_sample_rate + 0.5);
 	int64_t new_allocation = input_start + PluginClient::in_buffer_size;
-	double *new_buffer = new double[new_allocation];
-	bzero(new_buffer, sizeof(double) * new_allocation);
+	Samples *new_buffer = new Samples(new_allocation);
+	bzero(new_buffer->get_data(), sizeof(double) * new_allocation);
 
 // printf("DelayAudio::reconfigure %f %d %d %d\n", 
 // config.length, 
@@ -160,10 +161,10 @@ void DelayAudio::reconfigure()
 	{
 		int size = MIN(new_allocation, allocation);
 
-		memcpy(new_buffer, 
-			buffer, 
+		memcpy(new_buffer->get_data(), 
+			buffer->get_data(), 
 			(size - PluginClient::in_buffer_size) * sizeof(double));
-		delete [] buffer;
+		delete buffer;
 	}
 
 	allocation = new_allocation;
@@ -172,7 +173,7 @@ void DelayAudio::reconfigure()
 	need_reconfigure = 0;
 }
 
-int DelayAudio::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
+int DelayAudio::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr)
 {
 
 	load_configuration();
@@ -183,12 +184,12 @@ int DelayAudio::process_realtime(int64_t size, double *input_ptr, double *output
 
 
 
-	memcpy(buffer + input_start, input_ptr, size * sizeof(double));
-	memcpy(output_ptr, buffer, size * sizeof(double));
+	memcpy(buffer->get_data() + input_start, input_ptr->get_data(), size * sizeof(double));
+	memcpy(output_ptr->get_data(), buffer->get_data(), size * sizeof(double));
 
 	for(int i = size, j = 0; i < allocation; i++, j++)
 	{
-		buffer[j] = buffer[i];
+		buffer->get_data()[j] = buffer->get_data()[i];
 	}
 
 	return 0;

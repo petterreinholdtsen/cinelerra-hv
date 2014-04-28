@@ -26,6 +26,7 @@
 #include "language.h"
 #include "pluginaclientlad.h"
 #include "pluginserver.h"
+#include "samples.h"
 #include "vframe.h"
 
 #include <ctype.h>
@@ -845,8 +846,8 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 }
 
 int PluginAClientLAD::process_realtime(int64_t size, 
-	double *input_ptr, 
-	double *output_ptr)
+	Samples *input_ptr, 
+	Samples *output_ptr)
 {
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
@@ -857,7 +858,7 @@ int PluginAClientLAD::process_realtime(int64_t size,
 	{
 		LADSPA_Data *in_buffer = in_buffers[i];
 		for(int j = 0; j < size; j++)
-			in_buffer[j] = input_ptr[j];
+			in_buffer[j] = input_ptr->get_data()[j];
 	}
 	for(int i = 0; i < out_channels; i++)
 		bzero(out_buffers[i], sizeof(float) * size);
@@ -869,15 +870,15 @@ int PluginAClientLAD::process_realtime(int64_t size,
 	LADSPA_Data *out_buffer = out_buffers[0];
 	for(int i = 0; i < size; i++)
 	{
-		output_ptr[i] = out_buffer[i];
+		output_ptr->get_data()[i] = out_buffer[i];
 	}
 //printf("PluginAClientLAD::process_realtime 6\n");
 	return size;
 }
 
 int PluginAClientLAD::process_realtime(int64_t size, 
-	double **input_ptr, 
-	double **output_ptr)
+	Samples **input_ptr, 
+	Samples **output_ptr)
 {
 	int in_channels = get_inchannels();
 	int out_channels = get_outchannels();
@@ -891,9 +892,9 @@ int PluginAClientLAD::process_realtime(int64_t size,
 		float *in_buffer = in_buffers[i];
 		double *in_ptr;
 		if(i < PluginClient::total_in_buffers)
-			in_ptr = input_ptr[i];
+			in_ptr = input_ptr[i]->get_data();
 		else
-			in_ptr = input_ptr[0];
+			in_ptr = input_ptr[0]->get_data();
 		for(int j = 0; j < size; j++)
 			in_buffer[j] = in_ptr[j];
 	}
@@ -910,7 +911,7 @@ int PluginAClientLAD::process_realtime(int64_t size,
 		if(i < total_outbuffers)
 		{
 			LADSPA_Data *out_buffer = out_buffers[i];
-			double *out_ptr = output_ptr[i];
+			double *out_ptr = output_ptr[i]->get_data();
 			for(int j = 0; j < size; j++)
 				out_ptr[j] = out_buffer[j];
 		}

@@ -37,12 +37,14 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "indexable.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
+#include "nestededls.h"
 #include "newfolder.h"
 #include "preferences.h"
 #include "theme.h"
@@ -55,14 +57,14 @@
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
-	Asset *asset)
+	Indexable *indexable)
  : BC_ListBoxItem()
 {
 	reset();
 	this->mwindow = mwindow;
 	this->gui = gui;
-	this->asset = asset;
-	this->id = asset->id;
+	this->indexable = indexable;
+	this->id = indexable->id;
 }
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
@@ -96,9 +98,6 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->gui = gui;
 	this->plugin = plugin;
-	asset = 0;
-	icon = 0;
-	id = 0;
 }
 
 AssetPicon::~AssetPicon()
@@ -120,7 +119,7 @@ AssetPicon::~AssetPicon()
 void AssetPicon::reset()
 {
 	plugin = 0;
-	asset = 0;
+	indexable = 0;
 	edl = 0;
 	icon = 0;
 	icon_vframe = 0;
@@ -138,10 +137,15 @@ void AssetPicon::create_objects()
 
 	pixmap_h = 50;
 
-	if(asset)
+	if(indexable)
 	{
-		fs.extract_name(name, asset->path);
+		fs.extract_name(name, indexable->path);
 		set_text(name);
+	}
+	
+	if(indexable && indexable->is_asset)
+	{
+		Asset *asset = (Asset*)indexable;
 		if(asset->video_data)
 		{
 			if(mwindow->preferences->use_thumbnails)
@@ -153,7 +157,7 @@ void AssetPicon::create_objects()
 					pixmap_w = pixmap_h * asset->width / asset->height;
 
 					file->set_layer(0);
-					file->set_video_position(0, mwindow->edl->session->frame_rate);
+					file->set_video_position(0, 0);
 
 					if(gui->temp_picon && 
 						(gui->temp_picon->get_w() != asset->width ||
@@ -166,9 +170,11 @@ void AssetPicon::create_objects()
 					if(!gui->temp_picon)
 					{
 						gui->temp_picon = new VFrame(0, 
+							-1,
 							asset->width, 
 							asset->height, 
-							BC_RGB888);
+							BC_RGB888,
+							-1);
 					}
 
 					file->read_frame(gui->temp_picon);
@@ -183,9 +189,11 @@ void AssetPicon::create_objects()
 						0);
 //printf("%d %d\n", gui->temp_picon->get_w(), gui->temp_picon->get_h());
 					icon_vframe = new VFrame(0, 
+						-1,
 						pixmap_w, 
 						pixmap_h, 
-						BC_RGB888);
+						BC_RGB888,
+						-1);
 					cmodel_transfer(icon_vframe->get_rows(), /* Leave NULL if non existent */
 						gui->temp_picon->get_rows(),
 						0, /* Leave NULL if non existent */
@@ -235,6 +243,13 @@ void AssetPicon::create_objects()
 		set_icon(icon);
 		set_icon_vframe(icon_vframe);
 //printf("AssetPicon::create_objects 4\n");
+	}
+	else
+	if(indexable && !indexable->is_asset)
+	{
+		set_icon(gui->video_icon);
+		set_icon_vframe(BC_WindowBase::get_resources()->type_to_icon[ICON_FILM]);
+		
 	}
 	else
 	if(edl)
@@ -622,19 +637,19 @@ void AWindowGUI::create_persistent_folder(ArrayList<BC_ListBoxItem*> *output,
 	int is_realtime, 
 	int is_transition)
 {
-	ArrayList<PluginServer*> plugindb;
+	ArrayList<PluginServer*> plugin_list;
 
 // Get pointers to plugindb entries
-	mwindow->create_plugindb(do_audio, 
+	mwindow->search_plugindb(do_audio, 
 			do_video, 
 			is_realtime, 
 			is_transition,
 			0,
-			plugindb);
+			plugin_list);
 
-	for(int i = 0; i < plugindb.total; i++)
+	for(int i = 0; i < plugin_list.total; i++)
 	{
-		PluginServer *server = plugindb.values[i];
+		PluginServer *server = plugin_list.values[i];
 		int exists = 0;
 
 // Create new listitem
@@ -699,7 +714,6 @@ void AWindowGUI::update_asset_list()
 
 
 
-//printf("AWindowGUI::update_asset_list 3 %d\n", assets.total);
 // Synchronize EDL assets
 	for(Asset *current = mwindow->edl->assets->first; 
 		current; 
@@ -707,7 +721,6 @@ void AWindowGUI::update_asset_list()
 	{
 		int exists = 0;
 
-//printf("AWindowGUI::update_asset_list 3 %s\n", current->path);
 // Look for asset in existing listitems
 		for(int j = 0; j < assets.total && !exists; j++)
 		{
@@ -715,25 +728,54 @@ void AWindowGUI::update_asset_list()
 
 			if(picon->id == current->id)
 			{
-//printf("AWindowGUI::update_asset_list 4 %p %d %d\n", picon->asset, picon->get_icon_x(), picon->get_icon_y());
-				picon->asset = current;
+				picon->indexable = current;
 				exists = 1;
 				picon->in_use = 1;
 				break;
 			}
 		}
 
-//printf("AWindowGUI::update_asset_list 5\n");
 // Create new listitem
 		if(!exists)
 		{
-//printf("AWindowGUI::update_asset_list 4.1 %s\n", current->path);
 			AssetPicon *picon = new AssetPicon(mwindow, this, current);
-//printf("AWindowGUI::update_asset_list 4.2 %s\n", current->path);
 			picon->create_objects();
-//printf("AWindowGUI::update_asset_list 4.3 %s\n", current->path);
 			assets.append(picon);
-//printf("AWindowGUI::update_asset_list 4.4 %s\n", current->path);
+		}
+	}
+
+
+
+
+
+// Synchronize nested EDLs
+	for(int i = 0; i < mwindow->edl->nested_edls->size(); i++)
+	{
+		int exists = 0;
+		Indexable *indexable = mwindow->edl->nested_edls->get(i);
+
+// Look for asset in existing listitems
+		for(int j = 0; j < assets.total && !exists; j++)
+		{
+			AssetPicon *picon = (AssetPicon*)assets.values[j];
+
+			if(picon->id == indexable->id)
+			{
+				picon->indexable = indexable;
+				exists = 1;
+				picon->in_use = 1;
+				break;
+			}
+		}
+
+// Create new listitem
+		if(!exists)
+		{
+			AssetPicon *picon = new AssetPicon(mwindow, 
+				this, 
+				indexable);
+			picon->create_objects();
+			assets.append(picon);
 		}
 	}
 
@@ -808,7 +850,7 @@ void AWindowGUI::collect_assets()
 		AssetPicon *result = (AssetPicon*)asset_list->get_selection(0, i++);
 		if(!result) break;
 
-		if(result->asset) mwindow->session->drag_assets->append(result->asset);
+		if(result->indexable) mwindow->session->drag_assets->append(result->indexable);
 		if(result->edl) mwindow->session->drag_clips->append(result->edl);
 	}
 }
@@ -828,7 +870,7 @@ void AWindowGUI::copy_picons(ArrayList<BC_ListBoxItem*> *dst,
 		AssetPicon *picon = (AssetPicon*)src->values[i];
 //printf("AWindowGUI::copy_picons 2 %s\n", picon->asset->folder);
 		if(!folder ||
-			(folder && picon->asset && !strcasecmp(picon->asset->folder, folder)) ||
+			(folder && picon->indexable && !strcasecmp(picon->indexable->folder, folder)) ||
 			(folder && picon->edl && !strcasecmp(picon->edl->local_session->folder, folder)))
 		{
 			BC_ListBoxItem *item2, *item1;
@@ -971,10 +1013,10 @@ int AWindowGUI::drag_stop()
 	return 0;
 }
 
-Asset* AWindowGUI::selected_asset()
+Indexable* AWindowGUI::selected_asset()
 {
 	AssetPicon *picon = (AssetPicon*)asset_list->get_selection(0, 0);
-	if(picon) return picon->asset;
+	if(picon) return picon->indexable;
 }
 
 PluginServer* AWindowGUI::selected_plugin()
@@ -1178,8 +1220,8 @@ int AWindowAssets::handle_event()
 //printf("AWindowAssets::handle_event 2 %d %d\n", get_buttonpress(), get_selection(0, 0));
 			mwindow->vwindow->gui->lock_window("AWindowAssets::handle_event");
 			
-			if(((AssetPicon*)get_selection(0, 0))->asset)
-				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->asset);
+			if(((AssetPicon*)get_selection(0, 0))->indexable)
+				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->indexable);
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)
 				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->edl);
@@ -1207,7 +1249,7 @@ int AWindowAssets::selection_changed()
 		}
 		else
 		{
-			if(((AssetPicon*)get_selection(0, 0))->asset)
+			if(((AssetPicon*)get_selection(0, 0))->indexable)
 				gui->asset_menu->update();
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)

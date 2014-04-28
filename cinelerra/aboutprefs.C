@@ -66,7 +66,7 @@ void AboutPrefs::create_objects()
 
 	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
-	sprintf(license2, _("(C) 2008 Adam Williams\n\n"));
+	sprintf(license2, _("(C) 2009 Adam Williams\n\nheroinewarrior.com"));
 	set_font(MEDIUMFONT);
 	draw_text(x, y, license2);
 
@@ -74,17 +74,17 @@ void AboutPrefs::create_objects()
 
 	y += get_text_height(MEDIUMFONT) * 3;
 
-	char versions[BCTEXTLEN];
-	sprintf(versions, 
-_("Quicktime version %d.%d.%d\n"
-"Libmpeg3 version %d.%d.%d\n"),
-quicktime_major(),
-quicktime_minor(),
-quicktime_release(),
-mpeg3_major(),
-mpeg3_minor(),
-mpeg3_release());
-	draw_text(x, y, versions);
+// 	char versions[BCTEXTLEN];
+// 	sprintf(versions, 
+// _("Quicktime version %d.%d.%d\n"
+// "Libmpeg3 version %d.%d.%d\n"),
+// quicktime_major(),
+// quicktime_minor(),
+// quicktime_release(),
+// mpeg3_major(),
+// mpeg3_minor(),
+// mpeg3_release());
+// 	draw_text(x, y, versions);
 
 
 

@@ -522,9 +522,11 @@ void UnsharpUnit::process_package(LoadPackage *package)
 	if(!temp)
 	{
 		temp = new VFrame(0,
+			-1,
 			server->src->get_w(),
 			padded_rows,
-			components == 3 ? BC_RGB_FLOAT : BC_RGBA_FLOAT);
+			components == 3 ? BC_RGB_FLOAT : BC_RGBA_FLOAT,
+			-1);
 	}
 
 	float *temp_in = new float[MAX(temp->get_w(), padded_rows) * components];

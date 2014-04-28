@@ -42,6 +42,7 @@
 #include "pluginclient.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
+#include "samples.inc"
 #include "theme.inc"
 #include "thread.h"
 #include "track.inc"
@@ -164,8 +165,8 @@ public:
 		VFrame *output, 
 		int64_t current_position,
 		int64_t total_len);  
-	void process_transition(double *input, 
-		double *output,
+	void process_transition(Samples *input, 
+		Samples *output,
 		int64_t current_position, 
 		int64_t fragment_size,
 		int64_t total_len);
@@ -184,7 +185,7 @@ public:
 		double frame_rate,
 		int64_t total_len,
 		int direction);
-	void process_buffer(double **buffer,
+	void process_buffer(Samples **buffer,
 		int64_t current_position,
 		int64_t fragment_size,
 		int64_t sample_rate,
@@ -225,7 +226,7 @@ public:
 	int start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers);
 // Do one iteration of a nonrealtime plugin and return if finished
 	int process_loop(VFrame **buffers, int64_t &write_length);
-	int process_loop(double **buffers, int64_t &write_length);
+	int process_loop(Samples **buffers, int64_t &write_length);
 	int stop_loop();
 
 
@@ -233,10 +234,10 @@ public:
 	int read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position);
-	int read_samples(double *buffer, 
+	int read_samples(Samples *buffer, 
 		int channel, 
-		int64_t start_position, 
-		int64_t total_samples);
+		int64_t start_position,
+		int64_t len);
 
 
 // Called by client to read data in realtime effect.  
@@ -247,10 +248,10 @@ public:
 		double frame_rate,
 // Set to 1 if the reader can use OpenGL objects.
 		int use_opengl = 0);
-	int read_samples(double *buffer,
+	int read_samples(Samples *buffer,
 		int channel,
 		int64_t sample_rate,
-		int64_t start_position, 
+		int64_t start_position,
 		int64_t len);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result

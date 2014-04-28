@@ -147,10 +147,10 @@ const char* FileTGA::str_to_compression(const char *string)
 	return TGA_RGB;
 }
 
-int FileTGA::can_copy_from(Edit *edit, int64_t position)
+int FileTGA::can_copy_from(Asset *asset, int64_t position)
 {
-	if(edit->asset->format == FILE_TGA_LIST ||
-		edit->asset->format == FILE_TGA)
+	if(asset->format == FILE_TGA_LIST ||
+		asset->format == FILE_TGA)
 		return 1;
 	
 	return 0;
@@ -361,7 +361,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 		
 		if(!temp)
 		{
-			temp = new VFrame(0, width, height, source_cmodel);
+			temp = new VFrame(0, -1, width, height, source_cmodel, -1);
 		}
 		output_frame = temp;
 	}
@@ -496,7 +496,7 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 		
 		if(!temp)
 		{
-			temp = new VFrame(0, frame->get_w(), frame->get_h(), dest_cmodel);
+			temp = new VFrame(0, -1, frame->get_w(), frame->get_h(), dest_cmodel, -1);
 		}
 		input_frame = temp;
 

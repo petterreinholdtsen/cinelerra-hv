@@ -125,7 +125,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	VEdit *parent_edit = 0;
 	if(parent_node && parent_node->track && renderengine)
 	{
-		double edl_rate = renderengine->edl->session->frame_rate;
+		double edl_rate = renderengine->get_edl()->session->frame_rate;
 		int64_t start_position_project = (int64_t)(start_position *
 			edl_rate /
 			frame_rate + 
@@ -232,7 +232,7 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 {
 
 	int direction = renderengine->command->get_direction();
-	double edl_rate = renderengine->edl->session->frame_rate;
+	double edl_rate = renderengine->get_edl()->session->frame_rate;
 // Get position relative to project, compensated for direction
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate / 
@@ -273,7 +273,8 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 				start_position,
 				frame_rate,
 				track->automation->autos[AUTOMATION_FADE],
-				direction);
+				direction,
+				use_opengl);
 
 	render_mask(output_temp, start_position_project, use_opengl);
 
@@ -299,7 +300,8 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 		render_projector(output_temp,
 			video_out,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 
 	output_temp->push_prev_effect("VirtualVNode::render_as_module");
@@ -315,13 +317,14 @@ int VirtualVNode::render_fade(VFrame *output,
 			int64_t start_position, 
 			double frame_rate, 
 			Autos *autos,
-			int direction)
+			int direction,
+			int use_opengl)
 {
 	double slope, intercept;
 	int64_t slope_len = 1;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
-	double edl_rate = renderengine->edl->session->frame_rate;
+	double edl_rate = renderengine->get_edl()->session->frame_rate;
 	int64_t start_position_project = (int64_t)(start_position * 
 		edl_rate /
 		frame_rate);
@@ -343,7 +346,7 @@ int VirtualVNode::render_fade(VFrame *output,
 // color components by alpha.
 	if(!EQUIV(intercept / 100, 1))
 	{
-		if(((VirtualVConsole*)vconsole)->use_opengl)
+		if(use_opengl)
 			((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_fade(
 				output, 
 				intercept / 100);
@@ -392,7 +395,7 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 		return;
 	}
 
-	if(((VirtualVConsole*)vconsole)->use_opengl)
+	if(use_opengl)
 	{
 		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
 			output_temp, 
@@ -413,15 +416,17 @@ void VirtualVNode::render_mask(VFrame *output_temp,
 }
 
 
-// Start of input fragment in project if forward.  End of input fragment if reverse.
+// Start of input fragment in project if forward.  
+// End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input,
 			VFrame *output,
 			int64_t start_position,
-			double frame_rate)
+			double frame_rate,
+			int use_opengl)
 {
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
-	double edl_rate = renderengine->edl->session->frame_rate;
+	double edl_rate = renderengine->get_edl()->session->frame_rate;
 	int64_t start_position_project = (int64_t)(start_position * 
 		edl_rate /
 		frame_rate);
@@ -477,8 +482,10 @@ int VirtualVNode::render_projector(VFrame *input,
 				vconsole->current_exit_node == vconsole->total_exit_nodes - 1)
 				mode = TRANSFER_REPLACE;
 
-			if(((VirtualVConsole*)vconsole)->use_opengl)
+			if(use_opengl)
 			{
+// Nested EDL's overlay on a PBuffer instead of a screen
+				
 				((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->overlay(
 					output,
 					input,
@@ -492,7 +499,8 @@ int VirtualVNode::render_projector(VFrame *input,
 					out_y2, 
 					1,
 					mode, 
-					renderengine->edl);
+					renderengine->get_edl(),
+					renderengine->is_nested);
 			}
 			else
 			{
@@ -508,7 +516,7 @@ int VirtualVNode::render_projector(VFrame *input,
 					out_y2, 
 					1,
 					mode, 
-					renderengine->edl->session->interpolation_type);
+					renderengine->get_edl()->session->interpolation_type);
 			}
 		}
 	}

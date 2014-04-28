@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ class PluginClient;
 #include "pluginclient.inc"
 #include "plugincommands.h"
 #include "pluginserver.inc"
+#include "samples.inc"
 #include "theme.inc"
 #include "vframe.h"
 
@@ -254,7 +255,7 @@ public:
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
-	virtual int plugin_process_loop(double **buffers, int64_t &write_length) { return 1; };
+	virtual int plugin_process_loop(Samples **buffers, int64_t &write_length) { return 1; };
 // get parameters depending on video or audio
 	virtual int init_realtime_parameters();     
 // release objects which are required after playback stops

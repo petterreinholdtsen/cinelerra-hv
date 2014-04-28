@@ -55,7 +55,10 @@ public:
 	RenderPackage* get_package(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
-	ArrayList<Asset*>* get_asset_list();
+// Return a new asset list of what was rendered.  You must delete the return
+// value with Garbage::remove_user for each member of the list & delete for
+// the list.
+	ArrayList<Indexable*>* get_asset_list();
 	RenderPackage* get_package(int number);
 	int get_total_packages();
 

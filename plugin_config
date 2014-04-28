@@ -4,8 +4,6 @@ CFLAGS += -I../ -I../../cinelerra \
 	-I../colors \
 	-fPIC
 
-PLUGIN_DIR := ../../bin/
-
 $(shell echo $(CFLAGS) > ../$(OBJDIR)/c_flags)
 $(shell echo $(LFLAGS) > ../$(OBJDIR)/l_flags)
 

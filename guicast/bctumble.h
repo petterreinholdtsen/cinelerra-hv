@@ -33,6 +33,8 @@ public:
 	virtual int handle_up_event() { return 0; };
 	virtual int handle_down_event() { return 0; };
 	int repeat_event(int64_t repeat_id);
+	static int calculate_w();
+	static int calculate_h();
 
 	int initialize();
 	int set_images(VFrame **data);

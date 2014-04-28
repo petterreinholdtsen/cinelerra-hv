@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,6 @@ VRender::VRender(RenderEngine *renderengine)
 	transition_temp = 0;
 	overlayer = new OverlayFrame(renderengine->preferences->processors);
 	input_temp = 0;
-	input_length = 0;
 	vmodule_render_fragment = 0;
 	playback_buffer = 0;
 	session_frame = 0;
@@ -87,7 +86,7 @@ VirtualConsole* VRender::new_vconsole_object()
 
 int VRender::get_total_tracks()
 {
-	return renderengine->edl->tracks->total_video_tracks();
+	return renderengine->get_edl()->tracks->total_video_tracks();
 }
 
 Module* VRender::new_module(Track *track)
@@ -98,14 +97,14 @@ Module* VRender::new_module(Track *track)
 int VRender::flash_output()
 {
 	if(video_out)
-		return renderengine->video->write_buffer(video_out, renderengine->edl);
+		return renderengine->video->write_buffer(video_out, renderengine->get_edl());
 	else
 		return 0;
 }
 
 int VRender::process_buffer(VFrame *video_out, 
-	int64_t input_position, 
-	int last_buffer)
+	int64_t input_position,
+	int use_opengl)
 {
 // process buffer for non realtime
 	int i, j;
@@ -114,23 +113,21 @@ int VRender::process_buffer(VFrame *video_out,
 
 
 	this->video_out = video_out;
-	this->last_playback = last_buffer;
 
 	current_position = input_position;
 
-// test for automation configuration and shorten the fragment len if necessary
 	reconfigure = vconsole->test_reconfigure(input_position, 
-		render_len,
-		last_playback);
+		render_len);
 
 	if(reconfigure) restart_playback();
-	return process_buffer(input_position);
+	return process_buffer(input_position, use_opengl);
 }
 
 
-int VRender::process_buffer(int64_t input_position)
+int VRender::process_buffer(int64_t input_position,
+	int use_opengl)
 {
-	Edit *playable_edit = 0;
+	VEdit *playable_edit = 0;
 	int colormodel;
 	int use_vconsole = 1;
 	int use_brender = 0;
@@ -138,26 +135,31 @@ int VRender::process_buffer(int64_t input_position)
 	int use_cache = renderengine->command->single_frame();
 	int use_asynchronous = 
 		renderengine->command->realtime && 
-		renderengine->edl->session->video_every_frame &&
-		renderengine->edl->session->video_asynchronous;
+		renderengine->get_edl()->session->video_every_frame &&
+		renderengine->get_edl()->session->video_asynchronous;
+	const int debug = 0;
 
 // Determine the rendering strategy for this frame.
-	use_vconsole = get_use_vconsole(playable_edit, 
+	use_vconsole = get_use_vconsole(&playable_edit, 
 		input_position,
 		use_brender);
+	if(debug) printf("VRender::process_buffer %d use_vconsole=%d\n", __LINE__, use_vconsole);
 
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
+	if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 
 
 
 
 // Get output buffer from device
-	if(renderengine->command->realtime)
+	if(renderengine->command->realtime &&
+		!renderengine->is_nested)
 	{
 		renderengine->video->new_output_buffer(&video_out, colormodel);
 	}
 
+	if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 
 // printf("VRender::process_buffer use_vconsole=%d colormodel=%d video_out=%p\n", 
 // use_vconsole, 
@@ -171,7 +173,8 @@ int VRender::process_buffer(int64_t input_position)
 		{
 			Asset *asset = renderengine->preferences->brender_asset;
 			File *file = renderengine->get_vcache()->check_out(asset,
-				renderengine->edl);
+				renderengine->get_edl());
+
 			if(file)
 			{
 				int64_t corrected_position = current_position;
@@ -184,16 +187,21 @@ int VRender::process_buffer(int64_t input_position)
 				else
 					file->stop_video_thread();
 				if(use_cache) file->set_cache_frames(1);
-				file->set_video_position(corrected_position, 
-					renderengine->edl->session->frame_rate);
+				int64_t normalized_position = (int64_t)(corrected_position *
+					asset->frame_rate /
+					renderengine->get_edl()->session->frame_rate);
+				file->set_video_position(normalized_position,
+					0);
 				file->read_frame(video_out);
 				if(use_cache) file->set_cache_frames(0);
 				renderengine->get_vcache()->check_in(asset);
 			}
+
 		}
 		else
 		if(playable_edit)
 		{
+			if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 			result = ((VEdit*)playable_edit)->read_frame(video_out, 
 				current_position, 
 				renderengine->command->get_direction(),
@@ -201,27 +209,30 @@ int VRender::process_buffer(int64_t input_position)
 				1,
 				use_cache,
 				use_asynchronous);
-
+			if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 		}
+
+		video_out->set_opengl_state(VFrame::RAM);
 	}
 	else
 // Read into virtual console
 	{
 
 // process this buffer now in the virtual console
-		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
+		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position,
+			use_opengl);
 	}
-
 
 	return result;
 }
 
 // Determine if virtual console is needed
-int VRender::get_use_vconsole(Edit* &playable_edit, 
+int VRender::get_use_vconsole(VEdit* *playable_edit, 
 	int64_t position,
 	int &use_brender)
 {
-	Track *playable_track;
+	Track *playable_track = 0;
+	*playable_edit = 0;
 
 
 // Background rendering completed
@@ -229,43 +240,18 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 		renderengine->command->get_direction())) != 0) 
 		return 0;
 
-
-
-// Total number of playable tracks is 1
-	if(vconsole->total_exit_nodes != 1) return 1;
-
-	playable_track = vconsole->playable_tracks->values[0];
-
-// Test mutual conditions between render.C and this.
-	if(!playable_track->direct_copy_possible(position, 
+// Descend into EDL nest
+	return renderengine->get_edl()->get_use_vconsole(playable_edit,
+		position, 
 		renderengine->command->get_direction(),
-		1))
-		return 1;
-
-	playable_edit = playable_track->edits->editof(position, 
-		renderengine->command->get_direction(),
-		1);
-// No edit at current location
-	if(!playable_edit) return 1;
-
-// Edit is silence
-	if(!playable_edit->asset) return 1;
-
-// Asset and output device must have the same dimensions
-	if(playable_edit->asset->width != renderengine->edl->session->output_w ||
-		playable_edit->asset->height != renderengine->edl->session->output_h)
-		return 1;
-
-// If we get here the frame is going to be directly copied.  Whether it is
-// decompressed in hardware depends on the colormodel.
-	return 0;
+		vconsole->playable_tracks);
 }
 
-int VRender::get_colormodel(Edit* &playable_edit, 
+int VRender::get_colormodel(VEdit *playable_edit, 
 	int use_vconsole,
 	int use_brender)
 {
-	int colormodel = renderengine->edl->session->color_model;
+	int colormodel = renderengine->get_edl()->session->color_model;
 
 	if(!use_vconsole && !renderengine->command->single_frame())
 	{
@@ -280,16 +266,22 @@ int VRender::get_colormodel(Edit* &playable_edit,
 		}
 		else
 		{
-			asset = playable_edit->asset;
+			int64_t source_position = 0;
+			asset = playable_edit->get_nested_asset(&source_position,
+				current_position,
+				renderengine->command->get_direction());
 		}
 
-		file = renderengine->get_vcache()->check_out(asset,
-			renderengine->edl);
-
-		if(file)
+		if(asset)
 		{
-			colormodel = file->get_best_colormodel(driver);
-			renderengine->get_vcache()->check_in(asset);
+			file = renderengine->get_vcache()->check_out(asset,
+				renderengine->get_edl());
+
+			if(file)
+			{
+				colormodel = file->get_best_colormodel(driver);
+				renderengine->get_vcache()->check_in(asset);
+			}
 		}
 	}
 
@@ -305,6 +297,7 @@ int VRender::get_colormodel(Edit* &playable_edit,
 void VRender::run()
 {
 	int reconfigure;
+	const int debug = 0;
 
 // Want to know how many samples rendering each frame takes.
 // Then use this number to predict the next frame that should be rendered.
@@ -319,6 +312,8 @@ void VRender::run()
 	int64_t current_input_length;
 // Number of frames to skip.
 	int64_t frame_step = 1;
+	int use_opengl = (renderengine->video && 
+		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
 
 	first_frame = 1;
 
@@ -328,12 +323,11 @@ void VRender::run()
 	framerate_timer.update();
 
 	start_lock->unlock();
-
+	if(debug) printf("VRender::run %d\n", __LINE__);
 
 
 	while(!done && 
-		!renderengine->video->interrupt && 
-		!last_playback)
+		!renderengine->video->interrupt)
 	{
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
@@ -341,16 +335,19 @@ void VRender::run()
 		current_input_length = 1;
 
 		reconfigure = vconsole->test_reconfigure(current_position, 
-			current_input_length,
-			last_playback);
+			current_input_length);
 
 
+		if(debug) printf("VRender::run %d\n", __LINE__);
 		if(reconfigure) restart_playback();
 
-		process_buffer(current_position);
+		if(debug) printf("VRender::run %d\n", __LINE__);
+		process_buffer(current_position, use_opengl);
+		if(debug) printf("VRender::run %d\n", __LINE__);
 
 		if(renderengine->command->single_frame())
 		{
+//printf("VRender::run %d\n", __LINE__);
 			flash_output();
 			frame_step = 1;
 			done = 1;
@@ -363,19 +360,20 @@ void VRender::run()
 				renderengine->command->get_speed());
 // latest sample at which the frame can be shown.
 			end_sample = Units::tosamples(session_frame, 
-				renderengine->edl->session->sample_rate, 
-				renderengine->edl->session->frame_rate);
+				renderengine->get_edl()->session->sample_rate, 
+				renderengine->get_edl()->session->frame_rate);
 // earliest sample by which the frame needs to be shown.
 			start_sample = Units::tosamples(session_frame - 1, 
-				renderengine->edl->session->sample_rate, 
-				renderengine->edl->session->frame_rate);
+				renderengine->get_edl()->session->sample_rate, 
+				renderengine->get_edl()->session->frame_rate);
 
 			if(first_frame || end_sample < current_sample)
 			{
 // Frame rendered late or this is the first frame.  Flash it now.
+//printf("VRender::run %d\n", __LINE__);
 				flash_output();
 
-				if(renderengine->edl->session->video_every_frame)
+				if(renderengine->get_edl()->session->video_every_frame)
 				{
 // User wants every frame.
 					frame_step = 1;
@@ -393,11 +391,11 @@ void VRender::run()
 					delay_countdown = VRENDER_THRESHOLD;
 					frame_step = 1;
 					frame_step += (int64_t)Units::toframes(current_sample, 
-							renderengine->edl->session->sample_rate, 
-							renderengine->edl->session->frame_rate);
+							renderengine->get_edl()->session->sample_rate, 
+							renderengine->get_edl()->session->frame_rate);
 					frame_step -= (int64_t)Units::toframes(end_sample, 
-								renderengine->edl->session->sample_rate, 
-								renderengine->edl->session->frame_rate);
+								renderengine->get_edl()->session->sample_rate, 
+								renderengine->get_edl()->session->frame_rate);
 				}
 			}
 			else
@@ -417,7 +415,7 @@ void VRender::run()
 					{
 						int64_t delay_time = (int64_t)((float)(start_sample - current_sample) * 
 							1000 / 
-							renderengine->edl->session->sample_rate);
+							renderengine->get_edl()->session->sample_rate);
 						timer.delay(delay_time);
 					}
 					else
@@ -427,9 +425,11 @@ void VRender::run()
 				}
 
 // Flash frame now.
+//printf("VRender::run %d %lld\n", __LINE__, current_input_length);
 				flash_output();
 			}
 		}
+		if(debug) printf("VRender::run %d\n", __LINE__);
 
 // Trigger audio to start
 		if(first_frame)
@@ -438,6 +438,7 @@ void VRender::run()
 			first_frame = 0;
 			renderengine->reset_sync_position();
 		}
+		if(debug) printf("VRender::run %d\n", __LINE__);
 
 		session_frame += frame_step;
 
@@ -446,15 +447,31 @@ void VRender::run()
 
 
 // Subtract frame_step in a loop to allow looped playback to drain
-		while(frame_step && current_input_length && !last_playback)
+// printf("VRender::run %d %d %d %d\n", 
+// __LINE__,
+// done,
+// frame_step, 
+// current_input_length);
+		while(frame_step && current_input_length)
 		{
-// set last_playback if necessary and trim current_input_length to range
+// trim current_input_length to range
 			get_boundaries(current_input_length);
 // advance 1 frame
 			advance_position(current_input_length);
 			frame_step -= current_input_length;
 			current_input_length = frame_step;
+			if(done) break;
+// printf("VRender::run %d %d %d %d\n", 
+// __LINE__,
+// done,
+// frame_step, 
+// current_input_length);
 		}
+
+		if(debug) printf("VRender::run %d current_position=%lld done=%d\n", 
+			__LINE__, 
+			current_position,
+			done);
 
 // Update tracking.
 		if(renderengine->command->realtime &&
@@ -463,10 +480,11 @@ void VRender::run()
 		{
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}
+		if(debug) printf("VRender::run %d\n", __LINE__);
 
 // Calculate the framerate counter
 		framerate_counter++;
-		if(framerate_counter >= renderengine->edl->session->frame_rate && 
+		if(framerate_counter >= renderengine->get_edl()->session->frame_rate && 
 			renderengine->command->realtime)
 		{
 			renderengine->update_framerate((float)framerate_counter / 
@@ -474,12 +492,14 @@ void VRender::run()
 			framerate_counter = 0;
 			framerate_timer.update();
 		}
+		if(debug) printf("VRender::run %d done=%d\n", __LINE__, done);
 	}
 
 
 // In case we were interrupted before the first loop
 	renderengine->first_frame_lock->unlock();
 	stop_plugins();
+	if(debug) printf("VRender::run %d done=%d\n", __LINE__, done);
 }
 
 int VRender::start_playback()
@@ -495,19 +515,14 @@ int VRender::start_playback()
 int64_t VRender::tounits(double position, int round)
 {
 	if(round)
-		return Units::round(position * renderengine->edl->session->frame_rate);
+		return Units::round(position * renderengine->get_edl()->session->frame_rate);
 	else
-		return Units::to_int64(position * renderengine->edl->session->frame_rate);
+		return Units::to_int64(position * renderengine->get_edl()->session->frame_rate);
 }
 
 double VRender::fromunits(int64_t position)
 {
-	return (double)position / renderengine->edl->session->frame_rate;
-}
-
-int VRender::get_datatype()
-{
-	return TRACK_VIDEO;
+	return (double)position / renderengine->get_edl()->session->frame_rate;
 }
 
 

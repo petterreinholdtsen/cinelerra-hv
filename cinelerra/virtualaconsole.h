@@ -25,6 +25,7 @@
 
 #include "arender.inc"
 #include "filethread.inc"     // RING_BUFFERS
+#include "samples.inc"
 #include "virtualconsole.h"
 
 class VirtualAConsole : public VirtualConsole
@@ -37,15 +38,8 @@ public:
 	void get_playable_tracks();
 
 // process a buffer
-	int process_buffer(int buffer, 
-		int64_t input_len, 
-		int64_t input_position, 
-		int64_t absolute_position);
-
 	int process_buffer(int64_t input_len,
-		int64_t input_position,
-		int last_buffer,
-		int64_t absolute_position);
+		int64_t input_position);
 
 	void process_asynchronous();
 
@@ -61,7 +55,7 @@ public:
 
 // Temporary for audio rendering.  This stores each track's output before it is
 // mixed into the device buffer.
-	double *output_temp;
+	Samples *output_temp;
 	int output_allocation;
 
 	ARender *arender;

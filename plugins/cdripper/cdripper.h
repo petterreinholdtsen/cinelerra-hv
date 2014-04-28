@@ -23,6 +23,7 @@
 #define CDRIPPER_H
 
 #include "pluginaclient.h"
+#include "samples.inc"
 
 #include <linux/cdrom.h>
 
@@ -42,7 +43,7 @@ public:
 	int get_parameters(); 
 	int start_loop();
 	int stop_loop();
-	int process_loop(double **plugin_buffer, int64_t &write_length);
+	int process_loop(Samples **plugin_buffer, int64_t &write_length);
 	int load_defaults();  
 	int save_defaults();  
 

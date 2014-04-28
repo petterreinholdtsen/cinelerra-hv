@@ -29,16 +29,20 @@
 #include "clip.h"
 #include "colormodels.h"
 #include "bchash.h"
+#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "indexstate.h"
 #include "labels.h"
 #include "localsession.h"
 #include "mutex.h"
+#include "nestededls.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "playbackconfig.h"
+#include "playabletracks.h"
 #include "plugin.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -47,6 +51,7 @@
 #include "theme.h"
 #include "tracks.h"
 #include "transportque.inc"
+#include "vedit.h"
 #include "vtrack.h"
 
 
@@ -57,6 +62,7 @@ Mutex* EDL::id_lock = 0;
 
 
 EDL::EDL(EDL *parent_edl)
+ : Indexable(0)
 {
 	this->parent_edl = parent_edl;
 	tracks = 0;
@@ -65,7 +71,6 @@ EDL::EDL(EDL *parent_edl)
 	vwindow_edl = 0;
 	vwindow_edl_shared = 0;
 
-
 	folders.set_array_delete();
 
 	new_folder(CLIP_FOLDER);
@@ -73,7 +78,7 @@ EDL::EDL(EDL *parent_edl)
 	new_folder(MEDIA_FOLDER);
 
 	id = next_id();
-	project_path[0] = 0;
+	path[0] = 0;
 }
 
 
@@ -95,7 +100,7 @@ EDL::~EDL()
 	}
 
 	if(vwindow_edl && !vwindow_edl_shared)
-		delete vwindow_edl;
+		vwindow_edl->Garbage::remove_user();
 
 	if(!parent_edl)
 	{
@@ -105,7 +110,10 @@ EDL::~EDL()
 
 
 	folders.remove_all_objects();
-	clips.remove_all_objects();
+	for(int i = 0; i < clips.size(); i++)
+		clips.get(i)->Garbage::remove_user();
+	clips.remove_all();
+	delete nested_edls;
 }
 
 
@@ -125,6 +133,7 @@ void EDL::create_objects()
 	
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
+	nested_edls = new NestedEDLs;
 //	last_playback_position = 0;
 }
 
@@ -173,8 +182,7 @@ int EDL::create_default_tracks()
 	return 0;
 }
 
-int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
-	FileXML *file, 
+int EDL::load_xml(FileXML *file, 
 	uint32_t load_flags)
 {
 	int result = 0;
@@ -204,8 +212,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	if(!result)
 	{
 // Get path for backups
-		project_path[0] = 0;
-		file->tag.get_property("PROJECT_PATH", project_path);
+//		path[0] = 0;
+		file->tag.get_property("path", path);
 
 // Erase everything
 		if((load_flags & LOAD_ALL) == LOAD_ALL ||
@@ -216,7 +224,9 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 
 		if((load_flags & LOAD_ALL) == LOAD_ALL)
 		{
-			clips.remove_all_objects();
+			for(int i = 0; i < clips.size(); i++)
+				clips.get(i)->Garbage::remove_user();
+			clips.remove_all();
 		}
 
 		if(load_flags & LOAD_TIMEBAR)
@@ -275,7 +285,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				if(file->tag.title_is("ASSETS"))
 				{
 					if(load_flags & LOAD_ASSETS)
-						assets->load(plugindb, file, load_flags);
+						assets->load(file, load_flags);
 				}
 				else
 				if(file->tag.title_is(labels->xml_tag))
@@ -309,30 +319,31 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				{
 					EDL *new_edl = new EDL(this);
 					new_edl->create_objects();
-					new_edl->load_xml(plugindb, file, LOAD_ALL);
+					new_edl->load_xml(file, LOAD_ALL);
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 						clips.append(new_edl);
 					else
-						delete new_edl;
+						new_edl->Garbage::remove_user();
 				}
 				else
 				if(file->tag.title_is("VWINDOW_EDL") && !parent_edl)
 				{
 					EDL *new_edl = new EDL(this);
 					new_edl->create_objects();
-					new_edl->load_xml(plugindb, file, LOAD_ALL);
+					new_edl->load_xml(file, LOAD_ALL);
 
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
-						if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
+						if(vwindow_edl && !vwindow_edl_shared) 
+							vwindow_edl->Garbage::remove_user();
 						vwindow_edl = new_edl;
 						vwindow_edl_shared = 0;
 					}
 					else
 					{
-						delete new_edl;
+						new_edl->Garbage::remove_user();
 						new_edl = 0;
 					}
 				}
@@ -349,8 +360,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // It is a "" if complete names should be used.
 // Called recursively by copy for clips, thus the string can't be terminated.
 // The string is not terminated in this call.
-int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
-	FileXML *file, 
+int EDL::save_xml(FileXML *file, 
 	const char *output_path,
 	int is_clip,
 	int is_vwindow)
@@ -361,7 +371,6 @@ int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 		is_clip,
 		is_vwindow,
 		file, 
-		plugindb, 
 		output_path,
 		0);
 	return 0;
@@ -369,6 +378,10 @@ int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 
 int EDL::copy_all(EDL *edl)
 {
+	if(this == edl) return 0;
+
+	index_state->copy_from(edl->index_state);
+	nested_edls->clear();
 	copy_session(edl);
 	copy_assets(edl);
 	copy_clips(edl);
@@ -379,7 +392,9 @@ int EDL::copy_all(EDL *edl)
 
 void EDL::copy_clips(EDL *edl)
 {
-	if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
+	if(this == edl) return;
+
+	if(vwindow_edl && !vwindow_edl_shared) vwindow_edl->Garbage::remove_user();
 	vwindow_edl = 0;
 	vwindow_edl_shared = 0;
 	if(edl->vwindow_edl)
@@ -388,7 +403,9 @@ void EDL::copy_clips(EDL *edl)
 		vwindow_edl->create_objects();
 		vwindow_edl->copy_all(edl->vwindow_edl);
 	}
-	clips.remove_all_objects();
+	for(int i = 0; i < clips.size(); i++)
+		clips.get(i)->Garbage::remove_user();
+	clips.remove_all();
 	for(int i = 0; i < edl->clips.total; i++)
 	{
 		add_clip(edl->clips.values[i]);
@@ -397,6 +414,8 @@ void EDL::copy_clips(EDL *edl)
 
 void EDL::copy_assets(EDL *edl)
 {
+	if(this == edl) return;
+
 	if(!parent_edl)
 	{
 		assets->copy_from(edl->assets);
@@ -405,9 +424,12 @@ void EDL::copy_assets(EDL *edl)
 
 void EDL::copy_session(EDL *edl, int session_only)
 {
+	if(this == edl) return;
+
 	if(!session_only)
 	{
-		strcpy(this->project_path, edl->project_path);
+		strcpy(this->path, edl->path);
+//printf("EDL::copy_session %p %s\n", this, this->path);
 
 		folders.remove_all_objects();
 		for(int i = 0; i < edl->folders.total; i++)
@@ -433,7 +455,6 @@ int EDL::copy_assets(double start,
 	double end, 
 	FileXML *file, 
 	int all, 
-	ArrayList<PluginServer*> *plugindb,
 	const char *output_path)
 {
 	ArrayList<Asset*> asset_list;
@@ -490,7 +511,6 @@ int EDL::copy(double start,
 	int is_clip,
 	int is_vwindow,
 	FileXML *file, 
-	ArrayList<PluginServer*> *plugindb, 
 	const char *output_path,
 	int rewind_it)
 {
@@ -506,9 +526,9 @@ int EDL::copy(double start,
 		file->tag.set_title("EDL");
 		file->tag.set_property("VERSION", CINELERRA_VERSION);
 // Save path for restoration of the project title from a backup.
-		if(this->project_path[0])
+		if(this->path[0])
 		{
-			file->tag.set_property("PROJECT_PATH", project_path);
+			file->tag.set_property("path", path);
 		}
 	}
 
@@ -559,7 +579,6 @@ int EDL::copy(double start,
 				end, 
 				file, 
 				all, 
-				plugindb,
 				output_path);
 
 // Clips
@@ -569,16 +588,14 @@ int EDL::copy(double start,
 			if(vwindow_edl)
 			{
 				
-				vwindow_edl->save_xml(plugindb, 
-					file, 
+				vwindow_edl->save_xml(file, 
 					output_path,
 					0,
 					1);
 			}
 
 			for(int i = 0; i < clips.total; i++)
-				clips.values[i]->save_xml(plugindb, 
-					file, 
+				clips.values[i]->save_xml(file, 
 					output_path,
 					1,
 					0);
@@ -704,9 +721,9 @@ double EDL::equivalent_output(EDL *edl)
 }
 
 
-void EDL::set_project_path(char *path)
+void EDL::set_path(char *path)
 {
-	strcpy(this->project_path, path);
+	strcpy(this->path, path);
 }
 
 void EDL::set_inpoint(double position)
@@ -827,19 +844,20 @@ void EDL::paste_silence(double start,
 
 void EDL::remove_from_project(ArrayList<EDL*> *clips)
 {
-	for(int i = 0; i < clips->total; i++)
+	for(int i = 0; i < clips->size(); i++)
 	{
-		for(int j = 0; j < this->clips.total; j++)
+		for(int j = 0; j < this->clips.size(); j++)
 		{
-			if(this->clips.values[j] == clips->values[i])
+			if(this->clips.get(j) == clips->values[i])
 			{
-				this->clips.remove_object(clips->values[i]);
+				this->clips.get(j)->Garbage::remove_user();
+				this->clips.remove(this->clips.get(j));
 			}
 		}
 	}
 }
 
-void EDL::remove_from_project(ArrayList<Asset*> *assets)
+void EDL::remove_from_project(ArrayList<Indexable*> *assets)
 {
 // Remove from clips
 	if(!parent_edl)
@@ -852,18 +870,23 @@ void EDL::remove_from_project(ArrayList<Asset*> *assets)
 	if(vwindow_edl)
 		vwindow_edl->remove_from_project(assets);
 
-	for(int i = 0; i < assets->total; i++)
+	for(int i = 0; i < assets->size(); i++)
 	{
 // Remove from tracks
 		for(Track *track = tracks->first; track; track = track->next)
 		{
-			track->remove_asset(assets->values[i]);
+			track->remove_asset(assets->get(i));
 		}
 
 // Remove from assets
-		if(!parent_edl)
+		if(!parent_edl && assets->get(i)->is_asset)
 		{
-			this->assets->remove_asset(assets->values[i]);
+			this->assets->remove_asset((Asset*)assets->get(i));
+		}
+		else
+		if(!parent_edl && !assets->get(i)->is_asset)
+		{
+			this->nested_edls->remove_edl((EDL*)assets->get(i));
 		}
 	}
 }
@@ -1023,13 +1046,17 @@ EDL* EDL::add_clip(EDL *edl)
 }
 
 void EDL::insert_asset(Asset *asset, 
+	EDL *nested_edl,
 	double position, 
 	Track *first_track, 
 	RecordLabels *labels)
 {
 // Insert asset into asset table
-	Asset *new_asset = assets->update(asset);
+	Asset *new_asset = 0;
+	EDL *new_nested_edl = 0;
 
+	if(asset) new_asset = assets->update(asset);
+	if(nested_edl) new_nested_edl = nested_edls->get_copy(nested_edl);
 
 // Paste video
 	int vtrack = 0;
@@ -1038,18 +1065,31 @@ void EDL::insert_asset(Asset *asset,
 
 // Fix length of single frame
 	double length;
+	int layers = 0;
+	int channels = 0;
 
+	if(new_nested_edl)
+	{
+		length = new_nested_edl->tracks->total_playable_length();
+		layers = 1;
+		channels = new_nested_edl->session->audio_channels;
+	}
 
-	if(new_asset->video_length < 0) 
-		length = 1.0 / session->frame_rate; 
-	else
-	if(new_asset->frame_rate > 0)
-		length = ((double)new_asset->video_length / new_asset->frame_rate);
-	else
-		length = 1.0 / session->frame_rate;
+	if(new_asset)
+	{
+		if(new_asset->video_length < 0) 
+			length = 1.0 / session->frame_rate; 
+		else
+		if(new_asset->frame_rate > 0)
+			length = ((double)new_asset->video_length / new_asset->frame_rate);
+		else
+			length = 1.0 / session->frame_rate;
+		layers = new_asset->layers;
+		channels = new_asset->channels;
+	}
 
 	for( ;
-		current && vtrack < new_asset->layers;
+		current && vtrack < layers;
 		current = NEXT)
 	{
 		if(!current->record || 
@@ -1057,6 +1097,7 @@ void EDL::insert_asset(Asset *asset,
 			continue;
 
 		current->insert_asset(new_asset, 
+			new_nested_edl,
 			length, 
 			position, 
 			vtrack);
@@ -1065,8 +1106,14 @@ void EDL::insert_asset(Asset *asset,
 	}
 
 	int atrack = 0;
+	if(new_asset)
+	{
+		length = (double)new_asset->audio_length / 
+				new_asset->sample_rate;
+	}
+
 	for(current = tracks->first;
-		current && atrack < new_asset->channels;
+		current && atrack < channels;
 		current = NEXT)
 	{
 		if(!current->record ||
@@ -1074,8 +1121,8 @@ void EDL::insert_asset(Asset *asset,
 			continue;
 
 		current->insert_asset(new_asset, 
-			(double)new_asset->audio_length / 
-				new_asset->sample_rate, 
+			new_nested_edl,
+			length, 
 			position, 
 			atrack);
 
@@ -1083,6 +1130,7 @@ void EDL::insert_asset(Asset *asset,
 		atrack++;
 	}
 
+// Insert labels from a recording window.
 	if(labels)
 	{
 		for(RecordLabel *label = labels->first; label; label = label->next)
@@ -1094,9 +1142,12 @@ void EDL::insert_asset(Asset *asset,
 
 
 
-void EDL::set_index_file(Asset *asset)
+void EDL::set_index_file(Indexable *indexable)
 {
-	assets->update_index(asset);
+	if(indexable->is_asset) 
+		assets->update_index((Asset*)indexable);
+	else
+		nested_edls->update_index((EDL*)indexable);
 }
 
 void EDL::optimize()
@@ -1245,3 +1296,166 @@ void EDL::delete_folder(char *folder)
 		folders.values[i] = folders.values[i + 1];
 	}
 }
+
+int EDL::get_use_vconsole(VEdit* *playable_edit,
+	int64_t position, 
+	int direction,
+	PlayableTracks *playable_tracks)
+{
+	int share_playable_tracks = 1;
+	int result = 0;
+	VTrack *playable_track = 0;
+	const int debug = 0;
+	*playable_edit = 0;
+
+// Calculate playable tracks when being called as a nested EDL
+	if(!playable_tracks)
+	{
+		share_playable_tracks = 0;
+		playable_tracks = new PlayableTracks(this,
+			position,
+			direction,
+			TRACK_VIDEO,
+			1);
+	}
+
+
+// Total number of playable tracks is 1
+	if(playable_tracks->size() != 1) 
+	{
+		result = 1;
+	}
+	else
+	{
+		playable_track = (VTrack*)playable_tracks->get(0);
+	}
+
+// Don't need playable tracks anymore
+	if(!share_playable_tracks)
+	{
+		delete playable_tracks;
+	}
+
+if(debug) printf("EDL::get_use_vconsole %d playable_tracks->size()=%d\n", 
+__LINE__,
+playable_tracks->size());
+	if(result) return 1;
+
+
+// Test mutual conditions between direct copy rendering and this.
+	if(!playable_track->direct_copy_possible(position, 
+		direction,
+		1))
+		return 1;
+if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
+
+	*playable_edit = (VEdit*)playable_track->edits->editof(position, 
+		direction,
+		1);
+// No edit at current location
+	if(!*playable_edit) return 1;
+if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
+
+
+// Edit is nested EDL
+	if((*playable_edit)->nested_edl)
+	{
+// Test nested EDL
+		EDL *nested_edl = (*playable_edit)->nested_edl;
+		int64_t nested_position = (int64_t)((position - 
+				(*playable_edit)->startproject +
+				(*playable_edit)->startsource) * 
+			nested_edl->session->frame_rate /
+			session->frame_rate);
+
+
+		VEdit *playable_edit_temp = 0;
+		if(session->output_w != nested_edl->session->output_w ||
+			session->output_h != nested_edl->session->output_h ||
+			nested_edl->get_use_vconsole(&playable_edit_temp,
+				nested_position, 
+				direction,
+				0)) 
+			return 1;
+		
+		return 0;
+	}
+
+if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
+// Edit is not a nested EDL
+// Edit is silence
+	if(!(*playable_edit)->asset) return 1;
+if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
+
+
+// Asset and output device must have the same dimensions
+	if((*playable_edit)->asset->width != session->output_w ||
+		(*playable_edit)->asset->height != session->output_h)
+		return 1;
+
+
+if(debug) printf("EDL::get_use_vconsole %d\n", __LINE__);
+
+
+
+// If we get here the frame is going to be directly copied.  Whether it is
+// decompressed in hardware depends on the colormodel.
+	return 0;
+}
+
+
+// For Indexable
+int EDL::get_audio_channels()
+{
+	return session->audio_channels;
+}
+
+int EDL::get_sample_rate()
+{
+	return session->sample_rate;
+}
+
+int64_t EDL::get_audio_samples()
+{
+	return (int64_t)(tracks->total_playable_length() *
+		session->sample_rate);
+}
+
+int EDL::have_audio()
+{
+	return 1;
+}
+
+int EDL::have_video()
+{
+	return 1;
+}
+
+
+int EDL::get_w()
+{
+	return session->output_w;
+}
+
+int EDL::get_h()
+{
+	return session->output_h;
+}
+
+double EDL::get_frame_rate()
+{
+	return session->frame_rate;
+}
+
+int EDL::get_video_layers()
+{
+	return 1;
+}
+
+int64_t EDL::get_video_frames()
+{
+	return (int64_t)(tracks->total_playable_length() *
+		session->frame_rate);
+}
+
+

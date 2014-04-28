@@ -42,20 +42,25 @@ class VFrame
 {
 public:
 // Create new frame with shared data if *data is nonzero.
-// Pass 0 to *data if private data is desired.
+// Pass 0 to *data & -1 to shmid if private data is desired.
+	VFrame(int w, 
+		int h, 
+		int color_model);
 	VFrame(unsigned char *data, 
+		int shmid,
 		int w, 
 		int h, 
-		int color_model = BC_RGBA8888, 
-		long bytes_per_line = -1);
-	VFrame(unsigned char *data, 
+		int color_model /* = BC_RGBA8888 */, 
+		long bytes_per_line /* = -1 */);
+	VFrame(unsigned char *data,  // 0
+		int shmid, // -1
 		long y_offset,
 		long u_offset,
 		long v_offset,
 		int w, 
 		int h, 
-		int color_model = BC_RGBA8888, 
-		long bytes_per_line = -1);
+		int color_model,  /* = BC_RGBA8888 */
+		long bytes_per_line /* = -1 */);
 // Create a frame with the png image
 	VFrame(unsigned char *png_data);
 	VFrame(VFrame &vframe);
@@ -70,8 +75,10 @@ public:
 	int equivalent(VFrame *src, int test_stacks = 0);
 
 // Reallocate a frame without deleting the class
-	int reallocate(unsigned char *data, 
-		long y_offset,
+	int reallocate(
+		unsigned char *data,   // Data if shared
+		int shmid,             // shmid if IPC
+		long y_offset,         // plane offsets if shared YUV
 		long u_offset,
 		long v_offset,
 		int w, 
@@ -80,11 +87,13 @@ public:
 		long bytes_per_line);
 
 	void set_memory(unsigned char *data, 
+		int shmid,
 		long y_offset,
 		long u_offset,
 		long v_offset);
 
 	void set_compressed_memory(unsigned char *data,
+		int shmid,
 		int data_size,
 		int data_allocated);
 
@@ -98,8 +107,11 @@ public:
 // Test if data values in the frame match
 	int data_matches(VFrame *frame);
 
-	long set_shm_offset(long offset);
-	long get_shm_offset();
+//	long set_shm_offset(long offset);
+//	long get_shm_offset();
+	int get_shmid();
+	void set_use_shm(int value);
+	int get_use_shm();
 
 // direct copy with no alpha
 	int copy_from(VFrame *frame);
@@ -134,8 +146,7 @@ public:
 			int out_x1, int out_y1, int out_x2, int out_y2);
 	int get_bytes_per_pixel();
 	long get_bytes_per_line();
-// Return 1 if the buffer is shared.
-	int get_shared();
+	int get_memory_type();
 
 
 
@@ -303,7 +314,17 @@ public:
 	void clear_stacks();
 
 	void dump_stacks();
+
+
 	void dump_params();
+	int filefork_size();
+
+	void to_filefork(unsigned char *buffer);
+
+	void from_filefork(unsigned char *buffer);
+
+
+
 
 private:
 
@@ -322,6 +343,7 @@ private:
 	int reset_parameters(int do_opengl);
 	void create_row_pointers();
 	int allocate_data(unsigned char *data, 
+		int shmid,
 		long y_offset,
 		long u_offset,
 		long v_offset,
@@ -332,9 +354,20 @@ private:
 
 // Convenience storage
 	int field2_offset;
-// Data is pointing to someone else's buffer.
-	int shared; 
-	long shm_offset;
+	int memory_type; 
+	enum
+	{
+		PRIVATE,
+		SHARED,
+		SHMGET
+	};
+
+// Data pointer is pointing to someone else's buffer.
+//	long shm_offset;
+// ID of shared memory if using IPC
+	int shmid;
+// Local setting for shm usage
+	int use_shm;
 // If not set by user, is calculated from color_model
 	long bytes_per_line;
 	int bytes_per_pixel;

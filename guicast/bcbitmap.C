@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,9 +94,12 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	this->color_model = color_model;
 	this->use_shm = use_shm ? parent_window->get_resources()->use_shm : 0;
 	this->bg_color = parent_window->bg_color;
-	ximage[0] = 0;
-	xv_image[0] = 0;
-	data[0] = 0;
+	for(int i = 0; i < BITMAP_RING; i++)
+	{
+		ximage[0] = 0;
+		xv_image[0] = 0;
+		data[0] = 0;
+	}
 	last_pixmap_used = 0;
 	last_pixmap = 0;
 	current_ringbuffer = 0;
@@ -167,33 +170,50 @@ int BC_Bitmap::allocate_data()
 							0, 
 							w,
 							h,
-							&shm_info);
+							&shm_info[0]);
 // Create the shared memory
-				shm_info.shmid = shmget(IPC_PRIVATE, 
-					xv_image[0]->data_size * ring_buffers + 4, 
+				shm_info[0].shmid = shmget(IPC_PRIVATE, 
+					xv_image[0]->data_size + 4, 
 					IPC_CREAT | 0777);
-				if(shm_info.shmid < 0) perror("BC_Bitmap::allocate_data shmget");
-				data[0] = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
+				if(shm_info[0].shmid < 0) perror("BC_Bitmap::allocate_data shmget");
+				data[0] = (unsigned char *)shmat(shm_info[0].shmid, NULL, 0);
+// This causes it to automatically delete when the program exits.
+				shmctl(shm_info[0].shmid, IPC_RMID, 0);
 // setting ximage->data stops BadValue
-				xv_image[0]->data = shm_info.shmaddr = (char*)data[0];
-				shm_info.readOnly = 0;
+				xv_image[0]->data = shm_info[0].shmaddr = (char*)data[0];
+				shm_info[0].readOnly = 0;
 
 // Get the real parameters
 				w = xv_image[0]->width;
 				h = xv_image[0]->height;
+				if(!XShmAttach(top_level->display, &shm_info[0]))
+				{
+					perror("BC_Bitmap::allocate_data XShmAttach");
+				}
 
 // Create remaining X Images
 				for(int i = 1; i < ring_buffers; i++)
 				{
-					data[i] = data[0] + xv_image[0]->data_size * i;
+					shm_info[i].shmid = shmget(IPC_PRIVATE, 
+						xv_image[0]->data_size + 4, 
+						IPC_CREAT | 0777);
+					data[i] = (unsigned char *)shmat(shm_info[i].shmid, NULL, 0);
+// This causes it to automatically delete when the program exits.
+					shmctl(shm_info[i].shmid, IPC_RMID, 0);
+
 					xv_image[i] = XvShmCreateImage(top_level->display, 
 								xv_portid, 
 								cmodel_bc_to_x(color_model),
 								(char*)data[i], 
 								w,
 								h,
-								&shm_info);
-					xv_image[i]->data = (char*)data[i];
+								&shm_info[i]);
+					xv_image[i]->data = shm_info[i].shmaddr = (char*)data[i];
+					shm_info[i].readOnly = 0;
+					if(!XShmAttach(top_level->display, &shm_info[i]))
+					{
+						perror("BC_Bitmap::allocate_data XShmAttach");
+					}
 				}
 
 				if(color_model == BC_YUV422)
@@ -219,49 +239,59 @@ int BC_Bitmap::allocate_data()
 					get_default_depth(), 
 					get_default_depth() == 1 ? XYBitmap : ZPixmap, 
 					(char*)NULL, 
-					&shm_info, 
+					&shm_info[0], 
 					w, 
 					h);
 
 // Create shared memory
-				shm_info.shmid = shmget(IPC_PRIVATE, 
-					h * ximage[0]->bytes_per_line * ring_buffers + 4, 
+				shm_info[0].shmid = shmget(IPC_PRIVATE, 
+					h * ximage[0]->bytes_per_line + 4, 
 					IPC_CREAT | 0777);
-				if(shm_info.shmid < 0) 
+				if(shm_info[0].shmid < 0) 
 					perror("BC_Bitmap::allocate_data shmget");
-				data[0] = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
-				ximage[0]->data = shm_info.shmaddr = (char*)data[0];  // setting ximage->data stops BadValue
-				shm_info.readOnly = 0;
+				data[0] = (unsigned char *)shmat(shm_info[0].shmid, NULL, 0);
+// This causes it to automatically delete when the program exits.
+				shmctl(shm_info[0].shmid, IPC_RMID, 0);
+				ximage[0]->data = shm_info[0].shmaddr = (char*)data[0];  // setting ximage->data stops BadValue
+				shm_info[0].readOnly = 0;
 
 // Get the real parameters
 				bits_per_pixel = ximage[0]->bits_per_pixel;
 				bytes_per_line = ximage[0]->bytes_per_line;
+				if(!XShmAttach(top_level->display, &shm_info[0]))
+				{
+					perror("BC_Bitmap::allocate_data XShmAttach");
+				}
 
 // Create remaining X Images
 				for(int i = 1; i < ring_buffers; i++)
 				{
-					data[i] = data[0] + h * ximage[0]->bytes_per_line * i;
+					shm_info[i].shmid = shmget(IPC_PRIVATE, 
+						h * ximage[0]->bytes_per_line + 4, 
+						IPC_CREAT | 0777);
+					data[i] = (unsigned char *)shmat(shm_info[i].shmid, NULL, 0);
+					shm_info[i].shmaddr = (char*)data[i];
+// This causes it to automatically delete when the program exits.
+					shmctl(shm_info[i].shmid, IPC_RMID, 0);
 					ximage[i] = XShmCreateImage(top_level->display, 
 											top_level->vis, 
 											get_default_depth(), 
 											get_default_depth() == 1 ? XYBitmap : ZPixmap, 
 											(char*)data[i], 
-											&shm_info, 
+											&shm_info[i], 
 											w, 
 											h);
 					ximage[i]->data = (char*)data[i];
 //printf("BC_Bitmap::allocate_data %p\n", ximage[i]);
+					if(!XShmAttach(top_level->display, &shm_info[i]))
+					{
+						perror("BC_Bitmap::allocate_data XShmAttach");
+					}
 				}
 				break;
 		}
 
-		if(!XShmAttach(top_level->display, &shm_info))
-		{
-			perror("BC_Bitmap::allocate_data XShmAttach");
-		}
 
-// This causes it to automatically delete when the program exits.
-		shmctl(shm_info.shmid, IPC_RMID, 0);
 	}
 	else
 // Use unshared memory.
@@ -339,24 +369,20 @@ int BC_Bitmap::delete_data()
 					for(int i = 0; i < ring_buffers; i++)
 					{
 						XFree(xv_image[i]);
+						XShmDetach(top_level->display, &shm_info[i]);
+ 						shmdt(shm_info[i].shmaddr);
 					}
-					XShmDetach(top_level->display, &shm_info);
 					XvUngrabPort(top_level->display, xv_portid, CurrentTime);
-
- 					shmdt(shm_info.shmaddr);
- 					shmctl(shm_info.shmid, IPC_RMID, 0);
-					break;
+ 					break;
 
 				default:
 					for(int i = 0; i < ring_buffers; i++)
 					{
 						XDestroyImage(ximage[i]);
 						delete [] row_data[i];
+						XShmDetach(top_level->display, &shm_info[i]);
+						shmdt(shm_info[i].shmaddr);
 					}
-					XShmDetach(top_level->display, &shm_info);
-
-					shmdt(shm_info.shmaddr);
-					shmctl(shm_info.shmid, IPC_RMID, 0);
 					break;
 			}
 		}
@@ -456,10 +482,12 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 // 				dest_w, 
 // 				dest_h);
 //for(int i = 0; i < 1000; i++) xv_image[current_ringbuffer]->data[i] = 255;
-//printf("BC_Bitmap::write_drawable 2 %d %d %p %p\n", xv_portid, 
-//	pixmap, 
-//	gc,
-//	xv_image[current_ringbuffer]);
+// printf("BC_Bitmap::write_drawable %d %d %d %p %p\n", 
+// __LINE__, 
+// xv_portid, 
+// pixmap, 
+// gc,
+// xv_image[current_ringbuffer]);
 			XvShmPutImage(top_level->display, 
 				xv_portid, 
 				pixmap, 
@@ -474,6 +502,12 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 				dest_w, 
 				dest_h, 
 				False);
+// printf("BC_Bitmap::write_drawable %d %d %d %p %p\n", 
+// __LINE__, 
+// xv_portid, 
+// pixmap, 
+// gc,
+// xv_image[current_ringbuffer]);
 // Need to pass these to the XvStopVideo
 			last_pixmap = pixmap;
 			last_pixmap_used = 1;
@@ -637,21 +671,24 @@ int BC_Bitmap::read_frame(VFrame *frame,
 	return 0;
 }
 
-long BC_Bitmap::get_shm_id()
+long BC_Bitmap::get_shm_id(int buffer)
 {
-	return shm_info.shmid;
+	if(buffer < ring_buffers) return shm_info[buffer].shmid;
+	return shm_info[ring_buffers - 1].shmid;
 }
 
 long BC_Bitmap::get_shm_size()
 {
 	if(xv_image[0])
-		return xv_image[0]->data_size * ring_buffers;
+		return xv_image[0]->data_size /* * ring_buffers */;
 	else
 		return h * ximage[0]->bytes_per_line;
 }
 
 long BC_Bitmap::get_shm_offset()
 {
+	return 0;
+
 	if(xv_image[0])
 		return xv_image[0]->data_size * current_ringbuffer;
 	else
@@ -723,6 +760,11 @@ unsigned char* BC_Bitmap::get_data()
 {
 //printf("BC_Bitmap::get_data %d %p\n",current_ringbuffer , data[current_ringbuffer]);
 	return data[current_ringbuffer];
+}
+
+int BC_Bitmap::get_shmid()
+{
+	return shm_info[current_ringbuffer].shmid;
 }
 
 unsigned char* BC_Bitmap::get_y_plane()

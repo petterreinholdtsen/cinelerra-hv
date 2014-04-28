@@ -59,7 +59,7 @@ public:
 	DB db;
 
 	int is_realtime();
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr);
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 

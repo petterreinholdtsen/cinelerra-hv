@@ -167,10 +167,17 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 	}
 	else
 	{
-		temp_frame = new VFrame(0, 
+		temp_frame = new VFrame;
+		temp_frame->set_use_shm(0);
+		temp_frame->reallocate(0, 
+					-1,
+					0,
+					0,
+					0,
 					frame->get_w(), 
 					frame->get_h(), 
-					BC_RGBA8888); 
+					BC_RGBA8888,
+					-1); 
 
 		cmodel_transfer(temp_frame->get_rows(), 
 			frame->get_rows(),

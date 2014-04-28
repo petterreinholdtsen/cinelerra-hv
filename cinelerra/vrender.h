@@ -56,15 +56,15 @@ public:
 
 	int start_playback();     // start the thread
 
-// get data type for certain commonrender routines
-	int get_datatype();
 
 // process frames to put in buffer_out
+// use_opengl - used by nested render engines
 	int process_buffer(VFrame *video_out, 
-		int64_t input_position, 
-		int last_buffer);
+		int64_t input_position,
+		int use_opengl);
 // load an array of buffers for each track to send to the thread
-	int process_buffer(int64_t input_position);
+	int process_buffer(int64_t input_position,
+		int use_opengl);
 // Flash the output on the display
 	int flash_output();
 // Determine if data can be copied directly from the file to the output device.
@@ -74,10 +74,10 @@ public:
 		int64_t position);
 
 
-	int get_use_vconsole(Edit* &playable_edit, 
+	int get_use_vconsole(VEdit* *playable_edit, 
 		int64_t position,
-		int &get_use_vconsole);
-	int get_colormodel(Edit* &playable_edit, 
+		int &use_brender);
+	int get_colormodel(VEdit *playable_edit, 
 		int use_vconsole,
 		int use_brender);
 

@@ -1,8 +1,8 @@
-addtask.lo addtask.o: addtask.c ../config.h yuvfilters.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
+addtask.lo: addtask.c ../config.h yuvfilters.h \
+  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
   /usr/include/string.h /usr/include/features.h /usr/include/sys/cdefs.h \
   /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h /usr/include/xlocale.h /usr/include/errno.h \
+  /usr/include/gnu/stubs-32.h /usr/include/xlocale.h /usr/include/errno.h \
   /usr/include/bits/errno.h /usr/include/linux/errno.h \
   /usr/include/asm/errno.h /usr/include/asm-generic/errno.h \
   /usr/include/asm-generic/errno-base.h ../utils/mjpeg_logging.h \
@@ -23,7 +23,7 @@ addtask.lo addtask.o: addtask.c ../config.h yuvfilters.h \
 
 yuvfilters.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
 
 /usr/include/string.h:
 
@@ -35,7 +35,7 @@ yuvfilters.h:
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-64.h:
+/usr/include/gnu/stubs-32.h:
 
 /usr/include/xlocale.h:
 

@@ -340,9 +340,11 @@ int FileList::read_frame(VFrame *frame)
 						data->set_compressed_size(ostat.st_size);
 						fread(data->get_data(), ostat.st_size, 1, fd);
 						temp = new VFrame(0, 
+							-1,
 							asset->width, 
 							asset->height, 
-							frame->get_color_model());
+							frame->get_color_model(),
+							-1);
 						read_frame(temp, data);
 						break;
 				}

@@ -23,6 +23,7 @@
  */
 
 
+#include <stdlib.h>
 #include <config.h>
 #include "mpeg2syntaxcodes.h"
 #include "macroblock.hh"

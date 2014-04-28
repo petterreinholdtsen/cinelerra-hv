@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,20 +50,8 @@
 // These should be passed to VFrame::make_shader to construct shaders.
 // Can't hard code sampler2D
 
-static const char *yuv_to_rgb_frag = 
-	"uniform sampler2D tex;\n"
-	"void main()\n"
-	"{\n"
-	"	vec3 yuv = vec3(texture2D(tex, gl_TexCoord[0].st));\n"
-	"   yuv -= vec3(0, 0.5, 0.5);\n"
- 	"	const mat3 yuv_to_rgb_matrix = mat3(\n"
- 	"		1,       1,        1, \n"
- 	"		0,       -0.34414, 1.77200, \n"
- 	"		1.40200, -0.71414, 0);\n"
-	"	gl_FragColor = vec4(yuv_to_rgb_matrix * yuv, 1);\n"
-	"}\n";
 
-static const char *yuva_to_rgba_frag = 
+static const char *yuv_to_rgb_frag = 
 	"uniform sampler2D tex;\n"
 	"void main()\n"
 	"{\n"
@@ -74,6 +62,77 @@ static const char *yuva_to_rgba_frag =
  	"		0,       -0.34414, 1.77200, \n"
  	"		1.40200, -0.71414, 0);\n"
 	"	gl_FragColor = vec4(yuv_to_rgb_matrix * yuva.rgb, yuva.a);\n"
+	"}\n";
+
+static const char *yuva_to_yuv_frag = 
+	"uniform sampler2D tex;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 yuva = texture2D(tex, gl_TexCoord[0].st);\n"
+	"   float a = yuva.a;\n"
+	"   float anti_a = 1.0 - a;\n"
+	"	yuva.r *= a;\n"
+	"   yuva.g = yuva.g * a + 0.5 * anti_a;\n"
+	"   yuva.b = yuva.b * a + 0.5 * anti_a;\n"
+	"   yuva.a = 1.0;\n"
+	"	gl_FragColor = yuva;\n"
+	"}\n";
+
+static const char *yuva_to_rgb_frag = 
+	"uniform sampler2D tex;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 yuva = texture2D(tex, gl_TexCoord[0].st);\n"
+	"	yuva.rgb -= vec3(0, 0.5, 0.5);\n"
+ 	"	const mat3 yuv_to_rgb_matrix = mat3(\n"
+ 	"		1,       1,        1, \n"
+ 	"		0,       -0.34414, 1.77200, \n"
+ 	"		1.40200, -0.71414, 0);\n"
+	"   yuva.rgb = yuv_to_rgb_matrix * yuva.rgb;\n"
+	"   yuva.rgb *= yuva.a;\n"
+	"   yuva.a = 1.0;\n"
+	"	gl_FragColor = yuva;\n"
+	"}\n";
+
+static const char *rgb_to_yuv_frag = 
+	"uniform sampler2D tex;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
+ 	"	const mat3 rgb_to_yuv_matrix = mat3(\n"
+ 	"		0.29900, -0.16874, 0.50000, \n"
+ 	"		0.58700, -0.33126, -0.41869, \n"
+ 	"		0.11400, 0.50000,  -0.08131);\n"
+	"   rgba.rgb = rgb_to_yuv_matrix * rgba.rgb;\n"
+	"   rgba.rgb += vec3(0, 0.5, 0.5);\n"
+	"	gl_FragColor = rgba;\n"
+	"}\n";
+
+
+static const char *rgba_to_rgb_frag = 
+	"uniform sampler2D tex;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
+	"	rgba.rgb *= rgba.a;\n"
+	"   rgba.a = 1.0;\n"
+	"	gl_FragColor = rgba;\n"
+	"}\n";
+
+static const char *rgba_to_yuv_frag = 
+	"uniform sampler2D tex;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
+ 	"	const mat3 rgb_to_yuv_matrix = mat3(\n"
+ 	"		0.29900, -0.16874, 0.50000, \n"
+ 	"		0.58700, -0.33126, -0.41869, \n"
+ 	"		0.11400, 0.50000,  -0.08131);\n"
+	"   rgba.rgb *= rgba.a;\n"
+	"   rgba.a = 1.0;\n"
+	"   rgba.rgb = rgb_to_yuv_matrix * rgba.rgb;\n"
+	"   rgba.rgb += vec3(0, 0.5, 0.5);\n"
+	"	gl_FragColor = rgba;\n"
 	"}\n";
 
 static const char *blend_add_frag = 
@@ -104,6 +163,22 @@ static const char *blend_max_frag =
 	"	gl_FragColor.rgb *= opacity;\n"
 	"	gl_FragColor.rgb += canvas.rgb * transparency;\n"
 	"	gl_FragColor.a = max(gl_FragColor.a, canvas.a);\n"
+	"}\n";
+
+static const char *blend_min_frag = 
+	"uniform sampler2D tex2;\n"
+	"uniform vec2 tex2_dimensions;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 canvas = texture2D(tex2, gl_FragCoord.xy / tex2_dimensions);\n"
+	"	vec3 opacity = vec3(gl_FragColor.a, gl_FragColor.a, gl_FragColor.a);\n"
+	"	vec3 transparency = vec3(1.0, 1.0, 1.0) - opacity;\n"
+	"	gl_FragColor.r = min(canvas.r, gl_FragColor.r);\n"
+	"	gl_FragColor.g = min(canvas.g, gl_FragColor.g);\n"
+	"	gl_FragColor.b = min(canvas.b, gl_FragColor.b);\n"
+	"	gl_FragColor.rgb *= opacity;\n"
+	"	gl_FragColor.rgb += canvas.rgb * transparency;\n"
+	"	gl_FragColor.a = min(gl_FragColor.a, canvas.a);\n"
 	"}\n";
 
 static const char *blend_subtract_frag = 
@@ -232,6 +307,7 @@ Playback3DCommand::Playback3DCommand()
  : BC_SynchronousCommand()
 {
 	canvas = 0;
+	is_nested = 0;
 }
 
 void Playback3DCommand::copy_from(BC_SynchronousCommand *command)
@@ -259,6 +335,8 @@ void Playback3DCommand::copy_from(BC_SynchronousCommand *command)
 	this->default_auto = ptr->default_auto;
 	this->plugin_client = ptr->plugin_client;
 	this->want_texture = ptr->want_texture;
+	this->is_nested = ptr->is_nested;
+	this->dst_cmodel = ptr->dst_cmodel;
 
 	BC_SynchronousCommand::copy_from(command);
 }
@@ -326,6 +404,10 @@ void Playback3D::handle_command(BC_SynchronousCommand *command)
 
 		case Playback3DCommand::COPY_FROM:
 			copy_from_sync((Playback3DCommand*)command);
+			break;
+
+		case Playback3DCommand::CONVERT_CMODEL:
+			convert_cmodel_sync((Playback3DCommand*)command);
 			break;
 
 // 		case Playback3DCommand::DRAW_REFRESH:
@@ -604,14 +686,9 @@ void Playback3D::draw_output(Playback3DCommand *command)
 		switch(command->frame->get_color_model())
 		{
 			case BC_YUV888:
-				frag_shader = VFrame::make_shader(0,
-					yuv_to_rgb_frag,
-					0);
-				break;
-
 			case BC_YUVA8888:
 				frag_shader = VFrame::make_shader(0,
-					yuva_to_rgba_frag,
+					yuv_to_rgb_frag,
 					0);
 				break;
 		}
@@ -812,7 +889,8 @@ void Playback3D::overlay(Canvas *canvas,
 	float alpha,        // 0 - 1
 	int mode,
 	int interpolation_type,
-	VFrame *output)
+	VFrame *output,
+	int is_nested)
 {
 	Playback3DCommand command;
 	command.command = Playback3DCommand::OVERLAY;
@@ -830,6 +908,7 @@ void Playback3D::overlay(Canvas *canvas,
 	command.alpha = alpha;
 	command.mode = mode;
 	command.interpolation_type = interpolation_type;
+	command.is_nested = is_nested;
 	send_command(&command);
 }
 
@@ -856,6 +935,7 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 			canvas_h = command->frame->get_h();
 		}
 		else
+// Render to canvas
 		{
 			canvas_w = window->get_w();
 			canvas_h = window->get_h();
@@ -896,16 +976,17 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 // Enable texture
 		command->input->bind_texture(0);
 
-
-// Convert colormodel.
-		switch(command->input->get_color_model())
+// Convert colormodel to RGB if not nested.
+// The color model setting in the output frame is ignored.
+		if(!command->is_nested)
 		{
-			case BC_YUV888:
-				shader_stack[total_shaders++] = yuv_to_rgb_frag;
-				break;
-			case BC_YUVA8888:
-				shader_stack[total_shaders++] = yuva_to_rgba_frag;
-				break;
+			switch(command->input->get_color_model())
+			{
+				case BC_YUV888:
+				case BC_YUVA8888:
+					shader_stack[total_shaders++] = yuv_to_rgb_frag;
+					break;
+			}
 		}
 
 // Change blend operation
@@ -947,6 +1028,11 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 				enable_overlay_texture(command);
 				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
 				shader_stack[total_shaders++] = blend_max_frag;
+				break;
+			case TRANSFER_MIN:
+				enable_overlay_texture(command);
+				if(!total_shaders) shader_stack[total_shaders++] = read_texture_frag;
+				shader_stack[total_shaders++] = blend_min_frag;
 				break;
 			case TRANSFER_DIVIDE:
 				enable_overlay_texture(command);
@@ -996,7 +1082,6 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 
 
 
-
 		command->input->draw_texture(command->in_x1, 
 			command->in_y1,
 			command->in_x2,
@@ -1005,8 +1090,8 @@ void Playback3D::overlay_sync(Playback3DCommand *command)
 			command->out_y1,
 			command->out_x2,
 			command->out_y2,
-			1);
-
+// Don't flip vertical if nested
+			!command->is_nested);
 
 		glUseProgram(0);
 
@@ -1373,7 +1458,130 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 
 
 
+void Playback3D::convert_cmodel(Canvas *canvas, 
+	VFrame *output, 
+	int dst_cmodel)
+{
+// Do nothing if colormodels are equivalent in OpenGL & the image is in hardware.
+	int src_cmodel = output->get_color_model();
+	if(
+		(output->get_opengl_state() == VFrame::TEXTURE ||
+		output->get_opengl_state() == VFrame::SCREEN) &&
+// OpenGL has no floating point.
+		(src_cmodel == BC_RGB888 && dst_cmodel == BC_RGB_FLOAT) ||
+		(src_cmodel == BC_RGBA8888 && dst_cmodel == BC_RGBA_FLOAT) ||
+		(src_cmodel == BC_RGB_FLOAT && dst_cmodel == BC_RGB888) ||
+		(src_cmodel == BC_RGBA_FLOAT && dst_cmodel == BC_RGBA8888) ||
+// OpenGL sets alpha to 1 on import
+		(src_cmodel == BC_RGB888 && dst_cmodel == BC_RGBA8888) ||
+		(src_cmodel == BC_YUV888 && dst_cmodel == BC_YUVA8888) ||
+		(src_cmodel == BC_RGB_FLOAT && dst_cmodel == BC_RGBA_FLOAT)
+		) return;
 
+
+
+	Playback3DCommand command;
+	command.command = Playback3DCommand::CONVERT_CMODEL;
+	command.canvas = canvas;
+	command.frame = output;
+	command.dst_cmodel = dst_cmodel;
+	send_command(&command);
+}
+
+void Playback3D::convert_cmodel_sync(Playback3DCommand *command)
+{
+#ifdef HAVE_GL
+	command->canvas->lock_canvas("Playback3D::convert_cmodel_sync");
+
+	if(command->canvas->get_canvas())
+	{
+		BC_WindowBase *window = command->canvas->get_canvas();
+		window->lock_window("Playback3D::convert_cmodel_sync");
+		window->enable_opengl();
+
+// Import into hardware
+		command->frame->enable_opengl();
+		command->frame->init_screen();
+		command->frame->to_texture();
+
+// Colormodel permutation
+		const char *shader = 0;
+		int src_cmodel = command->frame->get_color_model();
+		int dst_cmodel = command->dst_cmodel;
+		typedef struct
+		{
+			int src;
+			int dst;
+			const char *shader;
+		} cmodel_shader_table_t;
+		static cmodel_shader_table_t cmodel_shader_table[]  = 
+		{
+			{ BC_RGB888, BC_YUV888, rgb_to_yuv_frag },
+			{ BC_RGB888, BC_YUVA8888, rgb_to_yuv_frag },
+			{ BC_RGBA8888, BC_RGB888, rgba_to_rgb_frag },
+			{ BC_RGBA8888, BC_RGB_FLOAT, rgba_to_rgb_frag },
+			{ BC_RGBA8888, BC_YUV888, rgba_to_yuv_frag },
+			{ BC_RGBA8888, BC_YUVA8888, rgb_to_yuv_frag },
+			{ BC_RGB_FLOAT, BC_YUV888, rgb_to_yuv_frag },
+			{ BC_RGB_FLOAT, BC_YUVA8888, rgb_to_yuv_frag },
+			{ BC_RGBA_FLOAT, BC_RGB888, rgba_to_rgb_frag },
+			{ BC_RGBA_FLOAT, BC_RGB_FLOAT, rgba_to_rgb_frag },
+			{ BC_RGBA_FLOAT, BC_YUV888, rgba_to_yuv_frag },
+			{ BC_RGBA_FLOAT, BC_YUVA8888, rgb_to_yuv_frag },
+			{ BC_YUV888, BC_RGB888, yuv_to_rgb_frag },
+			{ BC_YUV888, BC_RGBA8888, yuv_to_rgb_frag },
+			{ BC_YUV888, BC_RGB_FLOAT, yuv_to_rgb_frag },
+			{ BC_YUV888, BC_RGBA_FLOAT, yuv_to_rgb_frag },
+			{ BC_YUVA8888, BC_RGB888, yuva_to_rgb_frag },
+			{ BC_YUVA8888, BC_RGBA8888, yuv_to_rgb_frag },
+			{ BC_YUVA8888, BC_RGB_FLOAT, yuva_to_rgb_frag },
+			{ BC_YUVA8888, BC_RGBA_FLOAT, yuv_to_rgb_frag },
+			{ BC_YUVA8888, BC_YUV888, yuva_to_yuv_frag },
+		};
+
+		for(int i = 0; i < sizeof(cmodel_shader_table) / sizeof(cmodel_shader_table_t); i++)
+		{
+			if(cmodel_shader_table[i].src == src_cmodel &&
+				cmodel_shader_table[i].dst == dst_cmodel)
+			{
+				shader = cmodel_shader_table[i].shader;
+				break;
+			}
+		}
+
+// printf("Playback3D::convert_cmodel_sync %d %d %d shader=\n%s", 
+// __LINE__, 
+// command->frame->get_color_model(), 
+// command->dst_cmodel,
+// shader);
+
+		if(shader)
+		{
+//printf("Playback3D::convert_cmodel_sync %d\n", __LINE__);
+			command->frame->bind_texture(0);
+			unsigned int shader_id = -1;
+			if(shader)
+			{
+				shader_id = VFrame::make_shader(0,
+					shader,
+					0);
+				glUseProgram(shader_id);
+				glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
+			}
+
+			command->frame->draw_texture();
+
+			if(shader) glUseProgram(0);
+
+			command->frame->set_opengl_state(VFrame::SCREEN);
+		}
+
+		window->unlock_window();
+	}
+
+	command->canvas->unlock_canvas();
+#endif // HAVE_GL
+}
 
 void Playback3D::do_fade(Canvas *canvas, VFrame *frame, float fade)
 {

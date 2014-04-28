@@ -22,7 +22,7 @@
 #ifndef TIMESTRETCHENGINE_H
 #define TIMESTRETCHENGINE_H
 
-
+#include "samples.inc"
 #include <stdint.h>
 
 
@@ -35,11 +35,11 @@ public:
 
 	void overlay(double *out, double *in, int size, int skirt);
 // Returns the number of samples in the output buffer
-	int process(double *in_buffer, int in_size);
+	int process(Samples *in_buffer, int in_size);
 // Return the output buffer
 	double* get_samples();
 // Increment output buffer counters and shift output
-	void read_output(double *buffer, int size);
+	void read_output(Samples *buffer, int size);
 
 private:
 // ms length of average window

@@ -20,16 +20,19 @@
  */
 
 
+#include <stdlib.h>
 #include "picturereader.hh"
 #include "mpeg2encoder.hh"
 #include "imageplanes.hh"
 //#include <stdio.h>
-//#include <stdlib.h>
 //#include <unistd.h>
 //#include <string.h>
 //#include <errno.h>
 //#include "simd.h"
 
+#ifndef INT_MAX
+#define INT_MAX 0x7fffffffLL
+#endif
 
 PictureReader::PictureReader( EncoderParams &_encparams ) :
     encparams( _encparams )

@@ -36,7 +36,7 @@
 pthread_mutex_t BC_Display::display_lock = PTHREAD_MUTEX_INITIALIZER;
 BC_Display* BC_Display::display_global = 0;
 
-BC_Display::BC_Display(char *display_name)
+BC_Display::BC_Display(const char *display_name)
 {
 	done = 0;
 	motion_events = 0;
@@ -90,7 +90,7 @@ BC_Display::~BC_Display()
 {
 }
 
-Display* BC_Display::get_display(char *name)
+Display* BC_Display::get_display(const char *name)
 {
 	pthread_mutex_lock(&display_lock);
 	if(!display_global)
@@ -380,13 +380,13 @@ void BC_Display::unlock_repeaters(int64_t duration)
 }
 
 
-void BC_Display::lock_display(char *location)
+void BC_Display::lock_display(const char *location)
 {
 	pthread_mutex_lock(&BC_Display::display_lock);
 	int result = ++BC_Display::display_global->window_locked;
 	pthread_mutex_unlock(&BC_Display::display_lock);
 
-printf("BC_Display::lock_display %d %s result=%d\n", __LINE__, location, result);
+//printf("BC_Display::lock_display %d %s result=%d\n", __LINE__, location, result);
 	XLockDisplay(BC_Display::display_global->display);
 }
 
@@ -398,7 +398,7 @@ void BC_Display::unlock_display()
 //		BC_Display::display_global->window_locked = 0;
 	pthread_mutex_unlock(&BC_Display::display_lock);
 
-printf("BC_Display::unlock_display %d result=%d\n", __LINE__, result);
+//printf("BC_Display::unlock_display %d result=%d\n", __LINE__, result);
 	/* if(result == 1) */ XUnlockDisplay(BC_Display::display_global->display);
 }
 

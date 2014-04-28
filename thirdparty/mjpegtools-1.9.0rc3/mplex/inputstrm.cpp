@@ -28,6 +28,11 @@
 #include "inputstrm.hpp"
 #include "multiplexor.hpp"
 
+#ifndef INT_MAX
+#define INT_MAX 0x7fffffffLL
+#endif
+
+
 MuxStream::MuxStream() : init(false) 
 {
 }

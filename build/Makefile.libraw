@@ -10,6 +10,11 @@ OBJS := \
 	$(DIR)/$(OBJDIR)/src/main.o \
 	$(DIR)/$(OBJDIR)/src/readwrite.o
 
+HEADERS := \
+	csr.h \
+	ieee1394.h \
+	raw1394.h
+
 OUTPUT := $(DIR)/$(OBJDIR)/libraw1394.a
 
 
@@ -20,13 +25,17 @@ DIRS += $(OBJDIR)/libraw1394/src
 
 
 $(shell sh -c 'if ! test -d $(DIR)/$(OBJDIR)/src/\; then mkdir -p $(DIR)/$(OBJDIR)/src/\; fi' )
+$(shell sh -c 'if ! test -d $(DIR)/libraw1394\; then mkdir -p $(DIR)/libraw1394\; fi' )
 $(shell echo $(CFLAGS) > $(DIR)/$(OBJDIR)/c_flags)
 
-$(OUTPUT): $(OBJS)
+$(OUTPUT): $(OBJS) $(HEADERS)
 	ar rcs $(OUTPUT) $(OBJS)
 
 $(OBJS):
 	$(GCC) -c `cat $(DIR)/$(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
+
+$(HEADERS):
+	cp $(DIR)/src/$*.h $(DIR)/libraw1394
 
 clean:
 	rm -rf $(DIR)/$(OBJDIR)

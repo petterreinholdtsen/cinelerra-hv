@@ -6,6 +6,7 @@
 #include "edlsession.h"
 #include "labels.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mainsession.h"
 #include "mtimebar.h"
 #include "mwindow.h"

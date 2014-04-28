@@ -9,6 +9,7 @@ class RenderEngine;
 #include "cache.inc"
 #include "canvas.inc"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "condition.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -28,7 +29,7 @@ public:
 		TransportCommand *command, 
 		Canvas *output,
 		ArrayList<PluginServer*> *plugindb,
-		ArrayList<Channel*> *channeldb,
+		ChannelDB *channeldb,
 		int head_number);
 	~RenderEngine();
 
@@ -48,7 +49,8 @@ public:
 	Channel* get_current_channel();
 	double get_tracking_position();
 // Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title);
+	PluginServer* scan_plugindb(char *title,
+		int data_type);
 	CICache* get_acache();
 	CICache* get_vcache();
 	void set_acache(CICache *cache);
@@ -119,7 +121,7 @@ public:
 
 	ArrayList<PluginServer*> *plugindb;
 // Channels for the BUZ output
-	ArrayList<Channel*> *channeldb;
+	ChannelDB *channeldb;
 
 // Samples in audio buffer to process
 	int64_t fragment_len;

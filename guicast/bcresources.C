@@ -504,6 +504,10 @@ BC_Resources::BC_Resources()
 	menu_up = MECYAN;
 	menu_shadow = DKCYAN;
 
+	popup_title_text = BLACK;
+	menu_item_text = BLACK;
+	progress_text = BLACK;
+
 	text_default = BLACK;
 	text_background = WHITE;
 	highlight_inverse = WHITE ^ BLUE;

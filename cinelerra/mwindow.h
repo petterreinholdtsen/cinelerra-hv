@@ -10,6 +10,7 @@
 #include "brender.inc"
 #include "cache.inc"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "cwindow.inc"
 #include "defaults.inc"
 #include "edit.inc"
@@ -70,7 +71,6 @@ public:
 	void show_splash();
 	void hide_splash();
 	void start();
-	static void init_tuner(ArrayList<Channel*> &channeldb, char *path);
 
 	int run_script(FileXML *script);
 	int new_project();
@@ -128,7 +128,8 @@ public:
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb);
 // Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title);
+	PluginServer* scan_plugindb(char *title,
+		int data_type);
 	void dump_plugins();
 
 
@@ -366,7 +367,9 @@ public:
 
 	int reset_meters();
 
-
+// Channel DB for playback only.  Record channel DB's are in record.C
+	ChannelDB *channeldb_buz;
+	ChannelDB *channeldb_v4l2jpeg;
 
 // ====================================== plugins ==============================
 
@@ -376,11 +379,10 @@ public:
 	ArrayList<PluginServer*> *plugin_guis;
 
 
-// TV stations to record from
-	ArrayList<Channel*> channeldb_v4l;
-	ArrayList<Channel*> channeldb_buz;
 // Adjust sample position to line up with frames.
-	int fix_timing(int64_t &samples_out, int64_t &frames_out, int64_t samples_in);     
+	int fix_timing(int64_t &samples_out, 
+		int64_t &frames_out, 
+		int64_t samples_in);
 
 
 	BatchRenderThread *batch_render;
@@ -403,6 +405,8 @@ public:
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
 
+// Initialize channel DB's for playback
+	void init_channeldb();
 	void init_render();
 // These three happen synchronously with each other
 // Make sure this is called after synchronizing EDL's.
@@ -442,7 +446,6 @@ public:
 	void init_playbackcursor();
 	void delete_plugins();
 	void clean_indexes();
-	void save_tuner(ArrayList<Channel*> &channeldb, char *path);
 //	TimeBomb timebomb;
 	SigHandler *sighandler;
 };

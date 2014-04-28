@@ -547,9 +547,13 @@ CWindowCameraLeft::CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, in
 int CWindowCameraLeft::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
@@ -561,7 +565,7 @@ int CWindowCameraLeft::handle_event()
 		if(w && h)
 		{
 			keyframe->center_x = 
-				(double)track->track_w / keyframe->center_z / 2 - 
+				(double)track->track_w / zoom_keyframe->value / 2 - 
 				(double)w / 2;
 			gui->update();
 			gui->update_preview();
@@ -607,9 +611,13 @@ CWindowCameraRight::CWindowCameraRight(MWindow *mwindow, CWindowCameraGUI *gui, 
 int CWindowCameraRight::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
@@ -620,7 +628,7 @@ int CWindowCameraRight::handle_event()
 
 		if(w && h)
 		{
-			keyframe->center_x = -((double)track->track_w / keyframe->center_z / 2 - 
+			keyframe->center_x = -((double)track->track_w / zoom_keyframe->value / 2 - 
 				(double)w / 2);
 			gui->update();
 			gui->update_preview();
@@ -641,9 +649,13 @@ CWindowCameraTop::CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui, int 
 int CWindowCameraTop::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
@@ -654,7 +666,7 @@ int CWindowCameraTop::handle_event()
 
 		if(w && h)
 		{
-			keyframe->center_y = (double)track->track_h / keyframe->center_z / 2 - 
+			keyframe->center_y = (double)track->track_h / zoom_keyframe->value / 2 - 
 				(double)h / 2;
 			gui->update();
 			gui->update_preview();
@@ -700,9 +712,13 @@ CWindowCameraBottom::CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui
 int CWindowCameraBottom::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
@@ -713,7 +729,7 @@ int CWindowCameraBottom::handle_event()
 
 		if(w && h)
 		{
-			keyframe->center_y = -((double)track->track_h / keyframe->center_z / 2 - 
+			keyframe->center_y = -((double)track->track_h / zoom_keyframe->value / 2 - 
 				(double)h / 2);
 			gui->update();
 			gui->update_preview();
@@ -851,7 +867,6 @@ void CWindowProjectorGUI::handle_event()
 	{
 		keyframe->center_x = atof(x->get_text());
 		keyframe->center_y = atof(y->get_text());
-		keyframe->center_z = atof(z->get_text());
 		update_preview();
 	}
 	else
@@ -950,13 +965,16 @@ CWindowProjectorLeft::CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI
 int CWindowProjectorLeft::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
-
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+	}
 	if(keyframe)
 	{
-		keyframe->center_x = (double)track->track_w * keyframe->center_z / 2 - 
+		keyframe->center_x = (double)track->track_w * zoom_keyframe->value / 2 - 
 			(double)mwindow->edl->session->output_w / 2;
 		gui->update();
 		gui->update_preview();
@@ -1001,13 +1019,17 @@ CWindowProjectorRight::CWindowProjectorRight(MWindow *mwindow, CWindowProjectorG
 int CWindowProjectorRight::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
-		keyframe->center_x = -((double)track->track_w * keyframe->center_z / 2 - 
+		keyframe->center_x = -((double)track->track_w * zoom_keyframe->value / 2 - 
 			(double)mwindow->edl->session->output_w / 2);
 		gui->update();
 		gui->update_preview();
@@ -1027,13 +1049,17 @@ CWindowProjectorTop::CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *
 int CWindowProjectorTop::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
-		keyframe->center_y = (double)track->track_h * keyframe->center_z / 2 - 
+		keyframe->center_y = (double)track->track_h * zoom_keyframe->value / 2 - 
 			(double)mwindow->edl->session->output_h / 2;
 		gui->update();
 		gui->update_preview();
@@ -1078,13 +1104,17 @@ CWindowProjectorBottom::CWindowProjectorBottom(MWindow *mwindow, CWindowProjecto
 int CWindowProjectorBottom::handle_event()
 {
 	BezierAuto *keyframe = 0;
+	FloatAuto *zoom_keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
+	{
+		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
+		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+	}
 
 	if(keyframe)
 	{
-		keyframe->center_y = -((double)track->track_h * keyframe->center_z / 2 - 
+		keyframe->center_y = -((double)track->track_h * zoom_keyframe->value / 2 - 
 			(double)mwindow->edl->session->output_h / 2);
 		gui->update();
 		gui->update_preview();

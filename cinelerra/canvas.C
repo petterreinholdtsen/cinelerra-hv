@@ -62,14 +62,14 @@ void Canvas::calculate_sizes(float aspect_ratio,
 // Horizontal stretch
 	if((float)output_w / output_h <= aspect_ratio)
 	{
-		w = (int)((float)output_h * aspect_ratio * zoom + 1);
-		h = (int)((float)output_h * zoom + 1);
+		w = (int)((float)output_h * aspect_ratio * zoom);
+		h = (int)((float)output_h * zoom);
 	}
 	else
 // Vertical stretch
 	{
-		h = (int)((float)output_w / aspect_ratio * zoom + 1);
-		w = (int)((float)output_w * zoom + 1);
+		h = (int)((float)output_w / aspect_ratio * zoom);
+		w = (int)((float)output_w * zoom);
 	}
 }
 

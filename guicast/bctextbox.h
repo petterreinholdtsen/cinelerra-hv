@@ -5,7 +5,7 @@
 #include "bcsubwindow.h"
 #include "bctumble.h"
 #include "fonts.h"
-#include "timer.inc"
+#include "bctimer.inc"
 
 #define BCCURSORW 2
 

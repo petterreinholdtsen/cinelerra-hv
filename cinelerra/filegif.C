@@ -4,7 +4,8 @@
 #include "vframe.h"
 
 
-FileGIF::FileGIF(Asset *asset) : FileBase(asset)
+FileGIF::FileGIF(Asset *asset)
+ : FileBase(asset)
 {
 	reset_parameters();
 	asset->video_data = 1;

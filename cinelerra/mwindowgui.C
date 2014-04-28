@@ -8,6 +8,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
+#include "keyframepopup.h"
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
@@ -65,8 +66,10 @@ MWindowGUI::~MWindowGUI()
 	delete patchbay;
 	delete timebar;
 	delete mainclock;
+	delete edit_menu;
 	delete plugin_menu;
-	delete transition_menu;
+	delete keyframe_menu;
+ 	delete transition_menu;
 }
 
 void MWindowGUI::get_scrollbars()
@@ -226,6 +229,9 @@ int MWindowGUI::create_objects()
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
 	plugin_menu->create_objects();
 //printf("MWindowGUI::create_objects 1\n");
+
+	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
+	keyframe_menu->create_objects();
 
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 	transition_menu->create_objects();

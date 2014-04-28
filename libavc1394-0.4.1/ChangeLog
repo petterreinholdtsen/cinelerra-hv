@@ -1,0 +1,70 @@
+2002-10-01  Dan Dennedy <dan@dennedy.org?
+	* common/raw1394util.c: convert from usleep to nanosleep
+	
+2002-09-26  Dan Dennedy <dan@dennedy.org>
+	* avc1394_simple.c: remove test for STABLE response from avc transactions.
+	* avc1394_simple.c: convert usleep to nanosleep.
+	* dvcont.1, dvcont.c: apply patch from Daniel Kobras for updated docs.
+
+2002-09-25  Dan Dennedy <dan@dennedy.org>
+	* avc1394_simple.c: added timeout support to avc transactions.
+	* avc1394_vcr.c: added avc1394_vcr_seek_timecode(), but discovered
+	  it is not supported by most devices.
+	* dvcont.c: added seek command to test above, display usage if no
+	  commands entered, added hidden pluginfo command for playing around,
+	  added more verbose output.
+	* configure.in: bump version.
+	* dvcont.c: fixup version numbers.
+
+2002-04-04  Dan Dennedy <dan@dennedy.org>
+    * Applied patch from Kirk Bateman to handle unicode US_ENGLISH
+      (Microsoft specific?) textual leaves in librom1394. Thanks!
+
+2001-09-22  Dan Dennedy <dan@dennedy.org>
+    * test/Makefile.am: tidy up
+    * libavc1394/avc1394_internal.h: added defines for DEBUG and AVC1394_SLEEP
+    * libavc1394/avc1394_simple.c: slight cleanup and conditional debug
+    * test/dvcont.c: fixed bug that required Bevis King's timeout signal
+      by using rom1394 to check for an AVC node before asking the node
+      for AV/C subunit info -- doh!
+    * test/dvcont.c: cleanup error messages and explicitly close raw1394
+      handle
+
+2001-08-15  Dan Dennedy <dan@dennedy.org>
+    * avc1394_simple.c: bug fix in avc1394_check_subunit_type() to handle
+      error return from call to avc1394_subunit_info(), set retry level =2
+    * avc1394.h: added more VCR playback speeds,
+      added enum for VCR measurement units
+    * avc1394_vcr.[ch]: added functions for timecode, reverse, trickplay,
+      index search; set retry level =2
+    * dvcont.c: now version 0.1, added commands timecode, reverse, nextindex,
+      previndex, trickplay, and status
+    * dvcont.1: added man page written by Daniel Kobras
+    * README: added usage information about dvcont.
+    
+2001-06-10  Dan Dennedy <dan@dennedy.org>
+	* bug fix in librom1394/rom1394_internal.c:proc_directory, a failed
+	  read on first quadlet could lead to an invalid directory length
+	* bug fix in librom1394/rom1394_main.c:rom1394_get_directory, was not
+	  initializing all struct members
+	* librom1394 now first checks for valid node
+
+2001-05-27  Dan Dennedy <dan@dennedy.org>
+    * added librom1394
+    * added test program, romtest, for testing librom1394
+    * moved raw1394util into a common directory because it use by
+      both libraries
+    
+2001-05-11  Dan Dennedy
+    * various build fixes requires moving src/ to libavc1394/
+    * adapt raw1394util.c to new v0.9 libraw1394 API, 
+      auto compatible with libraw1394 v0.8+
+    * change avc1394_is_subunit_recorder() to a more generic
+      avc1394_check_subunit_type()
+    * make dvcont determine first numerically sequential node
+      that is VCR subunit and use it if no dev specified.
+
+2001-05-10  Dan Dennedy  <dan@dennedy.org>
+	* converted Andreas Mickleis' simplavc into a library
+	* converted Jason Howard's dvcont to use libavc1394 vcr interface
+

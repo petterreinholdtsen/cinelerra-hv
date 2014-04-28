@@ -147,14 +147,10 @@ FreezeFrameMain::~FreezeFrameMain()
 	if(first_frame) delete first_frame;
 }
 
-char* FreezeFrameMain::plugin_title() { return _("Freeze Frame"); }
-
-int FreezeFrameMain::is_synthesis()
-{
-	return 1;
-}
-
+char* FreezeFrameMain::plugin_title() { return N_("Freeze Frame"); }
+int FreezeFrameMain::is_synthesis() { return 1; }
 int FreezeFrameMain::is_realtime() { return 1; }
+
 
 SHOW_GUI_MACRO(FreezeFrameMain, FreezeFrameThread)
 

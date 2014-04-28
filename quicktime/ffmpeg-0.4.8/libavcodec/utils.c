@@ -305,17 +305,21 @@ int avcodec_open(AVCodecContext *avctx, AVCodec *codec)
 {
     int ret;
 
+
     if(avctx->codec)
         return -1;
 
     avctx->codec = codec;
     avctx->codec_id = codec->id;
     avctx->frame_number = 0;
-    if (codec->priv_data_size > 0) {
+    if (codec->priv_data_size > 0) 
+	{
         avctx->priv_data = av_mallocz(codec->priv_data_size);
         if (!avctx->priv_data) 
             return -ENOMEM;
-    } else {
+    } 
+	else 
+	{
         avctx->priv_data = NULL;
     }
     ret = avctx->codec->init(avctx);

@@ -31,18 +31,13 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 
 	card = -1;
 
-	if((error = snd_card_next(&card)) < 0)
-	{
-		printf("AudioALSA::list_devices: %s\n", snd_strerror(error));
-		return;
-	}
-
-	while(card >= 0) 
+	while(snd_card_next(&card) >= 0)
 	{
 		char name[BCTEXTLEN];
-		sprintf(name, "hw:%d", card);
+		if(card < 0) break;
+		sprintf(name, "hw:%i", card);
 
-		if((err = snd_ctl_open(&handle, name, 0)) < 0) 
+		if((err = snd_ctl_open(&handle, name, 0)) < 0)
 		{
 			printf("AudioALSA::list_devices (%i): %s", card, snd_strerror(err));
 			continue;
@@ -80,7 +75,6 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 			if(pcm_title)
 			{
 				sprintf(string, "plughw:%d,%d", card, dev);
-printf("AudioALSA::list_devices: %s\n", snd_ctl_card_info_get_name(info));
 //				strcpy(string, "cards.pcm.front");
 			}
 			else
@@ -95,12 +89,6 @@ printf("AudioALSA::list_devices: %s\n", snd_ctl_card_info_get_name(info));
 		}
 
 		snd_ctl_close(handle);
-
-		if(snd_card_next(&card) < 0) 
-		{
-			printf("AudioALSA::list_devices: snd_card_next");
-			break;
-		}
 	}
 
 //	snd_ctl_card_info_free(info);
@@ -159,21 +147,16 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 	snd_pcm_sw_params_t *swparams;
 	int err;
 
-printf("AudioALSA::set_params 1\n");
 	snd_pcm_hw_params_alloca(&params);
-printf("AudioALSA::set_params 1\n");
 	snd_pcm_sw_params_alloca(&swparams);
-printf("AudioALSA::set_params 1 %p %p\n", dsp, params);
 	err = snd_pcm_hw_params_any(dsp, params);
 
-printf("AudioALSA::set_params 1\n");
 	if (err < 0) 
 	{
 		printf("AudioALSA::set_params: no PCM configurations available\n");
 		return;
 	}
 
-printf("AudioALSA::set_params 1\n");
 	snd_pcm_hw_params_set_access(dsp, 
 		params,
 		SND_PCM_ACCESS_RW_INTERLEAVED);
@@ -185,21 +168,34 @@ printf("AudioALSA::set_params 1\n");
 		channels);
 	snd_pcm_hw_params_set_rate_near(dsp, 
 		params, 
-		samplerate, 
-		0);
+		(unsigned int*)&samplerate, 
+		(int*)0);
 
-printf("AudioALSA::set_params 1\n");
 // Buffers written must be equal to period_time
-	int buffer_time = (int)((double)samples / samplerate * 1000000 * 2 + 0.5);
-	int period_time = buffer_time / 2;
-	buffer_time = snd_pcm_hw_params_set_buffer_time_near(dsp, 
+	int buffer_time;
+	int period_time;
+	if(device->r)
+	{
+		buffer_time = 10000000;
+		period_time = (int)((int64_t)samples * 1000000 / samplerate);
+	}
+	else
+	{
+		buffer_time = (int)((int64_t)samples * 1000000 * 2 / samplerate + 0.5);
+		period_time = samples * samplerate / 1000000;
+	}
+
+
+//printf("AudioALSA::set_params 1 %d %d %d\n", samples, buffer_time, period_time);
+	snd_pcm_hw_params_set_buffer_time_near(dsp, 
 		params,
-		buffer_time, 
-		0);
-	period_time = snd_pcm_hw_params_set_period_time_near(dsp, 
+		(unsigned int*)&buffer_time, 
+		(int*)0);
+	snd_pcm_hw_params_set_period_time_near(dsp, 
 		params,
-		period_time, 
-		0);
+		(unsigned int*)&period_time, 
+		(int*)0);
+//printf("AudioALSA::set_params 5 %d %d\n", buffer_time, period_time);
 	err = snd_pcm_hw_params(dsp, params);
 	if(err < 0) 
 	{
@@ -207,11 +203,12 @@ printf("AudioALSA::set_params 1\n");
 		return;
 	}
 
-printf("AudioALSA::set_params 1\n");
-	int chunk_size = snd_pcm_hw_params_get_period_size(params, 0);
-	int buffer_size = snd_pcm_hw_params_get_buffer_size(params);
+	snd_pcm_uframes_t chunk_size = 1024;
+	snd_pcm_uframes_t buffer_size = 262144;
+	snd_pcm_hw_params_get_period_size(params, &chunk_size, 0);
+	snd_pcm_hw_params_get_buffer_size(params, &buffer_size);
+//printf("AudioALSA::set_params 10 %d %d\n", chunk_size, buffer_size);
 
-printf("AudioALSA::set_params 1\n");
 	snd_pcm_sw_params_current(dsp, swparams);
 	size_t xfer_align = 1 /* snd_pcm_sw_params_get_xfer_align(swparams) */;
 	unsigned int sleep_min = 0;
@@ -224,12 +221,11 @@ printf("AudioALSA::set_params 1\n");
 		printf("AudioALSA::set_params: snd_pcm_sw_params failed\n");
 	}
 
-printf("AudioALSA::set_params 1\n");
 	device->device_buffer = buffer_size / 
 		(bits / 8) / 
 		channels;
 
-printf("AudioALSA::set_params 2 %d %d\n", samples,  device->device_buffer);
+//printf("AudioALSA::set_params 100 %d %d\n", samples,  device->device_buffer);
 
 //	snd_pcm_hw_params_free(params);
 //	snd_pcm_sw_params_free(swparams);
@@ -242,30 +238,25 @@ int AudioALSA::open_input()
 	int open_mode = 0;
 	int err;
 
-//printf("AudioALSA::open_input 1\n");
 	device->in_channels = device->in_config->alsa_in_channels;
 	device->in_bits = device->in_config->alsa_in_bits;
-//printf("AudioALSA::open_input 1\n");
 
 	translate_name(pcm_name, device->in_config->alsa_in_device);
-//printf("AudioALSA::open_input 1\n");
 
 	err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode);
-//printf("AudioALSA::open_input 1\n");
 
 	if(err < 0)
 	{
 		printf("AudioALSA::open_input: %s\n", snd_strerror(err));
 		return 1;
 	}
-//printf("AudioALSA::open_input 1\n");
 
 	set_params(dsp_in, 
 		device->in_config->alsa_in_channels, 
 		device->in_config->alsa_in_bits,
 		device->in_samplerate,
 		device->in_samples);
-//printf("AudioALSA::open_input 2\n");
+
 	return 0;
 }
 
@@ -347,6 +338,7 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		size / (device->out_bits / 8) / device->out_channels) < 0)
 	{
 		printf("AudioALSA::write_buffer: failed\n");
+		sleep(1);
 	}
 	return 0;
 }

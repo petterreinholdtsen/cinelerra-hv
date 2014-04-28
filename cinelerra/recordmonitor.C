@@ -6,6 +6,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "keys.h"
+#include "language.h"
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "playbackconfig.h"
@@ -21,11 +22,6 @@
 #include "vframe.h"
 #include "videodevice.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 RecordMonitor::RecordMonitor(MWindow *mwindow, Record *record)
  : Thread(1)
@@ -81,10 +77,8 @@ int RecordMonitor::create_objects()
 						record->default_asset->height,
 						window->canvas,
 						0);
-//printf("RecordMonitor::create_objects 5\n");
 
 		thread = new RecordMonitorThread(mwindow, record, this);
-//printf("RecordMonitor::create_objects 6\n");
 		thread->start_playback();
 	}
 
@@ -183,6 +177,11 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	this->record = record;
+	avc = 0;
+	avc1394_transport = 0;
+	avc1394transport_title = 0;
+	avc1394transport_timecode = 0;
+	avc1394transport_thread = 0;
 	bitmap = 0;
 	channel_picker = 0;
 	reverse_interlace = 0;
@@ -195,29 +194,90 @@ RecordMonitorGUI::~RecordMonitorGUI()
 {
 	if(bitmap) delete bitmap;
 	if(channel_picker) delete channel_picker;
+	if(avc1394transport_thread)
+		delete avc1394transport_thread;
+	if(avc)
+	{
+		delete avc;
+	}
+	if(avc1394_transport)
+	{
+		delete avc1394_transport;
+	}
+	if(avc1394transport_title)
+		delete avc1394transport_title;
 }
 
 int RecordMonitorGUI::create_objects()
 {
-//printf("RecordMonitorGUI::create_objects 1\n");
+// y offset for video canvas if we have the transport controls
+	int do_channel = (mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
+			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
+			mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2 ||
+			mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG);
+	int do_interlace = (mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
+		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG);
+	int background_done = 0;
+
 	mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
 		record->default_asset->video_data,
-		(mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
-			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ),
-		(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ));
-	mwindow->theme->draw_rmonitor_bg(this);
-//printf("RecordMonitorGUI::create_objects 1\n");
+		do_channel,
+		do_interlace,
+		0);
 
-// 	record_transport = new RecordTransport(mwindow, 
-// 		record, 
-// 		this, 
-// 		mwindow->theme->rmonitor_tx_x,
-// 		mwindow->theme->rmonitor_tx_y);
-// 	record_transport->create_objects();
-//printf("RecordMonitorGUI::create_objects 1\n");
+
+
+
+
 
 	if(record->default_asset->video_data)
 	{
+		int driver = mwindow->edl->session->vconfig_in->driver;
+
+		if(driver == CAPTURE_FIREWIRE)
+		{
+			avc = new AVC1394Control;
+			if(avc->device > -1)
+			{
+				mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
+					record->default_asset->video_data,
+					do_channel,
+					do_interlace,
+					1);
+				mwindow->theme->draw_rmonitor_bg(this);
+				background_done = 1;
+
+printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x, mwindow->theme->rmonitor_tx_y);
+				avc1394_transport = new AVC1394Transport(mwindow,
+					avc,
+					this,
+					mwindow->theme->rmonitor_tx_x,
+					mwindow->theme->rmonitor_tx_y);
+				avc1394_transport->create_objects();
+
+				add_subwindow(avc1394transport_timecode =
+					new BC_Title(avc1394_transport->x_end,
+						mwindow->theme->rmonitor_tx_y + 10,
+						_("00:00:00:00"),
+						MEDIUM_7SEGMENT,
+						BLACK));
+
+				avc1394transport_thread =
+					new AVC1394TransportThread(avc1394transport_timecode,
+						avc);
+
+				avc1394transport_thread->start();
+
+			}
+		}
+
+
+		if(!background_done)
+		{
+			mwindow->theme->draw_rmonitor_bg(this);
+			background_done = 1;
+		}
+
 		canvas = new RecordMonitorCanvas(mwindow, 
 			this,
 			record, 
@@ -226,28 +286,28 @@ int RecordMonitorGUI::create_objects()
 			mwindow->theme->rmonitor_canvas_w, 
 			mwindow->theme->rmonitor_canvas_h);
 		canvas->create_objects(0);
-//printf("RecordMonitorGUI::create_objects 1\n");
 
-		if(mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
-			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ)
+		if(driver == VIDEO4LINUX ||
+			driver == CAPTURE_BUZ ||
+			driver == VIDEO4LINUX2 ||
+			driver == VIDEO4LINUX2JPEG)
 		{
 			channel_picker = new ChannelPicker(mwindow,
 				record,
 				thread,
-				record->current_channeldb(),
+				record->channeldb,
 				mwindow->theme->rmonitor_channel_x, 
 				mwindow->theme->rmonitor_channel_y);
 			channel_picker->create_objects();
 		}
-//printf("RecordMonitorGUI::create_objects 1\n");
 
-		if(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ)
+		if(driver == CAPTURE_BUZ ||
+			driver == VIDEO4LINUX2JPEG)
 		{
 			add_subwindow(reverse_interlace = new ReverseInterlace(record,
 				mwindow->theme->rmonitor_interlace_x, 
 				mwindow->theme->rmonitor_interlace_y));
 		}
-//printf("RecordMonitorGUI::create_objects 1\n");
 		
 		add_subwindow(monitor_menu = new BC_PopupMenu(0, 
 			0, 
@@ -256,9 +316,14 @@ int RecordMonitorGUI::create_objects()
 			0));
 		monitor_menu->add_item(new RecordMonitorFullsize(mwindow, 
 			this));
-//printf("RecordMonitorGUI::create_objects 1\n");
 	}
-//printf("RecordMonitorGUI::create_objects 1\n");
+
+
+	if(!background_done)
+	{
+		mwindow->theme->draw_rmonitor_bg(this);
+		background_done = 1;
+	}
 
 	if(record->default_asset->audio_data)
 	{
@@ -271,7 +336,6 @@ int RecordMonitorGUI::create_objects()
 			1);
 		meters->create_objects();
 	}
-//printf("RecordMonitorGUI::create_objects 2\n");
 	return 0;
 }
 
@@ -362,7 +426,8 @@ int RecordMonitorGUI::keypress_event()
 			close_event();
 			break;
 		default:
-//			result = record_transport->keypress_event();
+			if(avc1394_transport)
+				result = avc1394_transport->keypress_event(get_keypress());
 			break;
 	}
 	return result;
@@ -379,7 +444,14 @@ int RecordMonitorGUI::translation_event()
 
 int RecordMonitorGUI::resize_event(int w, int h)
 {
-//printf("RecordMonitorGUI::resize_event %d %d\n", w, h);
+	int do_channel = (mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
+			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
+			mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2 ||
+			mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG);
+	int do_interlace = (mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
+		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG);
+	int do_avc = avc1394_transport ? 1 : 0;
+
 	mwindow->session->rmonitor_x = get_x();
 	mwindow->session->rmonitor_y = get_y();
 	mwindow->session->rmonitor_w = w;
@@ -387,15 +459,21 @@ int RecordMonitorGUI::resize_event(int w, int h)
 
 	mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
 		record->default_asset->video_data,
-		(mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX ||
-			mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ),
-		(mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ));
+		do_channel,
+		do_interlace,
+		do_avc);
 	mwindow->theme->draw_rmonitor_bg(this);
 	flash();
 
 
 // 	record_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
 // 		mwindow->theme->rmonitor_tx_y);
+	if(avc1394_transport)
+	{
+		avc1394_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
+			mwindow->theme->rmonitor_tx_y);
+	}
+	
 	if(channel_picker) channel_picker->reposition();
 	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
 		reverse_interlace->get_y());
@@ -647,6 +725,7 @@ void RecordMonitorThread::reset_parameters()
 	shared_data = 0;
 	jpeg_engine = 0;
 	dv_engine = 0;
+	ready = 0;
 }
 
 
@@ -670,6 +749,7 @@ void RecordMonitorThread::init_output_format()
 	
 	
 		case CAPTURE_BUZ:
+		case VIDEO4LINUX2JPEG:
 			jpeg_engine = new RecVideoMJPGThread(record, this);
 			jpeg_engine->start_rendering();
 			output_colormodel = BC_YUV422P;
@@ -682,6 +762,7 @@ void RecordMonitorThread::init_output_format()
 			break;
 
 		case VIDEO4LINUX:
+		case VIDEO4LINUX2:
 			output_colormodel = record->vdevice->get_best_colormodel(record->default_asset);
 //printf("RecordMonitorThread::init_output_format 2 %d\n", output_colormodel);
 			break;
@@ -707,14 +788,12 @@ int RecordMonitorThread::stop_playback()
 	switch(mwindow->edl->session->vconfig_in->driver)
 	{
 		case CAPTURE_BUZ:
-//printf("RecordMonitorThread::stop_playback 2\n");
+		case VIDEO4LINUX2JPEG:
 			if(jpeg_engine) 
 			{
 				jpeg_engine->stop_rendering();
-//printf("RecordMonitorThread::stop_playback 2\n");
 				delete jpeg_engine;
 			}
-//printf("RecordMonitorThread::stop_playback 3\n");
 			break;
 
 		case CAPTURE_FIREWIRE:
@@ -736,6 +815,8 @@ int RecordMonitorThread::write_frame(VFrame *new_frame)
 	{
 		ready = 0;
 		shared_data = (new_frame->get_color_model() != BC_COMPRESSED);
+
+
 // Need to wait until after Record creates the input device before starting monitor
 // because the input device deterimes the output format.
 // First time
@@ -805,6 +886,7 @@ int RecordMonitorThread::render_frame()
 	switch(mwindow->edl->session->vconfig_in->driver)
 	{
 		case CAPTURE_BUZ:
+		case VIDEO4LINUX2JPEG:
 			render_jpeg();
 			break;
 
@@ -885,11 +967,12 @@ int RecVideoMJPGThread::stop_rendering()
 
 int RecVideoMJPGThread::render_frame(VFrame *frame, long size)
 {
-// printf("RecVideoMJPGThread::render_frame %d %02x%02x %02x%02x\n", frame->get_field2_offset(), 
-// 	frame->get_data()[0], 
-// 	frame->get_data()[1], 
-// 	frame->get_data()[frame->get_field2_offset()], 
-// 	frame->get_data()[frame->get_field2_offset() + 1]);
+// printf("RecVideoMJPGThread::render_frame %d %02x%02x %02x%02x\n", 
+// frame->get_field2_offset(), 
+// frame->get_data()[0], 
+// frame->get_data()[1], 
+// frame->get_data()[frame->get_field2_offset()], 
+// frame->get_data()[frame->get_field2_offset() + 1]);
 //frame->set_field2_offset(0);
 	mjpeg_decompress(mjpeg, 
 		frame->get_data(), 

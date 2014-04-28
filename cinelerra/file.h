@@ -4,21 +4,23 @@
 #include <stdlib.h>
 
 #include "asset.inc"
+#include "condition.inc"
 #include "edit.inc"
-#include "file.inc"
 #include "filebase.inc"
+#include "file.inc"
 #include "filethread.inc"
 #include "filexml.inc"
 #include "formatwindow.inc"
+#include "framecache.inc"
 #include "guicast.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "pluginserver.inc"
 #include "resample.inc"
-#include "sema.h"
 #include "vframe.inc"
 
-
 // ======================================= include file types here
+
+
 
 // generic file opened by user
 class File
@@ -46,6 +48,14 @@ public:
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
+// Enable or disable frame caching.  Must be tied to file to know when 
+// to delete the file object.  Otherwise we'd delete just the cached frames
+// while the list of open files grew.
+	void set_cache_frames(int value);
+// Delete oldest frame from cache.  Return 0 if successful.  Return 1 if 
+// nothing to delete.
+	int purge_cache();
+
 // Format may be preset if the asset format is not 0.
 	int open_file(ArrayList<PluginServer*> *plugindb, 
 		Asset *asset, 
@@ -57,6 +67,12 @@ public:
 // start a thread for writing to avoid blocking during record
 	int start_audio_thread(int64_t buffer_size, int ring_buffers);
 	int stop_audio_thread();
+// The ring buffer must either be 1 or 2.
+// The buffer_size for video needs to be > 1 on SMP systems to utilize 
+// multiple processors.
+// For audio it's the number of samples per buffer.
+// compressed - if 1 write_compressed_frame is called
+//              if 0 write_frames is called
 	int start_video_thread(int64_t buffer_size, 
 		int color_model, 
 		int ring_buffers, 
@@ -103,6 +119,9 @@ public:
 	double** get_audio_buffer();
 	VFrame*** get_video_buffer();
 
+// Used by ResourcePixmap to directly access the cache.
+	FrameCache* get_frame_cache();
+
 // Schedule a buffer for writing on the thread.
 // thread calls write_samples
 	int write_audio_buffer(int64_t len);
@@ -115,12 +134,10 @@ public:
 // return 1 if failed
 	int read_samples(double *buffer, int64_t len, int64_t base_samplerate);
 
-// Return a pointer to the frame in a video file for drawing or 0.
-// The following routine copies a frame once to a temporary buffer and either 
-// returns a pointer to the temporary buffer or copies the temporary buffer again.
-	VFrame* read_frame(int color_model);
 
-	int read_frame(VFrame *frame);
+// Read frame of video into the argument
+	int File::read_frame(VFrame *frame);
+
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
@@ -139,7 +156,11 @@ public:
 // direction determined to know whether to use a temp.
 	int colormodel_supported(int colormodel);
 
-
+// Used by CICache to calculate the total size of the cache.
+// Based on temporary frames and a call to the file subclass.
+// The return value is limited 1MB each in case of audio file.
+// The minimum setting for cache_size should be bigger than 1MB.
+	int get_memory_usage();
 
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
@@ -159,16 +180,16 @@ public:
 	FileBase *file; // virtual class for file type
 // Threads for writing data in the background.
 	FileThread *audio_thread, *video_thread; 
+
 // Temporary storage for color conversions
 	VFrame *temp_frame;
-// Frame to return pointer to
-	VFrame *return_frame;
+
 // Resampling engine
 	Resample *resample;
 
 // Lock writes while recording video and audio.
 // A binary lock won't do.  We need a FIFO lock.
-	Sema write_lock;
+	Condition *write_lock;
 	int cpus;
 	int64_t playback_preload;
 
@@ -185,12 +206,16 @@ public:
 	int64_t normalized_sample;
 	int64_t normalized_sample_rate;
 
+
 private:
 	void reset_parameters();
 
 	int getting_options;
 	BC_WindowBase *format_window;
-	Mutex format_completion;
+	Mutex *format_completion;
+	FrameCache *frame_cache;
+// Copy read frames to the cache
+	int use_cache;
 };
 
 #endif

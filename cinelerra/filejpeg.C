@@ -3,16 +3,13 @@
 #include "file.h"
 #include "filejpeg.h"
 #include "jpegwrapper.h"
+#include "language.h"
 #include "libmjpeg.h"
 #include "mwindow.inc"
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
@@ -119,6 +116,7 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 			break;
 		case CAPTURE_BUZ:
 		case CAPTURE_LML:
+		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
 			break;
 		case CAPTURE_FIREWIRE:

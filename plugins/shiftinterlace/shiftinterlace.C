@@ -260,15 +260,8 @@ ShiftInterlaceMain::~ShiftInterlaceMain()
 }
 
 
-int ShiftInterlaceMain::is_realtime() 
-{
-	return 1;
-}
-
-char* ShiftInterlaceMain::plugin_title() 
-{
-	return _("ShiftInterlace");
-}
+char* ShiftInterlaceMain::plugin_title()  { return N_("ShiftInterlace"); }
+int ShiftInterlaceMain::is_realtime() { return 1; }
 
 
 SHOW_GUI_MACRO(ShiftInterlaceMain, ShiftInterlaceThread)

@@ -2,6 +2,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "audiodevice.h"
+#include "channeldb.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -25,7 +26,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	TransportCommand *command,
 	Canvas *output,
 	ArrayList<PluginServer*> *plugindb,
-	ArrayList<Channel*> *channeldb,
+	ChannelDB *channeldb,
 	int head_number)
  : Thread(1, 0, 0)
 {
@@ -279,10 +280,18 @@ Channel* RenderEngine::get_current_channel()
 {
 	if(channeldb)
 	{
-		if(config->vconfig->buz_out_channel >= 0 && 
-			config->vconfig->buz_out_channel < channeldb->total)
+		switch(config->vconfig->driver)
 		{
-			return channeldb->values[config->vconfig->buz_out_channel];
+			case PLAYBACK_BUZ:
+				if(config->vconfig->buz_out_channel >= 0 && 
+					config->vconfig->buz_out_channel < channeldb->size())
+				{
+					return channeldb->get(config->vconfig->buz_out_channel);
+				}
+				break;
+			case VIDEO4LINUX2JPEG:
+				
+				break;
 		}
 	}
 	return 0;
@@ -429,11 +438,15 @@ int64_t RenderEngine::sync_position()
 	}
 }
 
-PluginServer* RenderEngine::scan_plugindb(char *title)
+PluginServer* RenderEngine::scan_plugindb(char *title, 
+	int data_type)
 {
 	for(int i = 0; i < plugindb->total; i++)
 	{
-		if(!strcasecmp(plugindb->values[i]->title, title))
+		PluginServer *server = plugindb->values[i];
+		if(!strcasecmp(server->title, title) &&
+			((data_type == TRACK_AUDIO && server->audio) ||
+			(data_type == TRACK_VIDEO && server->video)))
 			return plugindb->values[i];
 	}
 	return 0;

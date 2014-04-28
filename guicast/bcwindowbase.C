@@ -2786,27 +2786,44 @@ int BC_WindowBase::get_abs_cursor_y()
 	return abs_y;
 }
 
+int BC_WindowBase::match_window(Window win) 
+{
+	if (this->win == win) return 1;
+	int result = 0;
+	for(int i = 0; i < subwindows->total; i++)
+	{
+		result = subwindows->values[i]->match_window(win);
+		if (result) return result;
+	}
+	return 0;
+
+}
+
 int BC_WindowBase::get_cursor_over_window()
 {
-return 1;
 	if(top_level != this) return top_level->get_cursor_over_window();
 
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
-	Window temp_win;
+	Window temp_win1, temp_win2;
 //printf("BC_WindowBase::get_cursor_over_window 2\n");
 
-	XQueryPointer(display, 
+	if (!XQueryPointer(display, 
 		win, 
-		&temp_win, 
-		&temp_win,
+		&temp_win1, 
+		&temp_win2,
 		&abs_x, 
 		&abs_y, 
 		&win_x, 
 		&win_y, 
-		&temp_mask);
+		&temp_mask))
+	return(0);
 //printf("BC_WindowBase::get_cursor_over_window 3 %p\n", window_tree);
 
+	int result = match_window(temp_win2)	;
+//	printf("t1: %p, t2: %p, win: %p, ret: %i\n", temp_win1, temp_win2, win, result);
+	return(result);
+/*------------------------previous attempts ------------
 // Get location in window tree
 	BC_WindowTree *tree_node = window_tree->get_node(win);
 
@@ -2844,7 +2861,7 @@ return 1;
 			}
 		}
 	}
-
+*/
 # if 0
 // Test every window after current node in same parent node.
 // Test every parent node after current parent node.

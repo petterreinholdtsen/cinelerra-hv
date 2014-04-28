@@ -111,7 +111,6 @@ int AModule::render(double *buffer,
 	int sample_rate,
 	int use_nudge)
 {
-//printf("AModule::render 1 %p\n", buffer);
 	int64_t edl_rate = get_edl()->session->sample_rate;
 	if(use_nudge) 
 		input_position += track->nudge * 
@@ -132,13 +131,12 @@ int AModule::render(double *buffer,
 		end_project -= input_len;
 	}
 
-//printf("AModule::render 1 %p\n", buffer);
+//printf("AModule::render 1 %p %p %d\n", this, buffer, input_len);
 
 // Clear buffer
 	bzero(buffer, input_len * sizeof(double));
 
-//printf("AModule::render 1\n");
-
+//printf("AModule::render 2\n");
 // The EDL is normalized to the requested sample rate because the requested rate may
 // be the project sample rate and a sample rate 
 // might as well be directly from the source rate to the requested rate.
@@ -354,7 +352,7 @@ int AModule::render(double *buffer,
 	if(direction == PLAY_REVERSE)
 		reverse_buffer(buffer, input_len);
 
-//printf("AModule::render 100 %p\n", buffer);
+//printf("AModule::render 100\n");
 
 	return result;
 }

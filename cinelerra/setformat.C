@@ -24,8 +24,9 @@
 
 
 SetFormat::SetFormat(MWindow *mwindow)
- : BC_MenuItem(_("Format..."))
+ : BC_MenuItem(_("Format..."), "Shift-F", 'F')
 {
+	set_shift(1); 
 	this->mwindow = mwindow;
 	thread = new SetFormatThread(mwindow);
 }

@@ -61,7 +61,7 @@ Gain::~Gain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* Gain::plugin_title() { return _("Gain"); }
+char* Gain::plugin_title() { return N_("Gain"); }
 int Gain::is_realtime() { return 1; }
 
 
@@ -89,7 +89,7 @@ int Gain::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 
 int Gain::load_defaults()
 {
-	char directory[1024];
+	char directory[BCTEXTLEN];
 
 // set the default directory
 	sprintf(directory, "%sgain.rc", get_defaultdir());

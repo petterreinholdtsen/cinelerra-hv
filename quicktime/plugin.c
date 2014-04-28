@@ -36,6 +36,7 @@ static int register_acodec(void (*init_acodec)(quicktime_audio_map_t *))
 
 
 #include "ima4.h"
+#include "mp4a.h"
 #include "qtvorbis.h"
 #include "qtmp3.h"
 #include "rawaudio.h"
@@ -48,8 +49,9 @@ static void register_acodecs()
 {
 	register_acodec(quicktime_init_codec_twos);
 	register_acodec(quicktime_init_codec_rawaudio);
-	register_acodec(quicktime_init_codec_ima4); 
-	register_acodec(quicktime_init_codec_ulaw); 
+	register_acodec(quicktime_init_codec_ima4);
+	register_acodec(quicktime_init_codec_mp4a);
+	register_acodec(quicktime_init_codec_ulaw);
 
 	register_acodec(quicktime_init_codec_vorbis);
 	register_acodec(quicktime_init_codec_mp3);
@@ -84,13 +86,16 @@ static void register_vcodecs()
 	register_vcodec(quicktime_init_codec_hv60);
 	register_vcodec(quicktime_init_codec_div3);
 	register_vcodec(quicktime_init_codec_div3lower);
+	register_vcodec(quicktime_init_codec_mp4v);
 	register_vcodec(quicktime_init_codec_svq1);
+	register_vcodec(quicktime_init_codec_svq3);
 	register_vcodec(quicktime_init_codec_dv);
 	register_vcodec(quicktime_init_codec_dvsd);
 
 
 	register_vcodec(quicktime_init_codec_jpeg);
 	register_vcodec(quicktime_init_codec_mjpa);
+	register_vcodec(quicktime_init_codec_mjpg);
 	register_vcodec(quicktime_init_codec_png);
 	register_vcodec(quicktime_init_codec_rle);
 

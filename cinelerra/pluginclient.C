@@ -102,6 +102,17 @@ int PluginClient::delete_buffer_ptrs() { return 0; }
 char* PluginClient::plugin_title() { return _("Untitled"); }
 VFrame* PluginClient::new_picon() { return 0; }
 Theme* PluginClient::new_theme() { return 0; }
+
+
+
+
+Theme* PluginClient::get_theme()
+{
+	return server->get_theme();
+}
+
+
+
 int PluginClient::is_audio() { return 0; }
 int PluginClient::is_video() { return 0; }
 int PluginClient::is_theme() { return 0; }

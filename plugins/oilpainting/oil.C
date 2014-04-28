@@ -307,15 +307,9 @@ OilEffect::~OilEffect()
 }
 
 
-int OilEffect::is_realtime()
-{
-	return 1;
-}
+char* OilEffect::plugin_title() { return N_("Oil painting"); }
+int OilEffect::is_realtime() { return 1; }
 
-char* OilEffect::plugin_title()
-{
-	return _("Oil painting");
-}
 
 NEW_PICON_MACRO(OilEffect)
 

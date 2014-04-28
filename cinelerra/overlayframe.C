@@ -2415,7 +2415,8 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
  				line_len);
  		}
 
- 	} else
+ 	} 
+	else
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:

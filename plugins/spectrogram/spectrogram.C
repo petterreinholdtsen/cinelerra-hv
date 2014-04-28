@@ -199,15 +199,8 @@ void Spectrogram::reset()
 }
 
 
-char* Spectrogram::plugin_title()
-{
-	return _("Spectrogram");
-}
-
-int Spectrogram::is_realtime()
-{
-	return 1;
-}
+char* Spectrogram::plugin_title() { return N_("Spectrogram"); }
+int Spectrogram::is_realtime() { return 1; }
 
 int Spectrogram::process_buffer(int64_t size, 
 		double *buffer,

@@ -225,7 +225,8 @@ void Module::update_transition(int64_t current_position,
 		this->transition = transition;
 		if(renderengine)
 		{
-			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title);
+			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
+				track->data_type);
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
 				renderengine->preferences, 

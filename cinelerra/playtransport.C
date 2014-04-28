@@ -351,7 +351,7 @@ int PTransportButton::set_mode(int mode)
 RewindButton::RewindButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->rewind_data)
 {
-	set_tooltip(_("Rewind"));
+	set_tooltip(_("Rewind ( Home )"));
 }
 int RewindButton::handle_event()
 {
@@ -456,7 +456,7 @@ int FastPlayButton::handle_event()
 EndButton::EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->end_data) 
 {
-	set_tooltip(_("Jump to end"));
+	set_tooltip(_("Jump to end ( End )"));
 }
 int EndButton::handle_event()
 {	

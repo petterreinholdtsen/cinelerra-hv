@@ -184,9 +184,17 @@ int VModule::import_frame(VFrame *output,
 						-1);
 				}
 
+
+
 // file -> temp
-//printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
+// Cache for single frame only
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(1);
 				result = source->read_frame((*input));
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(0);
+
+//printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
 				OverlayFrame *overlayer = 0;
 // Realtime playback
 				if(commonrender)
@@ -246,13 +254,19 @@ int VModule::import_frame(VFrame *output,
 					1,
 					mode,
 					get_edl()->session->interpolation_type);
+				result = 1;
 //printf("VModule::import_frame 20\n");
 			}
 			else
 // file -> output
 			{
 //printf("VModule::import_frame 30 %p\n", output);
+// Cache single frames only
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(1);
 				result = source->read_frame(output);
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(0);
 //printf("VModule::import_frame 40\n");
 			}
 
@@ -287,11 +301,11 @@ int VModule::render(VFrame *output,
 		frame_rate / 
 		edl_rate);
 
-//printf("VModule::render 1\n");
 
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate /
-		frame_rate);
+		frame_rate + 
+		0.5);
 
 	update_transition(start_position_project, 
 		direction);
@@ -306,7 +320,8 @@ int VModule::render(VFrame *output,
 		output->clear_frame();
 		return 0;
 	}
-//printf("VModule::render 10\n");
+
+
 
 
 // Process transition

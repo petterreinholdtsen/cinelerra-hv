@@ -4,6 +4,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "mainundo.h"
 #include "mainmenu.h"
@@ -19,11 +20,6 @@
 #include "vwindow.h"
 
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 New::New(MWindow *mwindow)
  : BC_MenuItem(_("New..."), "n", 'n')

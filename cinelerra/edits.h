@@ -21,6 +21,7 @@ public:
 	virtual ~Edits();	
 
 	void equivalent_output(Edits *edits, int64_t *result);
+	virtual void copy_from(Edits *edits);
 	virtual Edits& operator=(Edits& edits);
 // Editing
 	void insert_edits(Edits *edits, int64_t position);

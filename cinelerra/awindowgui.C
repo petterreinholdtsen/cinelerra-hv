@@ -122,7 +122,6 @@ void AssetPicon::create_objects()
 			{
 //printf("AssetPicon::create_objects 1\n");
 				File *file = mwindow->video_cache->check_out(asset);
-//printf("AssetPicon::create_objects 2\n");
 
 				if(file)
 				{
@@ -1119,7 +1118,6 @@ int AWindowAssets::selection_changed()
 
 void AWindowAssets::draw_background()
 {
-//printf("AWindowAssets::draw_background %s\n", mwindow->edl->session->current_folder);
 	BC_ListBox::draw_background();
 	set_color(RED);
 	set_font(LARGEFONT);

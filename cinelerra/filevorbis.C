@@ -48,8 +48,25 @@ int FileVorbis::check_sig(Asset *asset)
 {
 	FILE *fd = fopen(asset->path, "rb");
 	OggVorbis_File vf;
+
+// Test for Quicktime since OGG misinterprets it
+	fseek(fd, 4, SEEK_SET);
+	char data[4];
+	fread(data, 4, 1, fd);
+	if(data[0] == 'm' &&
+		data[1] == 'd' &&
+		data[2] == 'a' &&
+		data[3] == 't')
+	{
+		fclose(fd);
+		return 0;
+	}
+	
+	fseek(fd, 0, SEEK_SET);
+
 	if(ov_open(fd, &vf, NULL, 0) < 0)
 	{
+// OGG failed.  Close file handle manually.
 		ov_clear(&vf);
 		if(fd) fclose(fd);
 		return 0;

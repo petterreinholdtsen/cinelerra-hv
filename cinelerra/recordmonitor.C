@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "channelpicker.h"
+#include "condition.h"
 #include "cursors.h"
 #include "libdv.h"
 #include "edl.h"
@@ -38,48 +39,38 @@ RecordMonitor::RecordMonitor(MWindow *mwindow, Record *record)
 
 RecordMonitor::~RecordMonitor()
 {
-//printf("RecordMonitor::~RecordMonitor 1\n");
 	if(thread)
 	{
 		thread->stop_playback();
 		delete thread;
 	}
-//printf("RecordMonitor::~RecordMonitor 1\n");
 	window->set_done(0);
-//printf("RecordMonitor::~RecordMonitor 1\n");
 	Thread::join();
-//printf("RecordMonitor::~RecordMonitor 1\n");
 	if(device) 
 	{
 		device->close_all();
 		delete device;
 	}
-//printf("RecordMonitor::~RecordMonitor 1\n");
 	delete window;
-//printf("RecordMonitor::~RecordMonitor 2\n");
 }
 
 int RecordMonitor::create_objects()
 {
-//printf("RecordMonitor::create_objects 1\n");
 	window = new RecordMonitorGUI(mwindow,
 		record, 
 		this);
-//printf("RecordMonitor::create_objects 2\n");
 	window->create_objects();
-//printf("RecordMonitor::create_objects 3\n");
 
 	if(record->default_asset->video_data)
 	{
 // Configure the output for record monitoring
 		VideoOutConfig config(PLAYBACK_LOCALHOST, 0);
 		device = new VideoDevice;
-//printf("RecordMonitor::create_objects 4\n");
 
 
 
 // Override default device for X11 drivers
-		if(mwindow->edl->session->playback_config[PLAYBACK_LOCALHOST].values[0]->vconfig->driver ==
+		if(mwindow->edl->session->get_playback_config(PLAYBACK_LOCALHOST, 0)->vconfig->driver ==
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
 
@@ -644,6 +635,8 @@ RecordMonitorThread::RecordMonitorThread(MWindow *mwindow,
 	this->record_monitor = record_monitor;
 	this->record = record;
 	reset_parameters();
+	output_lock = new Condition(1, "RecordMonitor::output_lock");
+	input_lock = new Condition(1, "RecordMonitor::input_lock");
 }
 
 
@@ -660,6 +653,8 @@ void RecordMonitorThread::reset_parameters()
 RecordMonitorThread::~RecordMonitorThread()
 {
 	if(input_frame && !shared_data) delete input_frame;
+	delete output_lock;
+	delete input_lock;
 }
 
 void RecordMonitorThread::init_output_format()
@@ -697,7 +692,7 @@ int RecordMonitorThread::start_playback()
 {
 	ready = 1;
 	done = 0;
-	output_lock.lock();
+	output_lock->lock("RecordMonitorThread::start_playback");
 	Thread::start();
 	return 0;
 }
@@ -705,7 +700,7 @@ int RecordMonitorThread::start_playback()
 int RecordMonitorThread::stop_playback()
 {
 	done = 1;
-	output_lock.unlock();
+	output_lock->unlock();
 	Thread::join();
 //printf("RecordMonitorThread::stop_playback 1\n");
 
@@ -757,10 +752,10 @@ int RecordMonitorThread::write_frame(VFrame *new_frame)
 		}
 		else
 		{
-			input_lock.lock();
+			input_lock->lock("RecordMonitorThread::write_frame");
 			input_frame = new_frame;
 		}
-		output_lock.unlock();
+		output_lock->unlock();
 	}
 	return 0;
 }
@@ -802,7 +797,7 @@ void RecordMonitorThread::show_output_frame()
 
 void RecordMonitorThread::unlock_input()
 {
-	if(shared_data) input_lock.unlock();
+	if(shared_data) input_lock->unlock();
 }
 
 int RecordMonitorThread::render_frame()
@@ -839,7 +834,7 @@ void RecordMonitorThread::run()
 	while(!done)
 	{
 // Wait for next frame
-		output_lock.lock();
+		output_lock->lock("RecordMonitorThread::run");
 		if(done)
 		{
 			unlock_input();

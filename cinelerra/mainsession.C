@@ -31,6 +31,7 @@ MainSession::MainSession(MWindow *mwindow)
 	drag_edit = 0;
 	clip_number = 1;
 	brender_end = 0;
+	cwindow_controls = 1;
 }
 
 MainSession::~MainSession()
@@ -57,6 +58,7 @@ void MainSession::boundaries()
 	rwindow_y = MAX(0, rwindow_y);
 	rmonitor_x = MAX(0, rmonitor_x);
 	rmonitor_y = MAX(0, rmonitor_y);
+	cwindow_controls = CLIP(cwindow_controls, 0, 1);
 }
 
 void MainSession::default_window_positions()
@@ -190,6 +192,7 @@ int MainSession::load_defaults(Defaults *defaults)
 	show_cwindow = defaults->get("SHOW_CWINDOW", 1);
 	show_lwindow = defaults->get("SHOW_LWINDOW", 0);
 
+	cwindow_controls = defaults->get("CWINDOW_CONTROLS", cwindow_controls);
 
 	plugindialog_w = defaults->get("PLUGINDIALOG_W", 510);
 	plugindialog_h = defaults->get("PLUGINDIALOG_H", 415);
@@ -254,6 +257,7 @@ int MainSession::save_defaults(Defaults *defaults)
 	defaults->update("SHOW_CWINDOW", show_cwindow);
 	defaults->update("SHOW_LWINDOW", show_lwindow);
 
+	defaults->update("CWINDOW_CONTROLS", cwindow_controls);
 
 	defaults->update("PLUGINDIALOG_W", plugindialog_w);
 	defaults->update("PLUGINDIALOG_H", plugindialog_h);

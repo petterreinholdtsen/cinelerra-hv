@@ -372,7 +372,6 @@ void PatchBay::stop_meters()
 
 int PatchBay::update()
 {
-//printf("PatchBay::update 1\n");
 	int patch_count = 0;
 
 // Every patch has a GUI regardless of whether or not it is visible.
@@ -429,7 +428,6 @@ int PatchBay::update()
 		patches.remove_number(patches.total - 1);
 	}
 
-//printf("PatchBay::update 10\n");
 	return 0;
 }
 

@@ -102,53 +102,63 @@ public:
 	PlaybackPrefs *prefs;
 };
 
-class PlaybackBufferSize : public BC_TextBox
+/*
+ * class PlaybackBufferSize : public BC_TextBox
+ * {
+ * public:
+ * 	PlaybackBufferSize(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
+ * 	int handle_event();
+ * 	PreferencesWindow *pwindow;
+ * 	PlaybackPrefs *playback;
+ * };
+ */
+
+/*
+ * class PlaybackReadLength : public BC_TextBox
+ * {
+ * public:
+ * 	PlaybackReadLength(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
+ * 	int handle_event();
+ * 	PreferencesWindow *pwindow;
+ * 	PlaybackPrefs *playback;
+ * };
+ */
+
+class PlaybackModuleFragment : public BC_PopupMenu
 {
 public:
-	PlaybackBufferSize(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
+	PlaybackModuleFragment(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback, 
+		char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;
 };
 
-class PlaybackReadLength : public BC_TextBox
-{
-public:
-	PlaybackReadLength(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
-class PlaybackModuleFragment : public BC_TextBox
-{
-public:
-	PlaybackModuleFragment(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
-class PlaybackBufferBytes : public BC_Title
-{
-public:
-	PlaybackBufferBytes(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
-	
-	int update_bytes();
-	
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-	char string[1024];
-};
-
-
-class PlaybackDisableNoEdits : public BC_CheckBox
-{
-public:
-	PlaybackDisableNoEdits(PreferencesWindow *pwindow, int value, int y);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
+/*
+ * class PlaybackBufferBytes : public BC_Title
+ * {
+ * public:
+ * 	PlaybackBufferBytes(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text);
+ * 	
+ * 	int update_bytes();
+ * 	
+ * 	PreferencesWindow *pwindow;
+ * 	PlaybackPrefs *playback;
+ * 	char string[1024];
+ * };
+ * 
+ * 
+ * class PlaybackDisableNoEdits : public BC_CheckBox
+ * {
+ * public:
+ * 	PlaybackDisableNoEdits(PreferencesWindow *pwindow, int value, int y);
+ * 	int handle_event();
+ * 	PreferencesWindow *pwindow;
+ * };
+ */
 
 class PlaybackViewFollows : public BC_CheckBox
 {

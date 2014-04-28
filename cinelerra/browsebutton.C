@@ -26,7 +26,7 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	this->init_directory = init_directory;
 	this->textbox = textbox;
 	this->mwindow = mwindow;
-	set_tooltip("Look for file");
+	set_tooltip(_("Look for file"));
 	gui = 0;
 	startup_lock = new Mutex;
 }

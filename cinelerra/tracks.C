@@ -113,13 +113,12 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 
 }
 
-
-
-Tracks& Tracks::operator=(Tracks &tracks)
+void Tracks::copy_from(Tracks *tracks)
 {
 	Track *new_track;
+
 	delete_all_tracks();
-	for(Track *current = tracks.first; current; current = NEXT)
+	for(Track *current = tracks->first; current; current = NEXT)
 	{
 		switch(current->data_type)
 		{
@@ -130,8 +129,14 @@ Tracks& Tracks::operator=(Tracks &tracks)
 				new_track = add_video_track(0, 0); 
 				break;
 		}
-		*new_track = *current;
+		new_track->copy_from(current);
 	}
+}
+
+Tracks& Tracks::operator=(Tracks &tracks)
+{
+printf("Tracks::operator= 1\n");
+	copy_from(&tracks);
 	return *this;
 }
 

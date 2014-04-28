@@ -34,8 +34,8 @@ all:
 	makeinfo --html --no-split cinelerra.texi
 
 install:
-	cp $(IMAGES) /amazon/httpd/html/cinelerra
-	cp cinelerra.html /amazon/httpd/html/cinelerra
+	cp $(IMAGES) /home/httpd/html/cinelerra
+	cp cinelerra.html /home/httpd/html/cinelerra
 
 clean:
 	rm -f $(IMAGES) $(OUTPUT)

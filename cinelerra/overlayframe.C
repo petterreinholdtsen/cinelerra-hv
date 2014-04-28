@@ -598,12 +598,14 @@ int OverlayFrame::overlay(VFrame *output,
 			scaletranslate_engine->input = translation_input;
 			scaletranslate_engine->in_x1 = (int)in_x1;
 			scaletranslate_engine->in_y1 = (int)in_y1;
-			scaletranslate_engine->in_x2 = (int)in_x2;
-			scaletranslate_engine->in_y2 = (int)in_y2;
+// we need to do this mumbo-jumbo in order to get numerical stability
+// other option would be to round all the coordinates
+ 			scaletranslate_engine->in_x2 = (int)in_x1 + (int)(in_x2 - in_x1);
+ 			scaletranslate_engine->in_y2 = (int)in_y1 + (int)(in_y2 - in_y1);
 			scaletranslate_engine->out_x1 = (int)out_x1;
 			scaletranslate_engine->out_y1 = (int)out_y1;
-			scaletranslate_engine->out_x2 = (int)out_x2;
-			scaletranslate_engine->out_y2 = (int)out_y2;
+ 			scaletranslate_engine->out_x2 = (int)out_x1 + (int)(out_x2 - out_x1);
+ 			scaletranslate_engine->out_y2 = (int)out_y1 + (int)(out_y2 - out_y1);
 			scaletranslate_engine->alpha = alpha;
 			scaletranslate_engine->mode = mode;
 
@@ -2254,7 +2256,6 @@ LoadPackage* TranslateEngine::new_package()
 { \
 	temp_type opacity = (temp_type)(alpha * max + 0.5); \
 	temp_type transparency = max - opacity; \
-	int out_w = out_x2 - out_x1; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
@@ -2373,6 +2374,7 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 	int out_y2 = scale_translate->out_y2;
 	float alpha = scale_translate->alpha;
 	int mode = scale_translate->mode;
+	int out_w = out_x2 - out_x1;
 
 	int *x_table;
 	int *y_table;
@@ -2382,7 +2384,7 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 //	Timer a;
 //	a.update();
 //printf("ScaleTranslateUnit::process_package 1 %d\n", mode);
-	if(out_x2 - out_x1 != in_x2 - in_x1)
+	if(out_w != in_x2 - in_x1)
 	{
 		scale_array(x_table, 
 			out_x1, 
@@ -2399,6 +2401,21 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 		0);
 
 
+ 	if (mode == TRANSFER_REPLACE && (out_w == in_x2 - in_x1)) 
+	{
+// if we have transfer replace and x direction is not scaled, PARTY!
+ 		char bytes_per_pixel = input->calculate_bytes_per_pixel(input->get_color_model());
+ 		int line_len = out_w * bytes_per_pixel;
+ 		int in_start_byte = in_x1 * bytes_per_pixel;
+ 		int out_start_byte = out_x1 * bytes_per_pixel;
+ 		for(int i = pkg->out_row1; i < pkg->out_row2; i++) 
+ 		{
+ 			memcpy (out_rows[i] + out_start_byte, 
+ 				in_rows[y_table[i - out_y1]] + in_start_byte , 
+ 				line_len);
+ 		}
+
+ 	} else
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:

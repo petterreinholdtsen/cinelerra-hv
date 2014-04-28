@@ -5,14 +5,10 @@
 #include "file.h"
 #include "filemov.h"
 #include "guicast.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 #if 0
@@ -161,7 +157,6 @@ int FileMOV::open_file(int rd, int wr)
 {
 	this->rd = rd;
 	this->wr = wr;
-
 
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 
@@ -843,6 +838,7 @@ int FileMOV::read_frame(VFrame *frame)
 // Packed
 		default:
 			quicktime_set_cmodel(fd, frame->get_color_model());
+//printf("FileMOV::read_frame 100 %p %p\n", frame->get_color_model(), frame->get_rows()[0]);
 			result = quicktime_decode_video(fd, 
 				frame->get_rows(),
 				file->current_layer);

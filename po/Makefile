@@ -3,6 +3,8 @@ include Makevars
 
 OBJS := \
 	de.mo \
+	es.mo \
+	fr.mo \
 	sl.mo
 
 
@@ -28,6 +30,8 @@ $(OBJS):
 	msgfmt -c -o $@ $(subst .mo,.po,$@)
 
 de.mo:   de.po
+es.mo:   es.po
+fr.mo:   fr.po
 sl.mo:   sl.po
 
 

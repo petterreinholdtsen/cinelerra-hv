@@ -3,11 +3,15 @@
 #include "videodevice.inc"
 #include <string.h>
 
-AudioOutConfig::AudioOutConfig(int playback_strategy, int engine_number, int duplex)
+AudioOutConfig::AudioOutConfig(int playback_strategy, 
+	int engine_number, 
+	int duplex)
 {
 	this->duplex = duplex;
 	this->playback_strategy = playback_strategy;
 	this->engine_number = engine_number;
+
+	fragment_size = 16384;
 	driver = AUDIO_OSS;
 
 	oss_out_bits = 16;
@@ -54,7 +58,8 @@ int AudioOutConfig::operator!=(AudioOutConfig &that)
 int AudioOutConfig::operator==(AudioOutConfig &that)
 {
 	return 
-		(driver == that.driver) &&
+		(fragment_size == that.fragment_size &&
+		driver == that.driver) &&
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
 		(oss_out_channels[0] == that.oss_out_channels[0]) && 
 		(oss_out_bits == that.oss_out_bits) && 
@@ -81,6 +86,7 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 
 AudioOutConfig& AudioOutConfig::operator=(AudioOutConfig &that)
 {
+	fragment_size = that.fragment_size;
 	driver = that.driver;
 	strcpy(esound_out_server, that.esound_out_server);
 	esound_out_port = that.esound_out_port;
@@ -121,6 +127,7 @@ int AudioOutConfig::load_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
 
+	fragment_size = defaults->get("FRAGMENT_SIZE", fragment_size);
 	sprintf(string, "AUDIO_OUT_DRIVER_%d_%d_%d", playback_strategy, engine_number, duplex);
 	driver =  		              defaults->get(string, driver);
 // 	sprintf(string, "OSS_OUT_DEVICE_%d_%d_%d", playback_strategy, engine_number, duplex);
@@ -180,6 +187,7 @@ int AudioOutConfig::save_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
 
+	defaults->update("FRAGMENT_SIZE", fragment_size);
 	sprintf(string, "AUDIO_OUT_DRIVER_%d_%d_%d", playback_strategy, engine_number, duplex);
 	defaults->update(string, driver);
 // 	sprintf(string, "OSS_OUT_DEVICE_%d_%d_%d", playback_strategy, engine_number, duplex);

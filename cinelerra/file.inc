@@ -1,11 +1,7 @@
 #ifndef FILE_INC
 #define FILE_INC
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
+#include "language.h"
 
 // Return values for open_file
 #define FILE_OK 0

@@ -121,6 +121,7 @@ OBJS += \
 	$(OBJDIR)/quicktime.o \
 	$(OBJDIR)/raw.o \
 	$(OBJDIR)/rawaudio.o \
+	$(OBJDIR)/rle.o \
 	$(OBJDIR)/smhd.o \
 	$(OBJDIR)/stbl.o \
 	$(OBJDIR)/stco.o \
@@ -373,6 +374,7 @@ $(OBJDIR)/raw.o:			  raw.c
 $(OBJDIR)/rawaudio.o:			  rawaudio.c
 $(OBJDIR)/rechunk.o:			  rechunk.c
 $(OBJDIR)/recover.o:			  recover.c
+$(OBJDIR)/rle.o:                          rle.c
 $(OBJDIR)/smhd.o:			  smhd.c
 $(OBJDIR)/stbl.o:			  stbl.c
 $(OBJDIR)/stco.o:			  stco.c

@@ -40,18 +40,21 @@ EDL* TransportCommand::get_edl()
 	return edl;
 }
 
+void TransportCommand::copy_from(TransportCommand *command)
+{
+	this->command = command->command;
+	this->change_type = command->change_type;
+	this->edl->copy_all(command->edl);
+	this->start_position = command->start_position;
+	this->end_position = command->end_position;
+	this->playbackstart = command->playbackstart;
+	this->realtime = command->realtime;
+	this->resume = command->resume;
+}
+
 TransportCommand& TransportCommand::operator=(TransportCommand &command)
 {
-	this->command = command.command;
-	this->change_type = command.change_type;
-//printf("TransportCommand::operator= 1\n");
-	*this->edl = *command.edl;
-//printf("TransportCommand::operator= 2\n");
-	this->start_position = command.start_position;
-	this->end_position = command.end_position;
-	this->playbackstart = command.playbackstart;
-	this->realtime = command.realtime;
-	this->resume = command.resume;
+	copy_from(&command);
 	return *this;
 }
 
@@ -248,7 +251,8 @@ int TransportQue::send_command(int command,
 			change_type == CHANGE_ALL)
 		{
 // Copy EDL
-			*this->command.get_edl() = *new_edl;
+//printf("TransportQue::send_command 1 %p %p\n", this->command.get_edl(), new_edl);
+			this->command.get_edl()->copy_all(new_edl);
 		}
 		else
 		if(change_type == CHANGE_PARAMS)

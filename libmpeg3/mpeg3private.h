@@ -12,7 +12,7 @@
 
 #define MPEG3_MAJOR   1
 #define MPEG3_MINOR   5
-#define MPEG3_RELEASE 2
+#define MPEG3_RELEASE 4
 
 #define RENDERFARM_FS_PREFIX "vfs://"
 
@@ -20,6 +20,7 @@
 #define MPEG3_FLOAT32 float
 
 #define MPEG3_TOC_PREFIX                 0x544f4320
+#define MPEG3_TOC_VERSION                0xff
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
@@ -186,12 +187,11 @@ typedef struct
 // May also get rid of end byte.
 typedef struct
 {
+/* Relative starting byte of cell in the title */
 	int64_t start_byte;
-	double start_time;
-	double absolute_start_time;
-	double absolute_end_time;
+/* Relative ending byte of cell in the title */
 	int64_t end_byte;
-	double end_time;
+/* Program the cell belongs to */
 	int program;
 } mpeg3demux_cell_t;
 
@@ -255,8 +255,6 @@ typedef struct
 	int error_flag;
 /* Temp variables for returning */
 	unsigned char next_char;
-/* Correction factor for time discontinuity */
-	double time_offset;
 	int read_all;
 /* Info for mpeg3cat */
 	int64_t last_packet_start;
@@ -276,11 +274,9 @@ typedef struct
 	int total_programs;
 	int current_program;
 
-/* Timecode in the current title */
-	int current_cell;
+/* Cell in the current title currently used */
+	int title_cell;
 
-/* Byte position in the current title */
-//	int64_t current_byte;
 /* Absolute byte position. */
 	int64_t absolute_byte;
 

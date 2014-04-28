@@ -111,7 +111,7 @@ private:
 
 // Top left of text relative to window
 	int text_x, text_y;
-// Top left of cursor relative to window
+// Top left of cursor relative to text
 	int ibeam_x, ibeam_y;
 
 	int ibeam_letter;

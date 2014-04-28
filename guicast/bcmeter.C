@@ -43,6 +43,7 @@ BC_Meter::BC_Meter(int x,
 	this->orientation = orientation;
 	this->pixels = pixels;
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) images[i] = 0;
+	db_titles.set_array_delete();
 }
 
 BC_Meter::~BC_Meter()

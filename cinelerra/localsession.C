@@ -20,6 +20,11 @@ LocalSession::LocalSession(EDL *edl)
 	clipboard_length = 0;
 	preview_start = preview_end = 0;
 	loop_playback = 0;
+	loop_start = 0;
+	loop_end = 0;
+	zoom_sample = 0;
+	zoom_y = 0;
+	zoom_track = 0;
 	view_start = 0;
 	track_start = 0;
 }
@@ -115,7 +120,13 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
 		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
 	}
-
+// on operations like cut, paste, slice, clear... we should also undo the cursor position as users
+// expect - this is additionally important in keyboard-only editing in viewer window
+	if(load_flags & LOAD_SESSION || load_flags & LOAD_TIMEBAR)
+	{
+		selectionstart = file->tag.get_property("SELECTION_START", (double)0);
+		selectionend = file->tag.get_property("SELECTION_END", (double)0);
+	}
 	if(load_flags & LOAD_TIMEBAR)
 	{
 		in_point = file->tag.get_property("IN_POINT", (double)-1);

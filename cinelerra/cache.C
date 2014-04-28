@@ -228,7 +228,8 @@ int CICache::delete_oldest()
 		}
 	}
 
-	if(highest_counter > 1 && oldest)
+//	if(highest_counter > 1 && oldest)
+	if(oldest)
 	{
 		total_lock->lock("CICache::delete_oldest");
 

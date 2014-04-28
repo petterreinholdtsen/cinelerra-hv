@@ -1,5 +1,6 @@
 #include "audiodevice.h"
 #include "audioalsa.h"
+#include "bcsignals.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -366,7 +367,9 @@ int AudioALSA::read_buffer(char *buffer, int size)
 			buffer, 
 			size / (device->in_bits / 8) / device->in_channels) < 0)
 		{
-			perror("AudioALSA::read_buffer");
+			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
+				device->total_samples_read);
+//			snd_pcm_resume(get_input());
 			close_input();
 			open_input();
 			attempts++;
@@ -397,9 +400,10 @@ int AudioALSA::write_buffer(char *buffer, int size)
 			samples) < 0)
 		{
 			device->Thread::disable_cancel();
-			perror("AudioALSA::write_buffer");
+			printf("AudioALSA::write_buffer underrun at sample %lld\n",
+				device->current_position());
+//			snd_pcm_resume(get_output());
 			close_output();
-//			sleep(1);
 			open_output();
 			attempts++;
 		}
@@ -432,9 +436,11 @@ int AudioALSA::interrupt_playback()
 	if(get_output()) 
 	{
 		interrupted = 1;
+// Interrupts the playback but may not have caused snd_pcm_writei to exit.
 		snd_pcm_drop(get_output());
-// The only way to ensure snd_pcm_writei exits
-		device->Thread::cancel();
+// The only way to ensure snd_pcm_writei exits, but
+// got a lot of crashes when doing this.
+//		device->Thread::cancel();
 	}
 	return 0;
 }

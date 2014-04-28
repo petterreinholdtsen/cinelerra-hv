@@ -47,7 +47,7 @@ public:
 	int get_center(float &x, 
 		float &y, 
 		float &z, 
-		float frame, 
+		int64_t frame, 
 		int direction, 
 		BezierAuto **before, 
 		BezierAuto **after);

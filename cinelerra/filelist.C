@@ -127,7 +127,6 @@ int FileList::close_file()
 //	path_list.total, asset->format, list_type, wr);
 	if(asset->format == list_type && path_list.total)
 	{
-//printf("FileList::close_file 1 %d\n", asset->use_header);
 		if(wr && asset->use_header) write_list_header();
 		path_list.remove_all_objects();
 	}
@@ -143,7 +142,7 @@ int FileList::close_file()
 int FileList::write_list_header()
 {
 	FILE *stream = fopen(asset->path, "w");
-// Use sprintf for VFS.
+// Use sprintf instead of fprintf for VFS.
 	char string[BCTEXTLEN];
 	sprintf(string, "%s\n", list_prefix);
 	fwrite(string, strlen(string), 1, stream);
@@ -166,11 +165,12 @@ int FileList::write_list_header()
 
 	for(int i = 0; i < path_list.total; i++)
 	{
-// Fix path for VFS
+// Fix path for VFS but leave leading slash
 		if(!strncmp(path_list.values[i], RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
-			sprintf(string, "%s", path_list.values[i] + strlen(RENDERFARM_FS_PREFIX) + 1);
+			sprintf(string, "%s\n", path_list.values[i] + strlen(RENDERFARM_FS_PREFIX));
 		else
 			sprintf(string, "%s\n", path_list.values[i]);
+		fwrite(string, strlen(string), 1, stream);
 	}
 	fclose(stream);
 	return 0;
@@ -386,6 +386,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 			{
 				VFrame *frame = frames[i][j];
 				char *path = create_path(frame->get_number());
+
 				FILE *fd = fopen(path, "wb");
 				if(fd)
 				{
@@ -473,7 +474,10 @@ char* FileList::create_path(int number_override)
 		if(number_override < 0)
 			number = file->current_frame++;
 		else
+		{
 			number = number_override;
+			file->current_frame++;
+		}
 
 		if(!asset->use_header)
 		{
@@ -619,7 +623,8 @@ void FrameWriter::init_packages()
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
 		package->input = frames[layer][number];
 		package->path = file->create_path(package->input->get_number());
-// printf("FrameWriter::init_packages 1 %d %s\n", 
+// printf("FrameWriter::init_packages 1 %p %d %s\n", 
+// package->input,
 // package->input->get_number(), 
 // package->path);
 		number++;

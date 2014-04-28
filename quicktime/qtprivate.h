@@ -661,6 +661,8 @@ typedef struct
 /* AVI tree */
 	quicktime_riff_t *riff[MAX_RIFFS];
 	int total_riffs;
+/* is odml version of AVI */
+	int is_odml;
 
 
 
@@ -711,6 +713,7 @@ typedef struct
 	int do_scaling;
 	int in_x, in_y, in_w, in_h, out_w, out_h;
 	int color_model, row_span;
+
 } quicktime_t;
 
 

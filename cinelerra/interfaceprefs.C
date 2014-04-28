@@ -39,37 +39,37 @@ int InterfacePrefs::create_objects()
 	y += 35;
 	add_subwindow(hms = new TimeFormatHMS(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 0, 
+		pwindow->thread->edl->session->time_format == TIME_HMS, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 1, 
+		pwindow->thread->edl->session->time_format == TIME_HMSF, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(samples = new TimeFormatSamples(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 2, 
+		pwindow->thread->edl->session->time_format == TIME_SAMPLES, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(hex = new TimeFormatHex(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 3, 
+		pwindow->thread->edl->session->time_format == TIME_SAMPLES_HEX, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(frames = new TimeFormatFrames(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 4, 
+		pwindow->thread->edl->session->time_format == TIME_FRAMES, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 5, 
+		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES, 
 		x, 
 		y));
 	add_subwindow(new BC_Title(260, y, _("frames per foot")));
@@ -78,6 +78,12 @@ int InterfacePrefs::create_objects()
 		x + 155, 
 		y - 5, 
 		string));
+	y += 20;
+	add_subwindow(seconds = new TimeFormatSeconds(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == TIME_SECONDS, 
+		x, 
+		y));
 
 
 	y += 35;
@@ -174,13 +180,6 @@ int InterfacePrefs::create_objects()
 
 	x = x1;
 	y += 30;
-// 	add_subwindow(new BC_Title(x, y, _("Format for meter:")));
-// 	add_subwindow(vu_db = new MeterVUDB(pwindow, _("DB"), y));
-//	add_subwindow(vu_int = new MeterVUInt(pwindow, _("Percent of maximum"), y));
-//	vu_db->vu_int = vu_int;
-//	vu_int->vu_db = vu_db;
-	
-	y += 30;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	x += 60;
@@ -215,12 +214,13 @@ int InterfacePrefs::update(int new_value)
 {
 	pwindow->thread->redraw_times = 1;
 	pwindow->thread->edl->session->time_format = new_value;
-	hms->update(new_value == 0);
-	hmsf->update(new_value == 1);
-	samples->update(new_value == 2);
-	hex->update(new_value == 3);
-	frames->update(new_value == 4);
-	feet->update(new_value == 5);
+	hms->update(new_value == TIME_HMS);
+	hmsf->update(new_value == TIME_HMSF);
+	samples->update(new_value == TIME_SAMPLES);
+	hex->update(new_value == TIME_SAMPLES_HEX);
+	frames->update(new_value == TIME_FRAMES);
+	feet->update(new_value == TIME_FEET_FRAMES);
+	seconds->update(new_value == TIME_SECONDS);
 }
 
 InterfacePrefs::~InterfacePrefs()
@@ -333,7 +333,7 @@ TimeFormatHMS::TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindo
 
 int TimeFormatHMS::handle_event()
 {
-	tfwindow->update(0);
+	tfwindow->update(TIME_HMS);
 	return 1;
 }
 
@@ -343,7 +343,7 @@ TimeFormatHMSF::TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwin
 
 int TimeFormatHMSF::handle_event()
 {
-	tfwindow->update(1);
+	tfwindow->update(TIME_HMSF);
 }
 
 TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -352,7 +352,7 @@ TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs 
 
 int TimeFormatSamples::handle_event()
 {
-	tfwindow->update(2);
+	tfwindow->update(TIME_SAMPLES);
 }
 
 TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -361,7 +361,7 @@ TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *t
 
 int TimeFormatFrames::handle_event()
 {
-	tfwindow->update(4);
+	tfwindow->update(TIME_FRAMES);
 }
 
 TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -370,7 +370,19 @@ TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindo
 
 int TimeFormatHex::handle_event()
 {
-	tfwindow->update(3);
+	tfwindow->update(TIME_SAMPLES_HEX);
+}
+
+TimeFormatSeconds::TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, _("Use Seconds"))
+{ 
+	this->pwindow = pwindow; 
+	this->tfwindow = tfwindow; 
+}
+
+int TimeFormatSeconds::handle_event()
+{
+	tfwindow->update(TIME_SECONDS);
 }
 
 TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -379,7 +391,7 @@ TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwin
 
 int TimeFormatFeet::handle_event()
 {
-	tfwindow->update(5);
+	tfwindow->update(TIME_FEET_FRAMES);
 }
 
 TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string)

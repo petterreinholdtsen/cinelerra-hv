@@ -328,7 +328,6 @@ double RenderEngine::get_tracking_position()
 
 int RenderEngine::open_output()
 {
-//printf("RenderEngine::open_output 1\n");
 	if(command->realtime)
 	{
 // Allocate devices
@@ -491,6 +490,7 @@ void RenderEngine::wait_render_threads()
 	{
 		arender->Thread::join();
 	}
+
 	if(do_video)
 	{
 		vrender->Thread::join();
@@ -658,29 +658,11 @@ int RenderEngine::reset_parameters()
 	follow_loop = 0;
 	end_position = 0;
 	infinite = 0;
-	reverse = 0;
 	start_position = 0;
 	audio_channels = 0;
 	do_audio = 0;
 	do_video = 0;
 	done = 0;
-}
-
-int RenderEngine::arm_playback_common(int64_t start_sample, 
-			int64_t end_sample,
-			int64_t current_sample,
-			int reverse, 
-			float speed, 
-			int follow_loop,
-			int infinite)
-{
-	this->follow_loop = follow_loop;
-	this->start_position = start_sample;
-	this->end_position = end_sample;
-	this->reverse = reverse;
-	this->infinite = infinite;
-	this->current_sample = current_sample;
-	if(infinite) this->follow_loop = 0;
 }
 
 int RenderEngine::arm_playback_audio(int64_t input_length, 

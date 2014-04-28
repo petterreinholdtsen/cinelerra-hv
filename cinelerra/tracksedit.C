@@ -39,7 +39,8 @@ int Tracks::clear(double start, double end, int clear_plugins)
 				1, 
 				1, 
 				clear_plugins, 
-				1); 
+				1,
+				0); 
 		}
 	}
 	return 0;
@@ -826,7 +827,7 @@ int Tracks::modify_edithandles(double &oldposition,
 		{
 			current->modify_edithandles(oldposition, 
 				newposition, 
-				currentend, 
+				currentend,
 				handle_mode,
 				edit_labels,
 				edit_plugins);
@@ -839,7 +840,8 @@ int Tracks::modify_pluginhandles(double &oldposition,
 	double &newposition, 
 	int currentend, 
 	int handle_mode,
-	int edit_labels)
+	int edit_labels,
+	Edits *trim_edits)
 {
 	Track *current;
 
@@ -851,7 +853,8 @@ int Tracks::modify_pluginhandles(double &oldposition,
 				newposition, 
 				currentend, 
 				handle_mode,
-				edit_labels);
+				edit_labels,
+				trim_edits);
 		}
 	}
 	return 0;

@@ -319,6 +319,12 @@ VideoOutConfig::VideoOutConfig()
 	dv1394_port = 0;
 	strcpy(dv1394_path, "/dev/dv1394");
 	dv1394_syt = 30000;
+
+	brightness = 32768;
+	hue = 32768;
+	color = 32768;
+	contrast = 32768;
+	whiteness = 32768;
 }
 
 VideoOutConfig::~VideoOutConfig()

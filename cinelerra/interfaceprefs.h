@@ -10,6 +10,7 @@ class TimeFormatSamples;
 class TimeFormatFrames;
 class TimeFormatHex;
 class TimeFormatFeet;
+class TimeFormatSeconds;
 class MeterMinDB;
 class MeterMaxDB;
 class MeterVUDB;
@@ -46,6 +47,7 @@ public:
 	TimeFormatHex *hex;
 	TimeFormatFrames *frames;
 	TimeFormatFeet *feet;
+	TimeFormatSeconds *seconds;
 
 	MeterMinDB *min_db;
 	MeterMaxDB *max_db;
@@ -131,6 +133,15 @@ class TimeFormatFeet : public BC_Radial
 {
 public:
 	TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	InterfacePrefs *tfwindow;
+};
+
+class TimeFormatSeconds : public BC_Radial
+{
+public:
+	TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 	InterfacePrefs *tfwindow;

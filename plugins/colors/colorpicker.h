@@ -1,6 +1,7 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
+#include "condition.h"
 #include "guicast.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -23,12 +24,19 @@ public:
 	ColorThread(int do_alpha = 0, char *title = 0);
 	~ColorThread();
 
+
 	void run();
 	void start_window(int output, int alpha);
-	virtual int handle_event(int output) { return 0; };
+	virtual int handle_new_color(int output, int alpha);
+	void update_gui(int output, int alpha);
+
+private:
+	friend class ColorWindow;
 
 	ColorWindow *window;
-	Mutex completion;
+	Condition completion;
+// protects window, output, alpha
+	Mutex mutex;	
 // Starting color
 	int output;
 	int alpha;
@@ -42,6 +50,7 @@ public:
 	ColorWindow(ColorThread *thread, int x, int y, char *title);
 
 	void create_objects();
+	void change_values();
 	int close_event();
 	void update_display();
 	void update_rgb();

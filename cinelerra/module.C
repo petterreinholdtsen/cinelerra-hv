@@ -4,6 +4,7 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "module.h"
+#include "mwindow.h"
 #include "patch.h"
 #include "patchbay.h"
 #include "plugin.h"
@@ -208,7 +209,7 @@ void Module::update_transition(int64_t current_position,
 	Plugin *transition = track->get_current_transition(current_position, 
 		direction,
 		0,
-		1);
+		0);
 
 	if((!transition && this->transition) || 
 		(transition && this->transition && strcmp(transition->title, this->transition->title)))
@@ -246,7 +247,7 @@ void Module::update_transition(int64_t current_position,
 			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
-				renderengine->preferences,
+				plugin_array->mwindow->preferences,
 				get_edl(), 
 				transition,
 				-1);

@@ -57,18 +57,3 @@ int AEdits::clone_derived(Edit* new_edit, Edit* old_edit)
 {
 	return 0;
 }
-
-int AEdits::paste_edit(long start, 
-				long end, 
-				long startsource, 
-				long length, 
-				int channel, 
-				Asset *asset)
-{
-	AEdit* current = (AEdit*)paste_edit_base(start, end, startsource, length, asset);
-
-	current->channel = channel;
-
-	optimize();
-}
-

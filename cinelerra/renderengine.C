@@ -93,11 +93,12 @@ int RenderEngine::arm_command(TransportCommand *command,
 	AudioOutConfig *aconfig = this->config->aconfig;
 	if(command->realtime)
 	{
-		int device_channels;
+		int device_channels, edl_channels;
 		if(command->single_frame())
 		{
 			vconfig->driver = PLAYBACK_X11;
-			device_channels = command->get_edl()->session->video_channels;
+			device_channels = 1;
+			edl_channels = command->get_edl()->session->video_channels;
 		}
 		else
 			device_channels = 1;
@@ -105,26 +106,39 @@ int RenderEngine::arm_command(TransportCommand *command,
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
 			vconfig->do_channel[i] = 
-				(i == current_vchannel && device_channels);
+				(i == current_vchannel && 
+					device_channels &&
+					edl_channels);
 			if(vconfig->do_channel[i])
 			{
 				current_vchannel++;
 				device_channels--;
+				edl_channels--;
 			}
 		}
 
 		device_channels = aconfig->total_output_channels();
+		edl_channels = command->get_edl()->session->audio_channels;
+//printf("RenderEngine::arm_command device_channels=%d\n", device_channels);
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
+
 			aconfig->do_channel[i] = 
 				(i == current_achannel && 
-					device_channels);
+					device_channels &&
+					edl_channels);
 			if(aconfig->do_channel[i])
 			{
 				current_achannel++;
 				device_channels--;
+				edl_channels--;
 			}
 		}
+// printf("RenderEngine::arm_command current_achannel=%d ", current_achannel);
+// for(int i = 0; i < MAXCHANNELS; i++)
+// printf("%d", aconfig->do_channel[i]);
+// printf("\n");
+
 	}
 	else
 	{
@@ -141,7 +155,7 @@ int RenderEngine::arm_command(TransportCommand *command,
 	}
 
 
-//printf("RenderEngine::arm_command %d\n", vconfig->do_channel[0]);
+//printf("RenderEngine::arm_command %p\n", vconfig);
 
 //printf("RenderEngine::arm_command 4 %f %f\n", this->command->playbackstart, command->playbackstart);
 	get_duty();
@@ -150,6 +164,7 @@ int RenderEngine::arm_command(TransportCommand *command,
 	if(do_audio)
 	{
 // Larger of audio_module_fragment and fragment length adjusted for speed
+// Extra memory must be allocated for rendering slow motion.
 		adjusted_fragment_len = (long)((float)edl->session->audio_module_fragment / 
 			command->get_speed() + 0.5);
 		if(adjusted_fragment_len < edl->session->audio_module_fragment)
@@ -160,7 +175,6 @@ int RenderEngine::arm_command(TransportCommand *command,
 	open_output();
 //printf("RenderEngine::arm_command 6 %d %d\n", do_audio, do_video);
 	create_render_threads();
-//printf("RenderEngine::arm_command 7 %d %d\n", do_audio, do_video);
 	arm_render_threads();
 //printf("RenderEngine::arm_command 8\n");
 	return 0;
@@ -170,6 +184,7 @@ void RenderEngine::get_duty()
 {
 	do_audio = 0;
 	do_video = 0;
+//edl->dump();
 //printf("RenderEngine::get_duty 1 %d %d\n", edl->tracks->playable_audio_tracks(), config->vconfig->total_playable_channels());
 	if(!command->single_frame() &&
 		edl->tracks->playable_audio_tracks() &&
@@ -178,7 +193,7 @@ void RenderEngine::get_duty()
 		do_audio = 1;
 	}
 
-//printf("RenderEngine::get_duty 1 %d %d\n", edl->tracks->playable_video_tracks(), config->vconfig->total_playable_channels());
+//printf("RenderEngine::get_duty 2 %d %d\n", edl->tracks->playable_video_tracks(), config->vconfig->total_playable_channels());
 	if(edl->tracks->playable_video_tracks() &&
 		config->vconfig->total_playable_channels())
 	{
@@ -348,7 +363,8 @@ PluginServer* RenderEngine::scan_plugindb(char *title)
 {
 	for(int i = 0; i < plugindb->total; i++)
 	{
-		if(!strcasecmp(plugindb->values[i]->title, title)) return plugindb->values[i];
+		if(!strcasecmp(plugindb->values[i]->title, title))
+			return plugindb->values[i];
 	}
 	return 0;
 }
@@ -632,7 +648,7 @@ int RenderEngine::arm_playback_audio(long input_length,
 
 	do_audio = 1;
 
-	arender = new ARender(mwindow, this);
+	arender = new ARender(this);
 	arender->arm_playback(current_sample, 
 							input_length, 
 							amodule_render_fragment, 
@@ -651,7 +667,7 @@ int RenderEngine::arm_playback_video(int every_frame,
 	do_video = 1;
 	this->every_frame = every_frame;
 
-	vrender = new VRender(mwindow, this);
+	vrender = new VRender(this);
 // 	vrender->arm_playback(current_sample, 
 // 							read_length, 
 // 							output_length, 
@@ -667,12 +683,6 @@ int RenderEngine::start_video()
 // start video for realtime
 	if(video) video->start_playback();
 	vrender->start_playback();
-}
-
-// REMOVE
-int RenderEngine::stop_playback()
-{
-	return 0;
 }
 
 

@@ -6,7 +6,6 @@
 #include "indexthread.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "pluginbuffer.inc"
 #include "preferences.h"
 #include "mainsession.h"
 #include "trackcanvas.h"

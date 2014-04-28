@@ -1,6 +1,6 @@
 /* -*- mode: C; mode: fold -*- */
 
-/* $Id: pcm.c,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $ */
+/* $Id: pcm.c,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $ */
 
 /*
  *  There are a lot of not tested return codes.

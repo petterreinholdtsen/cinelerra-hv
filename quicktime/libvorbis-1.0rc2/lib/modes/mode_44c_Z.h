@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: predefined encoding modes; 44kHz stereo ~64kbps true VBR
- last mod: $Id: mode_44c_Z.h,v 1.1 2002/05/07 09:16:53 myrina Exp $
+ last mod: $Id: mode_44c_Z.h,v 1.1.1.1 2002/06/21 12:35:23 myrina Exp $
 
  ********************************************************************/
 

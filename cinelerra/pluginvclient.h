@@ -13,9 +13,7 @@ public:
 	PluginVClient(PluginServer *server);
 	virtual ~PluginVClient();
 
-	int delete_buffer_ptrs();
 	int get_render_ptrs();
-	int create_nonrealtime_ptrs();
 	int init_realtime_parameters();
 	int delete_nonrealtime_parameters();
 	int is_video();

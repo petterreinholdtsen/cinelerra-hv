@@ -12,7 +12,6 @@
 #include "module.h"
 #include "overlayframe.h"
 #include "plugin.h"
-#include "pluginbuffer.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "transition.h"
@@ -236,14 +235,19 @@ int VirtualVNode::render_fade(VFrame *input,         // start of input fragment
 {
 	double slope, intercept;
 	long slope_len = 1;
+	int direction = renderengine->command->get_direction();
+	FloatAuto *previous = 0;
+	FloatAuto *next = 0;
 
-	get_fade_automation(slope,
-		intercept,
-		input_position,
-	   	slope_len,
-		autos);
+	intercept = ((FloatAutos*)autos)->get_value(input_position, 
+		direction,
+		previous,
+		next);
 
-//printf("VirtualVNode::render_fade %f %f\n", slope, intercept);
+
+//printf("VirtualVNode::render_fade %d %f\n", input_position, intercept);
+	CLAMP(intercept, 0, 100);
+
 
 // Can't use overlay here because overlayer blends the frame with itself.
 // The fade engine can compensate for lack of alpha channels by reducing the 

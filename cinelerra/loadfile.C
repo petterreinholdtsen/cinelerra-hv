@@ -75,15 +75,11 @@ void LoadFileThread::run()
 	sprintf(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
 	load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
-//printf("LoadFileThread::run 1\n");
 
 	{
 		LoadFileWindow window(mwindow, this, default_path);
-//printf("LoadFileThread::run 2\n");
 		window.create_objects();
-//printf("LoadFileThread::run 3\n");
 		result = window.run_window();
-//printf("LoadFileThread::run 4\n");
 
 // Collect all selected files
 		if(!result)
@@ -107,11 +103,9 @@ void LoadFileThread::run()
 				i++;
 			}
 		}
-//printf("LoadFileThread::run 1\n");
 
 		mwindow->defaults->update("DEFAULT_LOADPATH", window.get_path());
 		mwindow->defaults->update("LOAD_MODE", load_mode);
-//printf("LoadFileThread::run 1\n");
 	}
 
 // No file selected
@@ -119,23 +113,14 @@ void LoadFileThread::run()
 	{
 		return;
 	}
-//printf("LoadFileThread::run 1\n");
 
 	mwindow->undo->update_undo_before("load", LOAD_ALL);
 	mwindow->interrupt_indexes();
-//printf("LoadFileThread::run 1\n");
 	mwindow->gui->lock_window();
-//printf("LoadFileThread::run 1\n");
-	mwindow->stop_playback(1);
-//printf("LoadFileThread::run 1\n");
 	result = mwindow->load_filenames(&path_list, load_mode);
-//printf("LoadFileThread::run 2\n");
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
-//printf("LoadFileThread::run 3\n");
 	mwindow->gui->unlock_window();
-//printf("LoadFileThread::run 4\n");
 	path_list.remove_all_objects();
-//printf("LoadFileThread::run 5\n");
 	mwindow->undo->update_undo_after();
 	mwindow->save_backup();
 	return;
@@ -323,7 +308,6 @@ int LoadPrevious::handle_event()
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
-	mwindow->stop_playback(1);
 //printf("LoadPrevious::LoadPrevious 1\n");
 	mwindow->load_filenames(&path_list, LOAD_REPLACE);
 //printf("LoadPrevious::LoadPrevious 2\n");
@@ -381,7 +365,6 @@ int LoadBackup::handle_event()
 	strcpy(out_path, string);
 	
 	mwindow->undo->update_undo_before("load backup", LOAD_ALL);
-	mwindow->stop_playback(1);
 	mwindow->load_filenames(&path_list, LOAD_REPLACE);
 	mwindow->edl->local_session->clip_title[0] = 0;
 	mwindow->set_filename("");

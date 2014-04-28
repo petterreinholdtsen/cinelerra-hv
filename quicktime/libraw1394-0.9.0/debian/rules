@@ -1,0 +1,88 @@
+#!/usr/bin/make -f
+
+export DH_COMPAT=1
+
+potato-build	= no
+
+majorname	= $(shell grep library_names src/libraw1394.la | cut -d"'" -f 2 | cut -d" " -f 2)
+fullversionname	= $(shell grep library_names src/libraw1394.la | cut -d"'" -f 2 | cut -d" " -f 1)
+major 		= $(shell echo $(majorname) | cut -d"." -f 3)
+
+libraw		= libraw1394-$(major)
+source-version	= $(shell dpkg-parsechangelog | grep ^Version | cut -d" " -f 2)
+
+autoclean-files:
+	echo $@ >$@
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+
+	./configure --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info
+	$(MAKE)
+
+	touch build-stamp
+
+clean: autoclean-files
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+
+	-$(MAKE) distclean
+
+	dh_clean
+	xargs <autoclean-files rm -f
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	$(MAKE) install prefix=`pwd`/debian/tmp/usr
+
+binary-indep: build install
+# Nothing to do here
+
+binary-arch: build install autoclean-files
+	dh_testdir
+	dh_testroot
+
+	dh_movefiles -p$(libraw)		\
+		usr/lib/$(majorname)		\
+		usr/lib/$(fullversionname)
+
+	echo >>autoclean-files			\
+		debian/substvars		\
+		debian/$(libraw).postinst	\
+		debian/$(libraw).substvars
+
+	echo "soversion=$(major)" >>debian/substvars
+	if [ "$(potato-build)" = "yes" ]; then				\
+		cp debian/libraw1394-potato.postinst.in			\
+			debian/$(libraw).postinst;			\
+		echo "makedev-depend=" >>debian/$(libraw).substvars;	\
+	else								\
+		cp debian/libraw1394.postinst.in			\
+			debian/$(libraw).postinst;			\
+		echo "makedev-depend=, makedev (>= 2.3.1-49)"		\
+			>>debian/$(libraw).substvars;			\
+	fi
+
+	echo >>autoclean-files debian/shlibs.local
+	echo >debian/shlibs.local "libraw1394 $(major) $(libraw) (= $(source-version))"
+
+	dh_installdocs README NEWS
+	dh_installchangelogs
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

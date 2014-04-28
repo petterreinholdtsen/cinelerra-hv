@@ -4,6 +4,7 @@
 #include "edl.h"
 #include "fonts.h"
 #include "localsession.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "vwindow.h"
@@ -78,7 +79,6 @@ void ClipEdit::run()
 			if(create_it)
 				new_edl = mwindow->edl->add_clip(window->clip);
 
-
 // Copy clip to existing clip in EDL
 			if(!create_it)
 				original->copy_session(clip);
@@ -93,11 +93,17 @@ void ClipEdit::run()
 			mwindow->awindow->gui->unlock_window();
 
 // Change VWindow to it if vwindow was called
+// But this doesn't let you easily create a lot of clips.
 			if(vwindow && create_it)
 			{
-				vwindow->change_source(new_edl);
+//				vwindow->change_source(new_edl);
 			}
 		}
+		else
+		{
+			mwindow->session->clip_number--;
+		}
+		
 
 
 // For creating new clips, the original was copied in add_clip.

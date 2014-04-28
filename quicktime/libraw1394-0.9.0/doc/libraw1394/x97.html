@@ -1,0 +1,231 @@
+<HTML
+><HEAD
+><TITLE
+>The Event Loop</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.49"><LINK
+REL="HOME"
+TITLE="libraw1394"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Data Structures and Program Flow"
+HREF="general.html"><LINK
+REL="PREVIOUS"
+TITLE="Ports"
+HREF="x86.html"><LINK
+REL="NEXT"
+TITLE="Handlers"
+HREF="x120.html"></HEAD
+><BODY
+CLASS="SECT1"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>libraw1394: version 0.9</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x86.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Data Structures and Program Flow</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x120.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN97"
+>The Event Loop</A
+></H1
+><P
+>	All commands in libraw1394 are asynchronous, with some synchronous
+	wrapper functions for some types of transactions.  This means that there
+	are two streams of data, one going into raw1394 and one coming out.
+	With this design you can send out multiple transactions without having
+	to wait for the response before you can continue (sending out other
+	transactions, for example).  The responses and other events (like bus
+	resets and received isochronous packets) are queued, and you can get
+	them with <TT
+CLASS="FUNCTION"
+>raw1394_loop_iterate()</TT
+>.
+      </P
+><P
+>	This forms an event loop you may already know from similar systems like
+	GUI toolkits.  <TT
+CLASS="FUNCTION"
+>raw1394_loop_iterate()</TT
+> gets one
+	message from the event queue in raw1394, processes it with the
+	configured callback functions and returns the value returned by the
+	callback (so you can signal to the main loop from your callback; the
+	standard callbacks all return 0).  It normally blocks when there are no
+	events and always processes only one event.  If you are only receiving
+	broadcast events like isochronous packets you thus have to set up a loop
+	continuously calling the iterate function to get your callbacks called.
+      </P
+><P
+>	Often it is necessary to have multiple event loops and combine them,
+	e.g. if your application uses a GUI toolkit which also has its own event
+	loop.  In that case you can use <TT
+CLASS="FUNCTION"
+>raw1394_get_fd()</TT
+> to
+	get the file descriptor used for this handle by libraw1394.  The fd can
+	be used to for <TT
+CLASS="FUNCTION"
+>select()</TT
+> or
+	<TT
+CLASS="FUNCTION"
+>poll()</TT
+> calls (testing for read availability)
+	together with the other loop's fd, some event loops also allow to add
+	other fds to their own set (GTK's event loop does).  If these trigger on
+	the libraw1394 fd, you can call
+	<TT
+CLASS="FUNCTION"
+>raw1394_loop_iterate()</TT
+> once and it is guaranteed
+	that it will not block since at the very least one event waits.  After
+	the first call you continue the main event loop.  If more events wait,
+	the <TT
+CLASS="FUNCTION"
+>select()</TT
+>/<TT
+CLASS="FUNCTION"
+>poll()</TT
+> will
+	immediately return again.
+      </P
+><P
+>	You can also use the fd to set the <SPAN
+CLASS="SYMBOL"
+>O_NONBLOCK</SPAN
+> flag with
+	<TT
+CLASS="FUNCTION"
+>fcntl()</TT
+>.  After that, the iterate function will not
+	block anymore but fail with <SPAN
+CLASS="SYMBOL"
+>errno</SPAN
+> set to
+	<SPAN
+CLASS="SYMBOL"
+>EAGAIN</SPAN
+> if no events wait.  These are the only legal
+	uses for the fd returned by <TT
+CLASS="FUNCTION"
+>raw1394_get_fd()</TT
+>.
+      </P
+><P
+>	There are some functions which provide a synchronous wrapper for
+	transactions, note that these will call
+	<TT
+CLASS="FUNCTION"
+>raw1394_loop_iterate()</TT
+> continuously until their
+	transaction is completed, thus having implicit callback invocations
+	during their execution.  The standard transaction functions have names
+	of the form <TT
+CLASS="FUNCTION"
+>raw1394_start_xxx</TT
+>, the synchronous
+	wrappers are called <TT
+CLASS="FUNCTION"
+>raw1394_xxx</TT
+>.
+      </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x86.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="book1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x120.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Ports</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="general.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Handlers</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -2026,9 +2026,9 @@ int mpeg3demux_seek_time(mpeg3_demuxer_t *demuxer, double new_time)
 
 int mpeg3demux_seek_percentage(mpeg3_demuxer_t *demuxer, double percentage)
 {
-	double total_bytes = 0;
-	double absolute_position;
-	long relative_position;
+	int64_t total_bytes = 0;
+	int64_t absolute_position;
+	int64_t relative_position;
 	int i, new_title;
 	mpeg3_title_t *title;
 
@@ -2038,7 +2038,8 @@ int mpeg3demux_seek_percentage(mpeg3_demuxer_t *demuxer, double percentage)
 	for(i = 0; i < demuxer->total_titles; i++)
 		total_bytes += demuxer->titles[i]->total_bytes;
 
-	absolute_position = percentage * total_bytes;
+
+	absolute_position = (int64_t)(percentage * total_bytes);
 
 
 
@@ -2067,7 +2068,7 @@ int mpeg3demux_seek_percentage(mpeg3_demuxer_t *demuxer, double percentage)
 /* Got a title */
 	title = demuxer->titles[new_title];
 	total_bytes -= title->total_bytes;
-	relative_position = (long)(absolute_position - total_bytes);
+	relative_position = absolute_position - total_bytes;
 
 
 
@@ -2126,6 +2127,7 @@ int mpeg3demux_seek_percentage(mpeg3_demuxer_t *demuxer, double percentage)
 
 	if(!demuxer->error_flag)
 		demuxer->error_flag = mpeg3io_seek(title->fs, relative_position);
+//printf("mpeg3demux_seek_percentage %lld %lld\n", total_bytes, relative_position);
 
 	return demuxer->error_flag;
 }

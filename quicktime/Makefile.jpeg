@@ -142,3 +142,5 @@ endif
 
 
 
+
+DIRS += $(OBJDIR)/$(JPEG_DIR)

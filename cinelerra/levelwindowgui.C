@@ -13,7 +13,7 @@
 LevelWindowGUI::LevelWindowGUI(MWindow *mwindow, LevelWindow *thread)
  : BC_Window(PROGRAM_NAME ": Levels", 
  	mwindow->session->lwindow_x, 
-	mwindow->session->lwindow_x, 
+	mwindow->session->lwindow_y, 
 	mwindow->session->lwindow_w, 
 	mwindow->session->lwindow_h, 
 	10,

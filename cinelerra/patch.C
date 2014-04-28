@@ -1,4 +1,3 @@
-#include "console.h"
 #include "filexml.h"
 #include "mwindow.h"
 #include "module.h"

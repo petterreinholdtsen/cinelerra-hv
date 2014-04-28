@@ -38,9 +38,6 @@ public:
 
 
 
-// ============================================ file operations
-// REMOVE
-	int load_patches(FileXML *xml, Patch *current_patch);   // for undo
 
 // =========================================== drawing
 

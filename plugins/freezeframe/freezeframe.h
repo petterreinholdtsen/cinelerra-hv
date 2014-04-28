@@ -1,40 +1,83 @@
 #ifndef FREEZEFRAME_H
 #define FREEZEFRAME_H
 
-// the simplest plugin possible
 
-class FreezeFrameMain;
 
-#include "bcbase.h"
+
+#include "filexml.inc"
+#include "mutex.h"
 #include "pluginvclient.h"
 
+
+
+class FreezeFrameWindow;
+class FreezeFrameMain;
+class FreezeFrameThread;
+
+class FreezeFrameConfig
+{
+public:
+	FreezeFrameConfig();
+	void copy_from(FreezeFrameConfig &that);
+	int equivalent(FreezeFrameConfig &that);
+	void interpolate(FreezeFrameConfig &prev, 
+		FreezeFrameConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame);
+	int enabled;
+};
+
+class FreezeFrameToggle : public BC_CheckBox
+{
+public:
+	FreezeFrameToggle(FreezeFrameMain *client, int x, int y);
+	~FreezeFrameToggle();
+	int handle_event();
+	FreezeFrameMain *client;
+};
+
+class FreezeFrameWindow : public BC_Window
+{
+public:
+	FreezeFrameWindow(FreezeFrameMain *client, int x, int y);
+	~FreezeFrameWindow();
+	
+	int create_objects();
+	int close_event();
+	
+	FreezeFrameMain *client;
+	FreezeFrameToggle *enabled;
+};
+
+PLUGIN_THREAD_HEADER(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
 
 class FreezeFrameMain : public PluginVClient
 {
 public:
-	FreezeFrameMain(int argc, char *argv[]);
+	FreezeFrameMain(PluginServer *server);
 	~FreezeFrameMain();
 
 // required for all realtime plugins
-	int process_realtime(long size, VFrame **input_ptr, VFrame **output_ptr);
-	int plugin_is_realtime();
-	int plugin_is_multi_channel();
+	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int is_realtime();
 	char* plugin_title();
-	int start_realtime();
-	int stop_realtime();
-	int start_gui();
-	int stop_gui();
 	int show_gui();
-	int hide_gui();
+	void raise_window();
 	int set_string();
-	int save_data(char *text);
-	int read_data(char *text);
+	void update_gui();
+	int load_configuration();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
+	int load_defaults();
+	int save_defaults();
+	VFrame* new_picon();
 
 // parameters needed for freezeframe
 	VFrame *first_frame;
-
-private:
-// Utilities used by freezeframe.
+	FreezeFrameConfig config;
+	FreezeFrameThread *thread;
+	Defaults *defaults;
 };
 
 

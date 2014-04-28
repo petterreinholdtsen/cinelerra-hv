@@ -232,6 +232,11 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
     1,
     1)
 {
+// printf("AWindowGUI::AWindowGUI %d %d %d %d\n",
+// mwindow->session->awindow_x, 
+// mwindow->session->awindow_y, 
+// mwindow->session->awindow_w, 
+// mwindow->session->awindow_h);
 	this->mwindow = mwindow;
 	this->awindow = awindow;
 }

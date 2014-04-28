@@ -67,10 +67,10 @@ BurnMain::~BurnMain()
 char* BurnMain::plugin_title() { return "BurningTV"; }
 int BurnMain::is_realtime() { return 1; }
 
-VFrame* BurnMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(BurnMain)
+SHOW_GUI_MACRO(BurnMain, BurnThread)
+SET_STRING_MACRO(BurnMain)
+RAISE_WINDOW_MACRO(BurnMain)
 
 int BurnMain::load_defaults()
 {
@@ -188,30 +188,6 @@ int BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 //	if(total >= config.recycle * project_frame_rate) total = 0;
 	return 0;
 }
-
-int BurnMain::show_gui()
-{
-	load_configuration();
-	thread = new BurnThread(this);
-	thread->start();
-	return 0;
-}
-
-int BurnMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void BurnMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
 
 
 

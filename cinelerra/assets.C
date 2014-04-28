@@ -16,7 +16,6 @@
 Assets::Assets(EDL *edl) : List<Asset>()
 {
 	this->edl = edl;
-	thread_indexer_running = 0;
 }
 
 Assets::~Assets()
@@ -181,26 +180,6 @@ Asset* Assets::remove_asset(Asset *asset)
 	delete asset;
 }
 
-
-int Assets::build_indexes()
-{
-	if(!thread_indexer_running)
-	{
-		thread_indexer_running = 1;
-		thread_indexer->start_build();
-	}
-	return 0;
-}
-
-int Assets::interrupt_indexes()
-{
-	if(thread_indexer_running)
-	{
-		thread_indexer_running = 0;
-		thread_indexer->interrupt_build();
-	}
-	return 0;
-}
 
 int Assets::number_of(Asset *asset)
 {

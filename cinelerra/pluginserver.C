@@ -15,7 +15,6 @@
 #include "neworappend.h"
 #include "playbackengine.h"
 #include "plugin.h"
-#include "pluginbuffer.h"
 #include "pluginclient.h"
 #include "plugincommands.h"
 #include "pluginserver.h"
@@ -48,7 +47,6 @@ PluginGUIServer::~PluginGUIServer()
 int PluginGUIServer::start_gui_server(PluginServer *plugin_server, char *string)
 {
 	this->plugin_server = plugin_server;
-	messages = new Messages(MESSAGE_FROM_PLUGIN, MESSAGE_TO_PLUGIN);
 	strcpy(this->string, string);
 	completion_lock.lock();
 	start();
@@ -57,56 +55,7 @@ int PluginGUIServer::start_gui_server(PluginServer *plugin_server, char *string)
 
 void PluginGUIServer::run()
 {
-	int done = 0;
-	int command;
-	
-	while(!done)
-	{
-		command = messages->read_message();
-
-		switch(command)
-		{
-			case COMPLETED:          
-			{
-				MenuEffectPrompt *prompt = plugin_server->prompt;
-				done = 1;  						  
-				plugin_server->gui_on = 0;
-                if(plugin_server->plugin_open)
-                {
-			        if(prompt)
-			        {
-// Cancel a non realtime effect
-				        prompt->set_done(1);
-			        }
-			        else
-			        {
-// Update the attachment point.
-//				        plugin_server->attachment->set_show(0);
-			        }
-                }
-				done = 1;
-
-                plugin_server->close_plugin();
-			}
-				break;
-
-			case CONFIGURE_CHANGE:
-// Propagate the configuration to the attachment point.
-// non realtime context doesn't have an attachment
-//				if(plugin_server->attachment)
-//					plugin_server->attachment->get_configuration_change(messages->read_message_raw());
-//printf("PluginGUIServer::run 2\n");
-				break;
-
-			case GET_STRING:
-				messages->write_message(string);
-				break;
-		}
-	}
-	delete messages;
-	completion_lock.unlock();
 }
-
 
 
 
@@ -271,7 +220,6 @@ int PluginServer::cleanup_plugin()
 {
 	in_buffer_size = out_buffer_size = 0;
 	total_in_buffers = total_out_buffers = 0;
-	messages = 0;
 	message_lock = 0;
 	error_flag = 0;
 	written_samples = 0;
@@ -279,8 +227,6 @@ int PluginServer::cleanup_plugin()
 	new_buffers = 0;
 	written_samples = written_frames = 0;
 	gui_on = 0;
-	temp_frame_buffer = 0;
-	temp_frame = 0;
 	plugin = 0;
 	plugin_open = 0;
 }
@@ -400,52 +346,14 @@ int PluginServer::close_plugin()
 	cleanup_plugin();
 //printf("PluginServer::close_plugin 2\n");
 
-return 0;
-	messages->write_message(EXIT_PLUGIN);
-	fork_thread->wait_completion();
-	delete messages;
-
-// delete pointers to shared buffers but not the shared buffers themselves
-	if(data_in.total)
-	{
-		if(!shared_buffers)
-			for(int i = 0; i < data_in.total; i++) delete data_in.values[i];
-		data_in.remove_all();
-	}
-
-	if(data_out.total)
-	{
-		if(!shared_buffers)
-			for(int i = 0; i < data_out.total; i++) delete data_out.values[i];
-		data_out.remove_all();
-	}
-
-	if(temp_frame)
-	{
-		delete temp_frame;
-		delete temp_frame_buffer;
-	}
-
-// these are always shared
-	data_in_realtime.remove_all();
-	data_out_realtime.remove_all();
-	offset_in_render.remove_all();
-	offset_out_render.remove_all();
-	double_buffer_in_render.remove_all();
-	double_buffer_out_render.remove_all();
-	realtime_in_size.remove_all();
-	realtime_out_size.remove_all();
-	delete args[0];
-	delete args[1];
-	delete args[3];
-	total_args = 0;
-
+	return 0;
 }
 
 void PluginServer::client_side_close()
 {
 // Last command executed in client thread
-	if(plugin) mwindow->hide_plugin(plugin);
+	if(plugin)
+		mwindow->hide_plugin(plugin, 1);
 	else
 	if(prompt)
 	{
@@ -496,19 +404,6 @@ void PluginServer::process_realtime(double **input,
 }
 
 
-int PluginServer::plugin_server_loop()
-{
-	int done = 0;
-	int command;
-	if(!plugin_open) return 0;
-
-	while(!done)
-	{
-		done = handle_plugin_command();
-	}
-	return 0;
-}
-
 MainProgressBar* PluginServer::start_progress(char *string, long length)
 {
 	mwindow->gui->lock_window();
@@ -517,126 +412,10 @@ MainProgressBar* PluginServer::start_progress(char *string, long length)
 	return result;
 }
 
-// return values
-// 0 ok
-// 1 finished
-// 2 buffer written
-// 3 cancel
-int PluginServer::handle_plugin_command()
-{
-	int result;
-	int command;
-	if(!plugin_open) return 0;
-
-	command = messages->read_message();
-	result = 0;
-
-	switch(command)
-	{
-		case COMPLETED:
-			result = 1;
-			break;
-
-		case GET_SAMPLERATE:
-			messages->write_message(mwindow->session->sample_rate);
-			break;
-
-		case GET_FRAMERATE:
-			messages->write_message((int)(mwindow->session->frame_rate * 1000));
-			break;
-
-		case GET_FRAMESIZE:
-			messages->write_message(mwindow->session->track_w, mwindow->session->track_h);
-			break;
-
-		case GET_SMP:
-			messages->write_message(mwindow->edl->session->smp + 1);
-			break;
-
-		case GET_USE_FLOAT:
-//			messages->write_message(mwindow->preferences->video_floatingpoint);
-			break;
-
-		case GET_USE_ALPHA:
-//			messages->write_message(mwindow->preferences->video_use_alpha);
-			break;
-
-		case GET_USE_INTERPOLATION:
-//			messages->write_message(mwindow->preferences->video_interpolate);
-			break;
-
-		case GET_ASPECT_RATIO:
-			messages->write_message((long)mwindow->edl->session->aspect_w, (long)mwindow->edl->session->aspect_h);
-			break;
-		
-		case GET_GUI_STATUS:
-			send_gui_status(gui_on);
-			break;
-
-		case GET_REALTIME_BUFFERS:
-			send_buffer_info();
-			break;
-
-		case READ_SAMPLES:
-			break;
-
-		case WRITE_SAMPLES:
-			write_samples();
-			result = 2;
-			break;
-		
-		case READ_FRAMES:
-			break;
-
-		case WRITE_FRAMES:
-			write_frames();
-			result = 2;
-			break;
-		
-		case CANCEL:
-			result = 3;
-// Need to get the COMPLETED that is returned by default when a plugin exits.
-			messages->read_message_raw();
-			break;
-	}
-
-	return result;
-}
-
-int PluginServer::write_samples()
-{
-	if(!plugin_open) return 0;
-	if(error_flag)
-	{
-		messages->write_message(CANCEL);
-		return 1;
-	}
-	else
-	{
-		written_samples = messages->read_message();
-		return 0;
-	}
-}
-
 long PluginServer::get_written_samples()
 {
 	if(!plugin_open) return 0;
 	return written_samples;
-}
-
-int PluginServer::write_frames()
-{
-	if(!plugin_open) return 0;
-	if(error_flag)
-	{
-		messages->write_message(CANCEL);
-		return 1;
-	}
-	else
-	{
-		written_frames = messages->read_message();
-		return 0;
-	}
 }
 
 long PluginServer::get_written_frames()
@@ -649,18 +428,6 @@ long PluginServer::get_written_frames()
 
 
 
-
-int PluginServer::load_defaults()             // loads defaults from disk file
-{
-	if(!plugin_open) return 0;
-	messages->write_message(LOAD_DEFAULTS);
-}
-
-int PluginServer::save_defaults()             // save defaults from disk file
-{
-	if(!plugin_open) return 0;
-	messages->write_message(SAVE_DEFAULTS);
-}
 
 int PluginServer::get_parameters()      // waits for plugin to finish and returns a result
 {
@@ -681,14 +448,6 @@ int PluginServer::set_interactive()
 	return 0;
 }
 
-int PluginServer::set_range(long start, long end)
-{
-	if(!plugin_open) return 0;
-	messages->write_message(SET_RANGE);
-	messages->write_message(start, end);
-	return 0;
-}
-
 int PluginServer::set_module(Module *module)
 {
 	modules->append(module);
@@ -706,21 +465,6 @@ int PluginServer::set_realtime_sched()
 	struct sched_param params;
 	params.sched_priority = 1;
 	if(sched_setscheduler(fork_thread->plugin_pid, SCHED_RR, &params)) perror("sched_setscheduler");
-	return 0;
-}
-
-int PluginServer::send_cancel()
-{
-	if(!plugin_open) return 0;
-	messages->write_message(CANCEL);
-	return 0;
-}
-
-int PluginServer::send_write_result(int result)
-{
-	if(!plugin_open) return 0;
-	if(!result) messages->write_message(OK);
-	else messages->write_message(CANCEL);
 	return 0;
 }
 
@@ -794,13 +538,6 @@ int PluginServer::get_gui_status()
 		return GUI_OFF;
 }
 
-int PluginServer::send_gui_status(int visible)
-{
-	if(!plugin_open) return 0;
-	messages->write_message(visible ? GUI_ON : GUI_OFF);
-	return 0;
-}
-
 void PluginServer::raise_window()
 {
 	if(!plugin_open) return;
@@ -847,119 +584,6 @@ int PluginServer::set_string(char *string)
 	if(!plugin_open) return 0;
 
 	client->set_string_client(string);
-	return 0;
-}
-
-int PluginServer::process_realtime(long source_len, long source_position, long fragment_len)
-{
-	process_realtime_start(source_len, source_position, fragment_len);
-	process_realtime_end();
-	return 0;
-}
-
-int PluginServer::process_realtime_start(long source_len, long source_position, long fragment_len)
-{
-	if(!plugin_open) return 0;
-	if(message_lock) message_lock->lock();
-	messages->write_message(PROCESS_REALTIME);
-
-// send information on the buffers
-	messages->write_message(fragment_len, source_len, source_position);
-	int i;
-	for(i = 0; i < total_in_buffers; i++)
-	{
-		messages->write_message(offset_in_render.values[i], double_buffer_in_render.values[i]);
-	}
-	for(i = 0; i < total_out_buffers; i++)
-	{
-		messages->write_message(offset_out_render.values[i], double_buffer_out_render.values[i]);
-	}
-// Send information on the automation
-	send_automation(source_len, source_position, fragment_len);
-	return 0;
-}
-
-int PluginServer::send_automation(long source_len, long source_position, long buffer_len)
-{
-	long position;
-	int i, done = 0;
-	FloatAuto *current;
-	int automate = 1;
-	double constant = 0;
-	long buffer_position;
-	long input_start;
-	long input_end;
-	double slope_value;
-	double slope_start;
-	double slope_end;
-	double slope_position;
-	double slope;
-
-	if(autos)
-	{
-		autos->init_automation(buffer_position, 
-						input_start, 
-						input_end, 
-						automate, 
-						constant, 
-						source_position,
-						buffer_len,
-						(Auto**)start_auto, 
-						(Auto**)end_auto,
-						reverse);
-
-		if(automate)
-		{
-			autos->init_slope((Auto**)&current, 
-					slope_start,
-					slope_value,
-					slope_position, 
-					input_start,
-					input_end, 
-					(Auto**)start_auto, 
-					(Auto**)end_auto,
-					reverse);
-
-			while(buffer_position < buffer_len)
-			{
-				autos->get_slope((Auto**)&current, 
-						slope_start, 
-						slope_end, 
-						slope_value, 
-						slope, 
-						buffer_len, 
-						buffer_position,
-						reverse);
-
-				messages->write_message_f(buffer_position, slope_value + slope_position * slope, slope);
-				buffer_position += (long)(slope_end - slope_position);
-				slope_position = slope_end;
-				autos->advance_slope((Auto**)&current, 
-								slope_start, 
-								slope_value,
-								slope_position, 
-								reverse);
-			}
-		}
-		else
-		{
-// Send constant if no automation but constant is changed
-			if(constant != 0)
-				messages->write_message_f(0, constant, (double)0);
-		}
-	}
-
-	messages->write_message_f(-1, (double)0, (double)0);
-	return 0;
-}
-
-int PluginServer::process_realtime_end()
-{
-	if(!plugin_open) return 0;
-	messages->read_message();       // wait for completed
-	if(message_lock) message_lock->unlock();
-	start_auto = end_auto = 0;
-	autos = 0;
 	return 0;
 }
 
@@ -1012,104 +636,14 @@ double PluginServer::get_project_framerate()
 }
 
 
-int PluginServer::negotiate_buffers(long recommended_size)
-{
-	if(!plugin_open) return 0;
-// prepare to negotiate buffers
-	messages->write_message(GET_BUFFERS);
-// send number of tracks and recommended size for input and output buffers
-//	messages->write_message(tracks->total, recommended_size);
-
-// get actual sizes	
-	messages->read_message(&in_buffer_size, &out_buffer_size);  // get desired sizes
-// init buffers
-//	total_out_buffers = total_in_buffers = tracks->total;
-
-// init buffers
-	int word_size;
-//	if(video) 
-//		word_size = mwindow->session->track_w * mwindow->session->track_h * sizeof(VPixel);
-//	else
-//	if(audio)
-//		word_size = sizeof(double);
-
-// Sizes sent back to the client are byte counts.
-// 	for(int i = 0; i < tracks->total; i++)
-// 	{
-// 		data_out.append(new PluginBuffer(out_buffer_size, word_size));
-// 
-// 		messages->write_message(data_out.values[i]->get_id(), data_out.values[i]->get_size());
-// 	}
-
-// 	for(int i = 0; i < tracks->total; i++)
-// 	{
-// 		data_in.append(new PluginBuffer(in_buffer_size, word_size));
-// 		messages->write_message(data_in.values[i]->get_id(), data_in.values[i]->get_size());
-// 	}
-}
-
-int PluginServer::attach_input_buffer(PluginBuffer *input, long size)
-{
-	shared_buffers = 1;     // all buffers are shared
-
-	data_in.append(input);
-
-	in_buffer_size = size;
-	total_in_buffers++;
-	return total_in_buffers - 1;
-}
-
-int PluginServer::attach_input_buffer(PluginBuffer **input, long ring_buffers, long buffer_size, long fragment_size)
-{
-	shared_buffers = 1;     // all buffers are shared
-
-//printf("PluginServer::attach_input_buffer %p %d %d %d\n", input, ring_buffers, buffer_size, fragment_size);
-	data_in_realtime.append(input);
-	ring_buffers_in.append(ring_buffers);
-	offset_in_render.append(0);
-	double_buffer_in_render.append(0);
-	realtime_in_size.append(buffer_size);
-	in_buffer_size = fragment_size;
-
-	return total_in_buffers++;
-}
-
-int PluginServer::attach_output_buffer(PluginBuffer *output, long size)
-{
-	shared_buffers = 1;     // all buffers are shared
-
-	data_out.append(output);
-
-	total_out_buffers++;
-	out_buffer_size = size;
-	return total_out_buffers - 1;
-}
-
-
-int PluginServer::attach_output_buffer(PluginBuffer **output, long ring_buffers, long buffer_size, long fragment_size)
-{
-//printf("PluginServer::attach_output_buffer %p %d %d %d\n", output, ring_buffers, buffer_size, fragment_size);
-	shared_buffers = 1;     // all buffers are shared
-
-	data_out_realtime.append(output);
-	ring_buffers_out.append(ring_buffers);
-	offset_out_render.append(0);
-	double_buffer_out_render.append(0);
-	realtime_out_size.append(buffer_size);
-	out_buffer_size = fragment_size;
-
-	return total_out_buffers++;
-}
 
 int PluginServer::detach_buffers()
 {
-	data_out_realtime.remove_all();
 	ring_buffers_out.remove_all();
 	offset_out_render.remove_all();
 	double_buffer_out_render.remove_all();
 	realtime_out_size.remove_all();
 
-	data_in_realtime.remove_all();
 	ring_buffers_in.remove_all();
 	offset_in_render.remove_all();
 	double_buffer_in_render.remove_all();
@@ -1136,12 +670,6 @@ int PluginServer::arm_buffer(int buffer_number,
 }
 
 
-int PluginServer::restart_realtime()
-{
-	messages->write_message(RESTART_REALTIME);
-	send_buffer_info();
-}
-
 int PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse)
 {
 	this->autos = autos;
@@ -1150,29 +678,17 @@ int PluginServer::set_automation(FloatAutos *autos, FloatAuto **start_auto, Floa
 	this->reverse = reverse;
 }
 
-// REMOVE
-int PluginServer::send_buffer_info()
-{
-	return 0;
-}
 
 int PluginServer::realtime_stop()
 {
 	if(!plugin_open) return 0;
 	client->plugin_stop_realtime();
-}
+};
 
 void PluginServer::save_data(KeyFrame *keyframe)
 {
 	if(!plugin_open) return;
 	client->save_data(keyframe);
-}
-
-int PluginServer::notify_load_data()
-{
-	if(!plugin_open) return 0;
-// send the notification
-	messages->write_message(LOAD_DATA);
 }
 
 KeyFrame* PluginServer::get_prev_keyframe(long position)
@@ -1224,22 +740,6 @@ void PluginServer::sync_parameters()
 	}
 }
 
-
-int PluginServer::load_data()
-{
-	if(!plugin_open) return 0;
-// send the text that was previously loaded by char* get_message_buffer()
-	messages->write_message_raw();
-}
-
-int PluginServer::get_configuration_change(char *data)
-{
-	if(!plugin_open) return 0;
-	if(message_lock) message_lock->lock();
-	messages->write_message(CONFIGURE_CHANGE);
-	messages->write_message(data);
-	if(message_lock) message_lock->unlock();
-}
 
 
 void PluginServer::dump()

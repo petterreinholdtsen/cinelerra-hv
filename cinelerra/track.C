@@ -2,7 +2,6 @@
 #include "autoconf.h"
 #include "automation.h"
 #include "clip.h"
-#include "console.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
@@ -13,7 +12,6 @@
 #include "keyframe.h"
 #include "localsession.h"
 #include "module.h"
-#include "modules.h"
 #include "patch.h"
 #include "patchbay.h"
 #include "plugin.h"
@@ -41,7 +39,6 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	module_view = 0;
 	expand_view = 0;
 	draw = 1;
-	automate = 1;
 	gang = 1;
 	title[0] = 0;
 	record = 1;
@@ -67,20 +64,13 @@ int Track::create_objects()
 
 int Track::copy_settings(Track *track)
 {
-//printf("Track::copy_settings 1\n");
 	this->expand_view = track->expand_view;
-//printf("Track::copy_settings 1\n");
 	this->draw = track->draw;
-//printf("Track::copy_settings 1\n");
-	this->automate = track->automate;
 	this->gang = track->gang;
-//printf("Track::copy_settings 1\n");
 	this->record = track->record;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
-//printf("Track::copy_settings 1\n");
 	strcpy(this->title, track->title);
-//printf("Track::copy_settings 2\n");
 	return 0;
 }
 
@@ -155,6 +145,11 @@ double Track::get_length()
 			if(length > total_length) total_length = length;
 		}
 	}
+
+// Test keyframes
+	length = from_units(automation->get_length());
+	if(length > total_length) total_length = length;
+	
 
 	return total_length;
 }
@@ -320,14 +315,11 @@ void Track::insert_plugin_set(Track *track, double position)
 	else
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
-//printf("Track::insert_track 1\n");
 		if(i >= plugin_set.total)
 			plugin_set.append(new PluginSet(edl, this));
-//printf("Track::insert_track 2\n");
 
 		plugin_set.values[i]->insert_edits(track->plugin_set.values[i], 
 			to_units(position, 0));
-//printf("Track::insert_track 3\n");
 	}
 }
 
@@ -976,15 +968,6 @@ int Track::copy_assets(double start,
 
 
 
-int Track::paste_transition(double startproject, 
-				double endproject, 
-				Transition *transition)
-{
-	startproject = to_units(startproject, 0);
-	endproject = to_units(endproject, 0);
-	edits->paste_transition((long)startproject, (long)endproject, transition);
-	return 0;
-}
 
 int Track::clear(double start, 
 	double end, 
@@ -1118,18 +1101,6 @@ int Track::select_edit(int cursor_x,
 	return 0;
 }
 
-// REMOVE
-int Track::feather_edits(long start, long end, long units)
-{
-	return 0;
-}
-
-// REMOVE
-long Track::get_feather(long selectionstart, long selectionend)
-{
-	return 0;
-}
-
 int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, long start, long end)
 {
 	return 0;
@@ -1203,9 +1174,10 @@ int Track::delete_module_pointers(int deleted_track)
 	return 0;
 }
 
-int Track::playable_edit(long position)
+int Track::playable_edit(long position, int direction)
 {
 	int result = 0;
+	if(direction == PLAY_REVERSE) position--;
 	for(Edit *current = edits->first; current && !result; current = NEXT)
 	{
 		if(current->startproject <= position && 

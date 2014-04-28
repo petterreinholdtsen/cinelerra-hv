@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
 			do_audio = 1;
 /* Add audio stream to end */
 			mpeg3demux_seek_byte(in->atrack[stream]->demuxer, 0);
+//			mpeg3bits_refill(in->atrack[stream]->audio->astream);
 			while(!mpeg3_read_audio_chunk(in, 
 				buffer, 
 				&output_size, 

@@ -8,7 +8,7 @@
  *
  */
 
-/* $Id: layer1.c,v 1.1 2002/04/19 05:50:30 myrina Exp $ */
+/* $Id: layer1.c,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

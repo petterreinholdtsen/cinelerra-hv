@@ -15,14 +15,12 @@
 
 
 PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
-	int *do_channel, 
 	long current_position, 
 	int data_type)
  : ArrayList<Track*>()
 {
 	this->renderengine = renderengine;
 	this->data_type = data_type;
-	this->do_channel = do_channel;
 
 //printf("PlayableTracks::PlayableTracks 1 %d\n", renderengine->edl->tracks->total());
 	for(Track *current_track = renderengine->edl->tracks->first; 
@@ -43,18 +41,31 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 {
 	int result = 1;
 	int direction = renderengine->command->get_direction();
+
 	Auto *current = 0;
-	IntAuto *play_auto = (IntAuto*)current_track->automation->play_autos->get_prev_auto(
-		position, 
-		direction,
-		current);
+	IntAuto *play_auto = 
+		(IntAuto*)current_track->automation->play_autos->get_prev_auto(
+			position, 
+			direction,
+			current);
+	int *do_channel;
+	switch(data_type)
+	{
+		case TRACK_AUDIO:
+			do_channel = renderengine->config->aconfig->do_channel;
+			break;
+		case TRACK_VIDEO:
+			do_channel = renderengine->config->vconfig->do_channel;
+			break;
+	}
 
 	if(current_track->data_type != data_type) result = 0;
+	
 
 // Track is off screen and not bounced to other modules
-//printf("PlayableTracks::is_playable 1 %d %d\n", 
-//	result, 
-//	current_track->channel_is_playable(position, direction, do_channel));
+// printf("PlayableTracks::is_playable 1 %d %p\n", 
+// result, 
+// do_channel);
 
 
 	if(result)
@@ -98,7 +109,7 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 		if(renderengine->edl->session->test_playback_edits)
 		{
 //printf("PlayableTracks::is_playable 3 %p\n", plugin_server);
-			if(!current_track->playable_edit(position) &&
+			if(!current_track->playable_edit(position, direction) &&
 				!plugin_synthesis)
 				result = 0;
 		}

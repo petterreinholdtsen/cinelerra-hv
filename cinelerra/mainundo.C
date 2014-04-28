@@ -11,7 +11,8 @@
 
 MainUndo::MainUndo(MWindow *mwindow)
 { 
-	this->mwindow = mwindow; 
+	this->mwindow = mwindow;
+	undo_before_updated = 0;
 }
 
 MainUndo::~MainUndo()
@@ -20,33 +21,38 @@ MainUndo::~MainUndo()
 
 void MainUndo::update_undo_before(char *description, unsigned long load_flags)
 {
-	FileXML file;
-	mwindow->session->changes_made = 1;
-//printf("MainUndo::update_undo_before 1 %p\n", mwindow);
-	mwindow->edl->save_xml(mwindow->plugindb, &file, "");
-	file.terminate_string();
+	if(!undo_before_updated)
+	{
+		FileXML file;
+		mwindow->session->changes_made = 1;
+		mwindow->edl->save_xml(mwindow->plugindb, &file, "");
+		file.terminate_string();
 
-//printf("MainUndo::update_undo_before 1 \n%s\n", file.string);
-	current_entry = undo_stack.push();
-	current_entry->load_flags = load_flags;
-	current_entry->set_data_before(file.string);
-	current_entry->set_description(description);
-//printf("MainUndo::update_undo_before 2\n");
+		current_entry = undo_stack.push();
+		current_entry->load_flags = load_flags;
+		current_entry->set_data_before(file.string);
+		current_entry->set_description(description);
 
 // the after update is always without a description
-	mwindow->gui->lock_window();
-	mwindow->gui->mainmenu->undo->update_caption(description);
-	mwindow->gui->mainmenu->redo->update_caption("");
-	mwindow->gui->unlock_window();
-//printf("MainUndo::update_undo_before 2\n");
+		mwindow->gui->lock_window();
+		mwindow->gui->mainmenu->undo->update_caption(description);
+		mwindow->gui->mainmenu->redo->update_caption("");
+		mwindow->gui->unlock_window();
+
+		undo_before_updated = 1;
+	}
 }
 
 void MainUndo::update_undo_after()
 {
-	FileXML file;
-	mwindow->edl->save_xml(mwindow->plugindb, &file, "");
-	file.terminate_string();
-	current_entry->set_data_after(file.string);
+	if(undo_before_updated)
+	{
+		FileXML file;
+		mwindow->edl->save_xml(mwindow->plugindb, &file, "");
+		file.terminate_string();
+		current_entry->set_data_after(file.string);
+		undo_before_updated = 0;
+	}
 }
 
 

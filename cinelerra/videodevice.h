@@ -61,9 +61,6 @@ public:
 // Recording constructor
 	VideoDevice();
 	~VideoDevice();
-// REMOVE
-// Playback constructor
-	VideoDevice(MWindow *mwindow);
 
 	friend class VDeviceLML;
 	friend class VDeviceX11;
@@ -149,9 +146,6 @@ public:
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.
 	int write_buffer(VFrame **outputs, EDL *edl);   
-// Get render strategies from the device
-// REMOVE
-	ArrayList<int>* get_render_strategies(); 
 
 // Flag when output is interrupted
 	int interrupt;
@@ -181,8 +175,6 @@ public:
 // CPU count for MJPEG compression
 	int cpus;
 
-// REMOVE
-	MWindow *mwindow;
 
 	int is_recording; // status of thread
 	float frame_rate; // Frame rate to set in device

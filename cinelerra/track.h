@@ -133,8 +133,6 @@ public:
 	int y_pixel;
 	int expand_view;
 	int draw;
-// REMOVE
-	int automate;
 // There is some debate on whether to expand gang from faders to
 // dragging operations.  This would allow every edit in a column to get dragged
 // simultaneously.
@@ -188,9 +186,6 @@ public:
 		ArrayList<Asset*> *asset_list);
 	virtual int copy_derived(long start, long end, FileXML *file) { return 0; };
 	virtual int paste_derived(long start, long end, long total_length, FileXML *file, int &current_channel) { return 0; };
-	int paste_transition(double startproject, 
-		double endproject, 
-		Transition *transition);
 	int clear(double start, 
 		double end, 
 		int edit_edits,
@@ -294,7 +289,7 @@ public:
 // Utility for edit_change_duration.
 	int edit_is_interesting(Edit *current, int test_transitions);
 // If the edit under position is playable
-	int playable_edit(long position);
+	int playable_edit(long position, int direction);
 
 // ===================================== for handles, titles, etc
 
@@ -305,7 +300,6 @@ public:
 	IntAutos *play_autos;
 	IntAutos *mute_autos;
 	FloatAutos *fade_autos;
-	FloatAutos *plugin_autos[PLUGINS];
 	MWindow *mwindow;
 // Transition currently being rendered
 	Transition *transition;

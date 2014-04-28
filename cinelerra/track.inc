@@ -3,9 +3,4 @@
 
 class Track;
 
-// REMOVE
-#ifndef PLUGINS
-#define PLUGINS 4
-#endif
-
 #endif

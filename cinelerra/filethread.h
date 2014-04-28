@@ -4,7 +4,6 @@
 #include "file.inc"
 #include "mutex.h"
 #include "thread.h"
-#include "pluginbuffer.inc"
 #include "vframe.inc"
 
 
@@ -46,10 +45,8 @@ public:
 	int swap_buffer();
 
 	double **audio_buffer[RING_BUFFERS];
-	long byte_offset[RING_BUFFERS];    // Offsets of audio buffers [ring buffer]
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
 	VFrame ***video_buffer[RING_BUFFERS];      
-	PluginBuffer *video_ram, *audio_ram;
 	long output_size[RING_BUFFERS];  // Number of frames or samples to write
 	int is_compressed[RING_BUFFERS]; // Whether to use the compressed data in the frame
 	Mutex output_lock[RING_BUFFERS], input_lock[RING_BUFFERS];

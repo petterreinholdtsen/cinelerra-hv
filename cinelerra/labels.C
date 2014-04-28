@@ -34,31 +34,6 @@ void Labels::dump()
 	}
 }
 
-int Labels::flip_vertical()
-{
-	Label *current;
-
-	if(mwindow->gui)
-	{	
-		if(mwindow->session->tracks_vertical)
-		{
-			for(current = first; current; current = NEXT)
-			{
-				current->toggle->reposition_window(timebar->gui->get_x() + 2, current->toggle->get_y());
-			}
-		}
-		else
-		{
-			for(current = first; current; current = NEXT)
-			{
-				current->toggle->reposition_window(current->toggle->get_x(), timebar->gui->get_y() + 2);
-			}
-		}
-		samplemovement();
-	}
-    return 0;
-}
-
 void Labels::insert_labels(Labels *labels, double start, double length, int paste_silence)
 {
 	Label *new_label;
@@ -172,38 +147,6 @@ int Labels::toggle_label(double start, double end)
 	return 0;
 }
 
-int Labels::draw()
-{
-	Label *current;
-	
-	if(mwindow->gui)
-	{
-		for(current = first; current; current = NEXT)
-		{
-			current->draw();
-		}
-	}
-	return 0;
-}
-
-int Labels::samplemovement()
-{
-	return 0;
-}
-
-int Labels::resize_event(int x)
-{
-	Label* current;
-	if(mwindow->gui && mwindow->session->tracks_vertical)
-	{
-		for(current = first; current; current = NEXT)
-		{
-			current->toggle->reposition_window(x, current->toggle->get_y());
-		}
-	}
-	return 0;
-}
-
 int Labels::delete_all()
 {
 	while(last)
@@ -252,38 +195,6 @@ int Labels::copy_length(long start, long end) // return number of Labels in sele
 }
 
 
-// REMOVE
-int Labels::paste(long start, long end, long total_length, FileXML *xml)
-{
-	return 0;
-}
-
-// REMOVE
-int Labels::paste_output(long startproject, long endproject, long startsource, long endsource, RecordLabels *labels)
-{
-#if 0
-	if(mwindow->session->labels_follow_edits) clear(startproject, endproject);
-	if(mwindow->session->labels_follow_edits) insert(startproject, endsource - startsource);
-
-	RecordLabel *reclabel;
-	double position;
-	Label *current;
-
-	for(reclabel = labels->first; reclabel; reclabel = reclabel->next)
-	{
-		if(reclabel->position >= startsource)
-		{
-			position = reclabel->position - startsource;
-			position += startproject;
-			current = label_of(position);
-			current = insert_before(current);
-			current->create_objects(mwindow->edl, this, position);
-		}
-	}
-	optimize();
-#endif
-	return 0;
-}
 
 Labels& Labels::operator=(Labels &that)
 {
@@ -557,12 +468,13 @@ Label* Labels::label_of(double position)
 
 
 
-Label::Label() : ListItem<Label>()
+Label::Label()
+ : ListItem<Label>()
 {
-	toggle = 0;
 }
 
 Label::Label(EDL *edl, Labels *labels, double position)
+ : ListItem<Label>()
 {
 	this->edl = edl;
 	this->labels = labels;
@@ -573,26 +485,6 @@ Label::Label(EDL *edl, Labels *labels, double position)
 Label::~Label()
 {
 //	if(toggle) delete toggle;
-}
-
-int Label::create_objects(MWindow *mwindow, Labels *labels, long position)
-{
-	return 0;
-}
-
-int Label::samplemovement()
-{
-	return 0;
-}
-
-int Label::draw()
-{
-	return 0;
-}
-
-int Label::get_pixel(long position)
-{
-	return 0;
 }
 
 LabelToggle::LabelToggle(MWindow *mwindow, 

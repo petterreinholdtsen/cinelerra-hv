@@ -32,7 +32,7 @@ Preferences::Preferences()
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
-	index_size = 1000000;
+	index_size = 3000000;
 	index_count = 100;
 	use_thumbnails = 1;
 	theme[0] = 0;

@@ -66,22 +66,6 @@ public:
 
 
 
-	AttachmentPoint(MWindow *mwindow);
-	AttachmentPoint(AttachmentPoint *that);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -102,55 +86,12 @@ public:
 // Simply deletes the virtual plugin 
 	int render_stop(int duplicate);
 
-// Set up a plugin before attaching
-	int update(int plugin_type, int in, int out, char* title, SharedPluginLocation *shared_plugin_location, SharedModuleLocation *shared_module_location);
-// Plugin updates its title
-	virtual int update_derived() {};
-// Attach a new plugin
-	int attach(int is_loading = 0);
-// Control the gui for the plugin.
-	int show_gui();
-	int hide_gui();
-// Called by the plugin when it is hidden.
-	int set_show(int value);
-	virtual int set_show_derived(int value) {};
-// Default title when nothing is attached;
-	virtual char* default_title() {};
 
 
-// The track offset sets the first track number when importing a shared module or plugin.
-	int load(FileXML *file, int track_offset, char *terminator);
-	int save(FileXML *file, char *block_title);
 
-	AttachmentPoint& operator=(const AttachmentPoint &that);
-	int operator==(const AttachmentPoint &that);
-
-// Get the track or module title.
-	virtual char* get_module_title();
-
-// Update the widgets after loading.
-	virtual int update_display() {};
-// Draw edit after attaching
-// Set is_loading during a load operation so overlays aren't drawn
-	virtual int update_edit(int is_loading) {};
 	
 	int dump();
 
-	int get_configuration_change(char *data);
-
-// location of plugin if shared
-	SharedPluginLocation shared_plugin_location;
-	SharedModuleLocation shared_module_location;
-
-//	int in, out, show, on;
-//	int plugin_type;       // 0: none  1: executable   2: shared plugin   3: module
-	char plugin_data[MESSAGESIZE];     // configuration data for the plugin
-	char plugin_title[1024];    // title of plugin
-	MWindow *mwindow;
-
-// Only used by operator= and copy constructor
-	int copy_from(const AttachmentPoint &that);
-	int identical(const AttachmentPoint &that);
 };
 
 #endif

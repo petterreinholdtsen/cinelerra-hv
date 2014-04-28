@@ -1,6 +1,7 @@
 #ifndef BCRESOURCES_H
 #define BCRESOURCES_H
 
+#include "bcdisplayinfo.inc"
 #include "bcresources.inc"
 #include "bcsignals.inc"
 #include "bcwindowbase.inc"
@@ -27,6 +28,11 @@ public:
 	int get_bg_shadow2();
 	int get_bg_light1();
 	int get_bg_light2();
+// Get window border size created by window manager
+	int get_top_border();
+	int get_left_border();
+	int get_right_border();
+	int get_bottom_border();
 
 // Pointer to signal handler class to run after ipc
 	static BC_Signals *signal_handler;
@@ -157,7 +163,9 @@ public:
 private:
 // Test for availability of shared memory pixmaps
 	int init_shm(BC_WindowBase *window);
+	void init_sizes(BC_WindowBase *window);
 	static int x_error_handler(Display *display, XErrorEvent *event);
+	BC_DisplayInfo *display_info;
 };
 
 

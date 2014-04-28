@@ -388,19 +388,26 @@ int BC_ISlider::value_to_pixel()
 
 int BC_ISlider::update(long value)
 {
-	this->value = value;
-	int old_pixel = button_pixel;
-	button_pixel = value_to_pixel();
-	if(button_pixel != old_pixel) draw_face();
+	if(this->value != value)
+	{
+		this->value = value;
+		int old_pixel = button_pixel;
+		button_pixel = value_to_pixel();
+		if(button_pixel != old_pixel) draw_face();
+	}
 	return 0;
 }
 
-int BC_ISlider::update(int pointer_motion_range, long value, long minvalue, long maxvalue)
+int BC_ISlider::update(int pointer_motion_range, 
+	long value, 
+	long minvalue, 
+	long maxvalue)
 {
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
 	this->value = value;
 	this->pointer_motion_range = pointer_motion_range;
+
 	int old_pixel = button_pixel;
 	button_pixel = value_to_pixel();
 	if(button_pixel != old_pixel) draw_face();
@@ -540,10 +547,13 @@ int BC_FSlider::value_to_pixel()
 
 int BC_FSlider::update(float value)
 {
-	this->value = value;
-	int old_pixel = button_pixel;
-	button_pixel = value_to_pixel();
-	if(button_pixel != old_pixel) draw_face();
+	if(this->value != value)
+	{
+		this->value = value;
+		int old_pixel = button_pixel;
+		button_pixel = value_to_pixel();
+		if(button_pixel != old_pixel) draw_face();
+	}
 	return 0;
 }
 

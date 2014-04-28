@@ -30,6 +30,7 @@ public:
 	int cursor_leave_event();
 	int cursor_enter_event();
 	int cursor_motion_event();
+	int translation_event();
 	int drag_start_event();
 	int drag_stop_event();
 	int drag_motion_event();

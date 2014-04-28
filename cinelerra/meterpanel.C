@@ -214,10 +214,11 @@ MeterMeter::~MeterMeter()
 }
 
 
-int MeterMeter::button_release()
+int MeterMeter::button_press_event()
 {
 	if(is_event_win() && BC_WindowBase::cursor_inside())
 	{
+		panel->reset_meters();
 		mwindow->reset_meters();
 		return 1;
 	}

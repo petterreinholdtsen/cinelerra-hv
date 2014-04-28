@@ -395,6 +395,7 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
 		1,
 		1,
 		1,
+		0,
 		0)
 {
 	this->mwindow = mwindow;
@@ -407,6 +408,7 @@ VWindowEditing::~VWindowEditing()
 
 void VWindowEditing::copy_selection()
 {
+	vwindow->copy();
 }
 
 void VWindowEditing::splice_selection()
@@ -537,7 +539,6 @@ void VWindowEditing::to_clip()
 			end = edl->tracks->total_length();
 			start = 0;
 		}
-//printf("VWindowEditing::to_clip 1 %f %f\n", start, end);
 
 
 
@@ -552,19 +553,14 @@ void VWindowEditing::to_clip()
 
 
 
-//printf("VWindowEditing::to_clip 1\n");
-//printf("VWindowEditing::to_clip %s\n", file.string);
-//printf("VWindowEditing::to_clip 2\n\n\n");
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
-		
-//new_edl->dump();
-//printf("VWindowEditing::to_clip 3\n\n\n");
-		
-//printf("VWindowEditing::to_clip 2 %d\n", mwindow->edl->assets->total());
+		sprintf(new_edl->local_session->clip_title, "Clip %d\n", mwindow->session->clip_number++);
+
+printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
+
 		vwindow->clip_edit->create_clip(new_edl);
-//printf("VWindowEditing::to_clip 3 %d\n", mwindow->edl->assets->total());
 	}
 }
 

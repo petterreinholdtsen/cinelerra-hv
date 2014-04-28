@@ -50,7 +50,6 @@ public:
 	long audio_read_length;
 	int audio_tracks;
 // automation follows edits during editing
-// REMOVE
  	int autos_follow_edits;
 // Generate keyframes for every tweek
 	int auto_keyframes;

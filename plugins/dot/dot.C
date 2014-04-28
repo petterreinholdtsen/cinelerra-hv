@@ -73,10 +73,14 @@ DotMain::~DotMain()
 char* DotMain::plugin_title() { return "DotTV"; }
 int DotMain::is_realtime() { return 1; }
 
-VFrame* DotMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(DotMain)
+
+SHOW_GUI_MACRO(DotMain, DotThread)
+
+SET_STRING_MACRO(DotMain)
+
+RAISE_WINDOW_MACRO(DotMain)
+
 
 int DotMain::load_defaults()
 {
@@ -212,30 +216,6 @@ int DotMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	return 0;
 }
-
-int DotMain::show_gui()
-{
-	load_configuration();
-	thread = new DotThread(this);
-	thread->start();
-	return 0;
-}
-
-int DotMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void DotMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
 
 
 

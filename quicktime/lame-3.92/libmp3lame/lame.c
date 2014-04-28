@@ -20,7 +20,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/* $Id: lame.c,v 1.2 2002/04/21 20:16:09 amazon Exp $ */
+/* $Id: lame.c,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

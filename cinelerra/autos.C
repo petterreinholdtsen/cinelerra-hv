@@ -28,23 +28,6 @@ Autos::Autos(EDL *edl, Track *track)
 
 
 
-Autos::Autos(Track *track, 
-			int color, 
-			double default_, 
-			int stack_number, 
-			int stack_total)
- : List<Auto>()
-{
-	this->track = track;
-	this->color = color;
-	this->default_ = default_;
-	selected = 0;
-	this->stack_number = stack_number;
-	this->stack_total = stack_total;
-//printf("Autos::Autos 2 %p %p %p\n", this, first, last);
-}
-
-
 Autos::~Autos()
 {
 	while(last) delete last;
@@ -459,7 +442,7 @@ int Autos::copy(long start, long end, FileXML *file, int default_only)
 void Autos::optimize()
 {
 	int done = 0;
-	
+
 	while(!done)
 	{
 		int consecutive = 0;
@@ -493,6 +476,15 @@ void Autos::optimize()
 	}
 }
 
+
+void Autos::remove_nonsequential(Auto *keyframe)
+{
+	if((keyframe->next && keyframe->next->position <= keyframe->position) ||
+		(keyframe->previous && keyframe->previous->position >= keyframe->position))
+	{
+		delete keyframe;
+	}
+}
 
 
 
@@ -1257,4 +1249,21 @@ float Autos::value_to_percentage()
 {
 	return 0;
 }
+
+long Autos::get_length()
+{
+	if(last) 
+		return last->position + 1;
+	else
+		return 0;
+}
+
+
+
+
+
+
+
+
+
 

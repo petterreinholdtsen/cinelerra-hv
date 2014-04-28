@@ -35,10 +35,3 @@ void CPlayback::stop_cursor()
 	cwindow->playback_cursor->stop_playback();
 }
 
-void CPlayback::update_transport(int command, int paused)
-{
-	cwindow->gui->lock_window();
-	cwindow->gui->transport->update_gui_state(command, paused);
-	cwindow->gui->unlock_window();
-}
-

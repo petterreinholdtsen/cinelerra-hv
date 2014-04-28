@@ -13,6 +13,8 @@ int64_t mpeg3io_tell_gcc(mpeg3_fs_t *fs);
 double mpeg3_add_double_gcc(double x, double y);
 double mpeg3_divide_double_gcc(double x, double y);
 int64_t mpeg3_total_bytes_gcc(mpeg3_title_t *title);
+int64_t mpeg3io_path_total_bytes(char *path);
+int64_t mpeg3io_get_total_bytes(mpeg3_fs_t *fs);
 
 
 
@@ -490,7 +492,7 @@ static int mpeg3io_sync_buffer(mpeg3_fs_t *fs)
 			fs->buffer_size = fs->current_byte - fs->buffer_position + 1;
 			fs->buffer_offset = fs->buffer_size - 1;
 
-			fseek(fs->fd, fs->buffer_position, SEEK_SET);
+			fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
 			fs->buffer_size = fread(fs->buffer, 1, fs->buffer_size, fs->fd);
 		}
 		else
@@ -499,7 +501,7 @@ static int mpeg3io_sync_buffer(mpeg3_fs_t *fs)
 //printf("mpeg3io_sync_buffer 2 %x %x\n", fs->current_byte, fs->buffer_position);
 			fs->buffer_position = fs->current_byte;
 			fs->buffer_offset = 0;
-			fseek(fs->fd, fs->buffer_position, SEEK_SET);
+			fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
 			fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
 		}
 	}

@@ -80,10 +80,6 @@ int AboutPrefs::create_objects()
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
 "PURPOSE.  See the GNU General Public License for\n"
 "more details.\n"
-"\n"
-"If you feel like supporting Cinelerra send a dollar to:\n"
-"540 Canyon Woods Cir #210\n"
-"San Ramon CA 94583\n"
 "\n";
 	y += 100;
 	draw_text(x, y, license3);

@@ -5,14 +5,11 @@
 #include "arender.inc"
 #include "filethread.inc"     // RING_BUFFERS
 #include "virtualconsole.h"
-#include "mwindow.inc"
-#include "pluginbuffer.inc"
 
 class VirtualAConsole : public VirtualConsole
 {
 public:
 	VirtualAConsole(RenderEngine *renderengine, ARender *arender);
-	VirtualAConsole(MWindow *mwindow, ARender *arender);
 	virtual ~VirtualAConsole();
 
 	void new_input_buffer(int ring_buffer);

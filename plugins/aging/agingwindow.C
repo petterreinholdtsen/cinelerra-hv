@@ -2,35 +2,7 @@
 #include "agingwindow.h"
 
 
-AgingThread::AgingThread(AgingMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
-
-AgingThread::~AgingThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void AgingThread::run()
-{
-	BC_DisplayInfo info;
-	window = new AgingWindow(client, 
-		info.get_abs_cursor_x() - 105, 
-		info.get_abs_cursor_y() - 100);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
-
+PLUGIN_THREAD_OBJECT(AgingMain, AgingThread, AgingWindow)
 
 
 

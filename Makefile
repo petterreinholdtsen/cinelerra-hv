@@ -9,17 +9,22 @@ endif
 
 include global_config
 
-DIRS += \
+DIRS := \
 	$(AVIFILE_DIR) \
+	doc \
 	libmpeg3 \
 	tiff \
 	esound \
 	$(FREETYPE_DIR) \
 	libsndfile \
+	mplexhi \
+	mplexlo \
 	quicktime \
 	guicast \
 	cinelerra \
-	plugins
+	plugins \
+	mix \
+	xmovie \
 
 
 DISTNAME = bcast2000demo.tar
@@ -43,23 +48,9 @@ $(OBJDIR)/ipc: $(OBJDIR)/ipc.o
 $(OBJDIR)/soundtest: $(OBJDIR)/soundtest.o
 	$(CC) -o $(OBJDIR)/soundtest $(OBJDIR)/soundtest.o -lm
 
-root:
-	cd .. && \
-	tar cvf cinelerra.tar \
-		cinelerra/COPYING \
-		cinelerra/Makefile \
-		cinelerra/README \
-		cinelerra/global_config \
-		cinelerra/ipc.c \
-		cinelerra/libmpeg3 \
-		cinelerra/plugin_config \
-		cinelerra/quicktime \
-		cinelerra/soundtest.c \
-		cinelerra/swab.h
-
 backup: clean
 	cd .. && \
-	tar Icvf cinelerra.tar.bz2 cinelerra
+	tar Icvf hvirtual.tar.bz2 hvirtual
 
 clean:
 	find -follow \( -name core \
@@ -83,6 +74,10 @@ install:
 	make -C cinelerra install
 	make -C plugins install
 	make -C libmpeg3 install
+	make -C mix install
+	make -C xmovie install
+	make -C mplexhi install
+	make -C mplexlo install
 
 COMPILE = $(GCC) -c $(CFLAGS) $? -o $*.o
 

@@ -9,15 +9,12 @@
 #include "filejpeg.h"
 #include "filemov.h"
 #include "filempeg.h"
-#include "filepcm.h"
-#include "fileplugin.h"
 #include "filepng.h"
 #include "filesndfile.h"
 #include "filetga.h"
 #include "filethread.h"
 #include "filetiff.h"
 #include "formatwindow.h"
-#include "pluginioserver.h"
 #include "pluginserver.h"
 #include "resample.h"
 #include "stringfile.h"
@@ -37,7 +34,6 @@ File::~File()
 	if(getting_options)
 	{
 		if(format_window) format_window->set_done(0);
-		if(format_plugin) format_plugin->interrupt_parameters();
 		format_completion.lock();
 		format_completion.unlock();
 	}
@@ -64,7 +60,6 @@ void File::reset_parameters()
 	video_thread = 0;
 	getting_options = 0;
 	format_window = 0;
-	format_plugin = 0;
 	temp_frame = 0;
 	temp_frame = 0;
 	return_frame = 0;
@@ -96,131 +91,109 @@ int File::get_options(BC_WindowBase *parent_window,
 	int lock_compressor)
 {
 	getting_options = 1;
-	if(asset->format & FILE_PLUGIN)
+	format_completion.lock();
+	switch(asset->format)
 	{
-// Use plugin
-		if((asset->format ^ FILE_PLUGIN) < plugindb->total)
-		{
-			format_completion.lock();
-			format_plugin = new PluginIOServer(*(plugindb->values[asset->format ^ FILE_PLUGIN]));
-			format_plugin->open_plugin(0, 0, 0);
-			format_plugin->get_parameters(audio_options, video_options);
-			
-			getting_options = 0;
-			format_plugin->close_plugin();
-			delete format_plugin;
-			format_plugin = 0;
-			format_completion.unlock();
-		}
+		case FILE_PCM:
+		case FILE_WAV:
+		case FILE_AU:
+		case FILE_AIFF:
+		case FILE_SND:
+			FileSndFile::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
+		case FILE_MOV:
+			FileMOV::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options,
+				lock_compressor);
+			break;
+		case FILE_AMPEG:
+		case FILE_VMPEG:
+			FileMPEG::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
+		case FILE_AVI:
+			FileMOV::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options,
+				lock_compressor);
+			break;
+		case FILE_AVI_LAVTOOLS:
+		case FILE_AVI_ARNE2:
+		case FILE_AVI_ARNE1:
+		case FILE_AVI_AVIFILE:
+			FileAVI::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options,
+				lock_compressor);
+			break;
+		case FILE_JPEG:
+		case FILE_JPEG_LIST:
+			FileJPEG::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
+		case FILE_PNG:
+		case FILE_PNG_LIST:
+			FilePNG::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
+		case FILE_TGA:
+		case FILE_TGA_LIST:
+			FileTGA::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
+		case FILE_TIFF:
+		case FILE_TIFF_LIST:
+			FileTIFF::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
+		default:
+			break;
 	}
-	else
-	{
-// Use built-in window
-		format_completion.lock();
-//printf("File::get_options %d\n", asset->format);
-		switch(asset->format)
-		{
-			case FILE_PCM:
-			case FILE_WAV:
-			case FILE_AU:
-			case FILE_AIFF:
-			case FILE_SND:
-				FileSndFile::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options);
-				break;
-			case FILE_MOV:
-				FileMOV::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options,
-					lock_compressor);
-				break;
-			case FILE_AMPEG:
-			case FILE_VMPEG:
-				FileMPEG::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options);
-				break;
-			case FILE_AVI:
-				FileMOV::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options,
-					lock_compressor);
-				break;
-			case FILE_AVI_LAVTOOLS:
-			case FILE_AVI_ARNE2:
-			case FILE_AVI_ARNE1:
-			case FILE_AVI_AVIFILE:
-				FileAVI::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options,
-					lock_compressor);
-				break;
-			case FILE_JPEG:
-			case FILE_JPEG_LIST:
-				FileJPEG::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options);
-				break;
-			case FILE_PNG:
-			case FILE_PNG_LIST:
-				FilePNG::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options);
-				break;
-			case FILE_TGA:
-			case FILE_TGA_LIST:
-				FileTGA::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options);
-				break;
-			case FILE_TIFF:
-			case FILE_TIFF_LIST:
-				FileTIFF::get_parameters(parent_window, 
-					asset, 
-					format_window, 
-					audio_options, 
-					video_options);
-				break;
-			default:
-				break;
-		}
 
-		if(!format_window)
-		{
-			ErrorBox *errorbox = new ErrorBox(PROGRAM_NAME ": Error",
-				parent_window->get_abs_cursor_x(),
-				parent_window->get_abs_cursor_y());
-			format_window = errorbox;
-			getting_options = 1;
-			if(audio_options)
-				errorbox->create_objects("This format doesn't support audio.");
-			else
-			if(video_options)
-				errorbox->create_objects("This format doesn't support video.");
-			errorbox->run_window();
-			delete errorbox;
-		}
-		getting_options = 0;
-		format_window = 0;
-		format_completion.unlock();
+	if(!format_window)
+	{
+		ErrorBox *errorbox = new ErrorBox(PROGRAM_NAME ": Error",
+			parent_window->get_abs_cursor_x(),
+			parent_window->get_abs_cursor_y());
+		format_window = errorbox;
+		getting_options = 1;
+		if(audio_options)
+			errorbox->create_objects("This format doesn't support audio.");
+		else
+		if(video_options)
+			errorbox->create_objects("This format doesn't support video.");
+		errorbox->run_window();
+		delete errorbox;
 	}
+	getting_options = 0;
+	format_window = 0;
+	format_completion.unlock();
 	return 0;
 }
 
@@ -326,35 +299,19 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 				return FILE_IS_XML;
 			}    // can't load project file
 			else
-// Plugin file
+			if(FileMOV::check_sig(this->asset))
 			{
-				file = new FilePlugin(plugindb, this->asset, this);
-				if(file->check_header())
-				{
-					fclose(stream);
-					file->close_file();
-					delete file;
-					file = new FilePlugin(plugindb, this->asset, this);
-				}
-				else
-				{
-					delete file;
-					file = 0;
-					if(FileMOV::check_sig(this->asset))
-					{
 // MOV file
 // should be last because quicktime lacks a magic number
-						fclose(stream);
-						file = new FileMOV(this->asset, this);
-					}
-					else
-					{
-// PCM file
-						fclose(stream);
-						return FILE_UNRECOGNIZED_CODEC;
-					}   // need more info
-				}
+				fclose(stream);
+				file = new FileMOV(this->asset, this);
 			}
+			else
+			{
+// PCM file
+				fclose(stream);
+				return FILE_UNRECOGNIZED_CODEC;
+			}   // need more info
 			break;
 
 // format already determined
@@ -410,14 +367,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 
 // try plugins
 		default:
-			if((this->asset->format & 0x8000) &&
-				(this->asset->format & 0x7fff) < plugindb->total)
-			{
-				file = new FilePlugin(plugindb, this->asset, this);
-			}
-			else
-// non existant format
-				return 1;
+			return 1;
 			break;
 	}
 
@@ -1013,20 +963,7 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	if(!strcasecmp(format, AVI_AVIFILE_NAME)) return FILE_AVI_AVIFILE;
 	else
 	if(!strcasecmp(format, VORBIS_NAME)) return FILE_VORBIS;
-	else
-	{
-		int i, result = -1;
-		for(i = 0; i < plugindb->total; i++)
-		{	
-			if(plugindb->values[i]->fileio && 
-				!strcasecmp(plugindb->values[i]->title, format))
-			{
-				result = i | 0x8000;
-				break;
-			}
-		}
-		if(result != -1) return result;
-	}
+
 	return 0;
 }
 
@@ -1105,14 +1042,7 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 			break;
 
 		default:
-			if(format & 0x8000 && 
-				(format ^ 0x8000) < plugindb->total &&
-				plugindb->values[format ^ 0x8000]->fileio)
-			{
-				return plugindb->values[format ^ 0x8000]->title;
-			}
-			else
-				return "Unknown";
+			return "Unknown";
 			break;
 	}
 	return "Unknown";

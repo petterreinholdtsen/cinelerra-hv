@@ -3,12 +3,10 @@
 
 #include "arraylist.h"
 #include "commonrender.inc"
-#include "mwindow.inc"
 #include "maxbuffers.h"
 #include "module.inc"
 #include "mutex.inc"
 #include "playabletracks.inc"
-#include "pluginbuffer.inc"
 #include "renderengine.inc"
 #include "thread.h"
 #include "track.inc"
@@ -18,7 +16,6 @@ class VirtualConsole : public Thread
 {
 public:
 	VirtualConsole(RenderEngine *renderengine, CommonRender *commonrender, int data_type);
-	VirtualConsole(MWindow *mwindow, CommonRender *commonrender);
 	virtual ~VirtualConsole();
 
 	virtual void create_objects();
@@ -32,14 +29,16 @@ public:
 
 // Create ptrs to input buffers
 	virtual void create_input_ptrs() {};
-// allocate an array of pluginbuffers for all the playable tracks
-	virtual PluginBuffer** allocate_input_buffer(int ring_buffer) { return 0; };
 // Build the nodes
 	void build_virtual_console(int persistant_plugins);
 	virtual VirtualNode* new_toplevel_node(Track *track, Module *module, int track_number) { return 0; };
 	Module* module_of(Track *track);
 	Module* module_number(int track_number);
-	int test_reconfigure(long position, long &length);
+// Test for reconfiguration.
+// If reconfiguration is coming up, truncate length and reset last_playback.
+	int test_reconfigure(long position, 
+		long &length,
+		int &last_playback);
 
 	virtual void run();
 
@@ -52,11 +51,6 @@ public:
 // Order to process nodes
 	ArrayList<VirtualNode*> render_list;
 
-// Buffers to read from disk.
-// The derived console typecasts its data structures to this shared
-// segment for rapid rendering through the console.
-// (PluginBuffer*)(Array of tracks*)[ring buffer]
-	PluginBuffer **buffer_in[MAX_BUFFERS];
 
 	int data_type;
 // Store result of total_ring_buffers for destructor
@@ -94,15 +88,6 @@ public:
 
 	virtual int send_last_output_buffer() {};
 
-// Replaced by ring_buffers
-// REMOVE
-//	int total_buffers;      // number of sets of input buffers 
-							// 1 for one at a time / MAX_BUFFERS for realtime playback
-// virtual console
-// the same as total_tracks
-// REMOVE
-//	int total_virtual_modules;
-
 
 
 
@@ -110,11 +95,6 @@ public:
 	int current_input_buffer;      // input buffer being read from disk
 	PlayableTracks *playable_tracks;
 
-	MWindow *mwindow;
-
-// Argument for file handler.  Same as buffer_in
-// REMOVE
-	PluginBuffer **shared_buffer_in_ptr[MAX_BUFFERS];  
 
 	Mutex *input_lock[MAX_BUFFERS];     // lock before sending input buffers through console
 	Mutex *output_lock[MAX_BUFFERS];	// lock before loading input buffers

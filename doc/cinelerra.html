@@ -1,0 +1,2112 @@
+<html lang="en">
+<head>
+<title>Secrets of Cinelerra</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name=description content="Secrets of Cinelerra">
+<meta name=generator content="makeinfo 4.0b">
+<link href="http://texinfo.org/" rel=generator-home>
+</head>
+
+<body>
+<p><hr>
+Node:<a name="Top">Top</a>,
+Next:<a rel=next href="#ABOUT%20CINELERRA">ABOUT CINELERRA</a>
+<br>
+
+<h1>BRIEF CONTENTS</h1>
+
+<ul>
+<li><a href="#ABOUT%20CINELERRA">ABOUT CINELERRA</a>: 
+<li><a href="#INSTALLATION">INSTALLATION</a>: 
+<li><a href="#CONFIGURATION">CONFIGURATION</a>: 
+<li><a href="#THE%20MAIN%20WINDOWS">THE MAIN WINDOWS</a>: 
+<li><a href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>: 
+<li><a href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>: 
+<li><a href="#EDITING">EDITING</a>: 
+<li><a href="#USING%20EFFECTS">USING EFFECTS</a>: 
+<li><a href="#SETTING%20PROJECT%20ATTRIBUTES">SETTING PROJECT ATTRIBUTES</a>: 
+</ul>
+
+
+<h1>Table of Contents</h1>
+<ul>
+<li><a href="#Top">BRIEF CONTENTS</a>
+<li><a href="#ABOUT%20CINELERRA">ABOUT CINELERRA</a>
+<ul>
+<li><a href="#ABOUT%20THIS%20MANUAL">ABOUT THIS MANUAL</a>
+</ul>
+<li><a href="#INSTALLATION">INSTALLATION</a>
+<li><a href="#CONFIGURATION">CONFIGURATION</a>
+<ul>
+<li><a href="#PLAYBACK">PLAYBACK</a>
+<ul>
+<li><a href="#AUDIO%20OUT">AUDIO OUT</a>
+<li><a href="#VIDEO%20OUT">VIDEO OUT</a>
+</ul>
+<li><a href="#RECORDING">RECORDING</a>
+<ul>
+<li><a href="#AUDIO%20IN">AUDIO IN</a>
+<li><a href="#VIDEO%20IN">VIDEO IN</a>
+</ul>
+<li><a href="#PERFORMANCE">PERFORMANCE</a>
+<ul>
+<li><a href="#RENDERFARM">RENDERFARM</a>
+</ul>
+<li><a href="#INTERFACE">INTERFACE</a>
+</ul>
+<li><a href="#THE%20MAIN%20WINDOWS">THE MAIN WINDOWS</a>
+<li><a href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>
+<ul>
+<li><a href="#LOADING%20FILES">LOADING FILES</a>
+<ul>
+<li><a href="#SUPPORTED%20FILE%20FORMATS">SUPPORTED FILE FORMATS</a>
+<li><a href="#INSERTION%20STRATEGY">INSERTION STRATEGY</a>
+<li><a href="#LOADING%20MULTIPLE%20FILES">LOADING MULTIPLE FILES</a>
+</ul>
+<li><a href="#LOADING%20THE%20BACKUP">LOADING THE BACKUP</a>
+<li><a href="#SAVING%20FILES">SAVING FILES</a>
+<li><a href="#RENDERING%20FILES">RENDERING FILES</a>
+</ul>
+<li><a href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>
+<ul>
+<li><a href="#NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>
+<ul>
+<li><a href="#THE%20INSERTION%20POINT">THE INSERTION POINT</a>
+<li><a href="#THE%20IN%2fOUT%20POINTS">THE IN/OUT POINTS</a>
+<li><a href="#USING%20LABELS%20IN%20THE%20PROGRAM%20WINDOW">USING LABELS IN THE PROGRAM WINDOW</a>
+</ul>
+<li><a href="#NAVIGATING%20THE%20VIEWER%20AND%20COMPOSITOR">NAVIGATING THE VIEWER AND COMPOSITOR</a>
+<li><a href="#NAVIGATING%20THE%20RESOURCES">NAVIGATING THE RESOURCES</a>
+<li><a href="#USING%20THE%20TRANSPORT%20CONTROLS">USING THE TRANSPORT CONTROLS</a>
+</ul>
+<li><a href="#EDITING">EDITING</a>
+<ul>
+<li><a href="#MANIPULATING%20TRACKS">MANIPULATING TRACKS</a>
+<li><a href="#TWO%20SCREEN%20EDITING">TWO SCREEN EDITING</a>
+<li><a href="#DRAG%20AND%20DROP%20EDITING">DRAG AND DROP EDITING</a>
+<li><a href="#CUT%20AND%20PASTE%20EDITING">CUT AND PASTE EDITING</a>
+<li><a href="#TRIMMING">TRIMMING</a>
+</ul>
+<li><a href="#USING%20EFFECTS">USING EFFECTS</a>
+<ul>
+<li><a href="#REALTIME%20EFFECTS">REALTIME EFFECTS</a>
+<li><a href="#RENDERED%20EFFECTS">RENDERED EFFECTS</a>
+<li><a href="#TRANSITIONS">TRANSITIONS</a>
+</ul>
+<li><a href="#SETTING%20PROJECT%20ATTRIBUTES">SETTING PROJECT ATTRIBUTES</a>
+</ul>
+
+<p><hr>
+Node:<a name="ABOUT%20CINELERRA">ABOUT CINELERRA</a>,
+Next:<a rel=next href="#INSTALLATION">INSTALLATION</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>ABOUT CINELERRA</h1>
+
+<p>There are two types of moviegoers: producers who create new content,
+going back over their content at future points for further refinement,
+and consumers who want to acquire the content and watch it.  Cinelerra
+is not intended for consumers.  Cinelerra has many features for
+uncompressed content, high resolution processing, and compositing, with
+very few shortcuts.  Producers need these features because of the need
+to retouch many generations of footage with alterations to the format,
+which makes Cinelerra very complex. There are many more standard tools
+for consumers like MainActor, Kino, or Moxy, which you should consider
+before using Cinelerra.
+
+<p>In 1996 our first editor came out: Broadcast 1.0.  It was just a window
+with a waveform in it, it could cut and paste stereo audio waveforms on
+a UNIX box, except unlike other audio editors it could handle files up
+to 2 gigabytes with only 64 megs of RAM.  That was a feature normally
+only accessible to the highest end professional audio houses.
+
+<p>In 1997 Broadcast 1.0 was replaced by Broadcast 2.0.  This time the
+window had a menubar, patchbay, console, and transport control. 
+Broadcast 2.0 still only handled audio but this time it handled
+unlimited tracks, and it could perform effects on audio and save the
+resulting waveform to disk.  More notably a few effects could be
+performed as the audio was playing back, in realtime.  A user could mix
+unlimited numbers of tracks, adjust fade, pan, and EQ, and hear the
+result instantly.   Amazingly this real time tweeking is still
+unavailable on most audio programs.
+
+<p>But Broadcast 2.0 still didn't handle video and it wasn't very graceful
+at audio either.  In 1999 video broke into the story with Broadcast
+2000.  This iteration of the Broadcast series could do wonders with
+audio and offered a pretty good video feature set.  It could edit video
+files up to 64 terabytes.  It could do everything Broadcast 2.1 did
+with audio except now all effects for video and audio could be chained
+and performed on the fly, with instant feedback as a user tweeked
+parameters during playback.  Broadcast 2000 made it very easy to do a
+lot of processing and editing on video and audio that would otherwise
+involve many hours setting up command line sequences and writing to
+disk. For a time it seemed as if the original dream of immersive movie
+making for everyone regardless of income level had arrived.
+
+<p>Later on Broadcast 2000 began to come short.  Its audio was pretty
+graceful.  Its video was graceful if you knew how to use it
+efficiently, but quality issues and new user interface techniques were
+emerging.  Broadcast 2000 kept the audio interface from its ancestors,
+which didn't apply well to video.  Users likewise were maturing.  No
+longer would it be sufficient to just edit video on a UNIX box.  Most
+users expected on UNIX the same thing they got in Win or Mac. In mid
+2000 designs for a Broadcast 2000 replacement were drafted.  The
+Broadcast name was officially retired from the series and the software
+would now be called Cinelerra.  Cinelerra would allow users to
+configure certain effects in much less time than required with
+Broadcast 2000.  It would begin to emulate some of the features found
+in Win and Mac software while not attempting to become a clone.  It's
+interface would be designed for video from the ground up, while
+supplementing that with the Broadcast audio interface.  As always,
+quality improvements would happen.
+
+<ul>
+<li><a href="#ABOUT%20THIS%20MANUAL">ABOUT THIS MANUAL</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="ABOUT%20THIS%20MANUAL">ABOUT THIS MANUAL</a>,
+Up:<a rel=up href="#ABOUT%20CINELERRA">ABOUT CINELERRA</a>
+<br>
+
+<h2>ABOUT THIS MANUAL</h2>
+
+<p>After many years of searching for the perfect documentation format
+we've arrived at TexInfo.  This format can be converted to HTML,
+printed, automatically indexed, but most importantly is not bound to
+any commercial word processor.  Documents written in Texinfo will be
+readable as long as there's a C compiler.
+
+<p>There are no screenshots in this manual.  Screenshots become obsolete
+quickly and as a result confuse the users.  What looks one way in a
+screenshot will always look different in the real program because the
+real program and the manual are always evolving, never perfectly
+synchronized.  It is true that manuals should have screenshots, but our
+objective in omitting screenshots is to keep the software costs minimal
+so you don't have to pay for it.  That includes additional labor to
+synchronize the manual with the software.
+
+<p>In addition to telling you the basic editing features of Cinelerra this
+manual covers tricks that won't be described anywhere else.  We're
+going to try to come up with certain things you can do with Cinelerra
+that you wouldn't think of on your own.
+
+<p><hr>
+Node:<a name="INSTALLATION">INSTALLATION</a>,
+Next:<a rel=next href="#CONFIGURATION">CONFIGURATION</a>,
+Previous:<a rel=previous href="#ABOUT%20CINELERRA">ABOUT CINELERRA</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>INSTALLATION</h1>
+
+<p>The Cinelerra package contains Cinelerra, Mix2000, Mplex, and XMovie,
+along with standalone libraries for various functions.  All these
+programs are useful and in most cases they're the only free programs
+available for dealing with uncompressed, high resolution movies.
+
+<p>All of these programs tie into the same code base.  Updates in one area
+of the code base usually affect everything else so everything would
+have to be downloaded again even if one thing changed.  By including
+everything in one package you can be instantly updated for movie making
+after one download.
+
+<p>The purpose of the various programs is as follows:
+
+<ul>
+
+<li>
+Cinelerra - capturing, editing and production of material
+
+<li>
+Mix2000 - higher resolution volume controller than the standard Linux
+volume controls.
+
+<li>
+MPlex - Multiplexing of MPEG elementary streams.
+
+<li>
+XMovie - Standalone player for all the formats Cinelerra exports.
+
+<li>
+mpeg3toc - Utility for indexing and reading MPEG files.
+
+</ul>
+
+<p>We try to include all the dependancies because of the difficulty in
+tracking them down.  Furthermore, the versions of some of the
+dependancies Cinelerra requires differ from the versions other
+utilities may require, making it impossible to coexist on the same
+system without static inclusion.
+
+<p>Cinelerra is best installed by downloading an RPM and running
+
+<pre>rpm -U --force --nodeps hvirtual*.rpm
+</pre>
+
+<p>on a RedHat system.
+
+<p>On systems which don't support RPM look for a utility called
+<em>rpm2cpio</em>.  Download a Cinelerra RPM and from the /
+directory run
+
+<pre>rpm2cpio hvirtual*.rpm | cpio -i --make-directories
+</pre>
+
+<p>It should be noted that the compiler used in building Cinelerra
+binaries is the free GNU compiler and although it can reorder
+instructions for Pentium I and use some the of Pentium II branch
+instructions it's 12 years behind most modern CPUs.  You can try
+different compilers and optimization flags by compiling the source.
+
+<p>Compiling the source is hard and there's no warranty if the source code
+fails to compile, but the method for compiling starts by downloading
+the source code and decompressing.
+
+<pre>tar jxf hvirtual*.tar.bz2
+</pre>
+
+<p>Enter the hvirtual directory
+
+<pre>cd hvirtual
+</pre>
+
+<p>and set some environment variables.  For Pentium II use:
+
+<pre>export CFLAGS='-O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include'
+</pre>
+
+<p>For Pentium I and old AMD's use:
+
+<pre>export CFLAGS='-O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include'
+</pre>
+
+<p>Then run
+
+<pre>make
+</pre>
+
+<p>The make procedure should run through all the directories and put
+binaries in the <em>i686</em> directories.  When we originally supported
+Alpha it was convenient to compile Alpha and i686 binaries
+simultaneously, in different directories so all the binaries are put in
+i686 directories.
+
+<p>Once finished run
+
+<pre>make install
+</pre>
+
+<p>to install the binaries.  The output is put in the following directories:
+
+<ul>
+<li>Executables -&gt;/usr/bin
+<li>Plugins  -&gt;/usr/lib/cinelerra
+</ul>
+
+<p>The main binaries are the Cinelerra, XMovie, Mix2000 executables and
+several utilities for reading MPEG transport streams.
+
+<p>Run Cinelerra by running
+
+<pre>/usr/bin/cinelerra
+</pre>
+
+<p><hr>
+Node:<a name="CONFIGURATION">CONFIGURATION</a>,
+Next:<a rel=next href="#THE%20MAIN%20WINDOWS">THE MAIN WINDOWS</a>,
+Previous:<a rel=previous href="#INSTALLATION">INSTALLATION</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>CONFIGURATION</h1>
+
+<p>Because of the variety of uses, Cinelerra cannot be run optimally
+without some intimate configuration for your specific needs. Very few
+parameters are adjustible at compile time.  Runtime configuration is
+the only option for most configuration because of the multitude of
+parameters.
+
+<p>Go to <em>settings-&gt;preferences</em> and run through the options.
+
+<ul>
+<li><a href="#PLAYBACK">PLAYBACK</a>: 
+<li><a href="#RECORDING">RECORDING</a>: 
+<li><a href="#PERFORMANCE">PERFORMANCE</a>: 
+<li><a href="#INTERFACE">INTERFACE</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="PLAYBACK">PLAYBACK</a>,
+Next:<a rel=next href="#RECORDING">RECORDING</a>,
+Up:<a rel=up href="#CONFIGURATION">CONFIGURATION</a>
+<br>
+
+<h2>PLAYBACK</h2>
+
+<ul>
+<li><a href="#AUDIO%20OUT">AUDIO OUT</a>: 
+<li><a href="#VIDEO%20OUT">VIDEO OUT</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="AUDIO%20OUT">AUDIO OUT</a>,
+Next:<a rel=next href="#VIDEO%20OUT">VIDEO OUT</a>,
+Up:<a rel=up href="#PLAYBACK">PLAYBACK</a>
+<br>
+
+<h3>AUDIO OUT</h3>
+
+<p>These determine what happens when you play sound from the timeline.
+
+<ul>
+
+<li>SAMPLES TO READ FROM DISK
+
+<p>Cinelerra uses a pipeline for rendering audio. The first stage is
+reading large chunks of audio from disk, the samples to read from
+disk.  This is followed by processing small fragments in a virtual
+console.
+
+</p><li>SAMPLES TO SEND TO CONSOLE:
+
+<p>The second stage is rendering small fragments through the virtual
+console to the sound driver. A larger value here causes more latency
+when you change mixing parameters but gives more reliable playback.
+
+<p>Some sound drivers don't allow changing of the console fragment so
+latency is unchanged no matter what this value is.
+
+</p><li>
+VIEW FOLLOWS PLAYBACK
+
+<p>Causes the timeline window to scroll when the playback cursor moves out
+of view.  This can bog down the X Server.
+
+</p><li>USE SOFTWARE FOR POSITIONING INFORMATION
+
+<p>Most soundcards and sound drivers don't give reliable information on
+the number of samples the card has played. When playing video you need
+this information for synchronization. This option causes the sound
+driver to be ignored and a software timer to be used for
+synchronization.
+
+</p><li>AUDIO PLAYBACK IN REALTIME:
+
+<p>Back in the days when 150Mhz was the maximum, this allowed
+uninterrupted playback on heavy loads. Now you'll probably only need it
+for playing video and audio when the load is to high for uninterrupted
+audio.
+
+</p><li>AUDIO DRIVER
+
+<p>There are many sound drivers for Linux.  This allows selecting one and
+setting parameters specific to it.  Some of the common parameters for a
+sound driver are
+
+<ul>
+
+<li>DEVICE PATH
+
+<p>Usually a file in the <em>/dev/</em> directory which controls the
+device.
+
+</p><li>
+BITS
+
+<p>The number of bits of precision Cinelerra should set the device for. 
+This sometimes has a figuritive meaning.  Some sound drivers need to be
+set to 32 bits to perform 24 bit playback and won't play anything when
+set to 24 bits.  Some sound drivers need to be set to 24 bits for 24
+bit playback.
+
+</p><li>
+CHANNELS
+
+<p>The number of channels Cinelerra should set the device for.  Regardless
+of the number of channels in the project, the number of channels set
+here will be written to the device.  When this is set to 2 and the
+project has 1 channel you'll hear sound through the left speaker and
+not centered as expected for a monaural project.  When this is set to 1
+and the project has 2 channels you'll hear the left channel centered
+and not 2 channels mixed together.
+
+</ul>
+</ul>
+
+<p><hr>
+Node:<a name="VIDEO%20OUT">VIDEO OUT</a>,
+Previous:<a rel=previous href="#AUDIO%20OUT">AUDIO OUT</a>,
+Up:<a rel=up href="#PLAYBACK">PLAYBACK</a>
+<br>
+
+<h3>VIDEO OUT</h3>
+
+<p>These determine what happens when you play video from the timeline.
+
+<ul>
+
+<li>
+FRAMERATE ACHIEVED
+
+<p>The number of frames per second being
+displayed during playback.
+
+</p><li>
+SCALING EQUATION
+
+<p>The algorithm used in all video resizing in
+the virtual console.  This doesn't affect scaling to the size of the
+compositor window.
+
+<ul>
+
+<li>NEAREST NEIGHBOR ENLARGE AND REDUCE
+
+<p>lowest but fastest
+quality.  Produces jagged edges and uneven motion.
+
+</p><li>
+BICUBIC ENLARGE AND BILINEAR REDUCE
+
+<p>highest but slowest
+quality.  For enlarging a bicubic interpolation is used, which blurs
+slightly but doesn't reveal stair steps.  For reduction a bilinear
+interpolation is used, which produces very sharp images and reduces
+noise.  The bilinear reduced images can be sharpened with a sharpen
+effect with less noise than a normal sized image.
+
+</p><li>
+BILINEAR ENLARGE AND BILINEAR REDUCE
+
+<p>when slight enlargement
+is needed a bilinear enlargement looks better than a bicubic
+enlargement.
+
+</ul>
+
+</p><li>
+PRELOAD BUFFER FOR QUICKTIME
+
+<p>The Quicktime/AVI decoder can
+handle CDROM sources better when this is around 1000000.  This reduces
+the amount of seeking.  For normal use this should be 0.
+
+</p><li>
+VIDEO DRIVER
+
+<p>Normally video on the timeline goes to the
+compositor window during continuous playback and when the insertion
+point is repositioned.  Instead of sending video to the Compositor
+window the video driver can be set to send video to another output
+device during continuous playback.  This doesn't affect where video
+goes when the insertion point is repositioned, however.
+
+<p>Various parameters are given for Video Driver depending on the driver.
+
+<ul>
+
+<li>
+DISPLAY
+
+<p>The is intended for dual monitor
+displays.  Depending on the value of Display, the Compositor window
+will appear on a different monitor from the rest of the windows.
+
+</p><li>
+DEVICE PATH
+
+<p>Usually a file in the <em>/dev/</em> directory
+which controls the device.
+
+</p><li>
+SWAP FIELDS
+
+<p>Make the even lines odd and the odd lines even
+when sending to the device.  On an NTSC or 1080i monitor the fields may
+need to be swapped to prevent jittery motion.
+
+</p><li>
+OUTPUT CHANNEL
+
+<p>Devices with multiple outputs may need a
+specific connector to send video on.
+
+</p><li>
+PORT
+
+<p>The IEEE1394 standard specifies something known as the
+<em>port</em>.  This is probably the firewire card number in the system
+to use.
+
+</p><li>
+CHANNEL
+
+<p>The IEEE1394 standard specifies something known as the
+<em>channel</em>.  For DV cameras it's always <em>63</em>.
+
+</ul>
+
+</ul>
+
+<p><hr>
+Node:<a name="RECORDING">RECORDING</a>,
+Next:<a rel=next href="#PERFORMANCE">PERFORMANCE</a>,
+Previous:<a rel=previous href="#PLAYBACK">PLAYBACK</a>,
+Up:<a rel=up href="#CONFIGURATION">CONFIGURATION</a>
+<br>
+
+<h2>RECORDING</h2>
+
+<ul>
+<li><a href="#AUDIO%20IN">AUDIO IN</a>: 
+<li><a href="#VIDEO%20IN">VIDEO IN</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="AUDIO%20IN">AUDIO IN</a>,
+Next:<a rel=next href="#VIDEO%20IN">VIDEO IN</a>,
+Up:<a rel=up href="#RECORDING">RECORDING</a>
+<br>
+
+<h3>AUDIO IN</h3>
+
+<p>These determine what happens when you record audio.
+
+<ul>
+<li>
+RECORD DRIVER
+
+<p>This is used for recording audio in the Record window.  It may be
+shared with the Record Driver for video if the audio and video are
+wrapped in the same stream.  It takes variable parameters depending on
+the driver.  The parameters have the same meaning as they do for
+playback.
+
+<ul>
+<li>
+DEVICE PATH
+
+<p>Usually a file in the <em>/dev/</em> directory which controls the
+device.
+
+</p><li>
+BITS
+
+<p>The number of bits of precision Cinelerra should set the device for. 
+This sometimes has a figuritive meaning.  Some sound drivers need to be
+set to 32 bits to perform 24 bit recording and won't record anything
+when set to 24 bits.  Some sound drivers need to be set to 24 bits for
+24 bit recording.
+
+</p><li>CHANNELS
+
+<p>The number of channels Cinelerra should set the device for.  Regardless
+of the number of channels in the record operation, the number of
+channels set here will be read from the device.  When this is set to 2
+and the record operation has 1 channel you'll record the left speaker
+and not a mix of the left and right speakers as expected for a monaural
+project.  When this is set to 1 and the project has 2 channels you'll
+record the left and right channels mixed into the left speaker and not
+1 channel spead across two speakers.
+
+</ul>
+
+</p><li>
+SAMPLES TO WRITE AT A TIME
+
+<p>Audio is first read in small fragments from the device.  Many small
+fragments are combined into a large fragment before writing to disk. 
+The disk writing process is done in a different thread.  The value here
+determines how large the combination of fragments is for each disk
+write.
+
+</p><li>
+SAMPLE RATE FOR RECORDING
+
+<p>Regardless of what the project settings are.  This is the sample rate
+used for recording.  This should be the highest the audio device
+supports.
+
+</ul>
+
+<p><hr>
+Node:<a name="VIDEO%20IN">VIDEO IN</a>,
+Previous:<a rel=previous href="#AUDIO%20IN">AUDIO IN</a>,
+Up:<a rel=up href="#RECORDING">RECORDING</a>
+<br>
+
+<h3>VIDEO IN</h3>
+
+<p>These determine what happens when you record video.
+
+<ul>
+<li>
+RECORD DRIVER
+
+<p>This is used for recording video in the Record window.  It may be
+shared with the Record Driver for audio if the audio and video are
+wrapped in the same stream.  It takes variable parameters depending on
+the driver.  The parameters have the same meaning as they do for
+playback.
+
+</p><li>
+FRAMES TO RECORD TO DISK AT A TIME
+
+<p>Frames are recorded in a pipeline.  First frames are buffered in the
+device.  Then they're read into a larger buffer for writing to disk. 
+The disk writing is done in a different thread as the device reading. 
+For certain codecs the disk writing uses multiple processors.  This
+value determines how many frames are written to disk at a time.
+
+</p><li>
+FRAMES TO BUFFER IN DEVICE
+
+<p>The number of frames to store in the device before reading.  This
+determines how much latency there can be in the system before frames
+are dropped.
+
+</p><li>USE SOFTWARE FOR POSITIONING INFORMATION
+
+<p>Video uses audio for
+
+<p>synchronization but most soundcards don't give accurate position
+information.  This calculates an estimation of audio position in
+software instead of the hardware for synchronization.
+
+</p><li>
+SYNC DRIVES AUTOMATICALLY
+
+<p>For high bitrate recording the drives may be fast enough to store the
+data but Linux may wait several minutes and stall as it writes several
+minutes of data at a time.  This forces Linux to flush its buffers
+every second instead of every few minutes and produce slightly better
+realtime behavior.
+
+</p><li>
+SIZE OF CAPTURED FRAME
+
+<p>This is the size of the frames recorded.  It is independant of the
+project frame size because most video devices only record a fixed frame
+size.  If the frame size given here isn't supported by the device it
+might crash Cinelerra.
+
+</p><li>FRAME RATE FOR RECORDING
+
+<p>The frame rate recorded is different from the project settings.  This
+sets the recorded frame rate.
+
+</ul>
+
+<p><hr>
+Node:<a name="PERFORMANCE">PERFORMANCE</a>,
+Next:<a rel=next href="#INTERFACE">INTERFACE</a>,
+Previous:<a rel=previous href="#RECORDING">RECORDING</a>,
+Up:<a rel=up href="#CONFIGURATION">CONFIGURATION</a>
+<br>
+
+<h2>PERFORMANCE</h2>
+
+<p>You'll spend most of your time configuring this section.
+
+<ul>
+<li><a href="#RENDERFARM">RENDERFARM</a>: 
+</ul>
+
+<ul>
+
+<li>
+INDEX FILES GO HERE
+
+<p>Back in the days when 4 MB/sec was unearthly speed for a hard drive,
+index files were introduced to speed up drawing the audio tracks.  This
+option determines where index files are placed on the hard drive.
+
+</p><li>
+SIZE OF INDEX FILE
+
+<p>Determines the size of an index file. Larger index sizes allow smaller
+files to be drawn faster while slowing down the drawing of large files. 
+Smaller index sizes allow large files to be drawn faster while slowing
+down small files.
+
+</p><li>
+NUMBER OF INDEX FILES TO KEEP
+
+<p>To keep the index directory from becoming unruly, old index files are
+deleted. This determines the maximum number of index files to keep in
+the directory.
+
+</p><li>
+DELETE ALL INDEXES
+
+<p>When you change the index size or you want to clean out excessive index
+files, this deletes all the index files.
+
+</p><li>CACHE ITEMS
+
+<p>To speed up rendering, several assets are kept open simultaneously. 
+This determines how many are kept open.  A number too large may exhaust
+your memory pretty fast and result in a crash.  A number too small may
+result in slow playback as assets need to be reopened more frequently.
+
+</p><li>
+SECONDS TO PREROLL RENDERS
+
+<p>Some effects need a certain amount of time to settle in.  This sets a
+number of seconds to render without writing to disk before the selected
+region is rendered.  When using the renderfarm you'll sometimes need to
+preroll to get seemless transitions between the jobs.  Every job in a
+renderfarm is prerolled by this value.
+
+</p><li>
+FORCE SINGLE PROCESSOR USE
+
+<p>Cinelerra tries to use all processors on the system by default but
+sometimes you'll only want to use one processor, like in a renderfarm
+client.  This forces only one processer to be used.  The operating
+system, however, usually uses the second processor anyway for disk
+access so this option is really a 1.25 processor mode. </ul>
+
+<p><hr>
+Node:<a name="RENDERFARM">RENDERFARM</a>,
+Up:<a rel=up href="#PERFORMANCE">PERFORMANCE</a>
+<br>
+
+<h3>RENDERFARM</h3>
+
+<p>To use the renderfarm set these options.  Ignore them for a standalone
+system
+
+<ul>
+
+<li>
+USE RENDER FARM FOR RENDERING
+
+<p>When selected, all the
+<em>file-&gt;render</em> operations use the renderfarm.
+
+</p><li>
+NODES
+
+<p>Displays all the nodes on the renderfarm and which ones are active. 
+Select the <em>ON</em> column to activate and deactivate nodes.  Select
+the <em>HOSTNAME</em> and <em>PORT</em> columns to edit a node.  Computer
+freaks may be better off editing the <em>~/.bcast/.Cinelerra_rc</em> file
+than this if they have hundreds of nodes.
+
+</p><li>
+HOSTNAME
+
+<p>Edit the hostname of an existing node or enter the hostname of a new
+node here.
+
+</p><li>
+PORT
+
+<p>Edit the port of an existing node or enter the port of a new node here.
+
+</p><li>
+REPLACE NODE
+
+<p>When editing an existing node, hit this to commit the changes to
+<em>HOSTNAME</em> and <em>PORT</em>.  The changes won't be committed if you
+don't hit this buttoin.
+
+</p><li>
+ADD NODE
+
+<p>Create a new node with the <em>HOSTNAME</em> and <em>PORT</em> settings.
+
+</p><li>
+DELETE NODE
+
+<p>Deletes whatever node is highlighted in the <em>NODES</em> list.
+
+</p><li>
+SORT NODES
+
+<p>Sorts the <em>NODES</em> list based on the hostname.
+
+</p><li>
+FILESYSTEM PREFIX ON REMOTE NODES
+
+<p>Sets the relative location of all the assets on the nodes.  If the
+assets are in <em>/mov</em> on the master and the master filesystem is
+mounted under <em>/mnt</em> on the nodes, the filesystem prefix should be
+<em>/mnt</em>.  Ideally the assets should appear under the same directory
+on the nodes as the master.  In this case the filesystem prefix can be
+<em>/</em>.
+
+</p><li>
+TOTAL JOBS TO CREATE
+
+<p>Determines the number of jobs to dispatch to the renderfarm.  The more
+jobs you create, the more finely balanced the renderfarm becomes.
+
+</ul>
+
+<p><hr>
+Node:<a name="INTERFACE">INTERFACE</a>,
+Previous:<a rel=previous href="#PERFORMANCE">PERFORMANCE</a>,
+Up:<a rel=up href="#CONFIGURATION">CONFIGURATION</a>
+<br>
+
+<h2>INTERFACE</h2>
+
+<p>These parameters affect purely how the user interface works.
+
+<ul>
+
+<li>USE HOURS:MINUTES:SECONDS.XXX
+
+<p>Various representations of time are given.  Select the most convenient
+one.  The time representation can also be changed by <em>CTRL</em>
+clicking on the time ruler.
+
+</p><li>USE THUMBNAILS
+
+<p>The Resource Window displays thumbnails of assets by default.  This can
+take a long time to set up.  This option disables the thumbnails.
+
+</p><li>CLICKING IN/OUT POINTS DOES WHAT
+
+<p>Cinelerra not only allows you to perform editing by dragging in/out
+points but also defines three seperate operations which occur when you
+drag an in/out point. For each mouse button you select the behavior in
+this window. The usage of each editing mode is described in editing.
+
+</p><li>MIN DB FOR METER
+
+<p>Some sound sources have a lower noise threshold than others. 
+Everything below the noise threshold is meaningless.  This option sets
+the meters to clip below a certain level.  Consumer soundcards usually
+bottom out at -65.  Professional soundcards bottom out at -90.
+
+</p><li>FORMAT FOR METER
+
+<p>This option allows you to select the format for all the VU meters. If
+you're a CS major select percentage and if you're a EE major select DB. 
+With that, be aware all levels in Cinelerra are input as DB.
+
+</p><li>THEME
+
+<p>Cinelerra supports variable themes.  Select one here and restart
+Cinelerra to see it.
+
+</ul>
+
+<p><hr>
+Node:<a name="THE%20MAIN%20WINDOWS">THE MAIN WINDOWS</a>,
+Next:<a rel=next href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>,
+Previous:<a rel=previous href="#CONFIGURATION">CONFIGURATION</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>THE MAIN WINDOWS</h1>
+
+<p>When Cinelerra first starts, you'll get four main windows.  Hitting
+<em>CTRL-w</em> in any window closes it.
+
+<ul>
+
+<li>Viewer
+
+<p>In here you'll scrub around source media and clips, selecting regions
+to paste into the project.  Operations done in the viewer affect a
+temporary EDL or a clip but not the timeline.
+
+</p><li>Compositor
+
+<p>This window displays the output of the timeline.  It's the interface
+for most compositing operations or operations that affect the
+appearance of the timeline output.  Operations done in the Compositor
+affect the timeline but don't affect clips.
+
+</p><li>Program
+
+<p>This contains the timeline and the entry point for all menu driven
+operations.  The timeline consists of a vertical stack of tracks with
+horizontal representation of time.  This defines the output of
+rendering operations and what is saved when you save files.
+
+</p><li>Resources
+
+<p>Effects, transitions, clips, and assets are accessed here.  Most of the
+resources are inserted into the project by dragging them out of the
+resource window.  Management of resource allocation is also performed
+here.
+
+</ul>
+
+<p>Under the <em>Window</em> menu you'll find options affecting the main
+windows.  <em>default positions</em> repositions all the windows to a 4
+screen editing configuration.  On dual headed displays, the
+<em>default positions</em> operation fills only one monitor with windows.
+
+<p>An additional window, the <em>levels window</em> can be brought up from
+the <em>Window</em> menu.  The <em>levels</em> window displays the output
+audio levels after all mixing is done.
+
+<p><hr>
+Node:<a name="LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>,
+Next:<a rel=next href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>,
+Previous:<a rel=previous href="#THE%20MAIN%20WINDOWS">THE MAIN WINDOWS</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>LOADING AND SAVING FILES</h1>
+
+<ul>
+<li><a href="#LOADING%20FILES">LOADING FILES</a>: 
+<li><a href="#LOADING%20THE%20BACKUP">LOADING THE BACKUP</a>: 
+<li><a href="#SAVING%20FILES">SAVING FILES</a>: 
+<li><a href="#RENDERING%20FILES">RENDERING FILES</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="LOADING%20FILES">LOADING FILES</a>,
+Next:<a rel=next href="#LOADING%20THE%20BACKUP">LOADING THE BACKUP</a>,
+Up:<a rel=up href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>
+<br>
+
+<h2>LOADING FILES</h2>
+
+<p>All data that you work with in Cinelerra is acquired either by
+<em>recording from a device</em> or by <em>loading from disk</em>.  This
+section describes loading.
+
+<p>The loading and playing of files is just as you would expect. Just go
+to <em>file-&gt;Load</em>, select a file for loading, and hit <em>ok</em>. Hit
+the forward play button and it should start playing, regardless of
+whether a progress bar has popped up.
+
+<p>Another way to load files is to pass the filenames as arguments on the
+command line.  This creates new tracks for every file and starts the
+program with all the arguments loaded.
+
+<p>If the file is a still image, the project's attributes are not changed
+and the first frame of the track becomes the image.  If the file has
+audio, Cinelerra may build an index file for it to speed up drawing. 
+You can edit and play the file while the index file is being built.
+
+<ul>
+<li><a href="#SUPPORTED%20FILE%20FORMATS">SUPPORTED FILE FORMATS</a>: 
+<li><a href="#INSERTION%20STRATEGY">INSERTION STRATEGY</a>: 
+<li><a href="#LOADING%20MULTIPLE%20FILES">LOADING MULTIPLE FILES</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="SUPPORTED%20FILE%20FORMATS">SUPPORTED FILE FORMATS</a>,
+Next:<a rel=next href="#INSERTION%20STRATEGY">INSERTION STRATEGY</a>,
+Up:<a rel=up href="#LOADING%20FILES">LOADING FILES</a>
+<br>
+
+<h3>SUPPORTED FILE FORMATS</h3>
+
+<p>The format of the file affects what Cinelerra does with it.  Some
+formats replace all the project settings.  Some just insert data with
+existing project settings.  If your project sample rate is 48khz and
+you load a sound file with 96khz, you'll still be playing it at
+48khz.   XML files, however, replace the project settings.  If you load
+an XML file at 96khz and the current project sample rate is 48khz,
+you'll change it to 96khz.  Supported file formats are currently:
+
+<ul>
+<li>WAV
+<li>PCM
+<li>AIFF
+<li>Uncompresed Quicktime
+
+<p>Quicktime is not the standard for UNIX but we use it because it's well
+documented.  All of the Quicktime movies on the internet are
+compressed.  Cinelerra doesn't support compressed Quicktime movies. 
+Most of the Quicktime footage dealt with in Cinelerra is generated by
+Cinelerra either recording from a device or rendering.  The best
+Quicktime settings to use are JPEG video and twos audio.
+
+</p><li>JPEG, PNG, TIFF, TGA sequences
+
+<p>Cinelerra generates a special table of contents file when you render an
+image sequence.  You can either select every image file to load or
+select the table of contents when the rendering is done.  Selecting the
+table of contents is faster and doesn't fill up the resource window
+with thousands of images.
+
+</p><li>JPEG, PNG, TIFF, TGA still images
+
+<p>When loaded, the image takes up one frame in length and doesn't change
+the project attributes.
+
+</p><li>AVI with mp3 audio and MPEG-4 video
+
+<li>MPEG 1, 2 video
+
+<p>You need to run <em>mpeg3toc</em> to generate a table of contents for
+these, then load the table of contents.  If you want to edit a DVD,
+find the corresponding <em>ifo</em> file for the program of interest and run
+
+<pre>mpeg3toc /cdrom/video_ts/vts_01_0.ifo dvd.toc
+</pre>
+
+<p>or something similar.  Then load <em>dvd.toc</em>.  This allows frame
+accurate editing where none would be possible otherwise.
+
+</p><li>MPEG program streams and transport streams
+
+<p>You need to run <em>mpeg3toc</em> on these just like MPEG 1,2 video. 
+Program and transport streams are structured into multiple tracks. 
+Each track can be video or audio.  Each audio track can have 1-6
+channels.  Cinelerra converts each channel of audio into a track, so
+for MPEG streams with multiple tracks, the tracks will be flattened.
+
+</p><li>MPEG audio layer II, III
+
+<p>These can be loaded directly with no table of contents.  Variable
+bitrate streams may need a table of contents but are playable without
+it.
+
+</p><li>AC3 audio
+
+<li>XML
+
+<p>These are generated by Cinelerra for storing edit lists.  They change
+project attributes when loaded.
+
+</ul>
+
+<p><hr>
+Node:<a name="INSERTION%20STRATEGY">INSERTION STRATEGY</a>,
+Next:<a rel=next href="#LOADING%20MULTIPLE%20FILES">LOADING MULTIPLE FILES</a>,
+Previous:<a rel=previous href="#SUPPORTED%20FILE%20FORMATS">SUPPORTED FILE FORMATS</a>,
+Up:<a rel=up href="#LOADING%20FILES">LOADING FILES</a>
+<br>
+
+<h3>INSERTION STRATEGY</h3>
+
+<p>Usually three things happen when you load a file.  First the existing
+project is cleared from the screen, second the project's attributes are
+changed to match the file's, and finally the new file's tracks are
+created in the timeline.
+
+<p>But Cinelerra lets you change what happens when you load a file.
+
+<p>In the file selection box go to the <em>Insertion strategy</em> box and
+select it.  Each of these options loads the file a different way.
+
+<ul>
+
+<li>Replace current project
+
+<p>All tracks in the current project are deleted and new tracks are
+created to match the source.  Project attributes are only changed when
+loading XML.  If multiple files are selected it adds new tracks for
+every file.
+
+</p><li>Replace current project and concatenate tracks
+
+<p>Same as replace current project except if multiple files are selected
+it concatenates the tracks of every file after the first.
+
+</p><li>Append in new tracks
+
+<p>The current project is not deleted and new tracks are created for the
+source.
+
+</p><li>Concatenate to existing tracks
+
+<p>The current project is not deleted and new files are concatenated to
+the existing tracks.
+
+</p><li>Paste at insertion point
+
+<p>The file is pasted in like a normal paste operation.
+
+</p><li>Create new resources only
+
+<p>The timeline is unchanged and new resources are created in the Resource
+Window.
+
+</ul>
+
+<p>The insertion strategy is a recurring option in many of Cinelerra's
+functions.  In each place the options do the same thing.  With these
+options you can almost do all your editing by loading files.
+
+<p>If you load files by passing command line arguments to Cinelerra, the
+files are loaded with <em>Replace current project</em> rules.
+
+<p><hr>
+Node:<a name="LOADING%20MULTIPLE%20FILES">LOADING MULTIPLE FILES</a>,
+Previous:<a rel=previous href="#INSERTION%20STRATEGY">INSERTION STRATEGY</a>,
+Up:<a rel=up href="#LOADING%20FILES">LOADING FILES</a>
+<br>
+
+<h3>LOADING MULTIPLE FILES</h3>
+
+<p>In the file selection box go to the list of files.  Select a file.  Go
+to another file and select it while holding down <em>CTRL</em>.  This
+selects one additional file.  Go to another file and select it while
+holding down <em>SHIFT</em>.  This selects every intervening file.  This
+behavior is available in most every list box.
+
+<p>Select a bunch of mp3 files and <em>Replace current project and
+concatenate tracks</em> in the insertion strategy to create a song
+playlist.
+
+<p><hr>
+Node:<a name="LOADING%20THE%20BACKUP">LOADING THE BACKUP</a>,
+Next:<a rel=next href="#SAVING%20FILES">SAVING FILES</a>,
+Previous:<a rel=previous href="#LOADING%20FILES">LOADING FILES</a>,
+Up:<a rel=up href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>
+<br>
+
+<h2>LOADING THE BACKUP</h2>
+
+<p>There is one special XML file on disk at all times.  After every
+editing operation Cinelerra saves the current project to a backup in
+<em>$HOME/.bcast/backup.xml</em>.  In the event of a crash go to
+<em>file-&gt;load backup</em> to load the backup.  It is important after a
+crash to reboot Cinelerra without performing any editing operations. 
+Loading the backup should be the first operation or you'll overwrite
+the backup.
+
+<p><hr>
+Node:<a name="SAVING%20FILES">SAVING FILES</a>,
+Next:<a rel=next href="#RENDERING%20FILES">RENDERING FILES</a>,
+Previous:<a rel=previous href="#LOADING%20THE%20BACKUP">LOADING THE BACKUP</a>,
+Up:<a rel=up href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>
+<br>
+
+<h2>SAVING FILES</h2>
+
+<p>When Cinelerra saves a file it saves an edit decision list of the
+current project but doesn't save any media.  Go to <em>File-&gt;save
+as...</em>.  Select a file to overwrite or enter a new file.  Cinelerra
+automatically concatenates <em>.xml</em> to the filename if no
+<em>.xml</em> extension is given.
+
+<p>The saved file contains all the project settings and locations of every
+edit but instead of media it contains pointers to the original media
+files on disk.
+
+<p>For each media file the XML file stores either an absolute path or just
+the relative path.  If the media is in the same directory as the XML
+file a relative path is saved.  If it's in a different directory an
+absolute path is saved.
+
+<p>In order to move XML files around without breaking the media linkages
+you either need to keep the media in the same directory as XML file
+forever or save the XML file in a different directory than the media
+and not move the media ever again.
+
+<p>If you want to create an audio playlist and burn it on CD-ROM, save the
+XML file in the same directory as the audio files and burn the entire
+directory.  This keeps the media paths relative.
+
+<p>XML files are useful for saving the current state before going to sleep
+and saving audio playlists but they're limited in that they're specific
+to Cinelerra.  You can't play XML files in a dedicated movie player. 
+Realtime effects in an XML file have to be resynthesized every time you
+play it back.  The XML file also requires you to maintain copies of all
+the source assets on hard drives, which can take up space and cost a
+lot of electricity to spin.  For a more persistent storage of the
+output there's rendering.
+
+<p><hr>
+Node:<a name="RENDERING%20FILES">RENDERING FILES</a>,
+Previous:<a rel=previous href="#SAVING%20FILES">SAVING FILES</a>,
+Up:<a rel=up href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>
+<br>
+
+<h2>RENDERING FILES</h2>
+
+<p>Rendering takes a section of the timeline, performs all the editing,
+effects and compositing, and stores it in a pure movie file.  You can
+then delete all the source assets, play the rendered file in a movie
+player, or bring it back into Cinelerra for more editing.  It's very
+difficult to retouch any editing decisions in the pure movie file,
+however, so keep the original assets and XML file around several days
+after you render it.
+
+<p>To begin a render operation you need to define a region of the timeline
+to render.  The navigation section describes methods of defining
+regions.  See <a href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>.  When a region is highlighted
+or in/out points are set, the affected region is rendered.  When no
+region is highlighted, everything after the insertion point is
+rendered.
+
+<p>Go to <em>File-&gt;render</em> to bring up the render dialog.  Select the
+magnifying glass to bring up a file selection dialog.  This determines
+the filename to write the rendered file to.
+
+<p>In the render dialog select a format from the <em>File Format</em> menu. 
+The format of the file determines whether you can render audio or video
+or both.  Select <em>Render audio tracks</em> to generate audio tracks
+and <em>Render video tracks</em> to generate video tracks.  Select the
+wrench next to each toggle to set compression parameters.  If the file
+format can't store audio or video the compression parameters will be
+blank.  If <em>Render audio tracks</em> or <em>Render video tracks</em> is
+selected and the file format doesn't support it, trying to render will
+pop up an error.
+
+<p>The <em>Create new file at each label</em> option causes a new file to be
+created when every label in the timeline is encountered.  This is
+useful for dividing long audio recordings into individual tracks.  When
+using the renderfarm, <em>Create new file at each label</em> causes one
+renderfarm job to be created at every label instead of using the
+internal load balancing algorithm to space jobs.
+
+<p>When <em>Create new file at each label</em> is selected, a new filename
+is created for every output file.  If the filename given in the render
+dialog has a 2 digit number in it, the 2 digit number is overwritten
+with a different incremental number for every output file.  If no 2
+digit number is given, Cinelerra automatically concatenates a number to
+the end of the given filename for every output file.
+
+<p>In the filename <em>/hmov/track01.wav</em> the <em>01</em> would be
+overwritten for every output file.  The filename
+<em>/hmov/track.wav</em>; however, would become <em>/hmov/track.wav001</em>
+and so on and so forth.  Filename regeneration is only used when either
+renderfarm mode is active or creating new files for every label is
+active.
+
+<p>Finally the render dialog lets you select an insertion mode.  The
+insertion modes are the same as with loading files.  In this case if
+you select <em>insert nothing</em> the file will be written out to disk
+without changing the current project.  For other insertion strategies
+be sure to prepare the timeline to have the output inserted at the
+right position before the rendering operation is finished. 
+See <a href="#EDITING">EDITING</a>.  Editing describes how to cause output to be inserted
+at the right position.
+
+<p>It should be noted that even if you only have audio or only have video
+rendered, a <em>paste</em> insertion strategy will behave like a normal
+paste operation, erasing any selected region of the timeline and
+pasting just the data that was rendered.  If you render only audio and
+have some video tracks armed, the video tracks will get truncated while
+the audio output is pasted into the audio tracks.
+
+<p><hr>
+Node:<a name="NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>,
+Next:<a rel=next href="#EDITING">EDITING</a>,
+Previous:<a rel=previous href="#LOADING%20AND%20SAVING%20FILES">LOADING AND SAVING FILES</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>NAVIGATING THE PROJECT</h1>
+
+<p>The thing you want to do most of the time is get to a certain time and
+place in the media.  Internally the media is organized into tracks. 
+Each track extends across time.  Navigation involves both getting to a
+track and getting to a certain time in the track.
+
+<ul>
+<li><a href="#NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>: 
+<li><a href="#NAVIGATING%20THE%20VIEWER%20AND%20COMPOSITOR">NAVIGATING THE VIEWER AND COMPOSITOR</a>: 
+<li><a href="#NAVIGATING%20THE%20RESOURCES">NAVIGATING THE RESOURCES</a>: 
+<li><a href="#USING%20THE%20TRANSPORT%20CONTROLS">USING THE TRANSPORT CONTROLS</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>,
+Next:<a rel=next href="#NAVIGATING%20THE%20VIEWER%20AND%20COMPOSITOR">NAVIGATING THE VIEWER AND COMPOSITOR</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>
+<br>
+
+<h2>NAVIGATING THE PROGRAM WINDOW</h2>
+
+<p>The program window contains many features for navigation and displays
+the timeline as it is structured in memory: tracks stacked vertically
+and extending across time.  The horizontal scroll bar allows you to
+scan across time.  The vertical scroll bar allows you to scan across
+tracks.
+
+<p>Below the timeline you'll find the zoom panel.  The zoom panel contains
+values for <em>sample zoom</em>, <em>amplitude</em>, and <em>track
+zoom</em>.  These values in addition to the scrollbars are all that's
+needed to position the timeline.
+
+<br><p>
+<img src="zoompanel.png" alt="zoompanel.png">,
+
+<p>Changing the <em>sample zoom</em> causes the amount of time visible to
+change.  <em>If your mouse has a wheel and it works in X11 go over
+the tumblers and use the wheel to zoom in and out.</em>
+
+<p>The <em>amplitude</em> only affects audio.  It determines how big the
+waveform is if the waveform is drawn.
+
+<p>The <em>track zoom</em> affects all tracks.  It determines the height of
+each track.  If you change the track zoom the amplitude zoom
+compensates so  audio waveforms look proportional.
+
+<p>In addition to the graphical tools, you'll probably more often use the
+keyboard to navigate.  Use <em>PAGE UP</em> and <em>PAGE DOWN</em> to
+scroll up and down the tracks.
+
+<p>Use the <em>LEFT</em> and <em>RIGHT</em> arrows to move across time. 
+You'll often need to scroll beyond the end of the timeline but
+scrollbars won't let you do it.  Instead use the <em>RIGHT</em> arrow to
+scroll past the end of timeline.
+
+<p>Use the <em>UP</em> and <em>DOWN</em> arrows to change the sample zoom by a
+power of 2.
+
+<p><em>CTRL-UP</em> and <em>CTRL-DOWN</em> cause the amplitude zoom to change.
+
+<p><em>CTRL-PGUP</em> and <em>CTRL-PGDOWN</em> cause the track zoom to change.
+
+<ul>
+<li><a href="#THE%20INSERTION%20POINT">THE INSERTION POINT</a>: 
+<li><a href="#THE%20IN%2fOUT%20POINTS">THE IN/OUT POINTS</a>: 
+<li><a href="#USING%20LABELS%20IN%20THE%20PROGRAM%20WINDOW">USING LABELS IN THE PROGRAM WINDOW</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="THE%20INSERTION%20POINT">THE INSERTION POINT</a>,
+Next:<a rel=next href="#THE%20IN%2fOUT%20POINTS">THE IN/OUT POINTS</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>
+<br>
+
+<h3>THE INSERTION POINT</h3>
+
+<p>By default you'll see a flashing insertion point in the program window
+the first time you boot it up.  This is where new media is pasted onto
+the timeline.  It's also the starting point of all playback
+operations.  When rendering it defines the region of the timeline to be
+rendered.
+
+<p>The insertion point is normally moved by clicking inside the timebar. 
+Any region of the timebar not obscured by labels and in/out points is a
+hotspot for repositioning the insertion point.
+
+<br><p>
+<img src="main_timebar.png" alt="main_timebar.png">,
+<em>The main timebar</em>
+
+<p>The insertion point also can be moved by clicking in the timeline
+itself, but not always.  The insertion point has two modes of
+operation:
+
+<ul>
+<li>drag and drop mode
+
+<li>cut and paste mode
+
+</ul>
+
+<p>The mode of operation is determined by selecting the arrow or the
+i-beam in the buttonbar.
+
+<br><p>
+<img src="editing_mode.png" alt="editing_mode.png">,
+<em>The editing mode buttons</em>
+
+<p>If the arrow is highlighted it enables <em>drag and drop</em> mode.  In
+drag and drop mode, clicking in the timeline doesn't reposition the
+insertion point.  Instead it selects an entire edit.  Dragging in the
+timeline repositions the edit, snapping it to other edit boundaries. 
+This is normally useful for reordering audio playlists and moving
+effects around.
+
+<p>If the i-beam is highlighted it enables <em>cut and paste mode</em>.  In
+cut and paste mode clicking in the timeline repositions the insertion
+point.  Dragging in the timeline highlights a region.  The highlighted
+region becomes the playback range during the next playback operation,
+the rendered range during the next render operation, and the region
+affected by cut and paste operations.
+
+<p><em>Shift-clicking</em> in the timeline extends the highlighted region.
+
+<p><em>Double-clicking</em> in the timeline selects the entire edit the
+cursor is over.
+
+<p>It should be noted that when moving the insertion point and selecting
+regions, the positions are either aligned to frames or aligned to
+samples.  When editing video you'll want to align to frames.  When
+editing audio you'll want to align to samples.  This is set in
+<em>settings-&gt;align cursor on frames</em>.
+
+<p>If the highlighted region is the region affected by cut and paste
+operations, how do I cut and paste in <em>drag and drop</em> mode?  In
+this case you need to set <em>in/out points</em> to define an affected region.
+
+<p><hr>
+Node:<a name="THE%20IN%2fOUT%20POINTS">THE IN/OUT POINTS</a>,
+Next:<a rel=next href="#USING%20LABELS%20IN%20THE%20PROGRAM%20WINDOW">USING LABELS IN THE PROGRAM WINDOW</a>,
+Previous:<a rel=previous href="#THE%20INSERTION%20POINT">THE INSERTION POINT</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>
+<br>
+
+<h3>THE IN/OUT POINTS</h3>
+
+<p>In both editing modes you can set in/out points.  The in/out points
+define the affected region.  In drag and drop mode they are the only
+way to define an affected region.  In both cut and paste mode and drag
+and drop mode they override the highlighted area.  If a highlighted
+area and in/out points are set, the highlighted area affects playback
+while the in/out points affect editing operations.  To avoid confusion
+it's best to use either highlighting or in/out points but not both
+simultaneously.
+
+<p>To set in/out points go to the timebar and position the insertion point
+somewhere.  Hit the <img src="in_point_button.png" alt="in_point_button.png"> <em>in point button</em>.  Go
+to a position after the in point and hit the <img src="out_point_button.png" alt="out_point_button.png">
+<em>out point button</em>.
+
+<br><p>
+<img src="inout_points.png" alt="inout_points.png"> <em>Timebar with in/out points set</em>.
+
+<p>Select either the in point or the out point and the insertion point
+jumps to that location.  After selecting an in point, if you hit the
+<em>in point button</em> the in point will be deleted.  After selecting
+an out point, if you hit the <em>out point button</em> the out point will
+be deleted.
+
+<p>If you select a region somewhere else while in/out points already
+exist, the existing points will be repositioned when you hit the in/out
+buttons.
+
+<p><em>Shift-clicking</em> on an in/out point extends the highlighted region
+to that point.
+
+<p>Instead of using the button bar you can use the <em>[</em> and <em>]</em>
+keys to toggle in/out points.
+
+<p>The insertion point and the in/out points allow you to define an
+affected region but they don't let you jump to exact points on the
+timeline very easily.  For this purpose there are labels.
+
+<p><hr>
+Node:<a name="USING%20LABELS%20IN%20THE%20PROGRAM%20WINDOW">USING LABELS IN THE PROGRAM WINDOW</a>,
+Previous:<a rel=previous href="#THE%20IN%2fOUT%20POINTS">THE IN/OUT POINTS</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>
+<br>
+
+<h3>USING LABELS IN THE PROGRAM WINDOW</h3>
+
+<p>Labels are an easy way to set exact locations on the timeline you want
+to jump to.  When you position the insertion point somewhere and hit
+the <img src="label_button.png" alt="label_button.png"> <em>label button</em> a new label appears on the
+timeline.
+
+<br><p>
+<img src="timebar_label.png" alt="timebar_label.png"> <em>Timebar with a label on it</em>
+
+<p>No matter what the zoom settings are, clicking on the label positions
+the insertion point exactly where you set it.  Hitting the label button
+again when a label is selected deletes it.
+
+<p><em>Shift-clicking</em> on a label extends the highlighted region.
+
+<p><em>Double-clicking</em> between two labels highlights the region between
+the labels.
+
+<p>Hitting the <em>l</em> key has the same effect as the label button.
+
+<p>If you hit the label button when a region is highlighted, two labels
+are toggled at each end of the highlighted region.  If one end already
+has a label, then the existing label is deleted and a label is created
+at the opposite end.
+
+<p>Labels can reposition the insertion point when they are selected but
+they can also be traversed with the <img src="label_traversal.png" alt="label_traversal.png"> <em>label
+traversal</em> buttons.  When a label is out of view, the label traversal
+buttons reposition the timeline so the label is visible.  There are
+keyboard shortcuts for label traversal, too.
+
+<p><em>CTRL-LEFT</em> repositions the insertion point on the previous label.
+
+<p><em>CTRL-RIGHT</em> repositions the insertion point on the next label.
+
+<p>With label traversal you can quickly seek back and forth on the
+timeline but you can also select regions.
+
+<p><em>SHIFT-CTRL-LEFT</em> extends the highlighted region to the previous
+label.
+
+<p><em>SHIFT-CTRL-RIGHT</em> extends the highlighted region to the next label.
+
+<p>Manually hitting the label button or <em>l</em> key over and over again
+to delete a series of labels can get tedious.  For deleting a set of
+labels, first highlight a region and second use the <em>Edit-&gt;Clear
+labels</em> function.  If in/out points exist, the labels between the
+in/out points are cleared and the highlighted region ignored.
+
+<p><hr>
+Node:<a name="NAVIGATING%20THE%20VIEWER%20AND%20COMPOSITOR">NAVIGATING THE VIEWER AND COMPOSITOR</a>,
+Next:<a rel=next href="#NAVIGATING%20THE%20RESOURCES">NAVIGATING THE RESOURCES</a>,
+Previous:<a rel=previous href="#NAVIGATING%20THE%20PROGRAM%20WINDOW">NAVIGATING THE PROGRAM WINDOW</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>
+<br>
+
+<h2>NAVIGATING THE VIEWER AND COMPOSITOR</h2>
+
+<p>The navigation features of the Viewer and Compositor behave very
+similarly.  Each has a timebar and slider below the video output.  The
+timebar and slider are critical for navigation.
+
+<br><p>
+<img src="timebarslider.png" alt="timebarslider.png">,
+
+<p>The timebar represents the entire time covered by the program.  When
+you define labels and in/out points it defines those, too.  Finally the
+timebar defines a region known as the <em>preview region</em>.
+
+<p>The <em>preview region</em> is the region of the timeline which the
+slider effects.  The slider only covers the time covered by the preview
+region.  By using a preview region inside the entire program and using
+the slider inside the preview region you can quickly and precisely seek
+in the compositor and viewer.
+
+<p>When you replace the current project with a file the preview region
+automatically resizes to cover the entire file.  When you append data
+or change the size of the current project, the preview region stays the
+same size and shrinks.  Therefore, you need to resize the preview
+region.
+
+<p>Load a file and then slide around it using the compositor slider.  The
+insertion point in the main window follows the compositor.  Move the
+pointer over the compositor's timebar until it turns into a left resize
+pointer.  The click and drag right.  The preview region should have
+changed and the slider resized proportionally.
+
+<p>Go to the right of the timebar until a right resize pointer appears. 
+Drag left so the preview region shrinks.
+
+<p>Go to the center of the preview region in the timebar and drag it
+around to convince yourself if can be moved.
+
+<br><p>
+<img src="previewregion.png" alt="previewregion.png">,
+
+<p><em>Preview region in compositor</em>
+
+<p>If you go to the slider and slide it around with the preview region
+shrunk, you'll see the slider only affects the preview region.  The
+timebar and slider in the viewer window work exactly the same.
+
+<p>Labels and in/out points are fully supported in the viewer and
+compositor.  The only difference between the viewer and compositor is
+the compositor reflects the state of the program while the viewer
+reflects the state of a clip but not the program.
+
+<p>When you hit the <em>label button</em> in the compositor, the label
+appears both in the compositor timebar and the program timebar.
+
+<p>When you select a label or in/out point in the compositor, the program
+window jumps to that position.
+
+<br><p>
+<img src="viewer_labels.png" alt="viewer_labels.png"> <em>Labels and in/out points in the viewer</em>.
+
+<p>In the viewer and compositor, labels and in/out points are displayed in
+the timebar.  Instead of displaying just a region of the program, the
+timebar displays the entire program here.
+
+<p><hr>
+Node:<a name="NAVIGATING%20THE%20RESOURCES">NAVIGATING THE RESOURCES</a>,
+Next:<a rel=next href="#USING%20THE%20TRANSPORT%20CONTROLS">USING THE TRANSPORT CONTROLS</a>,
+Previous:<a rel=previous href="#NAVIGATING%20THE%20VIEWER%20AND%20COMPOSITOR">NAVIGATING THE VIEWER AND COMPOSITOR</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>
+<br>
+
+<h2>NAVIGATING THE RESOURCES</h2>
+
+<p>The resource window is divided into two areas.  One area lists folders
+and another area lists folder contents.  Going into the folder list and
+clicking on a folder updates the contents area with the contents of
+that folder.
+
+<p>The folder and contents can be displayed as icons or text.
+
+<p><em>Right clicking</em> in the folder or contents area brings up a menu
+containing formatting options.  Select <em>Display text</em> to display a
+text listing.  Select <em>Sort items</em> to sort the contents of the
+folder alphabetically.
+
+<p><hr>
+Node:<a name="USING%20THE%20TRANSPORT%20CONTROLS">USING THE TRANSPORT CONTROLS</a>,
+Previous:<a rel=previous href="#NAVIGATING%20THE%20RESOURCES">NAVIGATING THE RESOURCES</a>,
+Up:<a rel=up href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>
+<br>
+
+<h2>USING THE TRANSPORT CONTROLS</h2>
+
+<p>Transport controls are just as useful in navigation as they are in
+playing back footage, hence they are described here.  Each of the
+Viewer, Compositor, and Program windows has a transport panel.
+
+<br><p>
+<img src="transport_panel.png" alt="transport_panel.png"> <em>The transport panel</em>.
+
+<p>The transport panel is controlled by the keyboard as well as the
+graphical interface.  For each of the operations it performs, the
+starting position is the position of the insertion point or slider. 
+The ending position is either the end or start of the timeline or the
+end or start of the selected region if there is one.
+
+<p>The orientation of the end or start depends on the direction of
+playback.  If it's forward the end position is the end of the selected
+region.  If it's backward the end position is the start of the selected
+region.
+
+<p>The insertion point moves to track playback.  When playback stops it
+leaves the insertion point where it stopped.  Thus, by playing back you
+change the position of the insertion point.
+
+<p>The keyboard interface is usually the fastest and has more speeds.  The
+transport keys are arranged in a <em>T</em> on the number pad.
+
+<ul>
+
+<li><em>+</em> Fast reverse
+<li><em>6</em> Normal reverse
+<li><em>5</em> Slow reverse
+<li><em>4</em> Frame reverse
+<li><em>1</em> Frame forward
+<li><em>2</em> Slow forward
+<li><em>3</em> Normal forward
+<li><em>Enter</em> Fast forward
+<li><em>0</em> Stop
+<li><em>Spacebar</em> Normal forward
+</ul>
+
+<p>Hitting any key on the keyboard twice pauses it.
+
+<p>When using frame advance functions the behavior may seem odd.  If you
+frame advance forward and then frame advance backward, the displayed
+frame doesn't change.  This is because the playback position isn't the
+frame but the time between two frames.  The rendered frame is the area
+that the playback position crosses.  When you increment the time
+between two frames by one and decrement it by one, you cross the same
+frame both times and so the same frame is displayed.
+
+<p><hr>
+Node:<a name="EDITING">EDITING</a>,
+Next:<a rel=next href="#USING%20EFFECTS">USING EFFECTS</a>,
+Previous:<a rel=previous href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>EDITING</h1>
+
+<p>Editing comprises both the time domain and the track domain.  Since the
+timeline consists of a stack of tracks, you need to worry about how to
+sort and create tracks in addition to what time certain media appears
+on a track.
+
+<p>In the time domain, Cinelerra offers many ways to approach the editing
+process.  The three main methods are two screen editing, drag and drop
+editing, and cut and paste editing.
+
+<p>There are several concepts Cinelerra uses when editing which apply to
+all the methods.  The timeline is where all editing decisions are
+represented.  Every track on the timeline has a set of attributes on
+the left, the most important of which is the <em>arm track</em>
+attribute.
+
+<br><p>
+<img src="track_attributes.png" alt="track_attributes.png"><em>Track attributes</em>
+
+<p>Only the <em>armed tracks</em> are affected by editing operations.  Make
+sure you have enough armed destination tracks when you paste or splice
+material or some tracks in the material will get left out.
+
+<p>In addition to editing operations, the armed tracks in combination with
+the active region determine where material is inserted when loading
+files.  If the files are loaded with one of the insertion strategies
+which doesn't delete the existing project, the armed tracks will be
+used as destination tracks.
+
+<p>The active region is the range of time in the edit decision on the
+timeline.  The active region is determined first by the presence of
+in/out points in the timeline.  If those don't exist the highlighted
+region is used.  If no highlighted region exists the insertion point is
+used as the active region and the active length is 0.
+
+<p>Finally, editing decisions never affect source material.  Editing only affects
+pointers to source material, so if you want to have a media file at the
+end of your editing session which represents the editing decisions, you
+need to <em>render</em> it. See <a href="#RENDERING%20FILES">RENDERING FILES</a>.
+
+<ul>
+<li><a href="#MANIPULATING%20TRACKS">MANIPULATING TRACKS</a>: 
+<li><a href="#TWO%20SCREEN%20EDITING">TWO SCREEN EDITING</a>: 
+<li><a href="#DRAG%20AND%20DROP%20EDITING">DRAG AND DROP EDITING</a>: 
+<li><a href="#CUT%20AND%20PASTE%20EDITING">CUT AND PASTE EDITING</a>: 
+<li><a href="#TRIMMING">TRIMMING</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="MANIPULATING%20TRACKS">MANIPULATING TRACKS</a>,
+Next:<a rel=next href="#TWO%20SCREEN%20EDITING">TWO SCREEN EDITING</a>,
+Up:<a rel=up href="#EDITING">EDITING</a>
+<br>
+
+<h2>MANIPULATING TRACKS</h2>
+
+<p>Tracks in Cinelerra either contain audio or video.  There is no special
+designation for tracks other than the type of media they contain.  When
+you create a new project, it contains a certain mumber of default
+tracks.  You can still add or delete tracks from a number of menus. 
+The <em>Tracks</em> menu contains a number of options for dealing with
+multiple tracks simultaneously.  Each track itself has a popup menu
+which affects one track.
+
+<p>Bring up the popup menu by moving over a track and right clicking.  The
+popup menu affects the track whether it's armed or not.
+
+<p><em>Move up</em> and <em>move down</em> moves the one track up or down in
+the stack.  <em>Delete track</em> deletes the track.
+
+<p>Operations in the <em>Tracks</em> menu affect only tracks which are
+armed.
+
+<p><em>Move tracks up</em> and <em>Move tracks down</em> shift all the armed
+tracks up or down the stack.
+
+<p><em>Delete tracks</em> deletes the armed tracks.
+
+<p><em>Delete last track</em> deletes the last track, whether it's armed or
+not.  Holding down the <em>d</em> key quickly deletes all the tracks.
+
+<p><em>Concatenate tracks</em> is more complicated.  It takes every
+<em>playable</em> track and concatenates it to the end of the first
+<em>armed tracks</em>.  If there are two armed tracks followed by two
+playable tracks, the concatenate operation puts the two playable tracks
+after the two armed tracks.  If there are three playable tracks
+instead, two tracks are put after the armed tracks and a third track is
+put on the end of the first armed track.  The destination track wraps
+around until all the playable tracks are concatenated.
+
+<p>Finally, you'll want to create new tracks.  The <em>Audio</em> and
+<em>Video</em> menus each contain an option to add a track of their
+specific type.  In the case of audio, the new track is put on the
+bottom of the timeline and the output channel of the audio track is
+incremented by one.  In the case of video, the new track is put on the
+top of the timeline.  This way, video has a natural compositing order. 
+New video tracks are overlayed on top of old tracks.
+
+<p><hr>
+Node:<a name="TWO%20SCREEN%20EDITING">TWO SCREEN EDITING</a>,
+Next:<a rel=next href="#DRAG%20AND%20DROP%20EDITING">DRAG AND DROP EDITING</a>,
+Previous:<a rel=previous href="#MANIPULATING%20TRACKS">MANIPULATING TRACKS</a>,
+Up:<a rel=up href="#EDITING">EDITING</a>
+<br>
+
+<h2>TWO SCREEN EDITING</h2>
+
+<p>This is the fastest way to construct a program out of movie files.  The
+idea consists of viewing a movie file in one window and viewing the
+program in another window.  Sections of the movie file are defined in
+one window and transferred to the end of the program in the other
+window.
+
+<p>The way to begin a two screen editing session is to load some
+resources.  In <em>file-&gt;load</em> load some movies with the insertion
+mode <em>create new resources</em>.  You want the timeline to stay
+unchanged while new resources are brought in.  Go to the Resource
+Window and select the <em>media</em> folder.  The newly loaded resources
+should appear.  Drag a resource from the media side of the window over
+the Viewer window.
+
+<p>There should be enough armed tracks on the timeline to put the sections
+of source material that you want.  If there aren't, create new tracks
+or arm more tracks.
+
+<p>In the viewer window seek to the starting point of a clip you want to
+use.  Use either the <em>slider</em> or the <em>transport controls</em>. 
+Use the <em>preview region</em> to narrow down the search.  Set the
+starting point with the <img src="in_point_button.png" alt="in_point_button.png"> <em>in point button</em>.
+
+<p>Seek to the ending point of the clip you want to use.  Set the ending
+point with the <img src="out_point_button.png" alt="out_point_button.png"> <em>out point button</em>.  The
+two points should now appear on the timebar and define a clip.
+
+<p>There are several things you can do with the clip now.
+
+<ul>
+
+<li>
+Splice <img src="splice_button.png" alt="splice_button.png"> inserts the clip in the timeline, pushing
+everything back.  If an <em>in point</em> or <em>out point</em> exists on
+the timeline it's inserted there, otherwise it's inserted after the
+insertion point.  After that, the insertion point moves to the end of
+the clip.  If there is no in/out point, the insertion point will be
+used as the next splice location.  This way you can continuously build
+up the program by splicing.
+
+<li>
+Overwrite <img src="overwrite_button.png" alt="overwrite_button.png"> overwrites the region of the
+timeline with the clip.  If an <em>in point</em> or <em>out point</em>
+exists on the timeline it's overwritten there, otherwise it's
+overwritten after the insertion point.  If a region is highlighted or
+both in and out points exist the difference between the active region
+and the clip length is deleted.
+
+<li>
+Create a clip <img src="toclip_button.png" alt="toclip_button.png"> generates a new clip for the
+resource window containing the affected region but doesn't change the
+timeline.  Every clip has a title and a description.  These are
+optional.
+
+<li>
+Cut and copy behave the same as in cut and paste editing.
+
+</ul>
+
+<p><hr>
+Node:<a name="DRAG%20AND%20DROP%20EDITING">DRAG AND DROP EDITING</a>,
+Next:<a rel=next href="#CUT%20AND%20PASTE%20EDITING">CUT AND PASTE EDITING</a>,
+Previous:<a rel=previous href="#TWO%20SCREEN%20EDITING">TWO SCREEN EDITING</a>,
+Up:<a rel=up href="#EDITING">EDITING</a>
+<br>
+
+<h2>DRAG AND DROP EDITING</h2>
+
+<p>The answer is yes, you can you create a bunch of clips and drag them on
+the timeline.  You can also drag edits around the timeline.
+
+<p>Load some files using <em>file-&gt;load</em>.  Set the insertion mode to
+<em>Create new resources</em>.  This loads the files into the Resource
+Window.  Create some audio and video tracks on the timeline using the
+video and audio menus.
+
+<p>Open the <em>Media</em> folder in the resource window.  Drag a media file
+from the resource window to the timeline.  If the media has video, drag
+it onto a video track.  If the media is pure audio, drag it onto an
+audio track.
+
+<p>Cinelerra fills out the audio and video tracks below the dragging
+cursor with data from the file.  This affects what tracks you should
+create initially and which track to drag the media onto.  If the media
+has one video track and two audio tracks, you'll need one video track
+and two audio tracks on the timeline and the media should be dragged
+over the first video track.  If the media has audio only you'll need
+one audio track on the timeline for every audio track in the media and
+the media should be dragged over the first audio track.
+
+<p>When dragging, the media snaps to the start of track if the track is
+empty.  If there are edits on the track, the media snaps to the nearest
+edit boundary.
+
+<p>You can also drag multiple files from the resource window.  Either draw
+a box around the files, use SHIFT, or use CTRL when selecting files. 
+When you drop the files in the timeline, they are concatenated.  The
+behavior of SHIFT and CTRL changes depending on if the resources are in
+text or icons.
+
+<p>To display the resources as text or icons, right click inside the media
+list.  Select either <em>display icons</em> or <em>display text</em> to
+change the list format.
+
+<p>When displaying text in the resource window <em>SHIFT-clicking</em> on
+media files extends the number of highlighted selections. 
+<em>CTRL-clicking</em> on media files in text mode selects additional
+files one at a time.
+
+<p>When displaying icons in the resource window <em>SHIFT-clicking</em> or
+<em>CTRL-clicking</em> selects media files one at a time.
+
+<p>In addition to dragging media files, if you create clips and open the
+<em>clip</em> folder you can drag clips on the timeline.
+
+<p>In the timeline there is further dragging functionality.  To enable the
+dragging functionality of the timeline, select the arrow toggle
+<img src="arrow.png" alt="arrow.png">.  Move over an edit and drag it.  If more than one
+track is armed, Cinelerra will drag any edits which start on the same
+position as the edit the cursur is currently over.  During a dragging
+operation the edit snaps to the nearest boundary.
+
+<p>Dragging edits around the timeline allows you to sort music playlists,
+sort movie scenes, and give better NAB demos but not much else.
+
+<p><hr>
+Node:<a name="CUT%20AND%20PASTE%20EDITING">CUT AND PASTE EDITING</a>,
+Next:<a rel=next href="#TRIMMING">TRIMMING</a>,
+Previous:<a rel=previous href="#DRAG%20AND%20DROP%20EDITING">DRAG AND DROP EDITING</a>,
+Up:<a rel=up href="#EDITING">EDITING</a>
+<br>
+
+<h2>CUT AND PASTE EDITING</h2>
+
+<p>This is the traditional method of editing in audio editors.  In the
+case of Cinelerra, you either need to start a second copy of Cinelerra
+and copy from one copy to the other, copy from different tracks in the
+same copy, or load a media file into the Viewer and copy from there.
+
+<p>Load some files onto the timeline.  To perform cut and paste editing
+select the <img src="ibeam.png" alt="ibeam.png"> i-beam toggle.  Select a region of the
+timeline and select the <img src="cut.png" alt="cut.png"> cut button to cut it.  Move the
+insertion point to another point in the timeline and select the
+<img src="paste.png" alt="paste.png"> paste button.  Assuming no in/out points are defined on
+the timeline this performs a cut and paste operation.
+
+<p>If in/out points are defined, the insertion point and highlighted
+region are overridden by the in/out points for clipboard operations. 
+Thus, with in/out points you can perform cut and paste in drag and drop
+mode as well as cut and paste mode.
+
+<p>If you open a second copy of Cinelerra, cutting and pasting can
+transport media between the two copies.
+
+<p>A final operation in cut and paste editing is the <em>edit-&gt;clear</em>
+operation.  If a region is highlighted or in/out points exist, the
+affected region is cleared by <em>edit-&gt;clear</em>.  But if the insertion
+point is over an edit boundary and the edits on each side of the edit
+boundary are the same resource, the edits are combined into one edit
+comprised by the resource.  The start of this one edit is the start of
+the first edit and the end of this one edit is the end of the second
+edit.  This either results in the edit expanding or shrinking.
+
+<p><hr>
+Node:<a name="TRIMMING">TRIMMING</a>,
+Previous:<a rel=previous href="#CUT%20AND%20PASTE%20EDITING">CUT AND PASTE EDITING</a>,
+Up:<a rel=up href="#EDITING">EDITING</a>
+<br>
+
+<h2>TRIMMING</h2>
+
+<p>With some edits on the timeline it's possible to do trimming.  By
+trimming you shrink or grow the edit boundaries by dragging them.  In
+either drag and drop mode or cut and paste mode, move the cursor over
+an edit boundary until it changes shape.  The cursor will either be an
+expand left or an expand right.  If the cursor is an expand left, the
+dragging operation affects the beginning of the edit.  If the cursor is
+an expand right, the dragging operation affects the end of the edit.
+
+<p>When you click on an edit boundary to start dragging, the mouse button
+number determines which dragging behavior is going to be followed.  3
+possible behaviors are bound to mouse buttons in the interface
+preferences. See <a href="#INTERFACE">INTERFACE</a>.
+
+<p>The effect of each drag operation not only depends on the behavior
+button but whether the beginning or end of the edit is being dragged. 
+When you release the mouse button, the trimming operation is performed.
+
+<p>In a <em>Drag all following edits</em> operation, the beginning of the
+edit either cuts data from the edit if you move it forward or pastes
+new data from before the edit if you move it backward.  The end of the
+edit pastes data into the edit if you move it forward or cuts data from
+the end of the edit if you move it backward.  All the edits thereafter
+shift.  Finally, if you drag the end of the edit past the start of the
+edit, the edit is deleted.
+
+<p>In a <em>Drag only one edit</em> operation, the behavior is the same when
+you drag the beginning or end of an edit.  The only difference is none
+of the other edits in the track shift.  Instead, anything adjacent to
+the current edit expands or shrinks to fill gaps left by the drag
+operation.
+
+<p>In a <em>Drag source only</em> operation, nothing is cut or pasted.  If
+you move the beginning or end of the edit forward, the source reference
+in the edit shifts forward.  If you move the beginning or end of the
+edit backward, the source reference shifts backward.  Where the edit
+appears in the timeline remains the same but the source shifts.
+
+<p>For all file formats besides still images, the extent of the trimming
+operation is clamped to the source file length.  Attempting to drag the
+start of the edit beyond the start of the source clamps it to the
+source start.
+
+<p>In all trimming operations, all edits which start on the same position
+as the cursor when the drag operation begins are affected.  Unarm
+tracks to prevent edits from getting affected.
+
+<p><hr>
+Node:<a name="USING%20EFFECTS">USING EFFECTS</a>,
+Next:<a rel=next href="#SETTING%20PROJECT%20ATTRIBUTES">SETTING PROJECT ATTRIBUTES</a>,
+Previous:<a rel=previous href="#EDITING">EDITING</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>USING EFFECTS</h1>
+
+<p>It would be sufficient to perform all changes to the timeline using
+editing operations, but this isn't very extensible.  Certain timeline
+changes should produce a different effect in the output without
+involving a unique procedure to apply each change.  This is why we have
+effects.
+
+<p>Effects fall into three categories, and each effect in a category is
+applied the same way.
+
+<ul>
+<li><a href="#REALTIME%20EFFECTS">REALTIME EFFECTS</a>: 
+<li><a href="#RENDERED%20EFFECTS">RENDERED EFFECTS</a>: 
+<li><a href="#TRANSITIONS">TRANSITIONS</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="REALTIME%20EFFECTS">REALTIME EFFECTS</a>,
+Next:<a rel=next href="#RENDERED%20EFFECTS">RENDERED EFFECTS</a>,
+Up:<a rel=up href="#USING%20EFFECTS">USING EFFECTS</a>
+<br>
+
+<h2>REALTIME EFFECTS</h2>
+
+<p>These are layered under the track they apply to.  They process the
+track when the track is played back, with no permanent storage of the
+output except when the project is rendered.
+
+<p>All the realtime effects are listed in the resource window.
+
+<p><hr>
+Node:<a name="RENDERED%20EFFECTS">RENDERED EFFECTS</a>,
+Next:<a rel=next href="#TRANSITIONS">TRANSITIONS</a>,
+Previous:<a rel=previous href="#REALTIME%20EFFECTS">REALTIME EFFECTS</a>,
+Up:<a rel=up href="#USING%20EFFECTS">USING EFFECTS</a>
+<br>
+
+<h2>RENDERED EFFECTS</h2>
+
+<p>These are performed on a section of the track and the result stored
+somewhere before they are played back.  The result is usually pasted
+into the track to replace the original data.
+
+<p>The rendered effects are not listed in the resource window but instead
+are accessed in the <em>Audio-&gt;Render effect</em> and <em>Video-&gt;Render
+effect</em> options.
+
+<p><hr>
+Node:<a name="TRANSITIONS">TRANSITIONS</a>,
+Previous:<a rel=previous href="#RENDERED%20EFFECTS">RENDERED EFFECTS</a>,
+Up:<a rel=up href="#USING%20EFFECTS">USING EFFECTS</a>
+<br>
+
+<h2>TRANSITIONS</h2>
+
+<p>When one edit ends and another edit begins, the default behaviour is to
+have the first edit's output immediately become the output of the
+second edit when played back.  Transitions are a way for the first
+edit's output to become the second edit's output with different
+variations.
+
+<p>Cinelerra supports audio and video transitions, all of which are listed
+in the resource window.
+
+<p><hr>
+Node:<a name="SETTING%20PROJECT%20ATTRIBUTES">SETTING PROJECT ATTRIBUTES</a>,
+Previous:<a rel=previous href="#USING%20EFFECTS">USING EFFECTS</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>SETTING PROJECT ATTRIBUTES</h1>
+
+<p>When you play media files in Cinelerra, the media files have a certain
+number of tracks, a certain frame size, a certain sample size, and so
+on and so forth.  No matter what the media file has; however, it is
+still played back according to the project attributes.  If an audio
+file's samplerate is different than the project attributes, it is
+resampled.  If a video file's frame size is different than the project
+attributes, it is composited on a black frame, either cropped or
+bordered with black.
+
+<p>The project attributes
+
+</body></html>
+

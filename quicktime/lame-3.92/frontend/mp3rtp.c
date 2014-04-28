@@ -1,4 +1,4 @@
-/* $Id: mp3rtp.c,v 1.1 2002/04/19 05:50:29 myrina Exp $ */
+/* $Id: mp3rtp.c,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $ */
 
 /* Still under work ..., need a client for test, where can I get one? */
 

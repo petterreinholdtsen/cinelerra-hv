@@ -262,7 +262,6 @@ void Render::run()
 // Pointer from file
 // (VFrame*)(VFrame array [])(Channel [])
 	VFrame ***video_output;
-	PluginBuffer *video_shm;
 // Pointer to output buffers
 	VFrame *video_output_ptr[MAX_CHANNELS];
 	double *audio_output_ptr[MAX_CHANNELS];
@@ -280,7 +279,7 @@ void Render::run()
 	command->command = NORMAL_FWD;
 	*command->get_edl() = *mwindow->edl;
 	command->change_type = CHANGE_ALL;
-	command->set_playback_range();
+	command->set_playback_range(mwindow->edl);
 	packages = new PackageDispatcher;
 
 
@@ -981,17 +980,4 @@ int RenderWindow::create_objects()
 
 
 
-
-// REMOVE
-RenderListItem::RenderListItem(MWindow *mwindow)
- : BC_MenuItem("Render list...")
-{
-	this->mwindow = mwindow;
-}
-
-int RenderListItem::handle_event() 
-{
-	mwindow->render_list();
-	return 1;
-}
 

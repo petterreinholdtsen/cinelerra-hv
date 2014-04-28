@@ -30,7 +30,7 @@ int quicktime_udta_delete(quicktime_udta_t *udta)
 	{
 		free(udta->info);
 	}
-	quicktime_udta_init(udta);
+//	quicktime_udta_init(udta);
 	return 0;
 }
 

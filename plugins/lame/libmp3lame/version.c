@@ -26,7 +26,7 @@
   Contains functions which describe the version of LAME.
 
   \author A.L. Faber
-  \version \$Id: version.c,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $
+  \version \$Id: version.c,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $
   \ingroup libmp3lame
 
   \todo The mp3x version should be located in the mp3x source,

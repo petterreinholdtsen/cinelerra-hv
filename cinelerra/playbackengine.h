@@ -9,7 +9,6 @@
 #include "edl.inc"
 #include "mwindow.inc"
 #include "maxchannels.h"
-#include "modules.inc"
 #include "mutex.h"
 #include "tracking.inc"
 #include "preferences.inc"
@@ -104,13 +103,6 @@ public:
 
 	int reset_parameters();
 
-// arm the first buffers
-	int set_range(long start,
-				long end,
-				long current,
-				int reverse,
-				float speed);
-
 // ================= position information ======================
 // get exact position in samples corrected for speed and direction
 	long get_position(int sync_time = 1);
@@ -167,7 +159,6 @@ public:
 	RenderEngine *render_engine;
 	AudioDevice *audio;
 	VideoDevice *video;
-	Modules *modules;
 
 private:
 	int init_parameters();

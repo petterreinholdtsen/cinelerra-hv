@@ -24,7 +24,6 @@
 #include "recordengine.inc"
 #include "recordgui.inc"
 #include "recordmonitor.inc"
-#include "recordpreview.inc"
 #include "recordthread.inc"
 #include "recordwindow.inc"
 #include "videodevice.inc"
@@ -62,10 +61,11 @@ public:
 	void delete_batch(int number);
 	void swap_batches(int number1, int number2);
 	void get_audio_write_length(long &buffer_size, long &fragment_size);
-	int open_input_devices(int duplex, int single_frame);
+	int open_input_devices(int duplex, int context);
 	int close_input_devices();
 	void start_file_threads();
 	int start_recording(int duplex, int context = CONTEXT_INTERACTIVE);
+	int record_frame();
 	int start_monitor();
 	int pause_monitor();
 	int resume_monitor();
@@ -150,7 +150,6 @@ public:
 	RecordMonitor *record_monitor;
 	RecordThread *monitor_engine;
 	RecordThread *record_engine;
-	RecordPreview *record_preview;
 	AudioDevice *adevice;
 	VideoDevice *vdevice;
 // File handle of last asset.in current batch
@@ -161,7 +160,7 @@ public:
 // Table for LML conversion
 //	unsigned char _601_to_rgb_table[256];
 // For video synchronization when no audio thread
-	Timer monitor_timer, preview_timer;
+	Timer monitor_timer;
 // State of the capturing operation
 	int capture_state;
 // Translation of screencapture input
@@ -208,7 +207,6 @@ public:
 	int set_script(FileXML *script);
 	int run_script(Asset *asset, int &do_audio, int &do_video);
 	int save_engine_defaults();
-	int get_duplex_range(long *start, long *end);
 
 	float get_min_db();
 	int get_samplerate();
@@ -225,7 +223,6 @@ public:
 	int set_rec_mode(int value);
 	int set_loop_duration(long value);
 	int use_floatingpoint();
-	float get_aspect_ratio();
 
 	int get_out_length();   // Length to write during playback
 	long get_out_buffersize();  // Same as get_out_length

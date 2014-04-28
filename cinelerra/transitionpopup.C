@@ -1,5 +1,4 @@
 #include "clip.h"
-#include "console.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -189,7 +188,7 @@ TransitionPopupDetach::~TransitionPopupDetach()
 
 int TransitionPopupDetach::handle_event()
 {
-	mwindow->hide_plugin(popup->transition);
+	mwindow->hide_plugin(popup->transition, 1);
 	popup->transition->edit->detach_transition();
 	mwindow->gui->update(0,
 		1,

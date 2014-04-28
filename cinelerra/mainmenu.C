@@ -1,7 +1,5 @@
-#include "assetmanager.h"
 #include "assets.h"
 #include "cache.h"
-#include "console.h"
 #include "cplayback.h"
 #include "cropvideo.h"
 #include "cwindow.h"
@@ -84,8 +82,6 @@ int MainMenu::create_objects()
 	filemenu->add_item(record = new RecordMenuItem(mwindow));
 
 	filemenu->add_item(render = new RenderItem(mwindow));
-//	filemenu->add_item(render_list = new RenderListItem(mwindow));
-//	filemenu->add_item(asset_manager = new AssetManager(mwindow));
 	filemenu->add_item(new BC_MenuItem("-"));
 	filemenu->add_item(quit_program = new Quit(mwindow));
 	quit_program->create_objects(save);
@@ -119,37 +115,16 @@ int MainMenu::create_objects()
 	keyframemenu->add_item(new CopyDefaultKeyframe(mwindow));
 	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
 
-// Can't select single rows of effects
-// 	BC_Menu *effectmenu;
-// 	add_menu(effectmenu = new BC_Menu("Effects"));
-// 	
-// 	effectmenu->add_item(new CutEffects(mwindow));
-// 	effectmenu->add_item(new CopyEffects(mwindow));
-// 	effectmenu->add_item(new PasteEffects(mwindow));
-// 	effectmenu->add_item(new ClearEffects(mwindow));
-
 
 
 
 	add_menu(audiomenu = new BC_Menu("Audio"));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
-	//audiomenu->add_item(new DeleteAudioTrack(mwindow));
-//	audiomenu->add_item(new SetAudio(mwindow));
-//	audiomenu->add_item(new TransitionMenuItem(mwindow, 1, 0));
-//	audiomenu->add_item(new FeatherEdits(mwindow, 1, 0));
 	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
-//	audiomenu->add_item(new BC_MenuItem("-"));
 
 	add_menu(videomenu = new BC_Menu("Video"));
 	videomenu->add_item(new AddVideoTrack(mwindow));
-	//videomenu->add_item(new DeleteVideoTrack(mwindow));
-//	videomenu->add_item(new SetVideo(mwindow));
-//	videomenu->add_item(new CropVideo(mwindow));
-//	videomenu->add_item(new FeatherEdits(mwindow, 0, 1));
-//	videomenu->add_item(new TransitionMenuItem(mwindow, 0, 1));
-//	videomenu->add_item(new ResetTranslation(mwindow));
 	videomenu->add_item(veffects = new MenuVEffects(mwindow));
-//	videomenu->add_item(new BC_MenuItem("-"));
 
 	add_menu(trackmenu = new BC_Menu("Tracks"));
 	trackmenu->add_item(new MoveTracksUp(mwindow));
@@ -165,15 +140,14 @@ int MainMenu::create_objects()
 	mwindow->preferences_thread = preferences->thread;
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
 	settingsmenu->add_item(plugins_follow_edits = new PluginsFollowEdits(mwindow));
-//	settingsmenu->add_item(new AutosFollowEdits(mwindow));
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
 // set scrubbing speed
-	ScrubSpeed *scrub_speed;
-	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
-	if(mwindow->edl->session->scrub_speed == .5) 
-		scrub_speed->set_text("Fast Shuttle");
+//	ScrubSpeed *scrub_speed;
+//	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
+//	if(mwindow->edl->session->scrub_speed == .5) 
+//		scrub_speed->set_text("Fast Shuttle");
 
 
 
@@ -195,58 +169,22 @@ int MainMenu::create_objects()
 	viewmenu->add_item(czoom_automation = new CZoomAutomation(mwindow, "="));
 	viewmenu->add_item(pzoom_automation = new PZoomAutomation(mwindow, "+"));
 
-//	viewmenu->add_item(show_edits = new ShowEdits(mwindow));
-//	viewmenu->add_item(new BC_MenuItem("-"));
-//	viewmenu->add_item(show_output = new ShowRenderedOutput(mwindow));
 
 	add_menu(windowmenu = new BC_Menu("Window"));
-//	windowmenu->add_item(show_console = new ShowConsole(mwindow));
-//	windowmenu->add_item(show_levels = new ShowLevels(mwindow));
-//	windowmenu->add_item(show_video = new ShowVideo(mwindow));
-//	windowmenu->add_item(new OriginalSize(mwindow));
-//	windowmenu->add_item(new InverseAutomation(0));
 	windowmenu->add_item(show_vwindow = new ShowVWindow(mwindow));
 	windowmenu->add_item(show_awindow = new ShowAWindow(mwindow));
 	windowmenu->add_item(show_cwindow = new ShowCWindow(mwindow));
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow));
 
-//	plugin_automation->add_submenu(pluginmenu = new PluginMenu);
-// 	for(int i = 0; i < PLUGINS; i++)
-// 	{
-// 		sprintf(string, "Plugin %d", i + 1);
-// 		pluginmenu->add_submenuitem(pluginitem[i] = new PluginItem(mwindow, string, i));
-// 	}
 	return 0;
 }
 
 int MainMenu::load_defaults(Defaults *defaults)
 {
-//printf("MainMenu::load_defaults 1\n");
 	init_loads(defaults);
-//printf("MainMenu::load_defaults 1\n");
 	init_aeffects(defaults);
-//printf("MainMenu::load_defaults 1\n");
 	init_veffects(defaults);
-//printf("MainMenu::load_defaults 1\n");
-//	show_edits->set_checked(mwindow->edl->session->show_edits);
-	show_titles->set_checked(mwindow->edl->session->show_titles);
-// 	fade_automation->set_checked(mwindow->tracks->auto_conf.fade);
-// 	play_automation->set_checked(mwindow->tracks->auto_conf.play);
-// 	camera_automation->set_checked(mwindow->tracks->auto_conf.camera);
-// 	project_automation->set_checked(mwindow->tracks->auto_conf.projector);
-// 	if(!mwindow->tracks->show_output) 
-// 		show_output->set_text("Draw Output");
-// 	else
-// 		show_output->set_text("Draw Tracks");
-// 
-// 	int i;
-// 	for(i = 0; i < mwindow->session->audio_channels; i++) 
-// 		panitem[i]->set_checked(mwindow->tracks->auto_conf.pan[i]);
-// 
-// 	for(i = 0; i < PLUGINS; i++) 
-// 		pluginitem[i]->set_checked(mwindow->tracks->auto_conf.plugin[i]);
-//printf("MainMenu::load_defaults 2\n");
 	return 0;
 }
 
@@ -267,6 +205,8 @@ void MainMenu::update_toggles()
 	plugin_automation->set_checked(mwindow->edl->session->auto_conf->plugins);
 	mode_automation->set_checked(mwindow->edl->session->auto_conf->mode);
 	mask_automation->set_checked(mwindow->edl->session->auto_conf->mask);
+	czoom_automation->set_checked(mwindow->edl->session->auto_conf->czoom);
+	pzoom_automation->set_checked(mwindow->edl->session->auto_conf->pzoom);
 }
 
 int MainMenu::save_defaults(Defaults *defaults)
@@ -280,28 +220,6 @@ int MainMenu::save_defaults(Defaults *defaults)
 
 
 
-
-int MainMenu::change_channels(int old_channels, int new_channels)
-{
-	if(new_channels < old_channels)
-	{
-		for(int i = new_channels; i < old_channels; i++)
-		{
-			delete panitem[i];
-		}
-	}
-	else
-	{
-//		for(int i = old_channels; i < new_channels; i++)
-//		{
-//			char string[256];
-//			sprintf(string, "Channel %d", i + 1);
-//			panmenu->add_submenuitem(panitem[i] = new PanItem(mwindow, string, i));
-//			panitem[i]->set_checked(mwindow->tracks->auto_conf.pan[i]);
-//		}
-	}
-	return 0;
-}
 
 int MainMenu::quit()
 {
@@ -349,21 +267,32 @@ int MainMenu::init_veffects(Defaults *defaults)
 
 int MainMenu::init_loads(Defaults *defaults)
 {
+//printf("MainMenu::init_loads 1\n");
 	total_loads = defaults->get("TOTAL_LOADS", 0);
+//printf("MainMenu::init_loads 1\n");
 	char string[1024], path[1024], filename[1024];
+//printf("MainMenu::init_loads 1\n");
 	FileSystem dir;
+//printf("MainMenu::init_loads 2\n");
 	if(total_loads > 0) filemenu->add_item(new BC_MenuItem("-"));
 
 	for(int i = 0; i < total_loads; i++)
 	{
 		sprintf(string, "LOADPREVIOUS%d", i);
+//printf("MainMenu::init_loads 3\n");
 		defaults->get(string, path);
+//printf("MainMenu::init_loads 4\n");
 
 		filemenu->add_item(load[i] = new LoadPrevious(mwindow, load_file));
-		dir.extract_name(filename, path);
+//printf("MainMenu::init_loads 5\n");
+		dir.extract_name(filename, path, 0);
+//printf("MainMenu::init_loads 6\n");
 		load[i]->set_text(filename);
+//printf("MainMenu::init_loads 7\n");
 		load[i]->set_path(path);
+//printf("MainMenu::init_loads 8\n");
 	}
+//printf("MainMenu::init_loads 9\n");
 	return 0;
 }
 
@@ -549,15 +478,6 @@ int MainMenu::add_load(char *path)
 
 // ================================== menu items
 
-int MainMenu::set_show_console(int checked)
-{
-	show_console->set_checked(checked);
-}
-
-int MainMenu::set_show_video(int checked)
-{
-	show_video->set_checked(checked);
-}
 
 DumpCICache::DumpCICache(MWindow *mwindow)
  : BC_MenuItem("Dump CICache")
@@ -664,7 +584,6 @@ CutKeyframes::CutKeyframes(MWindow *mwindow)
 
 int CutKeyframes::handle_event()
 {
-	mwindow->stop_playback(1);
 	mwindow->cut_automation(); 
 }
 
@@ -719,7 +638,6 @@ CutDefaultKeyframe::CutDefaultKeyframe(MWindow *mwindow)
 
 int CutDefaultKeyframe::handle_event()
 {
-	mwindow->stop_playback(1);
 	mwindow->cut_default_keyframe(); 
 	return 1;
 }
@@ -1147,63 +1065,6 @@ int SaveSettingsNow::handle_event()
 
 
 // ============================================ window
-
-ShowConsole::ShowConsole(MWindow *mwindow)
- : BC_MenuItem("Show Console", "")
-{ 
-	this->mwindow = mwindow; 
-	set_checked(!mwindow->defaults->get("HIDECONSOLE", 0));
-}
-
-int ShowConsole::handle_event()
-{
-	set_checked(get_checked() ^ 1);
-	if(get_checked()) 
-		mwindow->console->gui->show_window(); 
-	else 
-		mwindow->console->gui->hide_window();
-}
-
-
-// REMOVE
-
-#if 0
-
-
-ShowVideo::ShowVideo(MWindow *mwindow)
- : BC_MenuItem("Show Video", "")
-{ 
-	this->mwindow = mwindow; 
-	set_checked(mwindow->defaults->get("VIDEOVISIBLE", 1));
-}
-
-int ShowVideo::handle_event()
-{
-	set_checked(get_checked() ^ 1);
-
-	if(get_checked()) 
-		mwindow->video_window->show_window();
-	else
-		mwindow->video_window->hide_window();
-}
-
-OriginalSize::OriginalSize(MWindow *mwindow)
- : BC_MenuItem("Original size")
-{ 
-	this->mwindow = mwindow; 
-}
-
-int OriginalSize::handle_event()
-{
-	mwindow->video_window->gui->lock_window();
-	mwindow->video_window->original_size();
-	mwindow->video_window->gui->unlock_window();
-}
-
-#endif
-
-
-
 
 
 

@@ -38,3 +38,6 @@ LAME_DIRS := \
 	$(OBJDIR)/$(LAME_DIR)/libmp3lame/
 
 $(shell echo  $(LAME_CFLAGS) > $(OBJDIR)/lame_flags)
+
+DIRS += $(LAME_DIRS)
+

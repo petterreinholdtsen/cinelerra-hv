@@ -240,35 +240,10 @@ char* SwapMain::plugin_title()
 	return "Swap channels";
 }
 
-
-int SwapMain::show_gui()
-{
-	load_configuration();
-	
-	thread = new SwapThread(this);
-	thread->start();
-	return 0;
-}
-
-VFrame* SwapMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
-int SwapMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void SwapMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+SHOW_GUI_MACRO(SwapMain, SwapThread)
+NEW_PICON_MACRO(SwapMain)
+SET_STRING_MACRO(SwapMain)
+RAISE_WINDOW_MACRO(SwapMain)
 
 int SwapMain::load_defaults()
 {

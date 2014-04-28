@@ -8,7 +8,6 @@
 #include "file.inc"
 #include "filelist.inc"
 #include "overlayframe.inc"
-#include "pluginbuffer.inc"
 #include "strategies.inc"
 #include "vframe.inc"
 
@@ -67,14 +66,6 @@ protected:
 // Return 1 if the render_strategy is present on the list.
 	static int search_render_strategies(ArrayList<int>* render_strategies, int render_strategy);
 
-// overlay on the frame with scaling
-// Alpha values are from 0 to VMAX
-	int transfer_from(VFrame *frame_out, VFrame *frame_in, 
-		float in_x1, float in_y1, float in_x2, float in_y2,
-		float out_x1, float out_y1, float out_x2, float out_y2, 
-		int alpha, int use_alpha, int use_float, int interpolate, 
-		int mode);
-
 // convert samples into file format
 	long samples_to_raw(char *out_buffer, 
 							float **in_buffer, // was **buffer
@@ -95,11 +86,6 @@ protected:
 		float lfeather_len, float lfeather_gain, float lfeather_slope);
 
 // convert a frame to and from file format
-	long raw_to_frame(unsigned char *in_buffer,
-					VFrame *out_frame, 
-					int in_x1, int in_y1, int in_x2, int in_y2,
-					int out_x1, int out_y1, int out_x2, int out_y2, 
-					int alpha, int use_alpha, int use_float, int color_model);
 
 	long frame_to_raw(unsigned char *out_buffer,
 					VFrame *in_frame,
@@ -140,39 +126,8 @@ protected:
 	File *file;
 
 private:
-// ==================================== video compression (broken)
-	int get_bytes_per_pixel(int color_model);
 
-// Import a row with no scaling
-	int raw_to_row_direct(unsigned char *in_buffer, VPixel *out_row, 
-		int w, int alpha, int use_alpha, int use_float, int color_model);
-// Import a row with scaling
-	int raw_to_row_scale(unsigned char *input, VPixel *output, 
-		int w, int *column_table, int alpha, int use_alpha, int use_float, int color_model);
 
-	int raw_to_pixel_alpha(unsigned char *input, VPixel *output, float a, float output_opacity);
-	int raw_to_pixel_alpha(unsigned char *input, VPixel *output, int a, int output_opacity);
-	int raw_to_pixel(unsigned char *input, VPixel *output);
-	int grey_to_pixel_alpha(unsigned char *input, VPixel *output, float a, float output_opacity);
-	int grey_to_pixel_alpha(unsigned char *input, VPixel *output, int a, int output_opacity);
-	int grey_to_pixel(unsigned char *input, VPixel *output);
-	int yuv_to_pixel_alpha(unsigned char *input, VPixel *output, int pixel, float a, float output_opacity);
-	int yuv_to_pixel_alpha(unsigned char *input, VPixel *output, int pixel, int a, int output_opacity);
-	int yuv_to_pixel_float(unsigned char *input, VPixel *output, int pixel);
-	int yuv_to_pixel_int(unsigned char *input, VPixel *output, int pixel);
-
-	int row_to_raw(unsigned char *out_buffer, VPixel *in_row, 
-		int w, int use_alpha, int use_float, int color_model);
-	int pixel_to_raw_alpha_float(VPixel *input, unsigned char *output);
-	int pixel_to_raw_alpha_int(VPixel *input, unsigned char *output);
-	int pixel_to_raw(VPixel *input, unsigned char *output);
-	int pixel_to_rgba_alpha_float(VPixel *input, unsigned char *output);
-	int pixel_to_rgba_alpha_int(VPixel *input, unsigned char *output);
-	int pixel_to_rgba(VPixel *input, unsigned char *output);
-	int pixel_to_yuv_alpha_float(VPixel *input, unsigned char *output);
-	int pixel_to_yuv_alpha_int(VPixel *input, unsigned char *output);
-	int pixel_to_yuv_float(VPixel *input, unsigned char *output);
-	int pixel_to_yuv_int(VPixel *input, unsigned char *output);
 
 // ================================= Audio compression
 // ULAW

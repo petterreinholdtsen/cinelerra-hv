@@ -25,32 +25,5 @@ public:
 };
 
 
-// REMOVE
-class SharedPluginLocation
-{
-public:
-	SharedPluginLocation();
-	SharedPluginLocation(int module, int plugin);
-
-	int save(FileXML *xml);
-	int load(FileXML *xml, int track_offset);
-	int operator==(const SharedPluginLocation &that);
-
-	int module, plugin;
-};
-
-// REMOVE
-class SharedModuleLocation
-{
-public:
-	SharedModuleLocation();
-	SharedModuleLocation(int module);
-
-	int save(FileXML *xml);
-	int load(FileXML *xml, int track_offset);
-	int operator==(const SharedModuleLocation &that);
-
-	int module;
-};
 
 #endif

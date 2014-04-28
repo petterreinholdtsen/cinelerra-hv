@@ -1,13 +1,13 @@
-/Makefile/1.1/Sun Apr 14 20:09:23 2002//
-/Makefile.am/1.1/Sun Apr 14 20:09:23 2002//
-/Makefile.in/1.1/Sun Apr 14 20:09:23 2002//
-/a52_internal.h/1.1/Sun Apr 14 20:09:23 2002//
-/bit_allocate.c/1.1/Sun Apr 14 20:09:23 2002//
-/bitstream.c/1.1/Sun Apr 14 20:09:23 2002//
-/bitstream.h/1.1/Sun Apr 14 20:09:23 2002//
-/configure.incl/1.1/Sun Apr 14 20:09:23 2002//
-/downmix.c/1.1/Sun Apr 14 20:09:23 2002//
-/imdct.c/1.1/Sun Apr 14 20:09:23 2002//
-/parse.c/1.1/Sun Apr 14 20:09:23 2002//
-/tables.h/1.1/Sun Apr 14 20:09:23 2002//
+/Makefile/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/Makefile.am/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/Makefile.in/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/a52_internal.h/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/bit_allocate.c/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/bitstream.c/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/bitstream.h/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/configure.incl/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/downmix.c/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/imdct.c/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/parse.c/1.1.1.1/Fri Jun 21 12:35:24 2002//
+/tables.h/1.1.1.1/Fri Jun 21 12:35:24 2002//
 D

@@ -283,3 +283,11 @@ int AudioDevice::get_interrupted()
 {
 	return interrupt;
 }
+
+int AudioDevice::get_device_buffer()
+{
+	return device_buffer;
+}
+
+
+

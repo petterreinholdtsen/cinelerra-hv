@@ -47,6 +47,7 @@ public:
 		long length_units,
 		int replace_default);
 	void resample(double old_rate, double new_rate);
+	long get_length();
 
 	IntAutos *play_autos;
 	IntAutos *mute_autos;

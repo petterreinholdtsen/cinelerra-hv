@@ -6,7 +6,6 @@
 #include "filemov.h"
 #include "guicast.h"
 #include "mwindow.inc"
-#include "pluginbuffer.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
@@ -423,12 +422,6 @@ int FileMOV::can_copy_from(Edit *edit, long position)
 	return 0;
 }
 
-// REMOVE
-int FileMOV::read_raw_frame_possible()
-{
-	if(depth == 24) return 1;
-	else return 0;
-}
 
 long FileMOV::get_audio_length()
 {
@@ -820,15 +813,6 @@ int FileMOV::write_compressed_frame(VFrame *buffer)
 	return result;
 }
 
-
-int FileMOV::read_raw_frame(VFrame *frame, PluginBuffer *buffer, long byte_offset)
-{
-	int result = 0;
-	if(!fd) return 0;
-	quicktime_set_video_position(fd, file->current_frame, file->current_layer);
-	result = quicktime_decode_video(fd, frame->get_rows(), file->current_layer);
-	return result;
-}
 
 
 int FileMOV::read_raw(VFrame *frame, 

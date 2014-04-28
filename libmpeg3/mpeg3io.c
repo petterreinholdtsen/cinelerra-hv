@@ -33,10 +33,10 @@ int mpeg3_copy_fs(mpeg3_fs_t *dst, mpeg3_fs_t *src)
 	return 0;
 }
 
-long mpeg3io_get_total_bytes(mpeg3_fs_t *fs)
+int64_t mpeg3io_get_total_bytes(mpeg3_fs_t *fs)
 {
-	struct stat ostat;
-	stat(fs->path, &ostat);
+	struct stat64 ostat;
+	stat64(fs->path, &ostat);
 	fs->total_bytes = ostat.st_size;
 	return fs->total_bytes;
 	
@@ -48,11 +48,11 @@ long mpeg3io_get_total_bytes(mpeg3_fs_t *fs)
  */
 }
 
-long mpeg3io_path_total_bytes(char *path)
+int64_t mpeg3io_path_total_bytes(char *path)
 {
-	struct stat st;
-	if(stat(path, &st) < 0) return 0;
-	return (long)st.st_size;
+	struct stat64 st;
+	if(stat64(path, &st) < 0) return 0;
+	return st.st_size;
 }
 
 int mpeg3io_open_file(mpeg3_fs_t *fs)
@@ -60,7 +60,7 @@ int mpeg3io_open_file(mpeg3_fs_t *fs)
 /* Need to perform authentication before reading a single byte. */
 	mpeg3_get_keys(fs->css, fs->path);
 
-	if(!(fs->fd = fopen(fs->path, "rb")))
+	if(!(fs->fd = fopen64(fs->path, "rb")))
 	{
 		perror("mpeg3io_open_file");
 		return 1;
@@ -140,11 +140,11 @@ void mpeg3io_complete_path(char *complete_path, char *path)
 
 int mpeg3io_device(char *path, char *device)
 {
-	struct stat file_st, device_st;
+	struct stat64 file_st, device_st;
     struct mntent *mnt;
 	FILE *fp;
 
-	if(stat(path, &file_st) < 0)
+	if(stat64(path, &file_st) < 0)
 	{
 		perror("mpeg3io_device");
 		return 1;
@@ -153,7 +153,7 @@ int mpeg3io_device(char *path, char *device)
 	fp = setmntent(MOUNTED, "r");
     while(fp && (mnt = getmntent(fp)))
 	{
-		if(stat(mnt->mnt_fsname, &device_st) < 0) continue;
+		if(stat64(mnt->mnt_fsname, &device_st) < 0) continue;
 		if(device_st.st_rdev == file_st.st_dev)
 		{
 			strncpy(device, mnt->mnt_fsname, MPEG3_STRLEN);

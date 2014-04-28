@@ -3,14 +3,12 @@
 #include "arender.h"
 #include "atrack.h"
 #include "automation.h"
-#include "console.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "floatautos.h"
 #include "mwindow.h"
 #include "module.h"
 #include "plugin.h"
-#include "pluginbuffer.h"
 #include "renderengine.h"
 #include "track.h"
 #include "transition.h"
@@ -310,53 +308,79 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 								long input_position, // starting sample of input buffer in project
 								Autos *autos)
 {
-	double db_value;
-	double slope, intercept;
+	double value, intercept;
 	int direction = renderengine->command->get_direction();
+	FloatAuto *previous = 0;
+	FloatAuto *next = 0;
 
-//printf("VirtualANode::render_fade 1\n");
-	for(long i = 0; i < fragment_len; )
+	if(((FloatAutos*)autos)->automation_is_constant(input_position, 
+		fragment_len,
+		direction,
+		intercept))
 	{
-		long slope_len = fragment_len - i;
+		value = DB::fromdb(intercept);
+		for(long i = 0; i < fragment_len; i++)
+		{
+			output[i] = input[i] * value;
+		}
+	}
+	else
+	{
+		for(long i = 0; i < fragment_len; i++)
+		{
+			long slope_len = fragment_len - i;
+
+			intercept = ((FloatAutos*)autos)->get_value(input_position, 
+				direction,
+				previous,
+				next);
+
+			value = DB::fromdb(intercept);
+			output[i] = input[i] * value;
+
+			if(direction == PLAY_FORWARD)
+				input_position++;
+
+			else
+				input_position--;
+		}
+	}
 
 // Get slope intercept formula for next fragment
-		get_fade_automation(slope, 
-						intercept, 
-						input_position,
-						slope_len,
-						autos);
-//printf("VirtualANode::render_fade 2 %f %f %d\n", slope, intercept, slope_len);
-
-		if(slope != 0)
-		{
-			for(double j = 0; 
-				j < slope_len; 
-				j++, i++)
-			{
-				value = slope * j + intercept;
-				value = DB::fromdb(value);
-				output[i] = input[i] * value;
-			}
-		}
-		else
-		{
-			double value = DB::fromdb(intercept);
-			for(int j = 0; 
-				j < slope_len; 
-				j++, i++)
-			{
-				output[i] = input[i] * value;
-			}
-		}
-
-//printf("VirtualANode::render_fade 3\n");
-
-		if(direction == PLAY_FORWARD)
-			input_position += slope_len;
-		else
-			input_position -= slope_len;
-	}
-//printf("VirtualANode::render_fade 4\n");
+// 		get_fade_automation(slope, 
+// 						intercept, 
+// 						input_position,
+// 						slope_len,
+// 						autos);
+// 
+// 		if(slope != 0)
+// 		{
+// 			for(double j = 0; 
+// 				j < slope_len; 
+// 				j++, i++)
+// 			{
+// 				value = slope * j + intercept;
+// 				value = DB::fromdb(value);
+// 				output[i] = input[i] * value;
+// 			}
+// 		}
+// 		else
+// 		{
+// 			double value = DB::fromdb(intercept);
+// 			for(int j = 0; 
+// 				j < slope_len; 
+// 				j++, i++)
+// 			{
+// 				output[i] = input[i] * value;
+// 			}
+// 		}
+// 
+// 
+// 		if(direction == PLAY_FORWARD)
+// 			input_position += slope_len;
+// 		else
+// 			input_position -= slope_len;
+// 	}
 
 	return 0;
 }
@@ -382,7 +406,6 @@ int VirtualANode::render_pan(double *input,        // start of input fragment
 						slope_len,
 						autos,
 						channel);
-//printf("VirtualANode::render_pan %d %f\n", channel, intercept);
 
 		if(slope != 0)
 		{

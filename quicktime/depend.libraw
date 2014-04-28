@@ -1,0 +1,8 @@
+
+$(OBJDIR)/libraw1394/src/errors.o:        libraw1394/src/errors.c
+$(OBJDIR)/libraw1394/src/eventloop.o:	  libraw1394/src/eventloop.c
+$(OBJDIR)/libraw1394/src/fcp.o:		  libraw1394/src/fcp.c
+$(OBJDIR)/libraw1394/src/iso.o:		  libraw1394/src/iso.c
+$(OBJDIR)/libraw1394/src/main.o:	  libraw1394/src/main.c
+$(OBJDIR)/libraw1394/src/readwrite.o:	  libraw1394/src/readwrite.c
+

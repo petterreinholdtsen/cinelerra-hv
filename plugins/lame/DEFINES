@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $
+$Id: DEFINES,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $
 
 USE_FFT3DN:
  - enable 3DNow code for the FFT

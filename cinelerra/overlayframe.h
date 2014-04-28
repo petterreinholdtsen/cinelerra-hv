@@ -116,12 +116,15 @@ public:
 		int total_pixels);
 	void tabulate_reduction(bilinear_table_t* &table,
 		float scale,
+		int pixel1,
 		int out_total,
 		int in_total);
 	void tabulate_enlarge(bilinear_table_t* &table,
 		float scale,
+		int pixel1,
 		int out_total,
 		int in_total);
+	void dump_bilinear(bilinear_table_t *table, int total);
 
 	void process_package(LoadPackage *package);
 	

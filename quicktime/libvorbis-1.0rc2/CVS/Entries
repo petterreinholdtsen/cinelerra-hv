@@ -1,27 +1,26 @@
-D/lib////
-D/include////
+/AUTHORS/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/COPYING/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/Makefile.am/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/Makefile.in/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/README/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/acinclude.m4/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/aclocal.m4/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/config.guess/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/config.sub/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/configure/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/configure.in/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/install-sh/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/libvorbis.spec/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/ltconfig/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/ltmain.sh/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/missing/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/mkinstalldirs/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/todo.txt/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/vorbis.m4/1.1.1.1/Fri Jun 21 12:35:23 2002//
+D/debian////
 D/doc////
 D/examples////
-D/win32////
-D/debian////
+D/include////
+D/lib////
 D/vq////
-D/CVS////
-/AUTHORS/1.1/Wed Nov  8 08:36:35 2000//
-/COPYING/1.1/Mon Feb 26 03:50:37 2001//
-/Makefile.am/1.1/Sat Nov 18 05:02:34 2000//
-/Makefile.in/1.1/Mon Aug 13 12:43:19 2001//
-/README/1.1/Tue May  7 09:16:51 2002//
-/acinclude.m4/1.1/Mon Mar 26 22:30:08 2001//
-/aclocal.m4/1.1/Mon Aug 13 12:43:05 2001//
-/config.guess/1.1/Thu Jul 13 21:54:58 2000//
-/config.sub/1.1/Thu Jul 13 21:54:58 2000//
-/configure/1.1/Mon Aug 13 12:43:08 2001//
-/configure.in/1.1/Mon Aug 13 05:57:37 2001//
-/install-sh/1.1/Wed Jul 12 09:40:03 2000//
-/libvorbis.spec/1.1/Mon Aug 13 02:40:25 2001//
-/ltconfig/1.1/Thu Jul 13 21:54:59 2000//
-/ltmain.sh/1.1/Thu Jul 13 21:54:59 2000//
-/missing/1.1/Wed Jul 12 09:40:03 2000//
-/mkinstalldirs/1.1/Tue May  7 09:16:51 2002//
-/todo.txt/1.1/Wed Jul 12 09:36:16 2000//
-/vorbis.m4/1.1/Mon Mar 26 22:30:08 2001//
+D/win32////

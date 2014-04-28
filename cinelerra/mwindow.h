@@ -8,7 +8,6 @@
 #include "guicast.h"
 #include "cache.inc"
 #include "channel.inc"
-#include "console.inc"
 #include "cwindow.inc"
 #include "defaults.inc"
 #include "edl.inc"
@@ -21,6 +20,7 @@
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "maxchannels.h"
+#include "mutex.inc"
 #include "new.inc"
 #include "patchbay.inc"
 #include "tracking.inc"
@@ -115,46 +115,17 @@ public:
 	PluginServer* scan_plugindb(char *title);
 	void dump_plugins();
 
-// ========================================= synchronization
 
-	int resize_lock;            // prevent tracks from redrawing on resize
-	int lock_resize();
-	int unlock_resize();
-
-
-// ========================================= file operations
 
 	
 	int load_filenames(ArrayList<char*> *filenames, 
 		int load_mode = LOAD_REPLACE);
-	int load(FileXML *xml, int import_ = 0,       // load from a xml file
-		int edits_only = 0,
-		int patches_only = 0,
-		int console_only = 0,
-		int timebar_only = 0,
-		int automation_only = 0);
-	int load_video_config(FileXML *xml, int import_);
-	int load_audio_config(FileXML *xml, int import_,
-		int edits_only, 
-		int patches_only,
-		int console_only,
-		int automation_only);
-
-	int load_edits(FileXML *xml);
-	int load_patches(FileXML *xml);
-	int load_console(FileXML *xml);
-	int load_timebar(FileXML *xml);
-	int load_automation(FileXML *xml);
 	
 	int interrupt_indexes();  // Stop index building
 
-// ========================================== drawing
-
-	int draw();          // draw everything
 
 	int redraw_time_dependancies();     // after reconfiguring the time format, sample rate, frame rate
 
-	int flip_vertical(int new_orientation);
 // =========================================== movement
 
 	void next_time_format();
@@ -185,7 +156,7 @@ public:
 // Call after every edit operation
 	void save_backup();
 	void show_plugin(Plugin *plugin);
-	void hide_plugin(Plugin *plugin);
+	void hide_plugin(Plugin *plugin, int lock);
 	void hide_plugins();
 // Update plugins with configuration changes
 	void update_plugin_guis();
@@ -347,7 +318,6 @@ public:
 // ================================ handle selection =======================
 
 	int init_handle_selection(long cursor_position, int handle_pixel, int which_handle);     // handle selection
-	int draw_floating_handle(int flash);          
 
 
 	LevelWindow *level_window;
@@ -371,25 +341,9 @@ public:
 // Menu items
 	ArrayList<ColormodelItem*> colormodels;
 
-	int update_playback_cursor(long new_position, int view_follows_playback);
-	int hide_playback_cursor(int flash = 1);
-	int show_playback_cursor(long position  = -1, int flash = 1);
-	int set_playback_range(long start_position = -1, int reverse = 0, float speed = 1);      // set the playback range for starting up
 	int reset_meters();
 
-// need playbutton to update when playback finishes
-	int arm_playback(int follow_loop, 
-					int use_buttons, 
-					int infinite, 
-					AudioDevice *audio);
-	int pause_playback();                               // stop and arm playback
-	int start_playback();                               // start instantly
-	int wait_for_playback();							// when playing back from command line
-	int stop_playback(int update_button = 0);           // stop
-	int start_reconfigure(int unlock_window = 0);       // stop the playback for a reconfiguration
-	int stop_reconfigure(int unlock_window = 0);        // restart playback after reconfiguration
 
-	long get_playback_position();                   // get the exact position of the playback
 
 // ====================================== plugins ==============================
 
@@ -405,29 +359,12 @@ public:
 // Adjust sample position to line up with frames.
 	int fix_timing(long &samples_out, long &frames_out, long samples_in);     
 
-// ===================================== formatting parameters
 
-// top pixel of track view
-	int get_top();                         
-// bottom pixel of track view
-	int get_bottom();                      
-
-// ================================== selection
-
-	int set_selectionend(long new_position);
-	int set_selectionstart(long new_position);
-	int set_selection(long selectionstart, long selectionend);
-
-// ==================================== cursor
-
-	int get_affected_range(long *start, long *end, int reverse = 0);    // get range that rendering and playback affects
 
 	Render *render;
 	Render *renderlist;
 // Master edl
 	EDL *edl;
-// Conosole
-	Console *console;
 // Main Window GUI
 	MWindowGUI *gui;
 // Compositor
@@ -438,6 +375,8 @@ public:
 	AWindow *awindow;
 // Levels
 	LevelWindow *lwindow;
+// Lock during creation and destruction of GUI
+	Mutex *plugin_gui_lock;
 
 	void init_render();
 	static void init_defaults(Defaults* &defaults);

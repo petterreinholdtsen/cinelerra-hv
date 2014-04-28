@@ -8,6 +8,7 @@
 #include "mainclock.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "patchbay.h"
 #include "trackcanvas.h"
 #include "transportque.h"
 #include "zoombar.h"
@@ -112,11 +113,9 @@ void CTracking::update_tracker(double position)
 	cwindow->gui->slider->update(position);
 	cwindow->gui->unlock_window();
 
-//printf("CTracking::update_tracker 1 %f\n", position);
 // Update mwindow cursor
 	mwindow->gui->lock_window();
 
-//printf("CTracking::update_tracker 2 %f\n", position);
 	mwindow->edl->local_session->selectionstart = 
 		mwindow->edl->local_session->selectionend = 
 		position;
@@ -124,15 +123,21 @@ void CTracking::update_tracker(double position)
 	updated_scroll = update_scroll(position);
 
 	mwindow->gui->mainclock->update(position);
+	mwindow->gui->patchbay->update();
 
 	if(!updated_scroll)
 	{
 		mwindow->gui->cursor->update();
 		mwindow->gui->zoombar->update();
+
+
 		mwindow->gui->canvas->flash();
 		mwindow->gui->flush();
 	}
 	mwindow->gui->unlock_window();
+
+// Plugin GUI's make lock on mwindow->gui here during user interface handlers.
+	mwindow->update_plugin_guis();
 
 //printf("CTracking::update_tracker 4\n");
 

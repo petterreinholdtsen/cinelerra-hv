@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "confirmsave.h"
 #include "defaults.h"
 #include "errorbox.h"
@@ -136,16 +137,8 @@ int Despike::save_defaults()
 	return 0;
 }
 
-void Despike::load_configuration()
-{
-	KeyFrame *prev_keyframe, *next_keyframe;
-//printf("BlurMain::load_configuration 1\n");
+LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
-	prev_keyframe = get_prev_keyframe(-1);
-	next_keyframe = get_next_keyframe(-1);
-//printf("BlurMain::load_configuration %s\n", prev_keyframe->data);
-	read_data(prev_keyframe);
-}
 
 void Despike::save_data(KeyFrame *keyframe)
 {
@@ -168,7 +161,6 @@ void Despike::read_data(KeyFrame *keyframe)
 // cause xml file to read directly from text
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 	int result = 0;
-	DespikeConfig new_config;
 
 	result = input.read_tag();
 
@@ -176,15 +168,8 @@ void Despike::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("DESPIKE"))
 		{
-			new_config.level = input.tag.get_property("LEVEL", new_config.level);
-			new_config.slope = input.tag.get_property("SLOPE", new_config.slope);
-		}
-
-		if(!(new_config == config))
-		{
-//printf("Despike::read_data %f\n", new_config.ref_level1);
-			config = new_config;
-			update_gui();
+			config.level = input.tag.get_property("LEVEL", config.level);
+			config.slope = input.tag.get_property("SLOPE", config.slope);
 		}
 	}
 }
@@ -193,6 +178,7 @@ void Despike::update_gui()
 {
 	if(thread)
 	{
+		load_configuration();
 		thread->window->lock_window();
 		thread->window->level->update(config.level);
 		thread->window->slope->update(config.slope);
@@ -203,18 +189,51 @@ void Despike::update_gui()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 DespikeConfig::DespikeConfig()
 {
+	level = 0;
+	slope = 0;
 }
 
-int DespikeConfig::operator==(DespikeConfig& that)
+int DespikeConfig::equivalent(DespikeConfig &that)
 {
-	return(level == that.level && slope == that.slope);
+	return EQUIV(level, that.level) && 
+		EQUIV(slope, that.slope);
 }
 
-DespikeConfig& DespikeConfig::operator=(DespikeConfig& that)
+void DespikeConfig::copy_from(DespikeConfig &that)
 {
 	level = that.level;
 	slope = that.slope;
-	return *this;
 }
+
+void DespikeConfig::interpolate(DespikeConfig &prev, 
+		DespikeConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame)
+{
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+
+	this->level = prev.level * prev_scale + next.level * next_scale;
+	this->slope = prev.slope * prev_scale + next.slope * next_scale;
+}
+
+
+
+
+
+

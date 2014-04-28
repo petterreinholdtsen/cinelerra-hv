@@ -54,8 +54,6 @@ public:
 	int recordable_video_tracks();
 	int total_audio_tracks();
 	int total_video_tracks();
-	void translate_camera(float offset_x, float offset_y);
-	void translate_projector(float offset_x, float offset_y);
 // return the longest track in all the tracks in seconds
  	double total_length();
 // Update y pixels after a zoom
@@ -69,6 +67,8 @@ public:
 		int mute,
 		int expand,
 		int value);
+	void translate_camera(float offset_x, float offset_y);
+	void translate_projector(float offset_x, float offset_y);
 	int total_of(int play, 
 		int record, 
 		int automate, 
@@ -226,9 +226,6 @@ public:
 	int paste_silence(double start, 
 		double end, 
 		int edit_plugins);
-	int paste_transition(long startproject, 
-				long endproject, 
-				Transition *transition);
 	int purge_asset(Asset *asset);
 	int asset_used(Asset *asset);
 	int select_translation(int cursor_x, int cursor_y);    // select video coordinates for frame
@@ -257,7 +254,6 @@ public:
 	int feather_edits(long start, long end, long samples, int audio, int video);
 	long get_feather(long selectionstart, long selectionend, int audio, int video);
 	int reset_translation(long start, long end);
-	int scale_video(int *dimension, int *offsets, int scale_data);
 // Move edit boundaries and automation during a framerate change
 	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, long start, long end);
 

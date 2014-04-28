@@ -166,13 +166,5 @@ public:
 
 
 
-// REMOVE
-class RenderListItem : public BC_MenuItem
-{
-public:
-	RenderListItem(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
 
 #endif

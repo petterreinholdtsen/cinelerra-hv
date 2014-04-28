@@ -1,6 +1,5 @@
 #include "awindow.h"
 #include "awindowgui.h"
-#include "console.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "defaults.h"
@@ -332,7 +331,10 @@ void MWindowGUI::default_positions()
 	mwindow->cwindow->gui->lock_window();
 	mwindow->awindow->gui->lock_window();
 
-//printf("MWindowGUI::default_positions 1\n");
+// printf("MWindowGUI::default_positions 1 %d %d %d %d\n", mwindow->session->vwindow_x, 
+// mwindow->session->vwindow_y,
+// mwindow->session->vwindow_w, 
+// mwindow->session->vwindow_h);
 	reposition_window(mwindow->session->mwindow_x, 
 		mwindow->session->mwindow_y,
 		mwindow->session->mwindow_w, 
@@ -407,12 +409,6 @@ int MWindowGUI::translation_event()
 }
 
 
-int MWindowGUI::flip_vertical()
-{
-	zoombar->resize_event(get_w(), get_h());
-	mbuttons->flip_vertical(get_w(), get_h());
-}
-
 int MWindowGUI::save_defaults(Defaults *defaults)
 {
 	defaults->update("MWINDOWWIDTH", get_w());
@@ -430,14 +426,9 @@ int MWindowGUI::keypress_event()
 }
 
 
-int MWindowGUI::close_event() { mainmenu->quit(); }
-
-int MWindowGUI::get_top()
-{
-	if(mwindow->session->tracks_vertical) 
-	return menu_h() + BUTTONBARWIDTH;    // menubar + mbuttons
-	else 
-	return menu_h();      // menubar
+int MWindowGUI::close_event() 
+{ 
+	mainmenu->quit(); 
 }
 
 int MWindowGUI::menu_h()

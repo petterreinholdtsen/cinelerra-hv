@@ -5,6 +5,14 @@
 #include <stdlib.h>
 
 
+
+
+static pthread_mutex_t *decode_lock = 0;
+
+
+
+
+
 /* Advance to next header and read it. */
 static int read_header(mpeg3audio_t *audio)
 {
@@ -174,7 +182,11 @@ static int read_frame(mpeg3audio_t *audio, int render)
 	int samples = 0;
 	int i;
 
-//printf(__FUNCTION__ " 1\n");
+// Liba52 is not reentrant
+	if(track->format == AUDIO_AC3)
+	{
+		pthread_mutex_lock(decode_lock);
+	}
 
 	if(render)
 	{
@@ -184,19 +196,10 @@ static int read_frame(mpeg3audio_t *audio, int render)
 			temp_output[i] = audio->output[i] + audio->output_size;
 		}
 	}
-//printf(__FUNCTION__ " 2 %d\n", result);
 
 /* Find and read next header */
 	result = read_header(audio);
 
-/*
- * printf(__FUNCTION__ " 3 %d %02x%02x%02x%02x\n", 
- * result, 
- * (unsigned char)audio->packet_buffer[0],
- * (unsigned char)audio->packet_buffer[1],
- * (unsigned char)audio->packet_buffer[2],
- * (unsigned char)audio->packet_buffer[3]);
- */
 
 /* Read rest of frame */
 	if(!result)
@@ -207,52 +210,37 @@ static int read_frame(mpeg3audio_t *audio, int render)
 	}
 
 
-//printf(__FUNCTION__ " 4 %d %d\n", result, track->format);
 
 	if(!result)
 	{
 		switch(track->format)
 		{
 			case AUDIO_AC3:
-//printf(__FUNCTION__ " 4.1\n");
 				samples = mpeg3audio_doac3(audio->ac3_decoder, 
 					audio->packet_buffer,
 					audio->framesize,
 					temp_output,
 					render);
-//printf(__FUNCTION__ " 4.2 %d\n", samples);
 				break;	
 
 			case AUDIO_MPEG:
-//printf(__FUNCTION__ " 4.5 %d\n", audio->layer_decoder->layer);
 				switch(audio->layer_decoder->layer)
 				{
 					case 2:
-//printf(__FUNCTION__ " 4.3\n");
 						samples = mpeg3audio_dolayer2(audio->layer_decoder, 
 							audio->packet_buffer,
 							audio->framesize,
 							temp_output,
 							render);
 
-/*
- * if(render)
- * {
- * temp_output[0][samples - 1] = 1;
- * temp_output[0][0] = -1;
- * }
- */
-//printf(__FUNCTION__ " 4.4 %d\n", samples);
 						break;
 
 					case 3:
-//printf(__FUNCTION__ " 5\n");
 						samples = mpeg3audio_dolayer3(audio->layer_decoder, 
 							audio->packet_buffer,
 							audio->framesize,
 							temp_output,
 							render);
-//printf(__FUNCTION__ " 6 %d\n", samples);
 						break;
 
 					default:
@@ -262,28 +250,27 @@ static int read_frame(mpeg3audio_t *audio, int render)
 				break;
 
 			case AUDIO_PCM:
-//printf(__FUNCTION__ " 6.1\n");
 				samples = mpeg3audio_dopcm(audio->pcm_decoder, 
 					audio->packet_buffer,
 					audio->framesize,
 					temp_output,
 					render);
-//printf(__FUNCTION__ " 6.2 %d\n", samples);
 				break;
 		}
 	}
 
-//printf(__FUNCTION__ " 7 %d %d %p\n", result, render, temp_output);
 
 	audio->output_size += samples;
 	if(render)
 	{
-//printf(__FUNCTION__ " 8\n", result, render, temp_output);
-//printf(__FUNCTION__ " 9 %d %d %p %d\n", result, render, temp_output, track->channels);
 		free(temp_output);
-//printf(__FUNCTION__ " 10\n", result, render, temp_output);
 	}
-//printf(__FUNCTION__ " 11\n", result, render, temp_output);
+
+// Liba52 is not reentrant
+	if(track->format == AUDIO_AC3)
+	{
+		pthread_mutex_unlock(decode_lock);
+	}
 	return samples;
 }
 
@@ -377,6 +364,14 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 	mpeg3audio_t *audio = calloc(1, sizeof(mpeg3audio_t));
 	int result = 0;
 	int i;
+
+	if(!decode_lock)
+	{
+		pthread_mutexattr_t attr;
+		decode_lock = calloc(1, sizeof(pthread_mutex_t));
+		pthread_mutexattr_init(&attr);
+		pthread_mutex_init(decode_lock, &attr);
+	}
 
 	audio->file = file;
 	audio->track = track;
@@ -672,32 +667,40 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 
 	if(output_f || output_i) render = 1;
 
-
+//printf(__FUNCTION__ " 1\n");
 /* Handle seeking requests */
 	seek(audio);
 
+//printf(__FUNCTION__ " 1\n");
 	new_size = track->current_position + 
 			len + 
 			MAXFRAMESAMPLES - 
 			audio->output_position;
 
+//printf(__FUNCTION__ " 1\n");
 /* Expand output until enough room exists for new data */
 	if(new_size > 
 		audio->output_allocated)
 	{
 
+//printf(__FUNCTION__ " 2 %d %d\n", new_size, audio->output_allocated);
 		for(i = 0; i < track->channels; i++)
 		{
 			float *new_output;
+//printf(__FUNCTION__ " 3\n");
 			new_output = calloc(sizeof(float), new_size);
+//printf(__FUNCTION__ " 4\n");
 			memcpy(new_output, audio->output[i], sizeof(float) * audio->output_size);
+//printf(__FUNCTION__ " 5\n");
 			free(audio->output[i]);
+//printf(__FUNCTION__ " 6\n");
 			audio->output[i] = new_output;
 		}
+//printf(__FUNCTION__ " 7\n");
 		audio->output_allocated = new_size;
 	}
 
-//printf(__FUNCTION__ " 1 %d %d\n", try, mpeg3demux_eof(track->demuxer));
+//printf(__FUNCTION__ " 8 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 /* Decode frames until the output is ready */
 	while(audio->output_position + audio->output_size < 
 			track->current_position + len &&
@@ -705,7 +708,9 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 		!mpeg3demux_eof(track->demuxer))
 	{
 
+//printf(__FUNCTION__ " 8.1\n");
 		int samples = read_frame(audio, render);
+//printf(__FUNCTION__ " 8.2 %d\n", samples);
 
 		if(!samples)
 			try++;
@@ -714,7 +719,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	}
 
 
-//printf(__FUNCTION__ " 2 %d %d\n", try, mpeg3demux_eof(track->demuxer));
+//printf(__FUNCTION__ " 9 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 
 
 /* Copy the buffer to the output */
@@ -769,7 +774,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	}
 
 
-//printf(__FUNCTION__ " 3 %d %d\n", try, mpeg3demux_eof(track->demuxer));
+//printf(__FUNCTION__ " 10 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 
 	if(audio->output_size > 0)
 		return 0;

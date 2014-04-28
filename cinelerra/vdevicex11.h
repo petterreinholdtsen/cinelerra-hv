@@ -23,9 +23,6 @@ public:
 	int close_all();
 	int read_buffer(VFrame *frame);
 	int reset_parameters();
-	ArrayList<int>* get_render_strategies();
-	int get_output_w();     // get the output window width
-	int get_output_h();     // get the output window height
 // User always gets the colormodel requested
 	void new_output_buffer(VFrame **output_frames, int colormodel);
 
@@ -33,8 +30,6 @@ public:
 	int start_playback();
 	int stop_playback();
 	int output_visible();
-// Get a bitmap
-	BC_Bitmap* get_bitmap();
 // After loading the bitmap with a picture, write it
 	int write_buffer(VFrame **outputs, EDL *edl);
 
@@ -49,7 +44,6 @@ private:
 	int bitmap_type;           // Type of output_frame
 	int bitmap_w, bitmap_h;   // dimensions of buffers written to window
 	ArrayList<int> render_strategies;
-	VideoWindow *video_window; // window for output or input
 // Canvas for output
 	Canvas *output;
 	int color_model;

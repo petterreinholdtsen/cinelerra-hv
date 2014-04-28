@@ -8,7 +8,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "pluginarray.h"
-#include "pluginbuffer.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "bcprogressbox.h"
@@ -25,6 +24,12 @@ PluginArray::~PluginArray()
 {
 	remove_all_objects();
 	delete [] modules;
+}
+
+
+PluginServer* PluginArray::scan_plugindb(char *title)
+{
+	return mwindow->scan_plugindb(title);
 }
 
 int PluginArray::start_plugins(MWindow *mwindow, 

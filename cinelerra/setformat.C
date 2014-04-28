@@ -88,6 +88,7 @@ void SetFormatThread::run()
 		mwindow->edl->copy_session(new_settings);
 		mwindow->edl->session->output_w = dimension[0];
 		mwindow->edl->session->output_h = dimension[1];
+		mwindow->edl->rechannel();
 		mwindow->edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
 		mwindow->edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
 		mwindow->save_backup();
@@ -99,7 +100,7 @@ void SetFormatThread::run()
 			1,
 			1,
 			1,
-			0, 
+			1, 
 			1,
 			0);
 		mwindow->gui->unlock_window();

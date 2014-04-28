@@ -1,5 +1,6 @@
 #include "bcbitmap.h"
 #include "bcclipboard.h"
+#include "bcdisplayinfo.h"
 #include "bcmenubar.h"
 #include "bcpixmap.h"
 #include "bcpopup.h"
@@ -29,9 +30,81 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 	this->h = h;
 }
 
+
+BC_WindowTree::BC_WindowTree(Display* display, 
+	BC_WindowTree *parent_tree, 
+	Window root_win)
+{
+	Window temp_win;
+	Window *stack;
+	int stack_total;
+
+	this->display = display;
+	this->win = root_win;
+	this->parent_tree = parent_tree;
+
+	XQueryTree(display, 
+		root_win, 
+		&temp_win, 
+		&temp_win, 
+		&stack, 
+		(unsigned int*)&stack_total);
+
+	for(int i = 0; i < stack_total; i++)
+	{
+		windows.append(new BC_WindowTree(display, this, stack[i]));
+	}
+	XFree(stack);
+}
+
+BC_WindowTree::~BC_WindowTree()
+{
+	windows.remove_all_objects();
+}
+
+BC_WindowTree* BC_WindowTree::get_node(Window win)
+{
+//printf("BC_WindowTree::get_node 1\n");
+	for(int i = 0; i < windows.total; i++)
+	{
+		BC_WindowTree *result = 0;
+//printf("BC_WindowTree::get_node 2\n");
+		if(windows.values[i]->win == win)
+			return windows.values[i];
+		else
+		{
+//printf("BC_WindowTree::get_node 3\n");
+			result = windows.values[i]->get_node(win);
+//printf("BC_WindowTree::get_node 4\n");
+			if(result) return result;
+		}
+	}
+}
+
+
+void BC_WindowTree::dump(int indent, Window caller_win)
+{
+	XWindowAttributes attr;
+	XGetWindowAttributes(display,
+    		win,
+    		&attr);
+	for(int i = 0; i < indent; i++)
+		printf(" ");
+	printf("x=%d y=%d w=%d h=%d win=%x subwindows=%d ", 
+		attr.x, attr.y, attr.width, attr.height, win, windows.total);
+	if(caller_win == win) printf("**");
+	printf("\n");
+	for(int i = 0; i < windows.total; i++)
+		windows.values[i]->dump(indent + 1, caller_win);
+}
+
+
+
+
 Mutex BC_WindowBase::opengl_lock;
 
 BC_Resources BC_WindowBase::resources;
+BC_WindowTree* BC_WindowBase::window_tree = 0;
 
 BC_WindowBase::BC_WindowBase()
 {
@@ -87,6 +160,7 @@ BC_WindowBase::~BC_WindowBase()
 
 int BC_WindowBase::initialize()
 {
+	window_lock = 0;
 	x = 0; 
 	y = 0; 
 	w = 0; 
@@ -164,14 +238,14 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	int root_w;
 	int root_h;
 #ifdef HAVE_LIBXXF86VM
-   int vm;
+    int vm;
 #endif
 
-   if(parent_window) top_level = parent_window->top_level;
+    if(parent_window) top_level = parent_window->top_level;
 
 #ifdef HAVE_LIBXXF86VM
-   if(window_type == VIDMODE_SCALED_WINDOW)
-	   closest_vm(&vm,&w,&h);
+    if(window_type == VIDMODE_SCALED_WINDOW)
+	    closest_vm(&vm,&w,&h);
 #endif
 
 	this->x = x;
@@ -222,6 +296,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		init_colors();
 // get the resources
 		if(resources.use_shm < 0) resources.initialize_display(this);
+		x_correction = get_resources()->get_left_border();
+		y_correction = get_resources()->get_top_border();
+
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
 		init_fonts();
@@ -377,6 +454,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		}
 
 		if(!hidden) show_window();
+
 	}
 
 	draw_background(0, 0, this->w, this->h);
@@ -464,7 +542,7 @@ int BC_WindowBase::dispatch_event()
 
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
-//printf("BC_WindowBase::dispatch_event 1\n");
+//printf("BC_WindowBase::dispatch_event 1 %p\n", this);
 	if(XPending(display) || (!motion_events && !resize_events && !translation_events))
 	{
 		XNextEvent(display, &event);
@@ -600,6 +678,7 @@ int BC_WindowBase::dispatch_event()
 
 			cancel_resize = 0;
 			cancel_translation = 0;
+
 // Resize history prevents responses to recursive resize requests
 			for(int i = 0; i < resize_history.total && !cancel_resize; i++)
 			{
@@ -628,16 +707,7 @@ int BC_WindowBase::dispatch_event()
 				translation_events = 1;
 			}
 
-// Get correction factors.  No correction for popup windows.
-			if(translation_count == 0 && window_type == MAIN_WINDOW)
-			{
-				x_correction = x - last_translate_x;
-				y_correction = y - last_translate_y;
-			}
-
 			translation_count++;
-//printf("BC_Windowbase %p %d %d %d %d\n", this, last_resize_w, last_resize_h, w, h);
-//printf("BC_Windowbase %p %d %d %d %d\n", this, last_translate_x, last_translate_y, x, y);
 			break;
 
 		case KeyPress:
@@ -723,7 +793,7 @@ int BC_WindowBase::dispatch_event()
 			break;
 	}
 
-//printf("BC_WindowBase::dispatch_event 3\n");
+//printf("BC_WindowBase::dispatch_event 3 %p\n", this);
 	unlock_window();
 	return 0;
 }
@@ -779,17 +849,21 @@ int BC_WindowBase::dispatch_translation_event()
 	translation_events = 0;
 	if(window_type == MAIN_WINDOW)
 	{
+		prev_x = x;
+		prev_y = y;
 		x = last_translate_x;
 		y = last_translate_y;
 // Correct for window manager offsets
-		x += x_correction;
-		y += y_correction;
+		x -= x_correction;
+		y -= y_correction;
 	}
+
 	for(int i = 0; i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_translation_event();
 	}
 
+//printf("BC_WindowBase::dispatch_translation_event 1 %p\n", this);
 	translation_event();
 	return 0;
 }
@@ -821,6 +895,19 @@ int BC_WindowBase::dispatch_motion_event()
 			{
 				cursor_x = drag_x;
 				cursor_y = drag_y;
+// 				if(window_tree)
+// 				{
+// 					delete window_tree;
+// 					window_tree = 0;
+// 				}
+// 				if(!window_tree)
+// 				{
+// 					window_tree = new BC_WindowTree(display, 
+// 						0, 
+// 						rootwin);
+// //window_tree->dump(0, win);
+// 				}
+
 				result = dispatch_drag_start();
 			}
 		}
@@ -1009,7 +1096,6 @@ int BC_WindowBase::dispatch_drag_start()
 	int result = 0;
 	if(active_menubar) result = active_menubar->dispatch_drag_start();
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_drag_start();
-//printf("BC_WindowBase::dispatch_drag_start %p %p %p %d\n", top_level, this, active_popup_menu, result);
 	if(!result && active_subwindow) result = active_subwindow->dispatch_drag_start();
 	
 	for(int i = 0; i < subwindows->total && !result; i++)
@@ -1938,8 +2024,6 @@ BC_Bitmap* BC_WindowBase::new_bitmap(int w, int h, int color_model)
 
 int BC_WindowBase::accel_available(int color_model)
 {
-// Disable because of X server memory leak
-//return 0;
 	if(window_type != MAIN_WINDOW) 
 		return top_level->accel_available(color_model);
 
@@ -1980,7 +2064,7 @@ int BC_WindowBase::accel_available(int color_model)
 			result = 0;
 			break;
 	}
-//printf("BC_WindowBase::accel_available %d\n", result);
+//printf("BC_WindowBase::accel_available %d %d\n", color_model, result);
 	return result;
 }
 
@@ -2069,6 +2153,8 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 int BC_WindowBase::show_window() 
 { 
 	XMapWindow(top_level->display, win); 
+		XFlush(top_level->display);
+		XSync(top_level->display, 0);
 	hidden = 0; 
 	return 0;
 }
@@ -2142,15 +2228,21 @@ void BC_WindowBase::sync_display()
 	XSync(top_level->display, False);
 }
 
+int BC_WindowBase::get_window_lock()
+{
+	return top_level->window_lock;
+}
 
 int BC_WindowBase::lock_window() 
-{ 
+{
+	top_level->window_lock = 1;
 	XLockDisplay(top_level->display); 
 	return 0;
 }
 
 int BC_WindowBase::unlock_window() 
 { 
+	top_level->window_lock = 0;
 	XUnlockDisplay(top_level->display); 
 	return 0;
 }
@@ -2476,14 +2568,16 @@ int BC_WindowBase::get_abs_cursor_y()
 
 int BC_WindowBase::get_cursor_over_window()
 {
+return 1;
+	if(top_level != this) return top_level->get_cursor_over_window();
+
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
-	Window temp_win, root_win, parent_win, this_win, drag_win;
-	Window *stack;
-	int stack_total;
+	Window temp_win;
+//printf("BC_WindowBase::get_cursor_over_window 2\n");
 
-	XQueryPointer(top_level->display, 
-		top_level->win, 
+	XQueryPointer(display, 
+		win, 
 		&temp_win, 
 		&temp_win,
 		&abs_x, 
@@ -2491,78 +2585,89 @@ int BC_WindowBase::get_cursor_over_window()
 		&win_x, 
 		&win_y, 
 		&temp_mask);
+//printf("BC_WindowBase::get_cursor_over_window 3 %p\n", window_tree);
 
-// Get the parent of this window which shows up in Tree
-	parent_win = this->win;
-	do
+// Get location in window tree
+	BC_WindowTree *tree_node = window_tree->get_node(win);
+
+// KDE -> Window is overlapped by a transparent window.
+// FVWM -> Window is bordered by different windows.
+	BC_WindowTree *parent_node = tree_node->parent_tree;
+	for( ; 
+		parent_node->parent_tree != window_tree; 
+		tree_node = parent_node, parent_node = parent_node->parent_tree)
 	{
-		Window last_parent = parent_win;
-		XQueryTree(top_level->display, 
-			parent_win, 
-			&temp_win, 
-			&parent_win, 
-			&stack, 
-			(unsigned int*)&stack_total);
-		
-		XFree(stack);
-		if(parent_win == top_level->rootwin)
+		;
+	}
+
+	int got_it = 0;
+	for(int i = 0; i < parent_node->windows.total; i++)
+	{
+		if(parent_node->windows.values[i] == tree_node)
 		{
-			parent_win = last_parent;
-			break;
+			got_it = 1;
 		}
-	}while(parent_win);
-
-
-
-	XQueryTree(top_level->display, 
-		top_level->rootwin, 
-		&temp_win, 
-		&temp_win, 
-		&stack, 
-		(unsigned int*)&stack_total);
-
-	for(int i = 0; i < stack_total; i++)
-	{
-		XWindowAttributes attr;
-		XGetWindowAttributes(top_level->display,
-    			stack[i],
-    			&attr);
-//printf("BC_WindowBase::get_cursor_over_window %d %x %d, %d %dx%d\n", 
-//	i, stack[i], attr.x,attr.y, attr.width,  attr.height);
-
-
-// Got this window
-		if(stack[i] == parent_win)
+		else
+		if(got_it)
 		{
-//printf("BC_WindowBase::get_cursor_over_window got it\n");
+			XWindowAttributes attr;
+			XGetWindowAttributes(display,
+    				parent_node->windows.values[i]->win,
+    				&attr);
 
-// Search everything below it
-			for(i++; i < stack_total; i++)
+// Obstructed by overlapping window.
+			if(abs_x >= attr.x && abs_x < attr.x + attr.width &&
+				abs_y >= attr.y && abs_y < attr.y + attr.height &&
+				!attr.override_redirect)
 			{
+				return 0;
+			}
+		}
+	}
+
+# if 0
+// Test every window after current node in same parent node.
+// Test every parent node after current parent node.
+// These are the overlapping windows.
+	while(parent_node && parent_node != window_tree)
+	{
+//printf("BC_WindowBase::get_cursor_over_window 4\n");
+		if(parent_node
+		for(int i = 0; i < parent_node->windows.total; i++)
+		{
+//printf("BC_WindowBase::get_cursor_over_window 5\n");
+			if(parent_node->windows.values[i] == tree_node)
+			{
+//printf("BC_WindowBase::get_cursor_over_window 6\n");
+				got_it = 1;
+			}
+			else
+			if(got_it)
+			{
+//printf("BC_WindowBase::get_cursor_over_window 7\n");
 				XWindowAttributes attr;
-				XGetWindowAttributes(top_level->display,
-    					stack[i],
+				XGetWindowAttributes(display,
+    					parent_node->windows.values[i]->win,
     					&attr);
 
-//printf("BC_WindowBase::get_cursor_over_window %d %x %d, %d %d, %d %dx%d\n", 
-//	i, stack[i], abs_x, abs_y, attr.x,attr.y, attr.width,  attr.height);
-
+// Obstructed by overlapping window.
 				if(abs_x >= attr.x && abs_x < attr.x + attr.width &&
 					abs_y >= attr.y && abs_y < attr.y + attr.height &&
 					!attr.override_redirect)
 				{
-//printf("BC_WindowBase::get_cursor_over_window return 0\n");
-					XFree(stack);
 					return 0;
 				}
 			}
-
-			break;
+//printf("BC_WindowBase::get_cursor_over_window 8\n");
 		}
+		tree_node = parent_node;
+		parent_node = tree_node->parent_tree;
 	}
-	XFree(stack);
+//printf("BC_WindowBase::get_cursor_over_window 9\n");
 
-//printf("BC_WindowBase::get_cursor_over_this %d %d %d\n", root_win, current_win, win);
+#endif
+
+// Didn't find obstruction
 	return 1;
 }
 
@@ -2717,6 +2822,7 @@ int BC_WindowBase::resize_event(int w, int h)
 int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 {
 	int resize = 0;
+
 // Some tools set their own dimensions before calling this, causing the 
 // resize check to skip.
 	this->x = x;
@@ -2743,10 +2849,12 @@ int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 
 	if(translation_count && window_type == MAIN_WINDOW)
 	{
+// KDE shifts window right and down.
+// FVWM leaves window alone and adds border around it.
 		XMoveResizeWindow(top_level->display, 
 			win, 
-			x - x_correction, 
-			y - y_correction, 
+			x + BC_DisplayInfo::left_border - BC_DisplayInfo::auto_reposition_x, 
+			y + BC_DisplayInfo::top_border - BC_DisplayInfo::auto_reposition_y, 
 			this->w,
 			this->h);
 	}

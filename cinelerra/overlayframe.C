@@ -620,6 +620,7 @@ ScaleUnit::~ScaleUnit()
 
 void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 	float scale,
+	int in_pixel1, 
 	int out_total,
 	int in_total)
 {
@@ -635,13 +636,15 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 
 // Store input fraction
 		entry->input_fraction1 = (floor(in_start + 1) - in_start) / scale;
-		entry->input_fraction2 = 1 / scale;
+		entry->input_fraction2 = 1.0 / scale;
 		entry->input_fraction3 = (in_end - floor(in_end)) / scale;
 
 		if(in_end >= in_total)
 		{
-			in_end = 0;
-			entry->input_fraction3 = 0;
+			in_end = in_total - 1;
+			entry->input_fraction3 = 1.0 - 
+				entry->input_fraction1 - 
+				entry->input_fraction2 * ((int)in_end - (int)in_start - 1);
 		}
 
 // Store input pixels
@@ -656,16 +659,19 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 		}
 
 // Get total fraction of output pixel used
-		if(entry->input_pixel2 > entry->input_pixel1)
-			entry->total_fraction = 
-				entry->input_fraction1 +
-				entry->input_fraction2 * (entry->input_pixel2 - entry->input_pixel1) +
-				entry->input_fraction3;
+//		if(entry->input_pixel2 > entry->input_pixel1)
+		entry->total_fraction = 
+			entry->input_fraction1 +
+			entry->input_fraction2 * (entry->input_pixel2 - entry->input_pixel1 - 1) +
+			entry->input_fraction3;
+		entry->input_pixel1 += in_pixel1;
+		entry->input_pixel2 += in_pixel1;
 	}
 }
 
 void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 	float scale,
+	int in_pixel1, 
 	int out_total,
 	int in_total)
 {
@@ -681,17 +687,17 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 
 		if(in_pixel <= in_total)
 		{
-			entry->input_fraction2 = in_pixel - entry->input_pixel1;
+			entry->input_fraction3 = in_pixel - entry->input_pixel1;
 		}
 		else
 		{
-			entry->input_fraction2 = 0;
+			entry->input_fraction3 = 0;
 			entry->input_pixel2 = 0;
 		}
 
 		if(in_pixel >= 0)
 		{
-			entry->input_fraction1 = entry->input_fraction2 - in_pixel;
+			entry->input_fraction1 = entry->input_pixel2 - in_pixel;
 		}
 		else
 		{
@@ -702,28 +708,152 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 		if(entry->input_pixel2 >= in_total)
 		{
 			entry->input_pixel2 = 0;
-			entry->input_fraction2 = 0;
+			entry->input_fraction3 = 0;
 		}
 
 		entry->total_fraction = 
 			entry->input_fraction1 + 
-			entry->input_fraction2;
+			entry->input_fraction3;
+		entry->input_pixel1 += in_pixel1;
+		entry->input_pixel2 += in_pixel1;
 	}
 }
 
+void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
+{
+	printf("ScaleUnit::dump_bilinear\n");
+	for(int i = 0; i < total; i++)
+	{
+		printf("out=%d inpixel1=%d inpixel2=%d infrac1=%f infrac2=%f infrac3=%f total=%f\n", 
+			i,
+			table[i].input_pixel1,
+			table[i].input_pixel2,
+			table[i].input_fraction1,
+			table[i].input_fraction2,
+			table[i].input_fraction3,
+			table[i].total_fraction);
+	}
+}
+
+#define PIXEL_REDUCE_MACRO(type, components, row) \
+{ \
+	type *input_row = &in_rows[row][x_entry->input_pixel1 * components]; \
+	type *input_end = &in_rows[row][x_entry->input_pixel2 * components]; \
+ \
+/* Do first pixel */ \
+	temp_f1 += input_scale1 * input_row[0]; \
+	temp_f2 += input_scale1 * input_row[1]; \
+	temp_f3 += input_scale1 * input_row[2]; \
+	if(components == 4) temp_f4 += input_scale1 * input_row[3]; \
+ \
+/* Do last pixel */ \
+	if(input_row < input_end) \
+	{ \
+		temp_f1 += input_scale3 * input_end[0]; \
+		temp_f2 += input_scale3 * input_end[1]; \
+		temp_f3 += input_scale3 * input_end[2]; \
+		if(components == 4) temp_f4 += input_scale3 * input_end[3]; \
+	} \
+ \
+/* Do middle pixels */ \
+	for(input_row += components; input_row < input_end; input_row += components) \
+	{ \
+		temp_f1 += input_scale2 * input_row[0]; \
+		temp_f2 += input_scale2 * input_row[1]; \
+		temp_f3 += input_scale2 * input_row[2]; \
+		if(components == 4) temp_f4 += input_scale2 * input_row[3]; \
+	} \
+}
+
+// Bilinear reduction and suboptimal enlargement.
+// Very high quality.
 #define BILINEAR_REDUCE(max, type, components) \
 { \
-	reduce_table_t *x_table, *y_table; \
+	bilinear_table_t *x_table, *y_table; \
+	int out_h = pkg->out_row2 - pkg->out_row1; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
  \
-	tabulate_reduction(x_table, \
-		scale_w, \
-		out_w_int, \
-		in_w_int); \
-	tabulate_reduction(y_table, \
-		scale_h, \
-		out_h_int, \
-		in_h_int); \
+ 	if(scale_w < 1) \
+		tabulate_reduction(x_table, \
+			1.0 / scale_w, \
+			in_x1_int, \
+			out_w_int, \
+			input->get_w()); \
+	else \
+		tabulate_enlarge(x_table, \
+			1.0 / scale_w, \
+			in_x1_int, \
+			out_w_int, \
+			input->get_w()); \
  \
+ 	if(scale_h < 1) \
+		tabulate_reduction(y_table, \
+			1.0 / scale_h, \
+			in_y1_int, \
+			out_h_int, \
+			input->get_h()); \
+	else \
+		tabulate_enlarge(y_table, \
+			1.0 / scale_h, \
+			in_y1_int, \
+			out_h_int, \
+			input->get_h()); \
+/* dump_bilinear(y_table, out_h_int); */ \
+ \
+ 	for(int i = 0; i < out_h; i++) \
+	{ \
+		type *out_row = out_rows[i + pkg->out_row1]; \
+		bilinear_table_t *y_entry = &y_table[i + pkg->out_row1]; \
+ \
+		for(int j = 0; j < out_w_int; j++) \
+		{ \
+			bilinear_table_t *x_entry = &x_table[j]; \
+/* Load rounding factors */ \
+			float temp_f1 = .5; \
+			float temp_f2 = .5; \
+			float temp_f3 = .5; \
+			float temp_f4 = .5; \
+ \
+/* First row */ \
+			float input_scale1 = y_entry->input_fraction1 * x_entry->input_fraction1; \
+			float input_scale2 = y_entry->input_fraction1 * x_entry->input_fraction2; \
+			float input_scale3 = y_entry->input_fraction1 * x_entry->input_fraction3; \
+			PIXEL_REDUCE_MACRO(type, components, y_entry->input_pixel1) \
+ \
+/* Last row */ \
+			if(out_h) \
+			{ \
+				input_scale1 = y_entry->input_fraction3 * x_entry->input_fraction1; \
+				input_scale2 = y_entry->input_fraction3 * x_entry->input_fraction2; \
+				input_scale3 = y_entry->input_fraction3 * x_entry->input_fraction3; \
+				PIXEL_REDUCE_MACRO(type, components, y_entry->input_pixel2) \
+ \
+/* Middle rows */ \
+				if(out_h > 1) \
+				{ \
+					input_scale1 = y_entry->input_fraction2 * x_entry->input_fraction1; \
+					input_scale2 = y_entry->input_fraction2 * x_entry->input_fraction2; \
+					input_scale3 = y_entry->input_fraction2 * x_entry->input_fraction3; \
+					for(int k = y_entry->input_pixel1 + 1; \
+						k < y_entry->input_pixel2; \
+						k++) \
+					{ \
+						PIXEL_REDUCE_MACRO(type, components, k) \
+					} \
+				} \
+			} \
+ \
+			if(temp_f1 > max) temp_f1 = max; \
+			if(temp_f2 > max) temp_f2 = max; \
+			if(temp_f3 > max) temp_f3 = max; \
+			if(components == 4) if(temp_f4 > max) temp_f4 = max; \
+			out_row[j * components    ] = (type)temp_f1; \
+			out_row[j * components + 1] = (type)temp_f2; \
+			out_row[j * components + 2] = (type)temp_f3; \
+			if(components == 4) out_row[j * components + 3] = (type)temp_f4; \
+		} \
+	} \
  \
 	delete [] x_table; \
 	delete [] y_table; \
@@ -731,7 +861,7 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 
 
 
-
+// Only 2 input pixels
 #define BILINEAR_ENLARGE(max, type, components) \
 { \
 	float k_y = 1.0 / scale_h; \
@@ -1326,22 +1456,22 @@ void ScaleUnit::process_package(LoadPackage *package)
 		{
 			case BC_RGB888:
 			case BC_YUV888:
-				BILINEAR_ENLARGE(0xff, unsigned char, 3);
+				BILINEAR_REDUCE(0xff, unsigned char, 3);
 				break;
 
 			case BC_RGBA8888:
 			case BC_YUVA8888:
-				BILINEAR_ENLARGE(0xff, unsigned char, 4);
+				BILINEAR_REDUCE(0xff, unsigned char, 4);
 				break;
 
 			case BC_RGB161616:
 			case BC_YUV161616:
-				BILINEAR_ENLARGE(0xffff, uint16_t, 3);
+				BILINEAR_REDUCE(0xffff, uint16_t, 3);
 				break;
 
 			case BC_RGBA16161616:
 			case BC_YUVA16161616:
-				BILINEAR_ENLARGE(0xffff, uint16_t, 4);
+				BILINEAR_REDUCE(0xffff, uint16_t, 4);
 				break;
 		}
 	}

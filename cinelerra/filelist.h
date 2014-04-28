@@ -44,18 +44,8 @@ public:
 
 	int write_list_header();
 	int write_frames(VFrame ***frames, int len);
-	
-	int read_frame(VFrame *frame, PluginBuffer *buffer, long byte_offset, 
-			float in_x1, float in_y1, float in_x2, float in_y2,
-			float out_x1, float out_y1, float out_x2, float out_y2, 
-			int alpha, int use_alpha, int use_float, int interpolate);
 	VFrame* read_frame(int use_alpha, int use_float);
 
-	int write_frames(VFrame ***frames, 
-			PluginBuffer *video_ram, 
-			int len, 
-			int use_alpha, 
-			int use_float);
 
 	virtual FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 

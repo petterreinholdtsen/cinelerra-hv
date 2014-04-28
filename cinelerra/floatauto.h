@@ -24,8 +24,13 @@ public:
 	void copy(long start, long end, FileXML *file);
 	void load(FileXML *xml);
 	float value_to_percentage();
+	float invalue_to_percentage();
+	float outvalue_to_percentage();
 	float percentage_to_value(float percentage);
+	float percentage_to_invalue(float percentage);
+	float percentage_to_outvalue(float percentage);
 
+// Control values relative to value
 	float value, control_in_value, control_out_value;
 // Control positions relative to value position
 	long control_in_position, control_out_position;

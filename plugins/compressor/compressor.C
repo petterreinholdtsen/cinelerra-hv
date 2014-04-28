@@ -15,11 +15,10 @@
 
 
 
+REGISTER_PLUGIN(CompressorEffect)
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new CompressorEffect(server);
-}
+
+
 
 
 
@@ -29,20 +28,12 @@ CompressorEffect::CompressorEffect(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 CompressorEffect::~CompressorEffect()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 	delete_dsp();
 }
 
@@ -70,7 +61,6 @@ void CompressorEffect::delete_dsp()
 
 void CompressorEffect::reset()
 {
-	thread = 0;
 	input_buffer = 0;
 	coefs = 0;
 	input_size = 0;
@@ -82,11 +72,6 @@ void CompressorEffect::reset()
 	current_coef = 1.0;
 	last_peak_age = 0;
 	last_peak = 0.0;
-}
-
-VFrame* CompressorEffect::new_picon()
-{
-	return new VFrame(picon_png);
 }
 
 char* CompressorEffect::plugin_title()
@@ -135,7 +120,7 @@ void CompressorEffect::read_data(KeyFrame *keyframe)
 				double x = input.tag.get_property("X", (double)0);
 				double y = input.tag.get_property("Y", (double)0);
 				compressor_point_t point = { x, y };
-				
+
 				config.levels.append(point);
 			}
 		}
@@ -216,13 +201,6 @@ int CompressorEffect::save_defaults()
 	return 0;
 }
 
-void CompressorEffect::load_configuration()
-{
-	KeyFrame *prev_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
-
-	read_data(prev_keyframe);
-}
 
 void CompressorEffect::update_gui()
 {
@@ -235,37 +213,12 @@ void CompressorEffect::update_gui()
 	}
 }
 
-int CompressorEffect::show_gui()
-{
-	load_configuration();
-	
-	thread = new CompressorThread(this);
-	thread->start();
-	return 0;
-}
 
-void CompressorEffect::raise_window()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		thread->window->raise_window();
-		thread->window->flush();
-		thread->window->unlock_window();
-	}
-}
-
-int CompressorEffect::set_string()
-{
-	if(thread) 
-	{
-		thread->window->lock_window();
-		thread->window->set_title(gui_string);
-		thread->window->unlock_window();
-	}
-	return 0;
-}
-
+NEW_PICON_MACRO(CompressorEffect)
+SHOW_GUI_MACRO(CompressorEffect, CompressorThread)
+RAISE_WINDOW_MACRO(CompressorEffect)
+SET_STRING_MACRO(CompressorEffect)
+LOAD_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
 
 
 
@@ -496,6 +449,35 @@ CompressorConfig::CompressorConfig()
 	trigger = 0;
 }
 
+void CompressorConfig::copy_from(CompressorConfig &that)
+{
+	this->reaction_len = that.reaction_len;
+	this->preview_len = that.preview_len;
+	this->min_db = that.min_db;
+	this->min_x = that.min_x;
+	this->min_y = that.min_y;
+	this->max_x = that.max_x;
+	this->max_y = that.max_y;
+	this->trigger = that.trigger;
+	levels.remove_all();
+	for(int i = 0; i < that.levels.total; i++)
+		this->levels.append(that.levels.values[i]);
+}
+
+int CompressorConfig::equivalent(CompressorConfig &that)
+{
+	return 0;
+}
+
+void CompressorConfig::interpolate(CompressorConfig &prev, 
+	CompressorConfig &next, 
+	long prev_frame, 
+	long next_frame, 
+	long current_frame)
+{
+	copy_from(prev);
+}
+
 int CompressorConfig::total_points()
 {
 	if(!levels.total) 
@@ -646,34 +628,14 @@ void CompressorConfig::optimize()
 
 
 
-CompressorThread::CompressorThread(CompressorEffect *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-CompressorThread::~CompressorThread()
-{
-	delete window;
-}
 
 
-void CompressorThread::run()
-{
-	BC_DisplayInfo info;
+PLUGIN_THREAD_OBJECT(CompressorEffect, CompressorThread, CompressorWindow)
 
-	window = new CompressorWindow(plugin,
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
 
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command in thread
-	if(result) plugin->client_side_close();
-}
+
+
+
 
 
 
@@ -737,12 +699,7 @@ void CompressorWindow::create_objects()
 	flush();
 }
 
-int CompressorWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(CompressorWindow)
 
 void CompressorWindow::draw_scales()
 {

@@ -713,17 +713,27 @@ int BC_ListBox::get_items_height()
 			int y1, x, y, w, h;
 			
 			if(display_format == LISTBOX_ICONS)
+			{
 				y1 = data[i].values[j]->icon_y;
+				if(icon_position == ICON_LEFT)
+				{
+					x += get_icon_w(i, j) + ICON_MARGIN * 2;
+					y1 += get_icon_h(i, j) - get_text_height(MEDIUMFONT); - ICON_MARGIN * 2;
+				}
+				else
+				{
+					y1 += get_icon_h(i, j) + ICON_MARGIN;
+				}
+				get_text_mask(i, j, x, y, w, h);
+				if(y1 + h > highest) highest = y1 + h;
+			}
 			else
+			{
 				y1 = data[i].values[j]->text_y;
+				get_text_mask(i, j, x, y, w, h);
+				if(y1 + h > highest) highest = y1 + h;
+			}
 
-//printf("BC_ListBox::get_items_height 1\n");
-			get_icon_mask(i, j, x, y, w, h);
-//printf("BC_ListBox::get_items_height 2\n");
-			if(y1 + h > highest) highest = y1 + h;
-			get_text_mask(i, j, x, y, w, h);
-//printf("BC_ListBox::get_items_height 3\n");
-			if(y1 + h > highest) highest = y1 + h;
 		}
 	}
 	if(display_format == LISTBOX_TEXT) highest += LISTBOX_MARGIN;
@@ -2169,8 +2179,14 @@ int BC_ListBox::translation_event()
 {
 	if(popup && gui)
 	{
-		int new_x = gui->get_x() + (top_level->last_translate_x - top_level->x);
-		int new_y = gui->get_y() + (top_level->last_translate_y - top_level->y);
+		int new_x = gui->get_x() + 
+			(top_level->last_translate_x - 
+				top_level->prev_x - 
+				top_level->get_resources()->get_left_border());
+		int new_y = gui->get_y() + 
+			(top_level->last_translate_y - 
+				top_level->prev_y -
+				top_level->get_resources()->get_top_border());
 
 		gui->reposition_window(new_x, new_y);
 		
@@ -2476,7 +2492,7 @@ int BC_ListBox::get_scrollbars()
 
 	view_h = popup_h - title_h - 4;
 	view_w = popup_w - 4;
-//printf("BC_ListBox::get_scrollbars 4\n");
+//printf("BC_ListBox::get_scrollbars 4 %d %d\n", h_needed, view_h);
 
 // Create scrollbars as needed
 	for(int i = 0; i < 2; i++)
@@ -2617,7 +2633,11 @@ void BC_ListBox::clear_listbox(int x, int y, int w, int h)
 void BC_ListBox::update_format(int display_format, int redraw)
 {
 	this->display_format = display_format;
-	if(redraw) draw_items();
+	if(redraw)
+	{
+		draw_items();
+		if(gui) gui->flash();
+	}
 }
 
 int BC_ListBox::get_format()

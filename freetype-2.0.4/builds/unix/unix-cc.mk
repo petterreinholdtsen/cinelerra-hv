@@ -56,7 +56,7 @@ T := -o # Don't remove this comment line!  We need the space after `-o'.
 #   Use the ANSIFLAGS variable to define the compiler flags used to enfore
 #   ANSI compliance.
 #
-CFLAGS := -c -Wall -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+CFLAGS := -c -Wall -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -DHAVE_LIBXXF86VM -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -DHAVE_OSS -DHAVE_FIREWIRE -D_REENTRANT 
 
 # ANSIFLAGS: Put there the flags used to make your compiler ANSI-compliant.
 #

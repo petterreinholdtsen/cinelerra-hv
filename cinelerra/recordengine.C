@@ -342,7 +342,6 @@ int RecordEngine::start_saving(int duplex)
 			long start, end;
 			record->get_duplex_range(&start, &end);
 			duplex_thread->reset_parameters();
-			duplex_thread->set_range(start + current_position, end, start + current_position, 0, 1);
 			duplex_thread->arm_playback(0, 0, 1, adevice);
 			duplex_thread->start_playback();
 			is_duplexing = 1;

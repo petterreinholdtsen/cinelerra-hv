@@ -22,7 +22,6 @@ class ShowLWindow;
 class Undo;
 
 #include "arraylist.h"
-#include "assetmanager.inc"
 #include "guicast.h"
 #include "defaults.inc"
 #include "loadfile.inc"
@@ -65,11 +64,8 @@ public:
 	int save_veffects(Defaults *defaults);
 	int add_veffect(char *title);
 
-	int change_channels(int old_channels, int new_channels);
 
 	int quit();
-	int set_show_console(int checked);
-	int set_show_video(int checked);
 // show only one of these at a time
 	int set_show_autos();
 	void update_toggles();
@@ -79,11 +75,8 @@ public:
 	ThreadLoader *threadloader;
 	PanMenu *panmenu;
 	PluginMenu *pluginmenu;
-	PanItem *panitem[MAXCHANNELS];
-	PluginItem *pluginitem[PLUGINS];
 	MenuAEffects *aeffects;
 	MenuVEffects *veffects;
-	AssetManager *asset_manager;
 
 // for previous document loader
 	Load *load_file;
@@ -93,7 +86,6 @@ public:
 
 	RecordMenuItem *record;
 	RenderItem *render;
-	RenderListItem *render_list;
 	New *new_project;
 	MenuAEffectItem *aeffect[TOTAL_EFFECTS];
 	MenuVEffectItem *veffect[TOTAL_EFFECTS];
@@ -506,22 +498,6 @@ class TileWindows : public BC_MenuItem
 {
 public:
 	TileWindows(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class ShowConsole : public BC_MenuItem
-{
-public:
-	ShowConsole(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class ShowVideo : public BC_MenuItem
-{
-public:
-	ShowVideo(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

@@ -441,6 +441,10 @@ void TimeBar::draw_range()
 		draw_top_background(get_parent(), x1, 0, x2 - x1, get_h());
 		draw_3segmenth(x2, 0, get_w() - x2, mwindow->theme->timebar_view_data);
 
+		set_color(BLACK);
+		draw_line(x1, 0, x1, get_h());
+		draw_line(x2, 0, x2, get_h());
+		
 		EDL *edl;
 		if(edl = get_edl())
 		{
@@ -533,9 +537,12 @@ int TimeBar::test_preview(int buttonpress)
 
 	if(get_edl())
 	{
+// Inside left handle
 		if(cursor_inside() &&
 			get_cursor_x() >= x1 - HANDLE_W &&
-			get_cursor_x() < x1 + HANDLE_W)
+			get_cursor_x() < x1 + HANDLE_W &&
+// Ignore left handle if both handles are up against the left side
+			x2 > HANDLE_W)
 		{
 			if(buttonpress)
 			{
@@ -552,9 +559,12 @@ int TimeBar::test_preview(int buttonpress)
 			}
 		}
 		else
+// Inside right handle
 		if(cursor_inside() &&
 			get_cursor_x() >= x2 - HANDLE_W &&
-			get_cursor_x() < x2 + HANDLE_W)
+			get_cursor_x() < x2 + HANDLE_W &&
+// Ignore right handle if both handles are up against the right side
+			x1 < get_w() - HANDLE_W)
 		{
 			if(buttonpress)
 			{

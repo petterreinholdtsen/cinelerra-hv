@@ -70,9 +70,9 @@ double IntAutos::get_automation_constant(long start, long end)
 
 void IntAutos::dump()
 {
-	printf("	Default: position: %ld value: %d\n", default_auto->position, ((IntAuto*)default_auto)->value);
+	printf("	Default %p: position: %ld value: %d\n", default_auto, default_auto->position, ((IntAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position: %ld value: %d\n", current->position, ((IntAuto*)current)->value);
+		printf("	%p position: %ld value: %d\n", current, current->position, ((IntAuto*)current)->value);
 	}
 }

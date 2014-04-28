@@ -19,7 +19,6 @@
 #include "neworappend.h"
 #include "playbackengine.h"
 #include "preferences.h"
-#include "previewaudio.h"
 #include "quicktime.h"
 #include "record.h"
 #include "recordaudio.h"
@@ -27,7 +26,6 @@
 #include "recordgui.h"
 #include "recordlabel.h"
 #include "recordmonitor.h"
-#include "recordpreview.h"
 #include "recordthread.h"
 #include "recordvideo.h"
 #include "recordwindow.h"
@@ -543,7 +541,7 @@ void Record::run()
 //printf("Record::run 1\n");
 		monitor_engine->create_objects();
 //printf("Record::run 10\n");
-		record_preview = new RecordPreview(mwindow, this);
+
 //		duplex_engine = new PlaybackEngine(mwindow, record_monitor->window->canvas, 1);
 //		duplex_engine->create_objects();
 
@@ -1029,25 +1027,19 @@ long Record::sync_position()
 		case IS_RECORDING: 
 			return record_engine->sync_position();
 			break;	  
-		case IS_PREVIEWING:
-			if(adevice && !mwindow->edl->session->record_software_position)
-				return record_preview->preview_audio->sync_position();
-			else
-				return (long)((float)preview_timer.get_difference() / 1000 * default_asset->sample_rate);
-			break;	  
 	}
 	return 0;
 }
 
 
-int Record::open_input_devices(int duplex, int single_frame)
+int Record::open_input_devices(int duplex, int context)
 {
 	int audio_opened = 0;
 	int video_opened = 0;
 	AudioInConfig *aconfig_in = mwindow->edl->session->aconfig_in;
 
 // Create devices
-	if(default_asset->audio_data && !single_frame)
+	if(default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 		adevice = new AudioDevice;
 	else
 		adevice = 0;
@@ -1111,15 +1103,12 @@ int Record::open_input_devices(int duplex, int single_frame)
 	if(vdevice)
 	{
 		vdevice->set_quality(default_asset->jpeg_quality);
-//printf("Record::open_input_devices 1\n");
 		vdevice->open_input(mwindow->edl->session->vconfig_in, 
 			video_x, 
 			video_y, 
 			video_zoom,
 			default_asset->frame_rate);
-//printf("Record::open_input_devices 2\n");
 		color_model = vdevice->get_best_colormodel(default_asset);
-//printf("Record::open_input_devices 3\n");
 		vdevice->set_field_order(reverse_interlace);
 		set_channel(get_current_channel());
 		set_video_picture();
@@ -1132,19 +1121,13 @@ int Record::start_recording(int duplex, int context)
 {
 	if(capture_state != IS_RECORDING)
 	{
-//printf("Record::start_recording 1 %d %d %d\n", context, current_batch, editing_batch);
 		pause_monitor();
-//printf("Record::start_recording 2 %d\n", context);
-//		current_batch = editing_batch;
 
-//printf("Record::start_recording 3 %d\n", context);
 		if(context == CONTEXT_INTERACTIVE ||
 			context == CONTEXT_SINGLEFRAME)
-			open_input_devices(duplex, 0);
+			open_input_devices(duplex, context);
 
-//printf("Record::start_recording 5 %d\n", context);
 		prompt_cancel = 1;
-//printf("Record::start_recording 7 %d\n", context);
 
 // start the duplex engine if necessary
 // OSS < 3.9 crashes if recording starts before playback
@@ -1155,10 +1138,8 @@ int Record::start_recording(int duplex, int context)
 		}
 		else
 			capture_state = IS_RECORDING;
-//printf("Record::start_recording 8 %d\n", context);
 
 		record_engine->start_recording(0, context);
-//printf("Record::start_recording 9 %d\n", context);
 	}
 	return 0;
 }
@@ -1189,7 +1170,7 @@ int Record::close_input_devices()
 int Record::start_monitor()
 {
 	monitor_timer.update();
-	open_input_devices(0, 0);
+	open_input_devices(0, CONTEXT_INTERACTIVE);
 	monitor_engine->start_recording(1, CONTEXT_INTERACTIVE);
 	capture_state = IS_MONITORING;
 	return 0;
@@ -1216,7 +1197,7 @@ int Record::resume_monitor()
 	{
 		capture_state = IS_MONITORING;
 		monitor_timer.update();
-		open_input_devices(0, 0);
+		open_input_devices(0, CONTEXT_INTERACTIVE);
 		monitor_engine->resume_recording();
 	}
 	return 0;
@@ -1348,20 +1329,8 @@ float Record::get_min_db() { return mwindow->edl->session->min_meter_db; }
 
 int Record::get_rec_mode() { return record_mode; }
 int Record::set_rec_mode(int value) { record_mode = value; }
-// REMOVE
-int Record::get_video_driver() 
-{ 
-//	return mwindow->edl->session->vconfig_in->driver; 
-}
 
-int Record::get_samplerate() 
-{ 
-	return 0;
-//return mwindow->session->sample_rate; 
-}
-float Record::get_framerate() { /* return mwindow->session->frame_rate;  */}
 int Record::get_video_buffersize() { return mwindow->edl->session->video_write_length; }
-int Record::use_floatingpoint() { /* return mwindow->edl->session->video_floatingpoint;  */};
 int Record::get_everyframe() { return mwindow->edl->session->video_every_frame; }
 
 int Record::get_out_length() { return mwindow->edl->session->playback_buffer; }
@@ -1373,5 +1342,3 @@ int Record::get_meter_speed() { return mwindow->edl->session->record_speed; }
 
 int Record::enable_duplex() { return mwindow->edl->session->enable_duplex; }
 long Record::get_playback_buffer() { return mwindow->edl->session->playback_buffer; }
-int Record::get_duplex_range(long *start, long *end) { return mwindow->get_affected_range(start, end); }
-float Record::get_aspect_ratio() { return mwindow->session->aspect_w / mwindow->session->aspect_h; };

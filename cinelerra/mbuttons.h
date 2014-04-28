@@ -36,7 +36,6 @@ public:
 
 	int create_objects();
 	int resize_event();
-	int flip_vertical(int w, int h);
 	int keypress_event();
 	int start_playback(BC_Button *button, int reverse, float speed);
 	int resume_playback();
@@ -50,8 +49,6 @@ public:
 	MainEditing *edit_panel;
 
 
-// REMOVE
-	BC_Title *x_title;
 	ExpandX *expand_x_button;
 	ZoomX *zoom_x_button;
 

@@ -13,7 +13,6 @@
 #include "linklist.h"
 #include "pluginserver.inc"
 #include "sharedlocation.h"
-#include "threadindexer.inc"
 
 class Assets : public List<Asset>
 {
@@ -64,11 +63,6 @@ public:
 	Asset* asset_number(int number);
 
 	int update_old_filename(char *old_filename, char *new_filename);
-	int build_indexes();
-	int interrupt_indexes();
-
-	ThreadIndexer *thread_indexer;
-	int thread_indexer_running;
 };
 
 

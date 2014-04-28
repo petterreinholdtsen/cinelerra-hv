@@ -62,10 +62,13 @@ AgingMain::~AgingMain()
 char* AgingMain::plugin_title() { return "AgingTV"; }
 int AgingMain::is_realtime() { return 1; }
 
-VFrame* AgingMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(AgingMain)
+
+SHOW_GUI_MACRO(AgingMain, AgingThread)
+
+SET_STRING_MACRO(AgingMain)
+
+RAISE_WINDOW_MACRO(AgingMain)
 
 int AgingMain::load_defaults()
 {
@@ -114,30 +117,6 @@ int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	return 0;
 }
-
-int AgingMain::show_gui()
-{
-	load_configuration();
-	thread = new AgingThread(this);
-	thread->start();
-	return 0;
-}
-
-int AgingMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void AgingMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
 
 
 

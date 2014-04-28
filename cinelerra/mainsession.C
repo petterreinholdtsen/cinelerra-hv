@@ -7,13 +7,12 @@
 #include "mainsession.h"
 #include "meterpanel.h"
 #include "mwindow.h"
+#include "mwindowgui.h"
 
 MainSession::MainSession(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	changes_made = 0;
-	view_start = 0;
-	track_start = 0;
 	filename[0] = 0;
 //	playback_cursor_visible = 0;
 //	is_playing_back = 0;
@@ -30,6 +29,7 @@ MainSession::MainSession(MWindow *mwindow)
 	drag_clips = new ArrayList<EDL*>;
 	drag_edits = new ArrayList<Edit*>;
 	drag_edit = 0;
+	clip_number = 1;
 }
 
 MainSession::~MainSession()
@@ -62,46 +62,68 @@ void MainSession::default_window_positions()
 {
 // Get defaults based on root window size
 	BC_DisplayInfo display_info;
-	int root_h = display_info.get_root_h();
+
+//printf("MainSession::default_window_positions %p\n", mwindow->gui);
+	int root_x = 0;
+	int root_y = 0;
 	int root_w = display_info.get_root_w();
+	int root_h = display_info.get_root_h();
+	int border_left = 0;
+	int border_right = 0;
+	int border_top = 0;
+	int border_bottom = 0;
+
+	border_left = display_info.get_left_border();
+	border_top = display_info.get_top_border();
+	border_right = display_info.get_right_border();
+	border_bottom = display_info.get_bottom_border();
 
 // Wider than 16:9, narrower than dual head
 	if((float)root_w / root_h > 1.8) root_w /= 2;
 
-// Make room for window manager garbage
-	root_w -= 10;
-	root_h -= 30;
+// Make room for control panels
+// 	root_x += 50;
+// 	root_y += 50;
+// 	root_w -= 100;
+// 	root_h -= 100;
 
-	vwindow_x = 0;
-	vwindow_y = 0;
-	vwindow_h = root_h / 2;
-	vwindow_w = root_w / 2 - 5;
 
-	cwindow_x = vwindow_x + vwindow_w + 10;
-	cwindow_y = 0;
-	cwindow_w = root_w - cwindow_x;
+	vwindow_x = root_x;
+	vwindow_y = root_y;
+	vwindow_w = root_w / 2 - border_left - border_right;
+	vwindow_h = root_h * 6 / 10 - border_top - border_bottom;
+
+// printf("MainSession::default_window_positions %d %d %d %d\n",
+// vwindow_x,
+// vwindow_y,
+// vwindow_w,
+// vwindow_h);
+	cwindow_x = root_x + root_w / 2;
+	cwindow_y = root_y;
+	cwindow_w = vwindow_w;
 	cwindow_h = vwindow_h;
 
 	ctool_x = cwindow_x + cwindow_w / 2;
 	ctool_y = cwindow_y + cwindow_h / 2;
 
-	mwindow_x = 0;
-	mwindow_y = root_h / 2 + 30;
-	mwindow_w = (int)(root_w * 0.60 - 5);
-	mwindow_h = root_h - mwindow_y;
+	mwindow_x = root_x;
+	mwindow_y = vwindow_y + vwindow_h + border_top + border_bottom;
+	mwindow_w = root_w * 2 / 3 - border_left - border_right;
+	mwindow_h = root_h - mwindow_y - border_top - border_bottom;
+
+	awindow_x = mwindow_x + border_left + border_right + mwindow_w;
+	awindow_y = mwindow_y;
+	awindow_w = root_x + root_w - awindow_x - border_left - border_right;
+	awindow_h = mwindow_h;
 
 	if(mwindow->edl)
 		lwindow_w = MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 1);
 	else
 		lwindow_w = 100;
+
 	lwindow_y = 0;
 	lwindow_x = root_w - lwindow_w;
 	lwindow_h = mwindow_y;
-
-	awindow_x = mwindow_x + mwindow_w + 10;
-	awindow_y = mwindow_y;
-	awindow_w = root_w - awindow_x;
-	awindow_h = mwindow_h;
 
 	rwindow_x = 0;
 	rwindow_y = 0;
@@ -119,15 +141,8 @@ int MainSession::load_defaults(Defaults *defaults)
 	char string[BCTEXTLEN];
 
 
-	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
-	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
-	labels_follow_edits = defaults->get("LABELSFOLLOWEDITS", 0);
-	autos_follow_edits = defaults->get("AUTOSFOLLOWEDITS", 1);
 
-//	tracks_vertical = defaults->get("TRACKSVERTICAL", 0);
 
-// Editing mode
-//	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
 
 // Setup main windows
 	default_window_positions();
@@ -177,15 +192,6 @@ int MainSession::load_defaults(Defaults *defaults)
 
 int MainSession::save_defaults(Defaults *defaults)
 {
-//	defaults->update("EDITING_MODE", editing_mode);
-	defaults->update("CWINDOW_ZOOM", cwindow_zoom);
-	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
-	defaults->update("TRACKSVERTICAL", tracks_vertical);
-	defaults->update("LABELSFOLLOWEDITS", labels_follow_edits);
-	defaults->update("AUTOSFOLLOWEDITS", autos_follow_edits);
-//	defaults->update("ZOOMSAMPLE", zoom_sample);
-//	defaults->update("ZOOMY", zoom_y);
-//	defaults->update("ZOOMTRACK", zoom_track);
 
 //printf("MainSession::save_defaults 1\n");
 // Window positions

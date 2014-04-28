@@ -14,7 +14,6 @@
 #include "localsession.h"
 #include "mwindow.h"
 #include "patch.h"
-#include "pluginbuffer.h"
 #include "selections.h"
 #include "mainsession.h"
 #include "theme.h"
@@ -206,8 +205,6 @@ int VTrack::direct_copy_possible(long start, int direction)
 VTrack::VTrack(MWindow *mwindow, Tracks *tracks) : Track(mwindow, tracks)
 {
 	data_type = TRACK_VIDEO;
-	translation_selected = 0;
-	translation_zoom = 0;
 }
 
 int VTrack::create_derived_objs(int flash)
@@ -217,11 +214,6 @@ int VTrack::create_derived_objs(int flash)
 	return 0;
 }
 
-
-long VTrack::length()
-{
-	return Units::tosamples(edits->length(), mwindow->session->sample_rate, mwindow->session->frame_rate);
-}
 
 int VTrack::get_dimensions(double &view_start, 
 	double &view_units, 
@@ -269,46 +261,7 @@ int VTrack::clear_automation_derived(AutoConf *auto_conf, long start, long end, 
 	return 0;
 }
 
-int VTrack::paste_auto_silence_derived(long start, long end)
-{
-	camera_autos->paste_silence(start, end);
-	projector_autos->paste_silence(start, end);
-}
-
 int VTrack::draw_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf)
-{
-	return 0;
-}
-
-int VTrack::select_translation(int cursor_x, int cursor_y)
-{
-	return 0;
-}
-
-int VTrack::update_translation(int cursor_x, int cursor_y, int shift_down)
-{
-	int result = 0;
-	double view_start, view_units, zoom_units;
-	get_dimensions(view_start, view_units, zoom_units);
-
-	for(Edit* current = edits->first; current/* && !result*/; current = NEXT)
-	{
-		result = ((VEdit*)current)->update_translation(cursor_x, cursor_y, shift_down, view_start, zoom_units);
-	}
-	return result;
-}
-
-int VTrack::end_translation()
-{
-	int result = 0;
-	for(Edit* current = edits->first; current && !result; current = NEXT)
-	{
-		result = ((VEdit*)current)->end_translation();
-	}
-	return result;
-}
-
-int VTrack::reset_translation(long start, long end)
 {
 	return 0;
 }
@@ -330,64 +283,10 @@ int VTrack::draw_floating_autos_derived(float view_start, float zoom_units, Auto
 	return 0;
 }
 
-int VTrack::release_auto_derived()
-{
-	int result;
-	result = 0;
-
-	result = camera_autos->release_auto();
-	if(!result) result = projector_autos->release_auto();
-		
-	return result;
-}
-
-int VTrack::scale_video(float camera_scale, float projector_scale, int *offsets)
-{
-// Fix the camera.
-	for(VEdit *current = (VEdit*)edits->first; current; current = (VEdit*)NEXT)
-	{
-		current->center_z *= camera_scale;
-		current->center_x = -offsets[0];
-		current->center_y = -offsets[1];
-	}
-
-// Fix the projector.
-	projector_autos->scale_video(projector_scale, &offsets[2]);
-}
-
-void VTrack::translate_camera(float offset_x, float offset_y)
-{
-	((BezierAuto*)automation->camera_autos->default_auto)->center_x += offset_x;
-	((BezierAuto*)automation->camera_autos->default_auto)->center_y += offset_y;
-
-	for(Auto *current = automation->camera_autos->first; 
-		current; 
-		current = NEXT)
-	{
-		((BezierAuto*)current)->center_x += offset_x;
-		((BezierAuto*)current)->center_y += offset_y;
-	}
-}
-
-void VTrack::translate_projector(float offset_x, float offset_y)
-{
-	((BezierAuto*)automation->projector_autos->default_auto)->center_x += offset_x;
-	((BezierAuto*)automation->projector_autos->default_auto)->center_y += offset_y;
-
-	for(Auto *current = automation->projector_autos->first; 
-		current; 
-		current = NEXT)
-	{
-		((BezierAuto*)current)->center_x += offset_x;
-		((BezierAuto*)current)->center_y += offset_y;
-	}
-}
-
-
 int VTrack::channel_is_playable(long position, int direction, int *do_channel)
 {
 	int result = 0;
-//printf("VTrack::channel_is_playable %d\n", edl->session->video_channels);
+//printf("VTrack::channel_is_playable 1 %d\n", do_channel[0]);
 	for(int i = 0; i < edl->session->video_channels && !result; i++)
 	{
 		if(do_channel[i])
@@ -422,28 +321,24 @@ void VTrack::calculate_input_transfer(Asset *asset,
 {
 	float auto_x, auto_y, auto_z;
 	BezierAuto *before = 0, *after = 0;
+	FloatAuto *previous = 0, *next = 0;
 	float camera_z = 1;
 	float camera_x = asset->width / 2;
 	float camera_y = asset->height / 2;
 	float z[6], x[6], y[6];        // camera and output coords
 
 // get camera center in asset
-	if(automate)
-	{
-		automation->camera_autos->get_center(auto_x, 
-			auto_y, 
-			auto_z, 
-			(float)position, 
-			direction, 
-			&before, 
-			&after);
-	}
-	else
-	{
-		auto_x = 0;
-		auto_y = 0;
-		auto_z = 1;
-	}
+	automation->camera_autos->get_center(auto_x, 
+		auto_y, 
+		auto_z, 
+		(float)position, 
+		direction, 
+		&before, 
+		&after);
+	auto_z = automation->czoom_autos->get_value(position,
+		direction,
+		previous,
+		next);
 
 	camera_z *= auto_z;
 	camera_x += auto_x;
@@ -508,6 +403,7 @@ void VTrack::calculate_output_transfer(int channel,
 	float &out_h)
 {
 	BezierAuto *before = 0, *after = 0;
+	FloatAuto *previous = 0, *next = 0;
 	float center_x, center_y, center_z;
 	float x[4], y[4];
 	float channel_x1 = edl->session->vchannel_x[channel];
@@ -520,22 +416,17 @@ void VTrack::calculate_output_transfer(int channel,
 	x[1] = track_w;
 	y[1] = track_h;
 
-	if(automate)
-	{
-		automation->projector_autos->get_center(center_x, 
-			center_y, 
-			center_z, 
-			(float)position, 
-			direction, 
-			&before, 
-			&after);
-	}
-	else
-	{
-		center_x = 0;
-		center_y = 0;
-		center_z = 1;
-	}
+	automation->projector_autos->get_center(center_x, 
+		center_y, 
+		center_z, 
+		(float)position, 
+		direction, 
+		&before, 
+		&after);
+	center_z = automation->pzoom_autos->get_value(position, 
+		direction,
+		previous,
+		next);
 
 	center_x += edl->session->output_w / 2;
 	center_y += edl->session->output_h / 2;
@@ -596,6 +487,7 @@ int VTrack::get_projection(int channel,
 	float center_x, center_y, center_z;
 	float x[4], y[4];
 	BezierAuto *before = 0, *after = 0;
+	FloatAuto *previous = 0, *next = 0;
 
 	automation->projector_autos->get_center(center_x, 
 		center_y, 
@@ -604,6 +496,10 @@ int VTrack::get_projection(int channel,
 		direction, 
 		&before, 
 		&after);
+	center_z = automation->pzoom_autos->get_value(real_position,
+		direction,
+		previous,
+		next);
 
 	x[0] = y[0] = 0;
 	x[1] = frame_w;
@@ -649,31 +545,31 @@ int VTrack::get_projection(int channel,
 	return 0;
 }
 
-int VTrack::automation_is_used_derived(long start, long end)
+
+void VTrack::translate_camera(float offset_x, float offset_y)
 {
-	if(camera_autos->total() ||
-		projector_autos->total())
-		return 1;
-	else
-		return 0;
+	((BezierAuto*)automation->camera_autos->default_auto)->center_x += offset_x;
+	((BezierAuto*)automation->camera_autos->default_auto)->center_y += offset_y;
+
+	for(Auto *current = automation->camera_autos->first; 
+		current; 
+		current = NEXT)
+	{
+		((BezierAuto*)current)->center_x += offset_x;
+		((BezierAuto*)current)->center_y += offset_y;
+	}
 }
 
-int VTrack::scale_time_derived(float rate_scale, int scale_edits, int scale_autos, long start, long end)
+void VTrack::translate_projector(float offset_x, float offset_y)
 {
-	camera_autos->scale_time(rate_scale, scale_edits, scale_autos, start, end);
-	projector_autos->scale_time(rate_scale, scale_edits, scale_autos, start, end);
-}
+	((BezierAuto*)automation->projector_autos->default_auto)->center_x += offset_x;
+	((BezierAuto*)automation->projector_autos->default_auto)->center_y += offset_y;
 
-
-int VTrack::get_virtual_center(VEdit *edit, int cursor_x, int cursor_y, float frame_w, float frame_h, float picture_zoom)
-{
-// 	if(translation_zoom)
-// 	{
-// 		virtual_center_y = (int)(cursor_y - edit->center_z * frame_w / mwindow->get_aspect_ratio());
-// 	}
-// 	else
-// 	{
-// 		virtual_center_x = (int)(cursor_x - edit->center_x * edit->center_z);
-// 		virtual_center_y = (int)(cursor_y - edit->center_y * edit->center_z);
-// 	}
+	for(Auto *current = automation->projector_autos->first; 
+		current; 
+		current = NEXT)
+	{
+		((BezierAuto*)current)->center_x += offset_x;
+		((BezierAuto*)current)->center_y += offset_y;
+	}
 }

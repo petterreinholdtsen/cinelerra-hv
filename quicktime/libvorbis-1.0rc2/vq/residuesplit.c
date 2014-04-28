@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: residue backend 0 partitioner/classifier
- last mod: $Id: residuesplit.c,v 1.1 2002/05/07 09:16:53 myrina Exp $
+ last mod: $Id: residuesplit.c,v 1.1.1.1 2002/06/21 12:35:23 myrina Exp $
 
  ********************************************************************/
 

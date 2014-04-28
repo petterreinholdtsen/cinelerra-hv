@@ -3,7 +3,6 @@
 #include "edlsession.h"
 #include "file.h"
 #include "mwindow.h"
-#include "pluginbuffer.h"
 #include "pluginserver.h"
 #include "preferences.h"
 #include "recordablevtracks.h"
@@ -53,7 +52,7 @@ void VPluginArray::create_modules()
 	modules = new Module*[total_tracks()];
 	for(int i = 0; i < total_tracks(); i++)
 	{
-		modules[i] = new VModule(0, 0, tracks->values[i]);
+		modules[i] = new VModule(0, 0, this, tracks->values[i]);
 		modules[i]->cache = cache;
 		modules[i]->edl = edl;
 		modules[i]->create_objects();

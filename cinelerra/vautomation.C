@@ -28,7 +28,7 @@ VAutomation::~VAutomation()
 int VAutomation::create_objects()
 {
 	Automation::create_objects();
-	fade_autos = new FloatAutos(edl, track, LTGREY, 0, 100);
+	fade_autos = new FloatAutos(edl, track, LTGREY, 0, 100, 100);
 	fade_autos->create_objects();
 	((FloatAuto*)fade_autos->default_auto)->value = 100;
 	mode_autos = new IntAutos(edl, track);
@@ -55,10 +55,12 @@ int VAutomation::create_objects()
 									edl->session->output_w,
 									edl->session->output_h);
 	projector_autos->create_objects();
-	czoom_autos = new FloatAutos(edl, track, LTGREY, 0, 10);
+	czoom_autos = new FloatAutos(edl, track, LTGREY, 0, 10, 1.0);
 	czoom_autos->create_objects();
-	pzoom_autos = new FloatAutos(edl, track, LTGREY, 0, 10);
+	((FloatAuto*)czoom_autos->default_auto)->value = 1;
+	pzoom_autos = new FloatAutos(edl, track, LTGREY, 0, 10, 1.0);
 	pzoom_autos->create_objects();
+	((FloatAuto*)pzoom_autos->default_auto)->value = 1;
 
 	
 	return 0;
@@ -67,6 +69,7 @@ int VAutomation::create_objects()
 int VAutomation::direct_copy_possible(long start, int direction)
 {
 	BezierAuto *before = 0, *after = 0;
+	FloatAuto *previous = 0, *next = 0;
 	float x, y, z;
 	long end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
 
@@ -75,10 +78,11 @@ int VAutomation::direct_copy_possible(long start, int direction)
 
 //printf("VAutomation::direct_copy_possible 1\n");
 // Automation is constant
-	if(fade_autos->automation_is_constant(start, end))
+	double constant;
+	if(fade_autos->automation_is_constant(start, end, direction, constant))
 	{
 //printf("VAutomation::direct_copy_possible 2 %f\n", fade_autos->get_automation_constant(start, end));
-		if(fade_autos->get_automation_constant(start, end) != 100)
+		if(!EQUIV(constant, 100))
 			return 0;
 	}
 	else
@@ -98,13 +102,8 @@ int VAutomation::direct_copy_possible(long start, int direction)
 
 //printf("VAutomation::direct_copy_possible 5\n");
 // Projector must be centered in an output channel
-	FloatAuto *previous = 0, *next = 0;
 	z = pzoom_autos->get_value(start, direction, previous, next);
-
-
-
-
-
+	if(!EQUIV(z, 1)) return 0;
 
 	projector_autos->get_center(x, 
 				y, 
@@ -115,21 +114,16 @@ int VAutomation::direct_copy_possible(long start, int direction)
 				&after);
 // FIXME develop channel search using track->get_projection
 	if(!EQUIV(x, 0) || 
-		!EQUIV(y, 0) || 
-		!EQUIV(z, 1)) return 0;
+		!EQUIV(y, 0)) return 0;
 
 //printf("VAutomation::direct_copy_possible 6 %f %f %f\n", x, y, z);
 
 
-// No mask must exist
-//printf("VAutomation::direct_copy_possible 1\n");
-	if(mask_autos->mask_exists(start, direction))
-		return 0;
-//printf("VAutomation::direct_copy_possible 7\n");
-
 
 // Camera must be centered
+	previous = next = 0;
 	z = czoom_autos->get_value(start, direction, previous, next);
+	if(!EQUIV(z, 1)) return 0;
 
 
 
@@ -146,9 +140,14 @@ int VAutomation::direct_copy_possible(long start, int direction)
 //printf("VAutomation::direct_copy_possible 8 %f %f %f\n", x, y, z);
 // Translation no longer used
 	if(!EQUIV(x, 0) || 
-		!EQUIV(y, 0) || 
-		!EQUIV(z, 1)) return 0;
+		!EQUIV(y, 0)) return 0;
 //printf("VAutomation::direct_copy_possible 9\n");
+
+// No mask must exist
+//printf("VAutomation::direct_copy_possible 1\n");
+	if(mask_autos->mask_exists(start, direction))
+		return 0;
+//printf("VAutomation::direct_copy_possible 7\n");
 
 	return 1;
 }

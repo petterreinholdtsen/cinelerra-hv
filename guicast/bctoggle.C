@@ -234,28 +234,33 @@ int BC_Toggle::get_value()
 
 int BC_Toggle::set_value(int value)
 {
-	this->value = value;
-	if(value) 
-	switch(status)
+	if(value != this->value)
 	{
-		case TOGGLE_UP:
-			status = TOGGLE_CHECKED;
-			break;
-		case TOGGLE_UPHI:
-			status = TOGGLE_CHECKEDHI;
-			break;
+		this->value = value;
+		if(value) 
+		{
+			switch(status)
+			{
+				case TOGGLE_UP:
+					status = TOGGLE_CHECKED;
+					break;
+				case TOGGLE_UPHI:
+					status = TOGGLE_CHECKEDHI;
+					break;
+			}
+		}
+		else
+		switch(status)
+		{
+			case TOGGLE_CHECKED:
+				status = TOGGLE_UP;
+				break;
+			case TOGGLE_CHECKEDHI:
+				status = TOGGLE_UPHI;
+				break;
+		}
+		draw_face();
 	}
-	else
-	switch(status)
-	{
-		case TOGGLE_CHECKED:
-			status = TOGGLE_UP;
-			break;
-		case TOGGLE_CHECKEDHI:
-			status = TOGGLE_UPHI;
-			break;
-	}
-	draw_face();
 	return 0;
 }
 

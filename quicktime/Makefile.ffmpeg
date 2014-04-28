@@ -92,3 +92,5 @@ FFMPEG_DIRS := \
 
 $(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_flags)
 
+DIRS += $(FFMPEG_DIRS)
+

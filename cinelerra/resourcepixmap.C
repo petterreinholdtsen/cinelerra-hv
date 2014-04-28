@@ -14,7 +14,6 @@
 #include "indexfile.h"
 #include "localsession.h"
 #include "mwindow.h"
-#include "pluginbuffer.h"
 #include "resourcepixmap.h"
 #include "theme.h"
 #include "track.h"
@@ -420,7 +419,10 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 		case INDEX_BUILDING:
 		case INDEX_READY:
 		{
-//printf("ResourcePixmap::draw_audio_resource 1 %d %d\n", edit->asset->index_status, visible);
+//printf("ResourcePixmap::draw_audio_resource 1 status=%d index_zoom=%d zoom_sample=%d\n", 
+//edit->asset->index_status,
+//edit->asset->index_zoom,
+//mwindow->edl->local_session->zoom_sample);
 			IndexFile indexfile(mwindow);
 			if(!indexfile.open_index(edit->asset))
 			{

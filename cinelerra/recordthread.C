@@ -52,21 +52,15 @@ int RecordThread::start_recording(int monitor, int context)
 	this->monitor = monitor;
 	this->context = context;
 	resume_monitor = !monitor;
-//printf("RecordThread::start_recording 1\n");
 	loop_lock.lock();
-//printf("RecordThread::start_recording 2\n");
 // Startup lock isn't 
 	startup_lock.lock();
-//printf("RecordThread::start_recording 3\n");
 	completion_lock.lock();
-//printf("RecordThread::start_recording 4\n");
 
 
 	set_synchronous(0);
 	Thread::start();
-//printf("RecordThread::start_recording 5\n");
 	startup_lock.lock();
-//printf("RecordThread::start_recording 6\n");
 	startup_lock.unlock();
 	return 0;
 }
@@ -221,7 +215,6 @@ void RecordThread::run()
 		{
 			do_cron();
 		}
-//printf("RecordThread::run -1 %d\n", monitor);
 
 // Stopped while waiting
 		if(!engine_done)
@@ -230,12 +223,12 @@ void RecordThread::run()
 
 // Devices are already opened for interactive recording to allow duplex
 			if(context == CONTEXT_BATCH)
-				record->open_input_devices(0, 0);
+				record->open_input_devices(0, context);
 
-// Switch to batch recording to get delay before next batch
+// Switch interactive recording to batch recording
+// to get delay before next batch
 			if(!monitor && context == CONTEXT_INTERACTIVE)
 				context = CONTEXT_BATCH;
-//printf("RecordThread::run 0 %d\n", monitor);
 
 			if(!monitor)
 			{
@@ -272,13 +265,10 @@ void RecordThread::run()
 			record_timer->update();
 
 // Do initialization
-//printf("RecordThread::run 1 %d\n", monitor);
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->arm_recording();
-//printf("RecordThread::run 2 %d\n", monitor);
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
-//printf("RecordThread::run 3 %d\n", monitor);
 
 // Trigger loops
 
@@ -292,7 +282,6 @@ void RecordThread::run()
 				record_audio->join();
 			if(record->default_asset->video_data)
 				record_video->join();
-//printf("RecordThread::run 3 %d\n", monitor);
 
 // Stop file threads here to keep loop synchronized
 			if(!monitor)
@@ -339,37 +328,27 @@ void RecordThread::run()
 			}
 		}
 
-//printf("RecordThread::run 4 %d\n", monitor);
 // Wait for thread to stop before closing devices
 		loop_lock.unlock();
-//printf("RecordThread::run 5 %d\n", monitor);
 		if(monitor)
 		{
 // Pause until monitor is resumed
 			pause_lock.lock();
 			pause_lock.unlock();
 		}
-//printf("RecordThread::run 6 %d\n", monitor);
 	}while(!engine_done);
 
-//printf("RecordThread::run 6.5 %d\n", monitor);
 	record->close_input_devices();
 
-//printf("RecordThread::run 7 %d\n", monitor);
 // Resume monitoring only if not a monitor ourselves
 	if(!monitor)
 	{
-//printf("RecordThread::run 8\n");
 		record->stop_duplex();
-//printf("RecordThread::run 9 %d %d\n", monitor, resume_monitor);
 		if(resume_monitor) record->resume_monitor();
-//printf("RecordThread::run 10 %d\n", monitor);
 	}
 	else
 	{
-//printf("RecordThread::run 9\n");
 		record->capture_state = IS_DONE;
-//printf("RecordThread::run 10\n");
 	}
 	completion_lock.unlock();
 }

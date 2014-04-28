@@ -83,7 +83,12 @@ AudioOutConfig& AudioOutConfig::operator=(AudioOutConfig &that)
 	firewire_channel = that.firewire_channel;
 	firewire_port = that.firewire_port;
 
-	for(int i = 0; i < MAXCHANNELS; i++) do_channel[i] = that.do_channel[i];
+	for(int i = 0; i < MAXCHANNELS; i++)
+		do_channel[i] = that.do_channel[i];
+// printf("AudioOutConfig::operator= ");
+// for(int i = 0; i < MAXCHANNELS; i++)
+// printf("%d", do_channel[i]);
+// printf("\n");
 	return *this;
 }
 
@@ -187,7 +192,7 @@ int AudioOutConfig::total_output_channels()
 			int total = 0;
 			for(int i = 0; i < MAXDEVICES; i++)
 			{
-				total += oss_out_channels[i];
+				if(oss_enable[i]) total += oss_out_channels[i];
 			}
 			return total;
 			break;

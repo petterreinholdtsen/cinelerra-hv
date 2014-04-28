@@ -66,7 +66,7 @@ VFrame* IVTCMain::new_picon()
 
 int IVTCMain::load_defaults()
 {
-	char directory[1024], string[1024];
+	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
 	sprintf(directory, "%sivtc.rc", BCASTDIR);
 

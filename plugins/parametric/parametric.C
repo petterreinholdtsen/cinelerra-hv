@@ -117,37 +117,6 @@ void ParametricConfig::interpolate(ParametricConfig &prev,
 
 
 
-ParametricThread::ParametricThread(ParametricEQ *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-ParametricThread::~ParametricThread()
-{
-	delete window;
-}
-
-
-void ParametricThread::run()
-{
-	BC_DisplayInfo info;
-
-	window = new ParametricWindow(plugin,
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command in thread
-	if(result) plugin->client_side_close();
-}
-
-
-
 
 
 
@@ -460,6 +429,9 @@ void ParametricWindow::update_canvas()
 
 
 
+PLUGIN_THREAD_OBJECT(ParametricEQ, ParametricThread, ParametricWindow)
+
+
 
 
 
@@ -526,11 +498,16 @@ ParametricEQ::~ParametricEQ()
 	if(fft) delete fft;
 }
 
+NEW_PICON_MACRO(ParametricEQ)
 
-VFrame* ParametricEQ::new_picon()
-{
-	return new VFrame(picon_png);
-}
+SHOW_GUI_MACRO(ParametricEQ, ParametricThread)
+
+RAISE_WINDOW_MACRO(ParametricEQ)
+
+SET_STRING_MACRO(ParametricEQ)
+
+LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
+
 
 char* ParametricEQ::plugin_title()
 {
@@ -662,26 +639,26 @@ double ParametricEQ::calculate_envelope()
 					break;
 
 				case ParametricBand::BANDPASS:
-				if(pass == 0)
-				{
-					double magnitude = (config.band[band].magnitude > 0) ? 
-						(DB::fromdb(config.band[band].magnitude) - 1) : 
-						(-1 + DB::fromdb(config.band[band].magnitude));
-					double sigma = (config.band[band].quality < 1) ?
-						(1.0 - config.band[band].quality) :
-						0.01;
-					sigma /= 4;
-					double a = (double)config.band[band].freq / niquist;
-					double normalize = gauss(sigma, 0, 0);
-					if(config.band[band].magnitude <= -MAXMAGNITUDE) 
-						magnitude = -1;
+					if(pass == 0)
+					{
+						double magnitude = (config.band[band].magnitude > 0) ? 
+							(DB::fromdb(config.band[band].magnitude) - 1) : 
+							(-1 + DB::fromdb(config.band[band].magnitude));
+						double sigma = (config.band[band].quality < 1) ?
+							(1.0 - config.band[band].quality) :
+							0.01;
+						sigma /= 4;
+						double a = (double)config.band[band].freq / niquist;
+						double normalize = gauss(sigma, 0, 0);
+						if(config.band[band].magnitude <= -MAXMAGNITUDE) 
+							magnitude = -1;
 
-					for(int i = 0; i < WINDOW_SIZE / 2; i++)
-						envelope[i] += magnitude * 
-							gauss(sigma, a, (double)i / (WINDOW_SIZE / 2)) / 
-							normalize;
+						for(int i = 0; i < WINDOW_SIZE / 2; i++)
+							envelope[i] += magnitude * 
+								gauss(sigma, a, (double)i / (WINDOW_SIZE / 2)) / 
+								normalize;
+					}
 					break;
-				}
 			}
 		}
 	}
@@ -709,32 +686,6 @@ int ParametricEQ::process_realtime(long size, double *input_ptr, double *output_
 	fft->process_fifo(size, input_ptr, output_ptr);
 //printf("ParametricEQ::process_realtime 2\n");
 }
-
-int ParametricEQ::show_gui()
-{
-	load_configuration();
-	
-	thread = new ParametricThread(this);
-	thread->start();
-	return 0;
-}
-
-void ParametricEQ::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
-int ParametricEQ::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-
 
 
 
@@ -791,8 +742,6 @@ int ParametricEQ::save_defaults()
 	return 0;
 }
 
-
-LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
 
 void ParametricEQ::reset()
 {

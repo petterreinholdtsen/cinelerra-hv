@@ -4,9 +4,7 @@
 #include "atrack.inc"
 #include "commonrender.h"
 #include "maxchannels.h"
-#include "mwindow.inc"
 #include "mutex.h"
-#include "pluginbuffer.inc"
 
 class ARender : public CommonRender
 {
@@ -31,11 +29,6 @@ public:
 	double fromunits(long position);
 
 	void run();
-	void render_track(ATrack *track,
-		PluginBuffer *shared_buffer_in, 
-		long offset,
-		long input_len, 
-		long min_position);
 // Calculate number of samples
 	int history_size();
 // Get subscript of history entry corresponding to sample
@@ -63,7 +56,6 @@ public:
 
 
 
-	ARender(MWindow *mwindow, RenderEngine *renderengine);
 
 // get the data type for certain commonrender routines
 	int get_datatype();

@@ -70,6 +70,22 @@ public:
 	int w, h;
 };
 
+class BC_WindowTree
+{
+public:
+	BC_WindowTree(Display* display, BC_WindowTree *parent_tree, Window root_win);
+	~BC_WindowTree();
+
+	void dump(int indent, Window caller_win = 0);
+	BC_WindowTree* get_node(Window win);
+	ArrayList<BC_WindowTree*> windows;
+
+	Display* display;
+	Window win;
+	BC_WindowTree *parent_tree;
+};
+
+
 // Windows, subwindows, popupwindows inherit from this
 class BC_WindowBase
 {
@@ -151,6 +167,7 @@ public:
 // Lock out other threads
 	int lock_window();
 	int unlock_window();
+	int get_window_lock();
 
 	BC_MenuBar* add_menubar(BC_MenuBar *menu_bar);
 	BC_WindowBase* add_subwindow(BC_WindowBase *subwindow);
@@ -539,6 +556,7 @@ private:
 // Resize event compression
 	int resize_events, last_resize_w, last_resize_h;
 	int translation_events, last_translate_x, last_translate_y;
+	int prev_x, prev_y;
 // Since the window manager automatically translates the window at boot, 
 // use the first translation event to get correction factors
 	int translation_count;
@@ -586,6 +604,9 @@ private:
 	int shared_bg_pixmap;
 	char title[BCTEXTLEN];
 
+// Window tree for dragging operations
+	static BC_WindowTree *window_tree;
+
 // X Window parameters
 	int screen;
 	Window rootwin;
@@ -598,6 +619,7 @@ private:
 	Pixmap pixmap;
 	GLXContext gl_context;
 	static Mutex opengl_lock;
+	int window_lock;
 	GC gc;
 // Depth given by the X Server
 	int default_depth;

@@ -61,6 +61,7 @@ void CommonRender::arm_command()
 	init_output_buffers();
 
 //printf("CommonRender::arm_command 3 %d\n", renderengine->command->playbackstart);
+	last_playback = 0;
 	if(test_reconfigure(current_position, temp_length))
 	{
 //printf("CommonRender::arm_command 3.1 %d\n", renderengine->command->playbackstart);
@@ -138,7 +139,7 @@ int CommonRender::test_reconfigure(long position, long &length)
 	if(!vconsole) return 1;
 	if(!modules) return 1;
 	
-	return vconsole->test_reconfigure(position, length);
+	return vconsole->test_reconfigure(position, length, last_playback);
 }
 
 
@@ -203,7 +204,11 @@ int CommonRender::get_boundaries(long &current_render_length)
 	long end_position = tounits(renderengine->command->end_position, 1);
 
 
-//printf("CommonRender::get_boundaries 1 %d %d %d %f\n", current_render_length, current_position, end_position, renderengine->command->end_position);
+//printf("CommonRender::get_boundaries 1 %d %d %d %d\n", 
+//current_render_length, 
+//current_position, 
+//start_position,
+//end_position);
 // test absolute boundaries if no loop and not infinite
 	if(renderengine->command->single_frame() || 
 		(!renderengine->edl->local_session->loop_playback && 
@@ -232,7 +237,7 @@ int CommonRender::get_boundaries(long &current_render_length)
 			}
 		}
 	}
-//printf("CommonRender::get_boundaries 2 %d %d\n", current_render_length, renderengine->edl->local_session->loop_playback);
+//printf("CommonRender::get_boundaries 2 %d\n", current_render_length);
 
 // test against loop boundaries
 	if(!renderengine->command->single_frame() &&
@@ -313,23 +318,6 @@ int CommonRender::wait_for_completion()
 
 
 
-
-// REMOVE
-int CommonRender::test_virtualnodes(long current_position, 
-	long &current_input_length, 
-	int data_type)
-{
-	int result = 0;
-	int direction = renderengine->command->get_direction();
-	long nearest_auto, longest_duration;
-	Track* current_track;
-	Auto* current_auto;
-
-
-
-//printf("ARender:: result %d length %ld\n", result, current_input_length);
-	return result;
-}
 
 
 int CommonRender::advance_position(long current_render_length)

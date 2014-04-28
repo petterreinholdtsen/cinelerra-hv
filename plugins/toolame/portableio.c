@@ -43,9 +43,12 @@
  * conversions, and accommodated conversions involving +/- infinity,
  * NaN's, and denormalized numbers.
  *
- * $Id: portableio.c,v 1.1.1.1 2001/10/01 03:14:55 heroine Exp $
+ * $Id: portableio.c,v 1.1.1.1 2002/06/21 12:35:26 myrina Exp $
  *
  * $Log: portableio.c,v $
+ * Revision 1.1.1.1  2002/06/21 12:35:26  myrina
+ *
+ *
  * Revision 1.1.1.1  2001/10/01 03:14:55  heroine
  *
  *

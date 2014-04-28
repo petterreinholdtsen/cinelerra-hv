@@ -422,8 +422,11 @@ float BC_FPot::get_value()
 
 void BC_FPot::update(float value)
 {
-	this->value = value;
-	draw();
+	if(value != this->value)
+	{
+		this->value = value;
+		draw();
+	}
 }
 
 
@@ -492,8 +495,11 @@ long BC_IPot::get_value()
 
 void BC_IPot::update(long value)
 {
-	this->value = value;
-	draw();
+	if(this->value != value)
+	{
+		this->value = value;
+		draw();
+	}
 }
 
 
@@ -559,8 +565,11 @@ long BC_QPot::get_value()
 
 void BC_QPot::update(long value)
 {
-	this->value = Freq::fromfreq(value);
-	draw();
+	if(this->value != value)
+	{
+		this->value = Freq::fromfreq(value);
+		draw();
+	}
 }
 
 
@@ -629,8 +638,11 @@ float BC_PercentagePot::get_value()
 
 void BC_PercentagePot::update(float value)
 {
-	this->value = value;
-	draw();
+	if(this->value != value)
+	{
+		this->value = value;
+		draw();
+	}
 }
 
 

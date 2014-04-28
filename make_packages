@@ -1,9 +1,14 @@
 #!/bin/sh
-VERSION=beta1
+VERSION=beta2
 
+# Be sure to put exit statements in the beginning of
+# /usr/lib/rpm/brp-strip 
+# /usr/lib/rpm/brp-strip-comment-note 
+# /usr/lib/rpm/brp-strip-shared
+# so they don't strip the theme plugins
 
 DEST=/usr/src/redhat
-NAME=cinelerra-$VERSION
+NAME=hvirtual-$VERSION
 
 # CLEAN SOURCE DIRECTORIES
 make clean
@@ -13,26 +18,7 @@ rm -r $DEST/$NAME
 mkdir $DEST/$NAME
 
 # COPY SOURCE FILES
-cp *.c                  $DEST/$NAME
-cp Makefile             $DEST/$NAME
-cp COPYING              $DEST/$NAME
-cp global_config        $DEST/$NAME
-cp plugin_config        $DEST/$NAME
-cp make_packages*       $DEST/$NAME
-
-cp -a audiofile        $DEST/$NAME
-cp -a build            $DEST/$NAME
-cp -a cinelerra        $DEST/$NAME
-cp -a esound 		   $DEST/$NAME
-cp -a freetype-2.0.4   $DEST/$NAME
-cp -a guicast          $DEST/$NAME
-cp -a libavc           $DEST/$NAME
-cp -a libsndfile       $DEST/$NAME
-cp -a plugins          $DEST/$NAME
-cp -a tiff        	   $DEST/$NAME
-cd ..
-cp -a libmpeg3         $DEST/$NAME
-cp -a quicktime        $DEST/$NAME
+cp -a * $DEST/$NAME
 
 # MAKE TARBALL
 
@@ -49,13 +35,13 @@ tar jcf SOURCES/$NAME-src.tar.bz2 $NAME
 # MAKE SPEC FILE
 cat > $NAME-1.spec << EOF
 
-Summary: Complete production environment for audio and video
-Name: cinelerra
+Summary: Complete production environment for audio and video.
+Name: hvirtual
 Version: $VERSION
 Release: 1
 Copyright: GPL
 Group: Applications/Video
-Source: http://heroinewarrior.com/$NAME-src.tar.bz2
+Source: http://prdownloads.sourceforge.net/heroines/hvirtual-beta2-src.tar.bz2
 BuildRoot: /var/tmp/%{name}-buildroot
 Provides: Everything
 Prefix: /usr
@@ -70,13 +56,45 @@ It's about transforming the impossible into reality.
 make
 
 %install
-	make install
+mkdir -p /var/tmp/%{name}-buildroot/usr/lib/cinelerra
+mkdir -p /var/tmp/%{name}-buildroot/usr/bin
+strip cinelerra/i686/cinelerra
+cp cinelerra/i686/cinelerra /var/tmp/%{name}-buildroot/usr/bin
+cp plugins/i686/* /var/tmp/%{name}-buildroot/usr/lib/cinelerra
+
+strip libmpeg3/i686/mpeg3toc
+strip libmpeg3/i686/mpeg3cat
+strip libmpeg3/i686/mpeg3dump
+cp libmpeg3/i686/mpeg3toc /var/tmp/%{name}-buildroot/usr/bin
+cp libmpeg3/i686/mpeg3cat /var/tmp/%{name}-buildroot/usr/bin
+cp libmpeg3/i686/mpeg3dump /var/tmp/%{name}-buildroot/usr/bin
+
+strip xmovie/i686/xmovie
+cp xmovie/i686/xmovie /var/tmp/%{name}-buildroot/usr/bin/
+
+strip mix/i686/mix2000
+cp mix/i686/mix2000 /var/tmp/%{name}-buildroot/usr/bin/
+
+strip mplexhi/i686/mplexhi
+cp mplexhi/i686/mplexhi /var/tmp/%{name}-buildroot/usr/bin/
+
+strip mplexlo/i686/mplexlo
+cp mplexlo/i686/mplexlo /var/tmp/%{name}-buildroot/usr/bin/
 
 %clean
 rm -rf /var/tmp/%{name}-buildroot
 
 %files
 %defattr(-,root,root)
-%changelog
+
+/usr/bin/cinelerra
+/usr/lib/cinelerra
+/usr/bin/mpeg3toc
+/usr/bin/mpeg3cat
+/usr/bin/mpeg3dump
+/usr/bin/xmovie
+/usr/bin/mix2000
+/usr/bin/mplexhi
+/usr/bin/mplexlo
 
 EOF

@@ -10,7 +10,7 @@
 
 Resample::Resample(File *file, int channels)
 {
-printf("Resample::Resample 1 %d\n", channels);
+//printf("Resample::Resample 1 %d\n", channels);
 	this->file = file;
 	this->channels = channels;
 
@@ -35,7 +35,7 @@ printf("Resample::Resample 1 %d\n", channels);
 	input = new double[input_size];
 	last_out_end = new long[channels];
 	bzero(last_out_end, sizeof(long) * channels);
-printf("Resample::Resample 2 %d\n", channels);
+//printf("Resample::Resample 2 %d\n", channels);
 }
 
 

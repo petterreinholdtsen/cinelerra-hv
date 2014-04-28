@@ -170,8 +170,6 @@ public:
 	int shared_data;
 	Mutex input_lock;
 
-// REMOVE
-	RecordMonitorGUI *window;
 
 private:
 	void show_output_frame();

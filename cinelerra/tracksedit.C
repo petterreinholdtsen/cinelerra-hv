@@ -1,7 +1,6 @@
 #include "assets.h"
 #include "atrack.h"
 #include "automation.h"
-#include "console.h"
 #include "aedits.h"
 #include "edit.h"
 #include "edits.h"
@@ -15,7 +14,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "module.h"
-#include "modules.h"
 #include "mainsession.h"
 #include "pluginset.h"
 #include "timebar.h"
@@ -500,14 +498,6 @@ int Tracks::delete_all_tracks()
 	return 0;
 }
 
-// REMOVE
-int Tracks::delete_all(int flash)
-{
-	while(last) delete_track();
-	
-//	if(flash) draw(flash);
-	return 0;
-}
 
 void Tracks::change_modules(int old_location, int new_location, int do_swap)
 {
@@ -781,31 +771,6 @@ void Tracks::paste_video_transition()
 }
 
 
-int Tracks::paste_transition(long startproject, 
-				long endproject, 
-				Transition *transition)
-{
-	Track *current_track;
-
-	for(current_track = first; 
-		current_track;
-		current_track = current_track->next)
-	{
-		if(current_track->record)
-		{
-			if((current_track->data_type == TRACK_AUDIO && transition->audio) ||
-				(current_track->data_type == TRACK_VIDEO && transition->video))
-			{
-					current_track->paste_transition(startproject, 
-												endproject, 
-												transition);
-			}
-		}
-	}
-	
-	return 0;
-}
-
 int Tracks::paste_silence(double start, double end, int edit_plugins)
 {
 	Track* current_track;
@@ -876,7 +841,7 @@ int Tracks::select_handle(int cursor_x, int cursor_y, long &handle_oldposition, 
 	{
 		for(Track* current = first; current && !result; current = NEXT) 
 		{
-			center_pixel = current->pixel + mwindow->session->zoom_track / 2;
+			center_pixel = current->pixel + edl->local_session->zoom_track / 2;
 
 			if(cursor_y > center_pixel - 6 && cursor_y < center_pixel + 6)
 				result = current->select_handle(cursor_x, cursor_y, selection);
@@ -965,62 +930,6 @@ int Tracks::modify_pluginhandles(double &oldposition,
 	return 0;
 }
 
-int Tracks::select_edit(long cursor_position, 
-	int cursor_x, 
-	int cursor_y, 
-	long &new_start, 
-	long &new_end)
-{
- 	int result = 0;
-// 	for(Track *track = first; track && !result; track = track->next)
-// 	{
-// 		result = track->select_edit(cursor_position, 
-// 			cursor_x, 
-// 			cursor_y, 
-// 			new_start, 
-// 			new_end);
-// 	}
- 	return result;
-}
-
-// REMOVE
-int Tracks::feather_edits(long start, long end, long samples, int audio, int video)
-{
-// 	Track *current_track;
-// 
-// 	for(current_track = first; 
-// 		current_track;
-// 		current_track = current_track->next)
-// 	{
-// 		if(current_track->record && 
-// 			((audio && current_track->data_type == TRACK_AUDIO) ||
-// 			(video && current_track->data_type == TRACK_VIDEO)))
-// 		{ 
-// 			current_track->feather_edits(start, end, samples); 
-// 		}
-// 	}
-	return 0;
-}
-
-// REMOVE
-long Tracks::get_feather(long selectionstart, long selectionend, int audio, int video)
-{
-// 	Track *current_track;
-// 
-// 	for(current_track = first; 
-// 		current_track; 
-// 		current_track = current_track->next)
-// 	{
-// 		if(current_track->record && 
-// 			((audio && current_track->data_type == TRACK_AUDIO) ||
-// 			(video && current_track->data_type == TRACK_VIDEO)))
-// 		{ 
-// 			return current_track->get_feather(edl->local_session->selectionstart, edl->local_session->selectionend);
-// 		}
-// 	}
-	return 0;
-}
-
 int Tracks::reset_translation(long start, long end)
 {
 	Track *current_track;
@@ -1064,33 +973,6 @@ int Tracks::asset_used(Asset *asset)
 		result += current_track->asset_used(asset); 
 	}
 	return result;
-}
-
-int Tracks::scale_video(int *dimension, int *offsets, int scale_data)
-{
-	Track *current_track;
-	int result = 0;
-// Tracks are scaled using a single z curve and independant x and y pans, 
-// so take the lowest of the horizontal and vertical scales as the zoom factor.
-	float camera_scale = 1, projector_scale = 1;
-	if(scale_data)
-	{
-		float hscale;
-		float vscale;
-		hscale = dimension[0] / mwindow->session->track_w;
-		vscale = dimension[1] / mwindow->session->track_h;
-		camera_scale = hscale < vscale ? hscale : vscale;
-		hscale = dimension[2] / mwindow->session->output_w;
-		vscale = dimension[3] / mwindow->session->output_h;
-		projector_scale = hscale < vscale ? hscale : vscale;
-	}
-
-	for(current_track = first; current_track; current_track = current_track->next)
-	{
-		if(current_track->data_type == TRACK_VIDEO)
-			result += ((VTrack*)current_track)->scale_video(camera_scale, projector_scale, offsets);
-	}
-	return result;	
 }
 
 int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, long start, long end)

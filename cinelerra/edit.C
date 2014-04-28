@@ -7,7 +7,6 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "localsession.h"
-#include "mwindow.h"
 #include "plugin.h"
 #include "mainsession.h"
 #include "trackcanvas.h"
@@ -157,48 +156,6 @@ int Edit::copy(long start, long end, FileXML *file, char *output_path)
 	return result;
 }
 
-int Edit::paste(FileXML *file)
-{
-	load_properties_derived(file);
-	length = file->tag.get_property("LENGTH", (long)0);
-
-	int result = 0;
-
-	do{
-		result = file->read_tag();
-//printf("Edit::paste %s\n", file->tag.get_title());
-
-		if(!result)
-		{
-			if(file->tag.title_is("/EDIT"))
-			{
-				result = 1;
-			}
-			else
-			if(file->tag.title_is("FILE"))
-			{
-				char *new_filename = file->tag.get_property("SRC");
-
-				asset = mwindow->assets->update(new_filename ? new_filename : SILENCE);
-			}
-			else
-			if(file->tag.title_is("TRANSITION"))
-			{
-				transition = new Transition(edl,
-					this, 
-					"",
-					track->to_units(edl->session->default_transition_length, 1));
-				transition->load_xml(file);
-			}
-			else
-			if(file->tag.title_is(SILENCE))
-			{
-				asset = mwindow->assets->update(SILENCE);
-			}
-		}
-	}while(!result);
-	return 0;
-}
 
 long Edit::get_source_end(long default_)
 {
@@ -665,42 +622,6 @@ int Edit::shift_end_out(int edit_mode,
 
 
 
-
-Edit::Edit(MWindow *mwindow, Edits *edits) : ListItem<Edit>()
-{
-	this->mwindow = mwindow;
-	this->edits = edits;
-	feather_left = 0;   
-	feather_right = 0;
-	startsource = 0;
-	startproject = 0;
-	length = 0;
-	asset = 0;
-	transition = 0;
-}
-
-
-
-// =================================================== drawing
-
-
-// REMOVE
-int Edit::draw_transition(int flash, int center_pixel, int x, int w, int y, int h, int set_index_file)
-{
-	return 0;
-}
-
-int Edit::draw_handles(BC_SubWindow *canvas, float view_start, float view_units, float zoom_units, int view_pixels, int center_pixel)
-{
-	return 0;
-}
-
-int Edit::draw_titles(BC_SubWindow *canvas, float view_start, float zoom_units, int view_pixels, int center_pixel)
-{
-	return 0;
-}
-
-// ================================================== editing
 
 
 int Edit::popup_transition(float view_start, float zoom_units, int cursor_x, int cursor_y)

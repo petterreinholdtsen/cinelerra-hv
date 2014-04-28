@@ -19,7 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/* $Id: reservoir.c,v 1.1 2002/04/19 05:50:30 myrina Exp $ */
+/* $Id: reservoir.c,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

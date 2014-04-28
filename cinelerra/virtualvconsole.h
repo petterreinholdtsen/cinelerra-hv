@@ -4,8 +4,6 @@
 #include "guicast.h"
 #include "virtualconsole.h"
 #include "maxbuffers.h"
-#include "mwindow.inc"
-#include "pluginbuffer.inc"
 #include "vframe.inc"
 #include "vrender.inc"
 #include "vtrack.inc"
@@ -14,7 +12,6 @@ class VirtualVConsole : public VirtualConsole
 {
 public:
 	VirtualVConsole(RenderEngine *renderengine, VRender *vrender);
-	VirtualVConsole(MWindow *mwindow, VRender *vrender);
 	virtual ~VirtualVConsole();
 
 // Create ptrs to input buffers

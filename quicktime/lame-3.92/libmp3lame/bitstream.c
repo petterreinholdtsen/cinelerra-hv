@@ -18,7 +18,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  *
- * $Id: bitstream.c,v 1.1 2002/04/19 05:50:29 myrina Exp $
+ * $Id: bitstream.c,v 1.1.1.1 2002/06/21 12:35:24 myrina Exp $
  */
 
 

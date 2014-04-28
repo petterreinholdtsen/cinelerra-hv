@@ -1,0 +1,11 @@
+*.la
+*.lo
+.deps
+.libs
+Makefile
+Makefile.in
+asmoff.h
+gasmoff
+testvlc
+dovlc
+testbitstream

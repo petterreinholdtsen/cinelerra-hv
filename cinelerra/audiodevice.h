@@ -115,7 +115,7 @@ public:
 	long current_position();
 // If interrupted
 	int get_interrupted();
-
+	int get_device_buffer();
 
 private:
 	int initialize();

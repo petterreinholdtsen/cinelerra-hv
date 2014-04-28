@@ -26,6 +26,7 @@ private:
 	UndoStack undo_stack;
 	UndoStackItem* current_entry; // for setting the after buffer
 	MWindow *mwindow;
+	int undo_before_updated;
 };
 
 #endif

@@ -66,41 +66,6 @@ int PluginClient::plugin_get_range()
 	messages->read_message(&start, &end);
 }
 
-// For non realtime plugins, allocate all the buffers.
-int PluginClient::plugin_negotiate_buffers()
-{
-	long recommended_size;
-	long total_channels;
-
-	messages->read_message(&total_channels, &recommended_size);
-	total_in_buffers = total_out_buffers = total_channels;
-
-// get desired sizes from user
-	in_buffer_size = get_in_buffers(recommended_size);
-	out_buffer_size = get_out_buffers(recommended_size);
-// notify server of desired sizes
-	messages->write_message(out_buffer_size, in_buffer_size);
-
-// get shared buffers from server
-	data_in = new PluginBuffer*[total_in_buffers];
-	data_out = new PluginBuffer*[total_out_buffers];
-
-	long mem_id, size;
-// Sizes recieved from server are now byte counts.
-	for(int i = 0; i < total_in_buffers; i++)
-	{
-		messages->read_message(&mem_id, &size);
-		data_in[i] = new PluginBuffer(mem_id, size, 1);
-	}
-
-	for(int i = 0; i < total_out_buffers; i++)
-	{
-		messages->read_message(&mem_id, &size);
-		data_out[i] = new PluginBuffer(mem_id, size, 1);
-	}
-	return 0;
-}
-
 
 // For realtime plugins initialize buffers
 int PluginClient::plugin_init_realtime(int realtime_priority, 
@@ -161,50 +126,6 @@ int PluginClient::plugin_stop_realtime()
 	return 0;
 }
 
-int PluginClient::plugin_delete_buffers()
-{
-	int i, j;
-// used in plugin that also runs the GUI
-	delete_buffer_ptrs();
-	if(total_in_buffers)
-	{
-		for(i = 0; i < total_in_buffers; i++)
-		{
-			for(j = 0; j < double_buffers_in.values[i]; j++)
-			{
-				delete data_in_realtime.values[i][j];
-			}
-			delete data_in_realtime.values[i];
-		}
-		offset_in_render.remove_all();
-		double_buffer_in_render.remove_all();
-		data_in_realtime.remove_all();
-		double_buffers_in.remove_all();
-		realtime_in_size.remove_all();
-	}
-	
-	if(total_out_buffers)
-	{
-		for(i = 0; i < total_out_buffers; i++)
-		{
-			for(j = 0; j < double_buffers_out.values[i]; j++)
-			{
-				delete data_out_realtime.values[i][j];
-			}
-			delete data_out_realtime.values[i];
-		}
-		offset_out_render.remove_all();
-		double_buffer_out_render.remove_all();
-		data_out_realtime.remove_all();
-		double_buffers_out.remove_all();
-		realtime_out_size.remove_all();
-	}
-
-	total_in_buffers = 0;
-	total_out_buffers = 0;
-	return 0;
-}
-
 int PluginClient::plugin_get_parameters()
 {
 	sample_rate = get_project_samplerate();
@@ -214,51 +135,6 @@ int PluginClient::plugin_get_parameters()
 }
 
 // ========================= main loop
-int PluginClient::plugin_run()
-{
-	if(!success) return 1;
-
-	int command;
-	int done = 0;
-
-//	if(client_gui_on)
-//		start_gui();         // Start the GUI
-
-	while(!done)
-	{
-		command = messages->read_message();
-
-		switch(command)
-		{
-			case -1:                    done = 1;                                                 break;
-//			case START_REALTIME:        plugin_init_realtime();                                   break;
-			case STOP_REALTIME:         plugin_stop_realtime();                                   break;
-//			case GET_REALTIME:          messages->write_message(plugin_is_realtime());            break;
-//			case GET_MULTICHANNEL:      messages->write_message(plugin_is_multi_channel());       break;
-//			case GET_FILEIO:            messages->write_message(plugin_is_fileio());              break;
-//			case GET_TITLE:             messages->write_message(plugin_title());                  break;
-//			case EXIT_PLUGIN:           plugin_exit(); done = 1;                                  break;
-			case LOAD_DEFAULTS:         load_defaults();                                          break;
-			case SAVE_DEFAULTS:         save_defaults();                                          break;
-			case STOP_GUI:              stop_gui_client();                                        break;
-//			case HIDE_GUI:              hide_gui(); 	                                          break;
-			case GET_PARAMETERS:        plugin_get_parameters();                                  break;
-//			case GET_SAMPLERATE:        messages->write_message(get_plugin_samplerate());         break;
-//			case GET_FRAMERATE:         messages->write_message((long)(get_plugin_framerate() * 1000));break;
-			case SET_INTERACTIVE:       interactive = 1;                                          break;
-			case SET_RANGE:             plugin_get_range();                                       break;
-			case GET_BUFFERS:           plugin_negotiate_buffers();                               break;
-			case START_PLUGIN:          plugin_start_plugin();                                    break;
-			case SAVE_DATA:             save_data_client();                                       break;
-			case LOAD_DATA:             load_data_client();                                       break;
-			case CONFIGURE_CHANGE:      get_configure_change();                                   break;
-			case GUI_ON:                master_gui_on = 1;                                        break;
-			case GUI_OFF:               master_gui_on = 0;                                        break;
-			default:                    plugin_command_derived(command);                          break;
-		}
-	}
-	return 0;
-}
 
 int PluginClient::start_realtime() { return 0; }
 int PluginClient::stop_realtime() { return 0; }
@@ -361,6 +237,10 @@ void PluginClient::update_display_title()
 	set_string();
 }
 
+char* PluginClient::get_gui_string()
+{
+	return gui_string;
+}
 
 int PluginClient::set_string_client(char *string)
 {

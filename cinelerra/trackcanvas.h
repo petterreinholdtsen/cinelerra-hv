@@ -11,6 +11,7 @@
 #include "floatautos.inc"
 #include "guicast.h"
 #include "mwindow.inc"
+#include "mwindowgui.inc"
 #include "plugin.inc"
 #include "resourcepixmap.inc"
 #include "track.inc"
@@ -58,11 +59,33 @@ public:
 		int x, 
 		int y, 
 		int center_pixel, 
-		int zoom_track, 
-		int show_caption);
+		int zoom_track,
+		int color);
+	void draw_floatauto(Auto *current, 
+		int x, 
+		int y, 
+		int in_x,
+		int in_y,
+		int out_x,
+		int out_y,
+		int center_pixel, 
+		int zoom_track,
+		int color);
 	int test_auto(Auto *current, 
 		int x, 
 		int y, 
+		int center_pixel, 
+		int zoom_track, 
+		int cursor_x, 
+		int cursor_y, 
+		int buttonpress);
+	int test_floatauto(Auto *current, 
+		int x, 
+		int y, 
+		int in_x,
+		int in_y,
+		int out_x,
+		int out_y,
 		int center_pixel, 
 		int zoom_track, 
 		int cursor_x, 
@@ -78,7 +101,8 @@ public:
 		int ax,
 		int ay,
 		int ax2,
-		int ay2);
+		int ay2,
+		int color);
 	int test_floatline(Autos *autos,
 		int center_pixel, 
 		FloatAuto *previous,
@@ -94,7 +118,8 @@ public:
 		int ax,
 		int ay,
 		int ax2,
-		int ay2);
+		int ay2,
+		int color);
 	int test_toggleline(Autos *autos,
 		int center_pixel, 
 		int x1,
@@ -117,13 +142,15 @@ public:
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress);
+		int buttonpress,
+		int color);
 	int do_toggle_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress);
+		int buttonpress,
+		int color);
 	int do_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 

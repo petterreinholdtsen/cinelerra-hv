@@ -49,32 +49,37 @@ int InterfacePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, "Clicking on in/out points does what:"));
 	y += 25;
 	add_subwindow(new BC_Title(x, y, "Button 1:"));
-	add_subwindow(new ViewBehaviourText(80, 
+	
+	ViewBehaviourText *text;
+	add_subwindow(text = new ViewBehaviourText(80, 
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[0]), 
 			pwindow, 
 			&(pwindow->thread->edl->session->edit_handle_mode[0])));
+	text->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, "Button 2:"));
-	add_subwindow(new ViewBehaviourText(80, 
+	add_subwindow(text = new ViewBehaviourText(80, 
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[1]), 
 			pwindow, 
 			&(pwindow->thread->edl->session->edit_handle_mode[1])));
+	text->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, "Button 3:"));
-	add_subwindow(new ViewBehaviourText(80, 
+	add_subwindow(text = new ViewBehaviourText(80, 
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]), 
 			pwindow, 
 			&(pwindow->thread->edl->session->edit_handle_mode[2])));
+	text->create_objects();
 
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Min DB for meter"));
+	add_subwindow(new BC_Title(x, y, "Min DB for meter:"));
 	sprintf(string, "%.0f", pwindow->thread->edl->session->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Format for meter"));
+	add_subwindow(new BC_Title(x, y, "Format for meter:"));
 	add_subwindow(vu_db = new MeterVUDB(pwindow, "DB", y));
 	add_subwindow(vu_int = new MeterVUInt(pwindow, "Percent of maximum", y));
 	vu_db->vu_int = vu_int;
@@ -206,7 +211,11 @@ int TimeFormatFeetSetting::handle_event()
 
 
 
-ViewBehaviourText::ViewBehaviourText(int x, int y, char *text, PreferencesWindow *pwindow, int *output)
+ViewBehaviourText::ViewBehaviourText(int x, 
+	int y, 
+	char *text, 
+	PreferencesWindow *pwindow, 
+	int *output)
  : BC_PopupMenu(x, y, 200, text)
 {
 	this->output = output;
@@ -220,7 +229,7 @@ int ViewBehaviourText::handle_event()
 {
 }
 
-int ViewBehaviourText::add_items()
+int ViewBehaviourText::create_objects()
 {
 // Video4linux versions are automatically detected
 	add_item(new ViewBehaviourItem(this, MOVE_ALL_EDITS_TITLE, MOVE_ALL_EDITS));

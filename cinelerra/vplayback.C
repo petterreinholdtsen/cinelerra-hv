@@ -33,11 +33,4 @@ void VPlayback::stop_cursor()
 	vwindow->playback_cursor->stop_playback();
 }
 
-void VPlayback::update_transport(int command, int paused)
-{
-	vwindow->gui->lock_window();
-	vwindow->gui->transport->update_gui_state(command, paused);
-	vwindow->gui->unlock_window();
-}
-
 

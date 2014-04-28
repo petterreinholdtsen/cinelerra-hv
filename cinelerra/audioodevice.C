@@ -73,31 +73,40 @@ int AudioDevice::arm_buffer(int buffer_num,
 	if(new_size > buffer_size[buffer_num])
 	{
 // do both buffers before threading to prevent kill during allocation
-		for(i = 0; i < 2; i++)
+// 		for(i = 0; i < 2; i++)
+// 		{
+// 			if(buffer_size[i] != 0)
+// 			{
+// 				delete [] buffer[i];
+// 			}
+// 			buffer[i] = new char[new_size];
+// 			buffer_size[i] = new_size;
+// 		}
+		if(buffer_size[buffer_num] != 0)
 		{
-			if(buffer_size[i] != 0)
-			{
-				delete [] buffer[i];
-			}
-			buffer[i] = new char[new_size];
-			buffer_size[i] = new_size;
-			bzero(buffer[i], new_size);
+			delete [] buffer[buffer_num];
 		}
+		buffer[buffer_num] = new char[new_size];
+		buffer_size[buffer_num] = new_size;
 	}
+
 	buffer_size[buffer_num] = new_size;
 
 //printf("AudioDevice::arm_buffer 1\n");
 	buffer_num_buffer = buffer[buffer_num];
+	bzero(buffer_num_buffer, new_size);
+	
 	last_input_channel = channels - 1;
 // copy data
 // intel byte order only to correspond with bits_to_fmt
 
 //printf("AudioDevice::arm_buffer 1\n");
-	for(channel = 0; channel < device_channels; channel++)
+	for(channel = 0; channel < device_channels && channel < channels; channel++)
 	{
-		if(channel >= channels) buffer_in_channel = output[last_input_channel];
-		else buffer_in_channel = output[channel];
+//		if(channel >= channels) buffer_in_channel = output[last_input_channel];
+//		else buffer_in_channel = output[channel];
 
+		buffer_in_channel = output[channel];
 		switch(bits)
 		{
 			case 8:

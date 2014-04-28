@@ -2,7 +2,6 @@
 #include "filexml.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "mwindow.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"
@@ -32,8 +31,6 @@ int AttachmentPoint::reset_parameters()
 //	plugin_type = 0;
 	plugin_server = 0;
 //	plugin_type = 0;
-	plugin_data[0] = 0;
-	strcpy(plugin_title, default_title());
 	new_total_input_buffers = 0;
 	total_input_buffers = 0;
 	return 0;
@@ -192,79 +189,7 @@ void AttachmentPoint::render(long current_position, long fragment_size)
 
 
 
-AttachmentPoint::AttachmentPoint(AttachmentPoint *that)
-{
-	reset_parameters();
-	copy_from(*that);
-}
 
-AttachmentPoint::AttachmentPoint(MWindow *mwindow)
-{
-	reset_parameters();
-	this->mwindow = mwindow;
-}
-
-AttachmentPoint& AttachmentPoint::operator=(const AttachmentPoint &that)
-{
-	copy_from(that);
-}
-
-int AttachmentPoint::operator==(const AttachmentPoint &that)
-{
-	int result = 0;
-
-	if(identical(that)) result = 1;
-
-	return result;
-}
-
-int AttachmentPoint::identical(const AttachmentPoint &that)
-{
-	int result = 0;
-
-	if(plugin->plugin_type == that.plugin->plugin_type)
-	{
-		switch(plugin->plugin_type)
-		{
-			case 0:
-				result = 1;
-				break;
-			
-			case 1:
-				if(!strcmp(plugin_title, that.plugin_title) &&
-					!strcmp(plugin_data, that.plugin_data)) result = 1;
-				break;
-			
-			case 2:
-				if(shared_plugin_location == that.shared_plugin_location) result = 1;
-				break;
-
-			case 3:
-				if(shared_module_location == that.shared_module_location) result = 1;
-				break;
-		}
-	}
-
-	return result;
-}
-
-int AttachmentPoint::copy_from(const AttachmentPoint &that)
-{
-	shared_plugin_location = that.shared_plugin_location;
-	shared_module_location = that.shared_module_location;
-//	in = that.in;
-//	out = that.out;
-//	show = that.show;
-//	on = that.on;
-//	plugin_type = that.plugin_type;
-	mwindow = that.mwindow;
-	strcpy(plugin_title, that.plugin_title);
-	strcpy(plugin_data, that.plugin_data);
-
-// Need to close plugin if it's open before replacing.
-	if(that.plugin_server) plugin_server = new PluginServer(*(that.plugin_server));
-	return 0;
-}
 
 int AttachmentPoint::dump()
 {
@@ -272,26 +197,6 @@ int AttachmentPoint::dump()
 	if(plugin_server) plugin_server->dump();
 }
 
-int AttachmentPoint::update(int plugin_type, int in, int out, char* title, SharedPluginLocation *shared_plugin_location, SharedModuleLocation *shared_module_location)
-{
-//	this->in = in; this->out = out;
-//	this->plugin_type = plugin_type;
 
-	strcpy(this->plugin_title, title);
-
-	if(shared_plugin_location && shared_module_location)
-	{
-		this->shared_plugin_location = *shared_plugin_location;
-		this->shared_module_location = *shared_module_location;
-	}
-	update_derived();
-}
-
-
-
-char* AttachmentPoint::get_module_title()
-{
-	return "AttachmentPoint::get_module_title";
-}
 
 

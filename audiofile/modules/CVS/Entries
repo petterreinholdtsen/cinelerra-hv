@@ -1,10 +1,10 @@
-/Makefile.am/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/Makefile.in/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/g711.c/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/g711.h/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/pcm.c/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/pcm.h/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/rebuffer.c/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/rebuffer.h/1.1.1.1/Tue Nov  6 13:30:56 2001//
-/rebuffer.template/1.1.1.1/Tue Nov  6 13:30:56 2001//
+/Makefile.am/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/Makefile.in/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/g711.c/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/g711.h/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/pcm.c/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/pcm.h/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/rebuffer.c/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/rebuffer.h/1.1.1.1/Fri Jun 21 12:35:27 2002//
+/rebuffer.template/1.1.1.1/Fri Jun 21 12:35:27 2002//
 D

@@ -1,5 +1,4 @@
 #include "arender.h"
-#include "console.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -12,7 +11,6 @@
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "modules.h"
 #include "tracking.h"
 #include "patchbay.h"
 #include "playbackengine.h"
@@ -143,6 +141,10 @@ void Tracking::stop_meters()
 	mwindow->gui->lock_window();
 	mwindow->gui->patchbay->stop_meters();
 	mwindow->gui->unlock_window();
+
+	mwindow->lwindow->gui->lock_window();
+	mwindow->lwindow->gui->panel->stop_meters();
+	mwindow->lwindow->gui->unlock_window();
 //printf("Tracking::stop_meters 2\n");
 }
 

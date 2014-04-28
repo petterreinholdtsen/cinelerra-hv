@@ -29,7 +29,6 @@ public:
 
 // Set up parameters for a transition menu.
 	void start_window(Track *track,
-		Edit *edit, 
 		Plugin *plugin, 
 		char *title);
 	int set_dialog(Transition *transition, char *title);
@@ -39,8 +38,6 @@ public:
 
 	MWindow *mwindow;
 	Track *track;
-//	Edit *edit;
-// Won't always have an edit
 	int data_type;
 	Transition *transition;
 	PluginDialog *window;

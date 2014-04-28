@@ -68,7 +68,17 @@ int VPatchGUI::update(int x, int y)
 		}
 		else
 		{
-			fade->update((int)fade->get_keyframe(mwindow, this)->value);
+			FloatAuto *previous = 0, *next = 0;
+			double unit_position = mwindow->edl->local_session->selectionstart;
+			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+			unit_position = vtrack->to_units(unit_position, 0);
+			int value = (int)((FloatAutos*)vtrack->automation->fade_autos)->get_value(
+				(long)unit_position,
+				PLAY_FORWARD, 
+				previous, 
+				next);
+			fade->update(value);
+//			fade->update((int)fade->get_keyframe(mwindow, this)->value);
 		}
 	}
 	else

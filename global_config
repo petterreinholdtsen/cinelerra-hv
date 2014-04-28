@@ -20,7 +20,7 @@ LIBPREFIX = $(PREFIX)/lib
 
 CC = g++
 GCC = gcc
-
+PLUGINDIR := /usr/lib/cinelerra
 
 ifneq ($(HAVE_CFLAGS), yes)
 CFLAGS = -O2 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include

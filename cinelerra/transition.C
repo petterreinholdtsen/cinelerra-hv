@@ -1,4 +1,3 @@
-#include "console.h"
 #include "edit.h"
 #include "edits.h"
 #include "errorbox.h"
@@ -218,19 +217,3 @@ void Transition::dump()
 }
 
 
-// REMOVE
-int Transition::update_edit(int is_loading)
-{
-// 	int w, h;
-// 
-// 	w = mwindow->tracks->canvas->get_w();
-// 	h = mwindow->tracks->canvas->get_h();
-// 	if(edit && edit->edits->track->track_visible(0, w, 0, h))
-// 	{
-// 		if(!is_loading) mwindow->tracks->hide_overlays(0);
-// 		edit->draw_transition(0, edit->edits->track->pixel + mwindow->session->zoom_track / 2, 
-// 			0, w, 0, h, 0);
-// 		if(!is_loading) mwindow->tracks->show_overlays(1);
-// 	}
-	return 0;
-}

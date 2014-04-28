@@ -18,6 +18,7 @@ public:
 	void copy(long start, long end, FileXML *file);
 	void copy_from(Auto *that);
 	void dump();
+	void rechannel();
 
 	float values[MAXCHANNELS];
 	int handle_x, handle_y;

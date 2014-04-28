@@ -4,7 +4,7 @@
  * details.  THERE IS ABSOLUTELY NO WARRANTY FOR THIS SOFTWARE.
  */
 
-/*$Header: /usr/cvs/libsndfile/GSM610/config.h,v 1.1.1.1 2001/11/06 13:32:00 heroine Exp $*/
+/*$Header: /usr/cvs/hvirtual/libsndfile/GSM610/config.h,v 1.1.1.1 2002/06/21 12:35:25 myrina Exp $*/
 
 #ifndef	CONFIG_H
 #define	CONFIG_H

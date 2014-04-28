@@ -50,6 +50,14 @@ public:
 	int change_channels(int new_channels, int *value_positions);
 // update values from stick position
 	int stick_to_values();
+// Generic conversion from stick to values for channel changes with no GUI
+	static int stick_to_values(float *values,
+		int total_values, 
+		int *value_positions, 
+		int stick_x, 
+		int stick_y,
+		int virtual_r,
+		float maxvalue);
 	int get_total_values();
 	float get_value(int channel);
 	int get_stick_x();
@@ -71,9 +79,13 @@ private:
 	void draw();
 	void draw_popup();
 // update values from stick position
-	float distance(int x1, int x2, int y1, int y2);
+	static float distance(int x1, int x2, int y1, int y2);
 // get x and y positions of channels
-	int get_channel_positions();
+	static int get_channel_positions(int *value_x, 
+		int *value_y, 
+		int *value_positions,
+		int virtual_r,
+		int total_values);
 
 	int virtual_r;
 	float maxvalue;

@@ -1,3 +1,5 @@
+#include "apatchgui.inc"
+#include "bcpan.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -17,11 +19,21 @@ PanAuto::~PanAuto()
 int PanAuto::operator==(Auto &that)
 {
 	PanAuto *panauto = (PanAuto*)&that;
-	
+
 	return handle_x == panauto->handle_x &&
 		handle_y == panauto->handle_y;
 }
 
+void PanAuto::rechannel()
+{
+	BC_Pan::stick_to_values(values,
+		edl->session->audio_channels, 
+		edl->session->achannel_positions, 
+		handle_x, 
+		handle_y,
+		PAN_RADIUS,
+		1);
+}
 
 void PanAuto::load(FileXML *file)
 {

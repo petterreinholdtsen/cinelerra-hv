@@ -6,6 +6,7 @@ class RenderEngine;
 
 #include "arender.inc"
 #include "audiodevice.inc"
+#include "cache.inc"
 #include "canvas.inc"
 #include "channel.inc"
 #include "mwindow.inc"
@@ -164,8 +165,6 @@ public:
 
 // start video since vrender is the master
 	int start_video();
-// clean up the audio rendering
-	int stop_playback();
 
 	int wait_for_startup();
 	int wait_for_completion();

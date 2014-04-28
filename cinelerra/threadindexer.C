@@ -84,11 +84,6 @@ void ThreadIndexer::run()
 		}
 	}
 
-// need to redraw with new file locations before testing indexes
-	if(result)
-	{
-		mwindow->draw();
-	}
 
 // test index of each asset
 	for(current_asset = assets->first; 
@@ -130,7 +125,6 @@ void ThreadIndexer::run()
 		progress = 0;
 	}
 
-	assets->thread_indexer_running = 0;
 	interrupt_lock.unlock();
 }
 

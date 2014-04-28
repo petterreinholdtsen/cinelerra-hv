@@ -9,7 +9,7 @@
 
 
 class CWindowToolGUI;
-
+class CWindowCoord;
 
 class CWindowTool : public Thread
 {
@@ -56,6 +56,7 @@ public:
 	
 	MWindow *mwindow;
 	CWindowTool *thread;
+	CWindowCoord *event_caller;
 };
 
 class CWindowCoord : public BC_TumbleTextBox

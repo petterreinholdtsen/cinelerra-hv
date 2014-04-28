@@ -32,29 +32,21 @@ void MainIndexes::add_next_asset(Asset *asset)
 	next_lock.lock();
 
 // Test current asset
-//printf("MainIndexes::add_next_asset 1\n");
 	IndexFile indexfile(mwindow);
-//printf("MainIndexes::add_next_asset 1\n");
 	if(!indexfile.open_index(asset))
 	{
 		asset->index_status = INDEX_READY;
-//printf("MainIndexes::add_next_asset 1\n");
 		indexfile.close_index();
-//printf("MainIndexes::add_next_asset 1\n");
 	}
 	else
+// Put copy of asset in stack
 	{
-//printf("MainIndexes::add_next_asset 1\n");
 		Asset *new_asset = new Asset;
-//printf("MainIndexes::add_next_asset 1\n");
 		*new_asset = *asset;
-//printf("MainIndexes::add_next_asset 1\n");
 		next_assets.append(new_asset);
-//printf("MainIndexes::add_next_asset 1\n");
 	}
-//printf("MainIndexes::add_next_asset 1\n");
+
 	next_lock.unlock();
-//printf("MainIndexes::add_next_asset 1\n");
 }
 
 void MainIndexes::delete_current_assets()
@@ -122,7 +114,7 @@ void MainIndexes::run()
 		input_lock.lock();
 		if(done) return;
 
-//printf("MainIndexes::run 1\n");
+//printf("MainIndexes::run 1 %d\n", next_assets.total);
 		load_next_assets();
 		interrupt_flag = 0;
 //printf("MainIndexes::run 2 %d\n", current_assets.total);

@@ -70,11 +70,6 @@ char* Reverb::plugin_title() { return "Heroine College Concert Hall"; }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 
-VFrame* Reverb::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
 int Reverb::start_realtime()
 {
 	int i;
@@ -260,28 +255,13 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 	return 0;
 }
 
+NEW_PICON_MACRO(Reverb)
 
 SHOW_GUI_MACRO(Reverb, ReverbThread)
 
-int Reverb::set_string()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		thread->window->set_title(PluginClient::gui_string);
-		thread->window->unlock_window();
-	}
-	return 0;
-}
+SET_STRING_MACRO(Reverb)
 
-void Reverb::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
+RAISE_WINDOW_MACRO(Reverb)
 
 int Reverb::load_defaults()
 {
@@ -399,7 +379,7 @@ void Reverb::update_gui()
 		thread->window->ref_length->update(config.ref_length);
 		thread->window->lowpass1->update(config.lowpass1);
 		thread->window->lowpass2->update(config.lowpass2);
-		thread->window->lock_window();
+		thread->window->unlock_window();
 	}
 }
 

@@ -4,12 +4,12 @@
 
 include ../../global_config
 
-OBJS = flip.o  \
-		 flipwindow.o
+OBJS = $(OBJDIR)/flip.o \
+	$(OBJDIR)/flipwindow.o
 
-OUTPUT = ../flip.plugin
-
-$(OUTPUT): $(OBJS)
-	$(CC) $(PLUGINLFLAGS) -o $(OUTPUT) $(OBJS) $(PLUGINVIDEOOBJS)
+OUTPUT = ../$(OBJDIR)/flip.plugin
 
 include ../../plugin_config
+
+$(OBJDIR)/flip.o: flip.C
+$(OBJDIR)/flipwindow.o: flipwindow.C

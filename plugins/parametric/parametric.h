@@ -80,19 +80,7 @@ public:
 
 
 
-class ParametricThread : public Thread
-{
-public:
-	ParametricThread(ParametricEQ *plugin);
-	~ParametricThread();
-	
-	void run();
-	
-	Mutex completion;
-	ParametricWindow *window;
-	ParametricEQ *plugin;
-};
-
+PLUGIN_THREAD_HEADER(ParametricEQ, ParametricThread, ParametricWindow)
 
 
 class ParametricFreq : public BC_QPot
@@ -220,23 +208,14 @@ public:
 	ParametricEQ(PluginServer *server);
 	~ParametricEQ();
 
-	VFrame* new_picon();
 	char* plugin_title();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_realtime(long size, double *input_ptr, double *output_ptr);
-	int show_gui();
-	void raise_window();
-	int set_string();
-
-
-
-
 
 	int load_defaults();
 	int save_defaults();
-	int load_configuration();
 	void reset();
 	void reconfigure();
 	void update_gui();
@@ -246,10 +225,8 @@ public:
 
 	double envelope[WINDOW_SIZE / 2];
 	int need_reconfigure;
-	Defaults *defaults;
-	ParametricThread *thread;
+	PLUGIN_CLASS_MEMBERS(ParametricConfig, ParametricThread)
 	ParametricFFT *fft;
-	ParametricConfig config;
 };
 
 

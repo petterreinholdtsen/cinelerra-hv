@@ -150,33 +150,29 @@ void RecordAudio::run()
 		!write_result)
 	{
 // Handle data from the audio device.
-//printf("RecordAudio::run 3\n");
 			if(!record_thread->monitor)
 			{
 // Read into file's buffer for recording.
 // device needs to write buffer starting at fragment position
-//printf("RecordAudio::run 2.1\n");
+//printf("RecordAudio::run %d\n",__LINE__);
 				grab_result = record->adevice->read_buffer(input, 
 					fragment_size,
 					over, 
 					max, 
 					fragment_position);
-//printf("RecordAudio::run 2.2\n");
+//printf("RecordAudio::run %d\n",__LINE__);
 			}
 			else
 			{
 // Read into monitor buffer for monitoring.
-//printf("RecordAudio::run 1\n");
-//SET_TRACE
+//printf("RecordAudio::run %d %d\n",__LINE__, fragment_size);
 				grab_result = record->adevice->read_buffer(input, 
 					fragment_size,
 					over, 
 					max, 
 					0);
-//SET_TRACE
-//printf("RecordAudio::run 2 %d\n", grab_result);
+//printf("RecordAudio::run %d\n",__LINE__);
 			}
-//printf("RecordAudio::run 3 %d %f\n", fragment_size, max);
 
 // Update timer for synchronization
 			timer_lock->lock("RecordAudio::run");

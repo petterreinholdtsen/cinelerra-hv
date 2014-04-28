@@ -78,9 +78,10 @@ void PluginClientThread::run()
 //printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		result = window->run_window();
 		window->lock_window("PluginClientThread::run");
-//printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		window->hide_window(1);
 		window->unlock_window();
+
+
 // Can't save defaults in the destructor because it's not called immediately
 // after closing.
 		if(client->defaults) client->save_defaults();
@@ -262,6 +263,7 @@ MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
 int PluginClient::plugin_get_parameters()
 {
 	int result = get_parameters();
+	if(defaults) save_defaults();
 	return result;
 }
 

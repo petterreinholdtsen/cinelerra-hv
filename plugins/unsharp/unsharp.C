@@ -22,6 +22,7 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -521,8 +522,13 @@ void UnsharpUnit::process_package(LoadPackage *package)
 
 	if(!temp)
 	{
-		temp = new VFrame(0,
+		temp = new VFrame;
+		temp->set_use_shm(0);
+		temp->reallocate(0,
 			-1,
+			0,
+			0,
+			0,
 			server->src->get_w(),
 			padded_rows,
 			components == 3 ? BC_RGB_FLOAT : BC_RGBA_FLOAT,
@@ -542,6 +548,13 @@ void UnsharpUnit::process_package(LoadPackage *package)
 			temp_out,
 			temp->get_w(),
 			components);
+// printf("UnsharpUnit::process_package %d %p %p %p %d %d\n", 
+// __LINE__, 
+// temp, 
+// temp->get_rows()[0], 
+// temp_out,
+// i - padded_y1,
+// temp->get_bytes_per_line());
 		memcpy(temp->get_rows()[i - padded_y1],
 		 	temp_out,
 			temp->get_bytes_per_line());

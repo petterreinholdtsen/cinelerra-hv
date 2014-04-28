@@ -80,22 +80,22 @@ void RecordMonitor::create_objects()
 	if(!record->default_asset->video_data)
 		min_w = MeterPanel::get_meters_width(
 			record->default_asset->channels, 1);
-SET_TRACE
+//SET_TRACE
 	window = new RecordMonitorGUI(mwindow,
 		record, 
 		this,
 		min_w);
-SET_TRACE
+//SET_TRACE
 	window->create_objects();
-SET_TRACE
+//SET_TRACE
 
 	if(record->default_asset->video_data)
 	{
 // Configure the output for record monitoring
 		VideoOutConfig config;
-SET_TRACE
+//SET_TRACE
 		device = new VideoDevice;
-SET_TRACE
+//SET_TRACE
 
 
 
@@ -104,7 +104,7 @@ SET_TRACE
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
 
-SET_TRACE
+//SET_TRACE
 
 		device->open_output(&config, 
 			record->default_asset->frame_rate, 
@@ -112,14 +112,14 @@ SET_TRACE
 			record->default_asset->height,
 			window->canvas,
 			0);
-SET_TRACE
+//SET_TRACE
 
 		thread = new RecordMonitorThread(mwindow, record, this);
-SET_TRACE
+//SET_TRACE
 		thread->start_playback();
-SET_TRACE
+//SET_TRACE
 	}
-SET_TRACE
+//SET_TRACE
 
 	Thread::start();
 }
@@ -431,12 +431,12 @@ int RecordMonitorGUI::button_release_event()
 
 int RecordMonitorGUI::cursor_motion_event()
 {
-SET_TRACE
+//SET_TRACE
 	if(canvas && canvas->get_canvas())
 	{
-SET_TRACE
+//SET_TRACE
 		canvas->get_canvas()->unhide_cursor();
-SET_TRACE
+//SET_TRACE
 		return canvas->cursor_motion_event();
 	}
 	return 0;
@@ -737,14 +737,14 @@ int RecordMonitorCanvas::button_release_event()
 
 int RecordMonitorCanvas::cursor_motion_event()
 {
-SET_TRACE
+//SET_TRACE
 	if(window->current_operation == MONITOR_TRANSLATE)
 	{
-SET_TRACE
+//SET_TRACE
 		record->set_translation(
 			get_cursor_x() - window->cursor_x_origin + window->translate_x_origin,
 			get_cursor_y() - window->cursor_y_origin + window->translate_y_origin);
-SET_TRACE
+//SET_TRACE
 	}
 
 	return 0;
@@ -1008,7 +1008,7 @@ void RecordMonitorThread::run()
 	while(!done)
 	{
 // Wait for next frame
-SET_TRACE
+//SET_TRACE
 		output_lock->lock("RecordMonitorThread::run");
 
 		if(done)
@@ -1017,13 +1017,13 @@ SET_TRACE
 			return;
 		}
 
-SET_TRACE
+//SET_TRACE
 		new_output_frame();
-SET_TRACE
+//SET_TRACE
 		render_frame();
-SET_TRACE
+//SET_TRACE
 		show_output_frame();
-SET_TRACE
+//SET_TRACE
 		unlock_input();
 // Get next frame
 		ready = 1;

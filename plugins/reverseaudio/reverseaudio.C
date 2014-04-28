@@ -255,7 +255,7 @@ int ReverseAudio::load_configuration()
 // prev_keyframe->position, 
 // next_keyframe->position);
 // Defeat default keyframe
-	if(prev_position == 0 && next_position == 0) 
+	if(prev_position == 0 && next_position == 0)
 	{
 		next_position = prev_position = get_source_start();
 	}

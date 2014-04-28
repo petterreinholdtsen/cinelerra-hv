@@ -152,6 +152,12 @@ int FileCR2::read_frame(VFrame *frame)
 	argv[argc++] = (char*)"dcraw";
 // write to stdout
 	argv[argc++] = (char*)"-c";
+
+// printf("FileCR2::read_frame %d interpolate=%d white_balance=%d\n", 
+// __LINE__,
+// file->interpolate_raw,
+// file->white_balance_raw);
+
 // Use camera white balance.  
 // Before 2006, DCraw had no Canon white balance.
 // In 2006 DCraw seems to support Canon white balance.
@@ -159,6 +165,8 @@ int FileCR2::read_frame(VFrame *frame)
 // Need to toggle this in preferences because it defeats dark frame subtraction.
 	if(file->white_balance_raw)
 		argv[argc++] = (char*)"-w";
+
+
 	if(!file->interpolate_raw)
 	{
 // Trying to do everything but interpolate doesn't work because convert_to_rgb
@@ -166,6 +174,7 @@ int FileCR2::read_frame(VFrame *frame)
 // Use document mode and hack dcraw to apply white balance in the write_ function.
 		argv[argc++] = (char*)"-d";
 	}
+
 
 	argv[argc++] = asset->path;
 
@@ -211,6 +220,19 @@ int FileCR2::colormodel_supported(int colormodel)
 }
 
 
+// Be sure to add a line to File::get_best_colormodel
+int FileCR2::get_best_colormodel(Asset *asset, int driver)
+{
+//printf("FileCR2::get_best_colormodel %d\n", __LINE__);
+	return BC_RGB_FLOAT;
+}
+
+int64_t FileCR2::get_memory_usage()
+{
+	int64_t result = asset->width * asset->height * sizeof(float) * 3;
+//printf("FileCR2::get_memory_usage %d %lld\n", __LINE__, result);
+	return result;
+}
 
 
 

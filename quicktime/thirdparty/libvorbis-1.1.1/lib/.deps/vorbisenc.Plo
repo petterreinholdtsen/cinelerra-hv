@@ -1,15 +1,16 @@
 vorbisenc.lo: vorbisenc.c /usr/include/stdlib.h /usr/include/features.h \
   /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
-  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
+  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stddef.h \
   /usr/include/sys/types.h /usr/include/bits/types.h \
   /usr/include/bits/typesizes.h /usr/include/time.h /usr/include/endian.h \
-  /usr/include/bits/endian.h /usr/include/sys/select.h \
-  /usr/include/bits/select.h /usr/include/bits/sigset.h \
-  /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
-  /usr/include/bits/pthreadtypes.h /usr/include/alloca.h \
-  /usr/include/string.h /usr/include/bits/string.h \
-  /usr/include/bits/string2.h /usr/include/math.h \
+  /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+  /usr/include/sys/select.h /usr/include/bits/select.h \
+  /usr/include/bits/sigset.h /usr/include/bits/time.h \
+  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+  /usr/include/alloca.h /usr/include/bits/stdlib.h /usr/include/string.h \
+  /usr/include/bits/string.h /usr/include/bits/string2.h \
+  /usr/include/bits/string3.h /usr/include/math.h \
   /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h \
   /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
   ../include/vorbis/codec.h \
@@ -19,15 +20,13 @@ vorbisenc.lo: vorbisenc.c /usr/include/stdlib.h /usr/include/features.h \
   ../include/vorbis/vorbisenc.h ../include/vorbis/codec.h \
   codec_internal.h envelope.h mdct.h codebook.h psy.h smallft.h \
   backends.h bitrate.h os.h ../config.h misc.h /usr/include/memory.h \
-  highlevel.h modes/setup_44.h modes/floor_all.h \
-  ../include/vorbis/codec.h backends.h books/floor/floor_books.h \
-  codebook.h modes/residue_44.h books/coupled/res_books_stereo.h \
-  codebook.h modes/psych_44.h modes/setup_44u.h modes/residue_44u.h \
-  books/uncoupled/res_books_uncoupled.h codebook.h modes/setup_32.h \
-  modes/setup_8.h modes/psych_8.h modes/residue_8.h \
-  ../include/vorbis/codec.h backends.h modes/setup_11.h modes/psych_11.h \
-  modes/setup_16.h modes/psych_16.h modes/residue_16.h modes/setup_22.h \
-  modes/setup_X.h
+  highlevel.h modes/setup_44.h modes/floor_all.h backends.h \
+  books/floor/floor_books.h codebook.h modes/residue_44.h \
+  books/coupled/res_books_stereo.h modes/psych_44.h modes/setup_44u.h \
+  modes/residue_44u.h books/uncoupled/res_books_uncoupled.h \
+  modes/setup_32.h modes/setup_8.h modes/psych_8.h modes/residue_8.h \
+  modes/setup_11.h modes/psych_11.h modes/setup_16.h modes/psych_16.h \
+  modes/residue_16.h modes/setup_22.h modes/setup_X.h
 
 /usr/include/stdlib.h:
 
@@ -39,9 +38,9 @@ vorbisenc.lo: vorbisenc.c /usr/include/stdlib.h /usr/include/features.h \
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-32.h:
+/usr/include/gnu/stubs-64.h:
 
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stddef.h:
 
 /usr/include/sys/types.h:
 
@@ -54,6 +53,8 @@ vorbisenc.lo: vorbisenc.c /usr/include/stdlib.h /usr/include/features.h \
 /usr/include/endian.h:
 
 /usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
 
 /usr/include/sys/select.h:
 
@@ -69,11 +70,15 @@ vorbisenc.lo: vorbisenc.c /usr/include/stdlib.h /usr/include/features.h \
 
 /usr/include/alloca.h:
 
+/usr/include/bits/stdlib.h:
+
 /usr/include/string.h:
 
 /usr/include/bits/string.h:
 
 /usr/include/bits/string2.h:
+
+/usr/include/bits/string3.h:
 
 /usr/include/math.h:
 
@@ -127,8 +132,6 @@ modes/setup_44.h:
 
 modes/floor_all.h:
 
-../include/vorbis/codec.h:
-
 backends.h:
 
 books/floor/floor_books.h:
@@ -139,8 +142,6 @@ modes/residue_44.h:
 
 books/coupled/res_books_stereo.h:
 
-codebook.h:
-
 modes/psych_44.h:
 
 modes/setup_44u.h:
@@ -149,8 +150,6 @@ modes/residue_44u.h:
 
 books/uncoupled/res_books_uncoupled.h:
 
-codebook.h:
-
 modes/setup_32.h:
 
 modes/setup_8.h:
@@ -158,10 +157,6 @@ modes/setup_8.h:
 modes/psych_8.h:
 
 modes/residue_8.h:
-
-../include/vorbis/codec.h:
-
-backends.h:
 
 modes/setup_11.h:
 

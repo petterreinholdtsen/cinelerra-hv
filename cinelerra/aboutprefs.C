@@ -66,7 +66,9 @@ void AboutPrefs::create_objects()
 
 	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
-	sprintf(license2, _("(C) 2009 Adam Williams\n\nheroinewarrior.com"));
+	sprintf(license2, 
+		_("(C) %d Adam Williams\n\nheroinewarrior.com"), 
+		COPYRIGHT_DATE);
 	set_font(MEDIUMFONT);
 	draw_text(x, y, license2);
 

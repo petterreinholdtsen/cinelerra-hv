@@ -110,6 +110,7 @@ KeyFrame* KeyFrames::get_keyframe()
 
 void KeyFrames::update_parameter(KeyFrame *src)
 {
+	const int debug = 0;
 // Create new keyframe if auto keyframes or replace entire keyframe.
 	double selection_start = edl->local_session->get_selectionstart(0);
 	double selection_end = edl->local_session->get_selectionend(0);
@@ -135,7 +136,7 @@ void KeyFrames::update_parameter(KeyFrame *src)
 		int64_t start = track->to_units(selection_start, 0);
 		int64_t end = track->to_units(selection_end, 0);
 		KeyFrame *current = get_prev_keyframe(
-				track->to_units(start, 0), 
+				start, 
 				PLAY_FORWARD);
 
 // The first one determines the changed parameters since it is the one displayed
@@ -145,12 +146,31 @@ void KeyFrames::update_parameter(KeyFrame *src)
 			&text,
 			&extra);
 
+
+if(debug) printf("KeyFrames::update_parameter %d params=%p position=%lld start=%lld\n", 
+__LINE__,  
+params,
+current->position,
+track->to_units(start, 0));
+
+if(debug && params)
+{
+for(int i = 0; i < params->size(); i++)
+printf("KeyFrames::update_parameter %d changed=%s %s\n", 
+__LINE__,  
+params->get_key(i),
+params->get_value(i));
+}
+
 // Always update the first one
 		current->update_parameter(params, 
 			text,
 			extra);
 		for(current = (KeyFrame*)NEXT ; current && current->position < end; current = (KeyFrame*)NEXT)
 		{
+if(debug) printf("KeyFrames::update_parameter %d position=%lld\n", 
+__LINE__,
+current->position);
 			current->update_parameter(params, 
 				text,
 				extra);

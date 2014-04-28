@@ -53,6 +53,8 @@ public:
 	int read_frame(VFrame *frame);
 // Get best colormodel for decoding.
 	int colormodel_supported(int colormodel);
+	static int get_best_colormodel(Asset *asset, int driver);
+	int64_t get_memory_usage();
 
 private:
 	void format_to_asset();

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -230,6 +230,8 @@ public:
 	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, int64_t start, int64_t end);
 
 	void clear_transitions(double start, double end);
+	void shuffle_edits(double start, double end);
+	void align_edits(double start, double end);
 	void set_edit_length(double start, double end, double length);
 	void set_transition_length(double start, double end, double length);
 	void set_transition_length(Transition *transition, double length);

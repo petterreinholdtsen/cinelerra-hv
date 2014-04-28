@@ -401,6 +401,7 @@ int AudioALSA::read_buffer(char *buffer, int size)
 //printf("AudioALSA::read_buffer 1\n");
 	int attempts = 0;
 	int done = 0;
+	int result = 0;
 
 	if(!get_input())
 	{
@@ -410,9 +411,10 @@ int AudioALSA::read_buffer(char *buffer, int size)
 
 	while(attempts < 1 && !done)
 	{
-		if(snd_pcm_readi(get_input(), 
+//printf("AudioALSA::read_buffer %d\n", __LINE__);
+		if((result = snd_pcm_readi(get_input(), 
 			buffer, 
-			size / (device->in_bits / 8) / device->get_ichannels()) < 0)
+			size / (device->in_bits / 8) / device->get_ichannels())) < 0)
 		{
 			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
 				device->total_samples_read);
@@ -423,6 +425,7 @@ int AudioALSA::read_buffer(char *buffer, int size)
 		}
 		else
 			done = 1;
+//printf("AudioALSA::read_buffer %d result=%d done=%d\n", __LINE__, result, done);
 	}
 	return 0;
 }

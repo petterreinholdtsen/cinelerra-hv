@@ -218,6 +218,7 @@ void KeyFrame::get_diff(KeyFrame *src,
 	char **text, 
 	char **extra)
 {
+	const int debug = 0;
 	FileXML input;
 	input.set_shared_string(data, strlen(data));
 	int result = 0;
@@ -231,6 +232,11 @@ void KeyFrame::get_diff(KeyFrame *src,
 	get_contents(&this_parameters, &this_text, &this_extra);
 	src->get_contents(&src_parameters, &src_text, &src_extra);
 
+if(debug) printf("KeyFrame::get_diff %d %d %d\n", 
+__LINE__, 
+this_parameters.size(), 
+src_parameters.size());
+
 // Capture changed parameters
 	char this_value[BCTEXTLEN];
 	for(int i = 0; i < MIN(this_parameters.size(), src_parameters.size()); i++)
@@ -239,6 +245,11 @@ void KeyFrame::get_diff(KeyFrame *src,
 		const char *src_value = src_parameters.get_value(i);
 		this_value[0] = 0;
 		this_parameters.get(src_key, this_value);
+if(debug) printf("KeyFrame::get_diff %d %s %s %s\n", 
+__LINE__, 
+src_key,
+src_value, 
+this_value);
 // Capture values which differ
 		if(strcmp(src_value, this_value))
 		{

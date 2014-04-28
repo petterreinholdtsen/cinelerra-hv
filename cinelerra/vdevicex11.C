@@ -137,6 +137,7 @@ int VDeviceX11::close_all()
 // Copy our output frame buffer to the canvas's permanent frame buffer.
 // They must be different buffers because the output frame is being written
 // while the user is redrawing the canvas frame buffer over and over.
+//for(int i = 0; i < 1000000; i++) ((float*)output_frame->get_rows()[0])[i] = 1;
 
 		int use_opengl = device->out_config->driver == PLAYBACK_X11_GL &&
 			output_frame->get_opengl_state() == VFrame::SCREEN;
@@ -165,6 +166,7 @@ int VDeviceX11::close_all()
 				-1);
 		}
 
+
 		if(use_opengl)
 		{
 			output->get_canvas()->unlock_window();
@@ -179,6 +181,11 @@ int VDeviceX11::close_all()
 		}
 		else
 			output->refresh_frame->copy_from(output_frame);
+
+
+
+
+
 
 // // Update the status bug
 // 		if(!device->single_frame)
@@ -198,6 +205,7 @@ int VDeviceX11::close_all()
 		if(/* device->out_config->driver != PLAYBACK_X11_GL || 
 			*/ device->single_frame)
 			output->draw_refresh();
+
 	}
 
 
@@ -546,7 +554,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 
 
 
-//printf("VDeviceX11::write_buffer %d\n", output->get_canvas()->get_video_on());
+//printf("VDeviceX11::write_buffer %d %d\n", __LINE__, output->get_canvas()->get_video_on());
 	output->get_transfers(edl, 
 		output_x1, 
 		output_y1, 
@@ -577,7 +585,12 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 // 			out_h );
 // fflush(stdout);
 
-//printf("VDeviceX11::write_buffer 2\n");
+
+
+// printf("VDeviceX11::write_buffer %d output_channels=%p\n", 
+// __LINE__, 
+// output_channels);
+
 
 
 		if(bitmap->hardware_scaling())
@@ -691,6 +704,8 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	}
 	else
 	{
+//printf("VDeviceX11::write_buffer %d bitmap=%p\n", __LINE__, bitmap);
+//for(int i = 0; i < 100000; i++) bitmap->get_row_pointers()[0][i] = 255;
 		output->get_canvas()->draw_bitmap(bitmap,
 			!device->single_frame,
 			(int)canvas_x1,
@@ -702,6 +717,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 			(int)(canvas_x2 - canvas_x1),
 			(int)(canvas_y2 - canvas_y1),
 			0);
+//printf("VDeviceX11::write_buffer %d bitmap=%p\n", __LINE__, bitmap);
 	}
 
 

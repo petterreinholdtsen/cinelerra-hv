@@ -64,7 +64,8 @@ public:
 		
 	void update_position(int change_type = CHANGE_NONE,
 		int use_slider = 1,
-		int update_slider = 0);
+		int update_slider = 0,
+		int lock_window = 0);
 	void set_inpoint();
 	void set_outpoint();
 	void clear_inpoint();

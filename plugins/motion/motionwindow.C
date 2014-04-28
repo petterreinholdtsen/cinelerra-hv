@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,17 +100,17 @@ void MotionWindow::create_objects()
 		y,
 		&plugin->config.global_block_h));
 
-	add_subwindow(title = new BC_Title(x2, 
-		y, 
-		_("Rotation block size:\n(W/H Percent of image)")));
-	add_subwindow(rotation_block_w = new BlockSize(plugin, 
-		x2 + title->get_w() + 10, 
-		y,
-		&plugin->config.rotation_block_w));
-	add_subwindow(rotation_block_h = new BlockSize(plugin, 
-		x2 + title->get_w() + 10 + rotation_block_w->get_w(), 
-		y,
-		&plugin->config.rotation_block_h));
+// 	add_subwindow(title = new BC_Title(x2, 
+// 		y, 
+// 		_("Rotation block size:\n(W/H Percent of image)")));
+// 	add_subwindow(rotation_block_w = new BlockSize(plugin, 
+// 		x2 + title->get_w() + 10, 
+// 		y,
+// 		&plugin->config.rotation_block_w));
+// 	add_subwindow(rotation_block_h = new BlockSize(plugin, 
+// 		x2 + title->get_w() + 10 + rotation_block_w->get_w(), 
+// 		y,
+// 		&plugin->config.rotation_block_h));
 
 	y += 50;
 	add_subwindow(title = new BC_Title(x1, y, _("Translation search steps:")));
@@ -151,6 +151,23 @@ void MotionWindow::create_objects()
 		x2 + title->get_w() + 10,
 		y));
 
+
+	int y1 = y;
+	y += 50;
+	add_subwindow(title = new BC_Title(x2, y + 10, _("Maximum angle offset:")));
+	add_subwindow(rotate_magnitude = new MotionRMagnitude(plugin, 
+		x2 + title->get_w() + 10, 
+		y));
+
+	y += 40;
+	add_subwindow(title = new BC_Title(x2, y + 10, _("Rotation settling speed:")));
+	add_subwindow(rotate_return_speed = new MotionRReturnSpeed(plugin,
+		x2 + title->get_w() + 10, 
+		y));
+
+
+
+	y = y1;
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block Y:")));
 	add_subwindow(block_y = new MotionBlockY(plugin, 
@@ -163,13 +180,13 @@ void MotionWindow::create_objects()
 		y + 10));
 
 	y += 50;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum absolute offset:")));
+	add_subwindow(title = new BC_Title(x, y + 10, _("Maximum position offset:")));
 	add_subwindow(magnitude = new MotionMagnitude(plugin, 
 		x + title->get_w() + 10, 
 		y));
 
 	y += 40;
-	add_subwindow(title = new BC_Title(x, y + 10, _("Settling speed:")));
+	add_subwindow(title = new BC_Title(x, y + 10, _("Position settling speed:")));
 	add_subwindow(return_speed = new MotionReturnSpeed(plugin,
 		x + title->get_w() + 10, 
 		y));
@@ -209,7 +226,7 @@ void MotionWindow::create_objects()
 		y));
 
 	y += 40;
-	int y1 = y;
+	y1 = y;
 	add_subwindow(title = new BC_Title(x, y, _("Master layer:")));
 	add_subwindow(master_layer = new MasterLayer(plugin, 
 		this,
@@ -484,18 +501,60 @@ int MotionMagnitude::handle_event()
 MotionReturnSpeed::MotionReturnSpeed(MotionMain *plugin, 
 	int x, 
 	int y)
- : BC_IPot(x, 
+ : BC_FPot(x, 
 		y, 
-		(int64_t)plugin->config.return_speed,
-		(int64_t)0,
-		(int64_t)100)
+		(float)plugin->config.return_speed,
+		(float)0,
+		(float)100)
 {
 	this->plugin = plugin;
+	set_precision(1);
 }
 
 int MotionReturnSpeed::handle_event()
 {
-	plugin->config.return_speed = (int)get_value();
+	plugin->config.return_speed = (float)get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+MotionRMagnitude::MotionRMagnitude(MotionMain *plugin, 
+	int x, 
+	int y)
+ : BC_IPot(x, 
+		y, 
+		(int64_t)plugin->config.rotate_magnitude,
+		(int64_t)0,
+		(int64_t)90)
+{
+	this->plugin = plugin;
+}
+
+int MotionRMagnitude::handle_event()
+{
+	plugin->config.rotate_magnitude = (int)get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+MotionRReturnSpeed::MotionRReturnSpeed(MotionMain *plugin, 
+	int x, 
+	int y)
+ : BC_FPot(x, 
+		y, 
+		(float)plugin->config.rotate_return_speed,
+		(float)0,
+		(float)100)
+{
+	this->plugin = plugin;
+	set_precision(1);
+}
+
+int MotionRReturnSpeed::handle_event()
+{
+	plugin->config.rotate_return_speed = (float)get_value();
 	plugin->send_configure_change();
 	return 1;
 }

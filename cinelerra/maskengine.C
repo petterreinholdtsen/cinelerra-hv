@@ -35,12 +35,10 @@
 
 MaskPackage::MaskPackage()
 {
-	apply_mutex = new Condition(1, "MaskPackage::apply_mutex");
 }
 
 MaskPackage::~MaskPackage()
 {
-	delete apply_mutex;
 }
 
 
@@ -136,19 +134,19 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 	}
 }
 
-void MaskUnit::blur_strip(float *val_p, 
-	float *val_m, 
-	float *dst, 
-	float *src, 
+void MaskUnit::blur_strip(double *val_p, 
+	double *val_m, 
+	double *dst, 
+	double *src, 
 	int size,
 	int max)
 {
-	float *sp_p = src;
-	float *sp_m = src + size - 1;
-	float *vp = val_p;
-	float *vm = val_m + size - 1;
-	float initial_p = sp_p[0];
-	float initial_m = sp_m[0];
+	double *sp_p = src;
+	double *sp_m = src + size - 1;
+	double *vp = val_p;
+	double *vm = val_m + size - 1;
+	double initial_p = sp_p[0];
+	double initial_m = sp_m[0];
 
 //printf("MaskUnit::blur_strip %d\n", size);
 	for(int k = 0; k < size; k++)
@@ -174,7 +172,7 @@ void MaskUnit::blur_strip(float *val_p,
 
 	for(int i = 0; i < size; i++)
 	{
-		float sum = val_p[i] + val_m[i];
+		double sum = val_p[i] + val_m[i];
 		CLAMP(sum, 0, max);
 		dst[i] = sum;
 	}
@@ -182,9 +180,11 @@ void MaskUnit::blur_strip(float *val_p,
 
 void MaskUnit::do_feather(VFrame *output,
 	VFrame *input, 
-	float feather, 
-	int start_out, 
-	int end_out)
+	double feather, 
+	int start_y, 
+	int end_y, 
+	int start_x, 
+	int end_x)
 {
 //printf("MaskUnit::do_feather %f\n", feather);
 // Get constants
@@ -292,53 +292,54 @@ void MaskUnit::do_feather(VFrame *output,
 	int frame_w = input->get_w(); \
 	int frame_h = input->get_h(); \
 	int size = MAX(frame_w, frame_h); \
-	float *src = new float[size]; \
-	float *dst = new float[size]; \
-	float *val_p = new float[size]; \
-	float *val_m = new float[size]; \
-	int start_in = start_out - (int)feather; \
-	int end_in = end_out + (int)feather; \
-	if(start_in < 0) start_in = 0; \
-	if(end_in > frame_h) end_in = frame_h; \
-	int strip_size = end_in - start_in; \
+	double *src = new double[size]; \
+	double *dst = new double[size]; \
+	double *val_p = new double[size]; \
+	double *val_m = new double[size]; \
 	type **in_rows = (type**)input->get_rows(); \
 	type **out_rows = (type**)output->get_rows(); \
 	int j; \
  \
 /* printf("DO_FEATHER 1\n"); */ \
-	for(j = 0; j < frame_w; j++) \
+	if(end_x > start_x) \
 	{ \
-/* printf("DO_FEATHER 1.1 %d\n", j); */ \
-		bzero(val_p, sizeof(float) * (end_in - start_in)); \
-		bzero(val_m, sizeof(float) * (end_in - start_in)); \
-		for(int l = 0, k = start_in; k < end_in; l++, k++) \
+		for(j = start_x; j < end_x; j++) \
 		{ \
-			src[l] = (float)in_rows[k][j]; \
-		} \
- \
-		blur_strip(val_p, val_m, dst, src, strip_size, max); \
- \
-		for(int l = start_out - start_in, k = start_out; k < end_out; l++, k++) \
-		{ \
-			out_rows[k][j] = (type)dst[l]; \
+	/* printf("DO_FEATHER 1.1 %d\n", j); */ \
+			bzero(val_p, sizeof(double) * frame_h); \
+			bzero(val_m, sizeof(double) * frame_h); \
+			for(int k = 0; k < frame_h; k++) \
+			{ \
+				src[k] = (double)in_rows[k][j]; \
+			} \
+	 \
+			blur_strip(val_p, val_m, dst, src, frame_h, max); \
+	 \
+			for(int k = 0; k < frame_h; k++) \
+			{ \
+				out_rows[k][j] = (type)dst[k]; \
+			} \
 		} \
 	} \
  \
-	for(j = start_out; j < end_out; j++) \
+ 	if(end_y > start_y) \
 	{ \
-/* printf("DO_FEATHER 2 %d\n", j); */ \
-		bzero(val_p, sizeof(float) * frame_w); \
-		bzero(val_m, sizeof(float) * frame_w); \
-		for(int k = 0; k < frame_w; k++) \
+		for(j = start_y; j < end_y; j++) \
 		{ \
-			src[k] = (float)out_rows[j][k]; \
-		} \
- \
-		blur_strip(val_p, val_m, dst, src, frame_w, max); \
- \
-		for(int k = 0; k < frame_w; k++) \
-		{ \
-			out_rows[j][k] = (type)dst[k]; \
+	/* printf("DO_FEATHER 2 %d\n", j); */ \
+			bzero(val_p, sizeof(double) * frame_w); \
+			bzero(val_m, sizeof(double) * frame_w); \
+			for(int k = 0; k < frame_w; k++) \
+			{ \
+				src[k] = (double)out_rows[j][k]; \
+			} \
+	 \
+			blur_strip(val_p, val_m, dst, src, frame_w, max); \
+	 \
+			for(int k = 0; k < frame_w; k++) \
+			{ \
+				out_rows[j][k] = (type)dst[k]; \
+			} \
 		} \
 	} \
  \
@@ -383,7 +384,8 @@ void MaskUnit::process_package(LoadPackage *package)
 {
 	MaskPackage *ptr = (MaskPackage*)package;
 
-	if(engine->recalculate && ptr->part == RECALCULATE_PART)
+	if(engine->recalculate && 
+		engine->step == DO_MASK)
 	{
 		VFrame *mask;
 		if(engine->feather > 0) 
@@ -396,7 +398,7 @@ SET_TRACE
 		int mask_w = mask->get_w();
 		int mask_h = mask->get_h();
 		int oversampled_package_w = mask_w * OVERSAMPLE;
-		int oversampled_package_h = (ptr->row2 - ptr->row1) * OVERSAMPLE;
+		int oversampled_package_h = (ptr->end_y - ptr->start_y) * OVERSAMPLE;
 //printf("MaskUnit::process_package 1\n");
 
 SET_TRACE
@@ -476,7 +478,7 @@ SET_TRACE
 						+ 3 * tpow2 * invt     * y2 
 						+     tpow3            * y3);
 
-					y -= ptr->row1;
+					y -= ptr->start_y;
 					x *= OVERSAMPLE;
 					y *= OVERSAMPLE;
 
@@ -537,9 +539,9 @@ SET_TRACE
 
 
 #define DOWNSAMPLE(type, temp_type, value) \
-for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
+for(int i = 0; i < ptr->end_y - ptr->start_y; i++) \
 { \
-	type *output_row = (type*)mask->get_rows()[i + ptr->row1]; \
+	type *output_row = (type*)mask->get_rows()[i + ptr->start_y]; \
 	unsigned char **input_rows = (unsigned char**)temp->get_rows() + i * OVERSAMPLE; \
  \
  \
@@ -597,31 +599,10 @@ SET_TRACE
 
 SET_TRACE
 
-	if(ptr->part == RECALCULATE_PART)
-	{
-// The feather could span more than one package so can't do it until
-// all packages are drawn.
-		if(get_package_number() >= engine->get_total_packages() / 2 - 1)
-		{
-			for(int i = engine->get_total_packages() / 2; 
-				i < engine->get_total_packages();
-				i++)
-			{
-				MaskPackage *package = (MaskPackage*)engine->get_package(i);
-				package->apply_mutex->unlock();
-			}
-		}
-
-	}
-
 SET_TRACE
 
-	if(ptr->part == APPLY_PART)
+	if(engine->step == DO_X_FEATHER)
 	{
-//printf("MaskUnit::process_package 2.1\n");
-		ptr->apply_mutex->lock("MaskUnit::process_package");
-		ptr->apply_mutex->unlock();
-//printf("MaskUnit::process_package 2.2\n");
 
 		if(engine->recalculate)
 		{
@@ -629,15 +610,31 @@ SET_TRACE
 			if(engine->feather > 0) do_feather(engine->mask, 
 				engine->temp_mask, 
 				engine->feather, 
-				ptr->row1, 
-				ptr->row2);
-
+				ptr->start_y, 
+				ptr->end_y,
+				0,
+				0);
 		}
 //printf("MaskUnit::process_package 3 %f\n", engine->feather);
+	}
 
+	if(engine->step == DO_Y_FEATHER)
+	{
+		if(engine->recalculate)
+		{
+// Feather polygon
+			if(engine->feather > 0) do_feather(engine->mask, 
+				engine->temp_mask, 
+				engine->feather, 
+				0, 
+				0,
+				ptr->start_x,
+				ptr->end_x);
+		}
+	}
 
-
-
+	if(engine->step == DO_APPLY)
+	{
 // Apply mask
 		int mask_w = engine->mask->get_w();
 
@@ -702,7 +699,7 @@ SET_TRACE
 
 
 //printf("MaskUnit::process_package 1 %d\n", engine->mode);
-		for(int i = ptr->row1; i < ptr->row2; i++)
+		for(int i = ptr->start_y; i < ptr->end_y; i++)
 		{
 			switch(engine->mode)
 			{
@@ -787,8 +784,8 @@ SET_TRACE
 
 
 MaskEngine::MaskEngine(int cpus)
-// : LoadServer(cpus, cpus * OVERSAMPLE * 2)
- : LoadServer(1, OVERSAMPLE * 2)
+ : LoadServer(cpus, cpus * OVERSAMPLE * 2)
+// : LoadServer(1, OVERSAMPLE * 2)
 {
 	mask = 0;
 }
@@ -954,6 +951,13 @@ SET_TRACE
 
 // Run units
 SET_TRACE
+	step = DO_MASK;
+	process_packages();
+	step = DO_Y_FEATHER;
+	process_packages();
+	step = DO_X_FEATHER;
+	process_packages();
+	step = DO_APPLY;
 	process_packages();
 SET_TRACE
 
@@ -968,25 +972,15 @@ SET_TRACE
 	if(division < 1) division = 1;
 
 SET_TRACE
-// Always a multiple of 2 packages exist
-	for(int i = 0; i < get_total_packages() / 2; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		MaskPackage *part1 = (MaskPackage*)get_package(i);
-		MaskPackage *part2 = (MaskPackage*)get_package(i + get_total_packages() / 2);
-		part2->row1 = part1->row1 = division * i;
-		part2->row2 = part1->row2 = division * i + division;
-		part2->row1 = part1->row1 = MIN(output->get_h(), part1->row1);
-		part2->row2 = part1->row2 = MIN(output->get_h(), part1->row2);
-		
-		if(i >= (get_total_packages() / 2) - 1) 
-		{
-			part2->row2 = part1->row2 = output->get_h();
-		}
+		MaskPackage *ptr = (MaskPackage*)get_package(i);
 
-		part2->apply_mutex->lock("MaskEngine::init_packages");
+		ptr->start_y = output->get_h() * i / get_total_packages();
+		ptr->end_y = output->get_h() * (i + 1) / get_total_packages();
 
-		part1->part = RECALCULATE_PART;
-		part2->part = APPLY_PART;
+		ptr->start_x = output->get_w() * i / get_total_packages();
+		ptr->end_x = output->get_w() * (i + 1) / get_total_packages();
 	}
 SET_TRACE
 //printf("MaskEngine::init_packages 2\n");
@@ -1001,4 +995,8 @@ LoadPackage* MaskEngine::new_package()
 {
 	return new MaskPackage;
 }
+
+
+
+
 

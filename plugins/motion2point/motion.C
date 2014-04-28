@@ -367,28 +367,28 @@ int MotionMain2::save_defaults()
 	for(int i = 0; i < TOTAL_POINTS; i++)
 	{
 		sprintf(string, "GLOBAL%d", i);
-		config.global[i] = defaults->update(string, config.global[i]);
+		defaults->update(string, config.global[i]);
 		sprintf(string, "GLOBAL_BLOCK_W%d", i);
-		config.global_block_w[i] = defaults->update(string, config.global_block_w[i]);
+		defaults->update(string, config.global_block_w[i]);
 		sprintf(string, "GLOBAL_BLOCK_H%d", i);
-		config.global_block_h[i] = defaults->update(string, config.global_block_h[i]);
+		defaults->update(string, config.global_block_h[i]);
 		sprintf(string, "BLOCK_X%d", i);
-		config.block_x[i] = defaults->update(string, config.block_x[i]);
+		defaults->update(string, config.block_x[i]);
 		sprintf(string, "BLOCK_Y%d", i);
-		config.block_y[i] = defaults->update(string, config.block_y[i]);
+		defaults->update(string, config.block_y[i]);
 		sprintf(string, "GLOBAL_RANGE_W%d", i);
-		config.global_range_w[i] = defaults->update(string, config.global_range_w[i]);
+		defaults->update(string, config.global_range_w[i]);
 		sprintf(string, "GLOBAL_RANGE_H%d", i);
-		config.global_range_h[i] = defaults->update(string, config.global_range_h[i]);
+		defaults->update(string, config.global_range_h[i]);
 		sprintf(string, "GLOBAL_ORIGIN_X%d", i);
-		config.global_origin_x[i] = defaults->update(string, config.global_origin_x[i]);
+		defaults->update(string, config.global_origin_x[i]);
 		sprintf(string, "GLOBAL_ORIGIN_Y%d", i);
-		config.global_origin_y[i] = defaults->update(string, config.global_origin_y[i]);
+		defaults->update(string, config.global_origin_y[i]);
 		sprintf(string, "DRAW_VECTORS%d", i);
-		config.draw_vectors[i] = defaults->update(string, config.draw_vectors[i]);
+		defaults->update(string, config.draw_vectors[i]);
 	}
 
-	config.global_positions = defaults->update("GLOBAL_POSITIONS", config.global_positions);
+	defaults->update("GLOBAL_POSITIONS", config.global_positions);
 	defaults->update("MAGNITUDE", config.magnitude);
 	defaults->update("RETURN_SPEED", config.return_speed);
 	defaults->update("MODE1", config.action);
@@ -555,7 +555,11 @@ void MotionMain2::scan_motion(int point)
 		total_dx[point],
 		total_dy[point],
 		config.global_origin_x[point],
-		config.global_origin_y[point]);
+		config.global_origin_y[point],
+		0,
+		0,
+		0,
+		0);
 	current_dx[point] = engine->dx_result;
 	current_dy[point] = engine->dy_result;
 
@@ -684,6 +688,17 @@ zoom);
 			interpolation = CUBIC_LINEAR;
 			dx = (float)total_dx[0] / OVERSAMPLE;
 			dy = (float)total_dy[0] / OVERSAMPLE;
+			break;
+		case MotionConfig::TRACK_PIXEL:
+			interpolation = NEAREST_NEIGHBOR;
+			dx = (int)(total_dx[0] / OVERSAMPLE);
+			dy = (int)(total_dy[0] / OVERSAMPLE);
+			break;
+		case MotionConfig::STABILIZE_PIXEL:
+			interpolation = NEAREST_NEIGHBOR;
+			dx = -(int)(total_dx[0] / OVERSAMPLE);
+			dy = -(int)(total_dy[0] / OVERSAMPLE);
+			angle *= -1;
 			break;
 		case MotionConfig::STABILIZE:
 			interpolation = CUBIC_LINEAR;

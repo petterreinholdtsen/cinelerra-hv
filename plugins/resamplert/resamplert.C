@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,13 +109,14 @@ ResampleRTScale::ResampleRTScale(ResampleRTWindow *window,
 	int y)
  : BC_TumbleTextBox(window,
  	plugin->config.scale,
-	0.0001,
-	1000,
+	(float)0.0001,
+	(float)1000,
  	x, 
 	y, 
 	100)
 {
 	this->plugin = plugin;
+	set_increment(0.001);
 }
 
 int ResampleRTScale::handle_event()
@@ -138,20 +139,23 @@ ResampleRTResample::ResampleRTResample(ResampleRT *plugin)
 
 // To get the keyframes to work, resampling is always done in the forward
 // direction with the plugin converting to reverse.
-int ResampleRTResample::read_samples(double *buffer, int64_t start, int64_t len)
+int ResampleRTResample::read_samples(Samples *buffer, 
+	int64_t start, 
+	int64_t len)
 {
-	int64_t position = plugin->source_start;
-
-	if(plugin->get_direction() == PLAY_FORWARD)
-		position += start;
-	else
-		position -= start;
-
-	return plugin->read_samples(buffer,
+	int result = plugin->read_samples(buffer,
 		0,
 		plugin->get_samplerate(),
-		position,
+		plugin->source_start,
 		len);
+
+//printf("ResampleRTResample::read_samples %lld %lld %lld %d\n", start, plugin->source_start, len, result);
+	if(plugin->get_direction() == PLAY_FORWARD)
+		plugin->source_start += len;
+	else
+		plugin->source_start -= len;
+	
+	return result;
 }
 
 
@@ -165,7 +169,7 @@ ResampleRT::ResampleRT(PluginServer *server)
 	resample = 0;
 	need_reconfigure = 1;
 	prev_scale = 0;
-	dest_end = 0;
+	dest_start = -1;
 }
 
 
@@ -174,7 +178,7 @@ ResampleRT::~ResampleRT()
 	delete resample;
 }
 
-const char* ResampleRT::plugin_title() { return N_("Reverse audio"); }
+const char* ResampleRT::plugin_title() { return N_("ResampleRT"); }
 int ResampleRT::is_realtime() { return 1; }
 
 #include "picon_png.h"
@@ -186,7 +190,7 @@ LOAD_CONFIGURATION_MACRO(ResampleRT, ResampleRTConfig)
 
 
 int ResampleRT::process_buffer(int64_t size, 
-	double *buffer,
+	Samples *buffer,
 	int64_t start_position,
 	int sample_rate)
 {
@@ -194,56 +198,43 @@ int ResampleRT::process_buffer(int64_t size,
 
 	load_configuration();
 	
-	int64_t new_dest_end = start_position;
-	if(get_direction() == PLAY_FORWARD)
-		new_dest_end += size;
-	else
-		new_dest_end -= size;
+	
+	if(start_position != dest_start) need_reconfigure = 1;
+	dest_start = start_position;
 
-	if(prev_scale != config.scale ||
-		new_dest_end != dest_end) need_reconfigure = 1;
-
-// Get start position of current samplerate segment in source 
-// by accounting for all previous keyframes
+// Get start position of the input.
+// Sample 0 is the keyframe position
 	if(need_reconfigure)
 	{
-		int64_t total_samples = 0;
-		int64_t current_position = get_source_start();
-		KeyFrame *keyframe = get_prev_keyframe(current_position, 1);
-		int64_t keyframe_position = 0;
-		int64_t segment_samples = 0;
-		do
-		{
-			read_data(keyframe);
-			int64_t new_keyframe_position = edl_to_local(keyframe->position);
-			if(new_keyframe_position == 0) new_keyframe_position = get_source_start();
-			if(keyframe_position == new_keyframe_position ||
-				new_keyframe_position > start_position)
-				break;
-
-			keyframe_position = new_keyframe_position;
-			segment_samples = keyframe_position - current_position;
-			total_samples += (int64_t)(segment_samples * config.scale);
-			current_position = keyframe_position;
-			keyframe = get_next_keyframe(current_position, 1);
-		}while(keyframe && current_position < start_position);
-
 		load_configuration();
-		segment_samples = start_position - keyframe_position;
-		total_samples += (int64_t)(segment_samples * config.scale);
-		source_start = total_samples;
-		dest_start = start_position;
+		int64_t prev_position = edl_to_local(
+			get_prev_keyframe(
+				get_source_position())->position);
+
+		if(prev_position == 0)
+		{
+			prev_position = get_source_start();
+		}
+
+		source_start = (int64_t)((start_position - prev_position) * 
+			config.scale) + prev_position;
+
+		resample->reset();
 		need_reconfigure = 0;
 	}
 
 	resample->resample(buffer,
 		size,
-		1000000.0,
-		(int)(1000000 * config.scale),
-		start_position - dest_start,
-		PLAY_FORWARD);	
+		(int)1000000,
+		(int)(1000000 / config.scale),
+		start_position,
+		get_direction());	
 
-	dest_end = new_dest_end;
+	if(get_direction() == PLAY_FORWARD)
+		dest_start += size;
+	else
+		dest_start -= size;
+
 	return 0;
 }
 

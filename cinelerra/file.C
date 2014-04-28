@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
  */
 
 #include "asset.h"
+#include "bchash.h"
 #include "bcsignals.h"
 #include "byteorder.h"
 #include "cache.inc"
 #include "condition.h"
-#include "edit.h"
 #include "errorbox.h"
 #include "file.h"
 #include "fileac3.h"
@@ -34,7 +34,9 @@
 #include "fileexr.h"
 #include "fileffmpeg.h"
 #include "fileflac.h"
+#include "filefork.h"
 #include "fileogg.h"
+#include "fileserver.h"
 #include "filexml.h"
 #include "filejpeg.h"
 #include "filemov.h"
@@ -49,6 +51,7 @@
 #include "formatwindow.h"
 #include "framecache.h"
 #include "language.h"
+#include "mwindow.h"
 #include "mutex.h"
 #include "pluginserver.h"
 #include "samples.h"
@@ -70,7 +73,6 @@ File::File()
 
 File::~File()
 {
-
 	if(getting_options)
 	{
 		if(format_window) format_window->set_done(0);
@@ -91,9 +93,6 @@ File::~File()
 
 	if(frame_cache) delete frame_cache;
 
-#ifdef USE_FILEFORK
-	delete file_fork;
-#endif
 }
 
 void File::reset_parameters()
@@ -119,6 +118,10 @@ void File::reset_parameters()
 	preferences = 0;
 	playback_subtitle = -1;
 	interpolate_raw = 1;
+	temp_samples_array = 0;
+	temp_frame_array = 0;
+	temp_frame_size = 0;
+	cache_size = 0;
 }
 
 int File::raise_window()
@@ -294,17 +297,13 @@ int File::get_options(BC_WindowBase *parent_window,
 
 
 
-// void File::set_asset(Asset *asset)
-// {
-// 		this->asset->copy_from(asset, 1);
-// }
 
 int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_PROCESSORS, &cpus, sizeof(cpus));
+		file_fork->send_command(FileFork::SET_PROCESSORS, (unsigned char*)&cpus, sizeof(cpus));
 		file_fork->read_result();
 	}
 #endif
@@ -315,12 +314,29 @@ int File::set_processors(int cpus)   // Set the number of cpus for certain codec
 	return 0;
 }
 
+void File::set_cache(int bytes)
+{
+#ifdef USE_FILEFORK
+	if(file_fork)
+	{
+		file_fork->send_command(FileFork::SET_CACHE, 
+			(unsigned char*)&bytes, 
+			sizeof(bytes));
+		file_fork->read_result();
+	}
+#endif
+
+// Set all instances so gets work.
+	this->cache_size = bytes;
+//printf("File::set_cache %d %d\n", __LINE__, cache_size);
+}
+
 int File::set_preload(int64_t size)
 {
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_PRELOAD, &size, sizeof(size));
+		file_fork->send_command(FileFork::SET_PRELOAD, (unsigned char*)&size, sizeof(size));
 		file_fork->read_result();
 	}
 
@@ -335,7 +351,7 @@ void File::set_subtitle(int value)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_SUBTITLE, &value, sizeof(value));
+		file_fork->send_command(FileFork::SET_SUBTITLE, (unsigned char*)&value, sizeof(value));
 		file_fork->read_result();
 	}
 
@@ -348,11 +364,12 @@ void File::set_interpolate_raw(int value)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_INTERPOLATE_RAW, &value, sizeof(value));
+		file_fork->send_command(FileFork::SET_INTERPOLATE_RAW, (unsigned char*)&value, sizeof(value));
 		file_fork->read_result();
 	}
 
 #endif
+
 	this->interpolate_raw = value;
 }
 
@@ -361,7 +378,7 @@ void File::set_white_balance_raw(int value)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_WHITE_BALANCE_RAW, &value, sizeof(value));
+		file_fork->send_command(FileFork::SET_WHITE_BALANCE_RAW, (unsigned char*)&value, sizeof(value));
 		file_fork->read_result();
 	}
 #endif
@@ -374,7 +391,7 @@ void File::set_cache_frames(int value)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_CACHE_FRAMES, &value, sizeof(value));
+		file_fork->send_command(FileFork::SET_CACHE_FRAMES, (unsigned char*)&value, sizeof(value));
 		file_fork->read_result();
 	}
 #endif
@@ -390,7 +407,8 @@ int File::purge_cache()
 	if(file_fork)
 	{
 		file_fork->send_command(FileFork::PURGE_CACHE, 0, 0);
-		return 0;
+		int result = file_fork->read_result();
+		return result;
 	}
 #endif
 
@@ -412,28 +430,74 @@ int File::open_file(Preferences *preferences,
 	int rd, 
 	int wr)
 {
-
+	int result = 0;
 
 	this->preferences = preferences;
 	this->asset->copy_from(asset, 1);
+	this->rd = rd;
+	this->wr = wr;
 	file = 0;
 
 #ifdef USE_FILEFORK
 	if(!is_fork)
 	{
-		file_fork = new FileFork(this);
-		unsigned char buffer[sizeof(Asset) + sizeof(int) * 2)];
-		memcpy(buffer, asset, sizeof(Asset));
-		*(int*)(buffer + sizeof(Asset)) = rd;
-		*(int*)(buffer + sizeof(Asset) + sizeof(int)) = wr;
-		file_fork->send_command(OPEN_FILE, buffer, sizeof(buffer));
-// TODO: get the asset from the fork
-		int result = file_fork->read_result();
+// printf("File::open_file %d file_server=%p rd=%d wr=%d %d\n", 
+// __LINE__, 
+// MWindow::file_server,
+// rd, 
+// wr, 
+// asset->ms_quantization);
+		file_fork = MWindow::file_server->new_filefork();
+//printf("File::open_file %d\n", __LINE__);
+
+// Send the asset
+// Convert to hash table
+		BC_Hash table;
+		asset->save_defaults(&table, "", 1, 1, 1, 1, 1);
+// Convert to string
+		char *string = 0;
+		table.save_string(string);
+		int buffer_size = sizeof(int) * 6 + strlen(string) + 1;
+		unsigned char *buffer = new unsigned char[buffer_size];
+		int offset = 0;
+		*(int*)(buffer + offset) = rd;
+		offset += sizeof(int);
+		*(int*)(buffer + offset) = wr;
+		offset += sizeof(int);
+		*(int*)(buffer + offset) = cpus;
+		offset += sizeof(int);
+		*(int*)(buffer + offset) = cache_size;
+		offset += sizeof(int);
+		*(int*)(buffer + offset) = white_balance_raw;
+		offset += sizeof(int);
+		*(int*)(buffer + offset) = interpolate_raw;
+		offset += sizeof(int);
+		memcpy(buffer + offset, string, strlen(string) + 1);
+//printf("File::open_file %d\n", __LINE__);
+		file_fork->send_command(FileFork::OPEN_FILE, 
+			buffer, 
+			buffer_size);
+		delete [] buffer;
+		delete [] string;
+//printf("File::open_file %d\n", __LINE__);
+
+// Get the updated asset from the fork
+		result = file_fork->read_result();
+//printf("File::open_file %d\n", __LINE__);
+		if(!result)
+		{
+			table.load_string((char*)file_fork->result_data);
+
+			asset->load_defaults(&table, "", 1, 1, 1, 1, 1);
+			this->asset->load_defaults(&table, "", 1, 1, 1, 1, 1);
+		}
+
+//printf("File::open_file %d\n", __LINE__);
 		return result;
 	}
 #endif
 
-// printf("File::open_file %d\n", __LINE__);
+//printf("File::open_file %d this=%p\n", __LINE__, this);
 // sleep(1);
 
 	switch(this->asset->format)
@@ -450,7 +514,7 @@ int File::open_file(Preferences *preferences,
 			}
 
 			char test[16];
-			fread(test, 16, 1, stream);
+			result = fread(test, 16, 1, stream);
 
 			if(FileSndFile::check_sig(this->asset))
 			{
@@ -670,7 +734,7 @@ int File::open_file(Preferences *preferences,
 //asset->dump();
 	}
 
-// printf("File::open_file file=%p %d\n", file, __LINE__);
+//printf("File::open_file %d file=%p\n", __LINE__, file);
 // sleep(1);
 
 	if(file)
@@ -679,19 +743,71 @@ int File::open_file(Preferences *preferences,
 		return FILE_NOT_FOUND;
 }
 
+void File::delete_temp_samples_array()
+{
+
+	if(temp_samples_array)
+	{
+		for(int i = 0; i < asset->channels; i++)
+		{
+			delete temp_samples_array[i];
+		}
+
+		delete [] temp_samples_array;
+		temp_samples_array = 0;
+	}
+}
+
+void File::delete_temp_frame_array()
+{
+	
+	if(temp_frame_array)
+	{
+		for(int i = 0; i < asset->layers; i++)
+		{
+			for(int j = 0; j < temp_frame_size; j++)
+			{
+				delete temp_frame_array[i][j];
+			}
+			delete [] temp_frame_array[i];
+		}
+
+		delete [] temp_frame_array;
+		temp_frame_array = 0;
+		temp_frame_size = 0;
+	}
+}
+
 int File::close_file(int ignore_thread)
 {
+	const int debug = 0;
+
 #ifdef USE_FILEFORK
+	if(debug) printf("File::close_file file=%p file_fork=%p %d\n", file, file_fork, __LINE__);
+
 	if(file_fork)
 	{
-		file_fork->send_command(CLOSE_FILE, 0, 0);
+		file_fork->send_command(FileFork::CLOSE_FILE, 0, 0);
 		file_fork->read_result();
+
+		if(asset && wr)
+		{
+			asset->audio_length = current_sample = *(int64_t*)file_fork->result_data;
+			asset->video_length = current_frame = *(int64_t*)(file_fork->result_data + sizeof(int64_t));
+		}
+
+		if(debug) printf("File::close_file current_sample=%lld current_frame=%lld\n", 
+			__LINE__,
+			current_sample,
+			current_frame);
+
 		delete file_fork;
 		file_fork = 0;
+		
 	}
 #endif
-// printf("File::close_file file=%p %d\n", file, __LINE__);
-// sleep(1);
+
+	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
 
 	if(!ignore_thread)
 	{
@@ -703,11 +819,12 @@ int File::close_file(int ignore_thread)
 	}
 
 
+	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
 	if(file) 
 	{
 // The file's asset is a copy of the argument passed to open_file so the
 // user must copy lengths from the file's asset.
-		if(asset && file->wr)
+		if(asset && wr)
 		{
 			asset->audio_length = current_sample;
 			asset->video_length = current_frame;
@@ -718,12 +835,19 @@ int File::close_file(int ignore_thread)
 		delete file;
 
 	}
+	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
 
+	delete_temp_samples_array();
+	delete_temp_frame_array();
+	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
 
+#ifdef USE_FILEFORK
+	delete file_fork;
+#endif
+	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
 
 	reset_parameters();
-// printf("File::close_file file=%p %d\n", file, __LINE__);
-// sleep(1);
+	if(debug) printf("File::close_file file=%p %d\n", file, __LINE__);
 
 	return 0;
 }
@@ -735,7 +859,7 @@ int File::get_index(char *index_path)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::GET_INDEX, index_path, strlen(index_path));
+		file_fork->send_command(FileFork::GET_INDEX, (unsigned char*)index_path, strlen(index_path) + 1);
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -786,7 +910,9 @@ int File::start_video_thread(int buffer_size,
 		*(int*)(buffer + sizeof(int)) = color_model;
 		*(int*)(buffer + sizeof(int) * 2) = ring_buffers;
 		*(int*)(buffer + sizeof(int) * 3) = compressed;
-		file_fork->send_command(FileFork::START_VIDEO_THREAD, buffer, sizeof(buffer));
+		file_fork->send_command(FileFork::START_VIDEO_THREAD, 
+			buffer, 
+			sizeof(buffer));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -879,8 +1005,9 @@ int File::set_channel(int channel)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
+// Set it locally for get_channel
 		current_channel = channel;
-		file_fork->send_command(FileFork::SET_CHANNEL, &channel, sizeof(channel));
+		file_fork->send_command(FileFork::SET_CHANNEL, (unsigned char*)&channel, sizeof(channel));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -904,9 +1031,9 @@ int File::set_layer(int layer, int is_thread)
 {
 #ifdef USE_FILEFORK
 // thread should only call in the fork
-	if(file_fork && !is_thread)
+	if(!is_fork && !is_thread)
 	{
-		file_fork->send_command(FileFork::SET_LAYER, &layer, sizeof(layer));
+		file_fork->send_command(FileFork::SET_LAYER, (unsigned char*)&layer, sizeof(layer));
 		int result = file_fork->read_result();
 		current_layer = layer;
 		return result;
@@ -1034,7 +1161,7 @@ int File::set_audio_position(int64_t position)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_AUDIO_POSITION, &position, sizeof(position));
+		file_fork->send_command(FileFork::SET_AUDIO_POSITION, (unsigned char*)&position, sizeof(position));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1101,9 +1228,9 @@ int File::set_video_position(int64_t position,
 {
 #ifdef USE_FILEFORK
 // Thread should only call in the fork
-	if(file_fork && !is_thread)
+	if(!is_fork && !is_thread)
 	{
-		file_fork->send_command(FileFork::SET_VIDEO_POSITION, &position, sizeof(position));
+		file_fork->send_command(FileFork::SET_VIDEO_POSITION, (unsigned char*)&position, sizeof(position));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1144,16 +1271,20 @@ int File::write_samples(Samples **buffer, int64_t len)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		int entry_size = buffer[0]->filefork_size();
-		unsigned char fork_buffer[entry_size * asset->channels];
+		int entry_size = Samples::filefork_size();
+		int buffer_size = entry_size * asset->channels + sizeof(int64_t);
+		unsigned char fork_buffer[buffer_size];
 		for(int i = 0; i < asset->channels; i++)
 		{
-			buffer[i]->to_filefork(buffer + entry_size * i);
+			buffer[i]->to_filefork(fork_buffer + entry_size * i);
 		}
+
+		*(int64_t*)(fork_buffer + 
+			entry_size * asset->channels) = len;
 
 		file_fork->send_command(FileFork::WRITE_SAMPLES, 
 			fork_buffer, 
-			entry_size * asset->channels);
+			buffer_size);
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1196,22 +1327,37 @@ int File::write_frames(VFrame ***frames, int len)
 
 	if(file_fork)
 	{
+//PRINT_TRACE
 		int entry_size = frames[0][0]->filefork_size();
-		int fork_buffer[entry_size * asset->layers * len];
-		for(int i = 0; i < asset->channels; i++)
+//PRINT_TRACE
+		unsigned char fork_buffer[entry_size * asset->layers * len + sizeof(int)];
+		for(int i = 0; i < asset->layers; i++)
 		{
 			for(int j = 0; j < len; j++)
 			{
+//printf("File::write_frames %d %lld\n", __LINE__, frames[i][j]->get_number());
 				frames[i][j]->to_filefork(fork_buffer + 
+					sizeof(int) +
 					entry_size * len * i +
 					entry_size * j);
 			}
 		}
 
+		
+//PRINT_TRACE
+// Frames per layer
+		*(int*)fork_buffer = len;
+
+//PRINT_TRACE
+
 		file_fork->send_command(FileFork::WRITE_FRAMES, 
 			fork_buffer, 
-			entry_size * asset->layers * len);
+			sizeof(fork_buffer));
+//PRINT_TRACE
 		int result = file_fork->read_result();
+
+
+//PRINT_TRACE
 		return result;
 	}
 
@@ -1219,6 +1365,7 @@ int File::write_frames(VFrame ***frames, int len)
 #endif // USE_FILEFORK
 
 
+//PRINT_TRACE
 // Store the counters in temps so the filebase can choose to overwrite them.
 	int result;
 	int current_frame_temp = current_frame;
@@ -1226,11 +1373,14 @@ int File::write_frames(VFrame ***frames, int len)
 
 	write_lock->lock("File::write_frames");
 
+//PRINT_TRACE
 	result = file->write_frames(frames, len);
+//PRINT_TRACE
 
 	current_frame = current_frame_temp + len;
 	asset->video_length = video_length_temp + len;
 	write_lock->unlock();
+//PRINT_TRACE
 	return result;
 }
 
@@ -1252,7 +1402,7 @@ int File::write_audio_buffer(int64_t len)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::WRITE_AUDIO_BUFFER, &len, sizeof(len));
+		file_fork->send_command(FileFork::WRITE_AUDIO_BUFFER, (unsigned char*)&len, sizeof(len));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1271,8 +1421,25 @@ int File::write_video_buffer(int64_t len)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::WRITE_VIDEO_BUFFER, &len, sizeof(len));
+// Copy over sequence numbers for background rendering
+//printf("File::write_video_buffer %d\n", __LINE__);
+		int fork_buffer_size = sizeof(int64_t) * (asset->layers * len + 1);
+		unsigned char fork_buffer[fork_buffer_size];
+		*(int64_t*)(fork_buffer) = len;
+		for(int i = 0; i < asset->layers; i++)
+		{
+			for(int j = 0; j < len; j++)
+			{
+				*(int64_t*)(fork_buffer + sizeof(int64_t) * (i * len + j + 1)) = 
+					temp_frame_array[i][j]->get_number();
+			}
+		}
+
+		file_fork->send_command(FileFork::WRITE_VIDEO_BUFFER, 
+			fork_buffer, 
+			fork_buffer_size);
 		int result = file_fork->read_result();
+//printf("File::write_video_buffer %d\n", __LINE__);
 		return result;
 	}
 #endif
@@ -1292,8 +1459,19 @@ Samples** File::get_audio_buffer()
 	if(file_fork)
 	{
 		file_fork->send_command(FileFork::GET_AUDIO_BUFFER, 0, 0);
+		if(file_fork->read_result()) return 0;
+
 // Read parameters for a Samples buffer & create it in File
-		return 0;
+		delete_temp_samples_array();
+		temp_samples_array  = new Samples*[asset->channels];
+		for(int i = 0; i < asset->channels; i++)
+		{
+			temp_samples_array[i] = new Samples;
+			temp_samples_array[i]->from_filefork(file_fork->result_data + 
+				i * Samples::filefork_size());
+		}
+
+		return temp_samples_array;
 	}
 #endif
 
@@ -1307,12 +1485,38 @@ VFrame*** File::get_video_buffer()
 	if(file_fork)
 	{
 		file_fork->send_command(FileFork::GET_VIDEO_BUFFER, 0, 0);
+		if(file_fork->read_result()) return 0;
+
 // Read parameters for a VFrame buffer & create it in File
-		return 0;
+		delete_temp_frame_array();
+
+		temp_frame_size = *(int*)(file_fork->result_data + 
+			file_fork->result_bytes - 
+			sizeof(int));
+		temp_frame_array = new VFrame**[asset->layers];
+		for(int i = 0; i < asset->layers; i++)
+		{
+			temp_frame_array[i] = new VFrame*[temp_frame_size];
+			for(int j = 0; j < temp_frame_size; j++)
+			{
+				temp_frame_array[i][j] = new VFrame;
+				temp_frame_array[i][j]->from_filefork(file_fork->result_data + 
+					i * temp_frame_size * VFrame::filefork_size() +
+					j * VFrame::filefork_size());
+			}
+		}
+		
+		return temp_frame_array;
 	}
 #endif
 
-	if(video_thread) return video_thread->get_video_buffer();
+	if(video_thread) 
+	{
+		VFrame*** result = video_thread->get_video_buffer();
+
+		return result;
+	}
+
 	return 0;
 }
 
@@ -1322,18 +1526,46 @@ int File::read_samples(Samples *samples, int64_t len)
 	if(len < 0) return 0;
 
 	int result = 0;
+	const int debug = 0;
+	if(debug) PRINT_TRACE
 
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::READ_SAMPLES, 0, 0);
+		int buffer_bytes = Samples::filefork_size() + sizeof(int64_t);
+		unsigned char buffer[buffer_bytes];
+		samples->to_filefork(buffer);
+		*(int64_t*)(buffer + Samples::filefork_size()) = len;
+		if(debug) PRINT_TRACE
+		file_fork->send_command(FileFork::READ_SAMPLES, 
+			buffer, 
+			buffer_bytes);
+		if(debug) PRINT_TRACE
 		int result = file_fork->read_result();
+
+// Crashed
+		if(result && !file_fork->child_running())
+		{
+			delete file_fork;
+			result = open_file(preferences, asset, rd, wr);
+		}
+
+
+ 		file_fork->send_command(FileFork::GET_MEMORY_USAGE, 
+ 			0, 
+ 			0);
+ 		memory_usage = file_fork->read_result();
+
+//printf("File::read_samples %lld\n", memory_usage);
+
+
 		return result;
 	}
 #endif
 
+	if(debug) PRINT_TRACE
+
 	double *buffer = samples->get_data();
-//printf("File::read_samples %d %d\n", __LINE__, samples->get_shmid());
 
 	int64_t base_samplerate = asset->sample_rate;
 
@@ -1366,63 +1598,65 @@ int File::read_samples(Samples *samples, int64_t len)
 // 		else
 // // Load directly
 		{
-//printf("File::read_samples 7\n");
+			if(debug) PRINT_TRACE
 			result = file->read_samples(buffer, len);
 
-//printf("File::read_samples 8\n");
+			if(debug) PRINT_TRACE
 			current_sample += len;
 		}
 
 		normalized_sample += len;
 	}
+	if(debug) PRINT_TRACE
+
 	return result;
 }
 
-int File::read_compressed_frame(VFrame *buffer)
-{
-#ifdef USE_FILEFORK
-	if(file_fork)
-	{
-		unsigned char fork_buffer[buffer->filefork_size()];
-		buffer->to_filefork(fork_buffer);
-		file_fork->send_command(FileFork::READ_COMPRESSED_FRAME, 
-			fork_buffer, 
-			buffer->filefork_size());
-// TODO: need to read back new frame parameters & reallocate
-		int result = file_fork->read_result();
-		return result;
-	}
-#endif
+// int File::read_compressed_frame(VFrame *buffer)
+// {
+// #ifdef USE_FILEFORK
+// 	if(file_fork)
+// 	{
+// 		unsigned char fork_buffer[buffer->filefork_size()];
+// 		buffer->to_filefork(fork_buffer);
+// 		file_fork->send_command(FileFork::READ_COMPRESSED_FRAME, 
+// 			fork_buffer, 
+// 			buffer->filefork_size());
+// // TODO: need to read back new frame parameters & reallocate
+// 		int result = file_fork->read_result();
+// 		return result;
+// 	}
+// #endif
+// 
+// 
+// 
+// 
+// 	int result = 1;
+// 	if(file)
+// 		result = file->read_compressed_frame(buffer);
+// 	current_frame++;
+// 	return result;
+// }
 
-
-
-
-	int result = 1;
-	if(file)
-		result = file->read_compressed_frame(buffer);
-	current_frame++;
-	return result;
-}
-
-int64_t File::compressed_frame_size()
-{
-#ifdef USE_FILEFORK
-	if(file_fork)
-	{
-		file_fork->send_command(FileFork::COMPRESSED_FRAME_SIZE, 
-			0, 
-			0);
-		int64_t result = file_fork->read_result();
-		return result;
-	}
-#endif
-
-
-	if(file)
-		return file->compressed_frame_size();
-	else 
-		return 0;
-}
+// int64_t File::compressed_frame_size()
+// {
+// #ifdef USE_FILEFORK
+// 	if(file_fork)
+// 	{
+// 		file_fork->send_command(FileFork::COMPRESSED_FRAME_SIZE, 
+// 			0, 
+// 			0);
+// 		int64_t result = file_fork->read_result();
+// 		return result;
+// 	}
+// #endif
+// 
+// 
+// 	if(file)
+// 		return file->compressed_frame_size();
+// 	else 
+// 		return 0;
+// }
 
 
 
@@ -1431,19 +1665,57 @@ int File::read_frame(VFrame *frame, int is_thread)
 {
 #ifdef USE_FILEFORK
 // is_thread is only true in the fork
-	if(file_fork && !is_thread)
+	if(!is_fork && !is_thread)
 	{
-		unsigned char fork_buffer[buffer->filefork_size()];
-		buffer->to_filefork(fork_buffer);
+		unsigned char fork_buffer[VFrame::filefork_size()];
+
+
+
+		frame->to_filefork(fork_buffer);
 		file_fork->send_command(FileFork::READ_FRAME, 
 			fork_buffer, 
-			buffer->filefork_size());
+			VFrame::filefork_size());
+
 		int result = file_fork->read_result();
+
+
+// Crashed
+		if(result && !file_fork->child_running())
+		{
+			delete file_fork;
+			result = open_file(preferences, asset, rd, wr);
+		}
+		else
+		if(!result && 
+			frame->get_color_model() == BC_COMPRESSED)
+		{
+// Get compressed data from socket
+			if(file_fork->result_bytes > sizeof(int))
+			{
+//printf("File::read_frame %d %d\n", __LINE__, file_fork->result_bytes);
+				frame->allocate_compressed_data(file_fork->result_bytes - sizeof(int));
+				frame->set_compressed_size(file_fork->result_bytes - sizeof(int));
+				memcpy(frame->get_data(), 
+					file_fork->result_data + sizeof(int),
+					file_fork->result_bytes - sizeof(int));
+			}
+			else
+// Get compressed data size
+			{
+//printf("File::read_frame %d %d\n", __LINE__, *(int*)file_fork->result_data);
+				frame->set_compressed_size(*(int*)file_fork->result_data);
+			}
+		}
+
+		file_fork->send_command(FileFork::GET_MEMORY_USAGE, 
+			0, 
+			0);
+		memory_usage = file_fork->read_result();
+
 		return result;
 	}
 #endif
 
-//printf("File::read_frame %d %d\n", __LINE__, frame->get_shmid());
 
 
 	if(video_thread && !is_thread) return video_thread->read_frame(frame);
@@ -1454,14 +1726,12 @@ int File::read_frame(VFrame *frame, int is_thread)
 		int advance_position = 1;
 
 // Test cache
-//printf("File::read_frame %d use_cache=%d\n", __LINE__, use_cache);
 		if(use_cache &&
 			frame_cache->get_frame(frame,
 				current_frame,
 				current_layer,
 				asset->frame_rate))
 		{
-//printf("File::read_frame %d\n", __LINE__);
 // Can't advance position if cache used.
 			advance_position = 0;
 		}
@@ -1472,7 +1742,6 @@ int File::read_frame(VFrame *frame, int is_thread)
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
-//printf("File::read_frame %d\n", __LINE__);
 
 // Can't advance position here because it needs to be added to cache
 			if(temp_frame)
@@ -1533,7 +1802,6 @@ int File::read_frame(VFrame *frame, int is_thread)
 			asset->frame_rate,
 			1,
 			0);
-// frame->dump_params();
 
 		if(advance_position) current_frame++;
 		return 0;
@@ -1542,18 +1810,37 @@ int File::read_frame(VFrame *frame, int is_thread)
 		return 1;
 }
 
-int File::can_copy_from(Edit *edit, int64_t position, int output_w, int output_h)
+int File::can_copy_from(Asset *asset, 
+	int64_t position, 
+	int output_w, 
+	int output_h)
 {
-	if(!edit->asset) return 0;
+	if(!asset) return 0;
 
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		unsigned char fork_buffer[sizeof(Asset)];
-		memcpy(fork_buffer, edit->asset, sizeof(Asset));
+		FileXML xml;
+		asset->write(&xml, 1, "");
+		xml.terminate_string();
+		int buffer_size = strlen(xml.string) + 1 + 
+			sizeof(int64_t) +
+			sizeof(int) + 
+			sizeof(int);
+		unsigned char *buffer = new unsigned char[buffer_size];
+		*(int64_t*)(buffer) = position;
+		*(int*)(buffer + sizeof(int64_t)) = output_w;
+		*(int*)(buffer + sizeof(int64_t) + sizeof(int)) = output_h;
+		memcpy(buffer + 
+			sizeof(int64_t) +
+			sizeof(int) + 
+			sizeof(int), 
+			xml.string, 
+			strlen(xml.string) + 1);
+
 		file_fork->send_command(FileFork::CAN_COPY_FROM, 
-			fork_buffer, 
-			sizeof(Asset));
+			buffer, 
+			buffer_size);
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1562,9 +1849,9 @@ int File::can_copy_from(Edit *edit, int64_t position, int output_w, int output_h
 
 	if(file)
 	{
-		return edit->asset->width == output_w &&
-			edit->asset->height == output_h &&
-			file->can_copy_from(edit->asset, position);
+		return asset->width == output_w &&
+			asset->height == output_h &&
+			file->can_copy_from(asset, position);
 	}
 	else
 		return 0;
@@ -1880,6 +2167,10 @@ int File::get_best_colormodel(Asset *asset, int driver)
 		case FILE_TGA_LIST:
 			return FileTGA::get_best_colormodel(asset, driver);
 			break;
+		
+		case FILE_CR2:
+			return FileCR2::get_best_colormodel(asset, driver);
+			break;
 	}
 
 	return BC_RGB888;
@@ -1891,9 +2182,11 @@ int File::colormodel_supported(int colormodel)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
+		unsigned char buffer[sizeof(int)];
+		*(int*)buffer = colormodel;
 		file_fork->send_command(FileFork::COLORMODEL_SUPPORTED, 
-			0, 
-			0);
+			buffer, 
+			sizeof(int));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1911,13 +2204,18 @@ int64_t File::get_memory_usage()
 {
 	int64_t result = 0;
 #ifdef USE_FILEFORK
-	if(file_fork)
-	{
-		file_fork->send_command(FileFork::GET_MEMORY_USAGE, 
-			0, 
-			0);
-		result = file_fork->read_result();
-	}
+
+
+ 	if(file_fork)
+ 	{
+// Return a precalculated value so it doesn't block.
+		return memory_usage;
+
+// 		file_fork->send_command(FileFork::GET_MEMORY_USAGE, 
+// 			0, 
+// 			0);
+// 		result = file_fork->read_result();
+ 	}
 #endif
 
 

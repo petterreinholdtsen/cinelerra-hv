@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ class ResampleRTResample : public Resample
 {
 public:
 	ResampleRTResample(ResampleRT *plugin);
-	int read_samples(double *buffer, int64_t start, int64_t len);
+	int read_samples(Samples *buffer, int64_t start, int64_t len);
 	ResampleRT *plugin;
 };
 
@@ -96,7 +96,7 @@ public:
 	void update_gui();
 	int is_realtime();
 	int process_buffer(int64_t size, 
-		double *buffer,
+		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
 	void render_stop();

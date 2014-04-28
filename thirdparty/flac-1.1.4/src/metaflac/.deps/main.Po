@@ -1,12 +1,12 @@
-main.o: main.c ../../config.h operations.h options.h \
+main.o main.o: main.c ../../config.h operations.h options.h \
   ../../include/FLAC/format.h ../../include/FLAC/export.h \
   ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
   /usr/include/features.h /usr/include/sys/cdefs.h \
   /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-32.h /usr/include/stdint.h \
+  /usr/include/gnu/stubs-64.h /usr/include/stdint.h \
   /usr/include/bits/wchar.h ../../include/share/getopt.h \
   /usr/include/locale.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
   /usr/include/bits/locale.h
 
 ../../config.h:
@@ -31,7 +31,7 @@ options.h:
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-32.h:
+/usr/include/gnu/stubs-64.h:
 
 /usr/include/stdint.h:
 
@@ -41,6 +41,6 @@ options.h:
 
 /usr/include/locale.h:
 
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
 
 /usr/include/bits/locale.h:

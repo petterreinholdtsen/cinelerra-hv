@@ -120,13 +120,20 @@ int FrameCache::get_frame(VFrame *frame,
 // 				0,
 // 				result->data->get_w(),
 // 				frame->get_w());
+
+
 			frame->copy_from(result->data);
+
+
 // This would have copied the color matrix for interpolate, but
 // required the same plugin stack as the reader.
 //			frame->copy_stacks(result->data);
 		}
 		result->age = get_age();
 	}
+
+
+
 
 	lock->unlock();
 	if(result) return 1;

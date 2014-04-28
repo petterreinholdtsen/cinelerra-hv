@@ -192,24 +192,17 @@ void MWindowGUI::get_scrollbars()
 
 void MWindowGUI::create_objects()
 {
-SET_TRACE
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	
-SET_TRACE
 
 	cursor = 0;
 	add_subwindow(mainmenu = new MainMenu(mwindow, this));
-SET_TRACE
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
-SET_TRACE
 	mwindow->theme->draw_mwindow_bg(this);
-SET_TRACE
 	mainmenu->create_objects();
-SET_TRACE
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
-SET_TRACE
 
 	add_subwindow(timebar = new MTimeBar(mwindow, 
 		this,
@@ -218,26 +211,20 @@ SET_TRACE
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h));
 	timebar->create_objects();
-SET_TRACE
 
 	add_subwindow(patchbay = new PatchBay(mwindow, this));
 	patchbay->create_objects();
-SET_TRACE
 
 	get_scrollbars();
 
-SET_TRACE
 	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
 	canvas->create_objects();
-SET_TRACE
 
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));
 	zoombar->create_objects();
-SET_TRACE
 
 	add_subwindow(statusbar = new StatusBar(mwindow, this));
 	statusbar->create_objects();
-SET_TRACE
 
 	add_subwindow(mainclock = new MainClock(mwindow, 
 		mwindow->theme->mclock_x,
@@ -245,29 +232,23 @@ SET_TRACE
 		mwindow->theme->mclock_w));
 	mainclock->update(0);
 
-SET_TRACE
 
 	cursor = new MainCursor(mwindow, this);
 	cursor->create_objects();
-SET_TRACE
 
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 	edit_menu->create_objects();
-SET_TRACE
 
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
 	plugin_menu->create_objects();
-SET_TRACE
 
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
 	keyframe_menu->create_objects();
 
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 	transition_menu->create_objects();
-SET_TRACE
 
 	canvas->activate();
-SET_TRACE
 }
 
 void MWindowGUI::update_title(char *path)
@@ -347,6 +328,7 @@ void MWindowGUI::update(int scrollbars,
 	if(buttonbar) mbuttons->update();
 
 // Can't age if the cache called this to draw missing picons
+// or the GUI is updating the status of the draw toggle.
 	if(canvas != 2 && canvas != 3)
 		mwindow->age_caches();
 }

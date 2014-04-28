@@ -111,6 +111,7 @@ int AudioDevice::read_buffer(Samples **input,
 	int result = 0;
 	double *input_channel;
 
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 
 
 	record_timer->update();
@@ -147,6 +148,7 @@ int AudioDevice::read_buffer(Samples **input,
 	}
 
 
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 
 	int got_it = 0;
 	int fragment_size = samples * frame;
@@ -165,13 +167,17 @@ int AudioDevice::read_buffer(Samples **input,
 		char *input_buffer = this->input_buffer[output_buffer_num];
 
 		int *input_buffer_size = &this->buffer_size[output_buffer_num];
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 
 
 // No data.  Test current buffer for data
 		if(!*input_buffer_size)
 		{
+// Get the reader thread to sleep to let us access the mutex
 			read_waiting = 1;
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 			buffer_lock->lock("AudioDevice::read_buffer 1");
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 			read_waiting = 0;
 			input_buffer = this->input_buffer[thread_buffer_num];
 
@@ -195,6 +201,10 @@ int AudioDevice::read_buffer(Samples **input,
 			buffer_lock->unlock();
 
 		}
+
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
+
+
 
 
 // Transfer data
@@ -278,7 +288,9 @@ int AudioDevice::read_buffer(Samples **input,
 			fragment_size -= subfragment_size;
 			*input_buffer_size -= subfragment_size;
 		}
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 	}
+//printf("AudioDevice::read_buffer %d\n", __LINE__);
 
 
 
@@ -297,7 +309,8 @@ void AudioDevice::run_input()
 
 	while(is_recording)
 	{
-		if(read_waiting) usleep(1);
+		if(read_waiting) usleep(1000);
+//printf("AudioDevice::run_input %d\n", __LINE__);
 		buffer_lock->lock("AudioDevice::run_input 1");
 
 // Get available input buffer
@@ -326,6 +339,7 @@ void AudioDevice::run_input()
 
 		}
 		buffer_lock->unlock();
+//printf("AudioDevice::run_input %d\n", __LINE__);
 		polling_lock->unlock();
 	}
 }

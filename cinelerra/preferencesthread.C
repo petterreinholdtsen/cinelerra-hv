@@ -340,7 +340,11 @@ PreferencesWindow::~PreferencesWindow()
 {
 	lock_window("PreferencesWindow::~PreferencesWindow");
 	delete category;
+
+
 	if(dialog) delete dialog;
+
+
 	for(int i = 0; i < categories.total; i++)
 		delete categories.values[i];
 	unlock_window();
@@ -350,8 +354,9 @@ void PreferencesWindow::create_objects()
 {
 	BC_Button *button;
 
-	lock_window("PreferencesWindow::create_objects");
 
+
+	lock_window("PreferencesWindow::create_objects");
 
 	mwindow->theme->draw_preferences_bg(this);
 	flash();
@@ -388,6 +393,7 @@ void PreferencesWindow::create_objects()
 	add_subwindow(new PreferencesCancel(mwindow, thread));
 
 	set_current_dialog(thread->current_dialog);
+
 	show_window();
 	unlock_window();
 }
@@ -426,8 +432,9 @@ int PreferencesWindow::set_current_dialog(int number)
 		category_button[i]->draw_face();
 
 // Copy face to background for next button's overlap.
-// Still can't to state changes right.
+// Still can't do state changes right.
 	}
+
 
 	switch(number)
 	{
@@ -458,6 +465,8 @@ int PreferencesWindow::set_current_dialog(int number)
 		dialog->flash();
 		dialog->create_objects();
 	}
+
+
 	return 0;
 }
 
@@ -499,7 +508,8 @@ int PreferencesButton::handle_event()
 
 
 
-PreferencesDialog::PreferencesDialog(MWindow *mwindow, PreferencesWindow *pwindow)
+PreferencesDialog::PreferencesDialog(MWindow *mwindow, 
+	PreferencesWindow *pwindow)
  : BC_SubWindow(10, 
  	40, 
 	pwindow->get_w() - 20, 
@@ -620,3 +630,7 @@ SET_TRACE
 SET_TRACE
 	return 1;
 }
+
+
+
+

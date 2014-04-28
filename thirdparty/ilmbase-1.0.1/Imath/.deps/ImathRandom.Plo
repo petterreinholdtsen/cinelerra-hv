@@ -1,8 +1,8 @@
-ImathRandom.lo: ImathRandom.cpp ImathRandom.h /usr/include/stdlib.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
+ImathRandom.lo ImathRandom.o: ImathRandom.cpp ImathRandom.h \
+  /usr/include/stdlib.h /usr/include/features.h /usr/include/sys/cdefs.h \
   /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-32.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
+  /usr/include/gnu/stubs-64.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
   /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
   /usr/include/endian.h /usr/include/bits/endian.h /usr/include/xlocale.h \
   /usr/include/sys/types.h /usr/include/bits/types.h \
@@ -13,10 +13,9 @@ ImathRandom.lo: ImathRandom.cpp ImathRandom.h /usr/include/stdlib.h \
   /usr/include/alloca.h /usr/include/math.h /usr/include/bits/huge_val.h \
   /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h \
   /usr/include/bits/inf.h /usr/include/bits/nan.h \
-  /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h \
-  /usr/include/bits/mathinline.h ImathInt64.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/limits.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/syslimits.h \
+  /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h ImathInt64.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/syslimits.h \
   /usr/include/limits.h /usr/include/bits/posix1_lim.h \
   /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
   /usr/include/bits/posix2_lim.h /usr/include/bits/xopen_lim.h \
@@ -34,9 +33,9 @@ ImathRandom.h:
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-32.h:
+/usr/include/gnu/stubs-64.h:
 
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
 
 /usr/include/bits/waitflags.h:
 
@@ -86,13 +85,11 @@ ImathRandom.h:
 
 /usr/include/bits/mathcalls.h:
 
-/usr/include/bits/mathinline.h:
-
 ImathInt64.h:
 
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/limits.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/limits.h:
 
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/syslimits.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/syslimits.h:
 
 /usr/include/limits.h:
 

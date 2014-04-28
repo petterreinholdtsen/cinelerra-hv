@@ -464,11 +464,12 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 // Case of no picture coding extension
 	if(video->repeat_count < 0) video->repeat_count = 0;
 
-	while(1)
+// Stop search after this many start codes
+	int count = 0x1000;
+	while(count)
 	{
 /* look for startcode */
     	code = mpeg3bits_next_startcode(vstream);
-
 
 		if(mpeg3bits_eof(vstream)) return 1;
 
@@ -502,6 +503,8 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
     		default:
     			break;
     	}
+
+		count--;
  	}
 
 

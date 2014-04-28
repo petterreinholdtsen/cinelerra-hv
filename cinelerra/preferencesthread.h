@@ -92,6 +92,10 @@ public:
 	
 	virtual void create_objects() { };
 	virtual int draw_framerate() { return 0; };
+
+
+
+
 	PreferencesWindow *pwindow;
 	MWindow *mwindow;
 	Preferences *preferences;

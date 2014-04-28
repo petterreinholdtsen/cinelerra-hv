@@ -190,8 +190,6 @@ static void error_callback(const FLAC__StreamDecoder *decoder,
 int FileFLAC::open_file(int rd, int wr)
 {
 	int result = 0;
-	this->rd = rd;
-	this->wr = wr;
 
 	if(rd)
 	{

@@ -221,7 +221,7 @@ if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
 		else
 		{
 			ffmpeg_lock->unlock();
-printf("FileFFMPEG::open_file %d\n", __LINE__);
+if(debug) printf("FileFFMPEG::open_file %d\n", __LINE__);
 			return 1;
 		}
 if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
@@ -313,12 +313,12 @@ decoder_context->codec_id);
 		else
 		{
 			ffmpeg_lock->unlock();
-printf("FileFFMPEG::open_file %d\n", __LINE__);
+if(debug) printf("FileFFMPEG::open_file %d\n", __LINE__);
 			return 1;
 		}
 	}
 
-printf("FileFFMPEG::open_file result=%d\n", result);
+if(debug) printf("FileFFMPEG::open_file result=%d\n", result);
 	ffmpeg_lock->unlock();
 	return result;
 }
@@ -431,7 +431,14 @@ int FileFFMPEG::read_frame(VFrame *frame)
 	AVStream *stream = ((AVFormatContext*)ffmpeg_file_context)->streams[video_index];
 	AVCodecContext *decoder_context = stream->codec;
 
-//printf("FileFFMPEG::read_frame\n");
+
+// if(file->current_frame == 100) 
+// {
+// printf("FileFFMPEG::read_frame %d fake crash\n", __LINE__);
+// 	exit(1);
+// }
+
+
 //dump_context(stream->codec);
 	if(first_frame)
 	{
@@ -470,6 +477,10 @@ int FileFFMPEG::read_frame(VFrame *frame)
 
 #define SEEK_THRESHOLD 16
 
+// printf("FileFFMPEG::read_frame %d current_frame=%lld file->current_frame=%lld\n", 
+// __LINE__, 
+// current_frame,
+// file->current_frame);
 	if(current_frame != file->current_frame &&
 		(file->current_frame < current_frame ||
 		file->current_frame > current_frame + SEEK_THRESHOLD))
@@ -493,7 +504,6 @@ int FileFFMPEG::read_frame(VFrame *frame)
 		current_frame = file->current_frame - 1;
 	}
 
-//sleep(1);
 	int got_it = 0;
 // Read frames until we catch up to the current position.
 // 	if(current_frame >= file->current_frame - SEEK_THRESHOLD &&
@@ -554,7 +564,7 @@ int FileFFMPEG::read_frame(VFrame *frame)
 						packet.size);
 //printf("FileFFMPEG::read_frame %d result=%d\n", __LINE__, result);
 					if(((AVFrame*)ffmpeg_frame)->data[0] && got_picture) got_it = 1;
-//printf("FileFFMPEG::read_frame result=%d got_it=%d\n", result, got_it);
+//printf("FileFFMPEG::read_frame %d result=%d got_it=%d\n", __LINE__, result, got_it);
 				}
 			}
 		}
@@ -562,6 +572,11 @@ int FileFFMPEG::read_frame(VFrame *frame)
 		if(got_it) current_frame++;
 	}
 //PRINT_TRACE
+// printf("FileFFMPEG::read_frame %d current_frame=%lld file->current_frame=%lld got_it=%d\n", 
+// __LINE__, 
+// current_frame,
+// file->current_frame,
+// got_it);
 
 // Convert colormodel
 	if(got_it)
@@ -650,6 +665,7 @@ int FileFFMPEG::read_samples(double *buffer, int64_t len)
 // decode_start,
 // decode_end);
 
+if(debug) PRINT_TRACE
 // Seek occurred
 	if(decode_start != decode_end)
 	{
@@ -667,7 +683,7 @@ int FileFFMPEG::read_samples(double *buffer, int64_t len)
 		decode_end = decode_start;
 	}
 
-//PRINT_TRACE
+if(debug) PRINT_TRACE
 	int got_it = 0;
 	int accumulation = 0;
 // Read frames until the requested range is decoded.
@@ -742,7 +758,7 @@ if(debug) PRINT_TRACE
 		file->current_channel,
 		len);
 
-if(debug) PRINT_TRACE
+if(debug) printf("FileFFMPEG::read_samples %d %d\n", __LINE__, error);
 	current_sample += len;
 	ffmpeg_lock->unlock();
 	return error;

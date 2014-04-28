@@ -7,7 +7,7 @@
 
 #define OVERRIDE_ALPHA
 #define USE_INTERLACE
-//#define SWAP_FIELDS
+#define SWAP_FIELDS
 #define FIELD_OFFSET1 3
 //#define FIELD_OFFSET1 1
 #define MONOCHROME

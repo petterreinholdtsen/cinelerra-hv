@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -590,25 +589,25 @@ void MWindow::insert(double position,
 // For clipboard pasting make the new edl use a separate session 
 // from the master EDL.  Then it can be resampled to the master rates.
 // For splice, overwrite, and dragging need same session to get the assets.
-	EDL edl(parent_edl);
+	EDL *edl = new EDL(parent_edl);
 	ArrayList<EDL*> new_edls;
 	uint32_t load_flags = LOAD_ALL;
 
 
-	new_edls.append(&edl);
-	edl.create_objects();
+	new_edls.append(edl);
+	edl->create_objects();
 
 
 
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
-	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
-	if(!edl.session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
+	if(!edl->session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
+	if(!edl->session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
 
-	edl.load_xml(file, load_flags);
+	edl->load_xml(file, load_flags);
 
 
-//printf("MWindow::insert %f\n", edl.local_session->clipboard_length);
+//printf("MWindow::insert %f\n", edl->local_session->clipboard_length);
 
 
 
@@ -623,6 +622,7 @@ void MWindow::insert(double position,
 // vwindow->edl->local_session->in_point,
 // vwindow->edl->local_session->out_point);
 	new_edls.remove_all();
+	edl->Garbage::remove_user();
 //printf("MWindow::insert 6 %p\n", vwindow->get_edl());
 }
 
@@ -1368,12 +1368,13 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	ArrayList<Track*> destination_tracks;
 	int need_new_tracks = 0;
 
+//PRINT_TRACE
 	if(!new_edls->total) return 0;
 
-//printf("MWindow::paste_edls %d\n", __LINE__);
+//PRINT_TRACE
 	double original_length = edl->tracks->total_playable_length();
 	double original_preview_end = edl->local_session->preview_end;
-SET_TRACE
+//PRINT_TRACE
 
 // Delete current project
 	if(load_mode == LOADMODE_REPLACE ||
@@ -1412,7 +1413,7 @@ SET_TRACE
 	}
 
 
-SET_TRACE
+//PRINT_TRACE
 
 // Create new tracks in master EDL
 	if(load_mode == LOADMODE_REPLACE || 
@@ -1454,7 +1455,7 @@ SET_TRACE
 		load_mode == LOADMODE_PASTE ||
 		load_mode == LOADMODE_NESTED)
 	{
-SET_TRACE
+//PRINT_TRACE
 
 // The point of this is to shift forward labels after the selection so they can
 // then be shifted back to their original locations without recursively
@@ -1474,9 +1475,10 @@ SET_TRACE
 				destination_tracks.append(current);
 			}
 		}
-SET_TRACE
+//PRINT_TRACE
 
 	}
+//PRINT_TRACE
 
 
 
@@ -1503,7 +1505,7 @@ SET_TRACE
 
 
 
-SET_TRACE
+//PRINT_TRACE
 
 // Convert EDL to master rates
 		new_edl->resample(new_edl->session->sample_rate, 
@@ -1512,7 +1514,7 @@ SET_TRACE
 		new_edl->resample(new_edl->session->frame_rate, 
 			edl->session->frame_rate, 
 			TRACK_VIDEO);
-SET_TRACE
+//PRINT_TRACE
 
 
 
@@ -1526,7 +1528,7 @@ SET_TRACE
 		}
 // Capture index file status from mainindex test
 		edl->update_assets(new_edl);
-SET_TRACE
+//PRINT_TRACE
 
 
 
@@ -1568,7 +1570,7 @@ SET_TRACE
 
 
 
-SET_TRACE
+//PRINT_TRACE
 
 
 // Insert edl
@@ -1587,7 +1589,7 @@ SET_TRACE
 					current_position,
 					edl_length,
 					edit_labels);
-SET_TRACE
+//PRINT_TRACE
 
 			for(Track *new_track = new_edl->tracks->first; 
 				new_track; 
@@ -1632,13 +1634,13 @@ SET_TRACE
 							break;
 					}
 
-SET_TRACE
+//PRINT_TRACE
 					track->insert_track(new_track, 
 						current_position, 
 						replace_default,
 						edit_plugins,
 						edl_length);
-SET_TRACE
+//PRINT_TRACE
 				}
 
 // Get next destination track
@@ -1698,7 +1700,7 @@ SET_TRACE
 // Don't save a backup after loading since the loaded file is on disk already.
 
 
-//printf("MWindow::paste_edls %d\n", __LINE__);
+//PRINT_TRACE
 	return 0;
 }
 
@@ -1852,6 +1854,42 @@ void MWindow::paste_video_transition()
 	sync_parameters(CHANGE_EDL);
 	restart_brender();
 	gui->update(0, 1, 0, 0, 0, 0, 0);
+}
+
+void MWindow::shuffle_edits()
+{
+	gui->lock_window("MWindow::shuffle_edits 1");
+
+	undo->update_undo_before();
+	double start = edl->local_session->get_selectionstart();
+	double end = edl->local_session->get_selectionend();
+
+	edl->tracks->shuffle_edits(start, end);
+
+	save_backup();
+	undo->update_undo_after(_("shuffle edits"), LOAD_EDITS | LOAD_TIMEBAR);
+
+	sync_parameters(CHANGE_EDL);
+	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->unlock_window();
+}
+
+void MWindow::align_edits()
+{
+	gui->lock_window("MWindow::align_edits 1");
+
+	undo->update_undo_before();
+	double start = edl->local_session->get_selectionstart();
+	double end = edl->local_session->get_selectionend();
+
+	edl->tracks->align_edits(start, end);
+
+	save_backup();
+	undo->update_undo_after(_("align edits"), LOAD_EDITS | LOAD_TIMEBAR);
+
+	sync_parameters(CHANGE_EDL);
+	gui->update(0, 1, 1, 0, 0, 0, 0);
+	gui->unlock_window();
 }
 
 void MWindow::set_edit_length(double length)

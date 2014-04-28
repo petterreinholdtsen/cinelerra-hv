@@ -167,11 +167,11 @@ void BC_Texture::create_texture(int w, int h, int colormodel)
 			texture_w,
 			texture_h,
 			texture_components);
-printf("VFrame::new_texture created texture_id=%d window_id=%d w=%d h=%d\n", 
-texture_id,
-window_id,
-texture_w,
-texture_h);
+// printf("BC_Texture::new_texture created texture_id=%d window_id=%d w=%d h=%d\n", 
+// texture_id,
+// window_id,
+// texture_w,
+// texture_h);
 	}
 	else
 	{

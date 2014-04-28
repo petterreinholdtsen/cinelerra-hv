@@ -77,14 +77,14 @@ public:
 // Reallocate a frame without deleting the class
 	int reallocate(
 		unsigned char *data,   // Data if shared
-		int shmid,             // shmid if IPC
+		int shmid,             // shmid if IPC  -1 if not
 		long y_offset,         // plane offsets if shared YUV
 		long u_offset,
 		long v_offset,
 		int w, 
 		int h, 
 		int color_model, 
-		long bytes_per_line);
+		long bytes_per_line);        // -1 if unused
 
 	void set_memory(unsigned char *data, 
 		int shmid,
@@ -151,12 +151,14 @@ public:
 
 
 	static int calculate_bytes_per_pixel(int colormodel);
+// Get size + 4 for assembly language
 	static long calculate_data_size(int w, 
 		int h, 
 		int bytes_per_line = -1, 
 		int color_model = BC_RGB888);
-// Get size of uncompressed frame buffer
+// Get size of uncompressed frame buffer without extra 4 bytes
 	long get_data_size();
+
 	void rotate270();
 	void rotate90();
 	void flip_vert();
@@ -314,10 +316,10 @@ public:
 	void clear_stacks();
 
 	void dump_stacks();
-
+	void dump();
 
 	void dump_params();
-	int filefork_size();
+	static int filefork_size();
 
 	void to_filefork(unsigned char *buffer);
 

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,6 +109,10 @@ public:
 		int edit_plugins,
 // Pad pasted sections to a minimum of this length.
 		double edl_length);
+	void shuffle_edits(double start, double end, int first_track);
+	void align_edits(double start, 
+		double end, 
+		ArrayList<double> *times);
 // Optimize editing
 	void optimize();
 	int is_muted(int64_t position, int direction);  // Test muting status

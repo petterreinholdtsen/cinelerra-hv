@@ -357,19 +357,17 @@ void cmodel_transfer(unsigned char **output_rows,
 		in_x, in_y, in_x + in_w, in_y + in_h,
 		out_x, out_y, out_x + out_w, out_y + out_h);
 
-/*
- * printf("cmodel_transfer 1 %d %d %d,%d %d,%d %d,%d %d,%d\n", 
- * in_colormodel, 
- * out_colormodel, 
- * out_x, 
- * out_y, 
- * out_w, 
- * out_h, 
- * in_x, 
- * in_y, 
- * in_w, 
- * in_h);
- */
+// printf("cmodel_transfer 1 %d %d %d,%d %d,%d %d,%d %d,%d\n", 
+// in_colormodel, 
+// out_colormodel, 
+// out_x, 
+// out_y, 
+// out_w, 
+// out_h, 
+// in_x, 
+// in_y, 
+// in_w, 
+// in_h);
 
 
 #define PERMUTATION_VALUES \

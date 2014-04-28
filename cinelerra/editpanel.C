@@ -1151,7 +1151,9 @@ int ArrowButton::handle_event()
 {
 	update(1);
 	panel->ibeam->update(0);
-	mwindow->set_editing_mode(EDITING_ARROW);
+	mwindow->set_editing_mode(EDITING_ARROW, 
+		!panel->is_mwindow, 
+		panel->is_mwindow);
 // Nothing after this
 	return 1;
 }
@@ -1176,7 +1178,9 @@ int IBeamButton::handle_event()
 {
 	update(1);
 	panel->arrow->update(0);
-	mwindow->set_editing_mode(EDITING_IBEAM);
+	mwindow->set_editing_mode(EDITING_IBEAM, 
+		!panel->is_mwindow, 
+		panel->is_mwindow);
 // Nothing after this
 	return 1;
 }

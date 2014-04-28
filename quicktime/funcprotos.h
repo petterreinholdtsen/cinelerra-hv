@@ -501,6 +501,7 @@ void quicktime_copy_vbr_float(quicktime_vbr_t *vbr,
 
 // Frame caching for keyframed video.
 quicktime_cache_t* quicktime_new_cache();
+void quicktime_cache_max(quicktime_cache_t *ptr, int bytes);
 void quicktime_delete_cache(quicktime_cache_t *ptr);
 void quicktime_reset_cache(quicktime_cache_t *ptr);
 void quicktime_put_frame(quicktime_cache_t *ptr,

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ class BlurEngine;
 #include "blurwindow.inc"
 #include "bchash.inc"
 #include "mutex.h"
+#include "overlayframe.h"
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -59,6 +60,7 @@ public:
 	int horizontal;
 	int radius;
 	int a, r ,g ,b;
+	int a_key;
 };
 
 class BlurMain : public PluginVClient
@@ -84,23 +86,42 @@ public:
 
 private:
 	BlurEngine **engine;
+	OverlayFrame *overlayer;
+	VFrame *input_frame;
 };
 
+
+class BlurConstants
+{
+public:
+    double n_p[5], n_m[5];
+    double d_p[5], d_m[5];
+    double bd_p[5], bd_m[5];
+};
 
 class BlurEngine : public Thread
 {
 public:
-	BlurEngine(BlurMain *plugin, int start_y, int end_y);
+	BlurEngine(BlurMain *plugin);
 	~BlurEngine();
 
 	void run();
+	void set_range(int start_y, 
+		int end_y,
+		int start_x,
+		int end_x);
 	int start_process_frame(VFrame *frame);
 	int wait_process_frame();
 
 // parameters needed for blur
-	int get_constants();
-	int reconfigure();
-	int transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size);
+	int get_constants(BlurConstants *ptr, double std_dev);
+	int reconfigure(BlurConstants *constants, double alpha);
+	int transfer_pixels(pixel_f *src1, 
+		pixel_f *src2, 
+		pixel_f *src, 
+		double *radius,
+		pixel_f *dest, 
+		int size);
 	int multiply_alpha(pixel_f *row, int size);
 	int separate_alpha(pixel_f *row, int size);
 	int blur_strip3(int &size);
@@ -108,23 +129,24 @@ public:
 
 	int color_model;
 	double vmax;
-	pixel_f *val_p, *val_m, *vp, *vm;
-	pixel_f *sp_p, *sp_m;
-    double n_p[5], n_m[5];
-    double d_p[5], d_m[5];
-    double bd_p[5], bd_m[5];
-    double std_dev;
+	pixel_f *val_p, *val_m;
+	double *radius;
+	BlurConstants forward_constants;
+	BlurConstants reverse_constants;
 	pixel_f *src, *dst;
     pixel_f initial_p;
     pixel_f initial_m;
 	int terms;
 	BlurMain *plugin;
 // A margin is introduced between the input and output to give a seemless transition between blurs
-	int start_in, start_out;
-	int end_in, end_out;
-	VFrame *frame;
+	int start_y, start_x;
+	int end_y, end_x;
 	int last_frame;
+	int do_horizontal;
+// Detect changes in alpha for alpha radius mode
+	double prev_forward_radius, prev_reverse_radius;
 	Mutex input_lock, output_lock;
+	VFrame *frame;
 };
 
 #endif

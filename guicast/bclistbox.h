@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,11 +189,19 @@ public:
 	int deactivate();
 // After popping up a menu call this to interrupt the selection process
 	void deactivate_selection();
-	int activate();
+
+// take_focus - used by the suggestion box to keep it from taking focus from the
+// textbox
+	int activate(int take_focus = 1);
+
 	virtual int keypress_event();
 	int translation_event();
 	int repeat_event(int64_t duration);
 	BC_DragWindow* get_drag_popup();
+// If the popup window should show a button.
+// Must be called in the constructor.
+	void set_use_button(int value);
+
 
 // change the contents
 	int update(ArrayList<BC_ListBoxItem*> *data,
@@ -464,7 +471,8 @@ private:
 
 // 1 if a button is used to make the listbox display
 	int is_popup;      // popup
-
+// If the button for a popup should be shown
+	int use_button;
 
 // Dimensions for a popup if there is one
 	int popup_w, popup_h;

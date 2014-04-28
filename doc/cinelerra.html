@@ -6727,10 +6727,10 @@ appliances.
      ifogen -T -o dvd
      mkisofs -dvd-video -udf -o dvd.iso dvd/
 </pre>
-   <p>Chapters may be set with the following:
+   <p>Chapters may be set with the following.  The units are seconds.
 
-   <p>ifogen -o dvd &ndash;chapters=0021.788,0047.447,0077.043 final.mpg
-
+<pre class="example">     ifogen -o dvd --chapters=0021.788,0047.447,0077.043 final.mpg
+</pre>
    <p>Replace the chapter times.
 
    <p>dvd.iso can be burned directly to a DVD with the following:

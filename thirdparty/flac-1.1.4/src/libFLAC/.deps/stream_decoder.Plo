@@ -1,29 +1,28 @@
 stream_decoder.lo: stream_decoder.c ../../config.h /usr/include/stdio.h \
   /usr/include/features.h /usr/include/sys/cdefs.h \
   /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-32.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h \
+  /usr/include/gnu/stubs-64.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stddef.h \
   /usr/include/bits/types.h /usr/include/bits/typesizes.h \
   /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
-  /usr/include/bits/wchar.h /usr/include/gconv.h \
-  /usr/lib/gcc/i386-redhat-linux/4.1.2/include/stdarg.h \
+  /usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stdarg.h \
   /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
-  /usr/include/bits/stdio.h /usr/include/stdlib.h \
-  /usr/include/sys/types.h /usr/include/time.h /usr/include/endian.h \
-  /usr/include/bits/endian.h /usr/include/sys/select.h \
+  /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+  /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/time.h \
+  /usr/include/endian.h /usr/include/bits/endian.h \
+  /usr/include/bits/byteswap.h /usr/include/sys/select.h \
   /usr/include/bits/select.h /usr/include/bits/sigset.h \
   /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
   /usr/include/bits/pthreadtypes.h /usr/include/alloca.h \
-  /usr/include/string.h /usr/include/bits/string.h \
-  /usr/include/bits/string2.h /usr/include/sys/stat.h \
+  /usr/include/bits/stdlib.h /usr/include/string.h \
+  /usr/include/bits/string.h /usr/include/bits/string2.h \
+  /usr/include/bits/string3.h /usr/include/sys/stat.h \
   /usr/include/bits/stat.h ../../include/FLAC/assert.h \
   include/protected/stream_decoder.h ../../include/FLAC/stream_decoder.h \
   ../../include/FLAC/export.h ../../include/FLAC/format.h \
   ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
-  /usr/include/stdint.h include/private/ogg_decoder_aspect.h \
-  /usr/include/ogg/ogg.h /usr/include/ogg/os_types.h \
-  /usr/include/ogg/config_types.h ../../include/FLAC/ordinals.h \
-  ../../include/FLAC/stream_decoder.h include/private/bitreader.h \
+  /usr/include/stdint.h /usr/include/bits/wchar.h \
+  include/private/bitreader.h ../../include/FLAC/ordinals.h \
   include/private/bitmath.h include/private/cpu.h include/private/crc.h \
   include/private/fixed.h include/private/float.h \
   ../../include/FLAC/format.h include/private/format.h \
@@ -41,9 +40,9 @@ stream_decoder.lo: stream_decoder.c ../../config.h /usr/include/stdio.h \
 
 /usr/include/gnu/stubs.h:
 
-/usr/include/gnu/stubs-32.h:
+/usr/include/gnu/stubs-64.h:
 
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stddef.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stddef.h:
 
 /usr/include/bits/types.h:
 
@@ -55,17 +54,15 @@ stream_decoder.lo: stream_decoder.c ../../config.h /usr/include/stdio.h \
 
 /usr/include/wchar.h:
 
-/usr/include/bits/wchar.h:
-
-/usr/include/gconv.h:
-
-/usr/lib/gcc/i386-redhat-linux/4.1.2/include/stdarg.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
 /usr/include/bits/sys_errlist.h:
 
 /usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
 
 /usr/include/stdlib.h:
 
@@ -76,6 +73,8 @@ stream_decoder.lo: stream_decoder.c ../../config.h /usr/include/stdio.h \
 /usr/include/endian.h:
 
 /usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
 
 /usr/include/sys/select.h:
 
@@ -91,11 +90,15 @@ stream_decoder.lo: stream_decoder.c ../../config.h /usr/include/stdio.h \
 
 /usr/include/alloca.h:
 
+/usr/include/bits/stdlib.h:
+
 /usr/include/string.h:
 
 /usr/include/bits/string.h:
 
 /usr/include/bits/string2.h:
+
+/usr/include/bits/string3.h:
 
 /usr/include/sys/stat.h:
 
@@ -117,19 +120,11 @@ include/protected/stream_decoder.h:
 
 /usr/include/stdint.h:
 
-include/private/ogg_decoder_aspect.h:
-
-/usr/include/ogg/ogg.h:
-
-/usr/include/ogg/os_types.h:
-
-/usr/include/ogg/config_types.h:
-
-../../include/FLAC/ordinals.h:
-
-../../include/FLAC/stream_decoder.h:
+/usr/include/bits/wchar.h:
 
 include/private/bitreader.h:
+
+../../include/FLAC/ordinals.h:
 
 include/private/bitmath.h:
 

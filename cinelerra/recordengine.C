@@ -612,10 +612,6 @@ int RecordEngine::start_over()
 			file->close_file();
 			remove(asset->path);
 
-// reopen file
-// 			file->set_processors(mwindow->preferences->smp ? 2: 1);
-// 			file->set_preload(mwindow->preferences->playback_preload);
-// 			file->try_to_open_file(mwindow->plugindb, asset, 1, 1);
 
 // start the engine over
 			labels->delete_new_labels();

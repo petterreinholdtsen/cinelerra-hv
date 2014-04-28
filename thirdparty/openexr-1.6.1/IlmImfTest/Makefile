@@ -35,8 +35,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = i686-pc-linux
-host_triplet = i686-pc-linux
+build_triplet = x86_64-unknown-linux
+host_triplet = x86_64-unknown-linux
 check_PROGRAMS = IlmImfTest$(EXEEXT)
 subdir = IlmImfTest
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -123,11 +123,11 @@ ECHO_N = -n
 ECHO_T = 
 EGREP = grep -E
 EXEEXT = 
-F77 = f95
-FFLAGS = -g -O2
-ILMBASE_CXXFLAGS =  -I/root/hvirtual/thirdparty//include/OpenEXR
-ILMBASE_LDFLAGS = -L/root/hvirtual/thirdparty//lib
-ILMBASE_LIBS = -lImath -lHalf -lIex -lIlmThread
+F77 = 
+FFLAGS = 
+ILMBASE_CXXFLAGS = -I/root/hvirtual/thirdparty//include/OpenEXR  
+ILMBASE_LDFLAGS = -L/root/hvirtual/thirdparty//lib  
+ILMBASE_LIBS = -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
@@ -164,7 +164,7 @@ VERSION = 1.6.1
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
-ac_ct_F77 = f95
+ac_ct_F77 = 
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
 acx_pthread_config = 
@@ -178,18 +178,18 @@ am__quote =
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
-build = i686-pc-linux
+build = x86_64-unknown-linux
 build_alias = 
-build_cpu = i686
+build_cpu = x86_64
 build_os = linux
-build_vendor = pc
+build_vendor = unknown
 datadir = ${prefix}/share
 exec_prefix = ${prefix}
-host = i686-pc-linux
+host = x86_64-unknown-linux
 host_alias = 
-host_cpu = i686
+host_cpu = x86_64
 host_os = linux
-host_vendor = pc
+host_vendor = unknown
 includedir = ${prefix}/include
 infodir = ${prefix}/info
 install_sh = /root/hvirtual/thirdparty/openexr-1.6.1/install-sh
@@ -234,10 +234,10 @@ AM_CPPFLAGS = -DILM_IMF_TEST_IMAGEDIR=\"$(srcdir)/\"
 INCLUDES = -I$(top_builddir)  \
 	   -I$(top_srcdir)/IlmImf \
 	   -I$(top_srcdir)/config \
-	    -I/root/hvirtual/thirdparty//include/OpenEXR
+	   -I/root/hvirtual/thirdparty//include/OpenEXR  
 
 LDADD = -L$(top_builddir)/IlmImf \
-	-L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread \
+	-L/root/hvirtual/thirdparty//lib   -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread   \
 	-lIlmImf -lz
 
 TESTS = IlmImfTest

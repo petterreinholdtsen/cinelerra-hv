@@ -122,11 +122,11 @@ Indexable* VWindow::get_source()
 
 void VWindow::change_source()
 {
-//printf("VWindow::change_source() 1 %p\n", mwindow->edl->vwindow_edl);
+//printf("VWindow::change_source() %d %p\n", __LINE__, mwindow->edl->vwindow_edl);
 	if(mwindow->edl->vwindow_edl)
 	{
 		gui->change_source(get_edl(), "");
-		update_position(CHANGE_ALL, 1, 1);
+		update_position(CHANGE_ALL, 1, 1, 1);
 	}
 	else
 	{
@@ -143,7 +143,7 @@ void VWindow::change_source(Indexable *indexable)
 // 		asset->id == this->asset->id &&
 // 		asset == this->asset) return;
 
-//printf("VWindow::change_source(Asset *asset) 1\n");
+//printf("VWindow::change_source %d\n", __LINE__);
 
 	char title[BCTEXTLEN];
 	FileSystem fs;
@@ -159,7 +159,7 @@ void VWindow::change_source(Indexable *indexable)
 	if(indexable->is_asset)
 	{
 		this->indexable = asset = new Asset;
-		asset->copy_from((Asset*)this->indexable, 0);
+		asset->copy_from((Asset*)indexable, 0);
 	}
 	else
 	{
@@ -171,16 +171,16 @@ void VWindow::change_source(Indexable *indexable)
 	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
 	mwindow->edl->vwindow_edl_shared = 0;
 	mwindow->edl->vwindow_edl->create_objects();
+
+//printf("VWindow::change_source 1 %d %p %p\n", __LINE__, asset, nested_edl);
 	if(asset)
 		mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
 	else
 		mwindow->edl_to_nested(mwindow->edl->vwindow_edl, nested_edl);
-//printf("VWindow::change_source 1 %d %d\n", edl->local_session->loop_playback, mwindow->edl->local_session->loop_playback);
-//edl->dump();
 
 // Update GUI
 	gui->change_source(mwindow->edl->vwindow_edl, title);
-	update_position(CHANGE_ALL, 1, 1);
+	update_position(CHANGE_ALL, 1, 1, 1);
 
 
 
@@ -205,7 +205,7 @@ void VWindow::change_source(EDL *edl)
 
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
-		update_position(CHANGE_ALL, 1, 1);
+		update_position(CHANGE_ALL, 1, 1, 1);
 	}
 	else
 		gui->change_source(edl, _("Viewer"));
@@ -263,7 +263,8 @@ void VWindow::goto_start()
 		get_edl()->local_session->set_selectionend(0);
 		update_position(CHANGE_NONE, 
 			0, 
-			1);
+			1, 
+			0);
 	}
 }
 
@@ -276,7 +277,8 @@ void VWindow::goto_end()
 		get_edl()->local_session->set_selectionend(position);
 		update_position(CHANGE_NONE, 
 			0, 
-			1);
+			1,
+			0);
 	}
 }
 
@@ -288,7 +290,8 @@ void VWindow::update(int do_timebar)
 
 void VWindow::update_position(int change_type, 
 	int use_slider, 
-	int update_slider)
+	int update_slider,
+	int lock_window)
 {
 	EDL *edl = get_edl();
 	if(edl)
@@ -304,12 +307,16 @@ void VWindow::update_position(int change_type,
 			gui->slider->set_position();
 		}
 
+//printf("VWindow::update_position %d\n", __LINE__);
+//edl->dump();
 		playback_engine->que->send_command(CURRENT_FRAME, 
 			change_type,
 			edl,
 			1);
 
+		if(lock_window) gui->lock_window("VWindow::update_position");
 		gui->clock->update(edl->local_session->get_selectionstart(1));
+		if(lock_window) gui->unlock_window();
 	}
 }
 

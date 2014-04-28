@@ -24,37 +24,31 @@
 #define FILEFORK_H
 
 #include "file.inc"
+#include "fileserver.inc"
+#include "forkwrapper.h"
 
 // This is an object created by File which runs in a separate process to 
 // actually interface the data.  File functions redirect to this process.
 // This is to isolate file format crashes.
+
+
+
 #ifdef USE_FILEFORK
-class FileFork
+class FileFork : public ForkWrapper
 {
 public:
-	FileFork();
+	FileFork(FileServer *server);
 	virtual ~FileFork();
 	
-	void run();
-// Called by parent to send commands
-	int send_command(int token, 
-		unsigned char *data,
-		int bytes);
-// Called by child to get commands
-	int read_command(int *token,
-		unsigned char *data,
-		int *bytes);
-// Called by parent to read result
-	int64_t read_result();
-// Called by child to send result
-	int send_result(int64_t value);
+	void init_child();
+	int handle_command();
 
 // Instance of file that does the actual work.	
 	File *file;
-	int pid;
-	int parent_fd;
-	int child_fd;
-	int done;
+// If this is a dummy filefork, the pointer of the real filefork in the fileserver
+// memory space.
+	FileFork *real_fork;
+	FileServer *server;
 
 // Command tokens
 	enum
@@ -63,12 +57,13 @@ public:
 		OPEN_FILE,
 		SET_PROCESSORS,
 		SET_PRELOAD,
+		SET_SUBTITLE,
 		SET_INTERPOLATE_RAW,
 		SET_WHITE_BALANCE_RAW,
 		SET_CACHE_FRAMES,
 		PURGE_CACHE,
 		CLOSE_FILE,
-		GET_INDEX,
+		GET_INDEX,           // 10
 		START_VIDEO_THREAD,
 		START_AUDIO_THREAD,
 		START_VIDEO_DECODE_THREAD,
@@ -78,7 +73,7 @@ public:
 		SET_LAYER,
 		GET_AUDIO_LENGTH,
 		GET_VIDEO_LENGTH,
-		GET_AUDIO_POSITION,
+		GET_AUDIO_POSITION,       // 20
 		GET_VIDEO_POSITION,
 		SET_AUDIO_POSITION,
 		SET_VIDEO_POSITION,
@@ -88,13 +83,14 @@ public:
 		WRITE_VIDEO_BUFFER,
 		GET_AUDIO_BUFFER,
 		GET_VIDEO_BUFFER,
-		READ_SAMPLES,
+		READ_SAMPLES,              // 30
 		READ_COMPRESSED_FRAME,
 		COMPRESSED_FRAME_SIZE,
 		READ_FRAME,
 		CAN_COPY_FROM,
 		COLORMODEL_SUPPORTED,
-		GET_MEMORY_USAGE
+		GET_MEMORY_USAGE,
+		SET_CACHE
 	};
 };
 

@@ -62,7 +62,7 @@
 #define HAVE_PTHREADSTACKSIZE 1
 
 /* SDL library present */
-#define HAVE_SDL 1
+/* #undef HAVE_SDL */
 
 /* SDL_gfx library present */
 /* #undef HAVE_SDLgfx */
@@ -145,7 +145,7 @@
 /* #undef X_DISPLAY_MISSING */
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-#define _FILE_OFFSET_BITS 64
+/* #undef _FILE_OFFSET_BITS */
 
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE

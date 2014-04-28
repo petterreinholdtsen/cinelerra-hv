@@ -22,6 +22,7 @@
 #include "amodule.h"
 #include "apluginarray.h"
 #include "atrack.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "edl.h"
 #include "edlsession.h"

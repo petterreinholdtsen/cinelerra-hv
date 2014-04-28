@@ -84,8 +84,6 @@ int FileAC3::check_sig()
 
 int FileAC3::open_file(int rd, int wr)
 {
-	this->wr = wr;
-	this->rd = rd;
 
 
 	if(wr)

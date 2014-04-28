@@ -119,14 +119,21 @@ int AudioESound::open_output()
 	format |= get_channels_flag(device->out_channels);
 	format |= get_bit_flag(device->out_bits);
 
-	if((esd_out = esd_open_sound(translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port))) <= 0)
+	if((esd_out = esd_open_sound(translate_device_string(
+		device->out_config->esound_out_server, 
+		device->out_config->esound_out_port))) <= 0)
 	{
-		fprintf(stderr, "AudioESound::open_output: open failed\n");
+		fprintf(stderr, "AudioESound::open_output %s:%d: open failed\n",
+			device->out_config->esound_out_server, 
+		device->out_config->esound_out_port);
 		return 1;
-	};
-	esd_out_fd = esd_play_stream_fallback(format, device->out_samplerate, 
-			    	translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port), 
-						"Cinelerra");
+	}
+
+	esd_out_fd = esd_play_stream_fallback(format, 
+		device->out_samplerate, 
+		translate_device_string(device->out_config->esound_out_server, 
+			device->out_config->esound_out_port), 
+		"Cinelerra");
 
 	device->device_buffer = esd_get_latency(esd_out);
 	device->device_buffer *= device->out_bits / 8 * device->out_channels;

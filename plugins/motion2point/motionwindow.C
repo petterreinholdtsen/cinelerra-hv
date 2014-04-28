@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "language.h"
 #include "motion.h"
@@ -760,15 +761,20 @@ int Action::handle_event()
 void Action::create_objects()
 {
 	add_item(new BC_MenuItem(to_text(MotionConfig::TRACK)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::TRACK_PIXEL)));
 	add_item(new BC_MenuItem(to_text(MotionConfig::STABILIZE)));
+	add_item(new BC_MenuItem(to_text(MotionConfig::STABILIZE_PIXEL)));
 	add_item(new BC_MenuItem(to_text(MotionConfig::NOTHING)));
 }
 
 int Action::from_text(char *text)
 {
 	if(!strcmp(text, _("Track"))) return MotionConfig::TRACK;
+	if(!strcmp(text, _("Track Pixel"))) return MotionConfig::TRACK_PIXEL;
 	if(!strcmp(text, _("Stabilize"))) return MotionConfig::STABILIZE;
+	if(!strcmp(text, _("Stabilize Pixel"))) return MotionConfig::STABILIZE_PIXEL;
 	if(!strcmp(text, _("Do Nothing"))) return MotionConfig::NOTHING;
+	return 0;
 }
 
 char* Action::to_text(int mode)
@@ -778,11 +784,20 @@ char* Action::to_text(int mode)
 		case MotionConfig::TRACK:
 			return _("Track");
 			break;
+		case MotionConfig::TRACK_PIXEL:
+			return _("Track Pixel");
+			break;
 		case MotionConfig::STABILIZE:
 			return _("Stabilize");
 			break;
+		case MotionConfig::STABILIZE_PIXEL:
+			return _("Stabilize Pixel");
+			break;
 		case MotionConfig::NOTHING:
 			return _("Do Nothing");
+			break;
+		default:
+			return _("Unknown");
 			break;
 	}
 }
@@ -791,7 +806,9 @@ int Action::calculate_w(MotionWindow *gui)
 {
 	int result = 0;
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::TRACK)));
+	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::TRACK_PIXEL)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::STABILIZE)));
+	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::STABILIZE_PIXEL)));
 	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(MotionConfig::NOTHING)));
 	return result + 50;
 }
@@ -831,6 +848,7 @@ int Calculation::from_text(char *text)
 	if(!strcmp(text, _("Recalculate"))) return MotionConfig::RECALCULATE;
 	if(!strcmp(text, _("Save coords to /tmp"))) return MotionConfig::SAVE;
 	if(!strcmp(text, _("Load coords from /tmp"))) return MotionConfig::LOAD;
+	return 0;
 }
 
 char* Calculation::to_text(int mode)
@@ -848,6 +866,9 @@ char* Calculation::to_text(int mode)
 			break;
 		case MotionConfig::LOAD:
 			return _("Load coords from /tmp");
+			break;
+		default:
+			return _("Unknown");
 			break;
 	}
 }

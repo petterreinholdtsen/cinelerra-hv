@@ -678,6 +678,11 @@ VFrame*** FileThread::get_video_buffer()
 	return video_buffer[current_buffer];
 }
 
+VFrame*** FileThread::get_last_video_buffer()
+{
+	return video_buffer[current_buffer];
+}
+
 int FileThread::write_buffer(long size)
 {
 	output_size[current_buffer] = size;

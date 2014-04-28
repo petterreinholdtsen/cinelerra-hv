@@ -492,45 +492,48 @@ void BatchRenderThread::start_rendering(char *config_path,
 	BC_Hash *boot_defaults;
 	Preferences *preferences;
 	Render *render;
+	BC_Signals *signals = new BC_Signals;
 
-PRINT_TRACE
+//PRINT_TRACE
 // Initialize stuff which MWindow does.
+	signals->initialize();
 	MWindow::init_defaults(boot_defaults, config_path);
 	load_defaults(boot_defaults);
 	preferences = new Preferences;
 	preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(preferences, 0);
 	BC_WindowBase::get_resources()->vframe_shm = 1;
+	MWindow::init_fileserver(preferences);
 
 
-PRINT_TRACE
+//PRINT_TRACE
 	load_jobs(batch_path, preferences);
 	save_jobs(batch_path);
 	save_defaults(boot_defaults);
 
-PRINT_TRACE
+//PRINT_TRACE
 // Test EDL files for existence
 	if(test_edl_files()) return;
 
-PRINT_TRACE
+//PRINT_TRACE
 
 // Predict all destination paths
 	ArrayList<char*> paths;
 	calculate_dest_paths(&paths,
 		preferences);
 
-PRINT_TRACE
+//PRINT_TRACE
 	int result = ConfirmSave::test_files(0, &paths);
 // Abort on any existing file because it's so hard to set this up.
 	if(result) return;
 
-PRINT_TRACE
+//PRINT_TRACE
 	render = new Render(0);
-PRINT_TRACE
+//PRINT_TRACE
 	render->start_batches(&jobs, 
 		boot_defaults,
 		preferences);
-PRINT_TRACE
+//PRINT_TRACE
 }
 
 void BatchRenderThread::start_rendering()

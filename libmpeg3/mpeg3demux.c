@@ -272,7 +272,7 @@ static int get_transport_pes_packet(mpeg3_demuxer_t *demuxer)
 	unsigned int pts = 0, dts = 0;
 	get_pes_packet_header(demuxer, &pts, &dts);
 
-//printf("get_transport_pes_packet: stream_id=%x\n", demuxer->stream_id);
+//printf("get_transport_pes_packet: stream_id=%x pts=%d\n", demuxer->stream_id, pts);
 
 	if(demuxer->stream_id == 0xbd ||
 // Blu-Ray audio
@@ -368,7 +368,7 @@ static int get_transport_pes_packet(mpeg3_demuxer_t *demuxer)
 			demuxer->pes_video_time = (double)pts / 90000;
 			demuxer->video_pid = demuxer->pid;
 
-
+//printf("get_transport_pes_packet %d\n", __LINE__);
 			return get_transport_payload(demuxer, 0, 1);
 		}
 	}
@@ -469,6 +469,7 @@ static int get_payload(mpeg3_demuxer_t *demuxer)
 			demuxer->read_all))
 		{
 			if(demuxer->do_video) demuxer->got_video = 1;
+//printf("get_payload %d\n", __LINE__);
 			get_transport_payload(demuxer, 0, 1);
 		}
     	else

@@ -210,6 +210,11 @@ static void signal_entry_recoverable(int signum)
 		getpid());
 }
 
+static void handle_exit(int signum)
+{
+	exit(0);
+}
+
 BC_Signals::BC_Signals()
 {
 }
@@ -268,6 +273,11 @@ void BC_Signals::delete_temps()
 	pthread_mutex_unlock(lock);
 }
 
+void BC_Signals::reset_locks()
+{
+	pthread_mutex_unlock(lock);
+}
+
 void BC_Signals::set_temp(char *string)
 {
 	char *new_string = strdup(string);
@@ -309,6 +319,8 @@ void BC_Signals::initialize2()
 	signal(SIGTERM, signal_entry);
 	signal(SIGFPE, signal_entry);
 	signal(SIGPIPE, signal_entry_recoverable);
+// Must create a signal handler to get the child processes to quit
+	signal(SIGUSR1, handle_exit);
 }
 
 

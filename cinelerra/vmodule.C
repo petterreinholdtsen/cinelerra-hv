@@ -118,9 +118,12 @@ int VModule::import_frame(VFrame *output,
 		0.001);
 	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
-	if(debug) printf("VModule::import_frame %d this=%p\n", 
+	if(debug) printf("VModule::import_frame %d this=%p input_position=%lld direction=%d\n", 
 		__LINE__,
-		this);
+		this,
+		input_position,
+		direction);
+
 // Convert to position going forward
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
@@ -749,6 +752,7 @@ current_cmodel);
 				if(file)
 				{
 // Cache single frames
+//memset(output->get_rows()[0], 0xff, 1024);
 					if(use_cache) file->set_cache_frames(1);
 					result = file->read_frame(output);
 					if(use_cache) file->set_cache_frames(0);

@@ -176,7 +176,6 @@ protected:
 	int64_t prev_len;
 	int prev_track;
 	int prev_layer;
-	int wr, rd;
 	int dither;
 	int internal_byte_order;
 	File *file;

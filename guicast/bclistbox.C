@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -364,6 +363,7 @@ BC_ListBox::BC_ListBox(int x,
 	bg_surface = 0;
  	bg_pixmap = 0;
 
+
  	current_operation = NO_OPERATION;
 	button_highlighted = 0;
 	list_highlighted = 0;
@@ -397,6 +397,7 @@ BC_ListBox::BC_ListBox(int x,
 	this->columns = columns;
 	this->yposition = yposition;
 	this->is_popup = is_popup;
+	this->use_button = 1;
 	this->display_format = display_format;
 	this->selection_mode = selection_mode;
 	this->icon_position = icon_position;
@@ -521,17 +522,21 @@ int BC_ListBox::initialize()
 {
 	if(is_popup)
 	{
-		for(int i = 0; i < 3; i++)
+		if(use_button)
 		{
-			button_images[i] = new BC_Pixmap(parent_window, 
-				BC_WindowBase::get_resources()->listbox_button[i], 
-				PIXMAP_ALPHA);
+			for(int i = 0; i < 3; i++)
+			{
+				button_images[i] = new BC_Pixmap(parent_window, 
+					BC_WindowBase::get_resources()->listbox_button[i], 
+					PIXMAP_ALPHA);
+			}
+			w = button_images[0]->get_w();
+			h = button_images[0]->get_h();
 		}
-		w = button_images[0]->get_w();
-		h = button_images[0]->get_h();
-		
+
 		gui = 0;
 		current_operation = NO_OPERATION;
+		
 	}
 	else
 	{
@@ -579,6 +584,13 @@ int BC_ListBox::initialize()
 
 	draw_button();
 	draw_items(1);
+
+	if(!use_button && is_popup)
+	{
+		hide_window(1);
+	}
+
+
 	return 0;
 }
 
@@ -590,7 +602,7 @@ void BC_ListBox::deactivate_selection()
 int BC_ListBox::draw_button()
 {
 // Draw the button for a popup listbox
-	if(is_popup)
+	if(use_button && is_popup)
 	{
 		int image_number = 0;
 
@@ -822,6 +834,11 @@ void BC_ListBox::calculate_item_coords_recursive(
 				0);
 		}
 	}
+}
+
+void BC_ListBox::set_use_button(int value)
+{
+	this->use_button = value;
 }
 
 void BC_ListBox::set_justify(int value)
@@ -3869,15 +3886,21 @@ int BC_ListBox::deactivate()
 	return 0;
 }
 
-int BC_ListBox::activate()
+int BC_ListBox::activate(int take_focus)
 {
 	if(!active)
 	{
-		top_level->active_subwindow = this;
-		active = 1;
+		if(take_focus)
+		{
+			top_level->active_subwindow = this;
+			active = 1;
+		}
+
 		button_releases = 0;
 
-		if(is_popup)
+// Test for existence of GUI in case this was previously called without
+// take_focus & again with take_focus
+		if(is_popup && !gui)
 		{
 			Window tempwin;
 			int x, y;
@@ -3934,7 +3957,17 @@ int BC_ListBox::keypress_event()
 		case ESC:
 		case RETURN:
 			top_level->deactivate();
-			result = 0;
+
+//printf("BC_ListBox::keypress_event %d\n", __LINE__);
+// If user is manipulating popup with keyboard, don't pass on event.
+			if(is_popup)
+			{
+				if(top_level->get_keypress() == RETURN)
+					handle_event();
+				result = 1;
+			}
+			else
+				result = 0;
 			break;
 
 		case UP:
@@ -3994,6 +4027,11 @@ int BC_ListBox::keypress_event()
 			result = 1;
 			break;
 
+		case HOME:
+		case END:
+			result = 0;
+			break;
+
 		default:
 			if(!ctrl_down())
 			{
@@ -4030,6 +4068,7 @@ int BC_ListBox::keypress_event()
 	{
 		selection_changed();
 	}
+
 	return result;
 }
 

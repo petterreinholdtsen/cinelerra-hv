@@ -606,10 +606,12 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 	first_frame = 0;
 	while(!done && !error)
 	{
+
 		struct v4l2_buffer buffer;
 		bzero(&buffer, sizeof(buffer));
 		buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		buffer.memory = V4L2_MEMORY_MMAP;
+
 
 // The driver returns the first buffer not queued, so only one buffer
 // can be unqueued at a time.
@@ -657,7 +659,6 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 				usleep(33000);
 			}
 		}
-//printf("VDeviceV4L2::run 100 %lld\n", timer.get_difference());
 	}
 }
 
@@ -896,12 +897,17 @@ int VDeviceV4L2::read_buffer(VFrame *frame)
 		thread->start();
 	}
 
-
 // Get buffer from thread
 	int timed_out;
 	VFrame *buffer = thread->get_buffer(&timed_out);
 	if(buffer)
 	{
+
+// printf("VDeviceV4L2::read_buffer %d %p %p\n", 
+// __LINE__, 
+// frame->get_data(), 
+// buffer->get_data());
+
 		frame->copy_from(buffer);
 		thread->put_buffer();
 	}

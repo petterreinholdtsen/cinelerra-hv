@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+
+
+
+// Various functions for macro editing
+
 
 #ifndef MENUEDITLENGTH_H
 #define MENUEDITLENGTH_H
@@ -38,6 +42,27 @@ public:
 
 	MWindow *mwindow;
 	EditLengthThread *thread;
+};
+
+class MenuEditShuffle : public BC_MenuItem
+{
+public:
+	MenuEditShuffle(MWindow *mwindow);
+
+	int handle_event();
+
+	MWindow *mwindow;
+};
+
+
+class MenuEditAlign : public BC_MenuItem
+{
+public:
+	MenuEditAlign(MWindow *mwindow);
+
+	int handle_event();
+
+	MWindow *mwindow;
 };
 
 

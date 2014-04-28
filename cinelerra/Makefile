@@ -116,6 +116,7 @@ OBJS = \
 	$(OBJDIR)/filebaseima4.o \
 	$(OBJDIR)/filebaseulaw.o \
 	$(OBJDIR)/filecr2.o \
+	$(OBJDIR)/filefork.o \
 	$(OBJDIR)/fileformat.o \
 	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/filejpeg.o \
@@ -123,6 +124,7 @@ OBJS = \
 	$(OBJDIR)/filempeg.o \
 	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
+	$(OBJDIR)/fileserver.o \
 	$(OBJDIR)/filesndfile.o \
 	$(OBJDIR)/filetga.o \
 	$(OBJDIR)/filethread.o \
@@ -131,6 +133,7 @@ OBJS = \
 	$(OBJDIR)/filexml.o \
 	$(OBJDIR)/floatauto.o \
 	$(OBJDIR)/floatautos.o \
+	$(OBJDIR)/forkwrapper.o \
 	$(OBJDIR)/formatcheck.o \
 	$(OBJDIR)/formatpresets.o \
 	$(OBJDIR)/formatpopup.o \
@@ -635,6 +638,8 @@ $(OBJDIR)/filebaseulaw.o: 			  filebaseulaw.C
 $(OBJDIR)/filebasevideo.o: 			  filebasevideo.C
 $(OBJDIR)/filecr2.o:                              filecr2.C
 $(OBJDIR)/fileffmpeg.o:                           fileffmpeg.C
+$(OBJDIR)/filefork.o:	 			  filefork.C
+$(OBJDIR)/fileserver.o:                           fileserver.C
 $(OBJDIR)/fileformat.o: 			  fileformat.C
 $(OBJDIR)/filejpeg.o: 				  filejpeg.C
 $(OBJDIR)/filelist.o: 				  filelist.C
@@ -650,6 +655,7 @@ $(OBJDIR)/filevorbis.o:                           filevorbis.C
 $(OBJDIR)/filexml.o: 				  filexml.C
 $(OBJDIR)/floatauto.o:  			  floatauto.C
 $(OBJDIR)/floatautos.o: 			  floatautos.C
+$(OBJDIR)/forkwrapper.o:                          forkwrapper.C
 $(OBJDIR)/formatcheck.o: 			  formatcheck.C
 $(OBJDIR)/formatpopup.o: 			  formatpopup.C
 $(OBJDIR)/formatpresets.o:                        formatpresets.C

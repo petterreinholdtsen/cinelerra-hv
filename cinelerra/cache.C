@@ -290,18 +290,21 @@ int CICache::delete_oldest()
 		}
 	}
 
+//printf("CICache::delete_oldest %d\n", __LINE__);
 
 	if(oldest)
 	{
 // Got the oldest file.  Try requesting cache purge from it.
+//printf("CICache::delete_oldest %d %p %d %d\n", __LINE__, oldest->file, oldest->file->purge_cache(), total());
 
 		if(!oldest->file || (oldest->file->purge_cache() && total() > 1))
 		{
+//printf("CICache::delete_oldest %d\n", __LINE__);
 
 // Delete the file if cache already empty and not checked out.
 			if(!oldest->checked_out)
 			{
-
+//printf("CICache::delete_oldest %d\n", __LINE__);
 				remove_pointer(oldest);
 
 				oldest->Garbage::remove_user();
@@ -370,7 +373,13 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 
 
 	file = new File;
+// printf("CICacheItem::CICacheItem %d %d %d\n", 
+// __LINE__, 
+// cache->preferences->processors,
+// cache->preferences->cache_size);
+
 	file->set_processors(cache->preferences->processors);
+	file->set_cache(cache->preferences->cache_size);
 	file->set_preload(edl->session->playback_preload);
 	file->set_subtitle(edl->session->decode_subtitles ? 
 		edl->session->subtitle_number : -1);

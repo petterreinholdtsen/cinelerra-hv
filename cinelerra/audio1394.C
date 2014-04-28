@@ -29,8 +29,12 @@ int Audio1394::initialize()
 int Audio1394::interrupt_crash()
 {
 //printf("Audio1394::interrupt_crash 1 %d\n",dv_grabber_crashed(grabber));
-	if(dv_grabber_crashed(grabber))
+	if(grabber && dv_grabber_crashed(grabber))
+	{
 		dv_interrupt_grabber(grabber);
+		if(device->sharing)
+			device->vdevice->get_shared_data(0, 0);
+	}
 }
 
 int Audio1394::open_input()
@@ -109,6 +113,8 @@ int Audio1394::read_buffer(char *buffer, long bytes)
 //printf("Audio1394::read_buffer 1\n");
 // Get the frame
 		result = dv_grab_frame(grabber, &data, &data_size);
+
+
 //printf("Audio1394::read_buffer 2\n");
 // Pass it on to the video device
 		if(!result && device->sharing)
@@ -122,8 +128,12 @@ int Audio1394::read_buffer(char *buffer, long bytes)
 					data, 
 					data_size);
 
-		dv_unlock_frame(grabber);
-		if(!result) ring_buffer_size += samples_recieved * bytes_per_sample;
+//printf("Audio1394::read_buffer 2\n");
+		if(!result)
+			dv_unlock_frame(grabber);
+//printf("Audio1394::read_buffer 3\n");
+		if(!result)
+			ring_buffer_size += samples_recieved * bytes_per_sample;
 	}
 
 	if(!result)

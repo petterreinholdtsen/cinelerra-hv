@@ -5,6 +5,7 @@
 #include "errorbox.h"
 #include "file.h"
 #include "formatcheck.h"
+#include "indexfile.h"
 #include "keyframe.h"
 #include "keys.h"
 #include "loadmode.h"
@@ -85,7 +86,6 @@ void MenuEffectThread::run()
 // get stuff from main window
 	ArrayList<PluginServer*> *plugindb = mwindow->plugindb;
 	Defaults *defaults = mwindow->defaults;
-	EDL *edl = mwindow->edl;
 	ArrayList<BC_ListBoxItem*> plugin_list;
 	ArrayList<PluginServer*> local_plugindb;
 	char string[1024];
@@ -247,13 +247,14 @@ void MenuEffectThread::run()
 	double total_start, total_end;
 
 //printf("MenuEffectThread::run 9\n");
-	total_start = edl->local_session->selectionstart;
+	total_start = mwindow->edl->local_session->get_selectionstart();
 
 
-	if(edl->local_session->selectionend == edl->local_session->selectionstart)
-		total_end = edl->tracks->total_playable_length();
+	if(mwindow->edl->local_session->get_selectionend() == 
+		mwindow->edl->local_session->get_selectionstart())
+		total_end = mwindow->edl->tracks->total_playable_length();
 	else
-		total_end = edl->local_session->selectionend;
+		total_end = mwindow->edl->local_session->get_selectionend();
 
 
 
@@ -317,9 +318,9 @@ void MenuEffectThread::run()
 			plugin->save_data(&plugin_data);
 //printf("MenuEffectThread::run 13 %s\n", plugin->title);
 			delete plugin;
+//printf("MenuEffectThread::run 14\n");
 			default_asset.sample_rate = mwindow->edl->session->sample_rate;
 			default_asset.frame_rate = mwindow->edl->session->frame_rate;
-//printf("MenuEffectThread::run 14\n");
 			realtime = 1;
 		}
 		else
@@ -419,6 +420,8 @@ void MenuEffectThread::run()
 					error.run_window();
 					result = 1;
 				}
+				else
+					IndexFile::delete_index(mwindow->preferences, asset);
 			}
 
 //printf("MenuEffectThread::run 10\n");
@@ -433,7 +436,7 @@ void MenuEffectThread::run()
 
 //printf("MenuEffectThread::run 11\n");
 				plugin_array->start_plugins(mwindow, 
-					edl, 
+					mwindow->edl, 
 					plugin_server, 
 					&plugin_data,
 					fragment_start,
@@ -441,40 +444,50 @@ void MenuEffectThread::run()
 					file);
 //printf("MenuEffectThread::run 12\n");
 				plugin_array->run_plugins();
-//printf("MenuEffectThread::run 13\n");
+printf("MenuEffectThread::run 13\n");
 				plugin_array->stop_plugins();
 				file->close_file();
 				asset->audio_length = file->asset->audio_length;
 				asset->video_length = file->asset->video_length;
-//printf("MenuEffectThread::run 14 %d %d\n", asset->audio_length, asset->video_length);
+printf("MenuEffectThread::run 14 %d %d\n", asset->audio_length, asset->video_length);
 				delete plugin_array;
-//printf("MenuEffectThread::run 16\n");
+printf("MenuEffectThread::run 16\n");
 			}
 
 			delete file;
 		}
 	}
+//printf("MenuEffectThread::run 16\n");
+
 
 // paste output to tracks
 	if(!result && load_mode != LOAD_NOTHING)
 	{
 		mwindow->gui->lock_window();
+printf("MenuEffectThread::run 17\n");
 		mwindow->undo->update_undo_before(title, LOAD_EDITS | LOAD_TIMEBAR);
 
+printf("MenuEffectThread::run 18\n");
 		mwindow->load_assets(&assets,
 			-1,
 			load_mode,
 			0,
 			0,
-			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			mwindow->edl->session->labels_follow_edits, 
+			mwindow->edl->session->plugins_follow_edits);
+printf("MenuEffectThread::run 19\n");
 
-		mwindow->undo->update_undo_after();
 		mwindow->save_backup();
-		if(!result) mwindow->session->changes_made = 1;
-		if(mwindow->gui) mwindow->gui->unlock_window();
+		mwindow->undo->update_undo_after();
+printf("MenuEffectThread::run 20\n");
+		mwindow->session->changes_made = 1;
+//printf("MenuEffectThread::run 22\n");
+		mwindow->gui->unlock_window();
+//printf("MenuEffectThread::run 23\n");
 	}
+
 	assets.remove_all_objects();
+//printf("MenuEffectThread::run 24\n");
 }
 
 
@@ -661,8 +674,11 @@ MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
 		mwindow->gui->get_abs_cursor_y() - 300,
  		260, 
 		80, 
-		0, 
-		0)
+		260,
+		80,
+		0,
+		0,
+		1)
 {
 }
 
@@ -678,6 +694,9 @@ int MenuEffectPrompt::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
+	show_window();
+	raise_window();
+	flush();
 	return 0;
 }
 

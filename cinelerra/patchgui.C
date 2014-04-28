@@ -279,10 +279,18 @@ void PatchGUI::toggle_behavior(int play,
 	}
 
 	if(play)
+	{
+		mwindow->gui->unlock_window();
 		mwindow->sync_parameters(CHANGE_EDL);
-
+		mwindow->gui->lock_window();
+	}
+	else
 	if(mute)
+	{
+		mwindow->gui->unlock_window();
 		mwindow->sync_parameters(CHANGE_PARAMS);
+		mwindow->gui->lock_window();
+	}
 	
 // Update affected tracks in cwindow
 	if(record)
@@ -334,7 +342,7 @@ int PlayPatch::handle_event()
 		mwindow->gui->canvas->flash();
 	}
 
-	mwindow->sync_parameters(CHANGE_EDL);
+//	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;
 }
 
@@ -522,7 +530,7 @@ int MutePatch::handle_event()
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 	}
-	mwindow->sync_parameters(CHANGE_PARAMS);
+//	mwindow->sync_parameters(CHANGE_PARAMS);
 	return 1;
 }
 

@@ -46,6 +46,7 @@ int BC_Tumbler::initialize()
 int BC_Tumbler::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
+	draw_face();
 	return 0;
 }
 
@@ -85,6 +86,7 @@ int BC_Tumbler::draw_face()
 
 int BC_Tumbler::repeat_event(long duration)
 {
+//printf("BC_Tumbler::repeat_event 1 %d\n", duration);
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
 		if(tooltip_text[0] != 0 &&
@@ -99,6 +101,7 @@ int BC_Tumbler::repeat_event(long duration)
 	else
 	if(duration == top_level->get_resources()->tumble_duration)
 	{
+//printf("BC_Tumbler::repeat_event 2\n");
 		repeat_count++;
 		if(repeat_count == 2) return 0;
 		if(status == TUMBLETOP_DN)
@@ -146,13 +149,15 @@ int BC_Tumbler::button_press_event()
 	hide_tooltip();
 	if(top_level->event_win == win)
 	{
+//printf("BC_Tumbler::button_press_event 1 %d\n", get_buttonpress());
 		if(get_buttonpress() == 4)
 		{
 			status = TUMBLETOP_DN;
 			draw_face();
 			flush();
-			repeat_count = 0;
-			repeat_event(top_level->get_resources()->tumble_duration);
+			handle_up_event();
+//			repeat_count = 0;
+//			repeat_event(top_level->get_resources()->tumble_duration);
 		}
 		else
 		if(get_buttonpress() == 5)
@@ -160,8 +165,9 @@ int BC_Tumbler::button_press_event()
 			status = TUMBLEBOTTOM_DN;
 			draw_face();
 			flush();
-			repeat_count = 0;
-			repeat_event(top_level->get_resources()->tumble_duration);
+			handle_down_event();
+//			repeat_count = 0;
+//			repeat_event(top_level->get_resources()->tumble_duration);
 		}
 		else
 		{
@@ -180,6 +186,7 @@ int BC_Tumbler::button_press_event()
 			top_level->set_repeat(top_level->get_resources()->tumble_duration);
 			repeat_count = 0;
 			repeat_event(top_level->get_resources()->tumble_duration);
+//printf("BC_Tumbler::button_press_event 2 %d\n", get_buttonpress());
 		}
 		return 1;
 	}

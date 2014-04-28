@@ -54,32 +54,25 @@ void ScaleConfig::interpolate(ScaleConfig &prev,
 ScaleMain::ScaleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
 	temp_frame = 0;
 	overlayer = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 ScaleMain::~ScaleMain()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-	
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
+
+	if(temp_frame) delete temp_frame;
+	temp_frame = 0;
+	if(overlayer) delete overlayer;
+	overlayer = 0;
 }
 
 char* ScaleMain::plugin_title() { return "Scale"; }
 int ScaleMain::is_realtime() { return 1; }
 
-VFrame* ScaleMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(ScaleMain)
 
 int ScaleMain::load_defaults()
 {
@@ -165,21 +158,6 @@ void ScaleMain::read_data(KeyFrame *keyframe)
 
 
 
-
-
-int ScaleMain::start_realtime()
-{
-	temp_frame = 0;
-	overlayer = 0;
-}
-
-int ScaleMain::stop_realtime()
-{
-	if(temp_frame) delete temp_frame;
-	temp_frame = 0;
-	if(overlayer) delete overlayer;
-	overlayer = 0;
-}
 
 int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
@@ -300,32 +278,9 @@ int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 
-
-int ScaleMain::show_gui()
-{
-//printf("ScaleMain::show_gui 1 %f %f\n",  config.w, config.h);
-	load_configuration();
-//printf("ScaleMain::show_gui 2 %f %f\n",  config.w, config.h);
-	thread = new ScaleThread(this);
-	thread->start();
-	return 0;
-}
-
-void ScaleMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
-int ScaleMain::set_string()
-{
-	if(thread)
-		thread->window->set_title(gui_string);
-	return 0;
-}
+SHOW_GUI_MACRO(ScaleMain, ScaleThread)
+RAISE_WINDOW_MACRO(ScaleMain)
+SET_STRING_MACRO(ScaleMain)
 
 void ScaleMain::update_gui()
 {

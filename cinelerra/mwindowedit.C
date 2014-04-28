@@ -32,8 +32,10 @@
 #include "track.h"
 #include "trackscroll.h"
 #include "tracks.h"
+#include "transition.h"
 #include "transportque.h"
 #include "units.h"
+#include "vplayback.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "zoombar.h"
@@ -230,6 +232,8 @@ int MWindow::copy(double start, double end)
 //printf("MWindow::copy 1\n");
 	edl->copy(start, 
 		end, 
+		0,
+		0,
 		0,
 		&file, 
 		plugindb,
@@ -428,6 +432,25 @@ void MWindow::delete_track(Track *track)
 	save_backup();
 }
 
+void MWindow::detach_transition(Transition *transition)
+{
+	undo->update_undo_before("detach transition", LOAD_ALL);
+	hide_plugin(transition, 1);
+	transition->edit->detach_transition();
+	save_backup();
+	undo->update_undo_after();
+	gui->update(0,
+		1,
+		0,
+		0,
+		0, 
+		0,
+		0);
+	sync_parameters(CHANGE_EDL);
+}
+
+
+
 
 
 // Insert data from clipboard
@@ -618,6 +641,7 @@ void MWindow::finish_modify_handles()
 	sync_parameters(CHANGE_EDL);
 //printf("TrackCanvas::end_handle_selection 1\n");
 	gui->update(1, 2, 1, 1, 1, 1, 0);
+	cwindow->update(1, 0, 0, 0, 1);
 //printf("TrackCanvas::end_handle_selection 2\n");
 
 
@@ -639,7 +663,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 		Track *track,
 		double position)
 {
-	undo->update_undo_before("move effect", LOAD_ALL);
+	undo->update_undo_before("move edit", LOAD_ALL);
 
 	edl->tracks->move_edits(edits, 
 		track, 
@@ -665,13 +689,16 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 }
 
 void MWindow::move_effect(Plugin *plugin,
-	PluginSet *plugin_set,
-	Track *track,
-	long position)
+	PluginSet *dest_plugin_set,
+	Track *dest_track,
+	long dest_position)
 {
 	undo->update_undo_before("move effect", LOAD_ALL);
 
-	edl->tracks->move_effect(plugin, plugin_set, track, position);
+	edl->tracks->move_effect(plugin, 
+		dest_plugin_set, 
+		dest_track, 
+		dest_position);
 
 	undo->update_undo_after();
 	save_backup();
@@ -812,6 +839,8 @@ void MWindow::overwrite(EDL *source)
 	source->copy(source->local_session->in_point, 
 		source->local_session->out_point, 
 		1,
+		0,
+		0,
 		&file,
 		plugindb,
 		"",
@@ -939,7 +968,7 @@ int MWindow::paste_assets(double position, Track *dest_track)
 
 
 
-//printf("TrackCanvas::drag_stop 4 %d\n", mwindow->session->drag_clips->total);
+//printf("TrackCanvas::drag_stop 4 %d\n", session->drag_clips->total);
 //printf("MWindow::paste_assets 4\n");
 
 	if(session->drag_clips->total)
@@ -983,7 +1012,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		new_edls.append(new_edl);
 
 
-//printf("MWindow::load_assets %d %d\n", new_assets->values[i]->audio_length, new_assets->values[i]->video_length);
+//printf("MWindow::load_assets 2 %d %d\n", new_assets->values[i]->audio_length, new_assets->values[i]->video_length);
 		asset_to_edl(new_edl, new_assets->values[i]);
 
 
@@ -993,7 +1022,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 				new_edl->labels->toggle_label(label->position, label->position);
 			}
 	}
-//printf("MWindow::load_assets 2\n");
+//printf("MWindow::load_assets 3\n");
 
 	paste_edls(&new_edls, 
 		load_mode, 
@@ -1001,7 +1030,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		position,
 		edit_labels,
 		edit_plugins);
-//printf("MWindow::load_assets 3\n");
+//printf("MWindow::load_assets 4\n");
 
 
 	save_backup();
@@ -1132,6 +1161,14 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		{
 			edl->add_clip(new_edl->clips.values[j]);
 		}
+
+		if(new_edl->vwindow_edl)
+		{
+			if(edl->vwindow_edl) delete edl->vwindow_edl;
+			edl->vwindow_edl = new EDL(edl);
+			edl->vwindow_edl->create_objects();
+			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
+		}
 	}
 //printf("MWindow::paste_edls 2\n");
 
@@ -1226,7 +1263,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 
 
-//printf("MWindow::paste_edls 1 %d\n", new_edl->assets->total());
+//printf("MWindow::paste_edls 2 %d\n", new_edl->assets->total());
 // Add assets and prepare index files
 		edl->update_assets(new_edl);
 		for(Asset *new_asset = edl->assets->first;
@@ -1336,17 +1373,18 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		if(load_mode == LOAD_PASTE)
 			current_position += edl_length;
 	}
-// printf("MWindow::paste_edls 2\n");
+//printf("MWindow::paste_edls 3\n");
 
 	delete [] paste_position;
-//printf("MWindow::paste_edls 2\n");
+//printf("MWindow::paste_edls 4\n");
 	update_project(load_mode);
 
+//printf("MWindow::paste_edls 5\n");
 
 // Start examining next batch of index files
 	mainindexes->start_build();
+//printf("MWindow::paste_edls 6\n");
 
-//printf("MWindow::paste_edls 2\n");
 // Don't save a backup after loading since the loaded file is on disk already.
 
 	return 0;
@@ -1366,38 +1404,103 @@ void MWindow::paste_silence()
 	undo->update_undo_after();
 
 	gui->update(1, 2, 1, 1, 1, 1, 0);
+	cwindow->update(1, 0, 0, 0, 1);
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 							CHANGE_EDL,
 							edl,
 							1);
 }
 
-
-
-void MWindow::paste_audio_transition()
+void MWindow::paste_transition()
 {
-    undo->update_undo_before("paste transition", LOAD_EDITS | LOAD_TIMEBAR);
-	edl->tracks->paste_audio_transition();
+    undo->update_undo_before("transition", LOAD_EDITS);
+// Only the first transition gets dropped.
+ 	PluginServer *server = session->drag_pluginservers->values[0];
+	if(server->audio)
+		strcpy(edl->session->default_atransition, server->title);
+	else
+		strcpy(edl->session->default_vtransition, server->title);
+
+	edl->tracks->paste_transition(server, session->edit_highlighted);
 	save_backup();
 	undo->update_undo_after();
 
 	sync_parameters(CHANGE_ALL);
+}
+
+void MWindow::paste_audio_transition()
+{
+ 	PluginServer *server = scan_plugindb(edl->session->default_atransition);
+	if(!server)
+	{
+		char string[BCTEXTLEN];
+		sprintf(string, "No default transition %s found.", edl->session->default_atransition);
+		gui->show_message(string);
+		return;
+	}
+
+    undo->update_undo_before("paste transition", LOAD_EDITS);
+	edl->tracks->paste_audio_transition(server);
+	save_backup();
+	undo->update_undo_after();
+
+	sync_parameters(CHANGE_ALL);
+	gui->update(0, 1, 0, 0, 0, 0, 0);
 }
 
 void MWindow::paste_video_transition()
 {
-    undo->update_undo_before("paste transition", LOAD_EDITS | LOAD_TIMEBAR);
-	edl->tracks->paste_video_transition();
+ 	PluginServer *server = scan_plugindb(edl->session->default_vtransition);
+	if(!server)
+	{
+		char string[BCTEXTLEN];
+		sprintf(string, "No default transition %s found.", edl->session->default_vtransition);
+		gui->show_message(string);
+		return;
+	}
+
+
+    undo->update_undo_before("paste transition", LOAD_EDITS);
+	edl->tracks->paste_video_transition(server);
 	save_backup();
 	undo->update_undo_after();
 
 	sync_parameters(CHANGE_ALL);
+	gui->update(0, 1, 0, 0, 0, 0, 0);
 }
 
-void MWindow::redo_entry()
+void MWindow::redo_entry(int is_mwindow)
 {
+	if(is_mwindow)
+		gui->unlock_window();
+	else
+		cwindow->gui->unlock_window();
+
+
+	cwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	vwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	cwindow->playback_engine->interrupt_playback(0);
+	vwindow->playback_engine->interrupt_playback(0);
+
+
+	cwindow->gui->lock_window();
+	gui->lock_window();
+
 	undo->redo(); 
 	gui->update(1, 2, 1, 1, 1, 1, 0);
+	cwindow->update(1, 1, 1, 1, 1);
+
+	if(is_mwindow)
+		cwindow->gui->unlock_window();
+	else
+		gui->unlock_window();
+
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 	    		   CHANGE_ALL,
 	    		   edl,
@@ -1518,7 +1621,7 @@ void MWindow::set_inpoint(int is_mwindow)
 
 void MWindow::set_outpoint(int is_mwindow)
 {
-	undo->update_undo_before("in point", LOAD_TIMEBAR);
+	undo->update_undo_before("out point", LOAD_TIMEBAR);
 	edl->set_outpoint(edl->local_session->selectionend);
 	save_backup();
 	undo->update_undo_after();
@@ -1554,6 +1657,8 @@ void MWindow::splice(EDL *source)
 	source->copy(source->local_session->in_point, 
 		source->local_session->out_point, 
 		1,
+		0,
+		0,
 		&file,
 		plugindb,
 		"",
@@ -1600,6 +1705,8 @@ void MWindow::to_clip()
 	edl->copy(start, 
 		end, 
 		0,
+		0,
+		0,
 		&file,
 		plugindb,
 		"",
@@ -1628,7 +1735,9 @@ int MWindow::toggle_label(int is_mwindow)
 {
 	double position1, position2;
 
+//printf("MWindow::toggle_label 1\n");
 	undo->update_undo_before("label", LOAD_TIMEBAR);
+//printf("MWindow::toggle_label 1\n");
 
 	if(cwindow->playback_engine->is_playing_back)
 	{
@@ -1641,12 +1750,15 @@ int MWindow::toggle_label(int is_mwindow)
 		position2 = edl->local_session->selectionend;
 	}
 
+//printf("MWindow::toggle_label 1 %f %f\n", position1,position2 );
 	position1 = edl->align_to_frame(position1, 0);
 	position2 = edl->align_to_frame(position2, 0);
 
+//printf("MWindow::toggle_label 1\n");
 	edl->labels->toggle_label(position1, position2);
 	save_backup();
 
+//printf("MWindow::toggle_label 1\n");
 	if(!is_mwindow)
 	{
 		gui->lock_window();
@@ -1659,6 +1771,7 @@ int MWindow::toggle_label(int is_mwindow)
 		gui->unlock_window();
 	}
 
+//printf("MWindow::toggle_label 1\n");
 	if(is_mwindow)
 	{
 		cwindow->gui->lock_window();
@@ -1670,7 +1783,9 @@ int MWindow::toggle_label(int is_mwindow)
 		cwindow->gui->unlock_window();
 	}
 
+//printf("MWindow::toggle_label 1\n");
 	undo->update_undo_after();
+//printf("MWindow::toggle_label 2\n");
 	return 0;
 }
 
@@ -1696,11 +1811,37 @@ void MWindow::trim_selection()
 
 
 
-void MWindow::undo_entry()
+void MWindow::undo_entry(int is_mwindow)
 {
+	if(is_mwindow)
+		gui->unlock_window();
+	else
+		cwindow->gui->unlock_window();
+
+	cwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	vwindow->playback_engine->que->send_command(STOP,
+		CHANGE_NONE, 
+		0,
+		0);
+	cwindow->playback_engine->interrupt_playback(0);
+	vwindow->playback_engine->interrupt_playback(0);
+
+	cwindow->gui->lock_window();
+	gui->lock_window();
+
 	undo->undo(); 
 
 	gui->update(1, 2, 1, 1, 1, 1, 0);
+	cwindow->update(1, 1, 1, 1, 1);
+
+	if(is_mwindow)
+		cwindow->gui->unlock_window();
+	else
+		gui->unlock_window();
+
 	awindow->gui->lock_window();
 	awindow->gui->update_assets();
 	awindow->gui->flush();
@@ -1794,52 +1935,5 @@ void MWindow::select_point(double position)
 	gui->flush();
 }
 
-
-
-void MWindow::sync_parameters(int change_type)
-{
-
-// Sync engines which are playing back
-	if(cwindow->playback_engine->is_playing_back)
-	{
-		if(change_type == CHANGE_PARAMS)
-		{
-// TODO: block keyframes until synchronization is done
-			cwindow->playback_engine->sync_parameters(edl);
-		}
-		else
-// Stop and restart
-		{
-//printf("MWindow::sync_parameters 1\n");
-			int command = cwindow->playback_engine->command->command;
-			cwindow->playback_engine->que->send_command(STOP,
-				CHANGE_NONE, 
-				0,
-				0);
-//printf("MWindow::sync_parameters 2\n");
-// Waiting for tracking to finish would make the restart position more
-// accurate but it can't lock the window to stop tracking for some reason.
-// Not waiting for tracking gives a faster response but restart position is
-// only as accurate as the last tracking update.
-			cwindow->playback_engine->interrupt_playback(0);
-//printf("MWindow::sync_parameters 3\n");
-			cwindow->playback_engine->que->send_command(command,
-					change_type, 
-					edl,
-					1,
-					0);
-//printf("MWindow::sync_parameters 4\n");
-		}
-	}
-	else
-	{
-//printf("MWindow::sync_parameters 1\n");
-		cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							change_type,
-							edl,
-							1);
-//printf("MWindow::sync_parameters 2\n");
-	}
-}
 
 

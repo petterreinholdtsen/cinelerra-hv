@@ -2,34 +2,7 @@
 #include "timeavgwindow.h"
 
 
-TimeAvgThread::TimeAvgThread(TimeAvgMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
-
-TimeAvgThread::~TimeAvgThread()
-{
-	delete window;
-}
-	
-void TimeAvgThread::run()
-{
-	BC_DisplayInfo info;
-	window = new TimeAvgWindow(client, 
-		info.get_abs_cursor_x() - 75, 
-		info.get_abs_cursor_y() - 65);
-	window->create_objects();
-
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-	if(result) client->client_side_close();
-}
-
+PLUGIN_THREAD_OBJECT(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
 
 
 
@@ -65,11 +38,7 @@ int TimeAvgWindow::create_objects()
 	return 0;
 }
 
-int TimeAvgWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(TimeAvgWindow)
 
 TimeAvgSlider::TimeAvgSlider(TimeAvgMain *client, int x, int y)
  : BC_ISlider(x, 

@@ -560,7 +560,7 @@ EditNextLabel::EditNextLabel(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	this->is_mwindow = is_mwindow;
-	set_tooltip("Next label");
+	set_tooltip("Next label ( ctrl -> )");
 }
 EditNextLabel::~EditNextLabel()
 {
@@ -587,7 +587,7 @@ EditPrevLabel::EditPrevLabel(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	this->is_mwindow = is_mwindow;
-	set_tooltip("Previous label");
+	set_tooltip("Previous label ( ctrl <- )");
 }
 EditPrevLabel::~EditPrevLabel()
 {
@@ -624,7 +624,7 @@ EditOverwrite::EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Overwrite");
+	set_tooltip("Overwrite ( b )");
 }
 EditOverwrite::~EditOverwrite()
 {
@@ -633,6 +633,15 @@ int EditOverwrite::handle_event()
 {
 	panel->overwrite_selection();
 	return 1;
+}
+int EditOverwrite::keypress_event()
+{
+	if(get_keypress() == 'b')
+	{
+		handle_event();
+		return 1;
+	}
+	return 0;
 }
 
 EditExtract::EditExtract(MWindow *mwindow, EditPanel *panel, int x, int y)
@@ -672,7 +681,7 @@ EditSplice::EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Splice");
+	set_tooltip("Splice ( v )");
 }
 EditSplice::~EditSplice()
 {
@@ -682,13 +691,22 @@ int EditSplice::handle_event()
 	panel->splice_selection();
 	return 1;
 }
+int EditSplice::keypress_event()
+{
+	if(get_keypress() == 'v')
+	{
+		handle_event();
+		return 1;
+	}
+	return 0;
+}
 
 EditCut::EditCut(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->cut_data)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Cut");
+	set_tooltip("Cut ( x )");
 }
 EditCut::~EditCut()
 {
@@ -713,7 +731,7 @@ EditCopy::EditCopy(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Copy");
+	set_tooltip("Copy ( c )");
 }
 EditCopy::~EditCopy()
 {
@@ -773,7 +791,7 @@ EditPaste::EditPaste(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Paste");
+	set_tooltip("Paste ( v )");
 }
 EditPaste::~EditPaste()
 {
@@ -830,7 +848,7 @@ EditUndo::EditUndo(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Undo");
+	set_tooltip("Undo ( z )");
 }
 EditUndo::~EditUndo()
 {
@@ -843,7 +861,7 @@ int EditUndo::keypress_event()
 }
 int EditUndo::handle_event()
 {
-	mwindow->undo_entry();
+	mwindow->undo_entry(panel->is_mwindow);
 	return 1;
 }
 
@@ -852,7 +870,7 @@ EditRedo::EditRedo(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Redo");
+	set_tooltip("Redo ( shift Z )");
 }
 EditRedo::~EditRedo()
 {
@@ -865,7 +883,7 @@ int EditRedo::keypress_event()
 }
 int EditRedo::handle_event()
 {
-	mwindow->redo_entry();
+	mwindow->redo_entry(panel->is_mwindow);
 	return 1;
 }
 
@@ -878,7 +896,7 @@ EditLabelbutton::EditLabelbutton(MWindow *mwindow, EditPanel *panel, int x, int 
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Toggle label at current position");
+	set_tooltip("Toggle label at current position ( l )");
 }
 
 EditLabelbutton::~EditLabelbutton()
@@ -907,7 +925,7 @@ EditFit::EditFit(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Fit selection to display");
+	set_tooltip("Fit selection to display ( f )");
 }
 EditFit::~EditFit()
 {

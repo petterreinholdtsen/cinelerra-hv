@@ -172,7 +172,7 @@ public:
 						int columns,
 						int xposition = 0,
 						int yposition = 0, 
-						int currentitem = -1,
+						int currentitem = -1,   // Item cursor is over
 						int recalc_positions = 0);   // set all autoplace flags to 1
 	void update_format(int display_format, int redraw);
 	int get_format();

@@ -121,6 +121,7 @@ BC_WindowBase::~BC_WindowBase()
    }
 #endif
 
+	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
 	{
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
@@ -345,7 +346,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		size_hints.max_width = allow_resize ? 32767 : this->w; 
 		size_hints.min_height = allow_resize ? minh : this->h;
 		size_hints.max_height = allow_resize ? 32767 : this->h; 
-		if(x > -INFINITY && x < INFINITY)
+		if(x > -BC_INFINITY && x < BC_INFINITY)
 		{
 			size_hints.flags |= PPosition;
 			size_hints.x = this->x;
@@ -1190,10 +1191,11 @@ int BC_WindowBase::show_tooltip(int w, int h)
 
 int BC_WindowBase::hide_tooltip()
 {
-	for(int i = 0; i < subwindows->total; i++)
-	{
-		subwindows->values[i]->hide_tooltip();
-	}
+	if(subwindows)
+		for(int i = 0; i < subwindows->total; i++)
+		{
+			subwindows->values[i]->hide_tooltip();
+		}
 
 	if(tooltip_on)
 	{
@@ -2933,8 +2935,8 @@ int BC_WindowBase::set_icon(VFrame *data)
 		1);
 
 	icon_window = new BC_Popup(this, 
-		(int)INFINITY, 
-		(int)INFINITY, 
+		(int)BC_INFINITY, 
+		(int)BC_INFINITY, 
 		icon_pixmap->get_w(), 
 		icon_pixmap->get_h(), 
 		-1, 

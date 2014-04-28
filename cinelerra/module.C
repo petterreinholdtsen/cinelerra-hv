@@ -35,18 +35,22 @@ Module::Module(RenderEngine *renderengine,
 
 Module::~Module()
 {
+//printf("Module::~Module 1\n");
 	if(attachments)
 	{
 		for(int i = 0; i < track->plugin_set.total; i++)
 		{
+//printf("Module::~Module 2 %p\n", attachments[i]);
 			if(attachments[i])
+			{
+//				attachments[i]->render_stop(0);
 				delete attachments[i];
+			}
 		}
 		delete [] attachments;
 	}
 	if(transition_server)
 	{
-		transition_server->realtime_stop();
 		transition_server->close_plugin();
 		delete transition_server;
 	}
@@ -128,11 +132,13 @@ void Module::swap_attachments()
 
 int Module::render_init()
 {
+//printf("Module::render_init 1\n");
 	for(int i = 0; i < total_attachments; i++)
 	{
 		if(attachments[i])
 			attachments[i]->render_init();
 	}
+//printf("Module::render_init 2\n");
 	return 0;
 }
 
@@ -197,7 +203,6 @@ void Module::update_transition(long current_position, int direction)
 	{
 		this->transition = 0;
 
-		transition_server->realtime_stop();
 		transition_server->close_plugin();
 		delete transition_server;
 		transition_server = 0;
@@ -216,7 +221,8 @@ void Module::update_transition(long current_position, int direction)
 			transition_server->init_realtime(
 				get_edl()->session->real_time_playback &&
 				renderengine->command->realtime,
-				1);
+				1,
+				get_buffer_size());
 		}
 		else
 		if(plugin_array)
@@ -226,7 +232,8 @@ void Module::update_transition(long current_position, int direction)
 			transition_server->open_plugin(0, get_edl(), transition);
 			transition_server->init_realtime(
 				0,
-				1);
+				1,
+				get_buffer_size());
 		}
 //printf("Module::update_transition 7\n");
 	}

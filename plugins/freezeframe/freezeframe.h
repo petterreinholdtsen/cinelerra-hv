@@ -72,6 +72,7 @@ public:
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
+	int is_synthesis();
 
 // parameters needed for freezeframe
 	VFrame *first_frame;

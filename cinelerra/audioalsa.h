@@ -5,7 +5,7 @@
 #include "audiodevice.h"
 
 #ifdef HAVE_ALSA
-#include <sys/asoundlib.h>
+#include "asoundlib.h"
 
 class AudioALSA : public AudioLowLevel
 {

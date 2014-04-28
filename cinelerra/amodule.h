@@ -37,7 +37,7 @@ public:
 		long input_position,
 		int direction);
 	void reverse_buffer(double *buffer, long len);
-
+	int get_buffer_size();
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
 

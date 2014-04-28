@@ -10,21 +10,10 @@ class BrightnessLuma;
 #include "brightness.h"
 #include "guicast.h"
 #include "mutex.h"
+#include "pluginvclient.h"
 #include "thread.h"
 
-class BrightnessThread : public Thread
-{
-public:
-	BrightnessThread(BrightnessMain *client);
-	~BrightnessThread();
-
-	void run();
-
-	Mutex gui_started, completion; // prevent loading data until the GUI is started
-	BrightnessMain *client;
-	BrightnessWindow *window;
-	BrightnessLuma *luma;
-};
+PLUGIN_THREAD_HEADER(BrightnessMain, BrightnessThread, BrightnessWindow)
 
 class BrightnessWindow : public BC_Window
 {

@@ -20,6 +20,7 @@ public:
 		long prev_frame, 
 		long next_frame, 
 		long current_frame);
+	void dump();
 
 	double level_init;
 	long delay_init;
@@ -61,8 +62,6 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	char* plugin_title();
-	int start_realtime();
-	int stop_realtime();
 	int show_gui();
 	int set_string();
 	void save_data(KeyFrame *keyframe);
@@ -77,6 +76,7 @@ public:
 	
 	ReverbThread *thread;
 	ReverbEngine **engine;
+	int initialized;
 };
 
 class ReverbEngine : public Thread

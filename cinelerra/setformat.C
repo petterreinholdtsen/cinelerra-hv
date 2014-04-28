@@ -77,61 +77,66 @@ void SetFormatThread::run()
 
 	if(!result)
 	{
-		double new_samplerate = new_settings->session->sample_rate;
-		double old_samplerate = mwindow->edl->session->sample_rate;
-		double new_framerate = new_settings->session->frame_rate;
-		double old_framerate = mwindow->edl->session->frame_rate;
-		int new_channels = new_settings->session->audio_channels;
-
-
-		mwindow->undo->update_undo_before("set format", LOAD_ALL);
-		mwindow->edl->copy_session(new_settings);
-		mwindow->edl->session->output_w = dimension[0];
-		mwindow->edl->session->output_h = dimension[1];
-		mwindow->edl->rechannel();
-		mwindow->edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
-		mwindow->edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
-		mwindow->save_backup();
-		mwindow->undo->update_undo_after();
-
-// Update GUIs
-		mwindow->gui->lock_window();
-		mwindow->gui->update(1,
-			1,
-			1,
-			1,
-			1, 
-			1,
-			0);
-		mwindow->gui->unlock_window();
-
-		mwindow->cwindow->gui->lock_window();
-		mwindow->cwindow->gui->resize_event(mwindow->cwindow->gui->get_w(), 
-			mwindow->cwindow->gui->get_h());
-		mwindow->cwindow->gui->meters->set_meters(new_channels, 1);
-		mwindow->cwindow->gui->slider->set_position();
-		mwindow->cwindow->gui->flush();
-		mwindow->cwindow->gui->unlock_window();
-
-		mwindow->vwindow->gui->lock_window();
-		mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
-			mwindow->vwindow->gui->get_h());
-		mwindow->vwindow->gui->meters->set_meters(new_channels, 1);
-		mwindow->vwindow->gui->flush();
-		mwindow->vwindow->gui->unlock_window();
-
-		mwindow->lwindow->gui->lock_window();
-		mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
-		mwindow->lwindow->gui->flush();
-		mwindow->lwindow->gui->unlock_window();
-
-// Flash frame
-		mwindow->sync_parameters(CHANGE_ALL);
+		apply_changes();
 		
 	}
 	
 	mwindow->defaults->update("AUTOASPECT", auto_aspect);
 	delete new_settings;
+}
+
+void SetFormatThread::apply_changes()
+{
+	double new_samplerate = new_settings->session->sample_rate;
+	double old_samplerate = mwindow->edl->session->sample_rate;
+	double new_framerate = new_settings->session->frame_rate;
+	double old_framerate = mwindow->edl->session->frame_rate;
+	int new_channels = new_settings->session->audio_channels;
+
+
+	mwindow->undo->update_undo_before("set format", LOAD_ALL);
+	mwindow->edl->copy_session(new_settings);
+	mwindow->edl->session->output_w = dimension[0];
+	mwindow->edl->session->output_h = dimension[1];
+	mwindow->edl->rechannel();
+	mwindow->edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
+	mwindow->edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
+	mwindow->save_backup();
+	mwindow->undo->update_undo_after();
+
+// Update GUIs
+	mwindow->gui->lock_window();
+	mwindow->gui->update(1,
+		1,
+		1,
+		1,
+		1, 
+		1,
+		0);
+	mwindow->gui->unlock_window();
+
+	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->resize_event(mwindow->cwindow->gui->get_w(), 
+		mwindow->cwindow->gui->get_h());
+	mwindow->cwindow->gui->meters->set_meters(new_channels, 1);
+	mwindow->cwindow->gui->slider->set_position();
+	mwindow->cwindow->gui->flush();
+	mwindow->cwindow->gui->unlock_window();
+
+	mwindow->vwindow->gui->lock_window();
+	mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
+		mwindow->vwindow->gui->get_h());
+	mwindow->vwindow->gui->meters->set_meters(new_channels, 1);
+	mwindow->vwindow->gui->flush();
+	mwindow->vwindow->gui->unlock_window();
+
+	mwindow->lwindow->gui->lock_window();
+	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
+	mwindow->lwindow->gui->flush();
+	mwindow->lwindow->gui->unlock_window();
+
+// Flash frame
+	mwindow->sync_parameters(CHANGE_ALL);
 }
 
 void SetFormatThread::update_window()
@@ -397,10 +402,13 @@ void SetFormatWindow::create_objects()
 
 
 
-
-
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
+	BC_OKButton *ok;
+	BC_CancelButton *cancel;
+	add_subwindow(ok = new BC_OKButton(this));
+	add_subwindow(cancel = new BC_CancelButton(this));
+	add_subwindow(new SetFormatApply((ok->get_x() + cancel->get_x()) / 2, 
+		ok->get_y(), 
+		thread));
 	flash();
 	show_window();
 }
@@ -718,3 +726,15 @@ int ScaleAspectText::handle_event()
 
 
 
+
+SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
+ : BC_GenericButton(x, y, "Apply")
+{
+	this->thread = thread;
+}
+
+int SetFormatApply::handle_event()
+{
+	thread->apply_changes();
+	return 1;
+}

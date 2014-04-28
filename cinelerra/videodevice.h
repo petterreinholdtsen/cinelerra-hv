@@ -154,7 +154,7 @@ public:
 	int is_playing_back;
 // Audio device to share data with
 	AudioDevice *adevice;
-// Reading data from the audio device
+// Reading data from the audio device.  This is set by the video device.
 	int sharing;
 // Synchronize the close devices
 	int done_sharing;

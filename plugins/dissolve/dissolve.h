@@ -20,8 +20,6 @@ public:
 	int is_video();
 	char* plugin_title();
 	VFrame* new_picon();
-	int start_realtime();
-	int stop_realtime();
 	OverlayFrame *overlayer;
 };
 

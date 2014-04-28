@@ -2,6 +2,8 @@
 OBJDIR := $(shell uname --machine)
 
 FREETYPE_DIR := $(shell expr freetype* )
+ALSA_DIR := $(shell expr alsa-lib* )
+
 
 ifeq ($(HAVE_AVIFILE), yes)
 AVIFILE_DIR := $(shell expr avifile* )
@@ -37,6 +39,9 @@ DISTOBJS = \
 
 all: $(OBJDIR)/ipc $(OBJDIR)/soundtest
 	make -f build/Makefile.libavc
+ifeq ($(HAVE_ALSA), yes)
+	make -f build/Makefile.asound
+endif
 	@ for i in $(DIRS) ; \
 	do \
 		 $(MAKE) -C $$i ; \

@@ -88,6 +88,8 @@ int TitleWindow::create_objects()
 	sizes.append(new BC_ListBoxItem("56"));
 	sizes.append(new BC_ListBoxItem("64"));
 	sizes.append(new BC_ListBoxItem("72"));
+	sizes.append(new BC_ListBoxItem("100"));
+	sizes.append(new BC_ListBoxItem("128"));
 
 	paths.append(new BC_ListBoxItem(TitleMain::motion_to_text(NO_MOTION)));
 	paths.append(new BC_ListBoxItem(TitleMain::motion_to_text(BOTTOM_TO_TOP)));
@@ -180,20 +182,29 @@ int TitleWindow::create_objects()
 	add_tool(x_title = new BC_Title(x, y, "X:"));
 	title_x = new TitleX(client, this, x, y + 20);
 	title_x->create_objects();
-	x += 100;
+	x += 90;
 
 	add_tool(y_title = new BC_Title(x, y, "Y:"));
 	title_y = new TitleY(client, this, x, y + 20);
 	title_y->create_objects();
-	x += 100;
+	x += 90;
 
 	add_tool(motion_title = new BC_Title(x, y, "Motion type:"));
+
 	motion = new TitleMotion(client, this, x, y + 20);
 	motion->create_objects();
 	x += 150;
 	
+	add_tool(loop = new TitleLoop(client, x, y + 20));
+	x += 100;
+	
 	x = 10;
 	y += 50;
+
+	add_tool(dropshadow_title = new BC_Title(x, y, "Drop shadow:"));
+	dropshadow = new TitleDropShadow(client, this, x, y + 20);
+	dropshadow->create_objects();
+	x += 100;
 
 	add_tool(fadein_title = new BC_Title(x, y, "Fade in (sec):"));
 	add_tool(fade_in = new TitleFade(client, this, &client->config.fade_in, x, y + 20));
@@ -206,7 +217,7 @@ int TitleWindow::create_objects()
 	add_tool(speed_title = new BC_Title(x, y, "Speed:"));
 	speed = new TitleSpeed(client, this, x, y + 20);
 	speed->create_objects();
-	x += 100;
+	x += 110;
 
 	add_tool(color_button = new TitleColorButton(client, this, x, y + 20));
 	x += 90;
@@ -254,6 +265,9 @@ int TitleWindow::resize_event(int w, int h)
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
 	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
 	motion->reposition_window(motion->get_x(), motion->get_y());
+	loop->reposition_window(loop->get_x(), loop->get_y());
+	dropshadow_title->reposition_window(dropshadow_title->get_x(), dropshadow_title->get_y());
+	dropshadow->reposition_window(dropshadow->get_x(), dropshadow->get_y());
 	fadein_title->reposition_window(fadein_title->get_x(), fadein_title->get_y());
 	fade_in->reposition_window(fade_in->get_x(), fade_in->get_y());
 	fadeout_title->reposition_window(fadeout_title->get_x(), fadeout_title->get_y());
@@ -354,6 +368,8 @@ void TitleWindow::update()
 	bold->update(client->config.style & FONT_BOLD);
 	size->update(client->config.size);
 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
+	loop->update(client->config.loop);
+	dropshadow->update((float)client->config.dropshadow);
 	fade_in->update((float)client->config.fade_in);
 	fade_out->update((float)client->config.fade_out);
 	font->update(client->config.font);
@@ -456,7 +472,7 @@ TitleMotion::TitleMotion(TitleMain *client, TitleWindow *window, int x, int y)
 		client->motion_to_text(client->config.motion_strategy),
 		x, 
 		y, 
-		150,
+		120,
 		100)
 {
 	this->client = client;
@@ -465,6 +481,18 @@ TitleMotion::TitleMotion(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleMotion::handle_event()
 {
 	client->config.motion_strategy = client->text_to_motion(get_text());
+	client->send_configure_change();
+	return 1;
+}
+
+TitleLoop::TitleLoop(TitleMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.loop, "Loop")
+{
+	this->client = client;
+}
+int TitleLoop::handle_event()
+{
+	client->config.loop = get_value();
 	client->send_configure_change();
 	return 1;
 }
@@ -529,6 +557,26 @@ int TitleText::handle_event()
 }
 
 
+TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y)
+ : BC_TumbleTextBox(window,
+ 	(long)client->config.dropshadow,
+	(long)0,
+	(long)1000,
+	x, 
+	y, 
+	70)
+{
+	this->client = client;
+	this->window = window;
+}
+int TitleDropShadow::handle_event()
+{
+	client->config.dropshadow = atol(get_text());
+	client->send_configure_change();
+	return 1;
+}
+
+
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
  	(long)client->config.x,
@@ -536,7 +584,7 @@ TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
 	(long)2048,
 	x, 
 	y, 
-	70)
+	60)
 {
 	this->client = client;
 	this->window = window;
@@ -555,7 +603,7 @@ TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
 	(long)2048,
 	x, 
 	y, 
-	70)
+	60)
 {
 	this->client = client;
 	this->window = window;

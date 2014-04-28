@@ -1076,6 +1076,7 @@ int BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 	if(gui)
 	{
 //printf("BC_ListBox::update 5\n");
+		draw_background();
 		draw_items();
 //printf("BC_ListBox::update 6\n");
 		update_scrollbars();

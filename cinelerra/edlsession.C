@@ -150,8 +150,10 @@ int EDLSession::load_defaults(Defaults *defaults)
 	cwindow_xscroll = defaults->get("CWINDOW_XSCROLL", 0);
 	cwindow_yscroll = defaults->get("CWINDOW_YSCROLL", 0);
 	cwindow_zoom = defaults->get("CWINDOW_ZOOM", (float)1);
-	sprintf(default_transition, "Dissolve");
-	defaults->get("DEFAULT_TRANSITION", default_transition);
+	sprintf(default_atransition, "Crossfade");
+	defaults->get("DEFAULT_ATRANSITION", default_atransition);
+	sprintf(default_vtransition, "Dissolve");
+	defaults->get("DEFAULT_VTRANSITION", default_vtransition);
 	default_transition_length = defaults->get("DEFAULT_TRANSITION_LENGTH", (double)1);
 	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", MOVE_ALL_EDITS);
 	edit_handle_mode[1] = defaults->get("EDIT_HANDLE_MODE1", MOVE_ONE_EDIT);
@@ -268,7 +270,8 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("CWINDOW_XSCROLL", cwindow_xscroll);
 	defaults->update("CWINDOW_YSCROLL", cwindow_yscroll);
 	defaults->update("CWINDOW_ZOOM", cwindow_zoom);
-	defaults->update("DEFAULT_TRANSITION", default_transition);
+	defaults->update("DEFAULT_ATRANSITION", default_atransition);
+	defaults->update("DEFAULT_VTRANSITION", default_vtransition);
 	defaults->update("DEFAULT_TRANSITION_LENGTH", default_transition_length);
     defaults->update("EDIT_HANDLE_MODE0", edit_handle_mode[0]);
     defaults->update("EDIT_HANDLE_MODE1", edit_handle_mode[1]);
@@ -336,21 +339,21 @@ int EDLSession::save_defaults(Defaults *defaults)
 
 
 // GCC 3.0 fails to compile
-#define INFINITY 65536
+#define BC_INFINITY 65536
 
 
 void EDLSession::boundaries()
 {
-	Workarounds::clamp(audio_tracks, 0, (int)INFINITY);
+	Workarounds::clamp(audio_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(audio_channels, 1, MAXCHANNELS - 1);
 	Workarounds::clamp(sample_rate, 1, 1000000);
-	Workarounds::clamp(video_tracks, 0, (int)INFINITY);
+	Workarounds::clamp(video_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(video_channels, 1, MAXCHANNELS - 1);
-	Workarounds::clamp(frame_rate, 1.0, (double)INFINITY);
+	Workarounds::clamp(frame_rate, 1.0, (double)BC_INFINITY);
 	Workarounds::clamp(min_meter_db, -100, -1);
 	Workarounds::clamp(frames_per_foot, 1, 32);
-	Workarounds::clamp(output_w, 16, (int)INFINITY);
-	Workarounds::clamp(output_h, 16, (int)INFINITY);
+	Workarounds::clamp(output_w, 16, (int)BC_INFINITY);
+	Workarounds::clamp(output_h, 16, (int)BC_INFINITY);
 	Workarounds::clamp(video_write_length, 1, 1000);
 //printf("EDLSession::boundaries 1\n");
 	Workarounds::clamp(cache_size, 1, 100);
@@ -455,7 +458,8 @@ int EDLSession::load_xml(FileXML *file,
 		cwindow_xscroll = file->tag.get_property("CWINDOW_XSCROLL", cwindow_xscroll);
 		cwindow_yscroll = file->tag.get_property("CWINDOW_YSCROLL", cwindow_yscroll);
 		cwindow_zoom = file->tag.get_property("CWINDOW_ZOOM", cwindow_zoom);
-		file->tag.get_property("DEFAULT_TRANSITION", default_transition);
+		file->tag.get_property("DEFAULT_ATRANSITION", default_atransition);
+		file->tag.get_property("DEFAULT_VTRANSITION", default_vtransition);
 		default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
@@ -510,7 +514,8 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("CWINDOW_XSCROLL", cwindow_xscroll);
 	file->tag.set_property("CWINDOW_YSCROLL", cwindow_yscroll);
 	file->tag.set_property("CWINDOW_ZOOM", cwindow_zoom);
-	file->tag.set_property("DEFAULT_TRANSITION", default_transition);
+	file->tag.set_property("DEFAULT_ATRANSITION", default_atransition);
+	file->tag.set_property("DEFAULT_VTRANSITION", default_vtransition);
 	file->tag.set_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
@@ -621,7 +626,8 @@ int EDLSession::copy(EDLSession *session)
 	cwindow_xscroll = session->cwindow_xscroll;
 	cwindow_yscroll = session->cwindow_yscroll;
 	cwindow_zoom = session->cwindow_zoom;
-	strcpy(default_transition, session->default_transition);
+	strcpy(default_atransition, session->default_atransition);
+	strcpy(default_vtransition, session->default_vtransition);
 	default_transition_length = session->default_transition_length;
 	edit_handle_mode[0] = session->edit_handle_mode[0];
 	edit_handle_mode[1] = session->edit_handle_mode[1];

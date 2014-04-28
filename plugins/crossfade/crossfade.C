@@ -4,11 +4,9 @@
 #include "picon_png.h"
 #include "vframe.h"
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new CrossfadeMain(server);
-}
 
+
+REGISTER_PLUGIN(CrossfadeMain)
 
 
 
@@ -26,21 +24,8 @@ char* CrossfadeMain::plugin_title() { return "Crossfade"; }
 int CrossfadeMain::is_transition() { return 1; }
 int CrossfadeMain::uses_gui() { return 0; }
 
-VFrame* CrossfadeMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+NEW_PICON_MACRO(CrossfadeMain)
 
-
-int CrossfadeMain::start_realtime()
-{
-	return 0;
-}
-
-int CrossfadeMain::stop_realtime()
-{
-	return 0;
-}
 
 int CrossfadeMain::process_realtime(long size, 
 	double *outgoing, 

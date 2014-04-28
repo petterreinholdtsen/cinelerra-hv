@@ -92,6 +92,7 @@ public:
 // Get keyframes for configuration
 	KeyFrame* get_prev_keyframe(long position);
 	KeyFrame* get_next_keyframe(long position);
+	long get_source_start();
 // Get interpolation used by EDL
 	int get_interpolation_type();
 // Get or create keyframe for writing, depending on editing status
@@ -125,9 +126,8 @@ public:
 	int set_string(char *string);      // set the string that appears on the plugin title
 // give the buffers and sizes and prepare processing realtime data
 	int init_realtime(int realtime_sched,
-		int total_in_buffers);   
-// deallocate buffers and stop realtime processing without closing the plugin
-	int realtime_stop();        
+		int total_in_buffers,
+		int buffer_size);   
 // process the data in the buffers
 	void process_realtime(VFrame **input, 
 			VFrame **output, 
@@ -244,7 +244,8 @@ public:
 	int uses_gui;
 // Plugin is a transition
 	int transition;
-	char *title;               // name of plugin in english
+// name of plugin in english.  Compared against the title value in the plugin.
+	char *title;               
 	long written_samples, written_frames;
 	char *path;           // location of plugin on disk
 	char *data_text;      // pointer to the data that was requested by a save_data command

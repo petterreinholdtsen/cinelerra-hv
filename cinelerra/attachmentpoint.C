@@ -59,9 +59,11 @@ int AttachmentPoint::render_init()
 //printf("AttachmentPoint::render_init 5.2 %p %p\n", plugin_servers.values[i], plugin);
 					plugin_servers.values[i]->open_plugin(0, renderengine->edl, plugin);
 //printf("AttachmentPoint::render_init 5.3\n");
-					plugin_servers.values[i]->init_realtime(renderengine->edl->session->real_time_playback &&
-						renderengine->command->realtime,
-						new_total_input_buffers);
+					plugin_servers.values[i]->init_realtime(
+						renderengine->edl->session->real_time_playback &&
+							renderengine->command->realtime,
+						new_total_input_buffers,
+						get_buffer_size());
 //printf("AttachmentPoint::render_init 5.4\n");
 				}
 //printf("AttachmentPoint::render_init 6\n");
@@ -90,14 +92,15 @@ int AttachmentPoint::render_stop(int duplicate)
 {
 // stop plugins
 // Can't use the on value here because it may have changed.
-	if(plugin_server && virtual_plugins.total && !duplicate)
+//printf("AttachmentPoint::render_stop 1\n");
+	if(plugin_server && plugin->on && virtual_plugins.total && !duplicate)
 	{
 // close the plugins if not shared
 		for(int i = 0; i < virtual_plugins.total; i++)
 		{
 			if(i == 0 || !plugin_server->multichannel)
 			{
-				plugin_servers.values[i]->realtime_stop();
+//printf("AttachmentPoint::render_stop 2\n");
 				plugin_servers.values[i]->close_plugin();
 			}
 		}

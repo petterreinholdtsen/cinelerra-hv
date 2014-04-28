@@ -30,8 +30,8 @@ int DC_Offset::calibrate_dc_offset(long *output, RecordGUIDCOffsetText **dc_offs
 void DC_Offset::run()
 {
 // thread out progress box
-	progress = new BC_ProgressBox((int)INFINITY, 
-		(int)INFINITY, 
+	progress = new BC_ProgressBox((int)BC_INFINITY, 
+		(int)BC_INFINITY, 
 		"DC Offset", 
 		256000);
 	progress->start();

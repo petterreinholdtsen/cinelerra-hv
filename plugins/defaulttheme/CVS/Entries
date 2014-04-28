@@ -2,7 +2,6 @@
 /buttons.xcf.bz2/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /cwindow.xcf.bz2/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /cwindow2.xcf.bz2/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/defaulttheme.h/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /defaulttheme.inc/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hscroll.xcf.bz2/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /hscroll2.xcf.bz2/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -17,4 +16,7 @@
 /vwindow.xcf.bz2/1.1.1.1/Fri Jun 21 12:35:26 2002//
 D/.xvpics////
 D/data////
-/defaulttheme.C/1.2/Thu Jul 11 16:08:00 2002//
+/defaulttheme.h/1.2/Mon Jul 29 12:31:00 2002//
+/recordgui.xcf.bz2/1.2/Mon Jul 29 12:44:03 2002/-kb/
+/recordmonitor.xcf.bz2/1.2/Mon Jul 29 13:27:58 2002/-kb/
+/defaulttheme.C/1.4/Tue Jul 30 16:24:20 2002//

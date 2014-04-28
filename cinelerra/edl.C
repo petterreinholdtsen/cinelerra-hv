@@ -32,6 +32,7 @@ EDL::EDL(EDL *parent_edl)
 	labels = 0;
 	local_session = 0;
 	presentations = 0;
+	vwindow_edl = 0;
 
 	new_folder(CLIP_FOLDER);
 	new_folder(MEDIA_FOLDER);
@@ -59,6 +60,9 @@ EDL::~EDL()
 	{
 		delete local_session;
 	}
+
+	if(vwindow_edl)
+		delete vwindow_edl;
 
 	if(!parent_edl)
 	{
@@ -194,12 +198,10 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 
 			if(!result)
 			{
-				if(file->tag.title_is("/XML"))
-				{
-					result = 1;
-				}
-				else
-				if(file->tag.title_is("/EDL"))
+				if(file->tag.title_is("/XML") ||
+					file->tag.title_is("/EDL") ||
+					file->tag.title_is("/CLIP_EDL") ||
+					file->tag.title_is("/VWINDOW_EDL"))
 				{
 					result = 1;
 				}
@@ -268,13 +270,35 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				else
 // Sub EDL.
 // Causes clip creation to fail because that involves an opening EDL tag.
-				if(file->tag.title_is("EDL") && !parent_edl)
+				if(file->tag.title_is("CLIP_EDL") && !parent_edl)
 				{
-//printf("EDL::load_xml 5 %d\n", tracks->total());
 					EDL *new_edl = new EDL(this);
 					new_edl->create_objects();
 					new_edl->load_xml(plugindb, file, LOAD_ALL);
-					if((load_flags & LOAD_ALL) == LOAD_ALL) clips.append(new_edl);
+
+					if((load_flags & LOAD_ALL) == LOAD_ALL)
+						clips.append(new_edl);
+					else
+						delete new_edl;
+				}
+				else
+				if(file->tag.title_is("VWINDOW_EDL") && !parent_edl)
+				{
+					EDL *new_edl = new EDL(this);
+					new_edl->create_objects();
+					new_edl->load_xml(plugindb, file, LOAD_ALL);
+
+
+					if((load_flags & LOAD_ALL) == LOAD_ALL)
+					{
+						if(vwindow_edl) delete vwindow_edl;
+						vwindow_edl = new_edl;
+					}
+					else
+					{
+						delete new_edl;
+						new_edl = 0;
+					}
 				}
 			}
 		}while(!result);
@@ -292,11 +316,15 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // The string is not terminated in this call.
 int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 	FileXML *file, 
-	char *output_path)
+	char *output_path,
+	int is_clip,
+	int is_vwindow)
 {
 	copy(0, 
 		tracks->total_length(), 
 		1, 
+		is_clip,
+		is_vwindow,
 		file, 
 		plugindb, 
 		output_path,
@@ -306,12 +334,15 @@ int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 
 int EDL::copy_all(EDL *edl)
 {
+//printf("EDL::copy_all 1\n");
 	copy_session(edl);
 //printf("EDL::copy_all 1\n");
 	copy_assets(edl);
-	copy_clips(edl);
 //printf("EDL::copy_all 1\n");
+	copy_clips(edl);
+//printf("EDL::copy_all 2\n");
 	*this->tracks = *edl->tracks;
+//printf("EDL::copy_all 2\n");
 	*this->labels = *edl->labels;
 //printf("EDL::copy_all 2\n");
 	return 0;
@@ -319,6 +350,14 @@ int EDL::copy_all(EDL *edl)
 
 void EDL::copy_clips(EDL *edl)
 {
+	if(vwindow_edl) delete vwindow_edl;
+	vwindow_edl = 0;
+	if(edl->vwindow_edl)
+	{
+		vwindow_edl = new EDL(this);
+		vwindow_edl->create_objects();
+		vwindow_edl->copy_all(edl->vwindow_edl);
+	}
 	clips.remove_all_objects();
 	for(int i = 0; i < edl->clips.total; i++)
 	{
@@ -409,6 +448,8 @@ int EDL::copy_assets(double start,
 int EDL::copy(double start, 
 	double end, 
 	int all, 
+	int is_clip,
+	int is_vwindow,
 	FileXML *file, 
 	ArrayList<PluginServer*> *plugindb, 
 	char *output_path,
@@ -416,7 +457,14 @@ int EDL::copy(double start,
 {
 //printf("EDL::copy 1\n");
 // begin file
-	file->tag.set_title("EDL");
+	if(is_clip)
+		file->tag.set_title("CLIP_EDL");
+	else
+	if(is_vwindow)
+		file->tag.set_title("VWINDOW_EDL");
+	else
+		file->tag.set_title("EDL");
+
 	file->append_tag();
 	file->append_newline();
 
@@ -465,10 +513,25 @@ int EDL::copy(double start,
 			output_path);
 
 // Clips
+// Don't want this if using clipboard
 		if(all)
 		{
+			if(vwindow_edl)
+			{
+				
+				vwindow_edl->save_xml(plugindb, 
+					file, 
+					output_path,
+					0,
+					1);
+			}
+
 			for(int i = 0; i < clips.total; i++)
-				clips.values[i]->save_xml(plugindb, file, output_path);
+				clips.values[i]->save_xml(plugindb, 
+					file, 
+					output_path,
+					1,
+					0);
 		}
 
 		file->append_newline();
@@ -486,7 +549,13 @@ int EDL::copy(double start,
 //printf("EDL::copy 2\n");
 
 // terminate file
-	file->tag.set_title("/EDL");
+	if(is_clip)
+		file->tag.set_title("/CLIP_EDL");
+	else
+	if(is_vwindow)
+		file->tag.set_title("/VWINDOW_EDL");
+	else
+		file->tag.set_title("/EDL");
 	file->append_tag();
 	file->append_newline();
 
@@ -706,6 +775,10 @@ void EDL::remove_from_project(ArrayList<Asset*> *assets)
 		{
 			clips.values[j]->remove_from_project(assets);
 		}
+
+// Remove from VWindow
+	if(vwindow_edl)
+		vwindow_edl->remove_from_project(assets);
 
 	for(int i = 0; i < assets->total; i++)
 	{

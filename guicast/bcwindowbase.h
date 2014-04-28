@@ -10,7 +10,7 @@
 #endif
 
 #define TOOLTIP_MARGIN 2
-#define INFINITY 65536
+#define BC_INFINITY 65536
 
 #include "bcfilebox.inc"
 #include "arraylist.h"

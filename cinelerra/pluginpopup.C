@@ -35,6 +35,7 @@ void PluginPopup::create_objects()
 
 int PluginPopup::update(Plugin *plugin)
 {
+//printf("PluginPopup::update %p\n", plugin);
 	on->set_checked(plugin->on);
 //	in->set_checked(plugin->in);
 //	out->set_checked(plugin->out);

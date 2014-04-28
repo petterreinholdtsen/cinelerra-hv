@@ -30,6 +30,10 @@ Copyright @copyright{} 2002 Heroine Virtual Ltd.
 * EDITING::
 * USING EFFECTS::
 * SETTING PROJECT ATTRIBUTES::
+* COMPOSITING::
+* KEYFRAMES::
+* CAPTURING MEDIA::
+* EFFECT DESCRIPTIONS::
 @end menu
 
 @contents
@@ -816,10 +820,20 @@ When selected, all the
 NODES
 
 Displays all the nodes on the renderfarm and which ones are active. 
-Select the @emph{ON} column to activate and deactivate nodes.  Select
-the @emph{HOSTNAME} and @emph{PORT} columns to edit a node.  Computer
-freaks may be better off editing the @emph{~/.bcast/.Cinelerra_rc} file
-than this if they have hundreds of nodes.
+
+Nodes are added by entering the host name of the node, verifying the
+value of @emph{port} and hitting @emph{add node}.
+
+Computer freaks may be better off editing the
+@emph{~/.bcast/.Cinelerra_rc} file than this if they have hundreds of
+nodes.  Remember that .Cinelerra_rc is overwritten whenever a copy of
+Cinelerra exits.
+
+Select the @emph{ON} column to activate and deactivate nodes once they
+are created.
+
+Nodes may be edited by highlighting a row and hitting @emph{replace
+node}.
 
 @item
 
@@ -871,12 +885,31 @@ mounted under @emph{/mnt} on the nodes, the filesystem prefix should be
 on the nodes as the master.  In this case the filesystem prefix can be
 @emph{/}.
 
+You don't have to mount a shared filesystem on remote nodes.  If the
+shared filesystem is replicated somewhere on the slave node's hard
+drive, Cinelerra will read all the assets from the node's hard drive
+and write the output to the node's hard drive, and you won't need a
+very fast network.  This is much more difficult to pull off but it's an
+option for really slow networks.
+
+You don't have to specify a file on the master node's filesystem as the
+output file.  If the output file is specified in some other directory
+on the slave node hard drive Cinelerra will read assets from the master
+filesystem but write to the node's hard drive.  Thus you have a way of
+rendering across an asymetric network.
+
 @item
 
 TOTAL JOBS TO CREATE
 
 Determines the number of jobs to dispatch to the renderfarm.  The more
 jobs you create, the more finely balanced the renderfarm becomes.
+
+Determine the total jobs to create by multiplying the number of nodes
+including the master node by some number.  Multiply them by 1 to have
+one job dispatched for every node.  Multiply them by 3 to have 3 jobs
+dispatched for every node.  If you have 10 slave nodes and one master
+node, specify 33 to have a well balanced renderfarm.
 
 @end itemize
 
@@ -1008,6 +1041,7 @@ audio levels after all mixing is done.
 * LOADING THE BACKUP::
 * SAVING FILES::
 * RENDERING FILES::
+* THE RENDER FARM::
 @end menu
 
 
@@ -1352,6 +1386,75 @@ the audio output is pasted into the audio tracks.
 
 
 
+
+
+
+
+
+
+
+
+
+
+@node THE RENDER FARM
+@section THE RENDER FARM
+
+When bicubic interpolation and HDTV was first done on Cinelerra, the
+time needed to produce the simplest output became unbearable even on
+the fastest dual 1.7Ghz Xeon of the time.  Renderfarm support even in
+the simplest form brings HDTV times back in line with SD while making
+SD faster than realtime.
+
+While the renderfarm interface isn't spectacular, it's simple enough to
+use inside an editing suite with less than a dozen nodes without going
+through the same amount of hassle you would with a several hundred node
+farm.  Renderfarm is invoked transparently for all file->render
+operations when it is enabled in the preferences.
+
+It should be noted that @emph{Create new file at each label} causes a
+new renderfarm job to be created at each label instead of the default
+load balancing.  If this option is selected when no labels exist, only
+one job will be created.
+
+A Cinelerra renderfarm is organized into a master node and any number
+of slave nodes.  The master node is the computer which is running the
+GUI.  The slave nodes are anywhere else on the network and are run from
+the command line.
+
+Cinelerra divides the selected region of the timeline into a certain
+number of jobs which are then dispatched to the different nodes
+depending on the load balance.  The nodes process the jobs and write
+their output to individual files on the filesystem.  The output files
+are not concatenated.  It's important for all the nodes and the master
+node to use the same filesystem for assets, mounted over the network.
+
+Since most of the time you'll want to bring in the rendered output and
+fine tune it on the timeline, the jobs are left in individual files. 
+You can load these using @emph{concatenate mode} and render them again
+with renderfarm disabled.  If the track and output dimensions equal the
+asset dimensions, Cinelerra will do a direct copy of all the jobs into
+a single file.  Note that direct copying doesn't work for MPEG Video. 
+MPEG has the distinction that you can concatenate the subfiles with the
+UNIX cat utility.
+
+Configuration of the renderfarm is described in the configuration
+chapter @xref{RENDERFARM}.  The slave nodes traditionally read and
+write data to a common filesystem over a network, thus they don't need
+hard drives.
+
+Ideally all the nodes on the renderfarm have similar CPU performance. 
+Cinelerra load balances on a first come first serve basis.  If the last
+segment is dispatched to the slowest node, all the fastest nodes may
+end up waiting for the slowest node to finish while they themselves
+could have rendered it faster.
+
+
+
+
+
+
+
+
 @node NAVIGATING THE PROJECT
 @chapter NAVIGATING THE PROJECT
 
@@ -1678,6 +1781,27 @@ timebar displays the entire program here.
 
 
 
+Like the Program window, the Compositor has a zoom capability.  First,
+the pulldown menu on the bottom of the compositor window has a number
+of zoom options.  When set to @emph{Auto} the video is zoomed to match
+the compositor window size as closely as possible.  When set to any
+other percentage, the video is zoomed a power of 2 and scrollbars can
+be used to scroll around the output.  When the video is zoomed bigger
+than the window size, not only do scrollbars scan around it but
+@emph{middle mouse button} dragging in the video output scans around
+it.  This is exactly when The Gimp does.
+
+Furthermore, the zoom @image{magnify} toggle causes the Compositor
+window to enter zoom mode.  In zoom mode, clicking in the video output
+zooms in while @emph{ctrl-clicking} in the video output zooms out.  If
+you have a wheel mouse, rotating the wheel zooms in or out too.
+
+Zooming in or out with the zoom tool does not change the rendered
+output, mind you.  It's merely for scrutinizing video or fitting it in
+the desktop.
+
+
+
 
 
 
@@ -1944,10 +2068,15 @@ optional.
 
 @item
 
-Cut and copy behave the same as in cut and paste editing.
+Copy behaves the same as in cut and paste editing.
 
 @end itemize
 
+Two screen editing can be done purely by keybard shortcuts.  When you
+move the pointer over any button a tooltip should appear, showing what
+key is bound to that button.  In the Viewer window, the number pad keys
+control the transport and the @emph{[ ] v} keys perform in/out points
+and splicing.
 
 
 
@@ -2049,8 +2178,23 @@ region are overridden by the in/out points for clipboard operations.
 Thus, with in/out points you can perform cut and paste in drag and drop
 mode as well as cut and paste mode.
 
-If you open a second copy of Cinelerra, cutting and pasting can
-transport media between the two copies.
+When editing audio, it is customary to cut from one part of a waveform
+into the same part of another waveform.  The start and stop points of
+the cut are identical in each waveform and might be offset slightly,
+while the wave data is different.  It would be very hard to highlight
+one waveform to cut it and highlight the second waveform to paste it
+without changing the relative start and stop positions.
+
+One option for simplifying this is to open a second copy of Cinelerra,
+cutting and pasting to transport media between the two copies.  This
+way two highlighed regions can exist simultanously.
+
+Another option is to set in/out points for the source region of the
+source waveform and set labels for the destination region of the
+destination waveform.  Perform a cut, clear the in/out points, select
+the region between the labels, and perform a paste.
+
+
 
 A final operation in cut and paste editing is the @emph{edit->clear}
 operation.  If a region is highlighted or in/out points exist, the
@@ -2131,7 +2275,7 @@ involving a unique procedure to apply each change.  This is why we have
 effects.
 
 Effects fall into three categories, and each effect in a category is
-applied the same way.
+applied using the same procedure.
 
 
 @menu
@@ -2149,7 +2293,204 @@ These are layered under the track they apply to.  They process the
 track when the track is played back, with no permanent storage of the
 output except when the project is rendered.
 
-All the realtime effects are listed in the resource window.
+All the realtime effects are listed in the resource window, divided
+into two groups: audio effects and video effects.  Audio effects should
+be dragged from the resource window onto audio tracks.  Video effects
+should be dragged onto video tracks.
+
+If there is data on the destination track, the effect is applied to the
+entire track.  If there is no data on the track the effect is deleted. 
+Finally, if a region of the track is selected the effect is pasted into
+the region, regardless of whether there is data.
+
+Some of the effects don't process data but synthesize data.  In the
+case of a synthesis effect, you'll want to select a region of the
+track so the dragging operation pastes it without deleting it.
+
+When dragging more than one effect onto a track, you'll see the effects
+layering from top to bottom, on the bottom of the track.   When the
+track is played back, effects are processed from top to bottom.  The
+output of the top effect becomes the input of the bottom effect and so
+on and so forth.
+
+In addition to dragging from the resource window, effects may be
+applied to a track by a popup menu.  Right click on a track and select
+@emph{Attach effect} from the popup.  The attach effect dialog gives
+you more control than pure dragging and dropping.  For one thing, the
+attach effect dialog lets you attach two more types of effects: shared
+effects and shared tracks.  Select a plugin from the @emph{Plugins}
+column and hit @emph{Attach} under the plugins column to attach it. 
+The effect is the same as if the effect was dragged from the resource
+window.
+
+When an effect exists under a track, it most often needs to be
+configured.  Go to the effect and right click on it to bring up the
+effect popup.  In the effect popup is a @emph{show} option.  The show
+option causes the GUI for the effect to appear under the cursor.  Most
+effects have GUI's but some don't.  If the effect doesn't have a GUI,
+nothing pops up when the @emph{show} option is selected.  When you
+tweek parameters in the effect GUI, the parameters normally effect the
+entire duration of the effect.
+
+
+@menu
+* REALTIME EFFECT TYPES::
+* EDITING REALTIME EFFECTS::
+@end menu
+
+
+
+@node REALTIME EFFECT TYPES
+@subsection REALTIME EFFECT TYPES
+
+The two other effect types supported by the Attach Effect dialog are
+recycled effects.  In order to use a recycled effect, three requiremenets
+must be met:
+
+@itemize
+
+@item
+There must be other effects in the timeline.
+
+@item
+
+The other effects must be of the same type as the track you're
+attaching an effect to.  If the track is an audio track, the effects
+must be audio effects.  If the track is a video track, the effects must
+be video effects.
+
+@item
+
+The insertion point or selected region must start inside the other effects.
+
+@end itemize
+
+In the case of a shared effect, these conditions must be true.  In the
+case of a shared track, there merely must be another track on the
+timeline of the same type as the track you're applying an effect to. 
+If you right clicked on a video track to attach an effect, there won't
+be anything in the @emph{shared tracks} column if no other video track
+exists.  If you right clicked on an audio track there won't be anything
+in the shared track column if no other audio track exists.
+
+If shared effects or shared tracks are available, they appear in the
+@emph{shared effects} and @emph{shared tracks} columns.  The
+@emph{attach} button under each column causes anything highlighted in
+the column to be attached under the current track.
+
+Shared effects and shared tracks allow very unique things to be done. 
+In the case of a shared effect, the shared effect is treated like a
+copy of the original effect except in the shared effect the GUI can't
+be brought up.  All configuration of the shared effect is determined by
+the GUI of the original effect and only the GUI of the original effect
+can be brought up.
+
+When a shared effect is played back, it's processed just like a normal
+effect except the configuration is copied from the original effect. 
+Some effects detect when they are being shared, like the reverb effects
+and the compressor.  These effects determine what tracks are sharing
+them and either mix the two tracks together or use one track to stage
+some value.  The reverb mixes tracks together to simulate ambience. 
+The compressor uses one of the sharing tracks as the trigger.
+
+When an original track has a @emph{shared track} as one of its effects,
+the shared track itself is used as a realtime effect.  This is more
+commonly known as @emph{bouncing tracks} but Cinelerra achieves the
+same operation by attaching shared tracks.  The fade and any effects in
+the shared track are applied to the original track.  Once the shared
+track has processed the data, the original track performs any effects
+which come below the shared track and then composites it on the output.
+
+In addition, once the shared track has processed the output of the
+original track like a realtime effect, the shared track mixes itself
+into the output with it's settings for pan, mode, and projector.  Thus,
+two tracks are mixing the same data on the output.  Most of the time
+you don't want the shared track to mix the same data as the original
+track on the output.  You want it to stop right before the mixing stage
+and give the data back to the original track.  Do this by enabling the
+@image{mutepatch_up} mute toggle next to each track for whom you don't
+want to mix on the output.
+
+Suppose you were making video and you did want the shared track to
+composite the original track's data on the output a second time.  In
+the case of video, the video from the shared track would always appear
+under the video from the original track, regardless of whether it was
+on top of the original track.  This is because shared tracks are
+composited in order of their attachment.  Since it's part of the original
+track it has to be composited before the original track is composited.
+
+
+
+
+
+
+
+@node EDITING REALTIME EFFECTS
+@subsection EDITING REALTIME EFFECTS
+
+Many operations exist for manipulating effects once they are in the
+timeline.  Because mixing effects and media is such complex business,
+the methods used in editing effects aren't as concise as cutting and
+pasting.  Some of the editing happens by dragging in/out points, some
+of the editing happens through popup menus, and some of it happens by
+dragging effects.
+
+Normally when you edit tracks, the effects follow the editing
+decisions.  If you cut from a track, the effect shrinks.  If you drag
+edit in/out points, the effect changes length.  This behavior can be
+disabled by selecting @emph{Settings->edit effects} in the project
+window.  This decouples effects from editing operations, but what if
+you just want to edit the effects?
+
+Move the timeline cursor over the effect borders until it changes to a
+resize left or resize right icon.  In this state, if you drag the end
+of the effect, it performs an edit just like dragging the end of a
+track does.  
+
+The three editing behaviors of track trimming apply to effect trimming
+and they are bound to the mouse buttons that you set in @emph{interface
+preferences}. @xref{INTERFACE}.  When you perform a trim edit on an
+effect, the effect boundary is moved by dragging on it.  Unlike track
+editing, the effect has no source length.  You can extend the end of an
+effect as much as desired without being limited.
+
+Also unlike track editing, the starting position of the drag operation
+doesn't bind the edit decision to media.  The media the effect is bound
+to doesn't follow effect edits.  Other effects; however, do follow
+editing decisions made on an effect.  If you drag the end of an effect
+which is lined up to effects on other tracks, the effects on the other
+tracks will be edited while the media stays the same.
+
+What happens if you trim the end of an effect in, leaving a lot of
+unaffected time near the end of the track?  When you drag an effect in
+from the Resource Window you can insert the effect in the portion of
+the row unoccupied by the trimming operation.  Realtime effects are
+organized into rows under the track.  Each row can have multiple
+effects.
+
+In addition to trimming, you can move effects up or down.  Every track
+can have a stack of effects under it.  By moving an effect up or down
+you change the order in which effects are processed in the stack.  Go
+to an effect and right click to bring up the effect menu.  The
+@emph{Move up} and @emph{Move down} options move the effect up or down.
+
+When you're moving effects up or down, be aware that if they're shared
+as @emph{shared effects}, any references will be pointing to a
+different effect after the move operation.
+
+Finally, there's dragging of effects.  Dragging effects works just like
+dragging edits.  You must select the @image{arrow} arrow to enter drag and
+drop mode before dragging effects.  The effects snap to media
+boundaries, effect boundaries, and tracks.  Be aware if you drag a
+reference to a shared effect, the reference will usually point to the
+wrong effect afterwards.
+
+Right click on an effect to bring up a menu for the effect.  Select
+@emph{attach...} to change the effect or change the reference if it is
+a shared effect.
+
+
+
 
 
 
@@ -2159,13 +2500,62 @@ All the realtime effects are listed in the resource window.
 @section RENDERED EFFECTS
 
 
-These are performed on a section of the track and the result stored
-somewhere before they are played back.  The result is usually pasted
-into the track to replace the original data.
+Another type of effect is performed on a section of the track and the
+result stored somewhere before it is played back.  The result is
+usually pasted into the track to replace the original data.
 
 The rendered effects are not listed in the resource window but instead
-are accessed in the @emph{Audio->Render effect} and @emph{Video->Render
-effect} options.
+are accessed through the @emph{Audio->Render effect} and
+@emph{Video->Render effect} menu options.  Each of these menu options
+brings up a dialog for the rendered effect.  Rendered effects apply to
+only one type of track, either audio or video.  If no tracks of the
+type exist, an error pops up.
+
+A region of the timeline to apply the effect to must be defined before
+selecting @emph{Render effect...}.  If no in/out points and no
+highlighted region exists, the entire region after the insertion point
+is treated as the affected region.  Otherwise, the region between the
+in/out points or the highlighted region is the affected region.
+
+In the render effect dialog is a list of all the realtime and all the
+rendered effects.  The difference here is that the realtime effects are
+rendered to disk and not applied under the track.  Highlight an effect
+in the list to designate it as the one being performed.
+
+Define a file to render the effect to in the @emph{Select a file to
+render to} box.  The @image{magnify} magnifying glass allows file
+selection from a list.
+
+Select a file format which can handle the track type.  The
+@image{wrench} wrench allows configuration specific to the file format.
+
+There is also an option for creating a new file at each label.  If you
+have a CD rip on the timeline which you want to divide into different
+files, the labels would become dividing points between the files if
+this option were selected.  When the timeline is divided by labels, the
+effect is re-initialized at every label.  Normalize operations take the
+peak in the current file and not in the entire timeline.
+
+Finally there is an insertion strategy just like in the render dialog. 
+It should be noted that even though the effect applies only to audio or
+video, the insertion strategy applies to all tracks just like a
+clipboard operation.
+
+When you click @emph{OK} in the effect dialog, it calls the GUI of the
+effect.  If the effect is also a realtime effect, a second GUI appears
+to prompt for acceptance or rejection of the current settings.  After
+accepting the settings, the effect is processed.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2179,7 +2569,57 @@ edit's output to become the second edit's output with different
 variations.
 
 Cinelerra supports audio and video transitions, all of which are listed
-in the resource window.
+in the resource window.  Transitions may only apply to the matching
+track type.  Transitions under @emph{audio transitions} can only apply
+to audio tracks.  Transitions under @emph{video transitions} can only
+apply to video tracks.
+
+Load a video file and cut a section from the center so the edit point
+is visible on the timeline.  Go the resource window and click on the
+@emph{Video transitions} folder.  Drag a transition from the transition
+list onto the second video edit on the timeline.  A box highlights over
+where the transition will appear.  Releasing it over the second edit
+applies the transition between the first and second edit.
+
+You can now scrub over the transition with the transport controls and
+watch the output in the @emph{Compositor window}.  Scrubbing with the
+insertion point doesn't normally show transitions because the
+transition durations are usually too short.  The exact point in time
+when the transition takes effect isn't straightforward.  It starts when
+the second edit begins and lasts a certain amount of time into the
+second edit.  Therefore, the first asset needs to have enough data
+after the edit point to fill the transition into the second edit.
+
+Once the transition is in place, it can be edited similarly to an
+effect.  Move the pointer over the transition and right click to bring
+up the transition menu.  The @emph{show} option brings up specific
+parameters for the transition in question if there are any.  The
+@emph{length} option adjusts the length of the transition in seconds. 
+Once these two parameters are set, they are applied to future
+transitions until they are changed again.  Finally, the @emph{detach}
+option removes the transition from the timeline.
+
+Dragging and dropping transitions from the Resource window to the
+Program window can be really slow and tiring.  Fortunately, once you
+drag a transition from the Resource window, the @emph{U} and @emph{u}
+keys will paste the same transition.  The @emph{U} key pastes the last
+video transition and the @emph{u} key pastes the last audio transition
+on all the recordable tracks.  If the insertion point or in point is
+over an edit, the beginning of the edit is covered by the transition.  
+
+It should be noted that when playing transitions from the timeline to a
+hardware accelerated video device, the hardware acceleration will
+usually be turned off momentarily during the transition and on after
+the transition in order to render the transition.  Using an
+unaccelerated video device for the entire timeline normally removes the
+disturbance.
+
+
+
+
+
+
+
 
 
 @node SETTING PROJECT ATTRIBUTES
@@ -2194,10 +2634,942 @@ resampled.  If a video file's frame size is different than the project
 attributes, it is composited on a black frame, either cropped or
 bordered with black.
 
-The project attributes
+The project attributes are adjusted in @emph{settings->format} and in
+to a more limited extent in @emph{file->new}.  When you adjust project
+settings in @emph{file->new} a new timeline is created with no data. 
+Every timeline created from this point uses the same settings.  When
+you adjust settings in @emph{settings->format}, the timeline is not
+recreated with no data but every timeline created from this point uses
+the same settings.
+
+In addition to the traditional settings for sample rate, frame rate,
+frame size, Cinelerra uses some unusual settings like @emph{channel
+positions, color model, and aspect ratio.}
+
+@itemize
+
+@item
+
+Channel positions is the only setting which doesn't affect the output
+necessarily.  Click on a speaker icon and drag to change the position
+of a channel.  It is merely a convenience so when more than 2 channels
+are used, the pan controls on the timeline are effective.  Channels 3,
+4, and 5 wouldn't be very adjustible if they occupied the same
+locations as channels 1 and 2 on a pan control.  Normally a 6 channel
+configuration would look like this:
+
+@sp 2
+@image{channelpositions}
+@sp 2
+
+But different channels can be positioned very close together to make
+them have the same output.
+
+
+
+
+@item
+
+Color model is very important for video playback.  The video is stored
+on disk in one colormodel, normally compressed using a YUV derivative. 
+When played back, Cinelerra decompresses it from the file format
+directly into the format of the output device.  If effects are
+processed, the decompression is into an internal colormodel first and
+the internal colormodel is then converted to the format of the output
+device.  The selection of internal colormodel determines how accurate
+and fast the effects are.
+
+Cinelerra colormodels are described using a certain packing order of
+components and a certain number of bits for each component.  The
+packing order is printed on the left and the bit allocation is printed
+on the right.
+
+@emph{RGBA8888} uses red, green, blue, and alpha with 8 bits per
+channel.
+
+In order to do effects which involve alpha channels, a colormodel with
+an alpha channel must be selected.  These are RGBA8888, YUVA8888,
+RGBA16161616, YUVA16161616.  The 4 channel colormodels are notoriously
+slower than 3 channel colormodels, with the slowest being
+RGBA16161616.  Some effects, like fade, work around the need for alpha
+channels while other effects, like chromakey, require an alpha channel
+to do anything, so it's a good idea to try the effect without alpha
+channels.
+
+The YUV colormodels are usually faster than RGB colormodels when using
+compressed footage.  They also destroy fewer colors than RGB
+colormodels.  If footage stored as JPEG or MPEG is processed many times
+in RGB, the colors will fade while they won't if processed in YUV.
+
+@item
+
+Aspect ratio determines the shape of the video output when using the
+X11 video output.  The numbers in each direction can be any floating
+point number.  When drawn on the screen, video pixels are stretched to
+match the aspect ratio.
+
+
+
+
+
+@end itemize
+
+
+
+
+
+
+@node COMPOSITING
+@chapter COMPOSITING
+
+
+A large amount of Cinelerra's binary size is directed towards
+compositing.  When you remove the letterboxing from a widescreen show,
+you're compositing.  Changing the resolution of a show, making a split
+screen, and fading in and out among other things are all compositing
+operations in Cinelerra.  Cinelerra detects when it's in a compositing
+operation and plays back through the compositing engine only then. 
+Otherwise, it uses the fastest decoder available in the hardware.
+
+Compositing operations are done on the timeline and in the Compositor
+window.  Shortcuts exist in the Resource window for changing project
+attributes.  Once some video files are on the timeline, the compositor
+window is a good place to try compositing.
+
+
+@menu
+* THE CAMERA AND PROJECTOR::
+* MASKS::
+* CROPPING::
+* SAFE REGIONS::
+* OVERLAY MODES::
+* TRACK AND OUTPUT SIZES::
+@end menu
+
+
+
+@node THE CAMERA AND PROJECTOR
+@section THE CAMERA AND PROJECTOR
+
+In the compositor window, the most important functions are the
+@image{camera} camera button and the @image{projector} projector
+button.  These control operation of the camera and projector.  Inside
+Cinelerra's compositing pipeline, the camera determines where in the
+source video the temporary is copied from.  The projector determines
+where in the output the temporary is copied to.  The temporary is a
+frame of video in Cinelerra's memory where all graphics processing is
+done.  Each track has a different temporary which is defined by the
+track size.  By resizing the tracks you can create splitscreens, pans,
+and zooms.
+
+@sp 2
+@image{compositing_pipeline}
+@sp 2
+@emph{Visual representation of the compositing pipeline}.
+
+When editing the camera and projector in the compositing window, the
+first track with @emph{record} enabled is the track affected.  Even if
+the track is completely transparent, it's still the affected track.  If
+multiple video tracks exist, the easiest way to select one track for
+editing is to @emph{shift-click} on the record icon of the track.  This
+solos the track.
+
+When the @emph{projector} button is enabled in the compositor window,
+you're in projector editing mode.  A guide box appears in the video
+window.  Dragging anywhere in the video window causes the guide box to
+move, hopefully along with the video.  @emph{shift-dragging} anywhere
+in the video window causes the guide box to shrink and grow along with
+the video.  Once you've positioned the video with the projector, you're
+ready to master the camera.
+
+Select the @image{camera} camera button to enable camera editing mode. 
+In this mode, the guide box shows where the camera position is in
+relation to past and future camera positions but not where it is in
+relation to the source video.  Dragging the camera box in the
+compositor window doesn't move the box but instead moves the location
+of the video inside the box.
+
+For example, when you drag the camera left, the video moves right. 
+When you drag the camera up, the video moves down.  When you shift-drag
+the camera, the effect is the same as if you zoomed in or out of the
+source.  The intention of the camera is to produce still photo panning,
+while the intention of the projector is to composite several sources in
+the same scene.
+
+In the compositing window, there is a popup menu of options for the
+camera and projector.  Right click over the video portion of the
+compositing window to bring up the menu.
+
+@itemize
+
+@item Reset Camera causes the camera to return to the center position.
+
+@item Reset Projector causes the projector to return to the center.
+
+@end itemize
+
+
+The camera and projector have shortcut operations neither in the popup
+menu or represented in video overlays.  These are accessed in the
+@emph{Tool window}.  Most operations in the Compositor window have a
+tool window which is enabled by activating the @image{toolwindow}
+question mark.
+
+In the case of the camera and projector, the tool window shows x, y,
+and z coordinates.  By either tumbling or entering text directly, the
+camera and projector can be precisely positioned.  9 justification
+types are also defined for easy access.  A popular justification
+operation is upper left projection after image reduction.  This is used
+when reducing the size of video with aspect ratio adjustment.
+
+The translation effect allows simultaneous aspect ratio conversion and
+reduction but is easier to use if the reduced video is put in the upper
+left of the temporary instead of in the center.  The track size is set
+to the original size of the video and the camera is centered.  The
+output size is set to the reduced size of the video.  Without any
+effects, this produces just the cropped center portion of the video in
+the output.
+
+The translation effect is dropped onto the video track.  The input
+dimensions of the translation effect are set to the original size and
+the output dimensions are set to the reduced size.  To put the reduced
+video in the center section that the projector shows would require
+offsetting @emph{out x and out y} by a complicated calculation. 
+Instead, we leave @emph{out x and out y} at 0 and use the projector's
+tool window.
+
+Merely by selecting @image{left_justify} left justify and
+@image{top_justify} top justify, the projector displays the reduced
+image from the top left corner of the temporary in the center of the
+output.
+
+
+
+
+
+
+@node MASKS
+@section MASKS
+
+Masks select a region of the video for either displaying or hiding. 
+Masks are also used in conjunction with another effect to isolate the
+effect to a certain region of the frame.  A copy of one video track may
+be delayed slightly and unmasked in locations where the one copy has
+interference but the other copy doesn't.  Color correction may be
+needed in one section of a frame but not another.  A mask can be
+applied to just a section of the color corrected track while the
+vanilla track shows through.  Removal of boom microphones, airplanes,
+and housewives are other mask uses.
+
+The order of the compositing pipeline affects what can be done with
+masks.  Mainly, masks are performed on the temporary after effects and
+before the projector.  This means multiple tracks can be bounced to a
+masked track and projected with the same mask.
+
+Our compositing pipeline graph now has a masking stage.  There are 8
+possible masks per track.  Each mask is defined separately, although
+they each perform the same operation, whether it's addition or
+subtraction.
+
+@sp 2
+@image{compositing_pipeline2}
+@sp 2
+@emph{Compositing pipeline with masks}
+
+To define a mask, go into the Compositor window and enable the
+@image{mask} @emph{mask} toggle.  Now go over the video and
+click-drag.  Click-drag again in another part of the image to create
+each new point of the mask.  While it isn't the conventional bezier
+curve behavior, this masking interface performs in realtime what the
+effect of the mask is going to be.  Creating each point of the mask
+expands a rubber band curve.  
+
+Once points are defined, they can be moved by @emph{ctrl-dragging} in
+the vicinity of the corner.  This; however, doesn't smooth out the
+curve.  The in-out points of the bezier curve are accessed by
+@emph{shift-dragging} in the vicinity of the corner.  Then
+@emph{shift-dragging} near the in or out point causes the point to
+move.
+
+Finally, once you have a mask, the mask can be translated in one piece
+by @emph{alt-dragging} the mask.  Mask editing in Cinelerra is
+identical to how The Gimp edits masks except in this case the effect of
+the mask is always on.
+
+The masks have many more parameters which couldn't be represented with
+video overlays.  These are represented in the tool window for masks. 
+Selecting the @image{toolwindow} question mark when the @image{mask}
+mask toggle is highlighted brings up the mask options.
+
+The @emph{mode} of the mask determines if the mask removes data or
+makes data visible.  If the mode is subtractive, the mask causes video
+to disappear.  If the mode is additive, the mask causes video to appear
+and everything outside the mask to disappear.
+
+The @emph{value} of the mask determines how extreme the addition or
+subtraction is.  In the subtractive mode, higher values subtract more
+alpha.  In the additive mode, higher values make the region in the mask
+brighter while the region outside the mask is always hidden.
+
+The mask number determines which one of the 8 possible masks we're
+editing.  Each track has 8 possible masks.  When you click-drag in the
+compositor window, you're only editing one of the masks.  Change the
+value of @emph{mask number} to cause another mask to be edited.  The
+previous mask is still active but only the curve overlay for the
+currently selected mask is visible.
+
+When multiple masks are used, their effects are ORed together.  Every
+mask in a single track uses the same value and mode.
+
+The edges of a mask are hard by default but this rarely is desired. 
+The @emph{feather} parameter determines how many pixels to feather the
+mask.  This creates softer edges but takes longer to render.
+
+Finally, there are parameters which affect one point on the current
+mask instead of the whole mask.  These are @emph{Delete, x, y}.  The
+active point is defined as the last point dragged in the compositor
+window.  Any point can be activated merely by @emph{ctrl-clicking} near
+it without moving the pointer.  Once a point is activated,
+@emph{Delete} deletes it and @emph{x, y} allow repositioning by numeric
+entry.
+
+
+
+
+@node CROPPING
+@section CROPPING
+
+
+
+Cropping changes the value of the output dimensions and the projector
+to reduce the visible picture area.  Enable the @image{crop} crop
+toggle and the @image{toolwindow} tool window to perform cropping in
+the compositing window.  This draws a rectangle over the video. 
+Click-drag anywhere in the video to create a new rectangle.  Click-drag
+over any corner of the rectangle to reposition the corner.  The tool
+window allows text entry of the coordinates.  When the rectangle is
+positioned, hit the @emph{do it} button in the tool window.
+
+
+
+
+@node SAFE REGIONS
+@section SAFE REGIONS
+
+On consumer displays the borders of the image are cut off and within
+the cutoff point is a region which isn't always square like it is in
+the compositor window.  The borders are intended for scratch room and
+vertical blanking data.  You can show where these borders are by
+enabling the @image{titlesafe} safe regions toggle.  Keep titles inside
+the inner rectangle and keep action inside the outer rectangle.
+
+
+
+
+
+
+
+
+@node OVERLAY MODES
+@section OVERLAY MODES
+
+Every track has an overlay mode, accessible by expanding the track. 
+Select the @image{expandpatch_checked} expand track toggle to view all
+the options for a video track.  The overlay mode of the track is
+@emph{normal} by default.  Select other modes by selecting the
+@emph{normal} button.  Overlay modes are processed inside the projector
+stage of compositing.  The different modes are summarized below.
+
+@itemize
+
+@item
+
+Normal uses a traditional Porter-Diff equation to blend tracks with
+alpha.  When no alpha exists, the new track replaces the output.
+
+@item
+
+In addition, whatever is in the output is added to the current track. 
+The result is blended based on the current track's alpha onto the
+output.
+
+@item
+
+In subtraction, the current track is subtracted from the output and the
+result is alpha blended onto the output.
+
+@item 
+
+Multiply is the most useful operation.  The current track is multiplied
+by the output and the result blended onto the output.  Usually a black
+and white image with no alpha channel or a white title on a black image
+is used as the current track.  With the multiply operation, only the
+output portions under the white area show.
+
+@item
+
+Divide divides the current track by the output and the result is
+blended into the output.  It usually results in overloaded levels.
+
+@item
+
+Replace does no blending and overwrites the output with the current
+track.
+
+@end itemize
+
+
+
+
+
+@node TRACK AND OUTPUT SIZES
+@section TRACK AND OUTPUT SIZES
+
+The size of the temporary and the size of the output in our compositing
+pipeline are independant and variable.  This fits into everything
+covered so far.  The camera's viewport is the temporary size.  Effects
+are processed in the temporary and are affected by the temporary size. 
+Projectors are rendered to the output and are affected by the output
+size.  If the temporary is smaller than the output, the temporary is
+bordered by blank regions in the output.  If the temporary is bigger
+than the output, the temporary is cropped.
+
+The temporary size is defined as the track size.  Each track has a
+different size.  Right click on a track to bring up the track's menu. 
+Select @emph{Resize Track} to resize the track to any arbitrary size. 
+Alternatively you can select @emph{Match output size} to make the track
+the same size as the output.
+
+The output size is set in either @emph{New} when creating a new project
+or @emph{Settings->Format}.  In the Resource window there is another
+way to change the output size.  Right click on a video asset and select
+@emph{Match project size} to conform the output to the asset.  When new
+tracks are created, the track size always conforms to the output size
+specified by these methods.
+
+
+
+
+
+
+@node KEYFRAMES
+@chapter KEYFRAMES
+
+
+
+Setting static compositing parameters isn't very useful most of the
+time.  Normally you need to move the camera around over time or change
+mask positions.  Masks need to follow objects.  We create dymanic
+changes by defining keyframes.  A keyframe is a certain point in time
+when the settings for one operation change.  In Cinelerra, there are
+keyframes for almost every compositing parameter and effect parameter.
+
+Whenever you adjust any parameter, the value is stored in a keyframe. 
+If the value is stored in a keyframe, why doesn't it always change? 
+The keyframe it is stored in is known as the @emph{default keyframe}. 
+The default keyframe applies to the entire duration if no other
+keyframes are present.  The default keyframe is not drawn anywhere
+because it always exists.  The only way change occurs over time is if
+non-default keyframes are created.
+
+Display keyframes for any parameter by using the @emph{view} menu. 
+When keyframes are selected, they are drawn on the timeline over the
+tracks they apply to.
+
+@menu
+* CURVE KEYFRAMES::
+* TOGGLE KEYFRAMES::
+* AUTOMATIC KEYFRAMES::
+* COMPOSITOR KEYFRAMES::
+* EDITING KEYFRAMES::
+@end menu
+
+
+
+@node CURVE KEYFRAMES
+@section CURVE KEYFRAMES
+
+Fade and zoom settings are stored in bezier curves.  Go to
+@emph{view->fade keyframes} or @emph{view->...zoom} to show curves on
+the timeline.  It's sometimes easier to pull down the @emph{view} menu
+and then use the keyboard shortcuts listed in the menu to enable or
+disable keyframes while the menu is visible.  In either arrow editing
+mode or i-beam editing mode, move the cursor over the curves in the
+timeline until it changes shape.  Then merely by clicking and dragging
+on the curve you can create a keyframe at the position.
+
+After the keyframe is created, click drag on it again to reposition
+it.  When you click-drag a second keyframe on the curve, it creates a
+smooth ramp.  @emph{ctrl-dragging} on a keyframe changes the value of
+either the input control or the output control.  This affects the
+sharpness of the curve.  While the input control and the output control
+can be moved horizontally as well as vertically, the horizontal
+movement is purely for legibility and isn't used in the curve value.
+
+You may remember that The Gimp and the Compositing masks all use
+@emph{shift} to select control points so why does the timeline use
+@emph{ctrl}?  When you @emph{shift-drag} on a timeline curve, the
+keyframe jumps to the value of either the next or previous keyframe,
+depending on which exists.  This lets you set a constant curve value
+without having to copy the next or previous keyframe.
+
+
+
+@node TOGGLE KEYFRAMES
+@section TOGGLE KEYFRAMES
+
+Play and mute are stored in toggle keyframes.  Playback keyframes
+determine where the track is playable and are rarely used.  Mute
+keyframes are probably more often used.  They determine where the track
+is processed but not rendered to the output.  Click-drag on these
+curves to create a keyframe.  Unlike curves, the toggle keyframe has
+only two values: on or off.  Ctrl and shift do nothing on toggle
+keyframes.
+
+
+
+
+
+
+@node AUTOMATIC KEYFRAMES
+@section AUTOMATIC KEYFRAMES
+
+You may have noticed when a few fade curves are set up, moving the
+insertion point around the curves causes the faders to reflect the
+curve value under the insertion point.  This isn't just to look cool. 
+The faders themselves can set keyframes in automatic keyframe mode. 
+Automatic keyframe mode is usually more useful than dragging curves.
+
+Enable automatic keyframe mode by enabling the automatic keyframe
+toggle @image{autokeyframe}.  In automatic keyframe mode, every time
+you tweek a keyframeable parameter it creates a keyframe on the
+timeline.  Since automatic keyframes affect many parameters, it's best
+enabled just before you need a keyframe and disabled immediately
+thereafter.
+
+It's useful to go into the @emph{View} menu and make the desired
+parameter visible before performing a change.  The location where the
+automatic keyframe is generated is under the insertion point.  If the
+timeline is playing back during a tweek, several automatic keyframes
+will be generated as you change the parameter.
+
+When automatic keyframe mode is disabled, a similarly strange thing
+happens.  Adjusting a parameter adjusts the keyframe immediately
+preceeding the insertion point.  If two fade keyframes exist and the
+insertion point is between them, changing the fader changes the first
+keyframe.
+
+There are many parameters which can only be keyframed in automatic
+keyframe mode.  These are parameters for which curves would take up too
+much space on the track or which can't be represented easily by a
+curve.
+
+Effects are only keyframable in automatic mode because of the number of
+parameters in each individual effect.  
+
+Camera and projector translation can only be keyframed in automatic
+keyframe mode while camera and projector zoom can be keyframed with
+curves.  It is here that we conclude the discussion of compositing,
+since compositing is highly dependant on the ability to change over
+time.
+
+
+
+@node COMPOSITOR KEYFRAMES
+@section COMPOSITOR KEYFRAMES
+
+Camera and projector translation is represented by two parameters: x
+and y.  Therefore it is cumbersome to adjust with curves.  Cinelerra
+solves this problem by relying on automatic keyframes.  With a video
+track loaded, move the insertion point to the beginning of the track
+and enable automatic keyframe mode.
+
+Move the projector slightly in the compositor window to create a
+keyframe.  Then go forward several seconds.  Move the projector a long
+distance to create another keyframe and emphasize motion.  This creates
+a second projector box in the compositor, with a line joining the two
+boxes.  The joining line is the motion path.  If you create more
+keyframes, more boxes are created.  Once all the desired keyframes are
+created, disable automatic keyframe mode.
+
+Now when scrubbing around with the compositor window's slider, the
+video projection moves over time.  At any point between two keyframes,
+the motion path is read for all time before the insertion point and
+green for all time after the insertion point.  It's debatable if this
+is a very useful feature but it makes you feel good to know what
+keyframe is going to be affected by the next projector tweek.
+
+Click-drag when automatic keyframes are off to adjust the preceeding
+keyframe.  If you're halfway between two keyframes, the first projector
+box is adjusted while the second one stays the same.  Furthermore, the
+video doesn't appear to move in step with the first keyframe.  This is
+because, halfway between two keyframes the projector translation is
+interpolated.  In order to set the second keyframe you'll need to scrub
+after the second keyframe.
+
+By default the motion path is a straight line, but it can be curved
+with control points.  @emph{Ctrl-drag} to set either the in or out
+control point of the preceeding keyframe.  Once again, we depart from
+The Gimp because @emph{shift} is already used for zoom.  After the in
+or out control points are extrapolated from the keyframe,
+@emph{Ctrl-dragging} anywhere in the video adjusts the nearest control
+point.  A control point can be out of view entirely yet still
+controllable.
+
+When editing the camera translation, the behavior of the camera boxes
+is slightly different.  Camera automation is normally used for still
+photo panning.  The current camera box doesn't move during a drag, but
+if multiple keyframes are set, every camera box except the current
+keyframe appears to move.  This is because the camera display shows
+every other camera position relative to the current one.
+
+The situation becomes more intuitive if you bend the motion path
+between two keyframes and scrub between the two keyframes.  The
+division between red and green, the current position between the
+keyframes, is always centered while the camera boxes move.
+
+
+
+
+
+
+@node EDITING KEYFRAMES
+@section EDITING KEYFRAMES
+
+Keyframes can be shifted around and moved between tracks on the
+timeline using similar cut and paste operations to editing media.  Only
+the keyframes selected in the @emph{view} menu are affected by keyframe
+editing operations, however.
+
+The most popular keyframe editing operation is replication of some
+curve from one track to the other, to make a stereo pair.  The first
+step is to solo the source track's record @image{recordpatch_up} patch
+by @emph{shift-clicking} on it.  Then either set in/out points or
+highlight the desired region of keyframes.  Go to @emph{keyframes->copy
+keyframes} to copy them to the clipboard.  Solo the destination track's
+record @image{recordpatch_up} patch by @emph{shift-clicking} on it and
+go to @emph{keyframes->paste keyframes} to paste the clipboard.
+
+The media editing commands are mapped to the keyframe editing commands
+by using the @emph{shift} key instead of just the keyboard shortcut.  
+
+This leads to the most complicated part of keyframe editing, the
+default keyframe.  Remember that when no keyframes are set at all,
+there is still a default keyframe which stores a global parameter for
+the entire duration.  The default keyframe isn't drawn because it
+always exists.  What if the default keyframe is a good value which you
+want to transpose between other non-default keyframes?  The
+@emph{keyframes->copy default keyframe} and @emph{keyframes->paste
+default keyframe} allow conversion of the default keyframe to a
+non-default keyframe.
+
+@emph{Keyframes->copy default keyframe} copies the default keyframe to
+the clipboard, no matter what region of the timeline is selected.  The
+@emph{keyframes->paste keyframes} function may then be used to paste
+the clipboard as a non-default keyframe.
+
+If you've copied a non-default keyframe, it can be stored as the
+default keyframe by calling @emph{keyframes->paste default keyframe}. 
+After using paste default keyframe to convert a non-default keyframe
+into a default keyframe, you won't see the value of the default
+keyframe reflected until all the non-default keyframes are removed.
+
+Finally, there is a convenient way to delete keyframes besides
+selecting a region and calling @emph{keyframes->clear keyframes}. 
+Merely click-drag a keyframe before its preceeding keyframe or after
+its following keyframe on the track.
+
+
+
+
+
+
+
+@node CAPTURING MEDIA
+@chapter CAPTURING MEDIA
+
+Ideally, all media would be stored on hard drives, CD-ROM, flash, or
+DVD and loading it into Cinelerra would be a matter of loading a file. 
+In reality, very few sources of media can be accessed like a filesystem
+but instead rely on tape transport mechanisms and dumb I/O mechanisms
+to transfer the data to computers.  These media types are imported into
+Cinelerra through the Record dialog.
+
+The first step in recording is to configure the input device.  In
+@emph{Settings->preferences} are a number of recording parameters
+described in configuration @xref{RECORDING}.  These parameters apply to
+recording no matter what the project settings are, because the
+recording parameters are usually the maximum capability of the
+recording hardware while project settings come and go.
+
+Go to @emph{File->record} to record a dumb I/O source.  This prompts
+for an output format much like rendering does.  Once that's done, the
+record window and the record monitor pop up.
+
+The record window has discrete sections.  While many parameters change
+depending on if the file has audio or video, the discrete sections are
+always the same.
+
+@itemize
+
+@item
+
+The output format area describes the format of the output file and the
+current position within it.
+
+
+@item
+
+The edit batch area lets you change parameters in the current batch.
+
+@item
+
+The transport controls start and stop recording different ways.
+
+@item
+
+The batch list displays all the defined batches.
+
+@item
+
+The confirmation area lets you determine how the output files are
+imported into the timeline and quit.
+
+@end itemize
+
+@image{recording}
+@sp 2
+@emph{Recording window areas}
+
+
+Recording in Cinelerra is organized around batches.  A batch
+essentially defines a distinct output file for the recording.  For now
+you can ignore the batch concept entirely and record merely by hitting
+the record button @image{record}.
+
+The record button opens the current output file if it isn't opened and
+writes captured data to it.  Use the stop button to stop the
+recording.  Recording can be resumed with the record button without
+erasing the file at this point.  In the case of a video file, there is
+a single frame record button @image{singleframe} which records a single
+frame.
+
+When enough media is recorded, choose an insertion method from the
+@emph{Insertion Strategy} menu and hit @emph{close}.
+
+
+
+
+@menu
+* BATCHES::
+* EDITING TUNER INFORMATION::
+@end menu
+
+
+
+
+@node BATCHES
+@section BATCHES
+
+Now we come to the concept of batches.  Batches try to make the dumb
+I/O look more like a filesystem.  Batches are traditionally used to
+divide tape into different programs and save the different programs as
+different files instead of recording straight through an entire tape. 
+Because of the high cost of developing frame-accurate deck control
+mechanisms, the only use of batches now is recording different programs
+during different times of day.  This is still useful for recording TV
+shows or time lapse movies as anyone who can't afford proper appliances
+knows.
+
+The record window supports a list of batches and two recording modes:
+interactive and batch recording.  Interactive recording happens when
+the record button is pressed.  Interactive recording starts immediately
+and uses the current batch to determine everything except start time. 
+By default, the current batch is configured to behave like tape.
+
+Batch recording happens when the @emph{start} button is pressed.  In
+batch recording, the @emph{start time} is the time the batch starts
+recording.
+
+First, you'll want to create some batches.  Each batch has certain
+parameters and methods of adjustment.  
+
+
+
+
+@itemize
+
+@item 
+
+@emph{On} determines whether the batch is included in batch recording
+operations.  Click the list row under @emph{On} to enable or disable
+batches.
+
+
+@item 
+
+@emph{Path} is the file the batch is going to be recorded to.  The
+filename specified in the record dialog is the name of the first batch,
+to simplify interactive recording, but the filename may be changed in
+the record window for any batch in the @emph{edit batch} area.
+
+
+@item
+
+@emph{News} shows whether the file exists or not.  This is a very
+important attribute since there is no confirmation dialog if the file
+exists.  The first time you hit record, the file is opened.  If the
+file exists at this point it's erased.  News says @emph{File exists} if
+it exists and @emph{OK} if it doesn't.  Every time you resume recording
+in the same batch, the news should say @emph{Open}, indicating the file
+is already opened and won't be erased in the next record button press.
+
+If you change out of the current batch after recording, the file is
+closed.  Next time you change into the batch, the file will be erased.
+
+@item
+
+@emph{Start time} is the 24 hour time of day the batch will start
+recording if in batch mode.  The start time may become a time of tape
+and reel number if deck control is implemented but for now it's a time
+of day.
+
+@item
+
+@emph{Duration} is the length of the batch.  It only has meaning if the
+@emph{Mode} of the batch is @emph{Timed}.  Once the recording length
+reaches @emph{duration} the recording stops, whether in interactive or
+batch mode.
+
+@item
+
+@emph{Source} has meaning only when the capturing hardware has multiple
+sources.  Usually the source is a tuner channel or input.  When the
+current batch finishes and the next batch begins recording, the source
+is changed to what the next batch is set to.  This way multiple TV
+stations can be recorded at different times.
+
+
+@end itemize
+
+The record window has a notion of the @emph{current batch}.  The
+current batch is not the same as the batch which is highlighted in the
+batch list.  The current batch text is colored red in the batch list. 
+The highlighted batch is merely displayed in the edit batch section for
+editing.
+
+By coloring the current batch red, any batch can be edited by
+highlighting it, without changing the batch to be recorded.
+
+All recording operations take place in the current batch.   If there
+are multiple batches, highlight the desired batch and hit
+@emph{activate} to make it the current batch.  If the @emph{start}
+button is pressed, the current batch flashes to indicate it's waiting
+for the start time in batch mode.  If the @emph{record} button is
+pressed, the current batch is recorded immediately in interactive mode.
+
+In batch and interactive recording modes, when the current batch
+finishes recording the next batch is activated and performed.  All
+future recording is done in batch mode.  When the first batch finishes,
+the next batch flashes until its start time is reached.
+
+Interrupt either the batch or the interactive operation by hitting the
+stop button.
+
+Finally there is the @image{rewind} rewind button.  In either
+interactive or batch recording, the rewind button causes the current
+batch to close its file.  The next recording operation in the current
+batch deletes the file.
+
+
+
+
+
+
+@node EDITING TUNER INFORMATION
+@section EDITING TUNER INFORMATION
+
+
+Sometimes in the recording process and the configuration process,
+you'll need to define and select tuner channels to either record or
+play back to.  In the case of the Video4Linux recording driver, tuner
+channels define the source.  In the case of the Buz playback driver,
+tuner channels define the destination.  
+
+Defining tuner channels is accomplished by pushing the @image{channel}
+channel button.  This brings up the channel editing window.  In this
+window you add, edit, and sort channels.  Also, for certain video
+drivers, you can adjust the picture quality.
+
+The @emph{add} operation brings up a channel editing box.  The title of
+the channel appears in the channel list.  The source of the channel is
+the entry in the physical tuner's frequency table corresponding to the
+title.  
+
+Fine tuning in the channel edit dialog adjusts the physical frequency
+slightly if the driver supports it.  The norm and frequency table
+together define which frequency table is selected for defining
+sources.  If the device supports multiple inputs, the input menu
+selects these.
+
+To sort channels, highlight the channel in the list and push @emph{move
+up} or @emph{move down} to move it.
+
+Once channels are defined, the @emph{source} item in the record window
+can be used to select channels for recording.  The same channel
+selecting ability also exists in the record monitor window.  Be aware
+channel selections in the record monitor window and the record window
+are stored in the current batch.
+
+
+
+
+
+@node EFFECT DESCRIPTIONS
+@chapter EFFECT DESCRIPTIONS
+
+Most effects in Cinelerra can be figured out just by using them and
+tweeking.  Here are brief descriptions of effects which you might not
+utilize fully by mere experimentation.
+
+
+@menu
+* CHROMA KEY::
+@end menu
+
+
+
+
+@node CHROMA KEY
+@section CHROMA KEY
+
+
+This effect replaces the selected color or intensity with black if
+there is no alpha channel and replaces it with transparency if there is
+an alpha channel.  The selection of color model is important.
+
+Chroma key uses either the value or the hue to determine what is
+erased.  If this parameter is within a certain threshold it's erased. 
+It's not a simple on/off switch, however.  As the selected parameter
+approaches the edge of the threshold, it gradually gets erased if the
+slope is low or is completely erased if the slope is high.
+
+The slope tries to soften the edges of the chroma key but it doesn't
+work well for compressed sources.  A popular softening technique is to
+use a maximum slope and chain a blur effect below the chroma key effect
+to blur just the alpha.
+
+
+
+
+
+
+
 
 
 
 
 
 @bye
+
+

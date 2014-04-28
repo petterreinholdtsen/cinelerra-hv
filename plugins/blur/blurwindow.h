@@ -11,18 +11,7 @@ class BlurWindow;
 #include "mutex.h"
 #include "thread.h"
 
-class BlurThread : public Thread
-{
-public:
-	BlurThread(BlurMain *client);
-	~BlurThread();
-
-	void run();
-
-	Mutex gui_started, completion;
-	BlurMain *client;
-	BlurWindow *window;
-};
+PLUGIN_THREAD_HEADER(BlurMain, BlurThread, BlurWindow)
 
 class BlurVertical;
 class BlurHorizontal;

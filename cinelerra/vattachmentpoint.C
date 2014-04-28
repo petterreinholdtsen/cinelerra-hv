@@ -28,6 +28,11 @@ void VAttachmentPoint::new_buffer_vectors()
 	buffer_out = new VFrame*[total_input_buffers];
 }
 
+int VAttachmentPoint::get_buffer_size()
+{
+	return 1;
+}
+
 void VAttachmentPoint::render(VFrame *video_in, 
 	VFrame *video_out, 
 	long current_position)
@@ -54,14 +59,16 @@ void VAttachmentPoint::dispatch_plugin_server(int buffer_number,
 
 //printf("VAttachmentPoint::dispatch_plugin_server 1 %d %d\n", current_position, plugin->startproject);
 	if(plugin_server->multichannel)
-		plugin_servers.values[0]->process_realtime(buffer_in, 
+		plugin_servers.values[0]->process_realtime(
+			buffer_in, 
 			buffer_out, 
-			current_position - plugin->startproject,
+			current_position /* - plugin->startproject */,
 			plugin->length);
 	else
-		plugin_servers.values[buffer_number]->process_realtime(&buffer_in[buffer_number], 
+		plugin_servers.values[buffer_number]->process_realtime(
+			&buffer_in[buffer_number], 
 			&buffer_out[buffer_number],
-			current_position - plugin->startproject,
+			current_position /* - plugin->startproject */,
 			plugin->length);
 //printf("VAttachmentPoint::dispatch_plugin_server 2\n");
 }

@@ -343,6 +343,8 @@ void RenderFarmServerThread::send_edl()
 //	server,	server->render,	server->render->command, server->render->command->get_edl());
 	server->render->command->get_edl()->save_xml(mwindow->plugindb,
 		&file, 
+		0,
+		0,
 		0);
 	file.terminate_string();
 //printf("RenderFarmServerThread::send_edl\n%s\n\n", file.string);

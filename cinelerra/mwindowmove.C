@@ -70,15 +70,15 @@ int MWindow::zoom_sample(long zoom_sample)
 
 void MWindow::find_cursor()
 {
-	if((edl->local_session->selectionend > 
-		(double)gui->canvas->get_w() * 
-		edl->local_session->zoom_sample / 
-		edl->session->sample_rate) ||
-		(edl->local_session->selectionstart > 
-		(double)gui->canvas->get_w() * 
-		edl->local_session->zoom_sample / 
-		edl->session->sample_rate))
-	{
+// 	if((edl->local_session->selectionend > 
+// 		(double)gui->canvas->get_w() * 
+// 		edl->local_session->zoom_sample / 
+// 		edl->session->sample_rate) ||
+// 		(edl->local_session->selectionstart > 
+// 		(double)gui->canvas->get_w() * 
+// 		edl->local_session->zoom_sample / 
+// 		edl->session->sample_rate))
+// 	{
 		edl->local_session->view_start = Units::round((edl->local_session->selectionend + 
 			edl->local_session->selectionstart) / 
 			2 *
@@ -86,9 +86,9 @@ void MWindow::find_cursor()
 			edl->local_session->zoom_sample - 
 			(double)gui->canvas->get_w() / 
 			2);
-	}
-	else
-		edl->local_session->view_start = 0;
+// 	}
+// 	else
+// 		edl->local_session->view_start = 0;
 
 //printf("MWindow::find_cursor %f\n", edl->local_session->view_start);
 	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;

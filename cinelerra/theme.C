@@ -655,6 +655,7 @@ void Theme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 
 void Theme::draw_rwindow_bg(RecordGUI *gui)
 {
+printf("Theme::draw_rwindow_bg 1\n");
 	gui->clear_box(0, 0, mwindow->session->rwindow_w, mwindow->session->rwindow_h);
 }
 
@@ -722,11 +723,14 @@ void Theme::get_recordmonitor_sizes(int do_audio,
 	int do_video)
 {
 	rmonitor_tx_x = 10;
-	rmonitor_tx_y = 5;
+	rmonitor_tx_y = 3;
 	rmonitor_source_x = 150;
 	rmonitor_source_y = 10;
 	rmonitor_interlace_x = 455;
 	rmonitor_interlace_y = 5;
+	rmonitor_channel_x = 0;
+	rmonitor_channel_y = 0;
+
 	if(do_audio)
 	{
 		rmonitor_meter_x = mwindow->session->rmonitor_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 1);

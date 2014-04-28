@@ -28,7 +28,7 @@ public:
 
 	void run();
 
-
+	void apply_changes();
 	void update_window();
 	void update_aspect();
 
@@ -143,6 +143,14 @@ public:
 	int handle_event();
 	SetFormatThread *thread;
 	float *output;
+};
+
+class SetFormatApply : public BC_GenericButton
+{
+public:
+	SetFormatApply(int x, int y, SetFormatThread *thread);
+	int handle_event();
+	SetFormatThread *thread;
 };
 
 class SetFormatWindow : public BC_Window

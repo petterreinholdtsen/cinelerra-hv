@@ -19,6 +19,7 @@
 #include "formattools.h"
 #include "labels.h"
 #include "loadmode.h"
+#include "localsession.h"
 #include "mainprogress.h"
 #include "mainsession.h"
 #include "mainundo.h"
@@ -280,6 +281,25 @@ void Render::run()
 	*command->get_edl() = *mwindow->edl;
 	command->change_type = CHANGE_ALL;
 	command->set_playback_range(mwindow->edl);
+
+
+
+// Adjust playback range with in/out points
+	if(mwindow->edl->local_session->in_point >= 0 ||
+		mwindow->edl->local_session->out_point >= 0)
+	{
+		if(mwindow->edl->local_session->in_point >= 0)
+			command->start_position = mwindow->edl->local_session->in_point;
+		else
+			command->start_position = 0;
+
+		if(mwindow->edl->local_session->out_point >= 0)
+			command->end_position = mwindow->edl->local_session->out_point;
+		else
+			command->end_position = mwindow->edl->tracks->total_playable_length();
+	}
+
+
 	packages = new PackageDispatcher;
 
 
@@ -553,8 +573,8 @@ printf("Render::run: Session finished.\n");
 		delete assets;
 
 
-		mwindow->undo->update_undo_after();
 		mwindow->save_backup();
+		mwindow->undo->update_undo_after();
 
 
 
@@ -909,8 +929,8 @@ RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
 	mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
  	WIDTH, 
 	HEIGHT,
-	(int)INFINITY,
-	(int)INFINITY,
+	(int)BC_INFINITY,
+	(int)BC_INFINITY,
 	0,
 	0,
 	1)

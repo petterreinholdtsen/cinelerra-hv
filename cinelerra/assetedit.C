@@ -65,7 +65,7 @@ void AssetEdit::run()
  		{
  			if(!asset->equivalent(*new_asset, 1, 1))
  			{
-// // 				thread->window->disable_window();
+//				thread->window->disable_window();
 // 				thread->mwindow->cache->delete_entry(asset);
 // // Copy information to new asset
 // 				if(new_asset.frame_rate < 1) new_asset.frame_rate = 1;
@@ -86,10 +86,8 @@ void AssetEdit::run()
 				mwindow->awindow->gui->lock_window();
 				mwindow->awindow->gui->update_assets();
 				mwindow->awindow->gui->unlock_window();
-				mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-					CHANGE_ALL,
-					mwindow->edl,
-					1);
+
+				mwindow->sync_parameters(CHANGE_ALL);
 //printf("AssetEdit::run 3\n");
 
 // 
@@ -280,7 +278,7 @@ int AssetEditWindow::create_objects()
 				1, 
 				1, 
 				1,
-				1,
+				0,
 				1);
 			bitspopup->create_objects();
 		}

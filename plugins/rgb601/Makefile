@@ -6,3 +6,5 @@ OBJS = $(OBJDIR)/rgb601.o  \
 OUTPUT = ../$(OBJDIR)/rgb601.plugin
 
 include ../../plugin_config
+
+$(OBJDIR)/rgb601.o: rgb601.C

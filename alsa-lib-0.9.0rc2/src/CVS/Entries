@@ -1,0 +1,21 @@
+/Makefile/1.1/Tue Jul 16 15:03:45 2002//
+/Makefile.am/1.1/Tue Jul 16 15:03:45 2002//
+/Makefile.in/1.1/Tue Jul 16 15:03:45 2002//
+/async.c/1.1/Tue Jul 16 15:03:45 2002//
+/confmisc.c/1.1/Tue Jul 16 15:03:45 2002//
+/dlmisc.c/1.1/Tue Jul 16 15:03:45 2002//
+/error.c/1.1/Tue Jul 16 15:03:45 2002//
+/input.c/1.1/Tue Jul 16 15:03:45 2002//
+/output.c/1.1/Tue Jul 16 15:03:45 2002//
+D/compat////
+D/conf////
+D/control////
+D/hwdep////
+D/instr////
+D/mixer////
+D/pcm////
+D/rawmidi////
+D/seq////
+D/timer////
+D/.libs////
+/conf.c/1.2/Mon Jul 22 23:04:22 2002//

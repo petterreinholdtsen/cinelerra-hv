@@ -50,7 +50,6 @@ int PluginAClient::get_render_ptrs()
 int PluginAClient::init_realtime_parameters()
 {
 	project_sample_rate = server->edl->session->sample_rate;
-	out_buffer_size = in_buffer_size = server->edl->session->audio_module_fragment;
 	return 0;
 }
 

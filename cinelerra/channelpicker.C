@@ -26,7 +26,7 @@ PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow,
 		x,
 		y)
 {
-	printf("PrefsChannelPicker::PrefsChannelPicker 1\n");
+//	printf("PrefsChannelPicker::PrefsChannelPicker 1\n");
 	this->prefs = prefs;
 	VDeviceBUZ::get_inputs(&input_sources);
 }
@@ -296,6 +296,17 @@ int ChannelPicker::create_objects()
 	x += channel_select->get_w() + 5;
 	get_subwindow()->add_subwindow(channel_button = new ChannelButton(mwindow, this, x, y - 1));
 //printf("ChannelPicker::create_objects 2\n");
+	return 0;
+}
+
+int ChannelPicker::reposition()
+{
+	channel_text->reposition_window(channel_text->get_x(),
+		channel_text->get_y());
+	channel_select->reposition_window(channel_select->get_x(),
+		channel_select->get_y());
+	channel_button->reposition_window(channel_button->get_x(),
+		channel_button->get_y());
 	return 0;
 }
 

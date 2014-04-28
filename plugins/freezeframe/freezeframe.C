@@ -133,6 +133,11 @@ FreezeFrameMain::~FreezeFrameMain()
 
 char* FreezeFrameMain::plugin_title() { return "Freeze Frame"; }
 
+int FreezeFrameMain::is_synthesis()
+{
+	return 1;
+}
+
 int FreezeFrameMain::is_realtime() { return 1; }
 
 SHOW_GUI_MACRO(FreezeFrameMain, FreezeFrameThread)
@@ -228,6 +233,7 @@ int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	if(!first_frame && config.enabled)
 	{
+//printf("FreezeFrameMain::process_realtime 1\n");
 		first_frame = new VFrame(0, 
 			input_ptr->get_w(), 
 			input_ptr->get_h(),
@@ -238,10 +244,13 @@ int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	else
 	if(!first_frame && !config.enabled)
 	{
+//printf("FreezeFrameMain::process_realtime 2\n");
 		output_ptr->copy_from(input_ptr);
 	}
+	else
 	if(first_frame && !config.enabled)
 	{
+//printf("FreezeFrameMain::process_realtime 3\n");
 		delete first_frame;
 		first_frame = 0;
 		output_ptr->copy_from(input_ptr);
@@ -249,6 +258,7 @@ int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	else
 	if(first_frame && config.enabled)
 	{
+//printf("FreezeFrameMain::process_realtime 4\n");
 		output_ptr->copy_from(first_frame);
 	}
 	return 0;

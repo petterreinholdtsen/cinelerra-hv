@@ -43,8 +43,8 @@ private:
 // if the next input number is taken it is dropped.
 	int *shared_ready;
 	int output_fd;
-	struct video1394_mmap v;
-	struct video1394_queue_variable w;
+	struct video1394_mmap output_mmap;
+	struct video1394_queue_variable output_queue;
 	raw1394handle_t avc_handle;
 	int avc_id;
 	unsigned char *output_buffer;

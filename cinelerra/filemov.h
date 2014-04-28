@@ -137,6 +137,7 @@ public:
 
 class MOVConfigAudioNum;
 class MOVConfigAudioPopup;
+class MOVConfigAudioToggle;
 
 class MOVConfigAudio : public BC_Window
 {
@@ -158,6 +159,7 @@ public:
 	MOVConfigAudioNum *vorbis_min_bitrate;
 	MOVConfigAudioNum *vorbis_bitrate;
 	MOVConfigAudioNum *vorbis_max_bitrate;
+	MOVConfigAudioToggle *vorbis_vbr;
 
 	MOVConfigAudioNum *mp3_bitrate;
 };
@@ -172,6 +174,18 @@ public:
 };
 
 
+class MOVConfigAudioToggle : public BC_CheckBox
+{
+public:
+	MOVConfigAudioToggle(MOVConfigAudio *popup,
+		char *title_text,
+		int x,
+		int y,
+		int *output);
+	int handle_event();
+	int *output;
+	MOVConfigAudio *popup;
+};
 
 
 class MOVConfigAudioNum : public BC_TumbleTextBox

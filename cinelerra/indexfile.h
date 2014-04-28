@@ -8,6 +8,7 @@
 #include "indexthread.inc"
 #include "mainprogress.inc"
 #include "mwindow.inc"
+#include "preferences.inc"
 #include "resourcepixmap.inc"
 #include "timer.inc"
 #include "tracks.inc"
@@ -24,6 +25,7 @@ public:
 	int create_index(Asset *asset, MainProgressBar *progress);
 	int create_index(MWindow *mwindow, Asset *asset, MainProgressBar *progress);
 	int interrupt_index();
+	static void delete_index(Preferences *preferences, Asset *asset);
 	static int get_index_filename(char *source_filename, 
 		char *index_directory, 
 		char *index_filename, 

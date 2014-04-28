@@ -78,6 +78,7 @@
 #define QUICKTIME_MARKER_SIZE 0x2c
 #define QUICKTIME_JPEG_TAG 0x6d6a7067
 
+
 METHODDEF(void) mjpeg_error_exit (j_common_ptr cinfo)
 {
 /* cinfo->err really points to a mjpeg_error_mgr struct, so coerce pointer */
@@ -630,23 +631,24 @@ static void decompress_field(mjpeg_compressor *engine)
     	mjpeg->jpeg_color_model = BC_YUV422P;
 	else
 		mjpeg->jpeg_color_model = BC_YUV444P;
+
+// Must be here because the color model isn't known until now
+	pthread_mutex_lock(&(mjpeg->decompress_init));
 	allocate_temps(mjpeg);
+	pthread_mutex_unlock(&(mjpeg->decompress_init));
 	get_rows(mjpeg, engine);
 
-//printf("decompress_field 1 %d\n", mjpeg->jpeg_color_model);
+
 	while(engine->jpeg_decompress.output_scanline < engine->jpeg_decompress.output_height)
 	{
-//printf("decompress_field 2 %d\n", engine->jpeg_decompress.output_scanline);
 		get_mcu_rows(mjpeg, engine, engine->jpeg_decompress.output_scanline);
-//printf("decompress_field 3\n");
-
 		jpeg_read_raw_data(&engine->jpeg_decompress, 
 			engine->mcu_rows, 
 			engine->field_h);
-//printf("decompress_field 4\n");
 	}
 	jpeg_finish_decompress(&engine->jpeg_decompress);
-//printf("decompress_field 5\n");
+
+
 finish:
 	;
 }
@@ -948,7 +950,7 @@ int mjpeg_compress(mjpeg_t *mjpeg,
 			mjpeg->compressors[i]->output_size);
 		if(i == 0) mjpeg->output_field2 = mjpeg->output_size;
 	}
-	
+
 	if(corrected_fields < mjpeg->fields)
 	{
 		append_buffer(&mjpeg->output_data, 
@@ -1113,6 +1115,7 @@ mjpeg_t* mjpeg_new(int w,
 	int fields)
 {
 	mjpeg_t *result = calloc(1, sizeof(mjpeg_t));
+	pthread_mutexattr_t mutex_attr;
 	int i;
 
 	result->output_w = w;
@@ -1122,6 +1125,11 @@ mjpeg_t* mjpeg_new(int w,
 	result->cpus = 1;
 	result->quality = 80;
 	result->use_float = 0;
+
+	pthread_mutexattr_init(&mutex_attr);
+	pthread_mutex_init(&(result->decompress_init), &mutex_attr);
+	
+
 // Calculate coded dimensions
 // An interlaced frame with 4:2:0 sampling must be a multiple of 32
 
@@ -1131,6 +1139,9 @@ mjpeg_t* mjpeg_new(int w,
 		result->coded_h = (h % 16) ? h + (16 - (h % 16)) : h;
 	else
 		result->coded_h = (h % 32) ? h + (32 - (h % 32)) : h;
+
+	
+
 //printf("mjpeg_new %d %d %d %d\n", result->output_w, result->output_h, result->coded_w, result->coded_h);
 	return result;
 }

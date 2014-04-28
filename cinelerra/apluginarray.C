@@ -50,6 +50,7 @@ void APluginArray::create_modules()
 void APluginArray::load_module(int module, long input_position, long len)
 {
 	if(module == 0) realtime_buffers = file->get_audio_buffer();
+//printf("APluginArray::load_module 1 %d %d %p %p\n", module, len, realtime_buffers, realtime_buffers[module]);
 	((AModule*)modules[module])->render(realtime_buffers[module], 
 		len, 
 		input_position,
@@ -58,8 +59,9 @@ void APluginArray::load_module(int module, long input_position, long len)
 
 void APluginArray::process_realtime(int module, long input_position, long len)
 {
-	values[module]->process_realtime(&realtime_buffers[module], 
-			&realtime_buffers[module],
+//printf("APluginArray::process_realtime 1 %d %p %p\n", len, realtime_buffers, realtime_buffers[0]);
+	values[module]->process_realtime(realtime_buffers + module, 
+			realtime_buffers + module,
 			input_position, 
 			len,
 			0);

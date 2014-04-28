@@ -13,6 +13,7 @@
 #include "filesystem.h"
 #include "filethread.h"
 #include "formatcheck.h"
+#include "indexfile.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -62,13 +63,17 @@ int RecordMenuItem::handle_event()
 		{
 			case RECORD_INTRO:
 //printf("RecordMenuItem::handle_event 3\n");
+				thread->record_window->lock_window();
 				thread->record_window->raise_window();
+				thread->record_window->unlock_window();
 //printf("RecordMenuItem::handle_event 4\n");
 				break;
 			
 			case RECORD_CAPTURING:
 //printf("RecordMenuItem::handle_event 5\n");
+				thread->record_gui->lock_window();
 				thread->record_gui->raise_window();
+				thread->record_gui->unlock_window();
 //printf("RecordMenuItem::handle_event 6\n");
 				break;
 		}
@@ -725,14 +730,16 @@ int Record::open_output_file()
 		FILE *test;
 //printf("Record::open_output_file 1\n");
 
-		if(current_batch == editing_batch) record_gui->batch_path->disable();
+//		if(current_batch == editing_batch) record_gui->batch_path->disable();
 
 // Delete old file
 		if((test = fopen(batch->get_current_asset()->path, "r")))
 		{
 			fclose(test);
 			sprintf(batch->news, "Deleting");
+			record_gui->lock_window();
 			record_gui->update_batches();
+			record_gui->unlock_window();
 			remove(batch->get_current_asset()->path);
 		}
 
@@ -753,9 +760,12 @@ int Record::open_output_file()
 		}
 		else
 		{
+			IndexFile::delete_index(mwindow->preferences, batch->get_current_asset());
 			file->set_processors(mwindow->edl->session->smp + 1);
 			batch->calculate_news();
+			record_gui->lock_window();
 			record_gui->update_batches();
+			record_gui->unlock_window();
 		}
 //printf("Record::open_output_file 1\n");
 	}
@@ -783,7 +793,8 @@ int Record::init_next_file()
 	return result;
 }
 
-// Rewind file at the end of a loop
+// Rewind file at the end of a loop.
+// This is called by RecordThread.
 void Record::rewind_file()
 {
 	if(file)
@@ -796,7 +807,9 @@ void Record::rewind_file()
 
 	get_current_batch()->current_sample = 0;
 	get_current_batch()->current_frame = 0;
+	record_gui->lock_window();
 	record_gui->update_position(0, current_display_length());
+	record_gui->unlock_window();
 }
 
 void Record::start_over()
@@ -1117,6 +1130,29 @@ int Record::open_input_devices(int duplex, int context)
 	return 0;
 }
 
+int Record::close_input_devices()
+{
+	if(vdevice)
+	{
+//printf("Record::close_input_devices 1\n");
+		vdevice->close_all();
+		delete vdevice;
+		vdevice = 0;
+//printf("Record::close_input_devices 2\n");
+	}
+
+	if(adevice)
+	{
+//printf("Record::close_input_devices 3\n");
+		adevice->close_all();
+		delete adevice;
+		adevice = 0;
+//printf("Record::close_input_devices 4\n");
+	}
+
+	return 0;
+}
+
 int Record::start_recording(int duplex, int context)
 {
 	if(capture_state != IS_RECORDING)
@@ -1141,29 +1177,6 @@ int Record::start_recording(int duplex, int context)
 
 		record_engine->start_recording(0, context);
 	}
-	return 0;
-}
-
-int Record::close_input_devices()
-{
-	if(vdevice)
-	{
-//printf("Record::close_input_devices 1\n");
-		vdevice->close_all();
-		delete vdevice;
-		vdevice = 0;
-//printf("Record::close_input_devices 2\n");
-	}
-
-	if(adevice)
-	{
-//printf("Record::close_input_devices 3\n");
-		adevice->close_all();
-		delete adevice;
-		adevice = 0;
-//printf("Record::close_input_devices 4\n");
-	}
-
 	return 0;
 }
 
@@ -1267,9 +1280,11 @@ int Record::set_channel(int channel)
 			char string[BCTEXTLEN];
 			get_editing_batch()->channel = channel;
 			source_to_text(string, get_editing_batch());
+			record_gui->lock_window();
 			record_gui->batch_source->update(string);
 			record_monitor->window->channel_picker->channel_text->update(string);
 			record_gui->update_batches();
+			record_gui->unlock_window();
 
 			if(vdevice)
 			{

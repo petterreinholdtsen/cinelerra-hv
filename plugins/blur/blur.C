@@ -55,6 +55,8 @@ void BlurConfig::interpolate(BlurConfig &prev,
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
+
+//printf("BlurConfig::interpolate %d %d %d\n", prev_frame, next_frame, current_frame);
 	this->vertical = (int)(prev.vertical * prev_scale + next.vertical * next_scale);
 	this->horizontal = (int)(prev.horizontal * prev_scale + next.horizontal * next_scale);
 	this->radius = (int)(prev.radius * prev_scale + next.radius * next_scale);
@@ -90,6 +92,7 @@ BlurMain::BlurMain(PluginServer *server)
 
 BlurMain::~BlurMain()
 {
+//printf("BlurMain::~BlurMain 1\n");
 	PLUGIN_DESTRUCTOR_MACRO
 
 	if(temp) delete temp;
@@ -104,10 +107,17 @@ BlurMain::~BlurMain()
 char* BlurMain::plugin_title() { return "Blur"; }
 int BlurMain::is_realtime() { return 1; }
 
-VFrame* BlurMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
+
+NEW_PICON_MACRO(BlurMain)
+
+SHOW_GUI_MACRO(BlurMain, BlurThread)
+
+SET_STRING_MACRO(BlurMain)
+
+RAISE_WINDOW_MACRO(BlurMain)
+
+LOAD_CONFIGURATION_MACRO(BlurMain, BlurConfig)
+
 
 
 
@@ -120,6 +130,8 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->output = output_ptr;
 	need_reconfigure |= load_configuration();
 
+
+//printf("BlurMain::process_realtime 1 %d %d\n", need_reconfigure, config.radius);
 	if(need_reconfigure)
 	{
 		int y1, y2, y_increment;
@@ -198,26 +210,6 @@ int BlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-SHOW_GUI_MACRO(BlurMain, BlurThread)
-
-
-int BlurMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void BlurMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->lock_window();
-		thread->window->raise_window();
-		thread->window->flush();
-		thread->window->unlock_window();
-	}
-}
-
 void BlurMain::update_gui()
 {
 	if(thread)
@@ -270,8 +262,6 @@ int BlurMain::save_defaults()
 	return 0;
 }
 
-LOAD_CONFIGURATION_MACRO(BlurMain, BlurConfig)
-
 
 
 void BlurMain::save_data(KeyFrame *keyframe)
@@ -311,6 +301,7 @@ void BlurMain::read_data(KeyFrame *keyframe)
 				config.vertical = input.tag.get_property("VERTICAL", config.vertical);
 				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
 				config.radius = input.tag.get_property("RADIUS", config.radius);
+//printf("BlurMain::read_data 1 %d %d %s\n", get_source_position(), keyframe->position, keyframe->data);
 				config.r = input.tag.get_property("R", config.r);
 				config.g = input.tag.get_property("G", config.g);
 				config.b = input.tag.get_property("B", config.b);
@@ -598,8 +589,14 @@ int BlurEngine::get_constants()
 
 int BlurEngine::transfer_pixels(pixel_f *src1, pixel_f *src2, pixel_f *dest, int size)
 {
-	register int i;
-	register float sum;
+	int i;
+	float sum;
+
+// printf("BlurEngine::transfer_pixels %d %d %d %d\n", 
+// plugin->config.r, 
+// plugin->config.g, 
+// plugin->config.b, 
+// plugin->config.a);
 
 	for(i = 0; i < size; i++)
     {
@@ -736,6 +733,7 @@ int BlurEngine::blur_strip4(int &size)
 	for(int k = 0; k < size; k++)
 	{
 		terms = (k < 4) ? k : 4;
+
 		for(l = 0; l <= terms; l++)
 		{
 			if(plugin->config.r)
@@ -759,6 +757,7 @@ int BlurEngine::blur_strip4(int &size)
 				vm->a += n_m[l] * sp_m[l].a - d_m[l] * vm[l].a;
 			}
 		}
+
 		for( ; l <= 4; l++)
 		{
 			if(plugin->config.r)
@@ -782,6 +781,7 @@ int BlurEngine::blur_strip4(int &size)
 				vm->a += (n_m[l] - bd_m[l]) * initial_m.a;
 			}
 		}
+
 		sp_p++;
 		sp_m--;
 		vp++;
@@ -791,4 +791,9 @@ int BlurEngine::blur_strip4(int &size)
 	separate_alpha(dst, size);
 	return 0;
 }
+
+
+
+
+
 

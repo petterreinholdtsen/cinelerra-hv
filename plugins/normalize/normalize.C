@@ -10,10 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new NormalizeMain(server);
-}
+REGISTER_PLUGIN(NormalizeMain)
+
+
+
+
+
 
 NormalizeMain::NormalizeMain(PluginServer *server)
  : PluginAClient(server)

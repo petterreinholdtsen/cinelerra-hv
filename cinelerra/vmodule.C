@@ -53,6 +53,11 @@ AttachmentPoint* VModule::new_attachment(Plugin *plugin)
 	return new VAttachmentPoint(renderengine, plugin);
 }
 
+int VModule::get_buffer_size()
+{
+	return 1;
+}
+
 CICache* VModule::get_cache()
 {
 	if(renderengine) 

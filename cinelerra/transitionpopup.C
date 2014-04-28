@@ -188,16 +188,7 @@ TransitionPopupDetach::~TransitionPopupDetach()
 
 int TransitionPopupDetach::handle_event()
 {
-	mwindow->hide_plugin(popup->transition, 1);
-	popup->transition->edit->detach_transition();
-	mwindow->gui->update(0,
-		1,
-		0,
-		0,
-		0, 
-		0,
-		0);
-	mwindow->sync_parameters(CHANGE_EDL);
+	mwindow->detach_transition(popup->transition);
 	return 1;
 }
 

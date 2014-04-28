@@ -50,12 +50,12 @@ public:
 	virtual void get_recordgui_sizes(RecordGUI *gui,
 		int w,
 		int h);
+	virtual void draw_rwindow_bg(RecordGUI *gui);
+	virtual void draw_rmonitor_bg(RecordMonitorGUI *gui);
 	virtual void draw_awindow_bg(AWindowGUI *gui);
 	virtual void draw_cwindow_bg(CWindowGUI *gui);
 	virtual void draw_lwindow_bg(LevelWindowGUI *gui);
 	virtual void draw_mwindow_bg(MWindowGUI *gui);
-	virtual void draw_rmonitor_bg(RecordMonitorGUI *gui);
-	virtual void draw_rwindow_bg(RecordGUI *gui);
 	virtual void draw_vwindow_bg(VWindowGUI *gui);
 	virtual void draw_resource_bg(TrackCanvas *canvas,
 		ResourcePixmap *pixmap, 

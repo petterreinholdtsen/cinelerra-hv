@@ -195,6 +195,23 @@ static inline void transfer_RGB888_to_RGBA8888(unsigned char *(*output), unsigne
 	(*output) += 4;
 }
 
+static inline void transfer_RGB888_to_RGB161616(uint16_t *(*output), unsigned char *input)
+{
+	(*output)[0] = (input[0] << 8) | input[0];
+	(*output)[1] = (input[1] << 8) | input[1];
+	(*output)[2] = (input[2] << 8) | input[2];
+	(*output) += 3;
+}
+
+static inline void transfer_RGB888_to_RGBA16161616(uint16_t *(*output), unsigned char *input)
+{
+	(*output)[0] = (input[0] << 8) | input[0];
+	(*output)[1] = (input[1] << 8) | input[1];
+	(*output)[2] = (input[2] << 8) | input[2];
+	(*output)[3] = 0xffff;
+	(*output) += 4;
+}
+
 static inline void transfer_RGB888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
 {
 	(*output)[0] = 0xff;
@@ -283,6 +300,38 @@ static inline void transfer_RGB888_to_YUVA8888(unsigned char *(*output), unsigne
 	(*output)[1] = u;
 	(*output)[2] = v;
 	(*output)[3] = 255;
+	(*output) += 4;
+}
+
+static inline void transfer_RGB888_to_YUV161616(uint16_t *(*output), unsigned char *input)
+{
+	int y, u, v, opacity, r, g, b;
+	
+	r = ((int)input[0] << 8) | input[0];
+	g = ((int)input[1] << 8) | input[1];
+	b = ((int)input[2] << 8) | input[2];
+
+	RGB_TO_YUV16(y, u, v, r, g, b);
+
+	(*output)[0] = y;
+	(*output)[1] = u;
+	(*output)[2] = v;
+	(*output) += 3;
+}
+
+static inline void transfer_RGB888_to_YUVA16161616(uint16_t *(*output), unsigned char *input)
+{
+	int y, u, v, r, g, b;
+
+	r = (((int)input[0]) << 8) | input[0];
+	g = (((int)input[1]) << 8) | input[1];
+	b = (((int)input[2]) << 8) | input[2];
+	RGB_TO_YUV16(y, u, v, r, g, b);
+
+	(*output)[0] = y;
+	(*output)[1] = u;
+	(*output)[2] = v;
+	(*output)[3] = 0xffff;
 	(*output) += 4;
 }
 
@@ -391,7 +440,7 @@ static inline void transfer_RGBA8888_to_BGR565bg(unsigned char *(*output), unsig
 	r = ((unsigned int)input[0] * a + bg_r * anti_a) / 0xff;
 	g = ((unsigned int)input[1] * a + bg_g * anti_a) / 0xff;
 	b = ((unsigned int)input[2] * a + bg_b * anti_a) / 0xff;
-	*(uint16_t*)(*output) = (uint16_t)((b & 0xf8) + 
+	*(uint16_t*)(*output) = (uint16_t)(((b & 0xf8) << 8) + 
 				((g & 0xfc) << 3) + 
 				((r & 0xf8) >> 3));
 	(*output) += 2;
@@ -405,7 +454,7 @@ static inline void transfer_RGBA8888_to_RGB565bg(unsigned char *(*output), unsig
 	r = ((unsigned int)input[0] * a + bg_r * anti_a) / 0xff;
 	g = ((unsigned int)input[1] * a + bg_g * anti_a) / 0xff;
 	b = ((unsigned int)input[2] * a + bg_b * anti_a) / 0xff;
-	*(uint16_t*)(*output) = (uint16_t)((r & 0xf8) + 
+	*(uint16_t*)(*output) = (uint16_t)(((r & 0xf8) << 8)+ 
 				((g & 0xfc) << 3) + 
 				((b & 0xf8) >> 3));
 	(*output) += 2;
@@ -483,7 +532,7 @@ static inline void transfer_RGBA8888_to_BGR565(unsigned char *(*output), unsigne
 	r = ((unsigned int)input[0] * a) / 0xff;
 	g = ((unsigned int)input[1] * a) / 0xff;
 	b = ((unsigned int)input[2] * a) / 0xff;
-	*(uint16_t*)(*output) = (uint16_t)((b & 0xf8) + 
+	*(uint16_t*)(*output) = (uint16_t)(((b & 0xf8) << 8) + 
 				((g & 0xfc) << 3) + 
 				((r & 0xf8) >> 3));
 	(*output) += 2;
@@ -496,7 +545,9 @@ static inline void transfer_RGBA8888_to_RGB565(unsigned char *(*output), unsigne
 	r = ((unsigned int)input[0] * a) / 0xff;
 	g = ((unsigned int)input[1] * a) / 0xff;
 	b = ((unsigned int)input[2] * a) / 0xff;
-	*(uint16_t*)(*output) = (uint16_t)((r & 0xf8) + 
+
+
+	*(uint16_t*)(*output) = (uint16_t)(((r & 0xf8) << 8) + 
 				((g & 0xfc) << 3) + 
 				((b & 0xf8) >> 3));
 	(*output) += 2;
@@ -534,6 +585,28 @@ static inline void transfer_RGBA8888_to_RGBA8888(unsigned char *(*output), unsig
 	(*output)[1] = input[1];
 	(*output)[2] = input[2];
 	(*output)[3] = input[3];
+	(*output) += 4;
+}
+
+static inline void transfer_RGBA8888_to_RGB161616(uint16_t *(*output), unsigned char *input)
+{
+	int y, u, v, opacity, r, g, b;
+	
+	opacity = input[3];
+	(*output)[0] = (((int)input[0] << 8) | input[0]) * opacity / 0xff;
+	(*output)[1] = (((int)input[1] << 8) | input[1]) * opacity / 0xff;
+	(*output)[2] = (((int)input[2] << 8) | input[2]) * opacity / 0xff;
+	(*output) += 3;
+}
+
+static inline void transfer_RGBA8888_to_RGBA16161616(uint16_t *(*output), unsigned char *input)
+{
+	int y, u, v, r, g, b;
+
+	(*output)[0] = (((int)input[0]) << 8) | input[0];
+	(*output)[1] = (((int)input[1]) << 8) | input[1];
+	(*output)[2] = (((int)input[2]) << 8) | input[2];
+	(*output)[3] = (((int)input[3]) << 8) | input[3];
 	(*output) += 4;
 }
 
@@ -585,9 +658,9 @@ static inline void transfer_RGBA8888_to_YUV161616(uint16_t *(*output), unsigned 
 	int y, u, v, opacity, r, g, b;
 	
 	opacity = input[3];
-	r = ((int)input[0] << 8) * opacity / 0xff;
-	g = ((int)input[1] << 8) * opacity / 0xff;
-	b = ((int)input[2] << 8) * opacity / 0xff;
+	r = (((int)input[0] << 8) | input[0]) * opacity / 0xff;
+	g = (((int)input[1] << 8) | input[1]) * opacity / 0xff;
+	b = (((int)input[2] << 8) | input[2]) * opacity / 0xff;
 
 	RGB_TO_YUV16(y, u, v, r, g, b);
 
@@ -601,15 +674,15 @@ static inline void transfer_RGBA8888_to_YUVA16161616(uint16_t *(*output), unsign
 {
 	int y, u, v, r, g, b;
 
-	r = ((int)input[0]) << 8;
-	g = ((int)input[1]) << 8;
-	b = ((int)input[2]) << 8;
+	r = (((int)input[0]) << 8) | input[0];
+	g = (((int)input[1]) << 8) | input[1];
+	b = (((int)input[2]) << 8) | input[2];
 	RGB_TO_YUV16(y, u, v, r, g, b);
 
 	(*output)[0] = y;
 	(*output)[1] = u;
 	(*output)[2] = v;
-	(*output)[3] = input[3] << 8;
+	(*output)[3] = (((int)input[3]) << 8) | input[3];
 	(*output) += 4;
 }
 
@@ -2009,7 +2082,7 @@ static inline void transfer_YUVA16161616_to_BGR565(unsigned char *(*output), uin
 	int y, u, v, a;
 	int r, g, b;
 	
-	a = input[3];
+	a = input[3] >> 8;
 	y = ((int)input[0]) << 8;
 	u = input[1] >> 8;
 	v = input[2] >> 8;
@@ -2030,7 +2103,7 @@ static inline void transfer_YUVA16161616_to_RGB565(unsigned char *(*output), uin
 	int y, u, v, a;
 	int r, g, b;
 	
-	a = input[3];
+	a = input[3] >> 8;
 	y = ((int)input[0]) << 8;
 	u = input[1] >> 8;
 	v = input[2] >> 8;
@@ -3203,7 +3276,7 @@ static inline void transfer_YUV422_to_YUVA16161616(uint16_t *(*output),
 
 	(*output)[1] = input[1] << 8;
 	(*output)[2] = input[3] << 8;
-	(*output)[3] = 255;
+	(*output)[3] = 0xffff;
 	(*output) += 4;
 }
 

@@ -10,19 +10,7 @@ class RGB601Window;
 #include "mutex.h"
 #include "rgb601.h"
 
-class RGB601Thread : public Thread
-{
-public:
-	RGB601Thread(RGB601Main *client);
-	~RGB601Thread();
-
-	void run();
-
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	RGB601Main *client;
-	RGB601Window *window;
-};
+PLUGIN_THREAD_HEADER(RGB601Main, RGB601Thread, RGB601Window)
 
 class RGB601Direction : public BC_CheckBox
 {

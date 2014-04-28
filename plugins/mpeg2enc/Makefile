@@ -4,7 +4,7 @@ CFLAGS += -I../../libmpeg3 -I../../quicktime
 
 
 ifeq ($(OBJDIR), i686)
-#CFLAGS += -DX86_CPU
+CFLAGS += -DX86_CPU
 NASMOBJ = \
 	$(OBJDIR)/bdist1_mmx.o \
 	$(OBJDIR)/bdist2_mmx.o \

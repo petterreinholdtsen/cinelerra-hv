@@ -833,3 +833,141 @@ Units in freeverb changed to DB.
 
 
 
+
+
+
+
+
+
+7/19/02
+
+libmjpeg works on dual CPU systems finally.  Mutually excludes
+allocate_temps.  MJPEG files should crash less often.
+
+Start playback after editing doesn't have noise. Denoise mutes first window.
+
+Clear plugin GUI after attach changes it to a different plugin.
+
+DV capture migrated to Linux 2.4.18.
+
+Freezeframe works better.
+
+Concatenate tracks works more often.
+
+When dragging effects, the effect can be positioned at the start of an
+edit or at the start of a track instead of just at the start of a
+track.
+
+More accurate drawing of highlighting.
+
+ALSA driver migrated to Linux 2.4.18, alsa-0.9.0rc2.
+
+Render realtime affect doesn't crash when bringing up GUI.
+Plugin initialization takes proper buffer size.
+Resource Window starts up with nothing highlighted.
+Textboxes don't update contents if the contents are identical.
+Textboxes allow entry and have normal cursor behavior during playback.
+
+Loading with insertion modes that don't replace the project doesn't
+change the project filename.
+
+Curves aren't affected by the cursor when the track isn't armed.
+Tooltips deleted when widgets are deleted.
+start_realtime and stop_realtime removed from plugin interface.
+Memory leaks due to plugins not deleting data reduced.
+
+Must use -O3 because optimization errors prevent video from playing with -O2.
+
+Labels in CWindow don't vanish after resize to fullscreen.
+Undo for transitions.
+
+Better recording from DV camcorders.
+
+
+
+
+
+
+
+
+
+7/26/02
+
+FFT based denoiser.
+Ogg Vorbis support.
+Interpolate effect interpolates the start and end sample of a selection.
+Quicktime ported to Vorbis 1.0
+Undo detach transition.
+Fade should cut out at INFINITYGAIN.
+More accurate waveform drawing of sound files.
+Dragging end of an edit in doesn't clear the first keyframe of the next edit.
+Dragging end of an edit out shifts keyframes with it.
+AgingTV debugged.
+Changing sample rate of asset has an effect on played output.
+Reset camera and projector once again resets the zoom curve.
+U and u key for default transition.  Default transition menu item.
+VWindow remembers labels and in/out points.
+Labels updated in CWindow after undo.
+More intuitive centering on cursor after zooming.
+
+
+
+
+
+
+7/29/02
+16 bit color supported again.
+Apply button in format settings.
+Fewer crashes when toggling play and mute patches during playback.
+More locking when record updates the GUI.
+Better floating point comparison for setting labels.
+More intuitive scrollbar behavior for timeline.
+Level window updates when meter range changes.
+Waveforms drawn after window expansion.
+Background for RecordGUI.
+Preview size adjusted after in/out point dragging and silence pasting.
+More robust handling of Freetype failures in titler.
+Private font directory for titler.  Should ease renderfarm administration.
+AWindow background title updated more often.
+Drop shadow in titler.
+Compositor overlays translated more accurately when scrollbars are gone.
+Better handling of scrollbar and tumbler repeating after mousewheel is used.
+Creating a new project removes the clip reference from VWindow instead of making it crash.
+Project deletion operations while CWindow or VWindow is playing crash less often.
+Overlay modes ported to YUV colormodels.
+8 bit RGB -> 16 bit YUV importing.
+RGB601 refurbished.
+Pots debugged.  They might change value with cursor keys now.
+Bilinear scaling has better clipping for fewer crashes.
+
+
+
+
+
+
+
+
+
+
+
+8/2/02
+Titler crash with drop shadow fixed.
+Titler looping.
+Render uses in/out points if they exist.
+More accurate edges in bilinear scaling.
+Playback termination memory leak removed.
+Module calls render_stop before deleting the attachmentpoint.
+Render farm crash fixed.
+More often terminates recording when no firewire device exists instead
+of just freezing up.
+Titler doesn't interpolate any parameters.
+Old references to real_transition removed from virtual console.
+Source position in plugin client made relative to start of track.
+
+
+
+
+
+
+
+

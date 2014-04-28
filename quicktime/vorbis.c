@@ -12,6 +12,7 @@ typedef struct
 	int max_bitrate;
 	int nominal_bitrate;
 	int min_bitrate;
+	int use_vbr;
 	int encode_initialized;
 	ogg_stream_state enc_os;
 	ogg_page enc_og;
@@ -21,6 +22,9 @@ typedef struct
 	vorbis_dsp_state enc_vd;
 	vorbis_block enc_vb;
 
+
+// Number of samples encoded into the chunk
+	int next_chunk_size;
 
 
 
@@ -172,6 +176,7 @@ static int chunk_len(quicktime_t *file, longest offset, longest next_chunk)
 		result = !quicktime_read_data(file, buffer, size); \
 		ogg_sync_wrote(&codec->dec_oy, size); \
 	} \
+/* printf("READ_CHUNK size=%d\n", size); */ \
 /* printf("%llx %x: ", quicktime_chunk_to_offset(file, trak, (chunk)), size); */ \
 /* for(i = 0; i < 16; i++) */ \
 /* 	printf("%02x ", buffer[i]); */ \
@@ -589,6 +594,12 @@ while(1) \
 	int eos = !ogg_stream_flush(&codec->enc_os, &codec->enc_og); \
 	if(eos) break; \
  \
+ 	if(!chunk_started) \
+	{ \
+		chunk_started = 1; \
+		quicktime_write_chunk_header(file, trak, &chunk_atom); \
+	} \
+ \
 	result = !quicktime_write_data(file, codec->enc_og.header, codec->enc_og.header_len); \
 	size += codec->enc_og.header_len; \
  \
@@ -610,27 +621,37 @@ while(vorbis_analysis_blockout(&codec->enc_vd, &codec->enc_vb) == 1) \
 { \
 /* printf("FLUSH_OGG2 1\n"); */ \
     vorbis_analysis(&codec->enc_vb, &codec->enc_op); \
+    vorbis_bitrate_addblock(&codec->enc_vb); \
 /* printf("FLUSH_OGG2 2\n"); */ \
-    ogg_stream_packetin(&codec->enc_os, &codec->enc_op); \
+	while(vorbis_bitrate_flushpacket(&codec->enc_vd, &codec->enc_op)) \
+	{ \
+    	ogg_stream_packetin(&codec->enc_os, &codec->enc_op); \
 /* printf("FLUSH_OGG2 3\n"); */ \
  \
-	while(!result) \
-	{ \
-		if(!ogg_stream_pageout(&codec->enc_os, &codec->enc_og)) break; \
- \
-		result = !quicktime_write_data(file, codec->enc_og.header, codec->enc_og.header_len); \
-		size += codec->enc_og.header_len; \
- \
-		if(!result) \
+		while(!result) \
 		{ \
-			result = !quicktime_write_data(file, codec->enc_og.body, codec->enc_og.body_len); \
-			size += codec->enc_og.body_len; \
-		} \
+			if(!ogg_stream_pageout(&codec->enc_os, &codec->enc_og)) break; \
+	 \
  \
-/*printf("FLUSH_OGG2 %d %d %d %d\n", result, codec->og.header_len,  codec->og.body_len, size); */\
-		if(ogg_page_eos(&codec->enc_og)) break; \
-	} \
+ 			if(!chunk_started) \
+			{ \
+				chunk_started = 1; \
+				quicktime_write_chunk_header(file, trak, &chunk_atom); \
+			} \
+			result = !quicktime_write_data(file, codec->enc_og.header, codec->enc_og.header_len); \
+			size += codec->enc_og.header_len; \
+	 \
+			if(!result) \
+			{ \
+				result = !quicktime_write_data(file, codec->enc_og.body, codec->enc_og.body_len); \
+				size += codec->enc_og.body_len; \
+			} \
+	 \
+/* printf("FLUSH_OGG2 %d %d %d %d\n", result, codec->enc_og.header_len,  codec->enc_og.body_len, size); */ \
+			if(ogg_page_eos(&codec->enc_og)) break; \
+		} \
 /* printf("FLUSH_OGG2 4\n"); */ \
+	} \
 }
 
 
@@ -649,6 +670,8 @@ static int encode(quicktime_t *file,
 	float **output;
 	int size = 0;
 	long output_position;
+	int chunk_started = 0;
+	quicktime_atom_t chunk_atom;
 
 
 
@@ -669,12 +692,28 @@ static int encode(quicktime_t *file,
   		vorbis_info_init(&codec->enc_vi);
 //printf("encode 1\n");
 
-		vorbis_encode_init(&codec->enc_vi,
-  			track_map->channels,
-			samplerate, 
-			codec->max_bitrate, 
-			codec->nominal_bitrate, 
-			codec->min_bitrate);
+		if(codec->use_vbr)
+		{
+//printf("encode 1\n");
+			result = vorbis_encode_setup_managed(&codec->enc_vi,
+				track_map->channels, 
+				samplerate, 
+				codec->max_bitrate, 
+				codec->nominal_bitrate, 
+				codec->min_bitrate);
+			result |= vorbis_encode_ctl(&codec->enc_vi, OV_ECTL_RATEMANAGE_AVG, NULL);
+			result |= vorbis_encode_setup_init(&codec->enc_vi);
+		}
+		else
+		{
+//printf("encode 2\n");
+			vorbis_encode_init(&codec->enc_vi,
+  				track_map->channels,
+				samplerate, 
+				codec->max_bitrate, 
+				codec->nominal_bitrate, 
+				codec->min_bitrate);
+		}
 
 //printf("encode 1\n");
 
@@ -746,15 +785,27 @@ static int encode(quicktime_t *file,
 
 //printf("encode 1\n");
 //printf("encode %d\n", size);
-	quicktime_update_tables(file,
-						track_map->track, 
-						offset, 
-						track_map->current_chunk, 
-						track_map->current_chunk - 1, 
-						codec->enc_vd.granulepos - output_position, 
-						0);
+	codec->next_chunk_size += samples;
+	if(chunk_started)
+	{
+		quicktime_write_chunk_footer(file, 
+						trak,
+						track_map->current_chunk,
+						&chunk_atom, 
+						codec->next_chunk_size);
+		track_map->current_chunk++;
+		codec->next_chunk_size = 0;
+	}
+/*
+ * 	quicktime_update_tables(file,
+ * 						track_map->track, 
+ * 						offset, 
+ * 						track_map->current_chunk, 
+ * 						track_map->current_chunk - 1, 
+ * 						codec->enc_vd.granulepos - output_position, 
+ * 						0);
+ */
 //printf("encode 1\n");
-	track_map->current_chunk++;
 //printf("encode 7\n");
 
 	return result;
@@ -772,6 +823,9 @@ static int set_parameter(quicktime_t *file,
 	quicktime_vorbis_codec_t *codec = ((quicktime_codec_t*)atrack->codec)->priv;
 
 
+	if(!strcasecmp(key, "vorbis_vbr"))
+		codec->use_vbr = *(int*)value;
+	else
 	if(!strcasecmp(key, "vorbis_bitrate"))
 		codec->nominal_bitrate = *(int*)value;
 	else
@@ -792,6 +846,9 @@ static void flush(quicktime_t *file, int track)
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_vorbis_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
 	long output_position = codec->enc_vd.granulepos;
+	int chunk_started = 0;
+	quicktime_atom_t chunk_atom;
+	quicktime_trak_t *trak = track_map->track;
 
 //printf("flush 1\n");
 	vorbis_analysis_wrote(&codec->enc_vd,0);
@@ -799,14 +856,25 @@ static void flush(quicktime_t *file, int track)
 	FLUSH_OGG2
 	
 //printf("flush 2 %d\n", size);
-	quicktime_update_tables(file,
-						track_map->track, 
-						offset, 
-						track_map->current_chunk, 
-						track_map->current_chunk, 
-						codec->enc_vd.granulepos - output_position, 
-						0);
-	file->atracks[track].current_chunk++;
+	if(chunk_started)
+	{
+		quicktime_write_chunk_footer(file, 
+						trak,
+						track_map->current_chunk,
+						&chunk_atom, 
+						1);
+		track_map->current_chunk++;
+		codec->next_chunk_size = 0;
+	}
+/*
+ * 	quicktime_update_tables(file,
+ * 						track_map->track, 
+ * 						offset, 
+ * 						track_map->current_chunk, 
+ * 						track_map->current_chunk, 
+ * 						codec->enc_vd.granulepos - output_position, 
+ * 						0);
+ */
 }
 
 void quicktime_init_codec_vorbis(quicktime_audio_map_t *atrack)

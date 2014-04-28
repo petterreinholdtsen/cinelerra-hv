@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
 //printf(__FUNCTION__ " 2\n");
 		vtracks = mpeg3_total_vstreams(input);
 		atracks = mpeg3_total_astreams(input);
+
 		if(atracks) sample_rate = mpeg3_sample_rate(input, 0);
 		if(vtracks) frame_rate = mpeg3_frame_rate(input, 0);
 
@@ -177,6 +178,7 @@ int main(int argc, char *argv[])
 			int have_audio = 0;
 			int have_video = 0;
 
+//printf(__FUNCTION__ " 1\n");
 // Store current position and read sample_count from each atrack
 			for(j = 0; j < atracks; j++)
 			{
@@ -186,7 +188,6 @@ int main(int argc, char *argv[])
 					mpeg3demux_seek_byte(demuxer, 0);
 				}
 
-//printf(__FUNCTION__ " 5\n");
 				if(!mpeg3_end_of_audio(input, j))
 				{
 // Don't want to maintain separate vectors for offset and title.
@@ -217,7 +218,6 @@ int main(int argc, char *argv[])
 					if(j == atracks - 1) 
 					{
 						total_samples += sample_count;
-//						printf("Audio: title=%lld offset=%016llx ", title_number, position);
 						printf("Audio: title=%lld total_samples=%d ", title_number, total_samples);
 					}
 				}
@@ -245,7 +245,12 @@ int main(int argc, char *argv[])
 				}
 
 
-//printf(__FUNCTION__ " 10\n");
+/*
+ * printf(__FUNCTION__ " 10 %lld %lld %d\n", 
+ * mpeg3io_tell(input->vtrack[j]->demuxer->titles[0]->fs), 
+ * mpeg3io_total_bytes(input->vtrack[j]->demuxer->titles[0]->fs),
+ * frame_count);
+ */
 				for(l = 0; l < frame_count; l++)
 				{
 					if(!mpeg3_end_of_video(input, j))
@@ -287,7 +292,6 @@ int main(int argc, char *argv[])
 
 
 
-
 // Get next frame
 						mpeg3video_get_header(input->vtrack[j]->video, 0);
 						input->vtrack[j]->video->current_repeat += 100;
@@ -307,6 +311,7 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
+//printf(__FUNCTION__ " 10 %d %d\n", have_audio, have_video);
 
 			if(!have_audio && !have_video) done = 1;
 

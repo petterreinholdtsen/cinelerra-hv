@@ -1,5 +1,6 @@
 #include "assets.h"
 #include "batch.h"
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -76,7 +77,7 @@ int RecordVideo::stop_recording()
 	if(record->vdevice)
 	{
 //printf("RecordVideo::stop_recording 1 %p\n", record->vdevice);
-// Interrupt DV crashes
+// Interrupt IEEE1394 crashes
 		record->vdevice->interrupt_crash();
 //printf("RecordVideo::stop_recording 1\n");
 
@@ -327,6 +328,8 @@ void RecordVideo::run()
 	if(record->default_asset->audio_data)
 	{
 		record_thread->record_audio->batch_done = 1;
+// Interrupt driver for IEEE1394
+		record_thread->record_audio->stop_recording();
 	}
 //printf("RecordVideo::run 14 %d\n", write_result);
 

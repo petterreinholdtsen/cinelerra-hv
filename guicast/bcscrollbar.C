@@ -351,12 +351,28 @@ void BC_ScrollBar::get_handle_dimensions()
 			total_pixels + 
 			.5);
 
-		if(handle_pixels < MINHANDLE) handle_pixels = MINHANDLE;
 
 		handle_pixel = (long)((double)position / length * total_pixels + .5) + 
 			get_arrow_pixels();
+
+		if(handle_pixels < MINHANDLE) handle_pixels = MINHANDLE;
+// Handle pixels is beyond minimum right position.  Clamp it.
+		if(handle_pixel > pixels - get_arrow_pixels() - MINHANDLE)
+		{
+			handle_pixel = pixels - get_arrow_pixels() - MINHANDLE;
+			handle_pixels = MINHANDLE;
+		}
+// Shrink handle_pixels until it fits inside scrollbar
 		if(handle_pixel > pixels - get_arrow_pixels() - handle_pixels)
-			handle_pixel = pixels - get_arrow_pixels() - handle_pixels;
+		{
+			handle_pixels = pixels - get_arrow_pixels() - handle_pixel;
+		}
+		if(handle_pixel < get_arrow_pixels())
+		{
+			handle_pixels = handle_pixel + handle_pixels - get_arrow_pixels();
+			handle_pixel = get_arrow_pixels();
+		}
+		if(handle_pixels < MINHANDLE) handle_pixels = MINHANDLE;
 	}
 	else
 	{

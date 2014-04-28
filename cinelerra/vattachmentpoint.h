@@ -17,6 +17,7 @@ public:
 	void dispatch_plugin_server(int buffer_number, 
 		long current_position, 
 		long fragment_size);
+	int get_buffer_size();
 
 	VFrame **buffer_in, **buffer_out;
 };

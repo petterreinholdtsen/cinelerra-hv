@@ -1,0 +1,24 @@
+/Makefile/1.2/Sun Jul 21 07:12:51 2002//
+/audioalsa.C/1.2/Sun Jul 21 07:12:51 2002//
+/audioalsa.h/1.2/Sun Jul 21 07:12:51 2002//
+/audioalsa.inc/1.1/Sun Jul 21 03:32:52 2002//
+/audiodriver.C/1.2/Sun Jul 21 07:12:51 2002//
+/audiodriver.h/1.1/Sun Jul 21 03:32:52 2002//
+/audiodriver.inc/1.1/Sun Jul 21 03:32:52 2002//
+/audiooss.C/1.2/Sun Jul 21 07:12:51 2002//
+/audiooss.h/1.2/Sun Jul 21 07:12:51 2002//
+/audiooss.inc/1.1/Sun Jul 21 03:32:52 2002//
+/main.C/1.1/Sun Jul 21 03:32:52 2002//
+/mixer.C/1.2/Sun Jul 21 07:12:51 2002//
+/mixer.h/1.3/Mon Jul 22 03:07:41 2002//
+/mixer.inc/1.1/Sun Jul 21 03:32:52 2002//
+/mixergui.C/1.2/Mon Jul 22 03:07:41 2002//
+/mixergui.h/1.3/Mon Jul 22 03:07:41 2002//
+/mixergui.inc/1.2/Sun Jul 21 07:12:51 2002//
+/mixerpopup.C/1.1/Sun Jul 21 03:32:52 2002//
+/mixerpopup.h/1.1/Sun Jul 21 03:32:52 2002//
+/mixerpopup.inc/1.1/Sun Jul 21 03:32:52 2002//
+/mixertree.C/1.1/Sun Jul 21 03:32:52 2002//
+/mixertree.h/1.2/Sun Jul 21 07:12:51 2002//
+/mixertree.inc/1.2/Sun Jul 21 07:12:51 2002//
+D/theme////

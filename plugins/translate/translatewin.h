@@ -8,20 +8,11 @@ class TranslateWin;
 
 #include "filexml.h"
 #include "mutex.h"
+#include "pluginclient.h"
 #include "translate.h"
 
-class TranslateThread : public Thread
-{
-public:
-	TranslateThread(TranslateMain *client);
-	~TranslateThread();
 
-	void run();
-
- 	Mutex gui_started, completion;
-	TranslateMain *client;
-	TranslateWin *window;
-};
+PLUGIN_THREAD_HEADER(TranslateMain, TranslateThread, TranslateWin)
 
 class TranslateCoord;
 

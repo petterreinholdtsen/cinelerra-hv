@@ -3,34 +3,8 @@
 
 #include <string.h>
 
-DespikeThread::DespikeThread(Despike *despike)
- : Thread()
-{
-	this->despike = despike;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-DespikeThread::~DespikeThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void DespikeThread::run()
-{
-	BC_DisplayInfo info;
-	window = new DespikeWindow(despike, 
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) despike->client_side_close();
-}
+PLUGIN_THREAD_OBJECT(Despike, DespikeThread, DespikeWindow)
 
 
 

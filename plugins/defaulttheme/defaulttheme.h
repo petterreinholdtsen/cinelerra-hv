@@ -17,6 +17,8 @@ public:
 	void initialize();
 	void draw_mwindow_bg(MWindowGUI *gui);
 
+	void draw_rwindow_bg(RecordGUI *gui);
+	void draw_rmonitor_bg(RecordMonitorGUI *gui);
 	void draw_cwindow_bg(CWindowGUI *gui);
 	void draw_vwindow_bg(VWindowGUI *gui);
 	void draw_preferences_bg(PreferencesWindow *gui);
@@ -63,6 +65,13 @@ private:
 	VFrame *preferences_bg;
 	VFrame *new_bg;
 	VFrame *setformat_bg;
+
+// Record windows
+	VFrame *rgui_batch;
+	VFrame *rgui_controls;
+	VFrame *rgui_list;
+	VFrame *rmonitor_panel;
+	VFrame *rmonitor_meters;
 };
 
 

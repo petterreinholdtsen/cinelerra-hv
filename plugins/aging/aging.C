@@ -10,11 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new AgingMain(server);
-}
 
+REGISTER_PLUGIN(AgingMain)
 
 
 
@@ -40,23 +37,14 @@ AgingConfig::AgingConfig()
 AgingMain::AgingMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	defaults = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
+	aging_server = 0;
 }
 
 AgingMain::~AgingMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	if(defaults) delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
+	if(aging_server) delete aging_server;
 }
 
 char* AgingMain::plugin_title() { return "AgingTV"; }
@@ -94,26 +82,19 @@ void AgingMain::read_data(KeyFrame *keyframe)
 }
 
 
-int AgingMain::start_realtime()
-{
-	aging_server = new AgingServer(this, 1, 1);
-	return 0;
-}
-
-int AgingMain::stop_realtime()
-{
-	delete aging_server;
-	return 0;
-}
-
 int AgingMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
+//printf("AgingMain::process_realtime 1\n");
 	load_configuration();
+//printf("AgingMain::process_realtime 1\n");
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
 
-
+	if(!aging_server) aging_server = new AgingServer(this, 
+		PluginClient::smp + 1, 
+		PluginClient::smp + 1);
 	aging_server->process_packages();
+//printf("AgingMain::process_realtime 2\n");
 
 	return 0;
 }
@@ -247,7 +228,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
 
 
 
-#define SCRATCHES(type, components) \
+#define SCRATCHES(type, components, chroma) \
 { \
 	int i, j, y, y1, y2; \
 	type *p, a, b; \
@@ -289,7 +270,7 @@ void AgingClient::coloraging(unsigned char **output_rows,
  \
 			for(y = y1; y < y2; y++)  \
 			{ \
-				for(j = 0; j < 3; j++) \
+				for(j = 0; j < (chroma ? 1 : 3); j++) \
 				{ \
 					if(sizeof(type) == 2) \
 					{ \
@@ -307,6 +288,11 @@ void AgingClient::coloraging(unsigned char **output_rows,
 					} \
 				} \
  \
+				if(chroma) \
+				{ \
+					p[1] = chroma; \
+					p[2] = chroma; \
+				} \
 				p += w * components; \
 			} \
 		}  \
@@ -333,30 +319,42 @@ void AgingClient::scratching(unsigned char **output_rows,
 	switch(color_model)
 	{
 		case BC_RGB888:
+			SCRATCHES(uint8_t, 3, 0);
+			break;
+
 		case BC_YUV888:
-			SCRATCHES(uint8_t, 3);
+			SCRATCHES(uint8_t, 3, 0x80);
 			break;
 		
 		case BC_RGBA8888:
+			SCRATCHES(uint8_t, 4, 0);
+			break;
+
 		case BC_YUVA8888:
-			SCRATCHES(uint8_t, 4);
+			SCRATCHES(uint8_t, 4, 0x80);
 			break;
 		
 		case BC_RGB161616:
+			SCRATCHES(uint16_t, 3, 0);
+			break;
+
 		case BC_YUV161616:
-			SCRATCHES(uint16_t, 3);
+			SCRATCHES(uint16_t, 3, 0x8000);
 			break;
 		
 		case BC_RGBA16161616:
+			SCRATCHES(uint16_t, 4, 0);
+			break;
+
 		case BC_YUVA16161616:
-			SCRATCHES(uint16_t, 4);
+			SCRATCHES(uint16_t, 4, 0x8000);
 			break;
 	}
 }
 
 
 
-#define PITS(type, components) \
+#define PITS(type, components, chroma) \
 { \
 	int i, j, k; \
 	int pnum, size, pnumscale; \
@@ -392,8 +390,15 @@ void AgingClient::scratching(unsigned char **output_rows,
  \
 			CLAMP(x, 0, w - 1); \
 			CLAMP(y, 0, h - 1); \
-			for(k = 0; k < 3; k++) \
+			for(k = 0; k < (chroma ? 1 : 3); k++) \
 				((type**)output_rows)[y][x * components + k] = 0xc0; \
+ \
+            if(chroma) \
+			{ \
+				((type**)output_rows)[y][x * components + 1] = chroma; \
+				((type**)output_rows)[y][x * components + 2] = chroma; \
+			} \
+ \
 		} \
 	} \
 }
@@ -411,29 +416,37 @@ void AgingClient::pits(unsigned char **output_rows,
 	switch(color_model)
 	{
 		case BC_RGB888:
+			PITS(uint8_t, 3, 0);
+			break;
 		case BC_YUV888:
-			PITS(uint8_t, 3);
+			PITS(uint8_t, 3, 0x80);
 			break;
 		
 		case BC_RGBA8888:
+			PITS(uint8_t, 4, 0);
+			break;
 		case BC_YUVA8888:
-			PITS(uint8_t, 4);
+			PITS(uint8_t, 4, 0x80);
 			break;
 		
 		case BC_RGB161616:
+			PITS(uint16_t, 3, 0);
+			break;
 		case BC_YUV161616:
-			PITS(uint16_t, 3);
+			PITS(uint16_t, 3, 0x8000);
 			break;
 		
 		case BC_RGBA16161616:
+			PITS(uint16_t, 4, 0);
+			break;
 		case BC_YUVA16161616:
-			PITS(uint16_t, 4);
+			PITS(uint16_t, 4, 0x8000);
 			break;
 	}
 }
 
 
-#define DUSTS(type, components) \
+#define DUSTS(type, components, chroma) \
 { \
 	int i, j, k; \
 	int dnum; \
@@ -462,8 +475,14 @@ void AgingClient::pits(unsigned char **output_rows,
 		{ \
 			CLAMP(x, 0, w - 1); \
 			CLAMP(y, 0, h - 1); \
-			for(k = 0; k < 3; k++) \
+			for(k = 0; k < (chroma ? 1 : 3); k++) \
 				((type**)output_rows)[y][x * components + k] = 0x10; \
+ \
+			if(chroma) \
+			{ \
+				((type**)output_rows)[y][x * components + 1] = chroma; \
+				((type**)output_rows)[y][x * components + 2] = chroma; \
+			} \
  \
 			y += AgingConfig::dy[d]; \
 			x += AgingConfig::dx[d]; \
@@ -489,23 +508,35 @@ void AgingClient::dusts(unsigned char **output_rows,
 	switch(color_model)
 	{
 		case BC_RGB888:
+			DUSTS(uint8_t, 3, 0);
+			break;
+
 		case BC_YUV888:
-			DUSTS(uint8_t, 3);
+			DUSTS(uint8_t, 3, 0x80);
 			break;
 		
 		case BC_RGBA8888:
+			DUSTS(uint8_t, 4, 0);
+			break;
+
 		case BC_YUVA8888:
-			DUSTS(uint8_t, 4);
+			DUSTS(uint8_t, 4, 0x80);
 			break;
 		
 		case BC_RGB161616:
+			DUSTS(uint16_t, 3, 0);
+			break;
+
 		case BC_YUV161616:
-			DUSTS(uint16_t, 3);
+			DUSTS(uint16_t, 3, 0x8000);
 			break;
 		
 		case BC_RGBA16161616:
+			DUSTS(uint16_t, 4, 0);
+			break;
+
 		case BC_YUVA16161616:
-			DUSTS(uint16_t, 4);
+			DUSTS(uint16_t, 4, 0x8000);
 			break;
 	}
 }
@@ -514,6 +545,7 @@ void AgingClient::dusts(unsigned char **output_rows,
 
 void AgingClient::process_package(LoadPackage *package)
 {
+//printf("AgingClient::process_package 1\n");
 	AgingPackage *local_package = (AgingPackage*)package;
 	unsigned char **input_rows = plugin->input_ptr->get_rows() + local_package->row1;
 	unsigned char **output_rows = plugin->output_ptr->get_rows() + local_package->row1;

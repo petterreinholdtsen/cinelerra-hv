@@ -25,7 +25,11 @@ void MainUndo::update_undo_before(char *description, unsigned long load_flags)
 	{
 		FileXML file;
 		mwindow->session->changes_made = 1;
-		mwindow->edl->save_xml(mwindow->plugindb, &file, "");
+		mwindow->edl->save_xml(mwindow->plugindb, 
+			&file, 
+			"",
+			0,
+			0);
 		file.terminate_string();
 
 		current_entry = undo_stack.push();
@@ -48,7 +52,11 @@ void MainUndo::update_undo_after()
 	if(undo_before_updated)
 	{
 		FileXML file;
-		mwindow->edl->save_xml(mwindow->plugindb, &file, "");
+		mwindow->edl->save_xml(mwindow->plugindb, 
+			&file, 
+			"",
+			0,
+			0);
 		file.terminate_string();
 		current_entry->set_data_after(file.string);
 		undo_before_updated = 0;

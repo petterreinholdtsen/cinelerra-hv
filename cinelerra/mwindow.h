@@ -189,7 +189,7 @@ public:
 	void delete_track();
 	void delete_track(Track *track);
 	void delete_tracks();
-//	void extract_selection();
+	void detach_transition(Transition *transition);
 	int feather_edits(long feather_samples, int audio, int video);
 	long get_feather(int audio, int video);
 	float get_aspect_ratio();
@@ -243,10 +243,11 @@ public:
 				RecordLabels *new_labels);
 	void paste_silence();
 
+	void paste_transition();
 	void paste_audio_transition();
 	void paste_video_transition();
 	void rebuild_indices();
-	void redo_entry();
+	void redo_entry(int is_mwindow);
 // Asset removal
 	void remove_assets_from_project(int push_undo = 0);
 	void remove_assets_from_disk();
@@ -266,7 +267,7 @@ public:
 	void sync_parameters(int change_type = CHANGE_PARAMS);
 	void to_clip();
 	int toggle_label(int is_mwindow);
-	void undo_entry();
+	void undo_entry(int is_mwindow);
 
 	int cut_automation();
 	int copy_automation();

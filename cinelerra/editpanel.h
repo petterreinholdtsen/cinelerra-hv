@@ -167,6 +167,7 @@ public:
 	EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditSplice();
 	int handle_event();
+	int keypress_event();
 	MWindow *mwindow;
 	EditPanel *panel;
 };
@@ -177,6 +178,7 @@ public:
 	EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditOverwrite();
 	int handle_event();
+	int keypress_event();
 	MWindow *mwindow;
 	EditPanel *panel;
 };

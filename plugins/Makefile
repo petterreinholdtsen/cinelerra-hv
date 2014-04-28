@@ -11,6 +11,7 @@ DIRS = \
 	blur \
 	brightness \
 	burn \
+	parametric \
 	aging \
 	cdripper \
 	chromakey \
@@ -22,6 +23,7 @@ DIRS = \
 	delayaudio \
 	delayvideo \
 	denoise \
+	denoisefft \
 	denoisevideo \
 	despike \
 	dissolve \
@@ -34,6 +36,7 @@ DIRS = \
 	gain \
 	holo \
 	huesaturation \
+	interpolateall \
 	invertaudio \
 	invertvideo \
 	irissquare \
@@ -42,7 +45,6 @@ DIRS = \
 	mpeg2enc \
 	normalize \
 	oilpainting \
-	parametric \
 	pitch \
 	polar \
 	reframe \
@@ -94,3 +96,9 @@ install:
 	rm -rf /usr/lib/cinelerra
 	mkdir -p /usr/lib/cinelerra
 	cp $(OBJDIR)/*.plugin /usr/lib/cinelerra
+	cp -a titler/fonts /usr/lib/cinelerra
+
+
+
+
+

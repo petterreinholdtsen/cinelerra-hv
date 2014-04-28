@@ -3,32 +3,12 @@
 #include "translatewin.h"
 
 
-TranslateThread::TranslateThread(TranslateMain *client)
- : Thread()
-{
-	this->client = client;
-	Thread::set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-TranslateThread::~TranslateThread()
-{
-	delete window;
-}
 
-void TranslateThread::run()
-{
-	BC_DisplayInfo info;
-	window = new TranslateWin(client,
-		info.get_abs_cursor_x() - 320, 
-		info.get_abs_cursor_y() - 100);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-	if(result) client->client_side_close();
-}
+
+
+
+PLUGIN_THREAD_OBJECT(TranslateMain, TranslateThread, TranslateWin)
 
 
 

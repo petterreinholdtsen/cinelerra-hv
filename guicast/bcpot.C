@@ -223,6 +223,7 @@ int BC_Pot::keypress_event()
 	{
 		show_value_tooltip();
 		draw();
+		handle_event();
 	}
 	return result;
 }

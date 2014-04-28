@@ -40,14 +40,17 @@ VWindow::~VWindow()
 
 void VWindow::delete_edl()
 {
-	if(edl && !edl_shared)
+//printf("VWindow::delete_edl 1\n");
+	if(mwindow->edl->vwindow_edl)
 	{
-		delete edl;
+		delete mwindow->edl->vwindow_edl;
+		mwindow->edl->vwindow_edl = 0;
 	}
+
 	if(asset) delete asset;
 	asset = 0;
-	edl = 0;
 	edl_shared = 0;
+	edl = 0;
 }
 
 
@@ -87,6 +90,7 @@ void VWindow::run()
 
 EDL* VWindow::get_edl()
 {
+//printf("VWindow::get_edl 1 %p\n", edl);
 	return edl;
 }
 
@@ -95,6 +99,23 @@ Asset* VWindow::get_asset()
 	return this->asset;
 }
 
+void VWindow::change_source()
+{
+//printf("VWindow::change_source() 1 %p\n", mwindow->edl->vwindow_edl);
+	if(mwindow->edl->vwindow_edl)
+	{
+		this->edl = mwindow->edl->vwindow_edl;
+		gui->change_source(edl, "");
+		update_position(CHANGE_ALL, 1, 1);
+	}
+	else
+	{
+		if(asset) delete asset;
+		asset = 0;
+		edl_shared = 0;
+		edl = 0;
+	}
+}
 
 void VWindow::change_source(Asset *asset)
 {
@@ -103,6 +124,7 @@ void VWindow::change_source(Asset *asset)
 // 		asset->id == this->asset->id &&
 // 		asset == this->asset) return;
 
+//printf("VWindow::change_source(Asset *asset) 1\n");
 
 	char title[BCTEXTLEN];
 	FileSystem fs;
@@ -112,10 +134,10 @@ void VWindow::change_source(Asset *asset)
 	delete_edl();
 //printf("VWindow::change_source 1\n");
 
-// Generate EDL off of MWindow for cutting
+// Generate EDL off of main EDL for cutting
 	this->asset = new Asset;
 	*this->asset = *asset;
-	edl = new EDL(mwindow->edl);
+	edl = mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
 	edl_shared = 0;
 	edl->create_objects();
 	mwindow->asset_to_edl(edl, asset);
@@ -148,11 +170,11 @@ void VWindow::change_source(Asset *asset)
 
 void VWindow::change_source(EDL *edl)
 {
+//printf("VWindow::change_source(EDL *edl) 1\n");
 //printf("VWindow::change_source %p\n", edl);
 // EDLs are identical
-	if(edl && this->edl && 
-		edl->id == this->edl->id &&
-		edl == this->edl) return;
+	if(edl && mwindow->edl->vwindow_edl && 
+		edl->id == mwindow->edl->vwindow_edl->id) return;
 
 	delete_edl();
 
@@ -187,6 +209,7 @@ void VWindow::remove_source()
 
 void VWindow::change_source(char *folder, int item)
 {
+//printf("VWindow::change_source(char *folder, int item) 1\n");
 	int result = 0;
 // Search EDLs
 	if(!strcasecmp(folder, CLIP_FOLDER))
@@ -330,6 +353,8 @@ void VWindow::copy()
 		FileXML file;
 		edl->copy(start,
 			end,
+			0,
+			0,
 			0,
 			&file,
 			mwindow->plugindb,

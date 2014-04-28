@@ -14,6 +14,7 @@
 #include "filetga.h"
 #include "filethread.h"
 #include "filetiff.h"
+#include "filevorbis.h"
 #include "formatwindow.h"
 #include "pluginserver.h"
 #include "resample.h"
@@ -172,6 +173,13 @@ int File::get_options(BC_WindowBase *parent_window,
 				audio_options, 
 				video_options);
 			break;
+		case FILE_VORBIS:
+			FileVorbis::get_parameters(parent_window,
+				asset,
+				format_window,
+				audio_options,
+				video_options);
+			break;
 		default:
 			break;
 	}
@@ -283,6 +291,13 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 				file = new FileTIFF(this->asset, this);
 			}
 			else
+			if(FileVorbis::check_sig(this->asset))
+			{
+// MPEG file
+				fclose(stream);
+				file = new FileVorbis(this->asset, this);
+			}
+			else
 			if(FileMPEG::check_sig(this->asset))
 			{
 // MPEG file
@@ -354,6 +369,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			file = new FileMPEG(this->asset, this, plugindb);
 			break;
 
+		case FILE_VORBIS:
+			file = new FileVorbis(this->asset, this);
+			break;
+
 		case FILE_AVI:
 			file = new FileMOV(this->asset, this);
 			break;
@@ -378,6 +397,8 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 		file = 0;
 	}
 
+
+// Fix writing parameters
 	if(file && wr)
 	{
 		if(this->asset->dither) file->set_dither();

@@ -70,6 +70,7 @@ public:
 // Update the batch editing tools
 	void update_batch_tools();
 	int resize_event(int w, int h);
+	int translation_event();
 
 	ArrayList<BC_ListBoxItem*> batches[BATCH_COLUMNS];
 // Menu items

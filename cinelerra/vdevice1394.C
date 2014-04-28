@@ -147,22 +147,22 @@ int VDevice1394::open_output()
 
 
 
-        v.channel = device->out_config->firewire_channel;
-        w.channel = v.channel;
-        v.sync_tag = 0;
-        v.nb_buffers = 10;
-        v.buf_size = 320 * 512;
-        v.packet_size = 512;
-        v.syt_offset = 19000;
-        v.flags = VIDEO1394_VARIABLE_PACKET_SIZE;
+        output_mmap.channel = device->out_config->firewire_channel;
+        output_queue.channel = output_mmap.channel;
+        output_mmap.sync_tag = 0;
+        output_mmap.nb_buffers = 10;
+        output_mmap.buf_size = 320 * 512;
+        output_mmap.packet_size = 512;
+        output_mmap.syt_offset = 19000;
+        output_mmap.flags = VIDEO1394_VARIABLE_PACKET_SIZE;
     
-        if(ioctl(output_fd, VIDEO1394_TALK_CHANNEL, &v) < 0)
+        if(ioctl(output_fd, VIDEO1394_TALK_CHANNEL, &output_mmap) < 0)
 		{
             perror("VDevice1394::open_output VIDEO1394_TALK_CHANNEL:");
         }
     
         output_buffer = (unsigned char*)mmap(0, 
-			v.nb_buffers * v.buf_size,
+			output_mmap.nb_buffers * output_mmap.buf_size,
             PROT_READ | PROT_WRITE, 
 			MAP_SHARED, 
 			output_fd, 
@@ -172,9 +172,9 @@ int VDevice1394::open_output()
             perror("VDevice1394::open_output mmap");
         }
     
-		unused_buffers = v.nb_buffers;
-        w.buffer = 0;
-        w.packet_sizes = packet_sizes;
+		unused_buffers = output_mmap.nb_buffers;
+        output_queue.buffer = 0;
+        output_queue.packet_sizes = packet_sizes;
         continuity_counter = 0;
         cip_counter = 0;
 
@@ -196,7 +196,7 @@ int VDevice1394::interrupt_crash()
 
 int VDevice1394::close_all()
 {
-//printf("VDevice1394::close_all 1\n");
+//printf("VDevice1394::close_all 1 %d\n", device->sharing);
 	if(device->sharing)
 	{
 //printf("VDevice1394::close_all 2\n");
@@ -211,6 +211,7 @@ int VDevice1394::close_all()
 //printf("VDevice1394::close_all 5\n");
 		delete [] shared_ready;
 //printf("VDevice1394::close_all 6\n");
+		device->sharing = 0;
 	}
 	else
 	if(grabber)
@@ -225,18 +226,18 @@ int VDevice1394::close_all()
 
 	if(output_fd)
 	{
-        w.buffer = (v.nb_buffers + w.buffer - 1) % v.nb_buffers;
+        output_queue.buffer = (output_mmap.nb_buffers + output_queue.buffer - 1) % output_mmap.nb_buffers;
 
-        if(ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &w) < 0) 
+        if(ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
 		{
             fprintf(stderr, 
 				"VDevice1394::close_all: VIDEO1394_TALK_WAIT_BUFFER %s: %s",
-				w,
+				output_queue,
 				strerror(errno));
         }
-        munmap(output_buffer, v.nb_buffers * v.buf_size);
+        munmap(output_buffer, output_mmap.nb_buffers * output_mmap.buf_size);
 
-        if(ioctl(output_fd, VIDEO1394_UNTALK_CHANNEL, &v.channel) < 0)
+        if(ioctl(output_fd, VIDEO1394_UNTALK_CHANNEL, &output_mmap.channel) < 0)
 		{
             perror("VDevice1394::close_all: VIDEO1394_UNTALK_CHANNEL");
         }
@@ -264,12 +265,17 @@ int VDevice1394::get_shared_data(unsigned char *data, long size)
 		if(shared_ready[shared_input_number])
 		{
 			shared_ready[shared_input_number] = 0;
-			shared_frames[shared_input_number]->allocate_compressed_data(size);
-			memcpy(shared_frames[shared_input_number]->get_data(), data, size);
-			shared_frames[shared_input_number]->set_compressed_size(size);
+			if(size && data)
+			{
+				shared_frames[shared_input_number]->allocate_compressed_data(size);
+				memcpy(shared_frames[shared_input_number]->get_data(), data, size);
+				shared_frames[shared_input_number]->set_compressed_size(size);
+			}
+
 			shared_output_lock[shared_input_number].unlock();
 			shared_input_number++;
-			if(shared_input_number >= device->in_config->capture_length) shared_input_number = 0;
+			if(shared_input_number >= device->in_config->capture_length) 
+				shared_input_number = 0;
 		}
 	return 0;
 }
@@ -297,9 +303,12 @@ int VDevice1394::read_buffer(VFrame *frame)
 			size = shared_frames[shared_output_number]->get_compressed_size();
 			data = shared_frames[shared_output_number]->get_data();
 
-			frame->allocate_compressed_data(size);
-			memcpy(frame->get_data(), data, size);
-			frame->set_compressed_size(size);
+			if(data && size)
+			{
+				frame->allocate_compressed_data(size);
+				memcpy(frame->get_data(), data, size);
+				frame->set_compressed_size(size);
+			}
 		}
 		else
 		{
@@ -326,9 +335,9 @@ int VDevice1394::read_buffer(VFrame *frame)
 			memcpy(frame->get_data(), data, size);
 			frame->set_compressed_size(size);
 		}
-//printf("VDevice1394::read_buffer 1\n");
+printf("VDevice1394::read_buffer 1\n");
 		dv_unlock_frame(grabber);
-//printf("VDevice1394::read_buffer 2\n");
+printf("VDevice1394::read_buffer 2\n");
 	}
 
 	return result;
@@ -484,10 +493,10 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 	{
 //printf("VDevice1394::write_buffer 8\n");
 		int is_pal = (ptr->get_h() == 576);
-		unsigned char *output = output_buffer + w.buffer * v.buf_size;
+		unsigned char *output = output_buffer + output_queue.buffer * output_mmap.buf_size;
 		int output_size = 320;
 		int packets_per_frame = (is_pal ? 300 : 250);
-		int min_packet_size = v.packet_size;
+		int min_packet_size = output_mmap.packet_size;
 		long frame_size = packets_per_frame * 480;
 		char vdata = 0;
 		unsigned char *data = ptr->get_data();
@@ -555,18 +564,18 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 // printf("VDevice1394::write_buffer 12 %02x %02x %02x %02x %02x %02x %02x %02x\n",
 // output[0],output[1], output[2], output[3], output[4], output[5], output[6], output[7]);
 
-		if(ioctl(output_fd, VIDEO1394_TALK_QUEUE_BUFFER, &w) < 0)
+		if(ioctl(output_fd, VIDEO1394_TALK_QUEUE_BUFFER, &output_queue) < 0)
 		{
         	perror("VDevice1394::write_buffer VIDEO1394_TALK_QUEUE_BUFFER");
     	}
 //printf("VDevice1394::write_buffer 13\n");
 
-    	w.buffer++;
-		if(w.buffer >= v.nb_buffers) w.buffer = 0;
+    	output_queue.buffer++;
+		if(output_queue.buffer >= output_mmap.nb_buffers) output_queue.buffer = 0;
 	}
 //printf("VDevice1394::write_buffer 14\n");
 
-    if (ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &w) < 0) 
+    if (ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
 	{
         perror("VDevice1394::write_buffer VIDEO1394_TALK_WAIT_BUFFER");
     }

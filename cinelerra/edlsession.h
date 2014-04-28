@@ -80,7 +80,8 @@ public:
 	int cwindow_yscroll;
 	float cwindow_zoom;
 // Transition
-	char default_transition[BCTEXTLEN];
+	char default_atransition[BCTEXTLEN];
+	char default_vtransition[BCTEXTLEN];
 // Length in seconds
 	double default_transition_length;
 // Edit mode to use for each mouse button

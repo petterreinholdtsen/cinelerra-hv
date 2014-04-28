@@ -49,6 +49,8 @@ void FileSndFile::asset_to_format()
 		case FILE_AIFF: fd_config.format = SF_FORMAT_AIFF; break;
 	}
 
+// Not all of these are allowed in all sound formats.
+// Raw can't be float.
 	switch(asset->bits)
 	{
 		case BITSLINEAR8:
@@ -75,6 +77,7 @@ void FileSndFile::asset_to_format()
 			break;
 
 		case BITSFLOAT: 
+//printf("FileSndFile::asset_to_format 1\n");
 			fd_config.format |= SF_FORMAT_FLOAT; 
 			fd_config.pcmbitwidth = 16;
 			break;

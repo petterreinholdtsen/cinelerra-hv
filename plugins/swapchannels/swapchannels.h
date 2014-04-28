@@ -83,20 +83,7 @@ public:
 
 
 
-
-
-class SwapThread : public Thread
-{
-public:
-	SwapThread(SwapMain *plugin);
-	~SwapThread();
-
-	void run();
-
-	SwapMain *plugin;
-	Mutex completion;
-	SwapWindow *window;
-};
+PLUGIN_THREAD_HEADER(SwapMain, SwapThread, SwapWindow)
 
 
 

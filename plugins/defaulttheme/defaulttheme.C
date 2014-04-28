@@ -12,6 +12,8 @@
 #include "new.h"
 #include "patchbay.h"
 #include "preferencesthread.h"
+#include "recordgui.h"
+#include "recordmonitor.h"
 #include "setformat.h"
 #include "statusbar.h"
 #include "timebar.h"
@@ -169,6 +171,15 @@ void DefaultTheme::initialize()
 		default_button_images[0],
 		default_button_images[1],
 		default_button_images[2]);
+
+
+// Record windows
+	rgui_batch = new VFrame(get_image("recordgui_batch.png"));
+	rgui_controls = new VFrame(get_image("recordgui_controls.png"));
+	rgui_list = new VFrame(get_image("recordgui_list.png"));
+	rmonitor_panel = new VFrame(get_image("recordmonitor_panel.png"));
+	rmonitor_meters = new VFrame(get_image("recordmonitor_meters.png"));
+
 
 // MWindow
 	mbutton_left = new VFrame(get_image("mbutton_left.png"));
@@ -568,6 +579,45 @@ void DefaultTheme::build_overlays()
 
 
 
+
+void DefaultTheme::draw_rwindow_bg(RecordGUI *gui)
+{
+	int y;
+	int margin = 50;
+	int margin2 = 80;
+	gui->draw_9segment(recordgui_batch_x - margin,
+		0,
+		mwindow->session->rwindow_w - recordgui_status_x + margin,
+		recordgui_buttons_y,
+		rgui_batch);
+	gui->draw_3segmenth(recordgui_options_x - margin2,
+		recordgui_buttons_y - 5,
+		mwindow->session->rwindow_w - recordgui_options_x + margin2,
+		rgui_controls);
+	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
+	gui->draw_9segment(0,
+		y,
+		mwindow->session->rwindow_w,
+		mwindow->session->rwindow_h - y,
+		rgui_list);
+}
+
+void DefaultTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
+{
+	int margin = 35;
+	int panel_w = 300;
+// 	gui->draw_3segmenth(0,
+// 		0,
+// 		panel_w,
+// 		rmonitor_panel);
+	int x = rmonitor_canvas_w - margin;
+//printf("DefaultTheme::draw_rmonitor_bg 1 %d\n", x);
+	gui->draw_9segment(x,
+		0,
+		mwindow->session->rmonitor_w - x,
+		mwindow->session->rmonitor_h,
+		rmonitor_meters);
+}
 
 
 

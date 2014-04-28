@@ -64,7 +64,6 @@ void VirtualConsole::create_objects()
 //printf("VirtualConsole::create_objects 4\n");
 	build_virtual_console(1);
 //printf("VirtualConsole::create_objects 5\n");
-//dump();
 	sort_virtual_console();
 //printf("VirtualConsole::create_objects 6\n");
 }
@@ -184,9 +183,9 @@ int VirtualConsole::sort_virtual_console()
 	long attempts = 0;
 	int i;
 
+//printf("VirtualConsole::sort_virtual_console 1\n");
 	if(!render_list.total)
 	{
-//printf("VirtualConsole::sort_virtual_console 1\n");
 		while(!done && attempts < 50)
 		{
 // Sort iteratively until all the remaining plugins can be rendered.
@@ -206,6 +205,7 @@ int VirtualConsole::sort_virtual_console()
 		{
 			printf("VirtualConsole::sort_virtual_console: Recursive.\n");
 		}
+//printf("VirtualConsole::sort_virtual_console 2\n");
 	}
 	return 0;
 }

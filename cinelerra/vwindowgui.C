@@ -55,7 +55,10 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 {
 	update_sources(title);
 	char string[BCTEXTLEN];
-	sprintf(string, PROGRAM_NAME ": %s", title);
+	if(title[0]) 
+		sprintf(string, PROGRAM_NAME ": %s", title);
+	else
+		sprintf(string, PROGRAM_NAME);
 
 	lock_window();
 	slider->set_position();
@@ -365,6 +368,7 @@ VWindowMeters::~VWindowMeters()
 int VWindowMeters::change_status_event()
 {
 	mwindow->edl->session->vwindow_meter = use_meters;
+//printf("VWindowMeters::change_status_event 1 %d\n", mwindow->edl->session->vwindow_meter);
 	mwindow->theme->get_vwindow_sizes(gui);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
@@ -545,6 +549,8 @@ void VWindowEditing::to_clip()
 		edl->copy(start, 
 			end, 
 			1,
+			0,
+			0,
 			&file,
 			mwindow->plugindb,
 			"",

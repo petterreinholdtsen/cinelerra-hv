@@ -15,6 +15,7 @@
 #include "mwindowgui.h"
 #include "module.h"
 #include "mainsession.h"
+#include "pluginserver.h"
 #include "pluginset.h"
 #include "timebar.h"
 #include "trackcanvas.h"
@@ -305,30 +306,30 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 }
 
 void Tracks::move_effect(Plugin *plugin,
-	PluginSet *plugin_set,
-	Track *track, 
-	long position)
+	PluginSet *dest_plugin_set,
+	Track *dest_track, 
+	long dest_position)
 {
 	Track *source_track = plugin->track;
 	Plugin *result = 0;
 
 // Insert on an existing plugin set
-	if(!track)
+	if(!dest_track && dest_plugin_set)
 	{
-		Track *dest_track = plugin_set->track;
+		Track *dest_track = dest_plugin_set->track;
 
 
 // Assume this operation never splits a plugin
 // Shift destination plugins back
-		plugin_set->shift(position, plugin->length);
+		dest_plugin_set->shift(dest_position, plugin->length);
 
 // Insert new plugin
 		Plugin *current = 0;
-		for(current = (Plugin*)plugin_set->first; current; current = (Plugin*)NEXT)
-			if(current->startproject >= position) break;
+		for(current = (Plugin*)dest_plugin_set->first; current; current = (Plugin*)NEXT)
+			if(current->startproject >= dest_position) break;
 
-		result = (Plugin*)plugin_set->insert_before(current, 
-			new Plugin(edl, plugin_set, ""));
+		result = (Plugin*)dest_plugin_set->insert_before(current, 
+			new Plugin(edl, dest_plugin_set, ""));
 	}
 	else
 // Create a new plugin set
@@ -343,44 +344,51 @@ void Tracks::move_effect(Plugin *plugin,
 				start;
 		}
 		else
-		if(track->get_length() > 0)
+		if(dest_track->get_length() > 0)
 		{
 			start = 0;
-			length = track->get_length();
+			length = dest_track->get_length();
 		}
 		else
 		{
 			start = 0;
-			length = track->from_units(plugin->length);
+			length = dest_track->from_units(plugin->length);
 		}
 
 
-//printf("Tracks::move_effect %f %f\n", start, length);
-		result = track->insert_effect("", 
+//printf("Tracks::move_effect 1\n");
+		result = dest_track->insert_effect("", 
 				&plugin->shared_location, 
 				0,
 				0,
 				start,
 				length,
 				plugin->plugin_type);
+//printf("Tracks::move_effect 2\n");
 	}
 
+//printf("Tracks::move_effect 2 %p %p\n", result, plugin);
 
 
 	result->copy_from(plugin);
-	result->shift(position - plugin->startproject);
+//printf("Tracks::move_effect 2\n");
+	result->shift(dest_position - plugin->startproject);
+//printf("Tracks::move_effect 3\n");
 
 // Clear new plugin from old set
 	plugin->plugin_set->clear(plugin->startproject, plugin->startproject + plugin->length);
 
+//printf("Tracks::move_effect 4\n");
 
 	source_track->optimize();
+//printf("Tracks::move_effect 5\n");
 }
 
 
 
 int Tracks::concatenate_tracks(int edit_plugins)
 {
+//printf("Tracks::concatenate_tracks 1\n");
 	Track *output_track, *first_output_track, *input_track;
 	int i, data_type = TRACK_AUDIO;
 	double output_start;
@@ -388,6 +396,7 @@ int Tracks::concatenate_tracks(int edit_plugins)
 	int result = 0;
 	IntAuto *play_keyframe = 0;
 
+//printf("Tracks::concatenate_tracks 1\n");
 // Relocate tracks
 	for(i = 0; i < 2; i++)
 	{
@@ -400,6 +409,7 @@ int Tracks::concatenate_tracks(int edit_plugins)
 
 		first_output_track = output_track;
 
+//printf("Tracks::concatenate_tracks 1\n");
 // Get first input track
 		for(input_track = first;
 			input_track;
@@ -417,6 +427,7 @@ int Tracks::concatenate_tracks(int edit_plugins)
 				!input_track->record) break;
 		}
 
+//printf("Tracks::concatenate_tracks 1\n");
 
 		if(output_track && input_track)
 		{
@@ -424,10 +435,12 @@ int Tracks::concatenate_tracks(int edit_plugins)
 			while(input_track)
 			{
 				output_start = output_track->get_length();
+//printf("Tracks::concatenate_tracks 1\n");
 				output_track->insert_track(input_track, 
 					output_start, 
 					0,
 					edit_plugins);
+//printf("Tracks::concatenate_tracks 1\n");
 
 // Get next source and destination
 				for(input_track = input_track->next; 
@@ -435,16 +448,19 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					input_track = input_track->next)
 				{
 					long unit_start = input_track->to_units(edl->local_session->selectionstart, 0);
-					play_keyframe = 0;
-					(IntAuto*)input_track->automation->play_autos->get_prev_auto(
+//printf("Tracks::concatenate_tracks 1\n");
+					play_keyframe = (IntAuto*)input_track->automation->play_autos->get_prev_auto(
 							unit_start, 
 							PLAY_FORWARD,
 							(Auto*)play_keyframe);
+//printf("Tracks::concatenate_tracks 1 %p %p\n", input_track, play_keyframe);
 
 					if(input_track->data_type == data_type && 
 						!input_track->record && 
 						play_keyframe->value) break;
+//printf("Tracks::concatenate_tracks 2\n");
 				}
+//printf("Tracks::concatenate_tracks 3\n");
 
 				for(output_track = output_track->next; 
 					output_track; 
@@ -453,18 +469,23 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					if(output_track->data_type == data_type && 
 						output_track->record) break;
 				}
+//printf("Tracks::concatenate_tracks 1\n");
 
 				if(!output_track)
 				{
 					output_track = first_output_track;
 				}
+//printf("Tracks::concatenate_tracks 1\n");
 			}
+//printf("Tracks::concatenate_tracks 1\n");
 			result = 1;
 		}
 
+//printf("Tracks::concatenate_tracks 1\n");
 		if(data_type == TRACK_AUDIO) data_type = TRACK_VIDEO;
 	}
 
+//printf("Tracks::concatenate_tracks 2\n");
 	return result;
 }
 
@@ -660,8 +681,22 @@ int Tracks::paste_assets(FileXML *xml)
 }
 
 
-void Tracks::paste_audio_transition()
+void Tracks::paste_audio_transition(PluginServer *server)
 {
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_AUDIO &&
+			current->record)
+		{
+			long position = current->to_units(
+				edl->local_session->get_selectionstart(), 0);
+			Edit *current_edit = current->edits->editof(position, PLAY_FORWARD);
+			if(current_edit)
+			{
+				paste_transition(server, current_edit);
+			}
+		}
+	}
 }
 
 void Tracks::paste_automation(double selectionstart, 
@@ -766,8 +801,27 @@ int Tracks::paste_default_keyframe(FileXML *file)
 	return 0;
 }
 
-void Tracks::paste_video_transition()
+void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 {
+	dest_edit->insert_transition(server->title);
+}
+
+void Tracks::paste_video_transition(PluginServer *server)
+{
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_VIDEO &&
+			current->record)
+		{
+			long position = current->to_units(
+				edl->local_session->get_selectionstart(), 0);
+			Edit *current_edit = current->edits->editof(position, PLAY_FORWARD);
+			if(current_edit)
+			{
+				paste_transition(server, current_edit);
+			}
+		}
+	}
 }
 
 

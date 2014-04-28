@@ -12,6 +12,11 @@ extern "C" {
 
 /* This is the reference for all your library entry points. */
 
+
+
+
+
+
 /* ===== compression formats for which codecs exist ====== */
 
 #define QUICKTIME_DIVX "DIVX"
@@ -85,6 +90,11 @@ extern "C" {
 #define QUICKTIME_WMA "WMA "
 
 /* =========================== public interface ========================= // */
+
+/* Get version information */
+int quicktime_major();
+int quicktime_minor();
+int quicktime_release();
 
 /* return 1 if the file is a quicktime file */
 int quicktime_check_sig(char *path);

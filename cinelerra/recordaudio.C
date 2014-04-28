@@ -1,6 +1,7 @@
 #include "assets.h"
 #include "audiodevice.h"
 #include "batch.h"
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -136,8 +137,9 @@ void RecordAudio::run()
 			else
 			{
 // Read into monitor buffer for monitoring.
+//printf("RecordAudio::run 1\n");
 				grab_result = record->adevice->read_buffer(input, fragment_size, record_channels, over, max, 0);
-//printf("RecordAudio::run 1 %d\n", grab_result);
+//printf("RecordAudio::run 2 %d\n", grab_result);
 			}
 //printf("RecordAudio::run 3\n");
 
@@ -221,7 +223,7 @@ void RecordAudio::run()
 					}
 				}
 			}
-//printf("RecordAudio::run 3\n");
+//printf("RecordAudio::run 3 %d %d\n", batch_done, write_result);
 	}
 
 //printf("RecordAudio::run 4\n");

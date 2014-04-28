@@ -8,6 +8,23 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+int mpeg3_major()
+{
+	return MPEG3_MAJOR;
+}
+
+int mpeg3_minor()
+{
+	return MPEG3_MINOR;
+}
+
+int mpeg3_release()
+{
+	return MPEG3_RELEASE;
+}
+
+
+
 mpeg3_t* mpeg3_new(char *path)
 {
 	int i;

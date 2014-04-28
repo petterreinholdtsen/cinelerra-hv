@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -113,13 +114,14 @@ int Labels::toggle_label(double start, double end)
 	}
 	else
 	{           // insert after last
+//printf("Labels::toggle_label 1\n");
 		current = append(new Label(edl, this, start));
 	}
 
 // handle selection end
-	if(start != end)
+	if(!EQUIV(start, end))
 	{
-//printf("Labels::toggle_label 2\n");
+//printf("Labels::toggle_label 2 %.16e %.16e\n", start, end);
 // find label the selectionend is after
 		for(current = first; 
 			current && current->position < end && !edl->equivalent(current->position, end); 

@@ -1,6 +1,8 @@
 #include "aboutprefs.h"
 #include "builddate.h"
+#include "libmpeg3.h"
 #include "mwindow.h"
+#include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
 
@@ -83,7 +85,21 @@ int AboutPrefs::create_objects()
 "\n";
 	y += 100;
 	draw_text(x, y, license3);
-	
+
+
+	char versions[BCTEXTLEN];
+	sprintf(versions, 
+"Quicktime version %d.%d.%d\n"
+"Libmpeg3 version %d.%d.%d\n",
+quicktime_major(),
+quicktime_minor(),
+quicktime_release(),
+mpeg3_major(),
+mpeg3_minor(),
+mpeg3_release());
+	y += 250;
+	draw_text(10, y, versions);
+
 
 
 	flash();

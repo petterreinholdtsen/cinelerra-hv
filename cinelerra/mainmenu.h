@@ -298,6 +298,22 @@ public:
 	MWindow *mwindow;
 };
 
+class MuteSelection : public BC_MenuItem
+{
+public:
+	MuteSelection(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class TrimSelection : public BC_MenuItem
+{
+public:
+	TrimSelection(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 // ======================================== audio
 
 class AddAudioTrack : public BC_MenuItem
@@ -316,18 +332,10 @@ public:
 	MWindow *mwindow;
 };
 
-class MuteSelection : public BC_MenuItem
+class DefaultATransition : public BC_MenuItem
 {
 public:
-	MuteSelection(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class TrimSelection : public BC_MenuItem
-{
-public:
-	TrimSelection(MWindow *mwindow);
+	DefaultATransition(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -356,6 +364,14 @@ class ResetTranslation : public BC_MenuItem
 {
 public:
 	ResetTranslation(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class DefaultVTransition : public BC_MenuItem
+{
+public:
+	DefaultVTransition(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

@@ -120,10 +120,12 @@ int MainMenu::create_objects()
 
 	add_menu(audiomenu = new BC_Menu("Audio"));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
+	audiomenu->add_item(new DefaultATransition(mwindow));
 	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
 
 	add_menu(videomenu = new BC_Menu("Video"));
 	videomenu->add_item(new AddVideoTrack(mwindow));
+	videomenu->add_item(new DefaultVTransition(mwindow));
 	videomenu->add_item(veffects = new MenuVEffects(mwindow));
 
 	add_menu(trackmenu = new BC_Menu("Tracks"));
@@ -534,13 +536,7 @@ Undo::Undo(MWindow *mwindow) : BC_MenuItem("Undo", "z", 'z')
 }
 int Undo::handle_event()
 { 
-	mwindow->undo->undo(); 
-
-	mwindow->gui->update(1, 2, 1, 1, 1, 1, 1);
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_ALL,
-							mwindow->edl,
-							1);
+	mwindow->undo_entry(1);
 	return 1;
 }
 int Undo::update_caption(char *new_caption)
@@ -559,13 +555,8 @@ Redo::Redo(MWindow *mwindow) : BC_MenuItem("Redo", "Shift+Z", 'Z')
 
 int Redo::handle_event()
 { 
-	mwindow->undo->redo(); 
+	mwindow->redo_entry(1);
 
-	mwindow->gui->update(1, 2, 1, 1, 1, 1, 1);
-	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_ALL,
-							mwindow->edl,
-							1);
 	return 1;
 }
 int Redo::update_caption(char *new_caption)
@@ -767,6 +758,31 @@ int ClearLabels::handle_event()
 	return 1;
 }
 
+MuteSelection::MuteSelection(MWindow *mwindow)
+ : BC_MenuItem("Mute Region", "m", 'm')
+{
+	this->mwindow = mwindow;
+}
+
+int MuteSelection::handle_event()
+{
+	mwindow->mute_selection();
+	return 1;
+}
+
+
+TrimSelection::TrimSelection(MWindow *mwindow)
+ : BC_MenuItem("Trim Selection")
+{
+	this->mwindow = mwindow;
+}
+
+int TrimSelection::handle_event()
+{
+	mwindow->trim_selection();
+	return 1;
+}
+
 
 
 
@@ -803,32 +819,19 @@ int DeleteAudioTrack::handle_event()
 	return 1;
 }
 
-
-
-MuteSelection::MuteSelection(MWindow *mwindow)
- : BC_MenuItem("Mute Region", "m", 'm')
+DefaultATransition::DefaultATransition(MWindow *mwindow)
+ : BC_MenuItem("Default Transition", "u", 'u')
 {
 	this->mwindow = mwindow;
 }
 
-int MuteSelection::handle_event()
+int DefaultATransition::handle_event()
 {
-	mwindow->mute_selection();
+	mwindow->paste_audio_transition();
 	return 1;
 }
 
 
-TrimSelection::TrimSelection(MWindow *mwindow)
- : BC_MenuItem("Trim Selection")
-{
-	this->mwindow = mwindow;
-}
-
-int TrimSelection::handle_event()
-{
-	mwindow->trim_selection();
-	return 1;
-}
 
 
 // ============================================= video
@@ -874,6 +877,21 @@ int ResetTranslation::handle_event()
 
 
 
+DefaultVTransition::DefaultVTransition(MWindow *mwindow)
+ : BC_MenuItem("Default Transition", "Shift-U", 'U')
+{
+	set_shift();
+	this->mwindow = mwindow;
+}
+
+int DefaultVTransition::handle_event()
+{
+	mwindow->paste_video_transition();
+	return 1;
+}
+
+
+
 
 
 
@@ -912,7 +930,7 @@ int DeleteTrack::handle_event()
 }
 
 MoveTracksUp::MoveTracksUp(MWindow *mwindow)
- : BC_MenuItem("Move tracks up", "Shift-U", 'U')
+ : BC_MenuItem("Move tracks up")
 {
 	set_shift(); this->mwindow = mwindow;
 }
@@ -924,7 +942,7 @@ int MoveTracksUp::handle_event()
 }
 
 MoveTracksDown::MoveTracksDown(MWindow *mwindow)
- : BC_MenuItem("Move tracks down", "Shift-D", 'D')
+ : BC_MenuItem("Move tracks down")
 {
 	set_shift(); this->mwindow = mwindow;
 }

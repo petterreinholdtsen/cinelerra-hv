@@ -28,6 +28,15 @@ extern "C" {
 #define MPEG3_YUV420P 12
 #define MPEG3_YUV422P 13
 
+
+
+
+/* Get version information */
+int mpeg3_major();
+int mpeg3_minor();
+int mpeg3_release();
+
+
 /* Check for file compatibility.  Return 1 if compatible. */
 int mpeg3_check_sig(char *path);
 

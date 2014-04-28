@@ -832,8 +832,8 @@ int ErrorThread::show_error(char *text)
 void ErrorThread::run()
 {
 	ErrorBox box("XMovie: Error", 
-		x < INFINITY ? x : gui->get_abs_cursor_x(), 
-		y < INFINITY ? y : gui->get_abs_cursor_y());
+		x < BC_INFINITY ? x : gui->get_abs_cursor_x(), 
+		y < BC_INFINITY ? y : gui->get_abs_cursor_y());
 	box.create_objects(text);
 	startup_lock.unlock();
 	box.run_window();

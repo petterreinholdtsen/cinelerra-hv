@@ -265,7 +265,7 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 		}
 	}
 
-/*printf("mpeg3video_picture_coding_extension %d\n", video->repeat_count); */
+//printf("mpeg3video_picture_coding_extension %d\n", video->repeat_count);
 	composite_display_flag = mpeg3bits_getbit_noptr(video->vstream);
 
 	if(composite_display_flag)
@@ -428,6 +428,7 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 /* a sequence header should be found before returning from `getheader' the */
 /* first time (this is to set horizontal/vertical size properly) */
 
+//printf("mpeg3video_get_header 1 %d %d\n", video->repeat_count, video->current_repeat);
 /* Repeat the frame until it's less than 1 count from repeat_count */
 	if(video->repeat_count - video->current_repeat >= 100 && !dont_repeat)
 	{
@@ -442,9 +443,13 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 	else
 		video->repeat_count -= video->current_repeat;
 
-//printf("mpeg3video_get_header 1 %d %d\n", 
-//	video->vstream->demuxer->titles[0]->fs->current_byte, 
-//	video->vstream->demuxer->titles[0]->fs->total_bytes);
+// Case of no picture coding extension
+	if(video->repeat_count < 0) video->repeat_count = 0;
+/*
+ * printf("mpeg3video_get_header 2 %lld %lld\n", 
+ * video->vstream->demuxer->titles[0]->fs->current_byte, 
+ * video->vstream->demuxer->titles[0]->fs->total_bytes);
+ */
 
 	while(1)
 	{

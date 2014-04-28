@@ -1,0 +1,35 @@
+/Makefile/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/Makefile.am/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/Makefile.in/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/aiff.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/alaw.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/alaw.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/au.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/au.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/au_g72x.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/common.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/common.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/config.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/config.h.in/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/newpcm.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/paf.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/pcm.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/raw.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/script/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/sfendian.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/sndfile.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/stamp-h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/stamp-h.in/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/svx.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/ulaw.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/ulaw.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/wav.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/wav_float.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/wav_gsm610.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/wav_ima_adpcm.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/wav_ms_adpcm.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+D/G72x////
+D/GSM610////
+/pcm.c/1.2/Mon May  6 11:26:31 2002//
+/sndfile.c/1.2/Mon May  6 11:26:31 2002//
+/wav.c/1.2/Mon May  6 11:26:31 2002//

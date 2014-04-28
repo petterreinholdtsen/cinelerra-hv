@@ -1,0 +1,18 @@
+/DO_EMMS.C/1.1/Fri Jan 19 14:34:14 2001//
+/deblock_horiz.c/1.1/Tue Feb 20 04:07:48 2001//
+/deblock_horiz_DC_on.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_horiz_default_filter.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_horiz_lpf9.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_horiz_useDC.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_vert.c/1.1/Tue Feb 20 04:07:58 2001//
+/deblock_vert_DC_on.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_vert_choose_p1p2.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_vert_copy_and_unpack.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_vert_default_filter.c/1.1/Fri Jan 19 14:34:12 2001//
+/deblock_vert_lpf9.c/1.1/Fri Jan 19 14:34:14 2001//
+/deblock_vert_useDC.c/1.1/Fri Jan 19 14:34:14 2001//
+/fast_copy.c/1.1/Tue Feb 20 04:07:58 2001//
+/postprocess.c/1.1/Sat Feb 17 08:39:44 2001//
+/postprocess.h/1.1/Fri Jan 19 14:34:14 2001//
+/postprocess_mmx.h/1.1/Sat Feb 17 08:39:44 2001//
+D

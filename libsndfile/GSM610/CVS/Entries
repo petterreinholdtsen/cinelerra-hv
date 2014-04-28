@@ -1,0 +1,26 @@
+/COPYRIGHT/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/ChangeLog/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/Makefile/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/Makefile.am/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/Makefile.in/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/README/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/add.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/code.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/config.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/decode.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/gsm.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/gsm_create.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/gsm_decode.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/gsm_destroy.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/gsm_encode.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/gsm_option.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/long_term.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/lpc.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/preprocess.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/private.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/proto.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/rpe.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/short_term.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/table.c/1.1.1.1/Tue Nov  6 13:32:00 2001//
+/unproto.h/1.1.1.1/Tue Nov  6 13:32:00 2001//
+D

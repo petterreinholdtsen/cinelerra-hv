@@ -1,0 +1,1 @@
+-O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -DHAVE_CSS -DHAVE_MMX -I. -Ia52dec-0.7.3/include -Ia52dec-0.7.3/liba52

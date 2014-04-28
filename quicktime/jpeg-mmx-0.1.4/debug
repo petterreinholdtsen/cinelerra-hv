@@ -1,0 +1,97 @@
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jquant_x86simd.o jquant_x86simd.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdtrans.o jdtrans.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdatasrc.o jdatasrc.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdmaster.o jdmaster.c
+jquant_x86simd.c: In function `jcquant_sse':
+jquant_x86simd.c:149: Internal compiler error in print_operand_address, at config/i386/i386.c:3656
+Please submit a full bug report,
+with preprocessed source if appropriate.
+See <URL:http://bugzilla.redhat.com/bugzilla/> for instructions.
+make: [jquant_x86simd.o] Error 1 (ignored)
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdinput.o jdinput.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdmarker.o jdmarker.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdhuff.o jdhuff.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdphuff.o jdphuff.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdmainct.o jdmainct.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdcoefct.o jdcoefct.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdpostct.o jdpostct.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jddctmgr.o jddctmgr.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jidctfst.o jidctfst.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jidctflt.o jidctflt.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jidctint.o jidctint.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jidctred.o jidctred.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdsample.o jdsample.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdcolor.o jdcolor.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jquant1.o jquant1.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jquant2.o jquant2.c
+/tmp/ccKv0sSK.s: Assembler messages:
+/tmp/ccKv0sSK.s:1424: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:1474: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:1585: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:1635: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:1746: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:1796: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:1907: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:1957: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:2068: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:2118: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:2229: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:2279: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:2390: Error: Symbol col_loop_a already defined.
+/tmp/ccKv0sSK.s:2440: Error: Symbol last_col already defined.
+/tmp/ccKv0sSK.s:3091: Error: Symbol col_loop already defined.
+/tmp/ccKv0sSK.s:3186: Error: Symbol last_column already defined.
+/tmp/ccKv0sSK.s:3260: Error: Symbol col_loop2 already defined.
+/tmp/ccKv0sSK.s:3327: Error: Symbol last_column2 already defined.
+/tmp/ccKv0sSK.s:3436: Error: Symbol col_loop already defined.
+/tmp/ccKv0sSK.s:3531: Error: Symbol last_column already defined.
+/tmp/ccKv0sSK.s:3605: Error: Symbol col_loop2 already defined.
+/tmp/ccKv0sSK.s:3672: Error: Symbol last_column2 already defined.
+/tmp/ccKv0sSK.s:3780: Error: Symbol col_loop already defined.
+/tmp/ccKv0sSK.s:3875: Error: Symbol last_column already defined.
+/tmp/ccKv0sSK.s:3949: Error: Symbol col_loop2 already defined.
+/tmp/ccKv0sSK.s:4016: Error: Symbol last_column2 already defined.
+make: [jdsample.o] Error 1 (ignored)
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jdmerge.o jdmerge.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jcomapi.o jcomapi.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jutils.o jutils.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jerror.o jerror.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jmemmgr.o jmemmgr.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jmemnobs.o jmemnobs.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o cjpeg.o cjpeg.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdppm.o rdppm.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdgif.o rdgif.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdtarga.o rdtarga.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdrle.o rdrle.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdbmp.o rdbmp.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdswitch.o rdswitch.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o cdjpeg.o cdjpeg.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o djpeg.o djpeg.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o wrppm.o wrppm.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o wrgif.o wrgif.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o wrtarga.o wrtarga.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o wrrle.o wrrle.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o wrbmp.o wrbmp.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdcolmap.o rdcolmap.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o jpegtran.o jpegtran.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o transupp.o transupp.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o rdjpgcom.o rdjpgcom.c
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  -I.   -c -o wrjpgcom.o wrjpgcom.c
+rm -f libjpeg-mmx.a
+ar rc libjpeg-mmx.a  jcapimin.o jcapistd.o jctrans.o jcparam.o jdatadst.o jcinit.o jcmaster.o jcmarker.o jcmainct.o jcprepct.o jccoefct.o jccolor.o jcsample.o jchuff.o jcphuff.o jcdctmgr.o jfdctfst.o jfdctflt.o jfdctint.o fdct_mmx.o quant_mmx.o fdctdata.o jquant_x86simd.o cpu_accel.o jdapimin.o jdapistd.o jdtrans.o jdatasrc.o jdmaster.o jdinput.o jdmarker.o jdhuff.o jdphuff.o jdmainct.o jdcoefct.o jdpostct.o jddctmgr.o jidctfst.o jidctflt.o jidctint.o jidctred.o jdsample.o jdcolor.o jquant1.o jquant2.o jdmerge.o jcomapi.o jutils.o jerror.o jmemmgr.o jmemnobs.o
+ar: jquant_x86simd.o: No such file or directory
+make: [libjpeg-mmx.a] Error 1 (ignored)
+ranlib libjpeg-mmx.a
+ranlib: libjpeg-mmx.a: No such file or directory
+make: [libjpeg-mmx.a] Error 9 (ignored)
+gcc  -o cjpeg cjpeg.o rdppm.o rdgif.o rdtarga.o rdrle.o rdbmp.o rdswitch.o cdjpeg.o libjpeg-mmx.a 
+gcc: libjpeg-mmx.a: No such file or directory
+make: [cjpeg] Error 1 (ignored)
+gcc  -o djpeg djpeg.o wrppm.o wrgif.o wrtarga.o wrrle.o wrbmp.o rdcolmap.o cdjpeg.o libjpeg-mmx.a 
+gcc: libjpeg-mmx.a: No such file or directory
+make: [djpeg] Error 1 (ignored)
+gcc  -o rdjpgcom rdjpgcom.o 
+gcc  -o wrjpgcom wrjpgcom.o 
+gcc  -o jpegtran jpegtran.o rdswitch.o cdjpeg.o transupp.o libjpeg-mmx.a 
+gcc: libjpeg-mmx.a: No such file or directory
+make: [jpegtran] Error 1 (ignored)

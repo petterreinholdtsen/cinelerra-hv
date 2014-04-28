@@ -1,0 +1,27 @@
+libraw1394 (0.8.2) unstable; urgency=low
+
+  * Create device file in /dev instead of / (closes: #81158).
+
+ -- Andreas Bombe <bombe@informatik.tu-muenchen.de>  Thu,  4 Jan 2001 02:37:57 +0100
+
+libraw1394 (0.8.1) unstable; urgency=low
+
+  * Use and require makedev (>= 2.3.1-49) which includes /dev/raw1394
+    (still supports potato by setting a variable during debian build).
+
+ -- Andreas Bombe <bombe@informatik.tu-muenchen.de>  Mon, 11 Dec 2000 02:26:34 +0100
+
+libraw1394 (0.8) unstable; urgency=low
+
+  * New libraw1394 release.
+  * ldconfig is done in postinst (now lintian clean).
+  * /dev/raw1394 is created if it doesn't exist.
+
+ -- Andreas Bombe <andreas.bombe@munich.netsurf.de>  Fri, 24 Nov 2000 02:06:08 +0100
+
+libraw1394 (0.7) unstable; urgency=low
+
+  * First unofficial Debian release.
+
+ -- Andreas Bombe <andreas.bombe@munich.netsurf.de>  Sun, 10 Sep 2000 03:28:50 +0200
+

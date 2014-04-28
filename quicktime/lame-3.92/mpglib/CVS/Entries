@@ -1,0 +1,21 @@
+D/.deps////
+/common.c/1.1/Fri Apr 19 05:50:30 2002//
+/common.h/1.1/Tue Feb 13 04:38:01 2001//
+/dct64_i386.c/1.1/Fri Apr 19 05:50:30 2002//
+/dct64_i386.h/1.1/Sun Oct  1 11:28:48 2000//
+/decode_i386.c/1.1/Fri Apr 19 05:50:30 2002//
+/decode_i386.h/1.1/Sun Oct  1 11:28:48 2000//
+/huffman.h/1.1/Mon Feb  5 01:57:03 2001//
+/interface.c/1.1/Fri Apr 19 05:50:30 2002//
+/interface.h/1.1/Fri Jan 25 20:10:48 2002//
+/l2tables.h/1.1/Tue Sep 12 22:36:14 2000//
+/layer1.c/1.1/Fri Apr 19 05:50:30 2002//
+/layer1.h/1.1/Sun Oct  1 11:28:10 2000//
+/layer2.c/1.1/Fri Apr 19 05:50:30 2002//
+/layer2.h/1.1/Sun Oct  1 11:28:10 2000//
+/layer3.c/1.1/Fri Apr 19 05:50:30 2002//
+/layer3.h/1.1/Sun Oct  1 11:28:10 2000//
+/mpg123.h/1.1/Mon Feb  5 01:57:04 2001//
+/mpglib.h/1.1/Mon Oct 29 21:21:19 2001//
+/tabinit.c/1.1/Fri Apr 19 05:50:30 2002//
+/tabinit.h/1.1/Sun Oct  1 09:51:04 2000//

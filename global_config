@@ -1,0 +1,75 @@
+HAVE_ALSA := $(shell if [ -f /usr/include/sys/asoundlib.h ] && \
+	[ -f /usr/include/linux/asound.h ] ; then echo yes; fi )
+HAVE_CFLAGS := $(shell if [ -n "$CFLAGS" ]; then echo yes; fi )
+HAVE_LIBXXF86VM := $(shell if [ -f /usr/X11R6/include/X11/extensions/xf86vmode.h ]; then echo yes; fi )
+HAVE_ESOUND := yes
+HAVE_AVIFILE := n
+OBJDIR := $(shell uname --machine)
+
+
+
+
+############################# C++ and C COMPILERS
+
+############################# FINAL DESTINATION FOR INSTALLATION BINARIES
+
+PREFIX = /usr/local
+LIBPREFIX = $(PREFIX)/lib
+
+########################## COMPILER
+
+CC = g++
+GCC = gcc
+
+
+ifneq ($(HAVE_CFLAGS), yes)
+CFLAGS = -O2 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+endif
+
+ifeq ($(HAVE_ALSA), yes)
+ALSA_CFLAGS = -DHAVE_ALSA
+ALSA_LIBS = -lasound
+endif
+
+
+ifeq ($(HAVE_LIBXXF86VM), yes)
+CFLAGS += -DHAVE_LIBXXF86VM
+XXF86VM = -lXxf86vm
+endif
+
+
+ifeq ($(HAVE_ESOUND), yes)
+ESOUNDCFLAGS = -DHAVE_ESOUND -I../esound
+ESOUNDLIBS = ../esound/$(OBJDIR)/libesound.a
+endif
+
+
+CFLAGS += -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+#CFLAGS += -I.      # Caused fileavi.C to fail
+CFLAGS += -DHAVE_OSS
+CFLAGS += -DHAVE_FIREWIRE
+CFLAGS += -D_REENTRANT
+CFLAGS += $(ALSA_CFLAGS)
+
+
+ifeq ($(OBJDIR), alpha)
+CXXREPOSITORY = cxx_repository/*.o
+endif
+
+$(shell sh -c 'if ! test -d $(OBJDIR)\; then mkdir $(OBJDIR)\; fi' )
+
+########################## LINKER
+
+LFLAGS = -L/usr/X11R6/lib
+PLUGINLFLAGS = -L../../bcbase/$(OBJDIR)/ -L/usr/X11R6/lib
+LDLINKER = g++ -shared 
+
+
+############### MAKEFILE MACROS
+
+LOOP_BEGIN = @ for i in $(DIRS) ; \
+	do \
+	
+
+LOOP_END = done
+

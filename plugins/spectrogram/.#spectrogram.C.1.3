@@ -1,0 +1,283 @@
+#include "bcdisplayinfo.h"
+#include "defaults.h"
+#include "filexml.h"
+#include "picon_png.h"
+#include "spectrogram.h"
+#include "units.h"
+#include "vframe.h"
+
+
+#include <string.h>
+
+
+
+
+PluginClient* new_plugin(PluginServer *server)
+{
+	return new Spectrogram(server);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
+ 	x, 
+	y, 
+	640, 
+	480, 
+	640, 
+	480,
+	0, 
+	0,
+	1)
+{
+	this->plugin = plugin;
+}
+
+SpectrogramWindow::~SpectrogramWindow()
+{
+	Spectrogram::graph_lock.lock();
+	Spectrogram::window = 0;
+	Spectrogram::graph_lock.unlock();
+}
+
+void SpectrogramWindow::create_objects()
+{
+	int x = 60, y = 10;
+	int divisions = 5;
+	char string[BCTEXTLEN];
+
+	add_subwindow(canvas = new BC_SubWindow(x, 
+		y, 
+		get_w() - x - 10, 
+		get_h() - 10 - y,
+		BLACK));
+	x = 10;
+	
+	for(int i = 0; i <= divisions; i++)
+	{
+		y = (int)((float)(get_h() - 30) / divisions * i) + 10;
+		sprintf(string, "%d", 
+			Freq::tofreq((int)((float)TOTALFREQS / divisions * (divisions - i))));
+		add_subwindow(new BC_Title(x, y, string));
+	}
+	show_window();
+	flush();
+}
+
+
+int SpectrogramWindow::close_event()
+{
+// Set result to 1 to indicate a client side close
+	set_done(1);
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+SpectrogramThread::SpectrogramThread(Spectrogram *plugin)
+ : Thread()
+{
+	this->plugin = plugin;
+	set_synchronous(0);
+	completion.lock();
+}
+
+SpectrogramThread::~SpectrogramThread()
+{
+	delete window;
+}
+
+void SpectrogramThread::run()
+{
+	BC_DisplayInfo info;
+	window = new SpectrogramWindow(plugin,
+		info.get_abs_cursor_x() - 125, 
+		info.get_abs_cursor_y() - 115);
+	window->create_objects();
+
+	Spectrogram::graph_lock.lock();
+	Spectrogram::window = window->canvas;
+	Spectrogram::graph_lock.unlock();
+
+	int result = window->run_window();
+	completion.unlock();
+// Last command in thread
+	if(result) plugin->client_side_close();
+}
+
+
+
+
+
+
+
+
+
+SpectrogramFFT::SpectrogramFFT(Spectrogram *plugin)
+ : CrossfadeFFT()
+{
+	this->plugin = plugin;
+}
+
+SpectrogramFFT::~SpectrogramFFT()
+{
+}
+
+
+int SpectrogramFFT::signal_process()
+{
+	Spectrogram::graph_lock.lock();
+
+	if(Spectrogram::window)
+	{
+		Spectrogram::window->lock_window();
+		int h = Spectrogram::window->get_h();
+		double temp[h];
+		double max = 0;
+		int niquist = plugin->PluginAClient::project_sample_rate / 2;
+		
+		for(int i = 0; i < h; i++)
+		{
+			int input = (int)((float)(h - 1 - i) / h * TOTALFREQS);
+			input = (int)((float)Freq::tofreq(input) / niquist * window_size / 2);
+
+			temp[i] = sqrt(freq_real[input] * freq_real[input] + 
+				freq_imag[input] * freq_imag[input]);
+			if(temp[i] > max) max = temp[i];
+		}
+
+		double scale = (double)0xffffff / max;
+		Spectrogram::window->copy_area(1, 
+			0, 
+			0, 
+			0, 
+			Spectrogram::window->get_w() - 1,
+			Spectrogram::window->get_h());
+		int x = Spectrogram::window->get_w() - 1;
+		for(int i = 0; i < h; i++)
+		{
+			Spectrogram::window->set_color((int)(scale * temp[i]));
+			Spectrogram::window->draw_pixel(x, i);
+		}
+		Spectrogram::window->flash();
+		Spectrogram::window->flush();
+		Spectrogram::window->unlock_window();
+	}
+
+	Spectrogram::graph_lock.unlock();
+
+	return 0;
+}
+
+
+
+
+
+
+BC_SubWindow* Spectrogram::window = 0;
+Mutex Spectrogram::graph_lock;
+
+
+
+
+Spectrogram::Spectrogram(PluginServer *server)
+ : PluginAClient(server)
+{
+	reset();
+}
+
+Spectrogram::~Spectrogram()
+{
+	if(thread)
+	{
+		thread->window->set_done(0);
+		thread->completion.lock();
+		delete thread;
+	}
+
+	if(fft) delete fft;
+}
+
+
+void Spectrogram::reset()
+{
+	thread = 0;
+	fft = 0;
+	done = 0;
+}
+
+
+VFrame* Spectrogram::new_picon()
+{
+	return new VFrame(picon_png);
+}
+
+char* Spectrogram::plugin_title()
+{
+	return "Spectrogram";
+}
+
+int Spectrogram::is_realtime()
+{
+	return 1;
+}
+
+int Spectrogram::process_realtime(long size, double *input_ptr, double *output_ptr)
+{
+	if(!fft) 
+	{
+		fft = new SpectrogramFFT(this);
+		fft->initialize(WINDOW_SIZE);
+	}
+
+	fft->process_fifo(size, input_ptr, output_ptr);
+
+	memcpy(output_ptr, input_ptr, sizeof(double) * size);
+	return 0;
+}
+
+int Spectrogram::show_gui()
+{
+	thread = new SpectrogramThread(this);
+	thread->start();
+	return 0;
+}
+
+void Spectrogram::raise_window()
+{
+	if(thread)
+	{
+		thread->window->raise_window();
+		thread->window->flush();
+	}
+}
+
+int Spectrogram::set_string()
+{
+	if(thread) thread->window->set_title(gui_string);
+	return 0;
+}
+
+
+
+

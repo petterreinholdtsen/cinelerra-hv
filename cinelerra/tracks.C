@@ -1,0 +1,652 @@
+#include "atrack.h"
+#include "automation.h"
+#include "cursor.h"
+#include "defaults.h"
+#include "edit.h"
+#include "edits.h"
+#include "edl.h"
+#include "edlsession.h"
+#include "file.h"
+#include "filexml.h"
+#include "intauto.h"
+#include "intautos.h"
+#include "localsession.h"
+#include "mwindow.h"
+#include "mwindowgui.h"
+#include "module.h"
+#include "panauto.h"
+#include "panautos.h"
+#include "patchbay.h"
+#include "mainsession.h"
+#include "theme.h"
+#include "track.h"
+#include "trackcanvas.h"
+#include "tracks.h"
+#include "vtrack.h"
+#include <string.h>
+
+Tracks::Tracks(EDL *edl)
+ : List<Track>()
+{
+	this->edl = edl;
+}
+
+Tracks::Tracks()
+ : List<Track>()
+{
+}
+
+
+Tracks::~Tracks()
+{
+	delete_all_tracks();
+}
+
+void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, Track *start_track)
+{
+	drag_edits->remove_all();
+
+	for(Track *track = start_track;
+		track;
+		track = track->next)
+	{
+//printf("Tracks::get_affected_edits 1 %p %d %d\n", track, track->data_type, track->record);
+		if(track->record)
+		{
+			for(Edit *edit = track->edits->first; edit; edit = edit->next)
+			{
+				double startproject = track->from_units(edit->startproject);
+//printf("Tracks::get_affected_edits 1 %d\n", edl->equivalent(startproject, position));
+				if(edl->equivalent(startproject, position))
+				{
+					drag_edits->append(edit);
+					break;
+				}
+			}
+		}
+	}
+
+}
+
+Tracks& Tracks::operator=(Tracks &tracks)
+{
+	Track *new_track;
+//printf("Tracks::operator= 1\n");
+	delete_all_tracks();
+//printf("Tracks::operator= 2\n");
+	for(Track *current = tracks.first; current; current = NEXT)
+	{
+		switch(current->data_type)
+		{
+			case TRACK_AUDIO: 
+				new_track = add_audio_track(); 
+				break;
+			case TRACK_VIDEO: 
+				new_track = add_video_track(); 
+				break;
+		}
+//printf("Tracks::operator= 3\n");
+		*new_track = *current;
+//printf("Tracks::operator= 4\n");
+	}
+//printf("Tracks::operator= 5\n");
+	return *this;
+}
+
+int Tracks::load_defaults(Defaults *defaults)
+{
+// Tracks
+	return 0;
+}
+
+int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
+{
+// add the appropriate type of track
+	char string[BCTEXTLEN];
+	Track *track = 0;
+	sprintf(string, "");
+	
+//printf("Tracks::load 1\n");
+	xml->tag.get_property("TYPE", string);
+
+	if((load_flags & LOAD_ALL) == LOAD_ALL ||
+		(load_flags & LOAD_EDITS))
+	{
+		if(!strcmp(string, "VIDEO"))
+		{
+//printf("Tracks::load 2\n");
+			add_video_track();
+		}
+		else
+		{
+//printf("Tracks::load 3\n");
+			add_audio_track();    // default to audio
+		}
+		track = last;
+	}
+	else
+	{
+		track = get_item_number(track_offset);
+		track_offset++;
+	}
+//printf("Tracks::load 4 %p\n", last);
+
+// load it
+	if(track) track->load(xml, track_offset, load_flags);
+//printf("Tracks::load 2 %d\n", total());
+
+	return 0;
+}
+
+Track* Tracks::add_audio_track(int to_end)
+{
+	int pixel;
+	ATrack* new_track = new ATrack(edl, this);
+	Track* current;
+
+	if(to_end)
+	{
+		current = last;
+		insert_after(current, (Track*)new_track);
+	}
+	else
+	{
+		current = first;
+		insert_before(current, (Track*)new_track);
+	}
+	new_track->create_objects();
+	new_track->set_default_title();
+
+	int current_pan = 0;
+	for(current = first; 
+		current != (Track*)new_track; 
+		current = NEXT)
+	{
+		if(current->data_type == TRACK_AUDIO) current_pan++;
+		if(current_pan >= edl->session->audio_channels) current_pan = 0;
+	}
+	PanAuto* pan_auto = (PanAuto*)new_track->automation->pan_autos->default_auto;
+	pan_auto->values[current_pan] = 1.0;
+
+	BC_Pan::calculate_stick_position(edl->session->audio_channels, 
+		edl->session->achannel_positions, 
+		pan_auto->values, 
+		1, 
+		50,
+		pan_auto->handle_x,
+		pan_auto->handle_y);
+	return new_track;
+}
+
+Track* Tracks::add_video_track(int to_end)
+{
+	int pixel;
+	VTrack* new_track = new VTrack(edl, this);
+	Track* current;
+
+	if(to_end)
+	{
+		current = last;
+		insert_after(current, (Track*)new_track);
+	}
+	else
+	{
+		current = first;
+		insert_before(current, (Track*)new_track);
+	}
+	new_track->create_objects();
+	new_track->set_default_title();
+//printf("Tracks::add_video_track 2\n");
+	return new_track;
+}
+
+
+int Tracks::delete_track()
+{
+	delete_track(last);
+	return 0;
+}
+
+int Tracks::delete_track(Track *track)
+{
+	if(track) delete track;
+	return 0;
+}
+
+int Tracks::total_of(int play, 
+		int record, 
+		int automate, 
+		int gang, 
+		int draw, 
+		int mute,
+		int expand)
+{
+	int result = 0;
+	IntAuto *play_keyframe = 0;
+	IntAuto *mute_keyframe = 0;
+	
+	for(Track *current = first; current; current = NEXT)
+	{
+		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
+		play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
+			unit_start, 
+			PLAY_FORWARD,
+			(Auto*)play_keyframe);
+		mute_keyframe = (IntAuto*)current->automation->mute_autos->get_prev_auto(
+			unit_start, 
+			PLAY_FORWARD,
+			(Auto*)mute_keyframe);
+
+		result += 
+			(play_keyframe->value && play) ||
+			(current->record && record) ||
+			(current->automate && automate) ||
+			(current->gang && gang) ||
+			(current->draw && draw) ||
+			(mute_keyframe->value && mute) ||
+			(current->expand_view && expand);
+	}
+	return result;
+}
+
+int Tracks::recordable_audio_tracks()
+{
+	int result = 0;
+	for(Track *current = first; current; current = NEXT)
+		if(current->data_type == TRACK_AUDIO && current->record) result++;
+	return result;
+}
+
+int Tracks::recordable_video_tracks()
+{
+	int result = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_VIDEO && current->record) result++;
+	}
+	return result;
+}
+
+
+int Tracks::playable_audio_tracks()
+{
+	int result = 0;
+	IntAuto *play_keyframe = 0;
+
+	for(Track *current = first; current; current = NEXT)
+	{
+		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
+		play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
+				unit_start, 
+				PLAY_FORWARD,
+				(Auto*)play_keyframe);
+
+		if(current->data_type == TRACK_AUDIO && 
+			play_keyframe->value) result++;
+	}
+
+	return result;
+}
+
+int Tracks::playable_video_tracks()
+{
+	int result = 0;
+	IntAuto *play_keyframe = 0;
+
+	for(Track *current = first; current; current = NEXT)
+	{
+		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
+		play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
+				unit_start, 
+				PLAY_FORWARD,
+				(Auto*)play_keyframe);
+		if(current->data_type == TRACK_VIDEO && 
+			((IntAuto*)current->automation->play_autos->get_prev_auto(
+				unit_start, 
+				PLAY_FORWARD,
+				(Auto*)play_keyframe))->value) result++;
+	}
+	return result;
+}
+
+int Tracks::total_audio_tracks()
+{
+	int result = 0;
+	for(Track *current = first; current; current = NEXT)
+		if(current->data_type == TRACK_AUDIO) result++;
+	return result;
+}
+
+int Tracks::total_video_tracks()
+{
+	int result = 0;
+	for(Track *current = first; current; current = NEXT)
+		if(current->data_type == TRACK_VIDEO) result++;
+	return result;
+}
+
+double Tracks::total_playable_length() 
+{
+	double total = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		double length = current->get_length();
+		if(length > total) total = length;
+	}
+	return total; 
+}
+
+double Tracks::total_recordable_length() 
+{
+	double total = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->record)
+		{
+			double length = current->get_length();
+			if(length > total) total = length;
+		}
+	}
+	return total; 
+}
+
+double Tracks::total_length() 
+{
+	double total = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->get_length() > total) total = current->get_length();
+	}
+	return total; 
+}
+
+void Tracks::translate_camera(float offset_x, float offset_y)
+{
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_VIDEO)
+		{
+			((VTrack*)current)->translate_camera(offset_x, offset_y);
+		}
+	}
+}
+
+
+void Tracks::translate_projector(float offset_x, float offset_y)
+{
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_VIDEO)
+		{
+			((VTrack*)current)->translate_projector(offset_x, offset_y);
+		}
+	}
+}
+
+
+
+void Tracks::update_y_pixels(Theme *theme)
+{
+	int y = -edl->local_session->track_start;
+	for(Track *current = first; current; current = NEXT)
+	{
+//printf("Tracks::update_y_pixels %d\n", y);
+		current->y_pixel = y;
+		y += current->vertical_span(theme);
+	}
+}
+
+int Tracks::dump()
+{
+	for(Track* current = first; current; current = NEXT)
+	{
+		printf("  Track: %x\n", current);
+		current->dump();
+		printf("\n");
+	}
+	return 0;
+}
+
+void Tracks::select_all(int play, 
+		int record, 
+		int automate, 
+		int gang, 
+		int draw, 
+		int mute,
+		int expand,
+		int value)
+{
+// printf("Tracks::select_all %d %d %d %d %d %d %d %d\n",
+// 	play, 
+// 	record, 
+// 	automate, 
+// 	gang, 
+// 	draw, 
+// 	mute,
+// 	expand,
+// 	value);
+
+	for(Track* current = first; current; current = NEXT)
+	{
+		double position = edl->local_session->selectionstart;
+
+		if(play)
+		{
+			((IntAuto*)current->automation->play_autos->get_auto_for_editing(position))->value = value;
+		}
+
+		if(record) current->record = value;
+		if(automate) current->automate = value;
+		if(gang) current->gang = value;
+		if(draw) current->draw = value;
+		
+		if(mute)
+		{
+			((IntAuto*)current->automation->mute_autos->get_auto_for_editing(position))->value = value;
+		}
+
+		if(expand) current->expand_view = value;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tracks::Tracks(MWindow *mwindow)
+ : List<Track>()
+{
+	this->mwindow = mwindow;
+	canvas = 0;
+	cursor = 0;
+	overlays_visible = 0;
+	handles = 0;
+	titles = 0;
+}
+// 
+// Tracks::~Tracks()
+// {
+// 	if(cursor) delete cursor;
+// 	if(canvas) delete canvas;
+// }
+// 
+int Tracks::create_objects(Defaults *defaults, int w, int h, int top, int bottom)
+{
+//	load_defaults(defaults);
+
+// 	if(mwindow->gui)
+// 	{
+// 		cursor = new Cursor_(canvas);
+// 		show_overlays(0);
+// 	}
+	return 0;
+}
+
+int Tracks::save_defaults(Defaults *defaults)
+{
+	defaults->update("SHOWTITLES", titles);
+	defaults->update("SHOWHANDLES", handles);
+	defaults->update("SHOWOUTPUT", show_output);
+	auto_conf.save_defaults(defaults);
+	return 0;
+}
+
+int Tracks::set_index_file(int flash, Asset *asset)
+{
+	Track* current;
+	int result;
+
+	result = 1;
+
+	if(mwindow->gui)
+	{
+//		hide_overlays(0);
+
+		for(current = first; current; current = NEXT)
+		{
+//			if(!(current->set_index_files(0, asset))) result = 0;
+		}
+
+//		show_overlays(flash);
+	}
+
+	return result;
+}
+
+
+int Tracks::resize_event(int w, int h, int top, int bottom)
+{
+	canvas->reposition_window(mwindow->theme->patchbay_w, top, w - mwindow->theme->patchbay_w - 17, bottom - top);
+	return 0;
+}
+
+int Tracks::flip_vertical(int top, int bottom)
+{
+	resize_event(mwindow->gui->get_w(), mwindow->gui->get_h(), top, bottom);
+	return 0;
+}
+
+
+
+// ===================================== file operations
+
+int Tracks::popup_transition(int cursor_x, int cursor_y)
+{
+	int result = 0;
+	for(Track* current = first; current && !result; current = NEXT)
+	{
+		result = current->popup_transition(cursor_x, cursor_y);
+	}
+	return result;
+}
+
+
+int Tracks::change_channels(int oldchannels, int newchannels)
+{
+	for(Track *current = first; current; current = NEXT)
+	{ current->change_channels(oldchannels, newchannels); }
+	return 0;
+}
+
+// REMOVE
+long Tracks::view_samples() 
+{ 
+// 	if(mwindow->gui)
+// 		return edl->session->tracks_vertical ? (long)canvas->get_h() * mwindow->session->zoom_sample : (long)canvas->get_w() * mwindow->session->zoom_sample; 
+// 	else
+ 		return 0;
+}
+
+// REMOVE
+int Tracks::view_pixels()
+{
+// 	if(mwindow->gui)
+// 		return mwindow->session->tracks_vertical ? canvas->get_h() : canvas->get_w();
+// 	else
+		return 0;
+}
+
+// REMOVE
+int Tracks::vertical_pixels()
+{
+// 	if(mwindow->gui)
+// 		return mwindow->session->tracks_vertical ? canvas->get_w() : canvas->get_h();
+// 	else
+		return 0;
+}
+
+
+
+int Tracks::totalpixels()
+{
+	int result = 0;
+	for(Track* current = first; current; current = NEXT)
+	{
+		result += mwindow->session->zoom_track;
+	}
+	return result;
+}
+
+int Tracks::number_of(Track *track)
+{
+	int i = 0;
+	for(Track *current = first; current && current != track; current = NEXT)
+	{
+		i++;
+	}
+	return i;
+}
+
+Track* Tracks::number(int number)
+{
+	Track *current;
+	int i = 0;
+	for(current = first; current && i < number; current = NEXT)
+	{
+		i++;
+	}
+	return current;
+}
+
+int Tracks::copy_length(long start, long end)
+{
+	return mwindow->patches->copy_length();
+}

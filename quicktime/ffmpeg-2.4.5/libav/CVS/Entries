@@ -1,0 +1,25 @@
+/Makefile/1.1/Mon Apr  8 02:03:14 2002//
+/asf.c/1.1/Mon Apr  8 02:03:14 2002//
+/audio.c/1.1/Mon Apr  8 02:03:14 2002//
+/avformat.h/1.1/Mon Apr  8 02:03:14 2002//
+/avi.h/1.1/Mon Apr  8 02:03:14 2002//
+/avio.c/1.1/Mon Apr  8 02:03:14 2002//
+/avio.h/1.1/Mon Apr  8 02:03:14 2002//
+/aviobuf.c/1.1/Mon Apr  8 02:03:14 2002//
+/ffm.c/1.1/Mon Apr  8 02:03:14 2002//
+/file.c/1.1/Mon Apr  8 02:03:14 2002//
+/grab.c/1.1/Mon Apr  8 02:03:14 2002//
+/http.c/1.1/Mon Apr  8 02:03:14 2002//
+/img.c/1.1/Mon Apr  8 02:03:14 2002//
+/jpeg.c/1.1/Mon Apr  8 02:03:14 2002//
+/libav.dsp/1.1/Mon Apr  8 02:03:14 2002//
+/mpeg.c/1.1/Mon Apr  8 02:03:14 2002//
+/raw.c/1.1/Mon Apr  8 02:03:14 2002//
+/rm.c/1.1/Mon Apr  8 02:03:14 2002//
+/swf.c/1.1/Mon Apr  8 02:03:14 2002//
+/udp.c/1.1/Mon Apr  8 02:03:14 2002//
+/utils.c/1.1/Mon Apr  8 02:03:14 2002//
+/wav.c/1.1/Mon Apr  8 02:03:14 2002//
+/avidec.c/1.2/Mon Apr  8 16:07:21 2002//
+/avienc.c/1.3/Wed Apr 24 14:18:06 2002//
+D

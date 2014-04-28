@@ -1,0 +1,6 @@
+gcc -c `cat i686/c_flags`  cmodel_yuv420p.c -o i686/cmodel_yuv420p.o
+gcc -c `cat i686/c_flags`  cmodel_yuv422.c -o i686/cmodel_yuv422.o
+gcc -c `cat i686/c_flags`  colormodels.c -o i686/colormodels.o
+gcc -c `cat i686/c_flags`  jpeg.c -o i686/jpeg.o
+gcc -c `cat i686/c_flags`  libmjpeg.c -o i686/libmjpeg.o
+ar rcs i686/libquicktime.a `cat i686/objs`

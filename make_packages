@@ -1,0 +1,82 @@
+#!/bin/sh
+VERSION=beta1
+
+
+DEST=/usr/src/redhat
+NAME=cinelerra-$VERSION
+
+# CLEAN SOURCE DIRECTORIES
+make clean
+
+# CREATE DIRECTORIES
+rm -r $DEST/$NAME
+mkdir $DEST/$NAME
+
+# COPY SOURCE FILES
+cp *.c                  $DEST/$NAME
+cp Makefile             $DEST/$NAME
+cp COPYING              $DEST/$NAME
+cp global_config        $DEST/$NAME
+cp plugin_config        $DEST/$NAME
+cp make_packages*       $DEST/$NAME
+
+cp -a audiofile        $DEST/$NAME
+cp -a build            $DEST/$NAME
+cp -a cinelerra        $DEST/$NAME
+cp -a esound 		   $DEST/$NAME
+cp -a freetype-2.0.4   $DEST/$NAME
+cp -a guicast          $DEST/$NAME
+cp -a libavc           $DEST/$NAME
+cp -a libsndfile       $DEST/$NAME
+cp -a plugins          $DEST/$NAME
+cp -a tiff        	   $DEST/$NAME
+cd ..
+cp -a libmpeg3         $DEST/$NAME
+cp -a quicktime        $DEST/$NAME
+
+# MAKE TARBALL
+
+cd $DEST/
+chmod -R u+w $NAME
+
+
+tar jcf SOURCES/$NAME-src.tar.bz2 $NAME
+
+
+
+
+
+# MAKE SPEC FILE
+cat > $NAME-1.spec << EOF
+
+Summary: Complete production environment for audio and video
+Name: cinelerra
+Version: $VERSION
+Release: 1
+Copyright: GPL
+Group: Applications/Video
+Source: http://heroinewarrior.com/$NAME-src.tar.bz2
+BuildRoot: /var/tmp/%{name}-buildroot
+Provides: Everything
+Prefix: /usr
+
+%description
+
+It's about transforming the impossible into reality.
+
+%prep
+%setup -q
+%build
+make
+
+%install
+	make install
+
+%clean
+rm -rf /var/tmp/%{name}-buildroot
+
+%files
+%defattr(-,root,root)
+%changelog
+
+EOF

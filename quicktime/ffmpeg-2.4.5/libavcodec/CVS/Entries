@@ -1,0 +1,42 @@
+/Makefile/1.1/Mon Apr  8 02:03:14 2002//
+/ac3dec.c/1.1/Mon Apr  8 02:03:14 2002//
+/ac3enc.c/1.1/Mon Apr  8 02:03:14 2002//
+/ac3enc.h/1.1/Mon Apr  8 02:03:14 2002//
+/ac3tab.h/1.1/Mon Apr  8 02:03:14 2002//
+/avcodec.h/1.1/Mon Apr  8 02:03:14 2002//
+/common.c/1.1/Mon Apr  8 02:03:14 2002//
+/common.h/1.1/Mon Apr  8 02:03:14 2002//
+/dct-test.c/1.1/Mon Apr  8 02:03:14 2002//
+/dsputil.c/1.1/Mon Apr  8 02:03:14 2002//
+/dsputil.h/1.1/Mon Apr  8 02:03:14 2002//
+/fastmemcpy.h/1.1/Mon Apr  8 02:03:14 2002//
+/fdctref.c/1.1/Mon Apr  8 02:03:14 2002//
+/h263.c/1.1/Mon Apr  8 02:03:14 2002//
+/h263data.h/1.1/Mon Apr  8 02:03:14 2002//
+/h263dec.c/1.1/Mon Apr  8 02:03:14 2002//
+/imgconvert.c/1.1/Mon Apr  8 02:03:14 2002//
+/imgresample.c/1.1/Mon Apr  8 02:03:14 2002//
+/jfdctfst.c/1.1/Mon Apr  8 02:03:14 2002//
+/jrevdct.c/1.1/Mon Apr  8 02:03:14 2002//
+/libavcodec.dsp/1.1/Mon Apr  8 02:03:14 2002//
+/mjpeg.c/1.1/Mon Apr  8 02:03:14 2002//
+/motion_est.c/1.1/Mon Apr  8 02:03:14 2002//
+/mpeg12.c/1.1/Mon Apr  8 02:03:14 2002//
+/mpeg12data.h/1.1/Mon Apr  8 02:03:14 2002//
+/mpeg4data.h/1.1/Mon Apr  8 02:03:14 2002//
+/mpegaudio.c/1.1/Mon Apr  8 02:03:14 2002//
+/mpegaudio.h/1.1/Mon Apr  8 02:03:14 2002//
+/mpegaudiodec.c/1.1/Mon Apr  8 02:03:14 2002//
+/mpegaudiotab.h/1.1/Mon Apr  8 02:03:14 2002//
+/mpegvideo.c/1.1/Mon Apr  8 02:03:14 2002//
+/mpegvideo.h/1.1/Mon Apr  8 02:03:14 2002//
+/msmpeg4.c/1.1/Mon Apr  8 02:03:14 2002//
+/msmpeg4data.h/1.1/Mon Apr  8 02:03:14 2002//
+/resample.c/1.1/Mon Apr  8 02:03:14 2002//
+/rv10.c/1.1/Mon Apr  8 02:03:14 2002//
+D/armv4l////
+D/i386////
+D/libac3////
+D/mpglib////
+/apiexample.c/1.2/Mon Apr  8 15:20:07 2002//
+/utils.c/1.2/Mon Apr  8 15:36:04 2002//

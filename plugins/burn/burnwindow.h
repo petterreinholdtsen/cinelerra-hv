@@ -1,0 +1,46 @@
+#ifndef BURNWINDOW_H
+#define BURNWINDOW_H
+
+#include "guicast.h"
+
+class BurnThread;
+class BurnWindow;
+
+#include "filexml.h"
+#include "mutex.h"
+#include "burn.h"
+
+class BurnThread : public Thread
+{
+public:
+	BurnThread(BurnMain *client);
+	~BurnThread();
+
+	void run();
+
+// prevent loading data until the GUI is started
+ 	Mutex gui_started, completion;
+	BurnMain *client;
+	BurnWindow *window;
+};
+
+class BurnWindow : public BC_Window
+{
+public:
+	BurnWindow(BurnMain *client, int x, int y);
+	~BurnWindow();
+
+	int create_objects();
+	int close_event();
+
+	BurnMain *client;
+};
+
+
+
+
+
+
+
+
+#endif

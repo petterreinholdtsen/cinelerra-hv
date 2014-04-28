@@ -1,0 +1,307 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:650: checking host system type
+configure:671: checking target system type
+configure:689: checking build system type
+configure:714: checking cached system tuple
+configure:747: checking for a BSD compatible install
+configure:800: checking whether build environment is sane
+configure:871: checking for mawk
+configure:871: checking for gawk
+configure:901: checking whether make -j 4 sets ${MAKE}
+configure:1021: checking whether to enable maintainer-specific portions of Makefiles
+configure:1050: checking for style of include used by make -j 4
+configure:1156: checking for ranlib
+configure:1186: checking for gcc
+configure:1299: checking whether the C compiler (gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include ) works
+configure:1315: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:1341: checking whether the C compiler (gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include ) is a cross-compiler
+configure:1346: checking whether we are using GNU C
+configure:1355: gcc -E conftest.c
+configure:1374: checking whether gcc accepts -g
+configure:1408: checking dependency style of gcc
+configure:1486: checking for ld used by GCC
+configure:1548: checking if the linker (/usr/bin/ld) is GNU ld
+GNU ld version 2.11.90.0.8 (with BFD 2.11.90.0.8)
+configure:1564: checking for BSD-compatible nm
+configure:1600: checking whether ln -s works
+ltconfig:603: checking for object suffix
+ltconfig:604: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+ltconfig:629: checking for executable suffix
+ltconfig:630: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+ltconfig:776: checking if gcc PIC flag -fPIC works
+ltconfig:777: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -fPIC -DPIC  conftest.c 1>&5
+ltconfig:829: checking if gcc supports -c -o file.o
+ltconfig:830: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -o out/conftest2.o  conftest.c 1>&5
+ltconfig:862: checking if gcc supports -c -o file.lo
+ltconfig:863: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -c -o conftest.lo  conftest.c 1>&5
+ltconfig:914: checking if gcc supports -fno-rtti -fno-exceptions
+ltconfig:915: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -fno-rtti -fno-exceptions -c conftest.c  conftest.c 1>&5
+ltconfig:958: checking if gcc static flag -static works
+ltconfig:959: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   -static conftest.c  1>&5
+GNU ld version 2.11.90.0.8 (with BFD 2.11.90.0.8)
+ltconfig:1635: checking if global_symbol_pipe works
+ltconfig:1636: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+ltconfig:1639: eval "/usr/bin/nm -B conftest.o | sed -n -e 's/^.*[ 	]\([ABCDGISTW]\)[ 	][ 	]*\(\)\([_A-Za-z][_A-Za-z0-9]*\)$/\1 \2\3 \3/p' > conftest.nm"
+ltconfig:1691: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -fno-builtin -fno-rtti -fno-exceptions   conftest.c conftstm.o 1>&5
+configure:1794: checking how to run the C preprocessor
+configure:1815: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1874: checking for AIX
+configure:1898: checking for POSIXized ISC
+configure:1920: checking for minix/config.h
+configure:1930: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1926:26: minix/config.h: No such file or directory
+configure: failed program was:
+#line 1925 "configure"
+#include "confdefs.h"
+#include <minix/config.h>
+configure:1968: checking for Cygwin environment
+configure:1984: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure: In function `main':
+configure:1980: `__CYGWIN32__' undeclared (first use in this function)
+configure:1980: (Each undeclared identifier is reported only once
+configure:1980: for each function it appears in.)
+configure: failed program was:
+#line 1973 "configure"
+#include "confdefs.h"
+
+int main() {
+
+#ifndef __CYGWIN__
+#define __CYGWIN__ __CYGWIN32__
+#endif
+return __CYGWIN__;
+; return 0; }
+configure:2001: checking for mingw32 environment
+configure:2013: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure: In function `main':
+configure:2009: `__MINGW32__' undeclared (first use in this function)
+configure:2009: (Each undeclared identifier is reported only once
+configure:2009: for each function it appears in.)
+configure: failed program was:
+#line 2006 "configure"
+#include "confdefs.h"
+
+int main() {
+return __MINGW32__;
+; return 0; }
+configure:2032: checking for executable suffix
+configure:2076: checking for gcc option to accept ANSI C
+configure:2130: gcc  -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure:2157: checking for function prototypes
+configure:2171: checking for ANSI C header files
+configure:2184: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2251: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2278: checking for string.h
+configure:2288: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2318: checking for dmalloc.h
+configure:2328: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2324:21: dmalloc.h: No such file or directory
+configure: failed program was:
+#line 2323 "configure"
+#include "confdefs.h"
+#include <dmalloc.h>
+configure:2374: checking for ANSI C header files
+configure:2489: checking for errno.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2489: checking for fcntl.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2489: checking for limits.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2489: checking for string.h
+configure:2489: checking for sys/soundcard.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2489: checking for sys/time.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2489: checking for unistd.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2489: checking for linux/soundcard.h
+configure:2499: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:2527: checking for working const
+configure:2581: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure:2602: checking for inline
+configure:2616: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure:2643: checking whether byte ordering is bigendian
+configure:2661: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure:2676: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure: In function `main':
+configure:2671: `not' undeclared (first use in this function)
+configure:2671: (Each undeclared identifier is reported only once
+configure:2671: for each function it appears in.)
+configure:2671: parse error before "big"
+configure: failed program was:
+#line 2665 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/param.h>
+int main() {
+
+#if BYTE_ORDER != BIG_ENDIAN
+ not big endian
+#endif
+; return 0; }
+configure:2736: checking version of GCC
+configure:2742: checking size of short
+configure:2761: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2781: checking size of unsigned short
+configure:2800: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2820: checking size of int
+configure:2839: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2859: checking size of unsigned int
+configure:2878: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2898: checking size of long
+configure:2917: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2937: checking size of unsigned long
+configure:2956: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:2976: checking size of long long
+configure:2995: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:3015: checking size of unsigned long long
+configure:3034: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:3054: checking size of float
+configure:3073: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:3093: checking size of double
+configure:3112: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:3134: checking for long double
+configure:3220: checking for uint8_t
+configure:3253: checking for int8_t
+configure:3286: checking for uint16_t
+configure:3319: checking for int16_t
+configure:3353: checking for uint32_t
+configure:3386: checking for int32_t
+configure:3558: checking for uint64_t
+configure:3591: checking for int64_t
+configure:3629: checking for IEEE854 compliant 80 bit floats
+configure:3663: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure: failed program was:
+#line 3638 "configure"
+#include "confdefs.h"
+
+int   float2long_IEEE_compliance ( void )
+{
+    float  f;
+    f = 12582912.; if ( *(long*)(&f) != 1262485504l ) return 0;
+    f = 12615679.; if ( *(long*)(&f) != 1262518271l ) return 0;
+    f = 13582912.; if ( *(long*)(&f) != 1263485504l ) return 0;
+    f = 12550145.; if ( *(long*)(&f) != 1262452737l ) return 0;
+    f = 11582912.; if ( *(long*)(&f) != 1261485504l ) return 0;
+    return 1;
+}
+
+int main(void)
+{
+    int retval;
+
+    retval = float2long_IEEE_compliance();
+
+    /* no error return -> success */
+    return !retval;
+}
+
+configure:3720: checking for ieee754_float64_t
+configure:3753: checking for ieee754_float32_t
+configure:3817: checking for size_t
+configure:3850: checking whether time.h and sys/time.h may both be included
+configure:3864: gcc -c -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include  conftest.c 1>&5
+configure:3888: checking for working alloca.h
+configure:3900: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:3921: checking for alloca
+configure:3954: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:4122: checking for gettimeofday
+configure:4150: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:4122: checking for socket
+configure:4150: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:4122: checking for strtol
+configure:4150: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c  1>&5
+configure:4200: checking for termcap.h
+configure:4210: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:4240: checking for ncurses/termcap.h
+configure:4250: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:4277: checking for initscr in -ltermcap
+configure:4296: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -ltermcap   1>&5
+/tmp/ccOjr0Au.o: In function `main':
+/tmp/ccOjr0Au.o(.text+0xa): undefined reference to `initscr'
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 4285 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char initscr();
+
+int main() {
+initscr()
+; return 0; }
+configure:4317: checking for initscr in -lcurses
+configure:4336: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -lcurses   1>&5
+configure:4357: checking for initscr in -lncurses
+configure:4376: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -lncurses   1>&5
+configure:4398: checking for cos in -lm
+configure:4417: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -lm   1>&5
+configure:4410: warning: conflicting types for built-in function `cos'
+configure:4438: checking for cos in -lffm
+configure:4457: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -lffm   1>&5
+configure:4450: warning: conflicting types for built-in function `cos'
+/usr/bin/ld: cannot find -lffm
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 4446 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char cos();
+
+int main() {
+cos()
+; return 0; }
+configure:4478: checking for cos in -lcpml
+configure:4497: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -lcpml   1>&5
+configure:4490: warning: conflicting types for built-in function `cos'
+/usr/bin/ld: cannot find -lcpml
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 4486 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char cos();
+
+int main() {
+cos()
+; return 0; }
+configure:4520: checking for sf_open_read in -lsndfile
+configure:4539: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include   conftest.c -lsndfile   1>&5
+/usr/bin/ld: cannot find -lsndfile
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 4528 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char sf_open_read();
+
+int main() {
+sf_open_read()
+; return 0; }
+configure:4612: checking for gtk-config
+configure:4647: checking for GTK - version >= 1.2.0
+configure:4748: gcc -o conftest -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -I/usr/local/include/gtk-1.2 -I/usr/local/include/glib-1.2 -I/usr/local/lib/glib/include -I/usr/X11R6/include   conftest.c -L/usr/local/lib -L/usr/X11R6/lib -lgtk -lgdk -rdynamic -lgmodule -lglib -ldl -lXext -lX11 -lm  1>&5
+configure:4839: checking use of ElectricFence malloc debugging
+configure:4912: checking use of file io
+configure:4990: checking use of analyzer hooks
+configure:5017: checking use of mpg123 decoder
+configure:5188: checking use of vorbis
+configure:5197: checking if the lame frontend should be build
+configure:5217: checking if mp3x is requested
+configure:5246: checking if mp3rtp is requested
+configure:5295: checking glibc mathinline bug
+configure:5345: checking use of VBR bitrate histogram
+configure:5407: checking for FLOAT8 as float
+configure:5436: checking for nasm
+configure:5474: checking for assembler routines for this processor type
+configure:5520: checking for additional optimizations
+configure:5623: checking for debug options

@@ -1,0 +1,97 @@
+make -j 4  all-recursive
+make[1]: Entering directory `/amazon/home/archive/libavc1394-0.3.1'
+make[1]: warning: -jN forced in submake: disabling jobserver mode.
+Making all in common
+make[2]: Entering directory `/amazon/home/archive/libavc1394-0.3.1/common'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c raw1394util.c
+mkdir .libs
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c raw1394util.c  -fPIC -DPIC -o .libs/raw1394util.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c raw1394util.c -o raw1394util.o >/dev/null 2>&1
+mv -f .libs/raw1394util.lo raw1394util.lo
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused  -o libraw1394util.la   raw1394util.lo  
+rm -fr .libs/libraw1394util.la .libs/libraw1394util.* .libs/libraw1394util.*
+ar cru .libs/libraw1394util.al raw1394util.lo
+ranlib .libs/libraw1394util.al
+creating libraw1394util.la
+(cd .libs && rm -f libraw1394util.la && ln -s ../libraw1394util.la libraw1394util.la)
+make[2]: Leaving directory `/amazon/home/archive/libavc1394-0.3.1/common'
+Making all in libavc1394
+make[2]: Entering directory `/amazon/home/archive/libavc1394-0.3.1/libavc1394'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_simple.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_vcr.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_internal.c
+mkdir .libs
+mkdir .libs
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_vcr.c  -fPIC -DPIC -o .libs/avc1394_vcr.lo
+mkdir: cannot create directory `.libs': File exists
+rm -f .libs/avc1394_internal.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_simple.c  -fPIC -DPIC -o .libs/avc1394_simple.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_internal.c  -fPIC -DPIC -o .libs/avc1394_internal.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_internal.c -o avc1394_internal.o >/dev/null 2>&1
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_vcr.c -o avc1394_vcr.o >/dev/null 2>&1
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c avc1394_simple.c -o avc1394_simple.o >/dev/null 2>&1
+mv -f .libs/avc1394_internal.lo avc1394_internal.lo
+mv -f .libs/avc1394_vcr.lo avc1394_vcr.lo
+mv -f .libs/avc1394_simple.lo avc1394_simple.lo
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused  -o libavc1394.la -rpath /usr/local/lib -version-info 0:4:0  avc1394_simple.lo avc1394_vcr.lo avc1394_internal.lo ../common/raw1394util.lo  
+rm -fr .libs/libavc1394.la .libs/libavc1394.* .libs/libavc1394.*
+gcc -shared  avc1394_simple.lo avc1394_vcr.lo avc1394_internal.lo ../common/raw1394util.lo  -lc  -Wl,-soname -Wl,libavc1394.so.0 -o .libs/libavc1394.so.0.0.4
+(cd .libs && rm -f libavc1394.so.0 && ln -s libavc1394.so.0.0.4 libavc1394.so.0)
+(cd .libs && rm -f libavc1394.so && ln -s libavc1394.so.0.0.4 libavc1394.so)
+ar cru .libs/libavc1394.a  avc1394_simple.o avc1394_vcr.o avc1394_internal.o ../common/raw1394util.o 
+ranlib .libs/libavc1394.a
+creating libavc1394.la
+(cd .libs && rm -f libavc1394.la && ln -s ../libavc1394.la libavc1394.la)
+make[2]: Leaving directory `/amazon/home/archive/libavc1394-0.3.1/libavc1394'
+Making all in librom1394
+make[2]: Entering directory `/amazon/home/archive/libavc1394-0.3.1/librom1394'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c rom1394_main.c
+/bin/sh ../libtool --mode=compile gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c rom1394_internal.c
+mkdir .libs
+mkdir .libs
+mkdir: cannot create directory `.libs': File exists
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c rom1394_main.c  -fPIC -DPIC -o .libs/rom1394_main.lo
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c rom1394_internal.c  -fPIC -DPIC -o .libs/rom1394_internal.lo
+In file included from rom1394_internal.c:24In file included from rom1394_main.c:25:
+:
+rom1394_internal.h:27:6: rom1394_internal.h:27:6: warning: warning: no newline at end of fileno newline at end of file
+
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c rom1394_internal.c -o rom1394_internal.o >/dev/null 2>&1
+gcc -DHAVE_CONFIG_H -I. -I. -I.. -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c rom1394_main.c -o rom1394_main.o >/dev/null 2>&1
+mv -f .libs/rom1394_internal.lo rom1394_internal.lo
+mv -f .libs/rom1394_main.lo rom1394_main.lo
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused  -o librom1394.la -rpath /usr/local/lib -version-info 0:4:0  -lm rom1394_main.lo rom1394_internal.lo ../common/raw1394util.lo 
+rm -fr .libs/librom1394.la .libs/librom1394.* .libs/librom1394.*
+gcc -shared  rom1394_main.lo rom1394_internal.lo ../common/raw1394util.lo  -lm -lc  -Wl,-soname -Wl,librom1394.so.0 -o .libs/librom1394.so.0.0.4
+(cd .libs && rm -f librom1394.so.0 && ln -s librom1394.so.0.0.4 librom1394.so.0)
+(cd .libs && rm -f librom1394.so && ln -s librom1394.so.0.0.4 librom1394.so)
+ar cru .libs/librom1394.a  rom1394_main.o rom1394_internal.o ../common/raw1394util.o 
+ranlib .libs/librom1394.a
+creating librom1394.la
+(cd .libs && rm -f librom1394.la && ln -s ../librom1394.la librom1394.la)
+make[2]: Leaving directory `/amazon/home/archive/libavc1394-0.3.1/librom1394'
+Making all in test
+make[2]: Entering directory `/amazon/home/archive/libavc1394-0.3.1/test'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c dvcont.c
+gcc -DHAVE_CONFIG_H -I. -I. -I..     -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -c romtest.c
+romtest.c: In function `main':
+romtest.c:49: warning: implicit declaration of function `exit'
+dvcont.c: In function `main':
+dvcont.c:135: warning: implicit declaration of function `strcmp'
+romtest.c:89:1: warning: no newline at end of file
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused  -o romtest  romtest.o ../librom1394/librom1394.la -lraw1394 
+/bin/sh ../libtool --mode=link gcc  -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused  -o dvcont  dvcont.o ../librom1394/librom1394.la ../libavc1394/libavc1394.la -lraw1394 
+mkdir .libs
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -o .libs/romtest romtest.o ../librom1394/.libs/librom1394.so -lm -lraw1394 -Wl,--rpath -Wl,/usr/local/lib
+creating romtest
+gcc -O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include -Wall -Wunused -o .libs/dvcont dvcont.o ../librom1394/.libs/librom1394.so -lm ../libavc1394/.libs/libavc1394.so -lraw1394 -Wl,--rpath -Wl,/usr/local/lib
+creating dvcont
+make[2]: Leaving directory `/amazon/home/archive/libavc1394-0.3.1/test'
+make[2]: Entering directory `/amazon/home/archive/libavc1394-0.3.1'
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: Leaving directory `/amazon/home/archive/libavc1394-0.3.1'
+make[1]: Leaving directory `/amazon/home/archive/libavc1394-0.3.1'

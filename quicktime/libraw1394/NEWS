@@ -1,0 +1,50 @@
+Version 0.9:
+
+- error reporting reworked to be more C library style; functions affected are
+  mainly raw1394_read(), raw1394_write(), raw1394_lock;
+  Source incompatibility!  Parts need to be adapted in application code, but
+  it's well worth it.
+- the generation number is not unconditionally updated on bus reset in the event
+  loop anymore, the new function raw1394_update_generation() has to be used
+  (unless the default bus reset handler is used) so that transactions won't fail
+- iso handlers used to get the iso header quadlet in host endian, now they get
+  it in big endian like the rest of the packet for consistency
+- testlibraw gets installed now, man page also included
+- (not yet complete) documentation in Docbook format included
+- libraw1394.m4 autoconf macro added
+
+Version 0.8:
+
+- added libraw1394/ieee1394.h with useful defines (especially ack and rcodes)
+- function to query isochronous resource manager ID
+- functions for isochronous sending
+- new raw1394_reset_bus() function to reset the bus
+
+Version 0.7:
+
+- added support for environments where the kernel runs in 64 bit mode whereas
+  user space runs in 32 bit mode
+- fixed lock transaction to actually return the required response; these
+  functions are actually useful now, prototypes for raw1394_start_lock and
+  raw1394_lock changed
+- a void pointer can now be stored as user data with a handle
+
+Version 0.6:
+
+- FCP monitoring added
+- not really libraw1394 news: the subsystem doesn't swap data anymore,
+  everything is to be kept big endian now on all architectures
+
+Version 0.5:
+
+- there are now separate iso handlers for each channel
+
+Version 0.4:
+
+- isochronous receive support
+
+Version 0.3:
+
+- first release of new libraw1394 for new raw1394 driver
+- supports 1394 async reads/writes
+- maintainer: Andreas Bombe <andreas.bombe@munich.netsurf.de>

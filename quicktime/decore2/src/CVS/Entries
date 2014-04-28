@@ -1,0 +1,23 @@
+/bitstream.c/1.1/Fri Nov 30 01:09:03 2001//
+/colorspace.c/1.1/Fri Nov 30 01:09:03 2001//
+/dec_bitstream.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_bitstream.h.bak/1.1/Fri Nov 30 01:09:03 2001//
+/dec_colorspace.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_dct.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_image.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_mbcoding.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_mbprediction.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_portab.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_quantize.h/1.1/Fri Nov 30 01:09:03 2001//
+/dec_transfer.h/1.1/Fri Nov 30 01:09:03 2001//
+/decoder.c/1.1/Fri Nov 30 01:09:03 2001//
+/decoder.h/1.1/Fri Nov 30 01:09:03 2001//
+/decore2.c/1.1/Fri Nov 30 01:09:03 2001//
+/decore2.h/1.1/Fri Nov 30 01:09:03 2001//
+/idct.c/1.1/Fri Nov 30 01:09:03 2001//
+/image.c/1.1/Fri Nov 30 01:09:03 2001//
+/mbcoding.c/1.1/Fri Nov 30 01:09:03 2001//
+/mbprediction.c/1.1/Fri Nov 30 01:09:03 2001//
+/quantize.c/1.1/Fri Nov 30 01:09:03 2001//
+/transfer.c/1.1/Fri Nov 30 01:09:03 2001//
+D/intel_mmx////

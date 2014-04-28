@@ -1,0 +1,182 @@
+#ifndef ROTATE_H
+#define ROTATE_H
+
+
+#include "defaults.inc"
+#include "guicast.h"
+#include "mutex.h"
+#include "pluginvplugin.h"
+#include "rotateframe.inc"
+#include "vframe.inc"
+
+
+
+
+typedef struct
+{
+	float x, y;
+} SourceCoord;
+
+
+class RotateMain;
+
+
+#define MAXANGLE 360
+
+
+
+class RotateConfig
+{
+public:
+	RotateConfig();
+	
+	int equivalent(RotateConfig &that);
+	void copy_from(RotateConfig &that);
+	
+	float angle;
+};
+
+class RotateToggle : public BC_Radial
+{
+public:
+	RotateToggle(RotateWindow *window, RotateMain *plugin, int init_value, int x, int y, int value, char *string);
+	int handle_event();
+
+	RotateMain *plugin;
+    RotateWindow *window;
+    int value;
+};
+
+class RotateFine : public BC_IPot
+{
+public:
+	RotateFine(RotateWindow *window, RotateMain *plugin, int x, int y);
+	int handle_event();
+
+	RotateMain *plugin;
+    RotateWindow *window;
+};
+
+class RotateWindow : public BC_Window
+{
+public:
+	RotateWindow(RotateMain *plugin, int x, int y);
+
+	int create_objects();
+	int close_event();
+	int update();
+	int update_fine();
+	int update_toggles();
+
+	RotateMain *plugin;
+	RotateToggle *toggle0;
+	RotateToggle *toggle90;
+	RotateToggle *toggle180;
+	RotateToggle *toggle270;
+	RotateFine *fine;
+};
+
+class RotateThread : public Thread
+{
+public:
+	RotateThread(RotateMain *plugin);
+	~RotateThread();
+
+	void run();
+
+	Mutex completion; // prevent loading data until the GUI is started
+	RotateMain *plugin;
+	RotateWindow *window;
+};
+
+
+class RotateMain : public PluginVClient
+{
+public:
+	RotateMain(int argc, char *argv[]);
+	~RotateMain();
+	
+	
+	
+	
+	
+	
+	
+	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int is_realtime();
+	char* plugin_title();
+	VFrame* new_picon();
+	int show_gui();
+	void raise_window();
+	void update_gui();
+	int set_string();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
+
+
+
+
+
+
+
+	void reset();
+
+
+
+
+
+
+
+	RotateConfig config;
+	RotateFrame *engine;
+	RotateThread *thread;
+	Defaults *defaults;
+	int need_reconfigure;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// required for all realtime plugins
+	int process_realtime(long size, VFrame **input_ptr, VFrame **output_ptr);
+	int stop_realtime();
+	int start_gui();
+	int stop_gui();
+	int show_gui();
+	int hide_gui();
+	int set_string();
+	int load_defaults();
+	int save_defaults();
+	int save_data(char *text);
+	int read_data(char *text);
+
+// parameters needed for rotate
+	int update_values(float value);
+    int rotate_rightangle(VPixel **input_rows, VPixel **output_rows, int angle);
+    int rotate_obliqueangle(VPixel **input_rows, VFrame *output, int angle);
+    int get_rightdimensions(int &diameter, int &in_x1, int &in_y1, int &in_x2, int &in_y2, int &out_x1, int &out_y1, int &out_x2, int &out_y2);
+    int clear_unused(VPixel **input_rows, VPixel **output_rows, int out_x1, int out_y1, int out_x2, int out_y2);
+
+// a thread for the GUI
+// Threads to parallelize the rotation and matrix generation.
+
+	int test_clip(int &r, int &g, int &b, int &a);
+// Temporary frame used for oblique angle rotations.
+	VFrame *temp_frame;
+// Matrix of source pixel offsets
+	int *int_matrix, **int_rows;
+// Interpolation uses input coordinates for each output coordinate.
+	SourceCoord *float_matrix, **float_rows;
+};
+
+
+#endif

@@ -1,0 +1,4 @@
+vorbis_interface.lo : \
+ vorbis_interface.c ../config.h
+vorbis_interface.c :
+../config.h :

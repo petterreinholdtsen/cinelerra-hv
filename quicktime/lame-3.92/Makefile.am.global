@@ -1,0 +1,7 @@
+## $Id: Makefile.am.global,v 1.1 2002/04/19 05:50:28 myrina Exp $
+
+# global section for every Makefile.am
+
+AUTOMAKE_OPTIONS = 1.5 foreign $(top_srcdir)/ansi2knr
+
+# end global section

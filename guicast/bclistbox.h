@@ -201,6 +201,7 @@ public:
 // If the popup window should show a button.
 // Must be called in the constructor.
 	void set_use_button(int value);
+	void set_is_suggestions(int value);
 
 
 // change the contents
@@ -605,6 +606,9 @@ private:
 
 
 	int active;
+// Popup listboxes have different behavior for suggestion boxes where the
+// textbox needs to be active when the listbox is visible.
+	int is_suggestions;
 
 // Button release counter for double clicking
 	int button_releases;

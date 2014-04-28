@@ -101,8 +101,9 @@ public:
 	void run();
 	int swap_buffer();
 
+// [ring_buffer][channels][Samples*]
 	Samples ***audio_buffer;
-// (VFrame*)(VFrame array *)(Track *)[ring buffer]
+// [ring buffer](Track *)(VFrame array *)(VFrame*)
 	VFrame ****video_buffer;      
 	long *output_size;  // Number of frames or samples to write
 // Not used

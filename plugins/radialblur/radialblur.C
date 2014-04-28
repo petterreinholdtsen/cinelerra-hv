@@ -24,7 +24,7 @@
 #include <string.h>
 
 
-#include "../motion/affine.h"
+#include "affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
@@ -546,7 +546,7 @@ int RadialBlurMain::handle_opengl()
 	get_output()->bind_texture(0);
 
 
-	int is_yuv = cmodel_is_yuv(get_output()->get_color_model());
+	int is_yuv = BC_CModels::is_yuv(get_output()->get_color_model());
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 

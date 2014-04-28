@@ -36,6 +36,9 @@ public:
 	MainUndo(MWindow *mwindow);
 	~MainUndo();
 
+
+
+
 // For tweeking operations:
 // If a pair of update_undo_before and update_undo_after are called
 // within a certain time limit and the creator is nonzero and equal,

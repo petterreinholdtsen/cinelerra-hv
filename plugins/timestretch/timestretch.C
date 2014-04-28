@@ -27,6 +27,7 @@
 #include "picon_png.h"
 #include "resample.h"
 #include "samples.h"
+#include "theme.h"
 #include "timestretch.h"
 #include "timestretchengine.h"
 #include "transportque.inc"
@@ -46,14 +47,14 @@ REGISTER_PLUGIN(TimeStretch)
 
 
 TimeStretchFraction::TimeStretchFraction(TimeStretch *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)plugin->scale)
+ : BC_TextBox(x, y, 100, 1, (float)(1.0 / plugin->scale))
 {
 	this->plugin = plugin;
 }
 
 int TimeStretchFraction::handle_event()
 {
-	plugin->scale = atof(get_text());
+	plugin->scale = 1.0 / atof(get_text());
 	return 1;
 }
 
@@ -116,9 +117,9 @@ TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
  				x - 160,
 				y - 75,
  				320, 
-				150, 
+				200, 
 				320, 
-				150,
+				200,
 				0,
 				0,
 				1)
@@ -135,13 +136,16 @@ void TimeStretchWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, _("Fraction of original length:")));
-	y += 20;
-	add_subwindow(new TimeStretchFraction(plugin, x, y));
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Fraction of original speed:")));
+	y += title->get_h() + plugin->get_theme()->widget_border;
+	
+	TimeStretchFraction *fraction;
+	add_subwindow(fraction = new TimeStretchFraction(plugin, x, y));
 
-	y += 30;
+	y += fraction->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(freq = new TimeStretchFreq(plugin, this, x, y));
-	y += 20;
+	y += freq->get_h() + plugin->get_theme()->widget_border;
 	add_subwindow(time = new TimeStretchTime(plugin, this, x, y));
 
 	add_subwindow(new BC_OKButton(this));

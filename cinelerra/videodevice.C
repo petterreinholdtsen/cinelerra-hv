@@ -247,8 +247,10 @@ VDeviceBase* VideoDevice::new_device_base()
 {
 	switch(in_config->driver)
 	{
+#ifdef HAVE_VIDEO4LINUX
 		case VIDEO4LINUX:
 			return input_base = new VDeviceV4L(this);
+#endif
 
 #ifdef HAVE_VIDEO4LINUX2
 		case VIDEO4LINUX2:
@@ -261,8 +263,10 @@ VDeviceBase* VideoDevice::new_device_base()
 		case SCREENCAPTURE:
 			return input_base = new VDeviceX11(this, 0);
 
+#ifdef HAVE_VIDEO4LINUX
 		case CAPTURE_BUZ:
 			return input_base = new VDeviceBUZ(this);
+#endif
 
 #ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
@@ -657,9 +661,11 @@ int VideoDevice::open_output(VideoOutConfig *config,
 //printf("VideoDevice::open_output 1 %d\n", out_config->driver);
 	switch(out_config->driver)
 	{
+#ifdef HAVE_VIDEO4LINUX
 		case PLAYBACK_BUZ:
 			output_base = new VDeviceBUZ(this);
 			break;
+#endif
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
 		case PLAYBACK_X11_GL:

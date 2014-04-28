@@ -312,7 +312,7 @@ int PluginClient::show_gui()
 
 void PluginClient::raise_window()
 {
-	if(thread)
+	if(thread && thread->window)
 	{
 		thread->window->lock_window("PluginClient::raise_window");
 		thread->window->raise_window();

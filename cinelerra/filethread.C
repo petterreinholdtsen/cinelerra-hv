@@ -213,7 +213,7 @@ void FileThread::run()
 				}
 
 // Read it
-//printf("FileThread::run position=%lld supported_colormodel=%d\n", local_position, supported_colormodel);
+//printf("FileThread::run %d position=%lld supported_colormodel=%d\n", __LINE__, local_position, supported_colormodel);
 				file->read_frame(local_frame->frame, 1);
 				local_frame->position = local_position;
 				local_frame->layer = local_layer;
@@ -537,7 +537,7 @@ int FileThread::read_frame(VFrame *frame)
 	int got_it = 0;
 	int number = 0;
 
-//printf("FileThread::read_frame 1\n");
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 
 // Search thread for frame
 	while(!got_it && !disable_read)
@@ -570,7 +570,8 @@ int FileThread::read_frame(VFrame *frame)
 			user_wait_lock->lock("FileThread::read_frame");
 		}
 	}
-//printf("FileThread::read_frame 2\n");
+
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 
 	if(got_it)
 	{
@@ -582,7 +583,14 @@ int FileThread::read_frame(VFrame *frame)
 			frame->get_w() != local_frame->frame->get_w() ||
 			frame->get_h() != local_frame->frame->get_h())
 		{
-			cmodel_transfer(frame->get_rows(), 
+// printf("FileThread::read_frame %d this=%p out cmodel=%d h=%d in cmodel=%d h=%d\n", 
+// __LINE__, 
+// this,
+// frame->get_color_model(),
+// frame->get_h(),
+// local_frame->frame->get_color_model(),
+// local_frame->frame->get_h());
+			BC_CModels::transfer(frame->get_rows(), 
 				local_frame->frame->get_rows(),
 				frame->get_y(),
 				frame->get_u(),
@@ -603,14 +611,18 @@ int FileThread::read_frame(VFrame *frame)
 				0,
 				local_frame->frame->get_w(),
 				frame->get_w());
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 		}
 		else
 		{
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 			frame->copy_from(local_frame->frame);
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 		}
 
 // Can't copy stacks because the stack is needed by the plugin requestor.
 		frame->copy_params(local_frame->frame);
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 
 // Recycle all frames before current one but not including current one.
 // This handles redrawing of a single frame but because FileThread has no
@@ -627,6 +639,7 @@ int FileThread::read_frame(VFrame *frame)
 			new_table[k] = read_frames[j];
 		}
 		memcpy(read_frames, new_table, sizeof(FileThreadFrame*) * total_frames);
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 		total_frames -= number;
 
 		start_position = read_position;
@@ -640,14 +653,18 @@ int FileThread::read_frame(VFrame *frame)
 // printf("FileThread::read_frame 2 color_model=%d disable_read=%d\n", 
 // frame->get_color_model(), 
 // disable_read);
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 // Use traditional read function
 		file->set_video_position(read_position, 1);
 		file->set_layer(layer, 1);
 		read_position++;
 		int result = file->read_frame(frame, 1);
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 		return result;
 	}
-//printf("FileThread::read_frame 100\n");
+
+
+//printf("FileThread::read_frame %d this=%p\n", __LINE__, this);
 }
 
 int64_t FileThread::get_memory_usage()

@@ -151,6 +151,20 @@ void Samples::to_filefork(unsigned char *buffer)
 
 void Samples::from_filefork(unsigned char *buffer)
 {
+// printf("Samples::from_filefork %d %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+// __LINE__,
+// buffer[0],
+// buffer[1],
+// buffer[2],
+// buffer[3],
+// buffer[4],
+// buffer[5],
+// buffer[6],
+// buffer[7],
+// buffer[8],
+// buffer[9],
+// buffer[10],
+// buffer[11]);
 	clear_objects();
 	shmid = *(int*)(buffer + 0);
 	allocated = *(int*)(buffer + 4);

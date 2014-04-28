@@ -35,7 +35,7 @@
 #include "bctimer.h"
 #include "bcwindowbase.h"
 #include "bcwindowevents.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "colors.h"
 #include "condition.h"
 #include "cursors.h"
@@ -74,6 +74,7 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 
 
 BC_Resources BC_WindowBase::resources;
+BC_CModels BC_WindowBase::cmodels;
 
 Window XGroupLeader = 0;
 
@@ -371,13 +372,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		display = init_display(display_name);
 #endif
 
-// Fudge window placement
+// window placement boundaries
 		root_w = get_root_w(1, 0);
 		root_h = get_root_h(0);
-		if(this->x + this->w > root_w) this->x = root_w - this->w;
-		if(this->y + this->h > root_h) this->y = root_h - this->h;
-		if(this->x < 0) this->x = 0;
-		if(this->y < 0) this->y = 0;
 		screen = DefaultScreen(display);
 		rootwin = RootWindow(display, screen);
 
@@ -395,6 +392,14 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(resources.use_shm < 0) resources.initialize_display(this);
 		x_correction = get_resources()->get_left_border();
 		y_correction = get_resources()->get_top_border();
+
+// clamp window placement
+		if(this->x + this->w + x_correction > root_w) 
+			this->x = root_w - this->w - x_correction;
+		if(this->y + this->h + y_correction > root_h) 
+			this->y = root_h - this->h - y_correction;
+		if(this->x < 0) this->x = 0;
+		if(this->y < 0) this->y = 0;
 
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
@@ -849,49 +854,57 @@ __LINE__, title, event);
 			cursor_x = event->xbutton.x;
 			cursor_y = event->xbutton.y;
 			button_number = event->xbutton.button;
+
+//printf("BC_WindowBase::dispatch_event %d %d\n", __LINE__, button_number);
 			event_win = event->xany.window;
-			if (button_number != 4 && button_number != 5)
-	  			button_down = 1;
-			button_pressed = event->xbutton.button;
-			button_time1 = button_time2;
-			button_time2 = button_time3;
-			button_time3 = event->xbutton.time;
-			drag_x = cursor_x;
-			drag_y = cursor_y;
-			drag_win = event_win;
-			drag_x1 = cursor_x - get_resources()->drag_radius;
-			drag_x2 = cursor_x + get_resources()->drag_radius;
-			drag_y1 = cursor_y - get_resources()->drag_radius;
-			drag_y2 = cursor_y + get_resources()->drag_radius;
+			if (button_number < 6)
+	  		{
+				if(button_number < 4)
+					button_down = 1;
+				button_pressed = event->xbutton.button;
+				button_time1 = button_time2;
+				button_time2 = button_time3;
+				button_time3 = event->xbutton.time;
+				drag_x = cursor_x;
+				drag_y = cursor_y;
+				drag_win = event_win;
+				drag_x1 = cursor_x - get_resources()->drag_radius;
+				drag_x2 = cursor_x + get_resources()->drag_radius;
+				drag_y1 = cursor_y - get_resources()->drag_radius;
+				drag_y2 = cursor_y + get_resources()->drag_radius;
 
-			if(button_time3 - button_time1 < resources.double_click * 2)
-			{
-				triple_click = 1;
-				button_time3 = button_time2 = button_time1 = 0;
-			}
-			if(button_time3 - button_time2 < resources.double_click)
-			{
-				double_click = 1; 
-//				button_time3 = button_time2 = button_time1 = 0;
-			}
-			else
-			{
-				triple_click = 0;
-				double_click = 0;
-			}
+				if(button_time3 - button_time1 < resources.double_click * 2)
+				{
+					triple_click = 1;
+					button_time3 = button_time2 = button_time1 = 0;
+				}
+				if(button_time3 - button_time2 < resources.double_click)
+				{
+					double_click = 1; 
+	//				button_time3 = button_time2 = button_time1 = 0;
+				}
+				else
+				{
+					triple_click = 0;
+					double_click = 0;
+				}
 
-			dispatch_button_press();
+				dispatch_button_press();
+			}
 			break;
 
 		case ButtonRelease:
 			get_key_masks(event);
 			button_number = event->xbutton.button;
 			event_win = event->xany.window;
-			if (button_number != 4 && button_number != 5) 
-				button_down = 0;
+			if (button_number < 6) 
+			{
+				if(button_number < 4)
+					button_down = 0;
+//printf("BC_WindowBase::dispatch_event %d %d\n", __LINE__, button_number);
 
-			dispatch_button_release();
-
+				dispatch_button_release();
+			}
 			break;
 
 		case Expose:
@@ -1276,6 +1289,8 @@ int BC_WindowBase::get_deleting()
 int BC_WindowBase::dispatch_button_press()
 {
 	int result = 0;
+
+
 	if(top_level == this)
 	{
 		if(active_menubar) result = active_menubar->dispatch_button_press();
@@ -1289,6 +1304,7 @@ int BC_WindowBase::dispatch_button_press()
 	}
 
 	if(!result) result = button_press_event();
+
 
 	return result;
 }
@@ -2592,7 +2608,7 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 	if(!get_resources()->use_xvideo) return -1;
 
 // Translate from color_model to X color model
-	x_color_model = cmodel_bc_to_x(color_model);
+	x_color_model = cmodels.bc_to_x(color_model);
 
 // Only local server is fast enough.
 	if(!resources.use_shm) return -1;
@@ -2983,6 +2999,11 @@ int BC_WindowBase::get_color_model()
 BC_Resources* BC_WindowBase::get_resources()
 {
 	return &BC_WindowBase::resources;
+}
+
+BC_CModels* BC_WindowBase::get_cmodels()
+{
+	return &BC_WindowBase::cmodels;
 }
 
 BC_Synchronous* BC_WindowBase::get_synchronous()

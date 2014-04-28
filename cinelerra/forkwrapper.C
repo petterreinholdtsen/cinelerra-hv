@@ -33,9 +33,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#define EXIT_CODE 0x7fff
 
 
-;
 ForkWrapper::ForkWrapper()
 {
 	done = 0;
@@ -52,7 +52,11 @@ ForkWrapper::ForkWrapper()
 ForkWrapper::~ForkWrapper()
 {
 	int status;
-	if(!is_dummy && pid) waitpid(pid, &status, 0);
+	if(!is_dummy && pid) 
+	{
+		waitpid(pid, &status, 0);
+	}
+
 	delete [] command_data;
 	if(parent_fd) close(parent_fd);
 	if(child_fd) close(child_fd);
@@ -71,11 +75,19 @@ void ForkWrapper::start()
 // Child process
 	if(!pid)
 	{
+//printf("ForkWrapper::start %d %d\n", __LINE__, getpid());
 		BC_Signals::reset_locks();
 		init_child();
 		run();
 		exit(0);
 	}
+}
+
+void ForkWrapper::stop()
+{
+	send_command(EXIT_CODE, 
+		0,
+		0);
 }
 
 void ForkWrapper::start_dummy(int parent_fd, int pid)
@@ -112,12 +124,16 @@ void ForkWrapper::run()
 		result = read_command();
 
 
+
 		if(debug) printf("ForkWrapper::run %d this=%p result=%d command_token=%d\n", 
 			__LINE__, 
 			this, 
 			result, 
 			command_token);
 
+		if(!result && command_token == EXIT_CODE) 
+			done = 1;
+		else
 		if(!result)
 		{
 			handle_command();
@@ -133,7 +149,12 @@ int ForkWrapper::send_command(int token,
 	unsigned char buffer[sizeof(int) * 2];
 	this->command_token = token;
 	this->command_bytes = bytes;
-//printf("ForkWrapper::send_command %d parent_fd=%d\n", __LINE__, parent_fd);
+// printf("ForkWrapper::send_command %d parent_fd=%d token=%d data=%p bytes=%d\n", 
+// __LINE__, 
+// parent_fd, 
+// token,
+// data,
+// bytes);
 	*(int*)(buffer + 0) = token;
 	*(int*)(buffer + sizeof(int)) = bytes;
 	write(parent_fd, buffer, sizeof(buffer));
@@ -206,9 +227,10 @@ int ForkWrapper::read_timeout(unsigned char *data, int size)
 int64_t ForkWrapper::read_result()
 {
 	unsigned char buffer[sizeof(int64_t) + sizeof(int)];
-
+//printf("ForkWrapper::read_result %d  parent_fd=%d\n", __LINE__, parent_fd);
 
 	if(read_timeout(buffer, sizeof(buffer))) return 1;
+//printf("ForkWrapper::read_result %d  parent_fd=%d\n", __LINE__, parent_fd);
 
 	int64_t result = *(int64_t*)(buffer + 0);
 	result_bytes = *(int*)(buffer + sizeof(int64_t));
@@ -219,9 +241,15 @@ int64_t ForkWrapper::read_result()
 		result_data = new unsigned char[result_bytes];
 		result_allocated = result_bytes;
 	}
+//printf("ForkWrapper::read_result %d  parent_fd=%d result=%lld result_bytes=%d\n", 
+//__LINE__, 
+//parent_fd,
+//result,
+//result_bytes);
 
 	if(result_bytes) 
 		if(read_timeout(result_data, result_bytes)) return 1;
+//printf("ForkWrapper::read_result %d  parent_fd=%d\n", __LINE__, parent_fd);
 
 	return result;
 }

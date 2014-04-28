@@ -219,6 +219,11 @@ void SUV::initialize()
 		"fileboxbutton_hi.png",
 		"fileboxbutton_dn.png");
 
+	resources->filebox_rename_images = new_button("rename.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
 	resources->filebox_updir_images = new_button("updir.png",
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",

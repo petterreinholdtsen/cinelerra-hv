@@ -455,6 +455,7 @@ RotationSearchPositions::RotationSearchPositions(MotionMain *plugin,
 }
 void RotationSearchPositions::create_objects()
 {
+	add_item(new BC_MenuItem("2"));
 	add_item(new BC_MenuItem("4"));
 	add_item(new BC_MenuItem("8"));
 	add_item(new BC_MenuItem("16"));

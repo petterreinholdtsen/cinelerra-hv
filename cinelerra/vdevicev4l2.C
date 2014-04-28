@@ -251,7 +251,7 @@ void VDeviceV4L2Thread::run()
 
 
 
-	if((input_fd = open(device->in_config->v4l2jpeg_in_device, 
+	if((input_fd = open(device->in_config->v4l2_in_device, 
 		O_RDWR)) < 0)
 	{
 		perror("VDeviceV4L2Thread::run");
@@ -619,6 +619,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 		ioctl_lock->lock("VDeviceV4L2Thread::run");
 		int result = ioctl(input_fd, VIDIOC_DQBUF, &buffer);
 		ioctl_lock->unlock();
+
 // Delay so the mutexes don't get stuck
 		usleep(1000000 * 1001 / 60000);
 		Thread::disable_cancel();
@@ -628,7 +629,9 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 		{
 			perror("VDeviceV4L2Thread::run VIDIOC_DQBUF");
 			Thread::enable_cancel();
-			usleep(100000);
+// Crystal Eye driver returns invalid result
+//			usleep(100000);
+//			usleep(10000);
 			Thread::disable_cancel();
 		}
 		else
@@ -903,13 +906,17 @@ int VDeviceV4L2::read_buffer(VFrame *frame)
 	if(buffer)
 	{
 
-// printf("VDeviceV4L2::read_buffer %d %p %p\n", 
-// __LINE__, 
-// frame->get_data(), 
-// buffer->get_data());
+printf("VDeviceV4L2::read_buffer %d %p %p\n", 
+__LINE__, 
+frame, 
+buffer->get_rows()[0]);
 
 		frame->copy_from(buffer);
 		thread->put_buffer();
+
+// printf("VDeviceV4L2::read_buffer %d\n", 
+// __LINE__);
+
 	}
 	else
 	{

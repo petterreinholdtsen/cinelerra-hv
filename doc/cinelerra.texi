@@ -15,7 +15,7 @@ Version 4.1
 
 by Adam Williams
 
-Copyright @copyright{} 2009
+Copyright @copyright{} 2011
 
 
 
@@ -5801,6 +5801,7 @@ problems and what tools are used to solve the problems.
 * MAKING A RINGTONE::
 * TIME STRETCHING AUDIO::
 * PITCH SHIFTING AUDIO::
+* TEXT TO MOVIE::
 @end menu
 
 
@@ -6252,6 +6253,58 @@ boundary of the audio tracks and dragging left or right to correspond
 to the length changes.
 
 
+@node TEXT TO MOVIE
+@section TEXT TO MOVIE
+
+
+
+Text to movie was added when another one of those startups whose name
+was an unmemorable combination of farting noises that the venture
+capitalist heard, started charging money for a ridulously simple program
+that converted scripts directly to movies.  It was such a simple
+program, we decided to add most of the functionality to Cinelerra.
+
+The easiest way to make a movie is to copy @b{tests/text2movie} and
+@b{tests/text2movie.xml} as a starting point.  Load the
+@b{text2movie.xml} file to see the movie.
+
+The @b{text2movie} file acts like a normal asset, except changes to it
+are immediately reflected on the timeline, without reloading.  Also, the
+length is infiinite.  Edit the @b{text2movie} file to change the
+script.  If the length of the movie increases, drag the right edit
+handle to extend the edit or use @b{edit->edit length}.
+
+1 audio channel is created for every character.  The frame rate, sample
+rate, and frame size are fixed.  Get it from the @b{asset window}. 
+Right click on the asset and go to @b{Asset info...}  Camera angles are
+fixed.
+
+Since its only use was to show dialog between 2 people, that's the
+functionality we focused on.  The character model and voice is selected
+separately in the script, because that was how it was done with the fee
+service.  The models are defined in model files, in the Cinelerra
+executable directory.  Usually @b{/opt/cinelerra/models}.
+
+There is a search path for models, starting with the directory the
+script is in.  You can define new models for the script, without
+affecting the entire system.  The model files are the exact name that
+appears in the script.  They define the total size of the model and the
+images used in the model.
+
+The models are 2D png images, because all the animations are baked.  No
+custom movement is currently supported, that would require a 3D
+renderer.  
+
+Some actions are implemented.  Character2 can cut off character1 if
+character1's dialog ends in @b{...}
+
+Inserting @b{[pause]} anywhere causes the character to pause.  Useful
+for adjusting the timing of dialog.
+
+Speech synthesis is pretty lousy.  Punctuation and spelling needs to be
+adjusted based on the sound.  The dialog is rendered on-demand, so there
+is a delay when each character starts to speak.  Split dialog into
+shorter blocks to reduce the delay.
 
 
 

@@ -294,7 +294,9 @@ int FileFLAC::write_samples(double **buffer, int64_t len)
 		double *src = buffer[i];
 		for(int j = 0; j < len; j++)
 		{
-			*dst++ = (int32_t)(*src++ * audio_max);
+			double sample = *src++ * audio_max;
+			CLAMP(sample, -audio_max, audio_max);
+			*dst++ = (int32_t)sample;
 		}
 	}
 	

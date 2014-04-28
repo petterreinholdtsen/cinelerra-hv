@@ -43,6 +43,7 @@
 #include "bcbutton.inc"
 #include "bccapture.inc"
 #include "bcclipboard.inc"
+#include "bccmodels.inc"
 #include "bcdisplay.inc"
 #include "bcdragwindow.inc"
 #include "bcfilebox.inc"
@@ -234,6 +235,7 @@ public:
 	static BC_Resources* get_resources();
 // User must create synchronous object first
 	static BC_Synchronous* get_synchronous();
+	static BC_CModels* get_cmodels();
 
 // Dimensions
 	virtual int get_w();
@@ -714,6 +716,8 @@ private:
 	int has_focus;
 
 	static BC_Resources resources;
+	static BC_CModels cmodels;
+	
 #ifndef SINGLE_THREAD
 // Array of repeaters for multiple repeating objects.
 	ArrayList<BC_Repeater*> repeaters;

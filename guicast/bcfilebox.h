@@ -28,6 +28,7 @@
 #include "bclistbox.inc"
 #include "bclistboxitem.inc"
 #include "bcnewfolder.inc"
+#include "bcrename.inc"
 #include "bcresources.inc"
 #include "bctextbox.h"
 #include "bcwindow.h"
@@ -149,6 +150,14 @@ public:
 	BC_FileBox *filebox;
 };
 
+class BC_FileBoxRename : public BC_Button
+{
+public:
+	BC_FileBoxRename(int x, int y, BC_FileBox *filebox);
+	int handle_event();
+	BC_FileBox *filebox;
+};
+
 class BC_FileBoxUpdir : public BC_Button
 {
 public:
@@ -209,8 +218,10 @@ public:
 	friend class BC_FileBoxText;
 	friend class BC_FileBoxIcons;
 	friend class BC_FileBoxNewfolder;
-	friend class BC_FileBoxOK;
 	friend class BC_NewFolderThread;
+	friend class BC_FileBoxRename;
+	friend class BC_RenameThread;
+	friend class BC_FileBoxOK;
 	friend class BC_FileBoxUpdir;
 	friend class BC_FileBoxFilterText;
 	friend class BC_FileBoxFilterMenu;
@@ -245,6 +256,7 @@ public:
 	int update_filter(char *filter);
 	virtual int resize_event(int w, int h);
 	char* get_newfolder_title();
+	char* get_rename_title();
 	char* get_delete_title();
 	void delete_files();
 	BC_Button* get_ok_button();
@@ -278,7 +290,7 @@ private:
 	BC_FileBoxFilterText *filter_text;
 	BC_FileBoxFilterMenu *filter_popup;
 	BC_Title *directory_title;
-	BC_Button *icon_button, *text_button, *folder_button, *updir_button, *delete_button, *reload_button;
+	BC_Button *icon_button, *text_button, *folder_button, *rename_button, *updir_button, *delete_button, *reload_button;
 	BC_Button *ok_button, *cancel_button;
 	BC_FileBoxUseThis *usethis_button;
 	char caption[BCTEXTLEN];
@@ -302,10 +314,21 @@ private:
 	int columns;
 
 	char new_folder_title[BCTEXTLEN];
+	char rename_title[BCTEXTLEN];
 	BC_NewFolderThread *newfolder_thread;
+	BC_RenameThread *rename_thread;
 	BC_DeleteThread *delete_thread;
 	int h_padding;
 	ArrayList<BC_ListBoxItem*> recent_dirs;
 };
 
+
+
+
 #endif
+
+
+
+
+
+

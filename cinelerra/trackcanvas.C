@@ -583,6 +583,9 @@ int TrackCanvas::drag_stop()
 
 void TrackCanvas::draw(int mode, int hide_cursor)
 {
+	const int debug = 0;
+
+
 // Swap pixmap layers
  	if(get_w() != background_pixmap->get_w() ||
  		get_h() != background_pixmap->get_h())
@@ -595,8 +598,13 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
+
+	if(debug) PRINT_TRACE
 	draw_resources(mode);
+
+	if(debug) PRINT_TRACE
 	draw_overlays();
+	if(debug) PRINT_TRACE
 }
 
 void TrackCanvas::update_cursor()
@@ -643,11 +651,17 @@ void TrackCanvas::draw_resources(int mode,
 	int indexes_only, 
 	Indexable *indexable)
 {
+	const int debug = 0;
+	
+	
+	if(debug) PRINT_TRACE
+
 	if(!mwindow->edl->session->show_assets) return;
 
 
 	if(mode != 3 && !indexes_only)
 		resource_thread->stop_draw(!indexes_only);
+	if(debug) PRINT_TRACE
 
 	resource_timer->update();
 
@@ -659,14 +673,17 @@ void TrackCanvas::draw_resources(int mode,
 	if(mode == 2)
 		resource_pixmaps.remove_all_objects();
 
+	if(debug) PRINT_TRACE
 
 // Search every edit
 	for(Track *current = mwindow->edl->tracks->first;
 		current;
 		current = NEXT)
 	{
+		if(debug) PRINT_TRACE
 		for(Edit *edit = current->edits->first; edit; edit = edit->next)
 		{
+			if(debug) PRINT_TRACE
 			if(!edit->asset && !edit->nested_edl) continue;
 			if(indexes_only)
 			{
@@ -679,6 +696,7 @@ void TrackCanvas::draw_resources(int mode,
 					strcmp(indexable->path, edit->asset->path)) continue;
 			}
 
+			if(debug) PRINT_TRACE
 
 			int64_t edit_x, edit_y, edit_w, edit_h;
 			edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
@@ -688,6 +706,7 @@ void TrackCanvas::draw_resources(int mode,
 				MWindowGUI::visible(edit_y, edit_y + edit_h, 0, get_h()))
 			{
 				int64_t pixmap_x, pixmap_w, pixmap_h;
+				if(debug) PRINT_TRACE
 
 // Search for existing pixmap containing edit
 				for(int i = 0; i < resource_pixmaps.total; i++)
@@ -700,6 +719,7 @@ void TrackCanvas::draw_resources(int mode,
 						break;
 					}
 				}
+				if(debug) PRINT_TRACE
 
 // Get new size, offset of pixmap needed
 				get_pixmap_size(edit, 
@@ -708,6 +728,7 @@ void TrackCanvas::draw_resources(int mode,
 					pixmap_x, 
 					pixmap_w, 
 					pixmap_h);
+				if(debug) PRINT_TRACE
 
 // Draw new data
 				if(pixmap_w && pixmap_h)
@@ -742,12 +763,15 @@ void TrackCanvas::draw_resources(int mode,
 						pixmap->pixmap_w,
 						edit_h);
 				}
+				if(debug) PRINT_TRACE
 
 			}
 		}
 	}
 
+
 // Delete unused pixmaps
+	if(debug) PRINT_TRACE
 	if(!indexes_only)
 		for(int i = resource_pixmaps.total - 1; i >= 0; i--)
 			if(resource_pixmaps.values[i]->visible < -5)
@@ -755,15 +779,20 @@ void TrackCanvas::draw_resources(int mode,
 				delete resource_pixmaps.values[i];
 				resource_pixmaps.remove(resource_pixmaps.values[i]);
 			}
+	if(debug) PRINT_TRACE
 
 	if(hourglass_enabled) 
 	{
 		stop_hourglass();
 		hourglass_enabled = 0;
 	}
+	if(debug) PRINT_TRACE
 
 	if(mode != 3 && !indexes_only)
 		resource_thread->start_draw();
+	if(debug) PRINT_TRACE
+
+
 }
 
 ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit, 

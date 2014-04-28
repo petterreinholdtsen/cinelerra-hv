@@ -108,6 +108,7 @@ public:
 	int run_script(FileXML *script);
 	int new_project();
 	int delete_project(int flash = 1);
+	void quit(int unlock);
 
 	int load_defaults();
 	int save_defaults();

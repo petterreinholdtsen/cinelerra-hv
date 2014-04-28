@@ -698,8 +698,16 @@ SET_TRACE
 		{
 			int next_y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
 			int next_y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
+			if(next_y1 < 0) next_y1 = 0;
+			if(next_y1 > pixmap->canvas->get_h()) next_y1 = pixmap->canvas->get_h();
+			if(next_y2 < 0) next_y2 = 0;
+			if(next_y2 > pixmap->canvas->get_h()) next_y2 = pixmap->canvas->get_h();
+
 			int y1 = next_y1;
 			int y2 = next_y2;
+
+
+
 
 //SET_TRACE
 // A different algorithm has to be used if it's 1 sample per pixel and the
@@ -720,6 +728,9 @@ SET_TRACE
 				{
 					first_frame = 0;
 				}
+
+
+
 				pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 			}
 			current_frame -= index_frames_per_pixel;

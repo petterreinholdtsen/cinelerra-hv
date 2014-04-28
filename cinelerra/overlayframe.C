@@ -623,7 +623,7 @@ int OverlayFrame::overlay(VFrame *output,
 #define NO_BLEND \
 	(EQUIV(alpha, 1) && \
 	(mode == TRANSFER_REPLACE || \
-	(mode == TRANSFER_NORMAL && cmodel_components(input->get_color_model()) == 3)))
+	(mode == TRANSFER_NORMAL && BC_CModels::components(input->get_color_model()) == 3)))
 
 
 

@@ -19,7 +19,7 @@
  * 
  */
 
-#include "../motion/affine.h"
+#include "affine.h"
 #include "../motion/motionscan.h"
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
@@ -577,6 +577,11 @@ void MotionMain2::scan_motion(int point)
 	{
 		total_dx[point] = engine->dx_result;
 		total_dy[point] = engine->dy_result;
+// printf("MotionMain2::scan_motion %d %d %d %d\n", 
+// __LINE__, 
+// point,
+// total_dx[point], 
+// total_dy[point]);
 	}
 
 // Clamp accumulation vector
@@ -614,6 +619,11 @@ void MotionMain2::scan_motion(int point)
 		CLAMP(total_dy[point], min_block_y, max_block_y);
 	}
 
+// printf("MotionMain2::scan_motion %d %d %d %d\n", 
+// __LINE__, 
+// point,
+// total_dx[point], 
+// total_dy[point]);
 
 
 }
@@ -660,8 +670,10 @@ void MotionMain2::apply_motion()
 			if(end_x[1] - end_x[0])
 				angle = atan((double)(end_y[0] - end_y[1]) /
 					(double)(end_x[0] - end_x[1]));
-printf("MotionMain2::apply_motion 1 %f %f\n", 
-angle0 * 360 / 2 / M_PI, angle * 360 / 2 / M_PI);
+// printf("MotionMain2::apply_motion %d angle0=%f angle=%f\n", 
+// __LINE__,
+// angle0 * 360 / 2 / M_PI, 
+// angle * 360 / 2 / M_PI);
 
 			angle -= angle0;
 
@@ -670,7 +682,9 @@ angle0 * 360 / 2 / M_PI, angle * 360 / 2 / M_PI);
 //				DISTANCE(end_x[1], end_y[1], end_x[0], end_y[0]);
 
 	}
-printf("MotionMain2::apply_motion 2 total_dx=%.02f total_dy=%.02f angle=%f zoom=%f\n", 
+
+printf("MotionMain2::apply_motion %d total_dx=%.02f total_dy=%.02f angle=%f zoom=%f\n", 
+__LINE__,
 (float)total_dx[TRANSLATION_POINT] / OVERSAMPLE,
 (float)total_dy[TRANSLATION_POINT] / OVERSAMPLE, 
 angle * 360 / 2 / M_PI,
@@ -708,6 +722,10 @@ zoom);
 			break;
 	}
 
+
+
+
+
 	if(config.action != MotionConfig::NOTHING)
 	{
 		double w = get_output()->get_w();
@@ -738,6 +756,19 @@ zoom);
 			affine = new AffineEngine(PluginClient::get_project_smp() + 1,
 				PluginClient::get_project_smp() + 1);
 		global_target_dst->clear_frame();
+
+
+// printf("MotionMain2::apply_motion %d %.02f %.02f %.02f %.02f %.02f %.02f %.02f %.02f\n",
+// __LINE__,
+// x1, 
+// y1, 
+// x2, 
+// y2, 
+// x3, 
+// y3, 
+// x4, 
+// y4);
+
 		affine->process(global_target_dst,
 			global_target_src, 
 			0,

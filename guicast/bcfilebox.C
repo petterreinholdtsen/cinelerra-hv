@@ -24,6 +24,7 @@
 #include "bclistboxitem.h"
 #include "bcnewfolder.h"
 #include "bcpixmap.h"
+#include "bcrename.h"
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bctitle.h"
@@ -175,105 +176,12 @@ BC_FileBoxTextBox::~BC_FileBoxTextBox()
 {
 }
 
+
+
+
 int BC_FileBoxTextBox::handle_event()
 {
-//	filebox->handle_event();
-
-
-//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
-// Let user delete suggestion
-	if(get_last_keypress() != BACKSPACE)
-	{
-
-// Compute suggestions
-		FileSystem fs;
-		ArrayList<char*> suggestions;
-		char *current_text = get_text();
-
-// If directory, tabulate it
-		if(current_text[0] == '/' ||
-			current_text[0] == '~')
-		{
-//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
-			char string[BCTEXTLEN];
-			char string2[BCTEXTLEN];
-			strcpy(string, current_text);
-			char *ptr = strrchr(string, '/');
-			if(!ptr) ptr = strrchr(string, '~');
-
-//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
-			*(ptr + 1) = 0;
-			int suggestion_column = ptr + 1 - string;
-
-			fs.set_filter(get_resources()->filebox_filter);
-			fs.set_sort_order(filebox->sort_order);
-			fs.set_sort_field(filebox->column_type[filebox->sort_column]);
-
-
-//printf("BC_FileBoxTextBox::handle_event %d %c %s\n", __LINE__, *ptr, string);
-			if(current_text[0] == '~' && *ptr != '/')
-			{
-				fs.update("/home");
-			}
-			else
-			{
-				fs.parse_tildas(string);
-				fs.update(string);
-			}
-//printf("BC_FileBoxTextBox::handle_event %d %d\n", __LINE__, fs.total_files());
-
-
-// Accept only entries with matching trailing characters
-			ptr = strrchr(current_text, '/');
-			if(!ptr) ptr = strrchr(current_text, '~');
-			if(ptr) ptr++;
-//printf("BC_FileBoxTextBox::handle_event %d %s %p\n", __LINE__, current_text, ptr);
-
-
-			if(ptr && strlen(ptr))
-			{
-				for(int i = 0; i < fs.total_files(); i++)
-				{
-					char *current_name = fs.get_entry(i)->name;
-					if(!strncmp(ptr, current_name, strlen(ptr)))
-					{
-						suggestions.append(current_name);
-	//printf("BC_FileBoxTextBox::handle_event %d %s\n", __LINE__, current_name);
-					}
-				}
-			}
-			else
-	// Accept all entries
-			for(int i = 0; i < fs.total_files(); i++)
-			{
-	//printf("BC_FileBoxTextBox::handle_event %d %s\n", __LINE__, fs.get_entry(i)->name);
-				suggestions.append(fs.get_entry(i)->name);
-			}
-//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
-
-// Add 1 to column to keep /
-			set_suggestions(&suggestions, suggestion_column);
-//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
-		}
-		else
-// Get entries from current listbox with matching trailing characters
-		{
-			for(int i = 0; i < filebox->list_column[0].size(); i++)
-			{
-				char *current_name = filebox->list_column[0].get(i)->get_text();
-
-//printf("BC_FileBoxTextBox::handle_event %d %s %s\n", __LINE__, current_text, current_name);
-				if(!strncmp(current_text, current_name, strlen(current_text)))
-				{
-					suggestions.append(current_name);
-				}
-			}
-
-			set_suggestions(&suggestions, 0);
-		}
-	}
-
-	return 1;
+	return calculate_suggestions(&filebox->list_column[0]);
 }
 
 
@@ -445,6 +353,19 @@ BC_FileBoxNewfolder::BC_FileBoxNewfolder(int x, int y, BC_FileBox *filebox)
 int BC_FileBoxNewfolder::handle_event()
 {
 	filebox->newfolder_thread->start_new_folder();
+	return 1;
+}
+
+
+BC_FileBoxRename::BC_FileBoxRename(int x, int y, BC_FileBox *filebox)
+ : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_rename_images)
+{
+	this->filebox = filebox; 
+	set_tooltip(_("Rename file"));
+}
+int BC_FileBoxRename::handle_event()
+{
+	filebox->rename_thread->start_rename();
 	return 1;
 }
 
@@ -649,16 +570,25 @@ void BC_FileBox::create_objects()
 	add_subwindow(new BC_Title(x, y, caption));
 
 	x = get_w() - resources->filebox_icons_images[0]->get_w() - 10;
+
 	add_subwindow(icon_button = new BC_FileBoxIcons(x, y, this));
 	x -= resources->filebox_text_images[0]->get_w() + 5;
+
 	add_subwindow(text_button = new BC_FileBoxText(x, y, this));
 	x -= resources->filebox_newfolder_images[0]->get_w() + 5;
+
 	add_subwindow(folder_button = new BC_FileBoxNewfolder(x, y, this));
 	x -= resources->filebox_delete_images[0]->get_w() + 5;
+
+	add_subwindow(rename_button = new BC_FileBoxRename(x, y, this));
+	x -= resources->filebox_delete_images[0]->get_w() + 5;
+
 	add_subwindow(delete_button = new BC_FileBoxDelete(x, y, this));
 	x -= resources->filebox_reload_images[0]->get_w() + 5;
+
 	add_subwindow(reload_button = new BC_FileBoxReload(x, y, this));
 	x -= resources->filebox_updir_images[0]->get_w() + 5;
+
 	add_subwindow(updir_button = new BC_FileBoxUpdir(x, y, this));
 
 	x = 10;
@@ -694,6 +624,9 @@ void BC_FileBox::create_objects()
  	listbox->activate();
 	newfolder_thread = new BC_NewFolderThread(this);
 	
+	rename_thread = new BC_RenameThread(this);
+
+
 	show_window();
 }
 
@@ -764,6 +697,8 @@ int BC_FileBox::resize_event(int w, int h)
 		text_button->get_y());
 	folder_button->reposition_window(w - (get_w() - folder_button->get_x()), 
 		folder_button->get_y());
+	rename_button->reposition_window(w - (get_w() - rename_button->get_x()), 
+		rename_button->get_y());
 	reload_button->reposition_window(w - (get_w() - reload_button->get_x()),
 		reload_button->get_y());
 	delete_button->reposition_window(w - (get_w() - delete_button->get_x()),
@@ -1287,6 +1222,21 @@ char* BC_FileBox::get_newfolder_title()
 	}
 
 	strcat(new_folder_title, _(": New folder"));
+
+	return new_folder_title;
+}
+
+char* BC_FileBox::get_rename_title()
+{
+	char *letter2 = strchr(title, ':');
+	new_folder_title[0] = 0;
+	if(letter2)
+	{
+		memcpy(new_folder_title, title, letter2 - title);
+		new_folder_title[letter2 - title] = 0;
+	}
+
+	strcat(new_folder_title, _(": Rename"));
 
 	return new_folder_title;
 }

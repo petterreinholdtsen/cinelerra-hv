@@ -49,23 +49,28 @@ UndoStackItem* UndoStack::push()
 		while(current->next) remove(last);
 	}
 
-// delete oldest undo if necessary
+// delete oldest 2 undos if necessary
 	if(total() > UNDOLEVELS)
 	{
-		UndoStackItem *second = first->next;
-		char *temp_data = 0;
-		if(!second->is_key())
+		for(int i = 0; i < 2; i++)
 		{
-			temp_data = second->get_data();
-		}
-		remove(first);
+			UndoStackItem *second = first->next;
+			char *temp_data = 0;
+
+
+			if(!second->is_key())
+			{
+				temp_data = second->get_data();
+			}
+			remove(first);
 
 // Convert new first to key buffer.
-		if(!second->is_key())
-		{
-			second->set_data(temp_data);
+			if(!second->is_key())
+			{
+				second->set_data(temp_data);
+			}
+			delete [] temp_data;
 		}
-		delete [] temp_data;
 	}
 	
 	return current;
@@ -96,12 +101,17 @@ UndoStackItem* UndoStack::pull_next()
 void UndoStack::dump()
 {
 	printf("UndoStack::dump\n");
-	UndoStackItem *current = first;
+	UndoStackItem *current = last;
 	int i = 0;
-	while(current)
+// Dump most recent
+	while(current && i < 10)
 	{
-		printf("  %d %p %s %c\n", i++, current, current->get_description(), current == this->current ? '*' : ' ');
-		current = NEXT;
+		printf("  %d %p %s %c\n", 
+			i++, 
+			current, 
+			current->get_description(), 
+			current == this->current ? '*' : ' ');
+		current = PREVIOUS;
 	}
 }
 

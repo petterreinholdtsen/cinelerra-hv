@@ -15,6 +15,8 @@
 # libxv-dev
 # libasound2-dev
 # libbz2-dev 
+# libncurses5-dev
+
 
 ERROR=0
 
@@ -232,6 +234,23 @@ PTHREAD_LIBS=-lpthread CFLAGS=-lpthread PKG_CONFIG_PATH=$TOPDIR/thirdparty/lib/p
 cd ../..
 
 if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
+
+
+echo CONFIGURING SPEECH TOOLS
+cd thirdparty/speech_tools && \
+./configure && \
+cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
+echo CONFIGURING FESTIVAL
+cd thirdparty/festival && \
+./configure && \
+cd ../..
+
+if [ $? -ne 0 ]; then echo "Giving up and going to a movie."; exit 1; fi
+
 
 # write configuration header
 echo "Writing hvirtual_config.h"

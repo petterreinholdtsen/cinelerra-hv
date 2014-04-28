@@ -23,8 +23,8 @@
 #define MWINDOW_INC
 
 #define PROGRAM_NAME "Cinelerra"
-#define CINELERRA_VERSION "4.2"
-#define COPYRIGHT_DATE 2010
+#define CINELERRA_VERSION "4.3"
+#define COPYRIGHT_DATE 2011
 #define DEFAULT_THEME "S.U.V."
 #define CONFIG_FILE "Cinelerra_rc"
 #define PRESETS_FILE "Cinelerra_presets"

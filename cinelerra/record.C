@@ -140,9 +140,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	file = 0;
 	editing_batch = 0;
 	current_batch = 0;
-SET_TRACE
 	picture = new PictureConfig(mwindow->defaults);
-SET_TRACE
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
 	window_lock = new Mutex("Record::window_lock");
@@ -234,9 +232,7 @@ int Record::load_defaults()
 	video_y = defaults->get("RECORD_VIDEO_Y", 0);
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
 
-SET_TRACE
 	picture->load_defaults();
-SET_TRACE
 
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
 	for(int i = 0; i < MAXCHANNELS; i++) 
@@ -315,9 +311,7 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_Y", video_y);
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
 	
-SET_TRACE
 	picture->save_defaults();
-SET_TRACE
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -325,7 +319,6 @@ SET_TRACE
 		defaults->update(string, dc_offset[i]);
 	}
 	defaults->update("FILL_DROPPED_FRAMES", fill_frames);
-SET_TRACE
 
 	return 0;
 }
@@ -359,7 +352,7 @@ void Record::source_to_text(char *string, Batch *batch)
 			if(batch->channel < 0 || batch->channel >= channeldb->size())
 				sprintf(string, _("None"));
 			else
-				sprintf(string, channeldb->get(batch->channel)->title);
+				strcpy(string, channeldb->get(batch->channel)->title);
 			break;
 	}
 }
@@ -429,6 +422,9 @@ void Record::run()
 	configure_batches();
 	current_batch = 0;
 	editing_batch = 0;
+
+//default_asset->dump();
+
 
 // Run recordgui
 	if(!result)
@@ -506,31 +502,24 @@ void Record::run()
 
 		window_lock->lock("Record::run 4");
 
-SET_TRACE
 		delete record_monitor;
 		record_monitor = 0;
-SET_TRACE
 
 
 		delete record_engine;
 		record_engine = 0;
-SET_TRACE
 
 		delete monitor_engine;
 		monitor_engine = 0;
 
-SET_TRACE
 		record_gui->save_defaults();
 
-SET_TRACE
 		delete record_gui;
 		record_gui = 0;
 		window_lock->unlock();
 
-SET_TRACE
 		edl->Garbage::remove_user();
 
-SET_TRACE
 	}
 
 	menu_item->current_state = RECORD_NOTHING;
@@ -1245,6 +1234,10 @@ int Record::get_in_length()
 		fragment_size *= 2;
 	fragment_size /= 2;
 	fragment_size = MAX(fragment_size, 512);
+
+
+//fragment_size = 512;
+//printf("Record::get_in_length %d %d\n", __LINE__, fragment_size);
 	return fragment_size;
 }
 

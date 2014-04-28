@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include "bctexture.h"
 #include "bcwindowbase.h"
 #include "clip.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "vframe.h"
 
 class PngReadFunction
@@ -51,6 +51,20 @@ public:
 		frame->image_offset += length;
 	};
 };
+
+
+
+
+
+
+
+VFrameScene::VFrameScene()
+{
+}
+
+VFrameScene::~VFrameScene()
+{
+}
 
 
 
@@ -169,6 +183,7 @@ VFrame::~VFrame()
 	prev_effects.remove_all_objects();
 	next_effects.remove_all_objects();
 	delete params;
+	delete scene;
 }
 
 int VFrame::equivalent(VFrame *src, int test_stacks)
@@ -224,6 +239,7 @@ int VFrame::params_match(int w, int h, int color_model)
 
 int VFrame::reset_parameters(int do_opengl)
 {
+	scene = 0;
 	field2_offset = -1;
 	memory_type = VFrame::PRIVATE;
 //	shm_offset = 0;
@@ -334,9 +350,14 @@ int VFrame::get_keyframe()
 }
 
 
+VFrameScene* VFrame::get_scene()
+{
+	return scene;
+}
+
 int VFrame::calculate_bytes_per_pixel(int color_model)
 {
-	return cmodel_calculate_pixelsize(color_model);
+	return BC_WindowBase::get_cmodels()->calculate_pixelsize(color_model);
 }
 
 long VFrame::get_bytes_per_line()
@@ -352,7 +373,7 @@ long VFrame::get_data_size()
 
 long VFrame::calculate_data_size(int w, int h, int bytes_per_line, int color_model)
 {
-	return cmodel_calculate_datasize(w, h, bytes_per_line, color_model);
+	return BC_WindowBase::get_cmodels()->calculate_datasize(w, h, bytes_per_line, color_model);
 	return 0;
 }
 
@@ -956,6 +977,21 @@ void VFrame::flip_vert()
 	delete [] temp;
 }
 
+void VFrame::flip_horiz()
+{
+	unsigned char temp[32];
+	for(int i = 0; i < h; i++)
+	{
+		unsigned char *row = rows[i];
+		for(int j = 0; j < bytes_per_line / 2; j += bytes_per_pixel)
+		{
+			memcpy(temp, row + j, bytes_per_pixel);
+			memcpy(row + j, row + bytes_per_line - j - bytes_per_pixel, bytes_per_pixel);
+			memcpy(row + bytes_per_line - j - bytes_per_pixel, temp, bytes_per_pixel);
+		}
+	}
+}
+
 
 
 int VFrame::copy_from(VFrame *frame)
@@ -1262,7 +1298,7 @@ void VFrame::dump()
 
 int VFrame::filefork_size()
 {
-	return sizeof(int) * 10 + sizeof(long);
+	return sizeof(int) * 12 + sizeof(long);
 }
 
 
@@ -1278,7 +1314,10 @@ void VFrame::to_filefork(unsigned char *buffer)
 	*(int*)(buffer + 28) = bytes_per_line;
 	*(int*)(buffer + 32) = compressed_allocated;
 	*(int*)(buffer + 36) = compressed_size;
-	*(long*)(buffer + 40) = sequence_number;
+	*(int*)(buffer + 40) = is_keyframe;
+	*(long*)(buffer + 44) = sequence_number;
+	
+	
 //printf("VFrame::to_filefork %d %lld\n", __LINE__, sequence_number);
 // printf("VFrame::to_filefork %d", __LINE__);
 // for(int i = 0; i < 40; i++)
@@ -1320,9 +1359,16 @@ void VFrame::from_filefork(unsigned char *buffer)
 			*(int*)(buffer + 28)); // bytes per line
 //dump();
 	}
-	
-	sequence_number = *(long*)(buffer + 40);
+
+	is_keyframe = *(int*)(buffer + 40);
+	sequence_number = *(long*)(buffer + 44);
 //printf("VFrame::from_filefork %d %lld\n", __LINE__, sequence_number);
+}
+
+int VFrame::get_memory_usage()
+{
+	if(get_compressed_allocated()) return get_compressed_allocated();
+	return get_h() * get_bytes_per_line();
 }
 
 

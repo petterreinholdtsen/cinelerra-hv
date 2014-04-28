@@ -49,7 +49,7 @@ void RemoveThread::remove_file(char *path)
 	strcpy(string, path);
 	uuid_unparse(id, string + strlen(string));
 	rename(path, string);
-printf("RemoveThread::run: renaming %s -> %s\n", path, string);
+printf("RemoveThread:remove_file: renaming %s -> %s\n", path, string);
 	
 	file_lock->lock("RemoveThread::remove_file");
 	files.append(strdup(string));

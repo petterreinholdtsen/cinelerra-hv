@@ -133,8 +133,6 @@ PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	button_down = 0;
-	reconfigure_trigger = 0;
 	drag_operation = Tracks::NONE;
 }
 

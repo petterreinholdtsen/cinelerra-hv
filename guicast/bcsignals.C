@@ -21,9 +21,13 @@
 
 #include "bcsignals.h"
 #include "bcwindowbase.inc"
+
+#include <ctype.h>
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
@@ -172,6 +176,103 @@ static const char* signal_titles[] =
 	"SIGTERM"
 };
 
+// Kill subprocesses
+void BC_Signals::kill_subs()
+{
+// List /proc directory
+	DIR *dirstream;
+	struct dirent64 *new_filename;
+	struct stat ostat;
+	char path[BCTEXTLEN];
+	char string[BCTEXTLEN];
+
+	dirstream = opendir("/proc");
+	if(!dirstream) return;
+
+	while(new_filename = readdir64(dirstream))
+	{
+// All digits are numbers
+		char *ptr = new_filename->d_name;
+		int got_alpha = 0;
+		while(*ptr)
+		{
+			if(*ptr == '.' || isalpha(*ptr++))
+			{
+				got_alpha = 1;
+				break;
+			}
+		}
+
+		if(got_alpha) continue;
+
+// Must be a directory
+		sprintf(path, "/proc/%s", new_filename->d_name);
+		if(!stat(path, &ostat))
+		{
+			if(S_ISDIR(ostat.st_mode))
+			{
+// Read process stat
+				strcat(path, "/stat");
+//printf("kill_subs %d %s\n", __LINE__, path);
+				FILE *fd = fopen(path, "r");
+
+// Must search forwards because the file is 0 length
+				if(fd)
+				{
+					while(!feof(fd))
+					{
+						char c = fgetc(fd);
+//printf("kill_subs %d %d\n", __LINE__, c);
+						if(c == ')')
+						{
+// Search for 2 spaces
+							int spaces = 0;
+							while(!feof(fd) && spaces < 2)
+							{
+								c = fgetc(fd);
+								if(c == ' ')
+									spaces++;
+							}
+
+// Read in parent process
+							ptr = string;
+							while(!feof(fd))
+							{
+								*ptr = fgetc(fd);
+								if(*ptr == ' ')
+								{
+									*ptr = 0;
+									break;
+								}
+								ptr++;
+							}
+
+// printf("kill_subs %d process=%d getpid=%d parent_process=%d\n", 
+// __LINE__, 
+// atoi(new_filename->d_name),
+// getpid(), 
+// atoi(string));
+							int parent_process = atoi(string);
+							int child_process = atoi(new_filename->d_name);
+
+// Kill if we're the parent
+							if(getpid() == parent_process)
+							{
+printf("kill_subs %d: process=%d\n", 
+__LINE__, 
+atoi(new_filename->d_name));
+								kill(child_process, SIGKILL);
+							}
+						}
+					}
+					
+					fclose(fd);
+				}
+			}
+		}
+	}
+}
+
 static void signal_entry(int signum)
 {
 	signal(signum, SIG_DFL);
@@ -192,6 +293,7 @@ static void signal_entry(int signum)
 		getpid(),
 		execution_table.size);
 
+	BC_Signals::kill_subs();
 	BC_Signals::dump_traces();
 	BC_Signals::dump_locks();
 	BC_Signals::dump_buffers();

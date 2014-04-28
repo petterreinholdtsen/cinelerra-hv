@@ -174,6 +174,8 @@ int FileFork::handle_command()
 		case PURGE_CACHE:
 			result = file->purge_cache();
 			send_result(result, 0, 0);
+//printf("FileFork::handle_command %d child_fd=%d\n", __LINE__, child_fd);
+//			send_result(1234, 0, 0);
 			break;
 
 		case CLOSE_FILE:
@@ -202,7 +204,23 @@ int FileFork::handle_command()
 			int buffer_size = *(int*)command_data;
 			int ring_buffers = *(int*)(command_data + sizeof(int));
 			result = file->start_audio_thread(buffer_size, ring_buffers);
-			send_result(result, 0, 0);
+// Send buffer information back to server here
+			int result_bytes = ring_buffers * 
+				Samples::filefork_size() * 
+				file->asset->channels;
+			unsigned char result_buffer[result_bytes];
+			for(int i = 0; i < ring_buffers; i++)
+			{
+				Samples **samples = file->audio_thread->audio_buffer[i];
+				for(int j = 0; j < file->asset->channels; j++)
+				{
+					samples[j]->to_filefork(result_buffer +
+						i * Samples::filefork_size() * file->asset->channels +
+						j * Samples::filefork_size());
+				}
+			}
+
+			send_result(result, result_buffer, result_bytes);
 			break;
 		}
 
@@ -216,7 +234,33 @@ int FileFork::handle_command()
 				color_model,
 				ring_buffers,
 				compressed);
-			send_result(result, 0, 0);
+
+// Send buffer information back to server here
+			int result_bytes = ring_buffers *
+				file->asset->layers *
+				buffer_size *
+				VFrame::filefork_size();
+			unsigned char result_buffer[result_bytes];
+
+			for(int i = 0; i < ring_buffers; i++)
+			{
+				VFrame ***frames = file->video_thread->video_buffer[i];
+				for(int j = 0; j < file->asset->layers; j++)
+				{
+					for(int k = 0; k < buffer_size; k++)
+					{
+						frames[j][k]->to_filefork(result_buffer +
+							i * file->asset->layers *
+								buffer_size *
+								VFrame::filefork_size() +
+							j * buffer_size *
+								VFrame::filefork_size() +
+							k * VFrame::filefork_size());
+					}
+				}
+			}
+
+			send_result(result, result_buffer, result_bytes);
 			break;
 		}
 
@@ -379,45 +423,49 @@ int FileFork::handle_command()
 
 		case GET_AUDIO_BUFFER:
 		{
-			int entry_size = Samples::filefork_size();
-			int result_bytes = entry_size * file->asset->channels;
-			unsigned char result_buffer[result_bytes];
+// 			int entry_size = Samples::filefork_size();
+// 			int result_bytes = entry_size * file->asset->channels;
+// 			unsigned char result_buffer[sizeof(int)];
+// 			
+// Make it swap buffers
 			Samples **samples = file->get_audio_buffer();
-			for(int i = 0; i < file->asset->channels; i++)
-			{
-				samples[i]->to_filefork(result_buffer + i * Samples::filefork_size());
-			}
-			send_result(result, result_buffer, result_bytes);
+// 			for(int i = 0; i < file->asset->channels; i++)
+// 			{
+// 				samples[i]->to_filefork(result_buffer + 
+// 					i * Samples::filefork_size());
+// 			}
+
+			send_result(file->audio_thread->current_buffer, 0, 0);
 			break;
 		}
 
 		case GET_VIDEO_BUFFER:
 		{
-			int entry_size = VFrame::filefork_size();
-			int layers = file->asset->layers;
-			int buffer_size = file->video_thread->buffer_size;
-			int result_size = entry_size * 
-				layers *
-				buffer_size +
-				sizeof(int);
-			unsigned char result_buffer[result_size];
-			*(int*)(result_buffer + entry_size * 
-				layers *
-				buffer_size) = buffer_size;
+// 			int entry_size = VFrame::filefork_size();
+// 			int layers = file->asset->layers;
+// 			int buffer_size = file->video_thread->buffer_size;
+// 			int result_size = entry_size * 
+// 				layers *
+// 				buffer_size +
+// 				sizeof(int);
+// 			unsigned char result_buffer[result_size];
+// 			*(int*)(result_buffer + entry_size * 
+// 				layers *
+// 				buffer_size) = buffer_size;
 //printf("FileFork::handle_command %d layers=%d\n", __LINE__, layers);
 
 			VFrame ***frames = file->get_video_buffer();
-			for(int i = 0; i < layers; i++)
-			{
-				for(int j = 0; j < buffer_size; j++)
-				{
-					frames[i][j]->to_filefork(result_buffer +
-						entry_size * i * buffer_size +
-						entry_size * j);
-				}
-			}
+// 			for(int i = 0; i < layers; i++)
+// 			{
+// 				for(int j = 0; j < buffer_size; j++)
+// 				{
+// 					frames[i][j]->to_filefork(result_buffer +
+// 						entry_size * i * buffer_size +
+// 						entry_size * j);
+// 				}
+// 			}
 
-			send_result(result, result_buffer, result_size);
+			send_result(file->video_thread->current_buffer, 0, 0);
 //printf("FileFork::handle_command %d\n", __LINE__);
 			break;
 		}
@@ -448,6 +496,10 @@ int FileFork::handle_command()
 			int allocated_data = frame->get_compressed_allocated();
 			
 			
+// printf("FileFork::handle_command %d file=%p size=%d\n", 
+// __LINE__, 
+// file,
+// frame->get_compressed_size());
 			result = file->read_frame(frame, 0);
 
 
@@ -460,10 +512,11 @@ int FileFork::handle_command()
 			if(frame->get_color_model() == BC_COMPRESSED &&
 				allocated_data != frame->get_compressed_allocated())
 			{
-				int result_size = sizeof(int) + frame->get_compressed_size();
+				int result_size = sizeof(int) * 2 + frame->get_compressed_size();
 				unsigned char *result_data = new unsigned char[result_size];
 				*(int*)result_data = frame->get_compressed_size();
-				memcpy(result_data + sizeof(int), 
+				*(int*)(result_data + sizeof(int)) = frame->get_keyframe();
+				memcpy(result_data + sizeof(int) * 2, 
 					frame->get_data(), 
 					frame->get_compressed_size());
 				send_result(result, 
@@ -473,12 +526,23 @@ int FileFork::handle_command()
 			}
 			else
 			{
-				unsigned char result_data[sizeof(int)];
+				int result_size = sizeof(int) * 2;
+				unsigned char *result_data = new unsigned char[result_size];
 				*(int*)result_data = frame->get_compressed_size();
-				send_result(result, result_data, sizeof(int));
+				*(int*)(result_data + sizeof(int)) = frame->get_keyframe();
+				send_result(result, result_data, result_size);
+				delete [] result_data;
 			}
 
+
+// printf("FileFork::handle_command %d size=%d\n", 
+// __LINE__, 
+// frame->get_compressed_size());
 			delete frame;
+
+// printf("FileFork::handle_command %d size=%d\n", 
+// __LINE__, 
+// frame->get_compressed_size());
 			break;
 		}
 

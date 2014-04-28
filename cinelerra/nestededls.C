@@ -56,8 +56,11 @@ EDL* NestedEDLs::get(char *path)
 	dst->create_objects();
 	FileXML xml_file;
 	xml_file.read_from_file(path);
-	dst->set_path(path);
+//printf("NestedEDLs::get %d %s\n", __LINE__, path);
 	dst->load_xml(&xml_file, LOAD_ALL);
+
+// Override path EDL was saved to with the path it was loaded from.
+	dst->set_path(path);
 	nested_edls.append(dst);
 	return dst;
 }

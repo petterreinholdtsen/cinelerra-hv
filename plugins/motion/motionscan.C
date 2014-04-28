@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	int w = server->current_frame->get_w();
 	int h = server->current_frame->get_h();
 	int color_model = server->current_frame->get_color_model();
-	int pixel_size = cmodel_calculate_pixelsize(color_model);
+	int pixel_size = BC_CModels::calculate_pixelsize(color_model);
 
 	pkg->difference1 = -1;
 	pkg->difference2 = -1;
@@ -359,12 +359,19 @@ LoadPackage* MotionScan::new_package()
 
 float MotionScan::get_macroblock_angle(int number)
 {
+
 	if(total_angle_steps == 0) return 0;
 
-	return scan_angle1 +
+	float result = scan_angle1 +
 		(scan_angle2 - scan_angle1) * 
 		number / 
 		total_angle_steps;
+// printf("MotionScan::get_macroblock_angle %d number=%d total_angle_steps=%d result=%f\n",
+// __LINE__,
+// number,
+// total_angle_steps,
+// result);
+	return result;
 }
 
 void MotionScan::scan_frame(VFrame *previous_frame,
@@ -514,6 +521,7 @@ printf("MotionScan::scan_frame: frames match. skipping.\n");
 		min_angle = MAX(min_angle, MIN_ANGLE);
 // Convert to degrees
 		min_angle = min_angle * 360 / 2 / M_PI;
+		min_angle *= total_angle_steps;
 
 // printf("MotionScan::scan_frame 1 %d %d %d %d %d %d %d %d\n",
 // block_x1 + block_w / 2,
@@ -790,9 +798,10 @@ printf("MotionScan::scan_frame: frames match. skipping.\n");
 						scan_angle2 = angle_result + angle_range;
 						x_result /= OVERSAMPLE;
 						y_result /= OVERSAMPLE;
-printf("MotionScan::scan_frame %d angle_range=%f angle_result=%f\n",
+printf("MotionScan::scan_frame %d angle1=%f angle2=%f angle_result=%f\n",
 __LINE__,
-angle_range,
+scan_angle1,
+scan_angle2,
 angle_result);
 					}
 					else
@@ -802,12 +811,14 @@ angle_result);
 						action_type == MotionConfig::NOTHING)
 					{
 						if(angle_range > min_angle) angle_range /= 2;
-printf("MotionScan::scan_frame %d angle_range=%f angle_result=%f\n",
-__LINE__,
-angle_range,
-angle_result);
+//						angle_range = 0;
 						scan_angle1 = angle_result - angle_range;
 						scan_angle2 = angle_result + angle_range;
+printf("MotionScan::scan_frame %d angle1=%f angle2=%f angle_result=%f\n",
+__LINE__,
+scan_angle1,
+scan_angle2,
+angle_result);
 						x_result /= OVERSAMPLE;
 						y_result /= OVERSAMPLE;
 						scan_w = 2;
@@ -836,9 +847,10 @@ angle_result);
 					x_result /= OVERSAMPLE;
 					y_result /= OVERSAMPLE;
 					if(angle_range > min_angle) angle_range /= 2;
-printf("MotionScan::scan_frame %d angle_range=%f angle_result=%f\n", 
+printf("MotionScan::scan_frame %d angle1=%f angle2=%f angle_result=%f\n", 
 __LINE__, 
-angle_range,
+scan_angle1,
+scan_angle2,
 angle_result);
 					scan_angle1 = angle_result - angle_range;
 					scan_angle2 = angle_result + angle_range;

@@ -23,7 +23,10 @@ OBJS :=
 # nonzero before memcmping it.
 FFMPEG_DIR := $(shell expr thirdparty/ffmpeg*)
 FFMPEG_LIB := $(OBJDIR)/ffmpeg/
-FFMPEG_INCLUDE := -I$(FFMPEG_DIR) -I$(FFMPEG_DIR)/libavcodec -I$(FFMPEG_DIR)/libavcore -I$(FFMPEG_DIR)/libavformat -I$(FFMPEG_DIR)/libavutil
+FFMPEG_INCLUDE := -I$(FFMPEG_DIR) \
+-I$(FFMPEG_DIR)/libavcodec \
+-I$(FFMPEG_DIR)/libavformat \
+-I$(FFMPEG_DIR)/libavutil
 
 FAAD_DIR := thirdparty/faad2-2.0
 FAAD_LIB := $(OBJDIR)/faad/
@@ -76,7 +79,7 @@ endif
 
 
 ifeq ($(OBJDIR), x86_64)
-  CFLAGS := -O2 -funroll-all-loops -fomit-frame-pointer  -I/usr/local/include
+  CFLAGS := -O -funroll-all-loops -fomit-frame-pointer  -I/usr/local/include
 endif
 
 
@@ -202,7 +205,8 @@ UTILS := \
 	$(OBJDIR)/yuv2mov \
 	$(OBJDIR)/yuv4toyuv \
 	$(OBJDIR)/recover \
-	$(OBJDIR)/rechunk
+	$(OBJDIR)/rechunk \
+	$(OBJDIR)/mts2mp4
 
 
 
@@ -253,19 +257,23 @@ LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -ldl -lm
 $(shell mkdir -p $(DIRS) )
 $(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo  $(LAME_CFLAGS) > $(OBJDIR)/lame_flags)
-#$(shell echo  $(OBJS) $(FFMPEG_OBJS) $(FFMPEG_LIB)/avformat/*.o $(FFMPEG_LIB)/avcore/*.o $(FFMPEG_LIB)/avcodec/*.o $(FFMPEG_LIB)/avutil/*.o $(JPEG_LIB)/*.o $(DV_LIB)/*.o $(FAAD_LIB)/*.o $(FAAC_LIB)/*.o $(X264_LIB)/*.o $(OGG_LIB)/*.o $(VORBIS_LIB)/*.o $(LAME_OBJS) > $(OBJDIR)/objs)
-$(shell echo  $(OBJS) $(FFMPEG_OBJS) $(FFMPEG_LIB)/avformat/*.o $(FFMPEG_LIB)/avcodec/*.o $(FFMPEG_LIB)/avutil/*.o $(JPEG_LIB)/*.o $(DV_LIB)/*.o $(FAAD_LIB)/*.o $(FAAC_LIB)/*.o $(X264_LIB)/*.o $(OGG_LIB)/*.o $(VORBIS_LIB)/*.o $(LAME_OBJS) > $(OBJDIR)/objs)
+$(shell echo  $(OBJS) $(FFMPEG_OBJS) $(JPEG_LIB)/*.o $(DV_LIB)/*.o $(FAAD_LIB)/*.o $(FAAC_LIB)/*.o $(X264_LIB)/*.o $(OGG_LIB)/*.o $(VORBIS_LIB)/*.o $(LAME_OBJS) > $(OBJDIR)/objs)
 $(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
 
 all: $(OBJDIR) $(OUTPUT)
 
 $(OUTPUT): $(OBJS) $(FFMPEG_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(LAME_OBJS) $(FAAD_LIB) $(FAAC_LIB) $(FFMPEG_LIB) $(X264_LIB) $(DV_LIB) $(JPEG_LIB) $(OGG_LIB)/ $(VORBIS_LIB)
+	find $(FFMPEG_DIR)/libavcodec/ -name *.o >> $(OBJDIR)/objs
+	find $(FFMPEG_DIR)/libavformat/ -name *.o >> $(OBJDIR)/objs
+	find $(FFMPEG_DIR)/libavutil/ -name *.o >> $(OBJDIR)/objs
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
 # this is the only way we figured out to merge .a files
 $(FFMPEG_LIB):
 	$(MAKE) -C $(FFMPEG_DIR)
-	mkdir -p $(FFMPEG_LIB)/avcodec $(FFMPEG_LIB)/avcore $(FFMPEG_LIB)/avformat $(FFMPEG_LIB)/avutil
+	mkdir -p $(FFMPEG_LIB)/avcodec \
+		$(FFMPEG_LIB)/avformat \
+		$(FFMPEG_LIB)/avutil
 	cd $(FFMPEG_LIB)/avcodec && \
 	ar x ../../../$(FFMPEG_DIR)/libavcodec/libavcodec.a &&  \
 	cd ../avformat && \
@@ -326,6 +334,9 @@ $(VORBIS_LIB):
 	ar x ../../$(VORBIS_DIR)/lib/.libs/libvorbisfile.a
 
 
+
+$(OBJDIR)/mts2mp4: $(OBJDIR)/mts2mp4.o $(OUTPUT)
+	$(CC) -o $(OBJDIR)/mts2mp4 $(OBJDIR)/mts2mp4.o $(LIBS)
 
 $(OBJDIR)/qtdump: $(OBJDIR)/dump.o $(OUTPUT)
 	$(CC) -o $(OBJDIR)/qtdump $(OBJDIR)/dump.o $(LIBS)
@@ -394,6 +405,9 @@ $(OBJDIR)/qtinfo.o \
 $(OBJDIR)/rechunk.o \
 $(OBJS):
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
+
+$(OBJDIR)/mts2mp4.o:
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(FFMPEG_INCLUDE) $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 $(JPEG_FAIL):
 	$(CC) -c -O3 -march=i686 -fmessage-length=0 $(subst $(OBJDIR)/,, $*.c) -o $*.o
@@ -495,6 +509,7 @@ $(OBJDIR)/quicktime.o: 		  	  quicktime.c
 $(OBJDIR)/raw.o:			  raw.c
 $(OBJDIR)/rawaudio.o:			  rawaudio.c
 $(OBJDIR)/rechunk.o:			  rechunk.c
+$(OBJDIR)/mts2mp4.o:			  mts2mp4.c
 $(OBJDIR)/recover.o:			  recover.c
 $(OBJDIR)/rle.o:                          rle.c
 $(OBJDIR)/smhd.o:			  smhd.c

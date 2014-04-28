@@ -2566,3 +2566,6 @@ static inline void transfer_YUVA16161616_to_YUV422(unsigned char *(*output),
 	int bg_r, \
 	int bg_g, \
 	int bg_b
+
+
+

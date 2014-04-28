@@ -86,6 +86,7 @@ void FileSndFile::asset_to_format()
 			break;
 
 		case BITSLINEAR16:
+// Only signed is supported
 			fd_config.format |= SF_FORMAT_PCM_16;
 
 			if(asset->byte_order || asset->format == FILE_WAV)

@@ -19,6 +19,9 @@
  * 
  */
 
+
+#ifdef HAVE_VIDEO4LINUX
+
 // V4L2 is incompatible with large file support
 // ALPHA C++ can't compile 64 bit headers
 #undef _FILE_OFFSET_BITS
@@ -566,7 +569,7 @@ SET_TRACE
 
 
 
-
+#endif // HAVE_VIDEO4LINUX
 
 
 

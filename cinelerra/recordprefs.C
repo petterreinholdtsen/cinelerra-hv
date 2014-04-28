@@ -202,7 +202,7 @@ void RecordPrefs::create_objects()
 	x += 10;
 	add_subwindow(h_text = new RecordH(pwindow, x, y));
 	x += h_text->get_w();
-	add_subwindow(new FrameSizePulldown(mwindow, 
+	add_subwindow(new FrameSizePulldown(mwindow->theme, 
 		w_text, 
 		h_text, 
 		x, 

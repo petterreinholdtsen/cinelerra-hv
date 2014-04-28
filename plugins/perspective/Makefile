@@ -1,7 +1,6 @@
 include ../../global_config
 
 OBJS = \
-	../motion/$(OBJDIR)/affine.o \
 	$(OBJDIR)/perspective.o
 
 OUTPUT = $(PLUGIN_DIR)/perspective.plugin

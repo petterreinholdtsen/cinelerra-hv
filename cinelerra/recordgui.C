@@ -74,7 +74,6 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 
 RecordGUI::~RecordGUI()
 {
-TRACE("RecordGUI::~RecordGUI 1");
 	lock_window("RecordGUI::~RecordGUI");
 	delete status_thread;
 	delete batch_source;
@@ -85,7 +84,6 @@ TRACE("RecordGUI::~RecordGUI 1");
 	delete batch_duration;
 	delete load_mode;
 	unlock_window();
-TRACE("RecordGUI::~RecordGUI 2");
 }
 
 
@@ -289,7 +287,8 @@ void RecordGUI::create_objects()
 	{
 		add_subwindow(new BC_Title(x, 
 			y, 
-			File::bitstostr(record->default_asset->bits), 
+			FileMOV::compressiontostr(record->default_asset->acodec),
+//			File::bitstostr(record->default_asset->bits), 
 			MEDIUMFONT, 
 			mwindow->theme->recordgui_fixed_color));
 
@@ -906,9 +905,32 @@ RecordPath::RecordPath(MWindow *mwindow, Record *record, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->record = record;
+	file_entries = new ArrayList<BC_ListBoxItem*>;
+	FileSystem fs;
+	char string[BCTEXTLEN];
+// Load current directory
+	fs.update(getcwd(string, BCTEXTLEN));
+	for(int i = 0; i < fs.total_files(); i++)
+	{
+		file_entries->append(
+			new BC_ListBoxItem(
+				fs.get_entry(i)->get_name()));
+	}
+	
 }
+
+RecordPath::~RecordPath()
+{
+	file_entries->remove_all_objects();
+	delete file_entries;
+}
+
 int RecordPath::handle_event()
 {
+// Suggestions
+	calculate_suggestions(file_entries);
+
+
 	strcpy(record->get_editing_batch()->assets.values[0]->path, get_text());
 	record->get_editing_batch()->calculate_news();
 	record->record_gui->update_batches();

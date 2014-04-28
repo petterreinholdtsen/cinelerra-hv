@@ -333,9 +333,9 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "divx_quality", &asset->divx_quality);
 		quicktime_set_parameter(fd, "divx_fix_bitrate", &asset->divx_fix_bitrate);
 
-printf("FileMOV::asset_to_format %d\n", 
-__LINE__);
-asset->dump();
+// printf("FileMOV::asset_to_format %d\n", 
+// __LINE__);
+// asset->dump();
 		quicktime_set_parameter(fd, "ffmpeg_bitrate", &asset->ms_bitrate);
 		quicktime_set_parameter(fd, "ffmpeg_bitrate_tolerance", &asset->ms_bitrate_tolerance);
 		quicktime_set_parameter(fd, "ffmpeg_interlaced", &asset->ms_interlaced);
@@ -738,9 +738,9 @@ if(debug) printf("FileMOV::write_frames %d len=%d\n", __LINE__, len);
 						quicktime_insert_keyframe(fd, file->current_frame + j, i);
 
 // Write frame
-if(debug) printf("FileMOV::write_frames %d result=%d data=%p size=%d\n", 
+if(debug) printf("FileMOV::write_frames %d keyframe=%d data=%p size=%d\n", 
 __LINE__, 
-result,
+frame->get_keyframe(),
 frame->get_data(),
 frame->get_compressed_size());
 						result = quicktime_write_frame(fd,
@@ -990,6 +990,7 @@ frame->get_color_model());
 				file->current_layer);
 			break;
 	}
+
 
 if(debug) printf("FileMOV::read_frame %d\n", __LINE__);
 

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "bcpbuffer.inc"
 #include "bctexture.inc"
 #include "bcwindowbase.inc"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "vframe.inc"
 
 class PngReadFunction;
@@ -35,6 +35,16 @@ class PngReadFunction;
 
 // Maximum number of prev or next effects to be pushed onto the stacks.
 #define MAX_STACK_ELEMENTS 255
+
+
+// Scene graph for 3D models
+// Defined by the subclass
+class VFrameScene
+{
+public:
+	VFrameScene();	
+	virtual ~VFrameScene();
+};
 
 
 
@@ -125,6 +135,7 @@ public:
 	long get_number();
 	void set_number(long number);
 
+	int get_memory_usage();
 	long get_compressed_allocated();
 	long get_compressed_size();
 	long set_compressed_size(long size);
@@ -162,6 +173,7 @@ public:
 	void rotate270();
 	void rotate90();
 	void flip_vert();
+	void flip_horiz();
 
 // Convenience storage.
 // Returns -1 if not set.
@@ -220,7 +232,14 @@ public:
 
 
 
+
+
+
+
+
+
 // ================================ OpenGL functions ===========================
+// Defined in vframe3d.C
 // Location of working image if OpenGL playback
 	int get_opengl_state();
 	void set_opengl_state(int value);
@@ -315,10 +334,30 @@ public:
 // This clears the stacks and the param table
 	void clear_stacks();
 
+
+
+
+// 3D scene graphs
+// Not integrated with shmem because that only affects codecs
+	VFrameScene* get_scene();
+
+
+
+
+
+// Debugging
 	void dump_stacks();
 	void dump();
 
 	void dump_params();
+
+
+
+
+
+
+
+// Shared memory utils
 	static int filefork_size();
 
 	void to_filefork(unsigned char *buffer);
@@ -328,7 +367,15 @@ public:
 
 
 
+
+
+
 private:
+
+
+// 3D scene graphs
+// Not integrated with shmem because that only affects codecs
+	VFrameScene *scene;
 
 // Create a PBuffer matching this frame's dimensions and to be 
 // referenced by this frame.  Does nothing if the pbuffer already exists.

@@ -31,6 +31,7 @@
 #include "filesystem.h"
 #include "mutex.h"
 #include "preferences.h"
+#include "sema.h"
 
 #include <string.h>
 
@@ -39,7 +40,7 @@ CICache::CICache(Preferences *preferences)
  : List<CICacheItem>()
 {
 	this->preferences = preferences;
-	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
+	check_out_lock = new Condition(1, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
 }
 
@@ -69,7 +70,11 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 	{
 // Scan directory for item
 		int got_it = 0;
+// Debugging
+		int is_checked_out = 0;
+//		printf("CICache::check_out %d asset=%p\n", __LINE__, asset);
 		total_lock->lock("CICache::check_out");
+//		printf("CICache::check_out %d\n", __LINE__);
 		for(current = first; current && !got_it; current = NEXT)
 		{
 			if(!strcmp(current->asset->path, asset->path))
@@ -82,12 +87,15 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 // Test availability
 		if(got_it)
 		{
+			is_checked_out = current->checked_out;
 			if(!current->checked_out)
 			{
 // Return existing item
 				current->age = EDL::next_id();
 				current->checked_out = 1;
+
 				current->Garbage::add_user();
+//printf("CICache::check_out %d %p %d\n", __LINE__, current, current->Garbage::users);
 				total_lock->unlock();
 				return current->file;
 			}
@@ -110,8 +118,9 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 			else
 			{
 				remove_pointer(new_item);
-				new_item->Garbage::remove_user();
 				total_lock->unlock();
+
+				new_item->Garbage::remove_user();
 				return 0;
 			}
 		}
@@ -119,7 +128,16 @@ File* CICache::check_out(Asset *asset, EDL *edl, int block)
 // Try again after blocking
 		total_lock->unlock();
 		if(block)
-			check_out_lock->lock("CICache::check_out");
+		{
+// 			printf("CICache::check_out %d asset=%p got_it=%d is_checked_out=%d\n", 
+// 				__LINE__, 
+// 				asset,
+// 				got_it, 
+// 				is_checked_out);
+// May not have enough unlocks, so make it time out
+			check_out_lock->timed_lock(100000, "CICache::check_out");
+//			printf("CICache::check_out %d\n", __LINE__);
+		}
 		else
 			return 0;
 	}
@@ -131,8 +149,11 @@ int CICache::check_in(Asset *asset)
 {
 	CICacheItem *current;
 	int got_it = 0;
-
+	const int debug = 0;
+	
+	if(debug) printf("CICache::check_in %d asset=%p\n", __LINE__, asset);
 	total_lock->lock("CICache::check_in");
+	if(debug) printf("CICache::check_in %d\n", __LINE__);
 	for(current = first; current; current = NEXT)
 	{
 // Need to compare paths because
@@ -140,17 +161,20 @@ int CICache::check_in(Asset *asset)
 		if(!strcmp(current->asset->path, asset->path))
 		{
 			current->checked_out = 0;
+//printf("CICache::check_in %d %p %d\n", __LINE__, current, current->Garbage::users);
 			current->Garbage::remove_user();
 // Pointer no longer valid here
 			break;
 		}
 	}
 	total_lock->unlock();
+	if(debug) printf("CICache::check_in %d %p\n", __LINE__, this);
 
 // Release for blocking check_out operations
 	check_out_lock->unlock();
 
 	age();
+	if(debug) printf("CICache::check_in %d %p\n", __LINE__, this);
 	return 0;
 }
 
@@ -167,7 +191,11 @@ void CICache::remove_all()
 		{
 //printf("CICache::remove_all: %s\n", current->asset->path);
 			remove_pointer(current);
+			total_lock->unlock();
 			current->Garbage::remove_user();
+// Don't know of next was deleted while unlocked
+			temp = first;
+			total_lock->lock("CICache::remove_all 2");
 		}
 	}
 	total_lock->unlock();
@@ -184,7 +212,9 @@ int CICache::delete_entry(char *path)
 			{
 //printf("CICache::delete_entry: %s\n", current->asset->path);
 				remove_pointer(current);
+				total_lock->unlock();
 				current->Garbage::remove_user();
+				total_lock->lock("CICache::delete_entry 2");
 				break;
 			}
 		}
@@ -207,7 +237,11 @@ int CICache::delete_entry(Asset *asset)
 			{
 //printf("CICache::delete_entry: %s\n", current->asset->path);
 				remove_pointer(current);
+				total_lock->unlock();
+
 				current->Garbage::remove_user();
+
+				total_lock->lock("CICache::delete_entry 2");
 				break;
 			}
 		}
@@ -222,20 +256,25 @@ int CICache::age()
 	CICacheItem *current;
 
 // delete old assets if memory usage is exceeded
-	int64_t prev_memory_usage;
-	int64_t memory_usage;
+	int64_t prev_memory_usage = 0;
+	int64_t memory_usage = 0;
 	int result = 0;
 	do
 	{
+//printf("CICache::age %d %p %lld %lld\n", __LINE__, this, memory_usage, preferences->cache_size);
 		memory_usage = get_memory_usage(1);
+//printf("CICache::age %d %p %lld %lld\n", __LINE__, this, memory_usage, preferences->cache_size);
 		
-//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
 		if(memory_usage > preferences->cache_size)
 		{
 			result = delete_oldest();
 		}
 		prev_memory_usage = memory_usage;
-		memory_usage = get_memory_usage(0);
+//printf("CICache::age %d %p %lld %lld\n", __LINE__, this, memory_usage, preferences->cache_size);
+		memory_usage = get_memory_usage(1);
+
+//printf("CICache::age %d\n", __LINE__);
+
 	}while(prev_memory_usage != memory_usage &&
 		memory_usage > preferences->cache_size && 
 		!result);
@@ -247,11 +286,14 @@ int64_t CICache::get_memory_usage(int use_lock)
 	CICacheItem *current;
 	int64_t result = 0;
 	if(use_lock) total_lock->lock("CICache::get_memory_usage");
+//printf("CICache::get_memory_usage %d\n", __LINE__);
 	for(current = first; current; current = NEXT)
 	{
 		File *file = current->file;
+// This doesn't lock anything
 		if(file) result += file->get_memory_usage();
 	}
+//printf("CICache::get_memory_usage %d\n", __LINE__);
 	if(use_lock) total_lock->unlock();
 	return result;
 }
@@ -292,22 +334,46 @@ int CICache::delete_oldest()
 
 //printf("CICache::delete_oldest %d\n", __LINE__);
 
-	if(oldest)
+	if(oldest && !oldest->checked_out)
 	{
 // Got the oldest file.  Try requesting cache purge from it.
-//printf("CICache::delete_oldest %d %p %d %d\n", __LINE__, oldest->file, oldest->file->purge_cache(), total());
+//printf("CICache::delete_oldest %d %d\n", __LINE__, oldest->Garbage::users);
+		int purge_result = 0;
+		if(oldest->file)
+		{
+// Increment counter to prevent deletion
+			oldest->checked_out = 1;
+			total_lock->unlock();
+//printf("CICache::delete_oldest %d %p %d\n", __LINE__, oldest, oldest->Garbage::users);
 
-		if(!oldest->file || (oldest->file->purge_cache() && total() > 1))
+			purge_result = oldest->file->purge_cache();
+
+			total_lock->lock("CICache::delete_oldest 3");
+			oldest->checked_out = 0;
+//printf("CICache::delete_oldest %d %d\n", __LINE__, oldest->Garbage::users);
+		}
+//printf("CICache::delete_oldest %d %p\n", __LINE__, oldest->file);
+
+
+		if(!oldest->file || (purge_result && total() > 1))
 		{
 //printf("CICache::delete_oldest %d\n", __LINE__);
 
 // Delete the file if cache already empty and not checked out.
 			if(!oldest->checked_out)
 			{
-//printf("CICache::delete_oldest %d\n", __LINE__);
+//printf("CICache::delete_oldest %d oldest=%p\n", __LINE__, oldest);
 				remove_pointer(oldest);
+//printf("CICache::delete_oldest %d\n", __LINE__);
 
+				total_lock->unlock();
+
+//printf("CICache::delete_oldest %d\n", __LINE__);
 				oldest->Garbage::remove_user();
+//printf("CICache::delete_oldest %d\n", __LINE__);
+
+				total_lock->lock("CICache::delete_oldest 2");
+//printf("CICache::delete_oldest %d\n", __LINE__);
 
 			}
 
@@ -404,7 +470,14 @@ SET_TRACE
 
 CICacheItem::~CICacheItem()
 {
+//printf("CICacheItem::~CICacheItem %d\n", __LINE__);
 	if(file) delete file;
+//printf("CICacheItem::~CICacheItem %d\n", __LINE__);
 	if(asset) asset->Garbage::remove_user();
+//printf("CICacheItem::~CICacheItem %d\n", __LINE__);
 	if(item_lock) delete item_lock;
+//printf("CICacheItem::~CICacheItem %d\n", __LINE__);
 }
+
+
+

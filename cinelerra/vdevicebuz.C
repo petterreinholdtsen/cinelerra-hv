@@ -19,6 +19,9 @@
  * 
  */
 
+
+#ifdef HAVE_VIDEO4LINUX
+
 // ALPHA C++ can't compile 64 bit headers
 #undef _LARGEFILE_SOURCE
 #undef _LARGEFILE64_SOURCE
@@ -794,4 +797,8 @@ ArrayList<int>* VDeviceBUZ::get_render_strategies()
 {
 	return &render_strategies;
 }
+
+
+#endif // HAVE_VIDEO4LINUX
+
 

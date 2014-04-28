@@ -50,7 +50,7 @@ void InterfacePrefs::create_objects()
 {
 	int y, x, value;
 	BC_Resources *resources = BC_WindowBase::get_resources();
-	char string[1024];
+	char string[BCTEXTLEN];
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 

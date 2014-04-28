@@ -280,7 +280,11 @@ PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow,
 //	printf("PrefsChannelPicker::PrefsChannelPicker 1\n");
 	this->mwindow = mwindow;
 	this->prefs = prefs;
+
+#ifdef HAVE_VIDEO4LINUX
 	VDeviceBUZ::get_inputs(&input_sources);
+#endif
+
 }
 
 PrefsChannelPicker::~PrefsChannelPicker()

@@ -170,7 +170,9 @@ int VModule::import_frame(VFrame *output,
 
 // Convert requested direction to command
 		if(renderengine->command->command == CURRENT_FRAME)
+		{
 			command = CURRENT_FRAME;
+		}
 		else
 		if(direction == PLAY_REVERSE)
 		{
@@ -241,7 +243,7 @@ int VModule::import_frame(VFrame *output,
 		(current_edit->nested_edl && nested_renderengine->vrender)))
 	{
 		File *file = 0;
-	
+
 		if(debug) printf("VModule::import_frame %d cache=%p\n", 
 			__LINE__,
 			get_cache());
@@ -509,7 +511,7 @@ current_cmodel,
 input2, 
 (*input),
 output);
-							cmodel_transfer((*input)->get_rows(),
+							BC_CModels::transfer((*input)->get_rows(),
 								input2->get_rows(),
 								0,
 								0,
@@ -616,7 +618,7 @@ output->get_opengl_state(),
 // of producing green borders in floating point translation of YUV
 					int mode = TRANSFER_REPLACE;
 					if(get_edl()->session->interpolation_type != NEAREST_NEIGHBOR &&
-						cmodel_is_yuv(output->get_color_model()))
+						BC_CModels::is_yuv(output->get_color_model()))
 						mode = TRANSFER_NORMAL;
 
 					if(debug) printf("VModule::import_frame %d temp -> output\n", __LINE__);
@@ -722,7 +724,7 @@ output->get_w(),
 output->get_h(),
 nested_cmodel,
 current_cmodel);
-							cmodel_transfer(output->get_rows(),
+							BC_CModels::transfer(output->get_rows(),
 								(*input)->get_rows(),
 								0,
 								0,

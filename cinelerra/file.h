@@ -125,8 +125,8 @@ public:
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
 	int close_file(int ignore_thread = 0);
-	void delete_temp_samples_array();
-	void delete_temp_frame_array();
+	void delete_temp_samples_buffer();
+	void delete_temp_frame_buffer();
 
 // get length of file normalized to base samplerate
 	int64_t get_audio_length();
@@ -245,11 +245,19 @@ public:
 // Temporary storage for color conversions
 	VFrame *temp_frame;
 // Temporary storage for get_audio_buffer.
-	Samples **temp_samples_array;
+// [ring buffers][channels][Samples]
+	Samples ***temp_samples_buffer;
+
 // Temporary storage for get_video_buffer.
-	VFrame ***temp_frame_array;
-// Number of frames in the temp_frame_array
-	int temp_frame_size;
+// [Ring buffers][layers][temp_frame_size][VFrame]
+	VFrame ****temp_frame_buffer;
+// Return value of get_video_buffer
+	VFrame ***current_frame_buffer;
+// server copies of variables for threaded recording
+	int audio_ring_buffers;
+	int video_ring_buffers;
+// Number of frames in the temp_frame_buffer
+	int video_buffer_size;
 
 
 // Lock writes while recording video and audio.

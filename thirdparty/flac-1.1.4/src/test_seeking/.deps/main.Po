@@ -1,35 +1,42 @@
-main.o main.o: main.c ../../config.h /usr/include/signal.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h /usr/include/bits/sigset.h \
-  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
-  /usr/include/bits/signum.h /usr/include/time.h \
-  /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h \
-  /usr/include/bits/sigcontext.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
-  /usr/include/bits/sigstack.h /usr/include/bits/pthreadtypes.h \
-  /usr/include/bits/sigthread.h /usr/include/stdio.h /usr/include/libio.h \
-  /usr/include/_G_config.h /usr/include/wchar.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h \
-  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
-  /usr/include/bits/stdio.h /usr/include/stdlib.h \
-  /usr/include/sys/types.h /usr/include/endian.h \
-  /usr/include/bits/endian.h /usr/include/sys/select.h \
-  /usr/include/bits/select.h /usr/include/bits/time.h \
-  /usr/include/sys/sysmacros.h /usr/include/alloca.h \
-  /usr/include/string.h /usr/include/bits/string.h \
-  /usr/include/bits/string2.h /usr/include/sys/time.h \
-  /usr/include/sys/stat.h /usr/include/bits/stat.h \
-  ../../include/FLAC/assert.h ../../include/FLAC/stream_decoder.h \
-  ../../include/FLAC/export.h ../../include/FLAC/format.h \
-  ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
-  /usr/include/stdint.h /usr/include/bits/wchar.h
+main.o: main.c ../../config.h /usr/include/signal.h \
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/bits/sigset.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/bits/signum.h \
+ /usr/include/time.h /usr/include/bits/siginfo.h \
+ /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/bits/sigstack.h /usr/include/sys/ucontext.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/bits/sigthread.h \
+ /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/wchar.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+ /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+ /usr/include/sys/types.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/bits/time.h \
+ /usr/include/sys/sysmacros.h /usr/include/alloca.h \
+ /usr/include/bits/stdlib.h /usr/include/string.h /usr/include/xlocale.h \
+ /usr/include/bits/string.h /usr/include/bits/string2.h \
+ /usr/include/bits/string3.h /usr/include/sys/time.h \
+ /usr/include/sys/stat.h /usr/include/bits/stat.h \
+ ../../include/FLAC/assert.h ../../include/FLAC/stream_decoder.h \
+ ../../include/FLAC/export.h ../../include/FLAC/format.h \
+ ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/wchar.h
 
 ../../config.h:
 
 /usr/include/signal.h:
 
 /usr/include/features.h:
+
+/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -55,9 +62,11 @@ main.o main.o: main.c ../../config.h /usr/include/signal.h \
 
 /usr/include/bits/sigcontext.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
 
 /usr/include/bits/sigstack.h:
+
+/usr/include/sys/ucontext.h:
 
 /usr/include/bits/pthreadtypes.h:
 
@@ -71,7 +80,7 @@ main.o main.o: main.c ../../config.h /usr/include/signal.h \
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
@@ -79,13 +88,21 @@ main.o main.o: main.c ../../config.h /usr/include/signal.h \
 
 /usr/include/bits/stdio.h:
 
+/usr/include/bits/stdio2.h:
+
 /usr/include/stdlib.h:
 
-/usr/include/sys/types.h:
+/usr/include/bits/waitflags.h:
+
+/usr/include/bits/waitstatus.h:
 
 /usr/include/endian.h:
 
 /usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/sys/types.h:
 
 /usr/include/sys/select.h:
 
@@ -97,11 +114,17 @@ main.o main.o: main.c ../../config.h /usr/include/signal.h \
 
 /usr/include/alloca.h:
 
+/usr/include/bits/stdlib.h:
+
 /usr/include/string.h:
+
+/usr/include/xlocale.h:
 
 /usr/include/bits/string.h:
 
 /usr/include/bits/string2.h:
+
+/usr/include/bits/string3.h:
 
 /usr/include/sys/time.h:
 
@@ -120,6 +143,8 @@ main.o main.o: main.c ../../config.h /usr/include/signal.h \
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
+
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 

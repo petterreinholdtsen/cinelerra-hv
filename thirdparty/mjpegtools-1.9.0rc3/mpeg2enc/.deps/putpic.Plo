@@ -1,82 +1,67 @@
-putpic.lo putpic.o: putpic.cc ../config.h /usr/include/stdio.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
-  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
-  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h \
-  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
-  /usr/include/c++/4.2/cassert /usr/include/assert.h mpeg2syntaxcodes.h \
-  tables.h ../utils/mjpeg_types.h /usr/include/sys/types.h \
-  /usr/include/time.h /usr/include/endian.h /usr/include/bits/endian.h \
-  /usr/include/sys/select.h /usr/include/bits/select.h \
-  /usr/include/bits/sigset.h /usr/include/bits/time.h \
-  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
-  /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h \
-  simd.h /usr/include/stdlib.h /usr/include/bits/waitflags.h \
-  /usr/include/bits/waitstatus.h /usr/include/xlocale.h \
-  /usr/include/alloca.h ../utils/cpu_accel.h /usr/include/stdlib.h \
-  ../utils/mjpeg_types.h quantize_ref.h transfrm_ref.h predict_ref.h \
-  mpeg2encoder.hh mpeg2encoptions.hh mpeg2encparams.h \
-  ../utils/mpegconsts.h ../utils/yuv4mpeg.h ../utils/mjpeg_types.h \
-  /usr/include/unistd.h /usr/include/bits/posix_opt.h \
-  /usr/include/bits/environments.h /usr/include/bits/confname.h \
-  /usr/include/getopt.h ../utils/mjpeg_logging.h \
-  /usr/include/c++/4.2/deque /usr/include/c++/4.2/bits/functexcept.h \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/c++config.h \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/os_defines.h \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/cpu_defines.h \
-  /usr/include/c++/4.2/exception_defines.h \
-  /usr/include/c++/4.2/bits/stl_algobase.h /usr/include/c++/4.2/cstring \
-  /usr/include/c++/4.2/cstddef /usr/include/string.h \
-  /usr/include/c++/4.2/climits \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/limits.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/syslimits.h \
-  /usr/include/limits.h /usr/include/bits/posix1_lim.h \
-  /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
-  /usr/include/bits/posix2_lim.h /usr/include/bits/xopen_lim.h \
-  /usr/include/c++/4.2/cstdlib /usr/include/c++/4.2/iosfwd \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/c++locale.h \
-  /usr/include/c++/4.2/cstdio /usr/include/c++/4.2/clocale \
-  /usr/include/locale.h /usr/include/bits/locale.h \
-  /usr/include/langinfo.h /usr/include/nl_types.h /usr/include/iconv.h \
-  /usr/include/libintl.h /usr/include/c++/4.2/cstdarg \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/c++io.h \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/gthr.h \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/gthr-default.h \
-  /usr/include/pthread.h /usr/include/sched.h /usr/include/bits/sched.h \
-  /usr/include/signal.h /usr/include/bits/setjmp.h \
-  /usr/include/c++/4.2/cctype /usr/include/ctype.h \
-  /usr/include/c++/4.2/bits/stringfwd.h \
-  /usr/include/c++/4.2/bits/postypes.h /usr/include/c++/4.2/cwchar \
-  /usr/include/c++/4.2/ctime /usr/include/c++/4.2/bits/stl_pair.h \
-  /usr/include/c++/4.2/bits/cpp_type_traits.h \
-  /usr/include/c++/4.2/ext/type_traits.h /usr/include/c++/4.2/utility \
-  /usr/include/c++/4.2/bits/stl_relops.h \
-  /usr/include/c++/4.2/bits/stl_iterator_base_types.h \
-  /usr/include/c++/4.2/bits/stl_iterator_base_funcs.h \
-  /usr/include/c++/4.2/bits/concept_check.h \
-  /usr/include/c++/4.2/bits/stl_iterator.h \
-  /usr/include/c++/4.2/debug/debug.h \
-  /usr/include/c++/4.2/bits/allocator.h \
-  /usr/include/c++/4.2/x86_64-linux-gnu/bits/c++allocator.h \
-  /usr/include/c++/4.2/ext/new_allocator.h /usr/include/c++/4.2/new \
-  /usr/include/c++/4.2/exception \
-  /usr/include/c++/4.2/bits/stl_construct.h \
-  /usr/include/c++/4.2/bits/stl_uninitialized.h \
-  /usr/include/c++/4.2/bits/stl_deque.h \
-  /usr/include/c++/4.2/bits/deque.tcc encoderparams.hh syntaxconsts.h \
-  mpeg2coder.hh synchrolib.h elemstrmwriter.hh ratectl.hh macroblock.hh \
-  /usr/include/c++/4.2/vector /usr/include/c++/4.2/bits/stl_vector.h \
-  /usr/include/c++/4.2/bits/stl_bvector.h \
-  /usr/include/c++/4.2/bits/vector.tcc encodertypes.h picture.hh
+putpic.lo: putpic.cc ../config.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+ /usr/include/c++/4.5/cassert /usr/include/assert.h mpeg2syntaxcodes.h \
+ tables.h ../utils/mjpeg_types.h /usr/include/sys/types.h \
+ /usr/include/time.h /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/bits/sigset.h \
+ /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
+ /usr/include/bits/pthreadtypes.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h \
+ simd.h /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/xlocale.h \
+ /usr/include/alloca.h /usr/include/bits/stdlib.h ../utils/cpu_accel.h \
+ ../utils/mjpeg_types.h quantize_ref.h transfrm_ref.h predict_ref.h \
+ mpeg2encoder.hh mpeg2encoptions.hh mpeg2encparams.h \
+ ../utils/mpegconsts.h ../utils/yuv4mpeg.h /usr/include/unistd.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
+ /usr/include/bits/confname.h /usr/include/getopt.h \
+ /usr/include/bits/unistd.h ../utils/mjpeg_logging.h \
+ /usr/include/c++/4.5/deque /usr/include/c++/4.5/bits/stl_algobase.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h \
+ /usr/include/c++/4.5/cstddef /usr/include/c++/4.5/bits/functexcept.h \
+ /usr/include/c++/4.5/exception_defines.h \
+ /usr/include/c++/4.5/bits/cpp_type_traits.h \
+ /usr/include/c++/4.5/ext/type_traits.h \
+ /usr/include/c++/4.5/ext/numeric_traits.h \
+ /usr/include/c++/4.5/bits/stl_pair.h /usr/include/c++/4.5/bits/move.h \
+ /usr/include/c++/4.5/bits/concept_check.h \
+ /usr/include/c++/4.5/bits/stl_iterator_base_types.h \
+ /usr/include/c++/4.5/bits/stl_iterator_base_funcs.h \
+ /usr/include/c++/4.5/bits/stl_iterator.h \
+ /usr/include/c++/4.5/debug/debug.h /usr/include/c++/4.5/bits/allocator.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h \
+ /usr/include/c++/4.5/ext/new_allocator.h /usr/include/c++/4.5/new \
+ /usr/include/c++/4.5/exception /usr/include/c++/4.5/bits/stl_construct.h \
+ /usr/include/c++/4.5/bits/stl_uninitialized.h \
+ /usr/include/c++/4.5/bits/stl_deque.h \
+ /usr/include/c++/4.5/initializer_list \
+ /usr/include/c++/4.5/bits/deque.tcc encoderparams.hh syntaxconsts.h \
+ mpeg2coder.hh synchrolib.h /usr/include/pthread.h /usr/include/sched.h \
+ /usr/include/bits/sched.h /usr/include/bits/setjmp.h elemstrmwriter.hh \
+ ratectl.hh macroblock.hh /usr/include/c++/4.5/vector \
+ /usr/include/c++/4.5/bits/stl_vector.h \
+ /usr/include/c++/4.5/bits/stl_bvector.h \
+ /usr/include/c++/4.5/bits/vector.tcc encodertypes.h picture.hh
 
 ../config.h:
 
 /usr/include/stdio.h:
 
 /usr/include/features.h:
+
+/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -86,7 +71,7 @@ putpic.lo putpic.o: putpic.cc ../config.h /usr/include/stdio.h \
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
 
 /usr/include/bits/types.h:
 
@@ -98,13 +83,17 @@ putpic.lo putpic.o: putpic.cc ../config.h /usr/include/stdio.h \
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
 /usr/include/bits/sys_errlist.h:
 
-/usr/include/c++/4.2/cassert:
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
+
+/usr/include/c++/4.5/cassert:
 
 /usr/include/assert.h:
 
@@ -122,6 +111,8 @@ tables.h:
 
 /usr/include/bits/endian.h:
 
+/usr/include/bits/byteswap.h:
+
 /usr/include/sys/select.h:
 
 /usr/include/bits/select.h:
@@ -133,6 +124,8 @@ tables.h:
 /usr/include/sys/sysmacros.h:
 
 /usr/include/bits/pthreadtypes.h:
+
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 
@@ -152,9 +145,9 @@ simd.h:
 
 /usr/include/alloca.h:
 
-../utils/cpu_accel.h:
+/usr/include/bits/stdlib.h:
 
-/usr/include/stdlib.h:
+../utils/cpu_accel.h:
 
 ../utils/mjpeg_types.h:
 
@@ -174,8 +167,6 @@ mpeg2encparams.h:
 
 ../utils/yuv4mpeg.h:
 
-../utils/mjpeg_types.h:
-
 /usr/include/unistd.h:
 
 /usr/include/bits/posix_opt.h:
@@ -186,135 +177,65 @@ mpeg2encparams.h:
 
 /usr/include/getopt.h:
 
+/usr/include/bits/unistd.h:
+
 ../utils/mjpeg_logging.h:
 
-/usr/include/c++/4.2/deque:
+/usr/include/c++/4.5/deque:
 
-/usr/include/c++/4.2/bits/functexcept.h:
+/usr/include/c++/4.5/bits/stl_algobase.h:
 
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/c++config.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h:
 
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/os_defines.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h:
 
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/cpu_defines.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h:
 
-/usr/include/c++/4.2/exception_defines.h:
+/usr/include/c++/4.5/cstddef:
 
-/usr/include/c++/4.2/bits/stl_algobase.h:
+/usr/include/c++/4.5/bits/functexcept.h:
 
-/usr/include/c++/4.2/cstring:
+/usr/include/c++/4.5/exception_defines.h:
 
-/usr/include/c++/4.2/cstddef:
+/usr/include/c++/4.5/bits/cpp_type_traits.h:
 
-/usr/include/string.h:
+/usr/include/c++/4.5/ext/type_traits.h:
 
-/usr/include/c++/4.2/climits:
+/usr/include/c++/4.5/ext/numeric_traits.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/limits.h:
+/usr/include/c++/4.5/bits/stl_pair.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/syslimits.h:
+/usr/include/c++/4.5/bits/move.h:
 
-/usr/include/limits.h:
+/usr/include/c++/4.5/bits/concept_check.h:
 
-/usr/include/bits/posix1_lim.h:
+/usr/include/c++/4.5/bits/stl_iterator_base_types.h:
 
-/usr/include/bits/local_lim.h:
+/usr/include/c++/4.5/bits/stl_iterator_base_funcs.h:
 
-/usr/include/linux/limits.h:
+/usr/include/c++/4.5/bits/stl_iterator.h:
 
-/usr/include/bits/posix2_lim.h:
+/usr/include/c++/4.5/debug/debug.h:
 
-/usr/include/bits/xopen_lim.h:
+/usr/include/c++/4.5/bits/allocator.h:
 
-/usr/include/c++/4.2/cstdlib:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h:
 
-/usr/include/c++/4.2/iosfwd:
+/usr/include/c++/4.5/ext/new_allocator.h:
 
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/c++locale.h:
+/usr/include/c++/4.5/new:
 
-/usr/include/c++/4.2/cstdio:
+/usr/include/c++/4.5/exception:
 
-/usr/include/c++/4.2/clocale:
+/usr/include/c++/4.5/bits/stl_construct.h:
 
-/usr/include/locale.h:
+/usr/include/c++/4.5/bits/stl_uninitialized.h:
 
-/usr/include/bits/locale.h:
+/usr/include/c++/4.5/bits/stl_deque.h:
 
-/usr/include/langinfo.h:
+/usr/include/c++/4.5/initializer_list:
 
-/usr/include/nl_types.h:
-
-/usr/include/iconv.h:
-
-/usr/include/libintl.h:
-
-/usr/include/c++/4.2/cstdarg:
-
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/c++io.h:
-
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/gthr.h:
-
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/gthr-default.h:
-
-/usr/include/pthread.h:
-
-/usr/include/sched.h:
-
-/usr/include/bits/sched.h:
-
-/usr/include/signal.h:
-
-/usr/include/bits/setjmp.h:
-
-/usr/include/c++/4.2/cctype:
-
-/usr/include/ctype.h:
-
-/usr/include/c++/4.2/bits/stringfwd.h:
-
-/usr/include/c++/4.2/bits/postypes.h:
-
-/usr/include/c++/4.2/cwchar:
-
-/usr/include/c++/4.2/ctime:
-
-/usr/include/c++/4.2/bits/stl_pair.h:
-
-/usr/include/c++/4.2/bits/cpp_type_traits.h:
-
-/usr/include/c++/4.2/ext/type_traits.h:
-
-/usr/include/c++/4.2/utility:
-
-/usr/include/c++/4.2/bits/stl_relops.h:
-
-/usr/include/c++/4.2/bits/stl_iterator_base_types.h:
-
-/usr/include/c++/4.2/bits/stl_iterator_base_funcs.h:
-
-/usr/include/c++/4.2/bits/concept_check.h:
-
-/usr/include/c++/4.2/bits/stl_iterator.h:
-
-/usr/include/c++/4.2/debug/debug.h:
-
-/usr/include/c++/4.2/bits/allocator.h:
-
-/usr/include/c++/4.2/x86_64-linux-gnu/bits/c++allocator.h:
-
-/usr/include/c++/4.2/ext/new_allocator.h:
-
-/usr/include/c++/4.2/new:
-
-/usr/include/c++/4.2/exception:
-
-/usr/include/c++/4.2/bits/stl_construct.h:
-
-/usr/include/c++/4.2/bits/stl_uninitialized.h:
-
-/usr/include/c++/4.2/bits/stl_deque.h:
-
-/usr/include/c++/4.2/bits/deque.tcc:
+/usr/include/c++/4.5/bits/deque.tcc:
 
 encoderparams.hh:
 
@@ -324,19 +245,27 @@ mpeg2coder.hh:
 
 synchrolib.h:
 
+/usr/include/pthread.h:
+
+/usr/include/sched.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/bits/setjmp.h:
+
 elemstrmwriter.hh:
 
 ratectl.hh:
 
 macroblock.hh:
 
-/usr/include/c++/4.2/vector:
+/usr/include/c++/4.5/vector:
 
-/usr/include/c++/4.2/bits/stl_vector.h:
+/usr/include/c++/4.5/bits/stl_vector.h:
 
-/usr/include/c++/4.2/bits/stl_bvector.h:
+/usr/include/c++/4.5/bits/stl_bvector.h:
 
-/usr/include/c++/4.2/bits/vector.tcc:
+/usr/include/c++/4.5/bits/vector.tcc:
 
 encodertypes.h:
 

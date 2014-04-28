@@ -1,7 +1,6 @@
 include ../../global_config
 
 OBJS := \
-	../motion/$(OBJDIR)/affine.o \
 	../downsample/$(OBJDIR)/downsampleengine.o \
 	../motion/$(OBJDIR)/motionscan.o \
 	$(OBJDIR)/motion.o \

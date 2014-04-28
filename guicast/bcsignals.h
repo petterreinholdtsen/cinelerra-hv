@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,7 +141,7 @@ public:
 	static void unset_temp(char *string);
 
 
-
+	static void kill_subs();
 
 	static int set_lock(void *ptr, const char *title, const char *location);
 	static void set_lock2(int table_id);

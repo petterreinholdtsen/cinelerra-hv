@@ -133,10 +133,11 @@ void AssetPicon::create_objects()
 	FileSystem fs;
 	char name[BCTEXTLEN];
 	int pixmap_w, pixmap_h;
-
+	const int debug = 0;
 
 	pixmap_h = 50;
 
+	if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 	if(indexable)
 	{
 		fs.extract_name(name, indexable->path);
@@ -145,12 +146,18 @@ void AssetPicon::create_objects()
 	
 	if(indexable && indexable->is_asset)
 	{
+		if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 		Asset *asset = (Asset*)indexable;
 		if(asset->video_data)
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
-				File *file = mwindow->video_cache->check_out(asset, mwindow->edl);
+				gui->unlock_window();
+				if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+				File *file = mwindow->video_cache->check_out(asset, 
+					mwindow->edl,
+					1);
+				if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 
 				if(file)
 				{
@@ -178,8 +185,15 @@ void AssetPicon::create_objects()
 					}
 
 					file->read_frame(gui->temp_picon);
+					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+					mwindow->video_cache->check_in(asset);
+					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
+					gui->lock_window("AssetPicon::create_objects 1");
+					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 
+					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
+					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 					icon->draw_vframe(gui->temp_picon,
 						0, 
 						0, 
@@ -216,14 +230,14 @@ void AssetPicon::create_objects()
 						0,       /* For planar use the luma rowspan */
 						0);     /* For planar use the luma rowspan */
 
+					if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 
-					mwindow->video_cache->check_in(asset);
 				}
 				else
 				{
+					gui->lock_window("AssetPicon::create_objects 2");
 					icon = gui->video_icon;
 					icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
-
 				}
 			}
 			else
@@ -242,7 +256,7 @@ void AssetPicon::create_objects()
 
 		set_icon(icon);
 		set_icon_vframe(icon_vframe);
-//printf("AssetPicon::create_objects 4\n");
+		if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 	}
 	else
 	if(indexable && !indexable->is_asset)
@@ -297,6 +311,7 @@ void AssetPicon::create_objects()
 		set_icon_vframe(icon_vframe);
 	}
 
+	if(debug) printf("AssetPicon::create_objects %d\n", __LINE__);
 }
 
 
@@ -712,6 +727,7 @@ void AWindowGUI::update_asset_list()
 
 
 
+//printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 
 
 // Synchronize EDL assets
@@ -738,14 +754,18 @@ void AWindowGUI::update_asset_list()
 // Create new listitem
 		if(!exists)
 		{
+//printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 			AssetPicon *picon = new AssetPicon(mwindow, this, current);
+//printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 			picon->create_objects();
+//printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 			assets.append(picon);
 		}
 	}
 
 
 
+//printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 
 
 // Synchronize nested EDLs
@@ -787,7 +807,7 @@ void AWindowGUI::update_asset_list()
 
 
 
-//printf("AWindowGUI::update_asset_list 6\n");
+//printf("AWindowGUI::update_asset_list %d\n", __LINE__);
 	for(int i = assets.total - 1; i >= 0; i--)
 	{
 		AssetPicon *picon = (AssetPicon*)assets.values[i];

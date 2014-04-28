@@ -701,7 +701,7 @@ void TimeBar::stop_playback()
 
 int TimeBar::button_press_event()
 {
-	if(is_event_win() && cursor_inside())
+	if(is_event_win() && cursor_inside() && get_buttonpress() == 1)
 	{
 // Change time format
 		if(ctrl_down())

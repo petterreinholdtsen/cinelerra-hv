@@ -27,7 +27,7 @@
 #include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "colors.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "fonts.h"
 #include "language.h"
 #include "vframe.h"
@@ -217,6 +217,9 @@ BC_Resources::BC_Resources()
 #include "images/file_newfolder_up_png.h"
 #include "images/file_newfolder_hi_png.h"
 #include "images/file_newfolder_dn_png.h"
+#include "images/file_rename_up_png.h"
+#include "images/file_rename_hi_png.h"
+#include "images/file_rename_dn_png.h"
 #include "images/file_updir_up_png.h"
 #include "images/file_updir_hi_png.h"
 #include "images/file_updir_dn_png.h"
@@ -252,6 +255,14 @@ BC_Resources::BC_Resources()
 		new VFrame(file_newfolder_up_png),
 		new VFrame(file_newfolder_hi_png),
 		new VFrame(file_newfolder_dn_png)
+	};
+
+
+	static VFrame* default_filebox_rename_images[] = 
+	{
+		new VFrame(file_rename_up_png),
+		new VFrame(file_rename_hi_png),
+		new VFrame(file_rename_dn_png)
 	};
 
 	static VFrame* default_filebox_delete_images[] = 
@@ -660,6 +671,7 @@ BC_Resources::BC_Resources()
 	filebox_icons_images = default_filebox_icons_images;
 	filebox_updir_images = default_filebox_updir_images;
 	filebox_newfolder_images = default_filebox_newfolder_images;
+	filebox_rename_images = default_filebox_rename_images;
 	filebox_delete_images = default_filebox_delete_images;
 	filebox_reload_images = default_filebox_reload_images;
 	directory_color = BLUE;
@@ -703,7 +715,7 @@ BC_Resources::BC_Resources()
 	drag_radius = 10;
 	recursive_resizing = 1;
 
-	
+
 }
 
 BC_Resources::~BC_Resources()

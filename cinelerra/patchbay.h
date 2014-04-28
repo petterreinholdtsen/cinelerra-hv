@@ -75,7 +75,7 @@ public:
 	MWindow *mwindow;
 	MWindowGUI *gui;
 
-	int button_down, new_status, drag_operation, reconfigure_trigger;
+	int new_status, drag_operation;
 	BC_Pixmap *mode_icons[TRANSFER_TYPES];
 
 	NudgePopup *nudge_popup;

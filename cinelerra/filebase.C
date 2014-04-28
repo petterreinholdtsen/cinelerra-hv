@@ -210,7 +210,6 @@ int FileBase::set_dither()
 
 int FileBase::reset_parameters()
 {
-	decode_end = 0;
 	dither = 0;
 	float_buffer = 0;
 	row_pointers_in = 0;
@@ -228,6 +227,7 @@ int FileBase::reset_parameters()
 	history_size = 0;
 	history_allocated = 0;
 	history_channels = 0;
+	decode_end = 0;
 
 	delete_ulaw_tables();
 	reset_parameters_derived();

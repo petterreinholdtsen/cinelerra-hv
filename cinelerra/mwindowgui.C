@@ -309,6 +309,11 @@ void MWindowGUI::update(int scrollbars,
 	int clock,
 	int buttonbar)
 {
+	const int debug = 0;
+	if(debug) PRINT_TRACE
+	
+	
+	
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
 	if(scrollbars) this->get_scrollbars();
 	if(timebar) this->timebar->update();
@@ -316,6 +321,10 @@ void MWindowGUI::update(int scrollbars,
 	if(patchbay) this->patchbay->update();
 	if(clock) this->mainclock->update(
 		mwindow->edl->local_session->get_selectionstart(1));
+	if(debug) PRINT_TRACE
+
+
+
 	if(canvas)
 	{
 		this->canvas->draw(canvas);
@@ -325,12 +334,22 @@ void MWindowGUI::update(int scrollbars,
 // picon thread.
 		if(canvas != 3) this->canvas->activate();
 	}
+	if(debug) PRINT_TRACE
+
+
+
 	if(buttonbar) mbuttons->update();
+	if(debug) PRINT_TRACE
 
 // Can't age if the cache called this to draw missing picons
 // or the GUI is updating the status of the draw toggle.
 	if(canvas != 2 && canvas != 3)
+	{
+		unlock_window();
 		mwindow->age_caches();
+		lock_window("MWindowGUI::update");
+	}
+	if(debug) PRINT_TRACE
 }
 
 int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)

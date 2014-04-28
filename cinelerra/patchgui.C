@@ -279,7 +279,6 @@ void PatchGUI::toggle_behavior(int type,
 		patchbay->update();
 		patchbay->drag_operation = type;
 		patchbay->new_status = 1;
-		patchbay->button_down = 1;
 	}
 	else
 	{
@@ -287,7 +286,6 @@ void PatchGUI::toggle_behavior(int type,
 // Select + drag behavior
 		patchbay->drag_operation = type;
 		patchbay->new_status = value;
-		patchbay->button_down = 1;
 	}
 
 	switch(type)

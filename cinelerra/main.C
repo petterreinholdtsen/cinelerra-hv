@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +23,7 @@
 #include "bcsignals.h"
 #include "edl.h"
 #include "filexml.h"
+#include "fileserver.h"
 #include "filesystem.h"
 #include "language.h"
 #include "loadfile.inc"
@@ -97,6 +97,8 @@ int main(int argc, char *argv[])
 
 	get_exe_path(exe_path);
 	sprintf(locale_path, "%s%s", exe_path, LOCALEDIR);
+
+
 // detect an UTF-8 locale and try to use a non-Unicode locale instead
 // <---Beginning of dirty hack
 // This hack will be removed as soon as Cinelerra is UTF-8 compliant
@@ -290,6 +292,7 @@ COPYRIGHT_DATE);
 			BatchRenderThread *thread = new BatchRenderThread;
 			thread->start_rendering(config_path, 
 				batch_path);
+			delete MWindow::file_server;
 			break;
 		}
 

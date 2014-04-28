@@ -1,25 +1,31 @@
-local_string_utils.o local_string_utils.o: local_string_utils.c \
-  ../../config.h /usr/include/string.h /usr/include/features.h \
-  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
-  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
-  /usr/include/bits/string.h /usr/include/bits/string2.h \
-  /usr/include/endian.h /usr/include/bits/endian.h \
-  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
-  /usr/include/stdlib.h utils.h ../../include/FLAC/ordinals.h \
-  /usr/include/inttypes.h /usr/include/stdint.h /usr/include/bits/wchar.h \
-  ../../include/FLAC/format.h ../../include/FLAC/export.h \
-  ../../include/FLAC/ordinals.h /usr/include/stdio.h /usr/include/libio.h \
-  /usr/include/_G_config.h /usr/include/wchar.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h \
-  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
-  /usr/include/bits/stdio.h
+local_string_utils.o: local_string_utils.c ../../config.h \
+ /usr/include/string.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/xlocale.h /usr/include/bits/string.h \
+ /usr/include/bits/string2.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/stdlib.h /usr/include/bits/string3.h utils.h \
+ ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/wchar.h \
+ ../../include/FLAC/format.h ../../include/FLAC/export.h \
+ ../../include/FLAC/ordinals.h /usr/include/stdio.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h
 
 ../../config.h:
 
 /usr/include/string.h:
 
 /usr/include/features.h:
+
+/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -29,7 +35,9 @@ local_string_utils.o local_string_utils.o: local_string_utils.c \
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+
+/usr/include/xlocale.h:
 
 /usr/include/bits/string.h:
 
@@ -39,17 +47,23 @@ local_string_utils.o local_string_utils.o: local_string_utils.c \
 
 /usr/include/bits/endian.h:
 
+/usr/include/bits/byteswap.h:
+
 /usr/include/bits/types.h:
 
 /usr/include/bits/typesizes.h:
 
 /usr/include/stdlib.h:
 
+/usr/include/bits/string3.h:
+
 utils.h:
 
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
+
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 
@@ -69,10 +83,12 @@ utils.h:
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
 /usr/include/bits/sys_errlist.h:
 
 /usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:

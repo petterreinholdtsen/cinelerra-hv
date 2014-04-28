@@ -60,21 +60,13 @@ RecordThread::RecordThread(MWindow *mwindow, Record *record)
 
 RecordThread::~RecordThread()
 {
-SET_TRACE
 	delete record_audio;
-SET_TRACE
 	delete record_video;
-SET_TRACE
 	delete record_timer;
-SET_TRACE
 	delete pause_lock;
-SET_TRACE
 	delete startup_lock;
-SET_TRACE
 	delete loop_lock;
-SET_TRACE
 	delete state_lock;
-SET_TRACE
 }
 
 void RecordThread::create_objects()

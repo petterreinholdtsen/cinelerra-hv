@@ -33,6 +33,11 @@ OBJS = \
 	$(OBJDIR)/bcbitmap.o \
 	$(OBJDIR)/bcbutton.o \
 	$(OBJDIR)/bccapture.o \
+	$(OBJDIR)/bccmodel_default.o \
+	$(OBJDIR)/bccmodel_float.o \
+	$(OBJDIR)/bccmodels.o \
+	$(OBJDIR)/bccmodel_yuv420p.o \
+	$(OBJDIR)/bccmodel_yuv422.o \
 	$(OBJDIR)/bccounter.o \
 	$(OBJDIR)/bcclipboard.o \
 	$(OBJDIR)/bcdelete.o \
@@ -48,8 +53,8 @@ OBJS = \
 	$(OBJDIR)/bcmenubar.o \
 	$(OBJDIR)/bcmenuitem.o \
 	$(OBJDIR)/bcmenupopup.o \
-	$(OBJDIR)/bcnewfolder.o \
 	$(OBJDIR)/bcmeter.o \
+	$(OBJDIR)/bcnewfolder.o \
 	$(OBJDIR)/bcpan.o \
 	$(OBJDIR)/bcpbuffer.o \
 	$(OBJDIR)/bcpixmap.o \
@@ -58,6 +63,7 @@ OBJS = \
 	$(OBJDIR)/bcpot.o \
 	$(OBJDIR)/bcprogress.o \
 	$(OBJDIR)/bcprogressbox.o \
+	$(OBJDIR)/bcrename.o \
 	$(OBJDIR)/bcrepeater.o \
 	$(OBJDIR)/bcresources.o \
 	$(OBJDIR)/bcscrollbar.o \
@@ -192,6 +198,11 @@ $(OBJDIR)/bcbar.o:                                            bcbar.C
 $(OBJDIR)/bcbitmap.o: 	   				      bcbitmap.C
 $(OBJDIR)/bcbutton.o: 	   				      bcbutton.C
 $(OBJDIR)/bccapture.o:     				      bccapture.C
+$(OBJDIR)/bccmodel_default.o:				      bccmodel_default.C bccmodel_permutation.h
+$(OBJDIR)/bccmodel_float.o:				      bccmodel_float.C
+$(OBJDIR)/bccmodels.o:					      bccmodels.C
+$(OBJDIR)/bccmodel_yuv420p.o:				      bccmodel_yuv420p.C
+$(OBJDIR)/bccmodel_yuv422.o:				      bccmodel_yuv422.C
 $(OBJDIR)/bccounter.o:                                        bccounter.C
 $(OBJDIR)/bcclipboard.o:   				      bcclipboard.C
 $(OBJDIR)/bcdelete.o:                                         bcdelete.C
@@ -218,6 +229,7 @@ $(OBJDIR)/bcpopupmenu.o:   				      bcpopupmenu.C
 $(OBJDIR)/bcpot.o: 	   				      bcpot.C
 $(OBJDIR)/bcprogress.o:    				      bcprogress.C
 $(OBJDIR)/bcprogressbox.o: 				      bcprogressbox.C
+$(OBJDIR)/bcrename.o:    				      bcrename.C
 $(OBJDIR)/bcrepeater.o:    				      bcrepeater.C
 $(OBJDIR)/bcresources.o:   				      bcresources.C
 $(OBJDIR)/bcscrollbar.o:   				      bcscrollbar.C
@@ -254,5 +266,9 @@ $(OBJDIR)/units.o: 	   				      units.C
 $(OBJDIR)/vframe.o: 	   				      vframe.C
 $(OBJDIR)/vframe3d.o: 	   				      vframe3d.C
 $(OBJDIR)/workarounds.o:   				      workarounds.C
+
+
+
+
 
 

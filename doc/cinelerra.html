@@ -3,7 +3,7 @@
 <title>SECRETS OF CINELERRA</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name="description" content="SECRETS OF CINELERRA">
-<meta name="generator" content="makeinfo 4.8">
+<meta name="generator" content="makeinfo 4.11">
 <link title="Top" rel="top" href="#Top">
 <link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
 <meta http-equiv="Content-Style-Type" content="text/css">
@@ -36,7 +36,7 @@ Up:&nbsp;<a rel="up" accesskey="u" href="#dir">(dir)</a>
 
    <p>by Adam Williams
 
-   <p>Copyright &copy; 2009
+   <p>Copyright &copy; 2011
 
 <h2 class="chapter">1 SHORT CONTENTS</h2>
 
@@ -284,6 +284,7 @@ Up:&nbsp;<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <li><a href="#MAKING-A-RINGTONE">17.7 MAKING A RINGTONE</a>
 <li><a href="#TIME-STRETCHING-AUDIO">17.8 TIME STRETCHING AUDIO</a>
 <li><a href="#PITCH-SHIFTING-AUDIO">17.9 PITCH SHIFTING AUDIO</a>
+<li><a href="#TEXT-TO-MOVIE">17.10 TEXT TO MOVIE</a>
 </li></ul>
 <li><a name="toc_SECRETS-OF-CINELERRA-EFFECTS" href="#SECRETS-OF-CINELERRA-EFFECTS">18 SECRETS OF CINELERRA EFFECTS</a>
 <ul>
@@ -6407,6 +6408,7 @@ problems and what tools are used to solve the problems.
 <li><a accesskey="7" href="#MAKING-A-RINGTONE">MAKING A RINGTONE</a>
 <li><a accesskey="8" href="#TIME-STRETCHING-AUDIO">TIME STRETCHING AUDIO</a>
 <li><a accesskey="9" href="#PITCH-SHIFTING-AUDIO">PITCH SHIFTING AUDIO</a>
+<li><a href="#TEXT-TO-MOVIE">TEXT TO MOVIE</a>
 </ul>
 
 <div class="node">
@@ -6727,9 +6729,10 @@ appliances.
      ifogen -T -o dvd
      mkisofs -dvd-video -udf -o dvd.iso dvd/
 </pre>
-   <p>Chapters may be set with the following.  The units are seconds.
+   <p>Chapters may be set with the following.  The units are seconds.  Version
+0.3.1 ignores the 1st chapter, so it has to be specified as 0.
 
-<pre class="example">     ifogen -o dvd --chapters=0021.788,0047.447,0077.043 final.mpg
+<pre class="example">     ifogen -o dvd --chapters=0,0021.788,0047.447,0077.043 final.mpg
 </pre>
    <p>Replace the chapter times.
 
@@ -6835,6 +6838,7 @@ correspond to the length changes.
 <div class="node">
 <p><hr>
 <a name="PITCH-SHIFTING-AUDIO"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="#TEXT-TO-MOVIE">TEXT TO MOVIE</a>,
 Previous:&nbsp;<a rel="previous" accesskey="p" href="#TIME-STRETCHING-AUDIO">TIME STRETCHING AUDIO</a>,
 Up:&nbsp;<a rel="up" accesskey="u" href="#SECRETS-OF-CINELERRA">SECRETS OF CINELERRA</a>
 
@@ -6861,6 +6865,64 @@ click on <b>Info</b>.  Adjust the sample rate in the <b>Info</b> dialog to
 adjust the pitch.  This method also requires left clicking on the right
 boundary of the audio tracks and dragging left or right to correspond
 to the length changes.
+
+<div class="node">
+<p><hr>
+<a name="TEXT-TO-MOVIE"></a>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="#PITCH-SHIFTING-AUDIO">PITCH SHIFTING AUDIO</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="#SECRETS-OF-CINELERRA">SECRETS OF CINELERRA</a>
+
+</div>
+
+<h3 class="section">17.10 TEXT TO MOVIE</h3>
+
+<p>Text to movie was added when another one of those startups whose name
+was an unmemorable combination of farting noises that the venture
+capitalist heard, started charging money for a ridulously simple program
+that converted scripts directly to movies.  It was such a simple
+program, we decided to add most of the functionality to Cinelerra.
+
+   <p>The easiest way to make a movie is to copy <b>tests/text2movie</b> and
+<b>tests/text2movie.xml</b> as a starting point.  Load the
+<b>text2movie.xml</b> file to see the movie.
+
+   <p>The <b>text2movie</b> file acts like a normal asset, except changes to it
+are immediately reflected on the timeline, without reloading.  Also, the
+length is infiinite.  Edit the <b>text2movie</b> file to change the
+script.  If the length of the movie increases, drag the right edit
+handle to extend the edit or use <b>edit-&gt;edit length</b>.
+
+   <p>1 audio channel is created for every character.  The frame rate, sample
+rate, and frame size are fixed.  Get it from the <b>asset window</b>. 
+Right click on the asset and go to <b>Asset info...</b>  Camera angles are
+fixed.
+
+   <p>Since its only use was to show dialog between 2 people, that's the
+functionality we focused on.  The character model and voice is selected
+separately in the script, because that was how it was done with the fee
+service.  The models are defined in model files, in the Cinelerra
+executable directory.  Usually <b>/opt/cinelerra/models</b>.
+
+   <p>There is a search path for models, starting with the directory the
+script is in.  You can define new models for the script, without
+affecting the entire system.  The model files are the exact name that
+appears in the script.  They define the total size of the model and the
+images used in the model.
+
+   <p>The models are 2D png images, because all the animations are baked.  No
+custom movement is currently supported, that would require a 3D
+renderer.
+
+   <p>Some actions are implemented.  Character2 can cut off character1 if
+character1's dialog ends in <b>...</b>
+
+   <p>Inserting <b>[pause]</b> anywhere causes the character to pause.  Useful
+for adjusting the timing of dialog.
+
+   <p>Speech synthesis is pretty lousy.  Punctuation and spelling needs to be
+adjusted based on the sound.  The dialog is rendered on-demand, so there
+is a delay when each character starts to speak.  Split dialog into
+shorter blocks to reduce the delay.
 
 <div class="node">
 <p><hr>
@@ -8595,7 +8657,7 @@ simpler.
 position.  The class definition for load_configuration should contain
 
      <pre class="example">          LOAD_CONFIGURATION_MACRO(plugin_class, config_class)
-     </pre>
+</pre>
      <p>to implement the default behavior for load_configuration.  This stores
 whatever the current configuration is inside the plugin's configuration
 object and returns 1 if the new configuration differs from the previous
@@ -8611,7 +8673,7 @@ PLUGIN_CLASS_MEMBERS.
 
      <pre class="example">          #include "picon_png.h"
           NEW_PICON_MACRO(plugin_class)
-     </pre>
+</pre>
      <p>to implement new_picon.  In addition, the user should create a
 <b>picon_png.h</b> header file from a PNG image using <b>pngtoh</b>. 
 <b>pngtoh</b> is compiled in the <b>guicast/ARCH</b> directory.
@@ -8642,7 +8704,7 @@ have a format like
           		}
           	}
           }
-     </pre>
+</pre>
      <p>to handle concurrency and conditions of no GUI.
 
    </ul>
@@ -9057,7 +9119,7 @@ instantiate the progress object with a line like
           progress = start_progress("MyPlugin progress...",
           	PluginClient::get_total_len());
           
-     </pre>
+</pre>
      <p>The usage of <b>start_progress</b> depends on whether the plugin is
 multichannel or single channel.  If it's multichannel you always call
 start_progress.  If it's single channel, you first need to know whether
@@ -9091,7 +9153,7 @@ contain the number of samples generated if it's audio.
 update the progress bar if it's 1.
 
      <pre class="example">          progress-&gt;update(total_written);
-     </pre>
+</pre>
      <p>returns 1 or 0 if the progress bar was cancelled.  If it's 1,
 process_loop should return 1 to indicate a cancellation.  In addition
 to progress bar cancellation, <b>process_loop</b> should return 1 when the

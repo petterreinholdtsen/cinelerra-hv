@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -683,8 +682,19 @@ int FileSystem::parse_dots(char *new_dir)
 		changed = 0;
 		for(i = 0, j = 1; !changed && j < len; i++, j++)
 		{
+// Got 2 dots
 			if(new_dir[i] == '.' && new_dir[j] == '.')
 			{
+// Ignore if character after .. doesn't qualify
+				if(j + 1 < len && 
+					new_dir[j + 1] != ' ' &&
+					new_dir[j + 1] != '/')
+					continue;
+
+// Ignore if character before .. doesn't qualify
+				if(i > 0 && 
+					new_dir[i - 1] != '/') continue;
+
 				changed = 1;
 				while(new_dir[i] != '/' && i > 0)
 				{

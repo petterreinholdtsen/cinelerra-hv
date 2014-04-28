@@ -106,10 +106,10 @@ static inline void transfer_RGB_FLOAT_to_BGR8888(unsigned char *(*output),
 	unsigned char r = (unsigned char)(CLIP(input[0], 0, 1) * 0xff);
 	unsigned char g = (unsigned char)(CLIP(input[1], 0, 1) * 0xff);
 	unsigned char b = (unsigned char)(CLIP(input[2], 0, 1) * 0xff);
-	*(*output)++ = b;
-	*(*output)++ = g;
-	*(*output)++ = r;
-	(*output)++;
+	(*output)[0] = b;
+	(*output)[1] = g;
+	(*output)[2] = r;
+	(*output) += 4;
 }
 
 static inline void transfer_RGB_FLOAT_to_YUV888(unsigned char *(*output), 

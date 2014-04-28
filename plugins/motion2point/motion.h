@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../motion/affine.inc"
+#include "affine.inc"
 #include "../motion/motionscan.inc"
 #include "bchash.inc"
 #include "filexml.inc"

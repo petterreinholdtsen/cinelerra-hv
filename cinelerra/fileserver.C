@@ -41,12 +41,14 @@ FileServer::FileServer(Preferences *preferences) : ForkWrapper()
 
 FileServer::~FileServer()
 {
+	stop();
 	delete lock;
 }
 
 void FileServer::init_child()
 {
 	BC_WindowBase::get_resources()->vframe_shm = 1;
+//printf("FileServer::init_child %d %d\n", __LINE__, getpid());
 }
 
 int FileServer::handle_command()

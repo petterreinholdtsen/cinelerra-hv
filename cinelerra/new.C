@@ -345,7 +345,7 @@ void NewWindow::create_objects()
 	add_subwindow(output_h_text = new NewOutputH(this, x1, y));
 	x1 += output_h_text->get_w();
 	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow->theme, 
 		output_w_text, 
 		output_h_text, 
 		x1, 
@@ -654,7 +654,7 @@ int FrameRatePulldown::handle_event()
 	return 1;
 }
 
-FrameSizePulldown::FrameSizePulldown(MWindow *mwindow, 
+FrameSizePulldown::FrameSizePulldown(Theme *theme, 
 		BC_TextBox *output_w, 
 		BC_TextBox *output_h, 
 		int x, 
@@ -664,14 +664,14 @@ FrameSizePulldown::FrameSizePulldown(MWindow *mwindow,
 	100,
 	200,
 	LISTBOX_TEXT,
-	&mwindow->theme->frame_sizes,
+	&theme->frame_sizes,
 	0,
 	0,
 	1,
 	0,
 	1)
 {
-	this->mwindow = mwindow;
+	this->theme = theme;
 	this->output_w = output_w;
 	this->output_h = output_h;
 }

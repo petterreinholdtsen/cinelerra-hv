@@ -42,9 +42,9 @@ build_triplet = x86_64-unknown-linux
 host_triplet = x86_64-unknown-linux
 target_triplet = x86_64-unknown-linux
 #am__append_1 = $(top_builddir)/mpeg2enc/libmpeg2encpp.la
-am__append_2 = liblavrec.la
-am__append_3 = liblavplay.la
-am__append_4 = ${X_LIBS} -lX11
+#am__append_2 = liblavrec.la
+#am__append_3 = liblavplay.la
+#am__append_4 = ${X_LIBS} -lX11
 bin_PROGRAMS = mjpeg_simd_helper$(EXEEXT) lav2wav$(EXEEXT) \
 	lav2yuv$(EXEEXT) lavaddwav$(EXEEXT) lavtrans$(EXEEXT) \
 	ypipe$(EXEEXT) yuv2lav$(EXEEXT) transist.flt$(EXEEXT) \
@@ -55,10 +55,10 @@ bin_PROGRAMS = mjpeg_simd_helper$(EXEEXT) lav2wav$(EXEEXT) \
 	yuvfps$(EXEEXT) yuvinactive$(EXEEXT) $(am__EXEEXT_1) \
 	$(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4) \
 	$(am__EXEEXT_5)
-#am__append_5 = glav
+am__append_5 = glav
 #am__append_6 = yuvplay
-am__append_7 = lavrec testrec lavvideo
-am__append_8 = lavplay
+#am__append_7 = lavrec testrec lavvideo
+#am__append_8 = lavplay
 am__append_9 = png2yuv
 subdir = lavtools
 DIST_COMMON = $(liblavinclude_HEADERS) $(noinst_HEADERS) \
@@ -93,20 +93,20 @@ liblavjpeg_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_liblavjpeg_la_OBJECTS = liblavjpeg_la-jpegutils.lo
 liblavjpeg_la_OBJECTS = $(am_liblavjpeg_la_OBJECTS)
 am__DEPENDENCIES_3 =
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
+#am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
 am_liblavplay_la_OBJECTS = liblavplay_la-liblavplay.lo \
 	liblavplay_la-audiolib.lo
 liblavplay_la_OBJECTS = $(am_liblavplay_la_OBJECTS)
-am_liblavplay_la_rpath = -rpath $(libdir)
+#am_liblavplay_la_rpath = -rpath $(libdir)
 am_liblavrec_la_OBJECTS = liblavrec_la-liblavrec.lo \
 	liblavrec_la-audiolib.lo liblavrec_la-frequencies.lo
 liblavrec_la_OBJECTS = $(am_liblavrec_la_OBJECTS)
-am_liblavrec_la_rpath = -rpath $(libdir)
-#am__EXEEXT_1 = glav$(EXEEXT)
+#am_liblavrec_la_rpath = -rpath $(libdir)
+am__EXEEXT_1 = glav$(EXEEXT)
 #am__EXEEXT_2 = yuvplay$(EXEEXT)
-am__EXEEXT_3 = lavrec$(EXEEXT) testrec$(EXEEXT) \
-	lavvideo$(EXEEXT)
-am__EXEEXT_4 = lavplay$(EXEEXT)
+#am__EXEEXT_3 = lavrec$(EXEEXT) testrec$(EXEEXT) \
+#	lavvideo$(EXEEXT)
+#am__EXEEXT_4 = lavplay$(EXEEXT)
 am__EXEEXT_5 = png2yuv$(EXEEXT)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
@@ -256,18 +256,18 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/mjpegtools-1.9.0rc3/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/mjpegtools-1.9.0rc3/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/mjpegtools-1.9.0rc3/missing --run automake-1.9
-AWK = gawk
+AWK = mawk
 CC = gcc
 CCAS = gcc
 CCASFLAGS = -I/quicktime/thirdparty/jpeg -L/quicktime/thirdparty/jpeg -L/usr/lib/X11
 CCDEPMODE = depmode=gcc3
-CFLAGS = -march=nocona -mtune=nocona -I/quicktime/thirdparty/jpeg -L/quicktime/thirdparty/jpeg -L/usr/lib/X11 -pthread -Wall -Wunused
+CFLAGS =  -I/quicktime/thirdparty/jpeg -L/quicktime/thirdparty/jpeg -L/usr/lib/X11 -pthread -Wall -Wunused
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -march=nocona -mtune=nocona -g -O2 -pthread 
+CXXFLAGS =  -g -O2 -pthread 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -280,14 +280,14 @@ EXEEXT =
 EXTRA_LDFLAGS = 
 F77 = 
 FFLAGS = 
-GTK_CFLAGS = 
-GTK_LIBS = 
+GTK_CFLAGS = -pthread -I/usr/include/atk-1.0 -I/usr/include/pango-1.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/cairo -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/pixman-1  
+GTK_LIBS = -pthread -L/usr/lib/x86_64-linux-gnu -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lpangocairo-1.0 -lgdk_pixbuf-2.0 -lm -lcairo -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 -lgmodule-2.0 -lgthread-2.0 -lrt -lglib-2.0  
 HAVE_ALTIVEC_FALSE = 
 HAVE_ALTIVEC_TRUE = #
 HAVE_ASM_MMX_FALSE = #
 HAVE_ASM_MMX_TRUE = 
-HAVE_GTK_FALSE = 
-HAVE_GTK_TRUE = #
+HAVE_GTK_FALSE = #
+HAVE_GTK_TRUE = 
 HAVE_LIBPNG_FALSE = #
 HAVE_LIBPNG_TRUE = 
 HAVE_LIBQUICKTIME_FALSE = 
@@ -296,10 +296,10 @@ HAVE_PPCCPU_FALSE =
 HAVE_PPCCPU_TRUE = #
 HAVE_SDL_FALSE = 
 HAVE_SDL_TRUE = #
-HAVE_V4L_FALSE = #
-HAVE_V4L_OR_SDL_FALSE = #
-HAVE_V4L_OR_SDL_TRUE = 
-HAVE_V4L_TRUE = 
+HAVE_V4L_FALSE = 
+HAVE_V4L_OR_SDL_FALSE = 
+HAVE_V4L_OR_SDL_TRUE = #
+HAVE_V4L_TRUE = #
 HAVE_X86CPU_FALSE = #
 HAVE_X86CPU_TRUE = 
 INSTALL_DATA = ${INSTALL} -m 644
@@ -315,7 +315,7 @@ LIBGETOPT_LIB =
 LIBM_LIBS = -lm 
 LIBOBJS = 
 LIBPNG_CFLAGS = -I/usr/include/libpng12  
-LIBPNG_LIBS = -lpng12  
+LIBPNG_LIBS = -L/usr/lib/x86_64-linux-gnu -lpng12  
 LIBQUICKTIME_CFLAGS = 
 LIBQUICKTIME_LIBS = 
 LIBS = -lm 
@@ -350,14 +350,14 @@ SDL_CONFIG = no
 SDL_LIBS = 
 SDLgfx_LIBS = 
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = strip
-V4LCONF_LIBS =  -lXxf86dga
+V4LCONF_LIBS = 
 VERSION = 1.9.0
 X_CFLAGS = 
 X_EXTRA_LIBS = 
 X_LIBS = 
-X_PRE_LIBS =  -lSM -lICE
+X_PRE_LIBS = 
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++

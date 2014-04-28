@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # libtool - Provide generalized library-building support services.
 # Generated automatically by  (GNU fftw 3.0.1)
@@ -41,7 +41,7 @@ if test "X${CDPATH+set}" = Xset; then CDPATH=:; export CDPATH; fi
 # Libtool was configured on host amazon:
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 
 # Whether or not to build shared libraries.
 build_libtool_libs=no

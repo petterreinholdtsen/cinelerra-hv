@@ -35,7 +35,7 @@
 /* #undef HAVE_LIBQUICKTIME */
 
 /* libxf86dga is present */
-#define HAVE_LIBXXF86DGA 1
+/* #undef HAVE_LIBXXF86DGA */
 
 /* Define to 1 if you have the `lround' function. */
 #define HAVE_LROUND 1
@@ -92,7 +92,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Building for Linux - using the video4linux API */
-#define HAVE_V4L 1
+/* #undef HAVE_V4L */
 
 /* Compiling for x86-64 architecture CPU */
 #define HAVE_X86CPU 1
@@ -142,7 +142,7 @@
 /* #undef WORDS_BIGENDIAN */
 
 /* Define to 1 if the X Window System is missing or not being used. */
-/* #undef X_DISPLAY_MISSING */
+#define X_DISPLAY_MISSING 1
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */

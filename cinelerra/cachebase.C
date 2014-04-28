@@ -151,8 +151,8 @@ int CacheBase::delete_oldest()
 	if(oldest_item)
 	{
 // Too much data to debug if audio.
-// printf("CacheBase::delete_oldest: deleted position=%lld %d bytes\n", 
-// oldest_item->position, oldest_item->get_size());
+//printf("CacheBase::delete_oldest: deleted position=%lld %d bytes\n", 
+//oldest_item->position, oldest_item->get_size());
 		delete oldest_item;
 		if(current_item == oldest_item) current_item = 0;
 		lock->unlock();

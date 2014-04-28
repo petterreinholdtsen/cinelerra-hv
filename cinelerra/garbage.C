@@ -60,7 +60,15 @@ void Garbage::remove_user()
 {
 	if(!this) return;
 
+//printf("Garbage::remove_user %d lock=%p users=%d\n", __LINE__, lock, users);
+	if(users <= 0)
+	{
+		printf("Garbage::remove_user %d users=%d\n", __LINE__, users);
+		return;
+	}
+
 	lock->lock("Garbage::delete_object");
+
 	users--;
 	
 	if(users <= 0)

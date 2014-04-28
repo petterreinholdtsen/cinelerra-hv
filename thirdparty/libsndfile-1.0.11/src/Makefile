@@ -48,7 +48,7 @@ AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/libsndfile-1.0.11/missing --run au
 # Disable autoheader. 
 AUTOHEADER = echo
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/libsndfile-1.0.11/missing --run automake-1.7
-AWK = gawk
+AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wcast-qual -Wnested-externs -Wshadow -Wbad-function-cast -Wwrite-strings -pipe 
@@ -103,7 +103,7 @@ RANLIB = ranlib
 SET_MAKE = 
 SF_COUNT_MAX = 0x7FFFFFFFFFFFFFFFLL
 SHARED_VERSION_INFO = 1:11:0
-SHELL = /bin/sh
+SHELL = /bin/bash
 SHLIB_VERSION_ARG = -Wl,--version-script=$(srcdir)/Symbols.linux
 SIZEOF_SF_COUNT_T = 8
 STRIP = strip

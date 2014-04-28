@@ -33,7 +33,7 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 
 VirtualConsole::~VirtualConsole()
 {
-// Destructor always calls default methods so can't put deletions in here
+//printf("VirtualConsole::~VirtualConsole 1\n");
 	delete_virtual_console();
 	delete_input_buffers();
 
@@ -173,7 +173,7 @@ int VirtualConsole::sort_virtual_console()
 {
 // sort the console
 	int done = 0, result = 0;
-	long attempts = 0;
+	int64_t attempts = 0;
 	int i;
 
 //printf("VirtualConsole::sort_virtual_console 1\n");
@@ -215,8 +215,8 @@ void VirtualConsole::dump()
 }
 
 
-int VirtualConsole::test_reconfigure(long position, 
-	long &length, 
+int VirtualConsole::test_reconfigure(int64_t position, 
+	int64_t &length, 
 	int &last_playback)
 {
 	int result = 0;
@@ -266,9 +266,9 @@ int VirtualConsole::test_reconfigure(long position,
 
 	int direction = renderengine->command->get_direction();
 // GCC 3.2 requires this or optimization error results.
-	long longest_duration1;
-	long longest_duration2;
-	long longest_duration3;
+	int64_t longest_duration1;
+	int64_t longest_duration2;
+	int64_t longest_duration3;
 
 //printf("VirtualConsole::test_reconfigure 6 %d %d\n", length, result);
 // Length of time until next transition, edit, or effect change.
@@ -360,7 +360,8 @@ int VirtualConsole::delete_virtual_console()
 	{
 		delete virtual_modules[i];
 	}
-	if(total_tracks) delete [] virtual_modules;
+// Seems to get allocated even if new[0].
+	if(virtual_modules) delete [] virtual_modules;
 	virtual_modules = 0;
 
 // delete sort order

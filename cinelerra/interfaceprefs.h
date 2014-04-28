@@ -48,7 +48,7 @@ public:
 
 	MeterMinDB *min_db;
 	MeterVUDB *vu_db;
-	MeterVUInt *vu_int;
+//	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
 };
@@ -157,7 +157,7 @@ class MeterVUDB : public BC_Radial
 public:
 	MeterVUDB(PreferencesWindow *pwindow, char *text, int y);
 	int handle_event();
-	MeterVUInt *vu_int;
+//	MeterVUInt *vu_int;
 	PreferencesWindow *pwindow;
 };
 

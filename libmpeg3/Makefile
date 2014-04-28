@@ -2,6 +2,14 @@ CC = gcc
 NASM = nasm
 USE_MMX = 0
 USE_CSS = 1
+A52DIR := $(shell expr a52dec* )
+
+HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
+                                                                                
+ifeq ($(HAVE_NASM), n)
+$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
+endif
+
 
 ifeq ($(origin CFLAGS), environment)
 HAVE_CFLAGS := yes
@@ -25,9 +33,18 @@ endif
 ifeq ($(OBJDIR), i686)
   USE_MMX = 1
   ifneq ($(HAVE_CFLAGS), yes)
-    CFLAGS := -O2 -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+    CFLAGS := -O2 -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2 -I/usr/local/include
   endif
   CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
+endif
+
+ifeq ($(OBJDIR), x86_64)
+  ifneq ($(HAVE_CFLAGS), yes)
+    CFLAGS := -O2 -fomit-frame-pointer -I/usr/local/include
+  endif
+  CFLAGS += -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
+
+
 endif
 
 
@@ -59,13 +76,6 @@ CFLAGS += \
 
 
 
-
-UTILOBJS = \
-	$(OBJDIR)/mpeg3cat.o \
-	$(OBJDIR)/mpeg3dump.o \
-	$(OBJDIR)/mpeg3toc.o
-
-#	$(OBJDIR)/mpeg3split.o \
 
 
 
@@ -128,7 +138,7 @@ DIRS += $(A52DIRS)
 
 
 OUTPUT = $(OBJDIR)/libmpeg3.a
-UTILS = $(OBJDIR)/mpeg3dump $(OBJDIR)/mpeg3cat $(OBJDIR)/mpeg3toc 
+UTILS = $(OBJDIR)/mpeg3dump $(OBJDIR)/mpeg3toc  $(OBJDIR)/mpeg3cat
 
 #$(OBJDIR)/mpeg3split
 
@@ -140,23 +150,24 @@ $(shell if ! test -d $(OBJDIR) \; then mkdir -p $(OBJDIR) \; fi )
 $(shell echo $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo $(A52CFLAGS) > $(OBJDIR)/a52_flags)
 $(shell echo $(OBJS) $(ASMOBJS) $(A52OBJS) $(NASMOBJS) > $(OBJDIR)/objs)
+$(shell mkdir -p $(DIRS) )
 
-all: $(DIRS) $(OUTPUT) util
+all: $(OUTPUT) $(UTILS)
 
-$(DIRS):
-	if ! test -d $@ ; then mkdir -p $@ ; fi
 
-$(OUTPUT): $(OBJS) $(ASMOBJS) $(NASMOBJS) $(A52OBJS) $(UTILOBJS)
+$(OUTPUT): $(OBJS) $(ASMOBJS) $(NASMOBJS) $(A52OBJS)
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
-$(OBJDIR)/mpeg3dump: $(OUTPUT)
+
+
+$(OBJDIR)/mpeg3dump: $(OUTPUT) mpeg3dump.c
 	$(CC) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/mpeg3dump mpeg3dump.c $(OUTPUT) $(LIBS)
 
-$(OBJDIR)/mpeg3cat: $(OUTPUT)
-	$(CC) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/mpeg3cat mpeg3cat.c $(OUTPUT) $(LIBS)
-
-$(OBJDIR)/mpeg3toc: $(OUTPUT)
+$(OBJDIR)/mpeg3toc: $(OUTPUT) mpeg3toc.c
 	$(CC) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/mpeg3toc mpeg3toc.c $(OUTPUT) $(LIBS)
+
+$(OBJDIR)/mpeg3cat: $(OUTPUT) mpeg3cat.c
+	$(CC) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/mpeg3cat mpeg3cat.c $(OUTPUT) $(LIBS)
 
 #$(OBJDIR)/mpeg3split: $(OUTPUT)
 #	$(CC) `cat $(OBJDIR)/c_flags` -o $(OBJDIR)/mpeg3split mpeg3split.c $(OUTPUT) $(LIBS)
@@ -171,8 +182,6 @@ $(OBJDIR)/mpeg2qt: $(OUTPUT)
 		-lpng \
 		-lz \
 		-ldl
-
-util: $(UTILS)
 
 install: 
 	cp $(UTILS) /usr/bin
@@ -200,7 +209,6 @@ $(OBJDIR)/bitstream.o:  			    bitstream.c
 $(OBJDIR)/mpeg3dump.o: 				    mpeg3dump.c
 $(OBJDIR)/libmpeg3.o: 				    libmpeg3.c
 $(OBJDIR)/mpeg3atrack.o: 			    mpeg3atrack.c
-$(OBJDIR)/mpeg3cat.o: 				    mpeg3cat.c
 $(OBJDIR)/mpeg3css.o: 				    mpeg3css.c
 $(OBJDIR)/mpeg3demux.o: 			    mpeg3demux.c
 $(OBJDIR)/mpeg3ifo.o: 				    mpeg3ifo.c

@@ -126,7 +126,7 @@ int VFrame::params_match(int w, int h, int color_model)
 
 int VFrame::reset_parameters()
 {
-	field2_offset = 0;
+	field2_offset = -1;
 	shared = 0;
 	shm_offset = 0;
 	bytes_per_line = 0;

@@ -410,12 +410,12 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
   			avcodec_init();
 			avcodec_register_all();
 		}
-;
+
 		codec->encoder = avcodec_find_encoder(codec->derivative);
 		if(!codec->encoder)
 		{
 			printf("encode: avcodec_find_encoder returned NULL.\n");
-			pthread_mutex_unlock(&decode_mutex);
+			pthread_mutex_unlock(&encode_mutex);
 			return 1;
 		}
 

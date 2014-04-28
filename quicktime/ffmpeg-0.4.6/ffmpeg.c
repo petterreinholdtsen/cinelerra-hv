@@ -1269,8 +1269,11 @@ static int av_encode(AVFormatContext **output_files,
                 case CODEC_TYPE_AUDIO:
                     /* XXX: could avoid copy if PCM 16 bits with same
                        endianness as CPU */
-                    ret = avcodec_decode_audio(&ist->st->codec, samples, &data_size,
-                                               ptr, len);
+                    ret = avcodec_decode_audio(&ist->st->codec, 
+						samples, 
+						&data_size,
+                        ptr, 
+						len);
                     if (ret < 0)
                         goto fail_decode;
                     /* Some bug in mpeg audio decoder gives */

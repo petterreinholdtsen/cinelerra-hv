@@ -169,6 +169,7 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
     <a href="#TROUBLESHOOTING">TROUBLESHOOTING</a>
 <ul>
 <li><a href="#BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>
+<li><a href="#DRAGGING%20IN%20AND%20OUT%20POINTS%20DOESN'T%20WORK">DRAGGING IN AND OUT POINTS DOESN'T WORK</a>
 </ul>
 <li><a name="toc_SECRETS%20OF%20CINELERRA"></a>
     <a href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
@@ -203,6 +204,7 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 <li><a href="#VIDEO%20PLUGINS">VIDEO PLUGINS</a>
 <li><a href="#TRANSITION%20PLUGINS">TRANSITION PLUGINS</a>
 <li><a href="#PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>
+<li><a href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>
 </ul>
 <li><a name="toc_RELEASE%20NOTES"></a>
     <a href="#RELEASE%20NOTES">RELEASE NOTES</a>
@@ -1004,27 +1006,25 @@ to scale job sizes based on CPU speed of the node.  Frame rates are
 only calculated when renderfarm is enabled.
 
 </p><li>
-FILESYSTEM PREFIX ON REMOTE NODES
+USE VIRTUAL FILESYSTEM
 
-<p>Sets the relative location of all the assets on the nodes.  If the
-assets are in <em>/mov</em> on the master and the master filesystem is
-mounted under <em>/mnt</em> on the nodes, the filesystem prefix should be
-<em>/mnt</em>.  Ideally the assets should appear under the same directory
-on the nodes as the master.  In this case the filesystem prefix can be
-<em>/</em>.
+<p>Normally the directory on the master node containing the source and
+destination assets is mounted on the clients.  The assets on the
+clients should be visible in the same locations as they are on the
+master node.  This can be hard to set up and requires root access.
 
-<p>You don't have to mount a shared filesystem on remote nodes.  If the
-shared filesystem is replicated somewhere on the slave node's hard
-drive, Cinelerra will read all the assets from the node's hard drive
-and write the output to the node's hard drive, and you won't need a
-very fast network.  This is much more difficult to pull off but it's an
-option for really slow networks.
+<p>A user level version of NFS was built into Cinelerra and called the
+Virtual File System.  This transparently redirects all file I/O over
+the network without requiring a replication of the master node's
+directory structure or root access on the client.  The client sees the
+exact directory structure on the master node but in reality is sending
+network packets to access it.
 
-<p>You don't have to specify a file on the master node's filesystem as the
-output file.  If the output file is specified in some other directory
-on the slave node hard drive Cinelerra will read assets from the master
-filesystem but write to the node's hard drive.  Thus you have a way of
-rendering across an asymetric network.
+<p>There is a penalty for doing this though, since Virtual Filesystem
+isn't as refined as NFS.  Operations that access one byte at a time are
+really slow.  Unless you need to run rendering clients without root
+access or have a lot of assets in different directories,  use NFS
+instead.
 
 </p><li>
 TOTAL JOBS TO CREATE
@@ -4063,10 +4063,12 @@ Up:<a rel=up accesskey=u href="#Top">Top</a>
 
 <ul>
 <li><a accesskey=1 href="#BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>: 
+<li><a accesskey=2 href="#DRAGGING%20IN%20AND%20OUT%20POINTS%20DOESN'T%20WORK">DRAGGING IN AND OUT POINTS DOESN'T WORK</a>: 
 </ul>
 
 <p><hr>
 Node:<a name="BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>,
+Next:<a rel=next accesskey=n href="#DRAGGING%20IN%20AND%20OUT%20POINTS%20DOESN'T%20WORK">DRAGGING IN AND OUT POINTS DOESN'T WORK</a>,
 Up:<a rel=up accesskey=u href="#TROUBLESHOOTING">TROUBLESHOOTING</a>
 <br>
 
@@ -4080,6 +4082,18 @@ See <a href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>.
 <p>Once tweeked, the Buz driver seems to crash if the number of recording
 buffers is too high.  Make sure <b>Preferences-&gt;Recording-&gt;Frames to
 buffer in device</b> is below 10.
+
+<p><hr>
+Node:<a name="DRAGGING%20IN%20AND%20OUT%20POINTS%20DOESN'T%20WORK">DRAGGING IN AND OUT POINTS DOESN'T WORK</a>,
+Previous:<a rel=previous accesskey=p href="#BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>,
+Up:<a rel=up accesskey=u href="#TROUBLESHOOTING">TROUBLESHOOTING</a>
+<br>
+
+<h3>DRAGGING IN AND OUT POINTS DOESN'T WORK</h3>
+
+<p>Sometimes there will be two edits really close together.  The point
+selected for dragging may be next to the indended edit on an edit too
+small to see at the current zoom level.  Zoom in horizontally.
 
 <p><hr>
 Node:<a name="SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>,
@@ -4512,6 +4526,7 @@ out of the group and rename the symbols.
 <li><a accesskey=5 href="#VIDEO%20PLUGINS">VIDEO PLUGINS</a>: 
 <li><a accesskey=6 href="#TRANSITION%20PLUGINS">TRANSITION PLUGINS</a>: 
 <li><a accesskey=7 href="#PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>: 
+<li><a accesskey=8 href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>: 
 </ul>
 
 <p><hr>
@@ -4739,9 +4754,9 @@ required functions and the configuration variables.
 	void copy_from(MyPluginConfig &amp;that);
 	void interpolate(MyPluginConfig &amp;prev,
 		MyPluginConfig &amp;next,
-		long prev_position,
-		long next_position,
-		long current_position);
+		int64_t prev_position,
+		int64_t next_position,
+		int64_t current_position);
 
 
 
@@ -4771,9 +4786,9 @@ fraction, using the arguments.
 
 <br><pre>void MyPluginConfig::interpolate(MyPluginConfig &amp;prev,
 		MyPluginConfig &amp;next,
-		long prev_position,
-		long next_position,
-		long current_position)
+		int64_t prev_position,
+		int64_t next_position,
+		int64_t current_position)
 {
 	double next_scale = (double)(current_position - prev_position) / (next_position - prev_position);
 	double prev_scale = (double)(next_position - current_position) / (next_position - prev_position);
@@ -5107,14 +5122,14 @@ Up:<a rel=up accesskey=u href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 include <b>pluginaclient.h</b> and inherit from <b>PluginAClient</b>.  Realtime audio plugins need to
 define
 
-<br><pre>int process_realtime(long size,
+<br><pre>int process_realtime(int64_t size,
 		double **input_ptr,
 		double **output_ptr);
 </pre>
 
 <p>if it's multichannel or
 
-<br><pre>int process_realtime(long size,
+<br><pre>int process_realtime(int64_t size,
 		double *input_ptr,
 		double *output_ptr);
 </pre>
@@ -5125,12 +5140,12 @@ synchronize plugins which delay audio.
 
 <p>Nonrealtime audio plugins need to define
 
-<br><pre>int process_loop(double *buffer, long &amp;write_length);
+<br><pre>int process_loop(double *buffer, int64_t &amp;write_length);
 </pre>
 
 <p>for single channel or
 
-<br><pre>int process_loop(double **buffers, long &amp;write_length);
+<br><pre>int process_loop(double **buffers, int64_t &amp;write_length);
 </pre>
 
 <p>for multi channel.
@@ -5218,6 +5233,7 @@ edit.  Eventually the second argument becomes the output.
 
 <p><hr>
 Node:<a name="PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>,
+Next:<a rel=next accesskey=n href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>,
 Previous:<a rel=previous accesskey=p href="#TRANSITION%20PLUGINS">TRANSITION PLUGINS</a>,
 Up:<a rel=up accesskey=u href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 <br>
@@ -5251,6 +5267,36 @@ eventually calls <b>render_gui</b> in the GUI instance of the plugin.
 <p>The sequence uses one argument, a void pointer to transfer information
 from the renderer to the GUI.  The user should typecast this pointer
 into something useful.
+
+<p><hr>
+Node:<a name="PLUGIN%20QUERIES">PLUGIN QUERIES</a>,
+Previous:<a rel=previous accesskey=p href="#PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>,
+Up:<a rel=up accesskey=u href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
+<br>
+
+<h3>PLUGIN QUERIES</h3>
+
+<p>There are several useful queries in PluginClient which can be accessed
+from the processing object.  Some of them have different meaning in
+realtime and non-realtime mode.  They all give information about the
+operating system or the project.
+
+<ul>
+
+<li>
+<b>int PluginClient::get_project_smp()</b> Gives the number of CPU's on
+the system minus 1.  If it's a uniprocessor it's 0.  If it's a dual
+processor, it's 1.  This number should be used to gain any parallelism.
+
+<li>
+<b>double PluginClient::get_project_framerate()</b> Gives the frames per
+second of the video.
+
+<li>
+<b>int PluginClient::get_project_samplerate()</b> Gives the samples per
+second of the audio.
+
+</ul>
 
 <p><hr>
 Node:<a name="RELEASE%20NOTES">RELEASE NOTES</a>,
@@ -5344,6 +5390,54 @@ MPEG-4 deblocking option in XMovie and Cinelerra.
 Resize in Record GUI doesn't screw it up.
 Better export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
 Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
+
+</pre>
+
+<p><b>1.1.6</b>
+
+<br><pre>
+Create fade keyframe inadverdently drags bezier handle less often.
+Float autos don't draw on right edge of timeline when keyframes are beyond right edge.
+Better float auto creation.
+Add track anywhere in timeline through track popup.
+Shared track references are automatically reconfigured after deleting or adding tracks.
+Libmpeg3: Better decoding of field-based MPEG video.
+Channels can be moved up or down in the Channel picker properly.
+Better handling of the long delay in deleting files without overflowing the recording buffers.
+Deinterlace really swaps fields instead of just saying it.
+Two line swapping combinations in deinterlace.
+Better listbox row sizing.
+Downsample offset.
+Faster window creation.
+Splash screen while you wait for it to start up.
+File deletion occurs before opening the driver instead of
+	after opening the driver for recording.
+Changing sample rate of WAV file in Asset window works.
+JPEG stills get saved with proper dimensions.
+Migrated to RedHat 8.0.
+ - e2fsprogs-devel is needed to compile the background render object.
+Fewer crashes due to OpenDivx global variables getting overwritten.
+Paste silence and clipboards also shifts effect keyframes properly.
+More checks for circular references in shared effects and shared tracks.
+Tracking during audio playback without video doesn't run past edge of loop boundaries.
+Better keyframing in Titler.
+Multiple language encodings in Titler.
+Undo of replace project after an effect works.
+Frame -&gt; field conversion does line averaging and pixel shifting.
+Field -&gt; frame conversion uses pixel shifting.
+Negative cursor selection is frame aligned.
+Documentation on video cleaning and deinterlacing tools.
+Buttons repositioned properly when filebox is resized vertically.
+Fade automation is more accurate.
+CWindow and VWindow slider position is less erratic after the window is resized.
+Timebars with regions track the playback position.
+More workarounds for buz driver lockups.
+Dragging the cursor on the timebar off the edges scrolls the timeline.
+IVTC uses luminance only in YUV colorspaces to improve accuracy.
+Quicktime: Tighter audio synchronization when encoding Quicktime with Vorbis audio.
+Start of audio effects is more accurate.
+Better IEEE1394 playback of video only.
+More IEEE1394 playback options.
 
 </pre>
 

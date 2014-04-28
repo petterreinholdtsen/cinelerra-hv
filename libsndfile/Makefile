@@ -1,7 +1,6 @@
 include ../global_config
 
-$(shell sh -c 'if ! test -d $(OBJDIR)/G72x\; then mkdir $(OBJDIR)/G72x\; fi' )
-$(shell sh -c 'if ! test -d $(OBJDIR)/GSM610\; then mkdir $(OBJDIR)/GSM610\; fi' )
+$(shell sh -c 'mkdir -p $(OBJDIR)/G72x $(OBJDIR)/GSM610' )
 
 OBJS = \
 	$(OBJDIR)/G72x/g721.o \
@@ -43,7 +42,7 @@ OBJS = \
 
 OUTPUT = $(OBJDIR)/libsndfile.a
 
-SHARED_OUTPUT = $(OBJDIR)/libsndfile.so
+$(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
 
 all: $(OUTPUT) $(SHARED_OUTPUT)
 
@@ -54,13 +53,10 @@ $(SHARED_OUTPUT): $(OBJS)
 	gcc -shared -o $(SHARED_OUTPUT) $(OBJS)
 
 clean:
-	find \( -name core \
-		-o -name '*.o' \
-		-o -name '*.a' \
-		-o -name '*.so' \) -exec rm -f {} \;
+	rm -rf $(OBJDIR)
 
 $(OBJS):
-	$(GCC) -c $(CFLAGS) $(subst $(OBJDIR)/,, $*.c) -o $*.o
+	$(GCC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 $(OBJDIR)/sndfile.o: sndfile.c
 $(OBJDIR)/raw.o: raw.c

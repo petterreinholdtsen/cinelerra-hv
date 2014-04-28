@@ -1,0 +1,1 @@
+-O2 -fomit-frame-pointer -funroll-all-loops -Iffmpeg-0.4.6/ -Iffmpeg-0.4.6/libavcodec -Iffmpeg-0.4.6/libavcodec/i386 -Iffmpeg-0.4.6/libavcodec/libac3 -Iffmpeg-0.4.6/libavcodec/mpglib -Iffmpeg-0.4.6/libavformat -DHAVE_AV_CONFIG_H -D_GNU_SOURCE

@@ -40,6 +40,7 @@ OBJS = \
 	$(OBJDIR)/bcwindow.o \
 	$(OBJDIR)/bcwindowbase.o \
 	$(OBJDIR)/bcwindowdraw.o \
+	$(OBJDIR)/condition.o \
 	$(OBJDIR)/errorbox.o \
 	$(OBJDIR)/defaults.o \
 	$(OBJDIR)/filesystem.o \

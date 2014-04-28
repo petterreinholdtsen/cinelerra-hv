@@ -176,6 +176,7 @@ open (const char *pathname, int flags, ...)
   if (!func)
     func = (int (*) (const char *, int, mode_t)) dlsym (REAL_LIBC, "open");
 
+
   dsp_init ();
 
   va_start (args, flags);
@@ -404,6 +405,7 @@ close (int fd)
 
   if (!func)
     func = (int (*) (int)) dlsym (REAL_LIBC, "close");
+
 
   if (fd == sndfd)
     sndfd = -1;

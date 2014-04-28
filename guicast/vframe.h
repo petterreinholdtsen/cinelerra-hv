@@ -106,6 +106,9 @@ public:
 	void rotate270();
 	void rotate90();
 	void flip_vert();
+
+// Convenience storage.
+// Returns -1 if not set.
 	int get_field2_offset();
 	int set_field2_offset(int value);
 // Overlay src onto this with blending and translation of input.

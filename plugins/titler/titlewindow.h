@@ -34,6 +34,9 @@ class TitleBold;
 class TitleSize;
 class TitleEncoding;
 class TitleColorButton;
+class TitleColorStrokeButton;
+class TitleStroke;
+class TitleStrokeW;
 class TitleDropShadow;
 class TitleMotion;
 class TitleLoop;
@@ -44,11 +47,11 @@ class TitleX;
 class TitleY;
 class TitleLeft;
 class TitleCenter;
-class TitleRight;
-class TitleTop;
+class TitleRight;class TitleTop;
 class TitleMid;
 class TitleBottom;
 class TitleColorThread;
+class TitleColorStrokeThread;
 class TitleSpeed;
 class TitleTimecode;
 
@@ -81,6 +84,17 @@ public:
 	BC_Title *style_title;
 	TitleItalic *italic;
 	TitleBold *bold;
+
+#ifdef USE_OUTLINE
+	TitleStroke *stroke;
+	TitleColorStrokeButton *color_stroke_button;
+	TitleColorStrokeThread *color_stroke_thread;
+	BC_Title *strokewidth_title;
+	TitleStrokeW *stroke_width;
+	int color_stroke_x, color_stroke_y;
+#endif
+
+	int color_x, color_y;
 	BC_Title *size_title;
 	BC_Title *encoding_title;
 	TitleSize *size;
@@ -108,7 +122,6 @@ public:
 	TitleTimecode *timecode;
 
 // Color preview
-	int color_x, color_y;
 	ArrayList<BC_ListBoxItem*> sizes;
 	ArrayList<BC_ListBoxItem*> encodings;
 	ArrayList<BC_ListBoxItem*> paths;
@@ -144,6 +157,17 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
+
+class TitleStroke : public BC_CheckBox
+{
+public:
+	TitleStroke(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+
+
 class TitleSize : public BC_PopupTextBox
 {
 public:
@@ -167,6 +191,14 @@ class TitleColorButton : public BC_GenericButton
 {
 public:
 	TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleColorStrokeButton : public BC_GenericButton
+{
+public:
+	TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
@@ -237,6 +269,14 @@ class TitleY : public BC_TumbleTextBox
 {
 public:
 	TitleY(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleStrokeW : public BC_TumbleTextBox
+{
+public:
+	TitleStrokeW(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
@@ -312,6 +352,15 @@ class TitleColorThread : public ColorThread
 {
 public:
 	TitleColorThread(TitleMain *client, TitleWindow *window);
+	int handle_event(int output);
+	TitleMain *client;
+	TitleWindow *window;
+};
+
+class TitleColorStrokeThread : public ColorThread
+{
+public:
+	TitleColorStrokeThread(TitleMain *client, TitleWindow *window);
 	int handle_event(int output);
 	TitleMain *client;
 	TitleWindow *window;

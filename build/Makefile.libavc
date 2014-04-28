@@ -11,7 +11,7 @@ OBJS := \
 
 OUTPUT := libavc/$(OBJDIR)/libavc.a
 
-CFLAGS += -DHAVE_CONFIG_H -Ilibavc -Iquicktime/libraw1394/src
+CFLAGS += -DHAVE_CONFIG_H -Ilibavc -Ilibraw1394-0.9.0/src
 
 $(shell sh -c 'if ! test -d libavc/$(OBJDIR)/common\; then mkdir -p libavc/$(OBJDIR)/common\; fi' )
 $(shell sh -c 'if ! test -d libavc/$(OBJDIR)/libavc1394\; then mkdir -p libavc/$(OBJDIR)/libavc1394\; fi' )

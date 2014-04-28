@@ -1,7 +1,12 @@
-DV_DIR := $(shell expr ../quicktime/libdv-0.9.5 )
-ALSA_DIR := $(shell expr ../alsa-lib* )
-OGG_DIR := $(shell expr ../quicktime/libogg-1.0 )
-VORBIS_DIR := $(shell expr ../quicktime/libvorbis-1.0 )
+DV_DIR := ../quicktime/libdv-0.99
+ALSA_DIR := ../alsa-lib-0.9.0rc2
+OGG_DIR := ../quicktime/libogg-1.0
+VORBIS_DIR := ../quicktime/libvorbis-1.0
+LIBRAW_DIR := ../libraw1394-0.9.0
+TIFF_DIR := ../tiff-v3.5.7
+UUID_DIR := ../uuid
+TOOLAME_DIR := ../toolame-02l
+LAME_DIR := ../quicktime/lame-3.93.1/include
 include ../global_config
 
 OBJS = \
@@ -65,6 +70,8 @@ OBJS = \
 	$(OBJDIR)/cwindowgui.o \
 	$(OBJDIR)/cwindowtool.o \
 	$(OBJDIR)/dcoffset.o \
+	$(OBJDIR)/device1394input.o \
+	$(OBJDIR)/device1394output.o \
 	$(OBJDIR)/deleteallindexes.o \
 	$(OBJDIR)/drivesync.o \
 	$(OBJDIR)/edit.o \
@@ -187,6 +194,8 @@ OBJS = \
 	$(OBJDIR)/render.o \
 	$(OBJDIR)/renderfarm.o \
 	$(OBJDIR)/renderfarmclient.o \
+	$(OBJDIR)/renderfarmfsclient.o \
+	$(OBJDIR)/renderfarmfsserver.o \
 	$(OBJDIR)/renderengine.o \
 	$(OBJDIR)/resample.o \
 	$(OBJDIR)/resizetrackthread.o \
@@ -196,6 +205,7 @@ OBJS = \
 	$(OBJDIR)/setformat.o \
 	$(OBJDIR)/sharedlocation.o \
 	$(OBJDIR)/shmemory.o \
+	$(OBJDIR)/sighandler.o \
 	$(OBJDIR)/splashgui.o \
 	$(OBJDIR)/statusbar.o \
 	$(OBJDIR)/theme.o \
@@ -268,17 +278,31 @@ STATICLIBS = \
 	../libavc/$(OBJDIR)/libavc.a \
 	../quicktime/$(OBJDIR)/libquicktime.a \
         $(ESOUNDLIBS) \
-	../tiff/$(OBJDIR)/libtiff.a \
+	$(TIFF_DIR)/$(OBJDIR)/libtiff.a \
 	../guicast/$(OBJDIR)/libguicast.a \
 	../libmpeg3/$(OBJDIR)/libmpeg3.a \
-	../libsndfile/$(OBJDIR)/libsndfile.a
+	../libsndfile/$(OBJDIR)/libsndfile.a \
+	$(UUID_DIR)/$(OBJDIR)/libuuid.a \
+	../mpeg2enc/$(OBJDIR)/mpeg2enc.a \
+	$(TOOLAME_DIR)/$(OBJDIR)/toolame.a
 
-LIBS = \
+LIBS := \
 	-L./ \
-	-L../guicast \
-	-L/usr/X11R6/lib \
+	-L../guicast
+
+
+ifeq ($(OBJDIR), x86_64)
+LIBS += -L/usr/X11R6/lib64
+else
+LIBS += -L/usr/X11R6/lib
+endif
+
+
+
+
+LIBS += \
 	$(ALSA_LIBS) \
-	-luuid \
+	$(LIBRAW_DIR)/$(OBJDIR)/libraw1394.a \
 	$(GLLIBS) \
 	-lX11 \
 	-lXext \
@@ -297,8 +321,12 @@ CFLAGS += \
 	-I$(DV_DIR) \
 	-I$(OGG_DIR)/include \
 	-I$(VORBIS_DIR)/include \
-	-I../quicktime/libdv \
-	-I../quicktime/libraw1394/src \
+	-I$(LIBRAW_DIR)/src \
+	-I$(TIFF_DIR)/libtiff \
+	-I$(UUID_DIR) \
+	-I$(DV_DIR) \
+	-I$(TOOLAME_DIR) \
+	-I$(LAME_DIR) \
 	-I../audiofile \
 	-I../libmpeg3 \
 	-I../libsndfile \
@@ -307,7 +335,6 @@ CFLAGS += \
 	-I../libavc/librom1394 \
 	$(ESOUNDCFLAGS) \
 	$(ALSA_CFLAGS) \
-	-I../tiff \
 	`glib-config --cflags`
 
 
@@ -394,7 +421,7 @@ clean:
 	find \( -name core \
 		-o -name '*.o' \
 		-o -name '*.a' \
-		-o -name '*.so' \) -exec rm -f {} \;
+		-o -name '*.so' \) -exec rm -f {} \; -prune
 
 wc:
 	cat *.C *.h | wc
@@ -477,6 +504,8 @@ $(OBJDIR)/cwindowgui.o: 			  cwindowgui.C
 $(OBJDIR)/cwindowtool.o: 			  cwindowtool.C
 $(OBJDIR)/dcoffset.o: 				  dcoffset.C
 $(OBJDIR)/deleteallindexes.o: 			  deleteallindexes.C
+$(OBJDIR)/device1394input.o:                      device1394input.C
+$(OBJDIR)/device1394output.o:                     device1394output.C
 $(OBJDIR)/drivesync.o:  			  drivesync.C
 $(OBJDIR)/edit.o: 				  edit.C
 $(OBJDIR)/edithandles.o: 			  edithandles.C
@@ -605,6 +634,8 @@ $(OBJDIR)/render.o: 				  render.C
 $(OBJDIR)/renderengine.o: 			  renderengine.C
 $(OBJDIR)/renderfarm.o: 			  renderfarm.C
 $(OBJDIR)/renderfarmclient.o: 			  renderfarmclient.C
+$(OBJDIR)/renderfarmfsclient.o: 		  renderfarmfsclient.C
+$(OBJDIR)/renderfarmfsserver.o: 		  renderfarmfsserver.C
 $(OBJDIR)/resample.o: 				  resample.C
 $(OBJDIR)/resizetrackthread.o:                    resizetrackthread.C
 $(OBJDIR)/resourcepixmap.o: 			  resourcepixmap.C
@@ -613,6 +644,7 @@ $(OBJDIR)/savefile.o: 				  savefile.C
 $(OBJDIR)/setformat.o:                            setformat.C
 $(OBJDIR)/sharedlocation.o: 			  sharedlocation.C
 $(OBJDIR)/shmemory.o: 				  shmemory.C
+$(OBJDIR)/sighandler.o:                           sighandler.C
 $(OBJDIR)/splashgui.o: 				  splashgui.C
 $(OBJDIR)/statusbar.o:  			  statusbar.C
 $(OBJDIR)/theme.o: 				  theme.C

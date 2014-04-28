@@ -45,6 +45,7 @@ Preferences::Preferences()
 	render_preroll = 0.5;
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
+	renderfarm_vfs = 1;
 	renderfarm_job_count = 1;
 	brender_asset = new Asset;
 	brender_asset->audio_data = 0;
@@ -127,6 +128,7 @@ Preferences& Preferences::operator=(Preferences &that)
 	render_preroll = that.render_preroll;
 	brender_preroll = that.brender_preroll;
 	renderfarm_job_count = that.renderfarm_job_count;
+	renderfarm_vfs = that.renderfarm_vfs;
 	strcpy(renderfarm_mountpoint, that.renderfarm_mountpoint);
 	renderfarm_consolidate = that.renderfarm_consolidate;
 	use_brender = that.use_brender;
@@ -190,6 +192,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
+	renderfarm_vfs = defaults->get("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	int renderfarm_total = defaults->get("RENDERFARM_TOTAL", 0);
 
@@ -244,10 +247,11 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
 	defaults->update("BRENDER_PREROLL", brender_preroll);
+	defaults->update("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
-	defaults->update("RENDERFARM_TOTAL", renderfarm_nodes.total);
+	defaults->update("RENDERFARM_TOTAL", (int64_t)renderfarm_nodes.total);
 	for(int i = 0; i < renderfarm_nodes.total; i++)
 	{
 		sprintf(string, "RENDERFARM_NODE%d", i);

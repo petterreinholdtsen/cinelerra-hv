@@ -174,7 +174,12 @@ some utilities for handling files.
 
 @item
 
-MPlex - Multiplexing of MPEG elementary streams.
+MPlexhi - Multiplexing of MPEG elementary streams with standards conformance.
+
+@item
+
+MPlexlo - Multiplexing of MPEG elementary streams without standards
+conformance but more efficiently.
 
 @item
 
@@ -213,14 +218,11 @@ rpm2cpio hvirtual*.rpm | cpio -i --make-directories
 @node COMPILING FROM SCRATCH
 @section COMPILING FROM SCRATCH
 
-It should be noted that the compiler used in building Cinelerra
-binaries is the free GNU compiler and although it can reorder
-instructions for Pentium I and use some the of Pentium II branch
-instructions it's 12 years behind most modern CPUs.  You can try
+It should be noted that the compiler used in building Cinelerra binaries is the free GNU compiler and very conservative optimization flags.  You can try
 different compilers and optimization flags by compiling the source.
 
-Compiling the source is hard and there's no warranty if the source code
-fails to compile, but the method for compiling starts by downloading
+The compilation is verified on a vanilla RedHat 9.0 installation, workstation mode.  RedHat 9.0 doesn't install @b{nasm}.  This has to be installed manually for compilation to succeed.
+Compiling the source is hard and there's no warranty if the source code fails to compile, but the method for compiling starts by downloading
 the source code and decompressing.
 
 @example
@@ -264,7 +266,7 @@ make
 The make procedure should run through all the directories and put
 binaries in the @emph{i686} directories.  When we originally supported
 Alpha it was convenient to compile Alpha and i686 binaries
-simultaneously, in different directories so all the binaries are put in
+simultaneously, in different directories, so all the binaries are put in
 subdirectories.
 
 Once finished run
@@ -880,8 +882,7 @@ Cinelerra exits.
 Select the @emph{ON} column to activate and deactivate nodes once they
 are created.
 
-Nodes may be edited by highlighting a row and hitting @emph{replace
-node}.
+Nodes may be edited by highlighting a row and hitting @emph{apply changes}.
 
 @item
 
@@ -933,27 +934,28 @@ only calculated when renderfarm is enabled.
 
 @item
 
-FILESYSTEM PREFIX ON REMOTE NODES
+USE VIRTUAL FILESYSTEM
 
-Sets the relative location of all the assets on the nodes.  If the
-assets are in @emph{/mov} on the master and the master filesystem is
-mounted under @emph{/mnt} on the nodes, the filesystem prefix should be
-@emph{/mnt}.  Ideally the assets should appear under the same directory
-on the nodes as the master.  In this case the filesystem prefix can be
-@emph{/}.
+Normally the directory on the master node containing the source and
+destination assets is mounted on the clients.  The assets on the
+clients should be visible in the same locations as they are on the
+master node.  This can be hard to set up and requires root access.
 
-You don't have to mount a shared filesystem on remote nodes.  If the
-shared filesystem is replicated somewhere on the slave node's hard
-drive, Cinelerra will read all the assets from the node's hard drive
-and write the output to the node's hard drive, and you won't need a
-very fast network.  This is much more difficult to pull off but it's an
-option for really slow networks.
+A user level version of NFS was built into Cinelerra and called the
+Virtual File System.  This transparently redirects all file I/O over
+the network without requiring a replication of the master node's
+directory structure or root access on the client.  The client sees the
+exact directory structure on the master node but in reality is sending
+network packets to access it.
 
-You don't have to specify a file on the master node's filesystem as the
-output file.  If the output file is specified in some other directory
-on the slave node hard drive Cinelerra will read assets from the master
-filesystem but write to the node's hard drive.  Thus you have a way of
-rendering across an asymetric network.
+There is a penalty for doing this though, since Virtual Filesystem
+isn't as refined as NFS.  Operations that access one byte at a time are
+really slow.  Unless you need to run rendering clients without root
+access or have a lot of assets in different directories,  use NFS
+instead.
+
+
+
 
 @item
 
@@ -4117,6 +4119,7 @@ the first frame.
 
 @menu
 * BUZ DRIVER CRASHES::
+* DRAGGING IN AND OUT POINTS DOESN'T WORK::
 @end menu
 
 @node BUZ DRIVER CRASHES
@@ -4132,7 +4135,13 @@ buffers is too high.  Make sure @b{Preferences->Recording->Frames to
 buffer in device} is below 10.
 
 
+@node DRAGGING IN AND OUT POINTS DOESN'T WORK
+@section DRAGGING IN AND OUT POINTS DOESN'T WORK
 
+
+Sometimes there will be two edits really close together.  The point
+selected for dragging may be next to the indended edit on an edit too
+small to see at the current zoom level.  Zoom in horizontally.
 
 
 
@@ -4567,6 +4576,7 @@ out of the group and rename the symbols.
 * VIDEO PLUGINS::
 * TRANSITION PLUGINS::
 * PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK::
+* PLUGIN QUERIES::
 @end menu
 
 
@@ -4823,9 +4833,9 @@ required functions and the configuration variables.
 	void copy_from(MyPluginConfig &that);
 	void interpolate(MyPluginConfig &prev, 
 		MyPluginConfig &next, 
-		long prev_position, 
-		long next_position, 
-		long current_position);
+		int64_t prev_position, 
+		int64_t next_position, 
+		int64_t current_position);
 
 
 
@@ -4857,9 +4867,9 @@ fraction, using the arguments.
 @example
 void MyPluginConfig::interpolate(MyPluginConfig &prev, 
 		MyPluginConfig &next, 
-		long prev_position, 
-		long next_position, 
-		long current_position)
+		int64_t prev_position, 
+		int64_t next_position, 
+		int64_t current_position)
 @{
 	double next_scale = (double)(current_position - prev_position) / (next_position - prev_position);
 	double prev_scale = (double)(next_position - current_position) / (next_position - prev_position);
@@ -5225,7 +5235,7 @@ include @b{pluginaclient.h} and inherit from @b{PluginAClient}.  Realtime audio 
 define 
 
 @example
-int process_realtime(long size, 
+int process_realtime(int64_t size, 
 		double **input_ptr, 
 		double **output_ptr);
 @end example
@@ -5233,7 +5243,7 @@ int process_realtime(long size,
 if it's multichannel or 
 
 @example
-int process_realtime(long size, 
+int process_realtime(int64_t size, 
 		double *input_ptr, 
 		double *output_ptr);
 @end example
@@ -5245,13 +5255,13 @@ synchronize plugins which delay audio.
 Nonrealtime audio plugins need to define
 
 @example
-int process_loop(double *buffer, long &write_length);
+int process_loop(double *buffer, int64_t &write_length);
 @end example
 
 for single channel or
 
 @example
-int process_loop(double **buffers, long &write_length);
+int process_loop(double **buffers, int64_t &write_length);
 @end example
 
 for multi channel.
@@ -5378,6 +5388,40 @@ into something useful.
 
 
 
+@node PLUGIN QUERIES
+@section PLUGIN QUERIES
+
+There are several useful queries in PluginClient which can be accessed
+from the processing object.  Some of them have different meaning in
+realtime and non-realtime mode.  They all give information about the
+operating system or the project.
+
+@itemize
+
+
+@item
+
+@b{int PluginClient::get_project_smp()} Gives the number of CPU's on
+the system minus 1.  If it's a uniprocessor it's 0.  If it's a dual
+processor, it's 1.  This number should be used to gain any parallelism.
+
+
+@item
+
+@b{double PluginClient::get_project_framerate()} Gives the frames per
+second of the video.
+
+
+@item
+
+@b{int PluginClient::get_project_samplerate()} Gives the samples per
+second of the audio.
+
+@end itemize
+
+
+
+
 
 
 
@@ -5481,12 +5525,58 @@ Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
 @end example
 
 
+
+@b{1.1.6}
+
+
+@example
+
+Create fade keyframe inadverdently drags bezier handle less often.
+Float autos don't draw on right edge of timeline when keyframes are beyond right edge.
+Better float auto creation.
+Add track anywhere in timeline through track popup.
+Shared track references are automatically reconfigured after deleting or adding tracks.
+Libmpeg3: Better decoding of field-based MPEG video.
+Channels can be moved up or down in the Channel picker properly.
+Better handling of the long delay in deleting files without overflowing the recording buffers.
+Deinterlace really swaps fields instead of just saying it.
+Two line swapping combinations in deinterlace.
+Better listbox row sizing.
+Downsample offset.
+Faster window creation.
+Splash screen while you wait for it to start up.
+File deletion occurs before opening the driver instead of
+	after opening the driver for recording.
+Changing sample rate of WAV file in Asset window works.
+JPEG stills get saved with proper dimensions.
+Migrated to RedHat 8.0.
+ - e2fsprogs-devel is needed to compile the background render object.
+Fewer crashes due to OpenDivx global variables getting overwritten.
+Paste silence and clipboards also shifts effect keyframes properly.
+More checks for circular references in shared effects and shared tracks.
+Tracking during audio playback without video doesn't run past edge of loop boundaries.
+Better keyframing in Titler.
+Multiple language encodings in Titler.
+Undo of replace project after an effect works.
+Frame -> field conversion does line averaging and pixel shifting.
+Field -> frame conversion uses pixel shifting.
+Negative cursor selection is frame aligned.
+Documentation on video cleaning and deinterlacing tools.
+Buttons repositioned properly when filebox is resized vertically.
+Fade automation is more accurate.
+CWindow and VWindow slider position is less erratic after the window is resized.
+Timebars with regions track the playback position.
+More workarounds for buz driver lockups.
+Dragging the cursor on the timebar off the edges scrolls the timeline.
+IVTC uses luminance only in YUV colorspaces to improve accuracy.
+Quicktime: Tighter audio synchronization when encoding Quicktime with Vorbis audio.
+Start of audio effects is more accurate.
+Better IEEE1394 playback of video only.
+More IEEE1394 playback options.
+
+@end example
+
 @end itemize
-
-
-
-
-
 
 @bye
 

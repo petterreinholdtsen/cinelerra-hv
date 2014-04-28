@@ -26,7 +26,7 @@ int FileSndFile::check_sig(Asset *asset)
 	fd_config.format = 0;
 //printf("FileSndFile::check_sig 1\n");
 	SNDFILE *fd = sf_open_read(asset->path, &fd_config);
-//printf("FileSndFile::check_sig 1\n");
+//printf("FileSndFile::check_sig 1 %p\n", fd);
 
 	if(fd)
 	{
@@ -212,20 +212,20 @@ int FileSndFile::close_file()
 	return 0;
 }
 
-int FileSndFile::set_audio_position(long sample)
+int FileSndFile::set_audio_position(int64_t sample)
 {
 //printf("FileSndFile::set_audio_position %ld\n", sample);
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
 	{
-		printf("FileSndFile::set_audio_position %ld: failed\n", sample);
+		printf("FileSndFile::set_audio_position %lld: failed\n", sample);
 		sf_perror(fd);
 		return 1;
 	}
 	return 0;
 }
 
-int FileSndFile::read_samples(double *buffer, long len)
+int FileSndFile::read_samples(double *buffer, int64_t len)
 {
 	int result = 0;
 
@@ -273,7 +273,7 @@ int FileSndFile::read_samples(double *buffer, long len)
 	return result;
 }
 
-int FileSndFile::write_samples(double **buffer, long len)
+int FileSndFile::write_samples(double **buffer, int64_t len)
 {
 	int result = 0;
 

@@ -1,3 +1,0 @@
-vorbis_interface.lo vorbis_interface.o: vorbis_interface.c ../config.h
-
-../config.h:

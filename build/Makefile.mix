@@ -14,8 +14,8 @@ clean:
 		-o -name '*.la' \
 		-o -name '*.a' \
 		-o -name '*.plugin' \
-		-o -name '*.so' \) -exec rm -f {} \;
-	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \;
+		-o -name '*.so' \) -exec rm -f {} \; -prune
+	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \; -prune
 
 install:
 	rm /usr/bin/mix2000

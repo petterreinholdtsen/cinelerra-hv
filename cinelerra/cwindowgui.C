@@ -46,7 +46,8 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
     1,
     1,
     1,
-	BLACK)
+	BLACK,
+	mwindow->edl->session->get_cwindow_display())
 {
 	this->mwindow = mwindow;
     this->cwindow = cwindow;
@@ -358,8 +359,9 @@ int CWindowGUI::drag_stop()
 			mwindow->gui->lock_window();
 			mwindow->undo->update_undo_before("insert assets", 
 				LOAD_ALL);
+			mwindow->clear(0);
 			mwindow->load_assets(mwindow->session->drag_assets, 
-				mwindow->edl->local_session->selectionstart, 
+				mwindow->edl->local_session->get_selectionstart(), 
 				LOAD_PASTE,
 				mwindow->session->track_highlighted,
 				0,
@@ -372,6 +374,7 @@ int CWindowGUI::drag_stop()
 			mwindow->gui->lock_window();
 			mwindow->undo->update_undo_before("insert assets", 
 				LOAD_ALL);
+			mwindow->clear(0);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
 				LOAD_PASTE, 
 				mwindow->session->track_highlighted,

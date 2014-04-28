@@ -1,5 +1,13 @@
-FREETYPE_DIR := $(shell expr freetype* )
+FREETYPE_DIR := freetype-2.1.4
 ALSA_DIR := $(shell expr alsa-lib* )
+
+# system tests
+
+HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
+
+ifeq ($(HAVE_NASM), n)
+$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
+endif
 
 
 ifeq ($(HAVE_AVIFILE), yes)
@@ -12,10 +20,8 @@ DIRS := \
 	$(AVIFILE_DIR) \
 	doc \
 	libmpeg3 \
-	tiff \
-	esound \
-	$(FREETYPE_DIR) \
 	libsndfile \
+	mpeg2enc \
 	mplexhi \
 	mplexlo \
 	quicktime \
@@ -34,6 +40,12 @@ DISTOBJS = \
 
 all: $(OBJDIR)/soundtest
 	make -f build/Makefile.libavc
+	make -f build/Makefile.libraw
+	make -f build/Makefile.esound
+	make -f build/Makefile.freetype
+	make -f build/Makefile.tiff
+	make -f build/Makefile.toolame
+	make -f build/Makefile.uuid
 ifeq ($(HAVE_ALSA), yes)
 	make -f build/Makefile.asound
 endif
@@ -56,8 +68,8 @@ clean:
 		-o -name '*.la' \
 		-o -name '*.a' \
 		-o -name '*.plugin' \
-		-o -name '*.so' \) -exec rm -f {} \;
-	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \;
+		-o -name '*.so' \) -exec rm -f {} \; -prune
+	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \; -prune
 
 wc:
 	cat *.C *.h | wc

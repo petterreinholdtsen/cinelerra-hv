@@ -1,5 +1,15 @@
 include global_config
 
+# system tests
+
+HAVE_NASM := $(shell if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then echo y; else echo n; fi)
+
+ifeq ($(HAVE_NASM), n)
+$(error "Nasm is required.  Download it from nasm.sourceforge.net.")
+endif
+
+
+
 DIRS := \
 	libmpeg3 \
 	libsndfile \
@@ -23,8 +33,8 @@ clean:
 		-o -name '*.la' \
 		-o -name '*.a' \
 		-o -name '*.plugin' \
-		-o -name '*.so' \) -exec rm -f {} \;
-	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \;
+		-o -name '*.so' \) -exec rm -f {} \; -prune
+	find -follow \( -name $(OBJDIR) \) -exec rm -rf {} \; -prune
 
 wc:
 	cat *.C *.h | wc

@@ -59,6 +59,18 @@ int FileTIFF::check_sig(Asset *asset)
 		{
 			return 1;
 		}
+		else
+		if(strlen(asset->path) > 4 && 
+			!strcasecmp(asset->path + strlen(asset->path) - 4, ".tif"))
+		{
+			return 1;
+		}
+		else
+		if(strlen(asset->path) > 5 && 
+			!strcasecmp(asset->path + strlen(asset->path) - 5, ".tiff"))
+		{
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -84,7 +96,9 @@ char* FileTIFF::cmodel_to_str(int value)
 	{
 		case FileTIFF::GREYSCALE: return "Greyscale"; break;
 		case FileTIFF::RGB_888: return "RGB-8 Bit"; break;
+		case FileTIFF::RGB_161616: return "RGB-16 Bit"; break;
 		case FileTIFF::RGBA_8888: return "RGBA-8 Bit"; break;
+		case FileTIFF::RGBA_16161616: return "RGBA-16 Bit"; break;
 		case FileTIFF::RGB_FLOAT: return "RGB-FLOAT"; break;
 		case FileTIFF::RGBA_FLOAT: return "RGBA-FLOAT"; break;
 		default: 
@@ -116,8 +130,20 @@ int FileTIFF::read_frame_header(char *path)
 		return 1;
 	}
 
+	char *ptr = 0;
+	TIFFGetField(stream, TIFFTAG_MODEL, &ptr);
+//printf("FileTIFF::read_frame_header 1 %s\n", ptr);
+	if(ptr && !strcmp(ptr, "Canon EOS-1DS"))
+	{
+		printf("FileTIFF::read_frame_header: got a %s.\n",
+			ptr);
+	}
+
+// The raw format for certain cameras deviates from TIFF here.
+
 	TIFFGetField(stream, TIFFTAG_IMAGEWIDTH, &(asset->width));
 	TIFFGetField(stream, TIFFTAG_IMAGELENGTH, &(asset->height));
+
 	int components = 0;
 	TIFFGetField(stream, TIFFTAG_SAMPLESPERPIXEL, &components);
 	int bitspersample = 0;
@@ -128,8 +154,14 @@ int FileTIFF::read_frame_header(char *path)
 	if(bitspersample == 8 && components == 3)
 		asset->tiff_cmodel = FileTIFF::RGB_888;
 	else
+	if(bitspersample == 16 && components == 3)
+		asset->tiff_cmodel = FileTIFF::RGB_161616;
+	else
 	if(bitspersample == 8 && components == 4)
 		asset->tiff_cmodel = FileTIFF::RGBA_8888;
+	else
+	if(bitspersample == 16 && components == 4)
+		asset->tiff_cmodel = FileTIFF::RGBA_16161616;
 	else
 	if(bitspersample == 32 && components == 3)
 		asset->tiff_cmodel = FileTIFF::RGB_FLOAT;
@@ -137,7 +169,7 @@ int FileTIFF::read_frame_header(char *path)
 	if(bitspersample == 32 && components == 4)
 		asset->tiff_cmodel = FileTIFF::RGBA_FLOAT;
 	else
-	if(bitspersample == 8 && components == 0)
+	if(bitspersample == 8 && components == 1)
 		asset->tiff_cmodel = FileTIFF::GREYSCALE;
 
 //printf("FileTIFF::read_frame_header %d %d %d\n", bitspersample, components, asset->tiff_cmodel);
@@ -152,8 +184,10 @@ int FileTIFF::colormodel_supported(int colormodel)
 	switch(asset->tiff_cmodel)
 	{
 		case FileTIFF::RGB_888: return BC_RGB888; break;
+		case FileTIFF::RGB_161616: return BC_RGB_FLOAT; break;
 		case FileTIFF::GREYSCALE: return BC_RGB888; break;
 		case FileTIFF::RGBA_8888: return BC_RGBA8888; break;
+		case FileTIFF::RGBA_16161616: return BC_RGBA_FLOAT; break;
 		case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT; break;
 		case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT; break;
 		default: return BC_RGB888; break;
@@ -166,7 +200,9 @@ int FileTIFF::get_best_colormodel(Asset *asset, int driver)
 	{
 		case FileTIFF::GREYSCALE: return BC_RGB888; break;
 		case FileTIFF::RGB_888: return BC_RGB888; break;
+		case FileTIFF::RGB_161616: return BC_RGB_FLOAT; break;
 		case FileTIFF::RGBA_8888: return BC_RGBA8888; break;
+		case FileTIFF::RGBA_16161616: return BC_RGBA_FLOAT; break;
 		case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT; break;
 		case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT; break;
 		default: return BC_RGB888; break;
@@ -261,18 +297,54 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 	    tiff_mmap, 
 		tiff_unmap);
 
+// This loads the original TIFF data into each scanline of the output frame, 
+// assuming the output scanlines are bigger than the input scanlines.
+// Then it expands the input data in reverse to fill the row.
 	for(int i = 0; i < asset->height; i++)
 	{
 		TIFFReadScanline(stream, output->get_rows()[i], i, 0);
+
 // For the greyscale model, the output is RGB888 but the input must be expanded
 		if(asset->tiff_cmodel == FileTIFF::GREYSCALE)
 		{
 			unsigned char *row = output->get_rows()[i];
-			for(int i = output->get_w() - 1; i >= 0; i--)
+			for(int j = output->get_w() - 1; j >= 0; j--)
 			{
-				row[i * 3] = row[i];
-				row[i * 3 + 1] = row[i];
-				row[i * 3 + 2] = row[i];
+				unsigned char value = row[j];
+				row[j * 3] = value;
+				row[j * 3 + 1] = value;
+				row[j * 3 + 2] = value;
+			}
+		}
+// For the 16 bit models, the output is floating point.
+		else
+		if(asset->tiff_cmodel == FileTIFF::RGB_161616)
+		{
+			uint16_t *input_row = (uint16_t*)output->get_rows()[i];
+			float *output_row = (float*)output->get_rows()[i];
+			for(int j = output->get_w() - 1; j >= 0; j--)
+			{
+				uint16_t r = input_row[j * 3];
+				uint16_t g = input_row[j * 3 + 1];
+				uint16_t b = input_row[j * 3 + 2];
+				output_row[j * 3] = (float)r / 65535;
+				output_row[j * 3 + 1] = (float)g / 65535;
+				output_row[j * 3 + 2] = (float)b / 65535;
+			}
+		}
+		else
+		if(asset->tiff_cmodel == FileTIFF::RGBA_16161616)
+		{
+			uint16_t *input_row = (uint16_t*)output->get_rows()[i];
+			float *output_row = (float*)output->get_rows()[i];
+			for(int j = output->get_w() - 1; j >= 0; j--)
+			{
+				uint16_t r = input_row[j * 4];
+				uint16_t g = input_row[j * 4 + 1];
+				uint16_t b = input_row[j * 4 + 2];
+				output_row[j * 4] = (float)r / 65535;
+				output_row[j * 4 + 1] = (float)g / 65535;
+				output_row[j * 4 + 2] = (float)b / 65535;
 			}
 		}
 	}
@@ -316,12 +388,26 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			type = TIFF_BYTE;
 			bytesperrow = 3 * asset->width;
 			break;
+		case FileTIFF::RGB_161616: 
+			components = 3;
+			color_model = BC_RGB_FLOAT;
+			bits = 16;
+			type = TIFF_SHORT;
+			bytesperrow = 6 * asset->width;
+			break;
 		case FileTIFF::RGBA_8888: 
 			components = 4;
 			color_model = BC_RGBA8888;
 			bits = 8;
 			type = TIFF_BYTE;
 			bytesperrow = 4 * asset->width;
+			break;
+		case FileTIFF::RGBA_16161616: 
+			components = 4;
+			color_model = BC_RGBA_FLOAT;
+			bits = 16;
+			type = TIFF_SHORT;
+			bytesperrow = 8 * asset->width;
 			break;
 		case FileTIFF::RGB_FLOAT: 
 			components = 3;
@@ -532,7 +618,9 @@ int TIFFColorspace::handle_event()
 void TIFFColorspace::create_objects()
 {
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_888));
+//	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_16161616));
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_8888));
+//	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_16161616));
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_FLOAT));
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_FLOAT));
 }

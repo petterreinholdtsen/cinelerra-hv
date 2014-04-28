@@ -3,6 +3,9 @@
 
 // designed for lists of track numbers
 
+#include <stdio.h>
+
+
 template<class TYPE>
 class ArrayList
 {

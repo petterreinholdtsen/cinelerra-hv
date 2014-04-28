@@ -6,6 +6,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
@@ -345,6 +346,14 @@ int FrameField::process_buffer(VFrame *frame,
 // Calculate current field based on absolute position so the algorithm isn't
 // relative to where playback started.
 	field_number = get_source_position() % 2;
+
+	if (get_direction() == PLAY_REVERSE)
+	{
+		start_position += 1;
+		field_number = (field_number + 1) % 2;
+	}
+
+
 	current_frame_number = start_position / 2;
 
 // Import source frame at half frame rate

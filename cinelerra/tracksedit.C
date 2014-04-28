@@ -143,44 +143,24 @@ int Tracks::copy_default_keyframe(FileXML *file)
 
 int Tracks::delete_tracks()
 {
-	int result = 1, total_deleted = 0;
-	Track *track, *next_track, *shifted_track;
-	int deleted_number;
-	
-	while(result)
+	int total_deleted = 0;
+	int done = 0;
+
+	while(!done)
 	{
-// keep deleting until all the recordable tracks are gone
-		result = 0;
-
-//printf("Tracks::delete_tracks 1\n");
-// Stop when first recordable track is reached
-		for(track = first; 
-			track && !result;  
-			track = next_track)
+		done = 1;
+		for (Track* current = first;
+			current && done;
+			current = NEXT)
 		{
-//printf("Tracks::delete_tracks 2\n");
-			next_track = track->next;
-			
-			if(track->record)
+			if(current->record)
 			{
-				deleted_number = number_of(track);
-// Delete the track.
-				delete track;
-
-// Shift all the plugin pointers.
-				for(shifted_track = next_track;
-					shifted_track;
-					shifted_track = shifted_track->next)
-				{
-					shifted_track->delete_module_pointers(deleted_number);
-				}
-				result = 1;
+				delete_track(current);
 				total_deleted++;
+				done = 0;
 			}
 		}
-//printf("Tracks::delete_tracks 3\n");
 	}
-//printf("Tracks::delete_tracks 4\n");
 	return total_deleted;
 }
 
@@ -277,7 +257,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 
 
 
-//printf("Tracks::move_edits 1 %d\n", source_edit->length);
 // Insert new edit
 				Edit *dest_edit = dest_track->edits->shift(position_i, 
 					source_length);
@@ -287,26 +266,12 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				result->startproject = position_i;
 				result->length = source_length;
 
-//printf("Tracks::move_edits 5\n");
-//dest_track->dump();
-
 // Clear source
-//printf("Tracks::move_edits 7 %d %d\n", clear_start, clear_end);
 				source_track->edits->clear(source_edit->startproject, 
 					source_edit->startproject + source_length);
-
-
-                                
-//printf("Tracks::move_edits 8 %d %d\n", clear_start, source_edit->length);
-//dest_track->dump();
-//printf("Tracks::move_edits 9\n");
 				source_track->optimize();
 				dest_track->optimize();
-//printf("Tracks::move_edits 10\n");
-//dump();
-//				delete source_edit;
 			}
-
 		}
 	}
 }
@@ -459,30 +424,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 	}
 
 	return result;
-}
-
-int Tracks::delete_audio_track()
-{
-	Track *current;
-
-	for(current = last; current && current->data_type != TRACK_AUDIO; current = PREVIOUS)
-	{
-		;
-	}
-
-	if(current) delete_track(current);
-}
-
-int Tracks::delete_video_track()
-{
-	Track *current;
-
-	for(current = last; current && current->data_type != TRACK_VIDEO; current = PREVIOUS)
-	{
-		;
-	}
-
-	if(current) delete_track(current);
 }
 
 int Tracks::delete_all_tracks()

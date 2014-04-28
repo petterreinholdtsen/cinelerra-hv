@@ -181,6 +181,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	safe_regions = defaults->get("SAFE_REGIONS", 1);
 	sample_rate = defaults->get("SAMPLERATE", 48000);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
+	show_assets = defaults->get("SHOW_ASSETS", 1);
 	show_titles = defaults->get("SHOW_TITLES", 1);
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMS);
@@ -287,6 +288,7 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
     defaults->update("SCRUB_SPEED", scrub_speed);
+	defaults->update("SHOW_ASSETS", show_assets);
 	defaults->update("SHOW_TITLES", show_titles);
 //	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
@@ -443,6 +445,7 @@ int EDLSession::load_xml(FileXML *file,
 		plugins_follow_edits = file->tag.get_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 		playback_preload = file->tag.get_property("PLAYBACK_PRELOAD", playback_preload);
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
+		show_assets = file->tag.get_property("SHOW_ASSETS", 1);
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
 //		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
@@ -498,6 +501,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	file->tag.set_property("PLAYBACK_PRELOAD", playback_preload);
 	file->tag.set_property("SAFE_REGIONS", safe_regions);
+	file->tag.set_property("SHOW_ASSETS", show_assets);
 	file->tag.set_property("SHOW_TITLES", show_titles);
 	file->tag.set_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 	file->tag.set_property("TIME_FORMAT", time_format);
@@ -637,6 +641,7 @@ int EDLSession::copy(EDLSession *session)
 	safe_regions = session->safe_regions;
 	sample_rate = session->sample_rate;
 	scrub_speed = session->scrub_speed;
+	show_assets = session->show_assets;
 	show_titles = session->show_titles;
 	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;

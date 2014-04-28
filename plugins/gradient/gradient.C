@@ -618,6 +618,7 @@ int GradientMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 
+	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
 	overlayer->overlay(output, 
 		gradient,
 		0, 
@@ -643,7 +644,6 @@ void GradientMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("GradientMain::update_gui");
-			thread->window->angle->update(config.angle);
 			thread->window->rate->set_text(GradientRate::to_text(config.rate));
 			thread->window->in_radius->update(config.in_radius);
 			thread->window->out_radius->update(config.out_radius);
@@ -651,9 +651,9 @@ void GradientMain::update_gui()
 			if(thread->window->angle)
 				thread->window->angle->update(config.angle);
 			if(thread->window->center_x)
-				thread->window->angle->update(config.center_x);
+				thread->window->center_x->update(config.center_x);
 			if(thread->window->center_y)
-				thread->window->angle->update(config.center_y);
+				thread->window->center_y->update(config.center_y);
 			thread->window->update_in_color();
 			thread->window->update_out_color();
 			thread->window->update_shape();
@@ -923,7 +923,6 @@ void GradientUnit::process_package(LoadPackage *package)
 	int gradient_size = (int)(ceil(hypot(w, h)));
 	int in_radius = (int)(plugin->config.in_radius / 100 * gradient_size);
 	int out_radius = (int)(plugin->config.out_radius / 100 * gradient_size);
-	double effect_angle = plugin->config.angle / 360 * 2 * M_PI;
 	double sin_angle = sin(plugin->config.angle * (M_PI / 180));
 	double cos_angle = cos(plugin->config.angle * (M_PI / 180));
 	double center_x = plugin->config.center_x * w / 100;

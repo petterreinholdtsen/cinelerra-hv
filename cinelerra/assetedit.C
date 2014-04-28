@@ -95,7 +95,7 @@ void AssetEdit::run()
 						asset->path);
 					remove(index_filename);
 					asset->index_status = INDEX_NOTTESTED;
-					mwindow->mainindexes->add_next_asset(asset);
+					mwindow->mainindexes->add_next_asset(0, asset);
 					mwindow->mainindexes->start_build();
 				}
 				mwindow->gui->unlock_window();
@@ -128,9 +128,9 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 500 / 2, 
 	400, 
-	500,
+	510,
 	400,
-	500,
+	510,
 	0,
 	0,
 	1)
@@ -154,23 +154,6 @@ AssetEditWindow::~AssetEditWindow()
 	if(bitspopup) delete bitspopup;
 }
 
-
-static void do_commas(char *string)
-{
-// Do commas
-	int len = strlen(string);
-	int commas = (len - 1) / 3;
-	for(int i = len + commas, j = len, k; j >= 0 && i >= 0; i--, j--)
-	{
-		k = (len - j - 1) / 3;
-		if(k * 3 == len - j - 1 && j != len - 1 && string[j] != 0)
-		{
-			string[i--] = ',';
-		}
-
-		string[i] = string[j];
-	}
-}
 
 
 
@@ -205,7 +188,7 @@ int AssetEditWindow::create_objects()
 	int64_t bytes = fs.get_size(asset->path);
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
 	sprintf(string, "%lld", bytes);
-	do_commas(string);
+	Units::punctuate(string);
 	
 
 	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
@@ -217,19 +200,25 @@ int AssetEditWindow::create_objects()
 		length = (double)asset->audio_length / asset->sample_rate;
 	if(asset->video_length > 0)
 		length = MAX(length, (double)asset->video_length / asset->frame_rate);
-	int64_t bitrate = (int64_t)(bytes * 8 / length);
+	int64_t bitrate;
+	if(!EQUIV(length, 0))
+		bitrate = (int64_t)(bytes * 8 / length);
+	else
+		bitrate = bytes;
 	add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
 	sprintf(string, "%lld", bitrate);
 
-	do_commas(string);
+	Units::punctuate(string);
 	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
 
 	y += 30;
 	x = x1;
 
-
 	if(asset->audio_data)
 	{
+		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
+		y += 5;
+
 		add_subwindow(new BC_Title(x, y, _("Audio:"), LARGEFONT, RED));
 
 		y += 30;
@@ -365,6 +354,9 @@ int AssetEditWindow::create_objects()
 	x = x1;
 	if(asset->video_data)
 	{
+		add_subwindow(new BC_Bar(x, y, get_w() - x * 2));
+		y += 5;
+
 		add_subwindow(new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
 
 

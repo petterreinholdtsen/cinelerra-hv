@@ -209,6 +209,7 @@ int BC_Pan::activate()
 
 	x -= (images[PAN_POPUP]->get_w() - get_w()) / 2;
 	y -= (images[PAN_POPUP]->get_h() - get_h()) / 2;
+	if (x < 0) x = 0;
 
 	popup = new BC_Popup(this, 
 				x, 

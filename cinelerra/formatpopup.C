@@ -1,11 +1,8 @@
 #include "file.inc"
 #include "formatpopup.h"
+#include "language.h"
 #include "pluginserver.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb, 
@@ -56,7 +53,7 @@ int FormatPopup::create_objects()
 		format_items.append(new BC_ListBoxItem(_(MOV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AMPEG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(VMPEG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
+		format_items.append(new BC_ListBoxItem(_(OGG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(PCM_NAME)));
 		format_items.append(new BC_ListBoxItem(_(PNG_NAME)));
 	}

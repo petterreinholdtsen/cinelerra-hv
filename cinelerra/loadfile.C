@@ -5,6 +5,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "language.h"
 #include "loadfile.h"
 #include "loadmode.h"
 #include "localsession.h"
@@ -13,12 +14,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "theme.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -93,7 +88,7 @@ void LoadFileThread::run()
 			char *in_path, *out_path;
 			int i = 0;
 
-			while(in_path = window.get_path(i))
+			while((in_path = window.get_path(i)))
 			{
 				int j;
 				for(j = 0; j < path_list.total; j++)
@@ -122,9 +117,8 @@ void LoadFileThread::run()
 		return;
 	}
 
-	mwindow->undo->update_undo_before(_("load"), LOAD_ALL);
 	mwindow->interrupt_indexes();
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("LoadFileThread::run");
 	result = mwindow->load_filenames(&path_list, load_mode);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	mwindow->gui->unlock_window();
@@ -133,7 +127,7 @@ void LoadFileThread::run()
 
 	mwindow->save_backup();
 	mwindow->restart_brender();
-	mwindow->undo->update_undo_after();
+//	mwindow->undo->update_undo(_("load"), LOAD_ALL);
 	return;
 }
 
@@ -171,7 +165,7 @@ int LoadFileWindow::create_objects()
 	BC_FileBox::create_objects();
 
 	int x = get_w() / 2 - 200;
-	int y = get_h() - 90;
+	int y = get_cancel_button()->get_y() - 50;
 	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 	loadmode->create_objects();
 
@@ -181,7 +175,7 @@ int LoadFileWindow::create_objects()
 int LoadFileWindow::resize_event(int w, int h)
 {
 	int x = w / 2 - 200;
-	int y = h - 90;
+	int y = get_cancel_button()->get_y() - 50;
 	draw_background(0, 0, w, h);
 
 	loadmode->reposition_window(x, y);
@@ -299,7 +293,9 @@ LocateFileWindow::LocateFileWindow(MWindow *mwindow,
 	this->mwindow = mwindow; 
 }
 
-LocateFileWindow::~LocateFileWindow() {}
+LocateFileWindow::~LocateFileWindow()
+{
+}
 
 
 
@@ -321,7 +317,6 @@ int LoadPrevious::handle_event()
 	char *out_path;
 	int load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
 
-	mwindow->undo->update_undo_before(_("load previous"), LOAD_ALL);
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
@@ -331,7 +326,7 @@ int LoadPrevious::handle_event()
 
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);
-	mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("load previous"), LOAD_ALL);
 	mwindow->save_backup();
 	return 1;
 }
@@ -378,14 +373,13 @@ int LoadBackup::handle_event()
 	path_list.append(out_path = new char[strlen(string) + 1]);
 	strcpy(out_path, string);
 	
-	mwindow->undo->update_undo_before(_("load backup"), LOAD_ALL);
 	mwindow->load_filenames(&path_list, LOAD_REPLACE, 0);
 	mwindow->edl->local_session->clip_title[0] = 0;
 // This is unique to backups since the path of the backup is different than the
 // path of the project.
 	mwindow->set_filename(mwindow->edl->project_path);
 	path_list.remove_all_objects();
-	mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("load backup"), LOAD_ALL, 0, 0);
 	mwindow->save_backup();
 
 	return 1;

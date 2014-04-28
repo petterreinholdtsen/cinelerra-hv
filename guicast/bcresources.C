@@ -82,11 +82,22 @@ BC_Resources::BC_Resources()
 {
 	display_info = new BC_DisplayInfo("", 0);
 
+	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
+		filebox_history[i][0] = 0;
+
 #ifdef HAVE_XFT
 	XftInitFtLibrary();
 #endif
 
 	use_xvideo = 1;
+
+
+#include "images/bar_png.h"
+	static VFrame* default_bar = new VFrame(bar_png);
+	bar_data = default_bar;
+
+
+
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
 #include "images/cancel_dn_png.h"
@@ -116,6 +127,7 @@ BC_Resources::BC_Resources()
 		new VFrame(usethis_uphi_png),
 		new VFrame(usethis_dn_png)
 	};
+
 
 #include "images/checkbox_checked_png.h"
 #include "images/checkbox_dn_png.h"
@@ -156,43 +168,63 @@ BC_Resources::BC_Resources()
 
 
 #include "images/file_text_up_png.h"
-#include "images/file_text_uphi_png.h"
+#include "images/file_text_hi_png.h"
 #include "images/file_text_dn_png.h"
 #include "images/file_icons_up_png.h"
-#include "images/file_icons_uphi_png.h"
+#include "images/file_icons_hi_png.h"
 #include "images/file_icons_dn_png.h"
 #include "images/file_newfolder_up_png.h"
-#include "images/file_newfolder_uphi_png.h"
+#include "images/file_newfolder_hi_png.h"
 #include "images/file_newfolder_dn_png.h"
 #include "images/file_updir_up_png.h"
-#include "images/file_updir_uphi_png.h"
+#include "images/file_updir_hi_png.h"
 #include "images/file_updir_dn_png.h"
+#include "images/file_delete_up_png.h"
+#include "images/file_delete_hi_png.h"
+#include "images/file_delete_dn_png.h"
+#include "images/file_reload_up_png.h"
+#include "images/file_reload_hi_png.h"
+#include "images/file_reload_dn_png.h"
 	static VFrame* default_filebox_text_images[] = 
 	{
 		new VFrame(file_text_up_png),
-		new VFrame(file_text_uphi_png),
+		new VFrame(file_text_hi_png),
 		new VFrame(file_text_dn_png)
 	};
 
 	static VFrame* default_filebox_icons_images[] = 
 	{
 		new VFrame(file_icons_up_png),
-		new VFrame(file_icons_uphi_png),
+		new VFrame(file_icons_hi_png),
 		new VFrame(file_icons_dn_png)
 	};
 
 	static VFrame* default_filebox_updir_images[] =  
 	{
 		new VFrame(file_updir_up_png),
-		new VFrame(file_updir_uphi_png),
+		new VFrame(file_updir_hi_png),
 		new VFrame(file_updir_dn_png)
 	};
 
 	static VFrame* default_filebox_newfolder_images[] = 
 	{
 		new VFrame(file_newfolder_up_png),
-		new VFrame(file_newfolder_uphi_png),
+		new VFrame(file_newfolder_hi_png),
 		new VFrame(file_newfolder_dn_png)
+	};
+
+	static VFrame* default_filebox_delete_images[] = 
+	{
+		new VFrame(file_delete_up_png),
+		new VFrame(file_delete_hi_png),
+		new VFrame(file_delete_dn_png)
+	};
+
+	static VFrame* default_filebox_reload_images[] =
+	{
+		new VFrame(file_reload_up_png),
+		new VFrame(file_reload_hi_png),
+		new VFrame(file_reload_dn_png)
 	};
 
 #include "images/listbox_button_dn_png.h"
@@ -241,11 +273,20 @@ BC_Resources::BC_Resources()
 #include "images/listbox_dn_png.h"
 	listbox_up = new VFrame(listbox_up_png);
 	listbox_dn = new VFrame(listbox_dn_png);
-
-
-
-
-
+	listbox_title_margin = 0;
+	listbox_title_color = BLACK;
+	listbox_title_hotspot = 5;
+	
+	listbox_border1 = DKGREY;
+	listbox_border2_hi = RED;
+	listbox_border2 = BLACK;
+	listbox_border3_hi = RED;
+	listbox_border3 = MEGREY;
+	listbox_border4 = WHITE;
+	listbox_selected = BLUE;
+	listbox_highlighted = LTGREY;
+	listbox_inactive = WHITE;
+	listbox_text = BLACK;
 
 
 
@@ -503,6 +544,7 @@ BC_Resources::BC_Resources()
 	ok_images = default_ok_images;
 	cancel_images = default_cancel_images;
 	usethis_button_images = default_usethis_images;
+	filebox_descend_images = default_ok_images;
 
 	checkbox_images = default_checkbox_images;
 	radial_images = default_radial_images;
@@ -516,7 +558,13 @@ BC_Resources::BC_Resources()
 	menu_popup_bg = 0;
 	menu_title_bg = 0;
 	menu_item_bg = 0;
+	menu_bar_bg = 0;
+	menu_title_bg = 0;
+	popupmenu_images = 0;
+	popupmenu_margin = 10;
+	popupmenu_triangle_margin = 10;
 
+	min_menu_w = 0;
 	menu_title_text = BLACK;
 	popup_title_text = BLACK;
 	menu_item_text = BLACK;
@@ -537,6 +585,7 @@ BC_Resources::BC_Resources()
 	text_border3_hi = LTPINK;
 	text_border4 = WHITE;
 	text_highlight = BLUE;
+	text_inactive_highlight = MEGREY;
 
 	toggle_highlight_bg = 0;
 	toggle_text_margin = 0;
@@ -549,6 +598,8 @@ BC_Resources::BC_Resources()
 	tooltip_bg_color = YELLOW;
 	tooltips_enabled = 1;
 
+	filebox_margin = 110;
+	dirbox_margin = 90;
 	filebox_mode = LISTBOX_TEXT;
 	sprintf(filebox_filter, "*");
 	filebox_w = 640;
@@ -559,14 +610,24 @@ BC_Resources::BC_Resources()
 	filebox_columnwidth[0] = 200;
 	filebox_columnwidth[1] = 100;
 	filebox_columnwidth[2] = 100;
+	dirbox_columntype[0] = FILEBOX_NAME;
+	dirbox_columntype[1] = FILEBOX_DATE;
+	dirbox_columnwidth[0] = 200;
+	dirbox_columnwidth[1] = 100;
 
 	filebox_text_images = default_filebox_text_images;
 	filebox_icons_images = default_filebox_icons_images;
 	filebox_updir_images = default_filebox_updir_images;
 	filebox_newfolder_images = default_filebox_newfolder_images;
+	filebox_delete_images = default_filebox_delete_images;
+	filebox_reload_images = default_filebox_reload_images;
+	directory_color = BLUE;
+	file_color = BLACK;
 
 	filebox_sortcolumn = 0;
 	filebox_sortorder = BC_ListBox::SORT_ASCENDING;
+	dirbox_sortcolumn = 0;
+	dirbox_sortorder = BC_ListBox::SORT_ASCENDING;
 
 
 	pot_images = default_pot_images;

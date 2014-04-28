@@ -10,10 +10,12 @@
 #include "filexml.h"
 #include "filesystem.h"
 #include "language.h"
+#include "mwindow.inc"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
 #include "titlewindow.h"
+#include "transportque.inc"
 
 
 #include <errno.h>
@@ -24,10 +26,7 @@
 #include <byteswap.h>
 #include <iconv.h>
 
-
-#define FONT_SEARCHPATH "/usr/lib/cinelerra/fonts"
-//#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
-
+#define FONT_SEARCHPATH PLUGIN_DIR "/fonts"
 
 REGISTER_PLUGIN(TitleMain)
 
@@ -1669,8 +1668,11 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Always synthesize text and redraw it for timecode
 	if(config.timecode)
 	{
+		int64_t rendered_frame = get_source_position();
+		if (get_direction() == PLAY_REVERSE)
+			rendered_frame -= 1;
 		Units::totext(config.text, 
-				(double)get_source_position() / PluginVClient::project_frame_rate, 
+				(double)rendered_frame / PluginVClient::project_frame_rate, 
 				TIME_HMSF, 
 				0,
 				PluginVClient::project_frame_rate, 
@@ -1966,7 +1968,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 	
-	output.append_text(config.text);
+	output.encode_text(config.text);
 
 	output.tag.set_title("/TITLE");
 	output.append_tag();

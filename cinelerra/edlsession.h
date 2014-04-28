@@ -131,6 +131,8 @@ public:
 	int safe_regions;
     int64_t sample_rate;
 	float scrub_speed;
+// Show assets in track canvas
+	int show_assets;
 // Show titles in resources
 	int show_titles;
 // Test for data before rendering a track

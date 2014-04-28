@@ -7,6 +7,7 @@
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
@@ -439,6 +440,12 @@ int FieldFrame::process_buffer(VFrame *frame,
 // Get input frames
 	int64_t field1_position = start_position * 2;
 	int64_t field2_position = start_position * 2 + 1;
+
+	if (get_direction() == PLAY_REVERSE)
+	{
+		field1_position -= 1;
+		field2_position -= 1;
+	}
 
 
 // printf("FieldFrame::process_buffer %d %lld %lld\n", 

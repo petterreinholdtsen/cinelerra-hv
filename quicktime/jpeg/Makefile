@@ -49,7 +49,8 @@ OBJS = \
 	jmemnobs.o
 
 
-all: $(OBJS)
+libjpeg.a: $(OBJS)
+	ar rcs libjpeg.a $(OBJS)
 
 .c.o:
 	$(CC) -c `./c_flags` $*.c

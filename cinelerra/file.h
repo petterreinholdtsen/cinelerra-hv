@@ -15,6 +15,7 @@
 #include "guicast.h"
 #include "mutex.inc"
 #include "pluginserver.inc"
+#include "preferences.inc"
 #include "resample.inc"
 #include "vframe.inc"
 
@@ -57,12 +58,15 @@ public:
 	int purge_cache();
 
 // Format may be preset if the asset format is not 0.
-	int open_file(ArrayList<PluginServer*> *plugindb, 
+	int open_file(Preferences *preferences, 
 		Asset *asset, 
 		int rd, 
 		int wr,
 		int64_t base_samplerate,
 		float base_framerate);
+
+// Get index from the file if one exists.  Returns 0 on success.
+	int get_index(char *index_path);
 
 // start a thread for writing to avoid blocking during record
 	int start_audio_thread(int64_t buffer_size, int ring_buffers);
@@ -205,6 +209,7 @@ public:
 // Position information normalized
 	int64_t normalized_sample;
 	int64_t normalized_sample_rate;
+	Preferences *preferences;
 
 
 private:

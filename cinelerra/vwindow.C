@@ -44,12 +44,14 @@ void VWindow::delete_edl()
 //printf("VWindow::delete_edl 1\n");
 	if(mwindow->edl->vwindow_edl)
 	{
-		delete mwindow->edl->vwindow_edl;
+		if (!edl_shared) 
+			delete mwindow->edl->vwindow_edl;
 		mwindow->edl->vwindow_edl = 0;
 	}
 
 	if(asset) delete asset;
 	asset = 0;
+	edl_shared = 0;
 }
 
 
@@ -110,6 +112,7 @@ void VWindow::change_source()
 	{
 		if(asset) delete asset;
 		asset = 0;
+		edl_shared = 0;
 	}
 }
 
@@ -134,6 +137,7 @@ void VWindow::change_source(Asset *asset)
 	this->asset = new Asset;
 	*this->asset = *asset;
 	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
+	edl_shared = 0;
 	mwindow->edl->vwindow_edl->create_objects();
 	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
 //printf("VWindow::change_source 1 %d %d\n", edl->local_session->loop_playback, mwindow->edl->local_session->loop_playback);
@@ -177,9 +181,8 @@ void VWindow::change_source(EDL *edl)
 	{
 		this->asset = 0;
 		mwindow->edl->vwindow_edl = edl;
-//printf("VWindow::change_source 1\n");
-//edl->dump();
-//printf("VWindow::change_source 2\n");
+// in order not to later delete edl if it is shared
+		edl_shared = 1;
 
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
@@ -242,8 +245,8 @@ void VWindow::goto_start()
 {
 	if(get_edl())
 	{
-		get_edl()->local_session->selectionstart = 
-			get_edl()->local_session->selectionend = 0;
+		get_edl()->local_session->set_selectionstart(0);
+		get_edl()->local_session->set_selectionend(0);
 		update_position(CHANGE_NONE, 
 			0, 
 			1);
@@ -254,9 +257,9 @@ void VWindow::goto_end()
 {
 	if(get_edl())
 	{
-		get_edl()->local_session->selectionstart = 
-			get_edl()->local_session->selectionend = 
-			get_edl()->tracks->total_length();
+		double position = get_edl()->tracks->total_length();
+		get_edl()->local_session->set_selectionstart(position);
+		get_edl()->local_session->set_selectionend(position);
 		update_position(CHANGE_NONE, 
 			0, 
 			1);
@@ -278,9 +281,8 @@ void VWindow::update_position(int change_type,
 	{
 		if(use_slider) 
 		{
-			edl->local_session->selectionstart = 
-				edl->local_session->selectionend = 
-				gui->slider->get_value();
+			edl->local_session->set_selectionstart(gui->slider->get_value());
+			edl->local_session->set_selectionend(gui->slider->get_value());
 		}
 
 		if(update_slider)
@@ -293,7 +295,7 @@ void VWindow::update_position(int change_type,
 			edl,
 			1);
 
-		gui->clock->update(edl->local_session->selectionstart);
+		gui->clock->update(edl->local_session->get_selectionstart(1));
 	}
 }
 
@@ -302,7 +304,7 @@ void VWindow::set_inpoint()
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		edl->set_inpoint(edl->local_session->selectionstart);
+		edl->set_inpoint(edl->local_session->get_selectionstart(1));
 		gui->timebar->update();
 	}
 }
@@ -312,7 +314,7 @@ void VWindow::set_outpoint()
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		edl->set_outpoint(edl->local_session->selectionstart);
+		edl->set_outpoint(edl->local_session->get_selectionstart(1));
 		gui->timebar->update();
 	}
 }
@@ -322,7 +324,7 @@ void VWindow::clear_inpoint()
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		edl->local_session->in_point = -1;
+		edl->local_session->unset_inpoint();
 		gui->timebar->update();
 	}
 }
@@ -332,7 +334,7 @@ void VWindow::clear_outpoint()
 	EDL *edl = get_edl();
 	if(edl)
 	{
-		edl->local_session->out_point = -1;
+		edl->local_session->unset_outpoint();
 		gui->timebar->update();
 	}
 }

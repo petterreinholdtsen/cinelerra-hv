@@ -1,3 +1,4 @@
+#include "automation.inc"
 #include "clip.h"
 #include "maskauto.h"
 #include "maskautos.h"
@@ -10,6 +11,7 @@ MaskAutos::MaskAutos(EDL *edl,
 	Track *track)
  : Autos(edl, track)
 {
+	type = AUTOMATION_TYPE_MASK;
 }
 
 MaskAutos::~MaskAutos()
@@ -97,7 +99,7 @@ Auto* MaskAutos::new_auto()
 	return new MaskAuto(edl, this);
 }
 
-int MaskAutos::dump()
+void MaskAutos::dump()
 {
 	printf("	MaskAutos::dump %p\n", this);
 	printf("	Default: position %ld submasks %d\n", 
@@ -111,7 +113,6 @@ int MaskAutos::dump()
 			((MaskAuto*)current)->masks.total);
 		((MaskAuto*)current)->dump();
 	}
-	return 0;
 }
 
 int MaskAutos::mask_exists(int64_t position, int direction)
@@ -148,4 +149,26 @@ int MaskAutos::total_submasks(int64_t position, int direction)
 	return ((MaskAuto*)default_auto)->masks.total;
 }
 
+
+void MaskAutos::translate_masks(float translate_x, float translate_y)
+{
+	((MaskAuto *)default_auto)->translate_submasks(translate_x, translate_y);
+	for(MaskAuto* current = (MaskAuto*)first; 
+		current; 
+		current = (MaskAuto*)NEXT)
+	{
+		current->translate_submasks(translate_x, translate_y);
+		for(int i = 0; i < current->masks.total; i++)
+		{
+			SubMask *mask = current->get_submask(i);
+			for (int j = 0; j < mask->points.total; j++) 
+			{
+				mask->points.values[j]->x += translate_x;
+				mask->points.values[j]->y += translate_y;
+				printf("mpx: %f, mpy:%f\n",mask->points.values[j]->x,mask->points.values[j]->y);
+			}
+		}
+		
+	}
+}
 

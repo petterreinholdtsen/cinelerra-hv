@@ -327,13 +327,16 @@ int PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
 		int buffer_size)
 {
+SET_TRACE
 	if(!plugin_open) return 0;
+SET_TRACE
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
 	client->plugin_init_realtime(realtime_sched, 
 		total_in_buffers, 
 		buffer_size);
+SET_TRACE
 }
 
 
@@ -707,14 +710,14 @@ void PluginServer::show_gui()
 	if(video)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->frame_rate);
 	}
 	else
 	if(audio)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->sample_rate);
 	}
 	client->update_display_title();
@@ -730,14 +733,14 @@ void PluginServer::update_gui()
 	if(video)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->frame_rate);
 	}
 	else
 	if(audio)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->sample_rate);
 	}
 	client->update_gui();

@@ -40,6 +40,11 @@ public:
 		double position, 
 		Track *start_track);
 
+	void get_automation_extents(float *min, 
+		float *max,
+		double start,
+		double end);
+
 	void equivalent_output(Tracks *tracks, double *result);
 
 	int move_track_up(Track *track);        // move recordable tracks up
@@ -74,8 +79,10 @@ public:
 	Track* add_video_track(int above, Track *dst_track);
 //	Track* add_audio_track(int to_end = 1);
 //	Track* add_video_track(int to_end = 1);
-	int delete_track();     // delete last track
-	int delete_track(Track* track);        // delete any track
+// delete any track
+ 	int delete_track(Track* track);       
+// detach shared effects referencing module
+	int detach_shared_effects(int module);	
 
 	EDL *edl;
 	
@@ -116,8 +123,6 @@ public:
 // Change references to shared plugins in all tracks
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 
-	int delete_audio_track();       // delete the last audio track
-	int delete_video_track();        // delete the last video track
 	int delete_tracks();     // delete all the recordable tracks
 	int delete_all_tracks();      // delete just the tracks
 

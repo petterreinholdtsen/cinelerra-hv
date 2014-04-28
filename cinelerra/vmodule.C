@@ -84,6 +84,7 @@ int VModule::import_frame(VFrame *output,
 	float out_w1;
 	float out_h1;
 	int result = 0;
+SET_TRACE
 	double edl_rate = get_edl()->session->frame_rate;
 	int64_t input_position_project = (int64_t)(input_position * 
 		edl_rate / 
@@ -91,7 +92,7 @@ int VModule::import_frame(VFrame *output,
 		0.001);
 	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
-//printf("VModule::import_frame 1 %lld\n", input_position);
+SET_TRACE
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
 	if(direction == PLAY_REVERSE)
@@ -105,7 +106,9 @@ int VModule::import_frame(VFrame *output,
 		current_edit->asset)
 	{
 		get_cache()->age();
+SET_TRACE
 		File *source = get_cache()->check_out(current_edit->asset);
+SET_TRACE
 //		get_cache()->dump();
 
 		if(source)
@@ -125,6 +128,7 @@ int VModule::import_frame(VFrame *output,
 			source->set_video_position(position,
 				frame_rate);
 			source->set_layer(current_edit->channel);
+SET_TRACE
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
 				input_position_project, 
@@ -138,6 +142,7 @@ int VModule::import_frame(VFrame *output,
 				out_w1, 
 				out_h1);
 
+SET_TRACE
 
 
 // file -> temp -> output
@@ -195,7 +200,9 @@ int VModule::import_frame(VFrame *output,
 // Cache for single frame only
 				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(1);
+SET_TRACE
 				result = source->read_frame((*input));
+SET_TRACE
 				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
 
@@ -274,6 +281,7 @@ int VModule::import_frame(VFrame *output,
 					source->set_cache_frames(0);
 //printf("VModule::import_frame 40\n");
 			}
+SET_TRACE
 
 			get_cache()->check_in(current_edit->asset);
 		}
@@ -323,11 +331,12 @@ int VModule::render(VFrame *output,
 
 	update_transition(start_position_project, 
 		direction);
-
+SET_TRACE
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
 		direction,
 		0);
+SET_TRACE
 	VEdit* previous_edit = 0;
 
 	if(!current_edit)
@@ -400,11 +409,13 @@ int VModule::render(VFrame *output,
 	else
 	{
 // Load output buffer
+SET_TRACE
 		result = import_frame(output, 
 			current_edit, 
 			start_position,
 			frame_rate,
 			direction);
+SET_TRACE
 	}
 
 

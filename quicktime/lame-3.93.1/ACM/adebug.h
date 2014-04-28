@@ -22,7 +22,7 @@
  
 /*!
 	\author Steve Lhomme
-	\version \$Id: adebug.h,v 1.1 2003/07/29 04:17:51 heroine Exp $
+	\version \$Id: adebug.h,v 1.1.1.1 2003/10/14 07:54:36 heroine Exp $
 */
 
 #if !defined(_DEBUG_H__INCLUDED_)

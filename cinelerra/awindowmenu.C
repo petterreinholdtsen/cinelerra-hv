@@ -3,8 +3,8 @@
 #include "awindowmenu.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mwindow.h"
-
 
 
 
@@ -53,7 +53,7 @@ AssetListFormat::AssetListFormat(MWindow *mwindow)
 void AssetListFormat::update()
 {
 	set_text(mwindow->edl->session->assetlist_format == ASSETS_TEXT ?
-		(char*)"Display icons" : (char*)"Display text");
+		(char*)_("Display icons") : (char*)_("Display text"));
 }
 
 int AssetListFormat::handle_event()
@@ -79,7 +79,7 @@ int AssetListFormat::handle_event()
 
 
 AssetListSort::AssetListSort(MWindow *mwindow)
- : BC_MenuItem("Sort items")
+ : BC_MenuItem(_("Sort items"))
 {
 	this->mwindow = mwindow;
 }
@@ -119,7 +119,7 @@ void FolderListMenu::create_objects()
 void FolderListMenu::update_titles()
 {
 	format->set_text(mwindow->edl->session->folderlist_format == FOLDERS_TEXT ?
-		(char*)"Display icons" : (char*)"Display text");
+		(char*)_("Display icons") : (char*)_("Display text"));
 }
 
 

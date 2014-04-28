@@ -1,5 +1,6 @@
 #include "assets.h"
 #include "file.inc"
+#include "language.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -8,6 +9,7 @@
 #include "vframe.h"
 #include "videoconfig.h"
 #include "videodevice.h"
+
 
 #define SOI 0xffd8
 #define APP3 0xffe3
@@ -246,11 +248,11 @@ int VDeviceLML::reopen_input()
 {
 	int input_error = 0;
 	Timer timer;
-	fprintf(stderr, "VDeviceLML::read_buffer: driver crash\n");
+	fprintf(stderr, _("VDeviceLML::read_buffer: driver crash\n"));
 	fclose(jvideo_fd);
 	timer.delay(100);
 	input_error = open_input();
-	if(!input_error) fprintf(stderr, "VDeviceLML::read_buffer: reopened\n");
+	if(!input_error) fprintf(stderr, _("VDeviceLML::read_buffer: reopened\n"));
 	last_frame_no = 0;
 	input_position = INPUT_BUFFER_SIZE;
 	return input_error;

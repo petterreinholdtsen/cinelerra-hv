@@ -8,6 +8,7 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "edl.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainindexes.h"
 #include "mainsession.h"
@@ -16,6 +17,8 @@
 #include "tracks.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
+
+
 
 AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
  : BC_PopupMenu(0, 
@@ -48,9 +51,9 @@ void AssetPopup::create_objects()
 void AssetPopup::paste_assets()
 {
 // Collect items into the drag vectors for temporary storage
-	gui->lock_window();
-	mwindow->gui->lock_window();
-	mwindow->cwindow->gui->lock_window();
+	gui->lock_window("AssetPopup::paste_assets");
+	mwindow->gui->lock_window("AssetPopup::paste_assets");
+	mwindow->cwindow->gui->lock_window("AssetPopup::paste_assets");
 
 	gui->collect_assets();
 	mwindow->paste_assets(mwindow->edl->local_session->selectionstart, 
@@ -65,7 +68,7 @@ void AssetPopup::match_size()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("AssetPopup::match_size");
 	mwindow->asset_to_size();
 	mwindow->gui->unlock_window();
 }
@@ -86,7 +89,7 @@ int AssetPopup::update()
 
 
 AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Info...")
+ : BC_MenuItem(_("Info..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -128,7 +131,7 @@ int AssetPopupInfo::handle_event()
 
 
 AssetPopupBuildIndex::AssetPopupBuildIndex(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Rebuild index")
+ : BC_MenuItem(_("Rebuild index"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -152,7 +155,7 @@ int AssetPopupBuildIndex::handle_event()
 
 
 AssetPopupSort::AssetPopupSort(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Sort items")
+ : BC_MenuItem(_("Sort items"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -175,7 +178,7 @@ int AssetPopupSort::handle_event()
 
 
 AssetPopupView::AssetPopupView(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("View")
+ : BC_MenuItem(_("View"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -187,7 +190,7 @@ AssetPopupView::~AssetPopupView()
 
 int AssetPopupView::handle_event()
 {
-	mwindow->vwindow->gui->lock_window();
+	mwindow->vwindow->gui->lock_window("AssetPopupView::handle_event");
 
 	if(mwindow->session->drag_assets->total)
 		mwindow->vwindow->change_source(
@@ -208,7 +211,7 @@ int AssetPopupView::handle_event()
 
 
 AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Paste")
+ : BC_MenuItem(_("Paste"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -232,7 +235,7 @@ int AssetPopupPaste::handle_event()
 
 
 AssetMatchSize::AssetMatchSize(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Match project size")
+ : BC_MenuItem(_("Match project size"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -262,7 +265,7 @@ int AssetMatchSize::handle_event()
 
 
 AssetPopupProjectRemove::AssetPopupProjectRemove(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Remove from project")
+ : BC_MenuItem(_("Remove from project"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -284,7 +287,7 @@ int AssetPopupProjectRemove::handle_event()
 
 
 AssetPopupDiskRemove::AssetPopupDiskRemove(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Remove from disk")
+ : BC_MenuItem(_("Remove from disk"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

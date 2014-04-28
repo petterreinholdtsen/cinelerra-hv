@@ -12,6 +12,10 @@
 #include "preferences.h"
 #include "bcprogressbox.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -72,7 +76,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
 				plugin->set_module(modules[i]);
-				plugin->open_plugin(0, mwindow->edl, 0);
+				plugin->open_plugin(0, 
+					mwindow->preferences, 
+					mwindow->edl, 
+					0,
+					-1);
 				if(i == 0) plugin->set_interactive();
 				plugin->start_loop(start, end, buffer_size, 1);
 //printf("PluginArray::start_plugins 4\n");
@@ -92,7 +100,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			for(i = 0; i < total_tracks(); i++)
 				plugin->set_module(modules[i]);
 //printf("PluginArray::start_plugins 4\n");
-			plugin->open_plugin(0, mwindow->edl, 0);
+			plugin->open_plugin(0, 
+				mwindow->preferences, 
+				mwindow->edl, 
+				0,
+				-1);
 // set one plugin for progress bars
 			plugin->set_interactive();
 //printf("PluginArray::start_plugins 4\n");
@@ -116,7 +128,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				append(plugin = new PluginServer(*plugin_server));
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
-				plugin->open_plugin(0, mwindow->edl, 0);
+				plugin->open_plugin(0, 
+					mwindow->preferences, 
+					mwindow->edl, 
+					0,
+					-1);
 				plugin->init_realtime(0, 1, get_bufsize());
 // Plugin loads configuration on its own
 //			plugin->get_configuration_change(plugin_data);				
@@ -129,7 +145,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			append(plugin = new PluginServer(*plugin_server));
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(keyframe);
-			plugin->open_plugin(0, mwindow->edl, 0);
+			plugin->open_plugin(0, 
+				mwindow->preferences,
+				mwindow->edl, 
+				0,
+				-1);
 			plugin->init_realtime(0, total_tracks(), get_bufsize());
 // Plugin loads configuration on its own
 //		plugin->get_configuration_change(plugin_data);				
@@ -159,7 +179,7 @@ int PluginArray::run_plugins()
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 
 //printf("PluginArray::run_plugins 2\n");
-		sprintf(string, "%s...", plugin_server->title);
+		sprintf(string, _("%s..."), plugin_server->title);
 		progress = mwindow->mainprogress->start_progress(string, end - start);
 
 //printf("PluginArray::run_plugins 3\n");
@@ -195,7 +215,7 @@ int PluginArray::run_plugins()
 		progress->stop_progress();
 		delete progress;
 
-		sprintf(string, "%s took %s", plugin_server->title, string2);
+		sprintf(string, _("%s took %s"), plugin_server->title, string2);
 		mwindow->gui->lock_window();
 		mwindow->gui->show_message(string2, BLACK);
 		mwindow->gui->unlock_window();

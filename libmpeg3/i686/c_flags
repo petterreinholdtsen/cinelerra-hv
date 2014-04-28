@@ -1,1 +1,0 @@
--O2 -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2 -I/usr/local/include -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -DHAVE_CSS -DHAVE_MMX -I. -Ia52dec-0.7.3/include -Ia52dec-0.7.3/liba52

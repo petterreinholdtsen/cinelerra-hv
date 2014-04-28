@@ -1,5 +1,5 @@
 /******************************************************************************
- * $Id: tif_overview.c,v 1.1 2003/07/25 03:27:39 heroine Exp $
+ * $Id: tif_overview.c,v 1.1.1.1 2003/10/14 07:54:39 heroine Exp $
  *
  * Project:  TIFF Overview Builder
  * Purpose:  Library function for building overviews in a TIFF file.
@@ -45,6 +45,9 @@
  ******************************************************************************
  *
  * $Log: tif_overview.c,v $
+ * Revision 1.1.1.1  2003/10/14 07:54:39  heroine
+ *
+ *
  * Revision 1.1  2003/07/25 03:27:39  heroine
  * *** empty log message ***
  *

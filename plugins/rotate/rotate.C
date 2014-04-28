@@ -11,6 +11,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 #define SQR(x) ((x) * (x))
 #define MAXANGLE 360
@@ -75,6 +80,20 @@ public:
     RotateWindow *window;
 };
 
+
+class RotateText : public BC_TextBox
+{
+public:
+	RotateText(RotateWindow *window, 
+		RotateEffect *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+
+	RotateEffect *plugin;
+    RotateWindow *window;
+};
+
 class RotateWindow : public BC_Window
 {
 public:
@@ -84,6 +103,7 @@ public:
 	int close_event();
 	int update();
 	int update_fine();
+	int update_text();
 	int update_toggles();
 
 	RotateEffect *plugin;
@@ -92,6 +112,7 @@ public:
 	RotateToggle *toggle180;
 	RotateToggle *toggle270;
 	RotateFine *fine;
+	RotateText *text;
 	RotateInterpolate *bilinear;
 };
 
@@ -216,7 +237,7 @@ int RotateToggle::handle_event()
 
 
 RotateInterpolate::RotateInterpolate(RotateEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.bilinear, "Interpolate")
+ : BC_CheckBox(x, y, plugin->config.bilinear, _("Interpolate"))
 {
 	this->plugin = plugin;
 }
@@ -240,12 +261,39 @@ RotateFine::RotateFine(RotateWindow *window, RotateEffect *plugin, int x, int y)
 	this->window = window;
 	this->plugin = plugin;
 	set_precision(0.01);
+	set_use_caption(0);
 }
 
 int RotateFine::handle_event()
 {
 	plugin->config.angle = get_value();
 	window->update_toggles();
+	window->update_text();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+RotateText::RotateText(RotateWindow *window, 
+	RotateEffect *plugin, 
+	int x, 
+	int y)
+ : BC_TextBox(x, 
+ 	y, 
+	100,
+	1,
+	(float)plugin->config.angle)
+{
+	this->window = window;
+	this->plugin = plugin;
+	set_precision(4);
+}
+
+int RotateText::handle_event()
+{
+	plugin->config.angle = atof(get_text());
+	window->update_toggles();
+	window->update_fine();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -283,7 +331,7 @@ int RotateWindow::create_objects()
 
 
 
-	add_tool(new BC_Title(x, y, "Rotate"));
+	add_tool(new BC_Title(x, y, _("Rotate")));
 	x += 50;
 	y += 20;
 	add_tool(toggle0 = new RotateToggle(this, 
@@ -321,12 +369,14 @@ int RotateWindow::create_objects()
 		270, 
 		"270"));
 	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
-	x += 110;
+	x += 130;
 	y -= 50;
 	add_tool(fine = new RotateFine(this, plugin, x, y));
 	y += fine->get_h() + 10;
+	add_tool(text = new RotateText(this, plugin, x, y));
+	y += 30;
 	add_tool(new BC_Title(x, y, "Angle"));
-
+	
 
 
 	show_window();
@@ -348,6 +398,7 @@ int RotateWindow::update()
 {
 	update_fine();
 	update_toggles();
+	update_text();
 	bilinear->update(plugin->config.bilinear);
 	return 0;
 }
@@ -355,6 +406,12 @@ int RotateWindow::update()
 int RotateWindow::update_fine()
 {
 	fine->update(plugin->config.angle);
+	return 0;
+}
+
+int RotateWindow::update_text()
+{
+	text->update(plugin->config.angle);
 	return 0;
 }
 
@@ -420,7 +477,7 @@ RotateEffect::~RotateEffect()
 
 char* RotateEffect::plugin_title() 
 {
-	return "Rotate";
+	return _("Rotate");
 }
 
 int RotateEffect::is_realtime() 

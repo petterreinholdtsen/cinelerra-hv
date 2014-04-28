@@ -1,4 +1,5 @@
 #include "cropvideo.h"
+#include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mainsession.h"
@@ -6,8 +7,11 @@
 #include "videowindow.h"
 #include "videowindowgui.h"
 
+
+
+
 CropVideo::CropVideo(MWindow *mwindow)
- : BC_MenuItem("Crop Video..."), Thread()
+ : BC_MenuItem(_("Crop Video...")), Thread()
 {
 	this->mwindow = mwindow;
 }
@@ -41,7 +45,7 @@ void CropVideo::run()
 		offsets[0] = -(mwindow->video_window->gui->x1 + mwindow->video_window->gui->x2 - mwindow->session->output_w) / 2;
 		offsets[1] = -(mwindow->video_window->gui->y1 + mwindow->video_window->gui->y2 - mwindow->session->output_h) / 2;
 		offsets[2] = offsets[3] = 0;
-//		mwindow->undo->update_undo_edits("Crop", 0);
+//		mwindow->undo->update_undo_edits(_("Crop"), 0);
 		
 		mwindow->tracks->scale_video(dummy_dimension, offsets, 0);
 		mwindow->session->track_w = mwindow->video_window->gui->x2 - mwindow->video_window->gui->x1;
@@ -82,7 +86,7 @@ CropVideoWindow::~CropVideoWindow()
 int CropVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Select a region to crop in the video output window"));
+	add_subwindow(new BC_Title(x, y, _("Select a region to crop in the video output window")));
 	y += 30;
 	add_subwindow(new BC_OKButton(x, y));
 	x = get_w() - 100;

@@ -10,6 +10,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new BurnMain(server);
@@ -36,35 +41,24 @@ BurnConfig::BurnConfig()
 BurnMain::BurnMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	defaults = 0;
 	input_ptr = 0;
 	output_ptr = 0;
 	burn_server = 0;
 	buffer = 0;
 	effecttv = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 BurnMain::~BurnMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	if(defaults) delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(buffer) delete [] buffer;
 	if(burn_server) delete burn_server;
 	if(effecttv) delete effecttv;
 }
 
-char* BurnMain::plugin_title() { return "BurningTV"; }
+char* BurnMain::plugin_title() { return _("BurningTV"); }
 int BurnMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(BurnMain)

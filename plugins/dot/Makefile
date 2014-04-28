@@ -1,5 +1,3 @@
-CFLAGS += -I../burn
-
 include ../../global_config
 
 OBJS = $(OBJDIR)/dot.o  \
@@ -7,6 +5,8 @@ OBJS = $(OBJDIR)/dot.o  \
 	../burn/$(OBJDIR)/effecttv.o
 
 OUTPUT = ../$(OBJDIR)/dot.plugin
+CFLAGS += -I../burn
+
 
 include ../../plugin_config
 

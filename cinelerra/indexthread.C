@@ -1,4 +1,5 @@
-#include "assets.h"
+#include "asset.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -10,6 +11,11 @@
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "tracks.h"
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 // Read data from buffers and calculate peaks
 
@@ -30,8 +36,8 @@ IndexThread::IndexThread(MWindow *mwindow,
 // initialize output data
 	int64_t index_size = mwindow->preferences->index_size / 
 		sizeof(float) + 1;      // size of output file in floats
-	if(asset->index_buffer) delete asset->index_buffer;
-	if(asset->index_offsets) delete asset->index_offsets;
+	if(asset->index_buffer) delete [] asset->index_buffer;
+	if(asset->index_offsets) delete [] asset->index_offsets;
 // buffer used for drawing during the build.  This is not deleted in the asset
 	asset->index_buffer = new float[index_size];  
 // This is deleted in the asset's destructor
@@ -43,11 +49,12 @@ IndexThread::IndexThread(MWindow *mwindow,
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
 		buffer_in[i] = new double*[asset->channels];
+		output_lock[i] = new Condition(0, "IndexThread::output_lock");
+		input_lock[i] = new Condition(1, "IndexThread::input_lock");
 		for(int j = 0; j < asset->channels; j++)
 		{
 			buffer_in[i][j] = new double[buffer_size];
 		}
-		output_lock[i].lock();
 	}
 
 	interrupt_flag = 0;
@@ -62,9 +69,11 @@ IndexThread::~IndexThread()
 			delete [] buffer_in[i][j];
 		}
 		delete [] buffer_in[i];
+		delete output_lock[i];
+		delete input_lock[i];
 	}
 	
-	delete asset->index_buffer;
+	delete [] asset->index_buffer;
 	asset->index_buffer = 0;
 }
 
@@ -124,7 +133,7 @@ void IndexThread::run()
 
 	while(!interrupt_flag && !done)
 	{
-		output_lock[current_buffer].lock();
+		output_lock[current_buffer]->lock("IndexThread::run");
 
 		if(last_buffer[current_buffer]) done = 1;
 		if(!interrupt_flag && !done)
@@ -185,7 +194,7 @@ void IndexThread::run()
 		}
 
 //printf("IndexThread::run %ld\n", lowpoint[asset->channels - 1] + 1);
-		input_lock[current_buffer].unlock();
+		input_lock[current_buffer]->unlock();
 		current_buffer++;
 		if(current_buffer >= TOTAL_BUFFERS) current_buffer = 0;
 	}
@@ -197,7 +206,7 @@ void IndexThread::run()
 	if(!(file = fopen(index_filename, "wb")))
 	{
 // failed to create it
-		printf("IndexThread::run() Couldn't write index file %s to disk.\n", index_filename);
+		printf(_("IndexThread::run() Couldn't write index file %s to disk.\n"), index_filename);
 	}
 	else
 	{

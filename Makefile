@@ -1,10 +1,10 @@
 all:
-	make -f build/Makefile.cinelerra
+	$(MAKE) -f build/Makefile.cinelerra
 
 install:
-	make -f build/Makefile.cinelerra install
+	$(MAKE) -f build/Makefile.cinelerra install
 
 clean:
-	make -f build/Makefile.cinelerra clean
+	$(MAKE) -f build/Makefile.cinelerra clean
 
 

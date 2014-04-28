@@ -1,5 +1,5 @@
 #ifndef lint
-static char id[] = "$Id: tif2ras.c,v 1.1 2003/07/25 03:27:39 heroine Exp $"; 
+static char id[] = "$Id: tif2ras.c,v 1.1.1.1 2003/10/14 07:54:39 heroine Exp $"; 
 #endif
 /*-
  * tif2ras.c - Converts from a Tagged Image File Format image to a Sun Raster.

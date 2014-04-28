@@ -6,7 +6,7 @@ progdesc='MUltiGEnerationCOding'
 # NEEDS: getopt, lame
 # Please have a look at the DEFAULTS section.
 
-# $Id: mugeco.sh,v 1.1 2003/07/29 04:17:52 heroine Exp $
+# $Id: mugeco.sh,v 1.1.1.1 2003/10/14 07:54:38 heroine Exp $
 
 usage() {
 cat << EOF

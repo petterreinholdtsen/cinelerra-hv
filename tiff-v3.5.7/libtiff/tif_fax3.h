@@ -1,4 +1,4 @@
-/* $Id: tif_fax3.h,v 1.1 2003/07/25 03:27:39 heroine Exp $ */
+/* $Id: tif_fax3.h,v 1.1.1.1 2003/10/14 07:54:39 heroine Exp $ */
 
 /*
  * Copyright (c) 1990-1997 Sam Leffler

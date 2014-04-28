@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "bitspopup.h"
 #include "byteorder.h"
 #include "clip.h"
@@ -13,6 +13,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 FileMPEG::FileMPEG(Asset *asset, File *file)
@@ -210,7 +214,7 @@ int FileMPEG::open_file(int rd, int wr)
 				asset->sample_rate);
 			if((result = lame_init_params(lame_global)) < 0)
 			{
-				printf("encode: lame_init_params returned %d\n", result);
+				printf(_("encode: lame_init_params returned %d\n"), result);
 				lame_close(lame_global);
 				lame_global = 0;
 			}
@@ -314,6 +318,7 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;
 			break;
+		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			return BC_YUV422P;
 			break;
@@ -373,7 +378,9 @@ int FileMPEG::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
-		return mpeg3_set_frame(fd, x, file->current_layer);
+	{
+		mpeg3_set_frame(fd, x, file->current_layer);
+	}
 	else
 		return 1;
 }
@@ -635,27 +642,30 @@ int FileMPEG::read_frame(VFrame *frame)
 					&u,
 					&v,
 					file->current_layer);
-				cmodel_transfer(frame->get_rows(), 
-					0,
-					frame->get_y(),
-					frame->get_u(),
-					frame->get_v(),
-					(unsigned char*)y,
-					(unsigned char*)u,
-					(unsigned char*)v,
-					0,
-					0,
-					asset->width,
-					asset->height,
-					0,
-					0,
-					asset->width,
-					asset->height,
-					src_cmodel, 
-					frame->get_color_model(),
-					0, 
-					asset->width,
-					frame->get_w());
+				if(y && u && v)
+				{
+					cmodel_transfer(frame->get_rows(), 
+						0,
+						frame->get_y(),
+						frame->get_u(),
+						frame->get_v(),
+						(unsigned char*)y,
+						(unsigned char*)u,
+						(unsigned char*)v,
+						0,
+						0,
+						asset->width,
+						asset->height,
+						0,
+						0,
+						asset->width,
+						asset->height,
+						src_cmodel, 
+						frame->get_color_model(),
+						0, 
+						asset->width,
+						frame->get_w());
+				}
 			}
 //printf("FileMPEG::read_frame 2\n");
 			break;
@@ -801,12 +811,12 @@ int MPEGConfigAudio::create_objects()
 	int x1 = 150;
 	MPEGLayer *layer;
 
-	add_tool(new BC_Title(x, y, "Layer:"));
+	add_tool(new BC_Title(x, y, _("Layer:")));
 	add_tool(layer = new MPEGLayer(x1, y, this));
 	layer->create_objects();
 
 	y += 30;
-	add_tool(new BC_Title(x, y, "Kbits per second:"));
+	add_tool(new BC_Title(x, y, _("Kbits per second:")));
 	add_tool(bitrate = new MPEGABitrate(x1, y, this));
 	bitrate->create_objects();
 	
@@ -863,15 +873,15 @@ char* MPEGLayer::layer_to_string(int layer)
 	switch(layer)
 	{
 		case 2:
-			return "II";
+			return _("II");
 			break;
 		
 		case 3:
-			return "III";
+			return _("III");
 			break;
 			
 		default:
-			return "II";
+			return _("II");
 			break;
 	}
 }
@@ -990,42 +1000,42 @@ int MPEGConfigVideo::create_objects()
 	MPEGDerivative *derivative;
 	MPEGColorModel *cmodel;
 
-	add_subwindow(new BC_Title(x, y + 5, "Derivative:"));
+	add_subwindow(new BC_Title(x, y + 5, _("Derivative:")));
 	add_subwindow(derivative = new MPEGDerivative(x1, y, this));
 	derivative->create_objects();
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y + 5, "Bitrate:"));
+	add_subwindow(new BC_Title(x, y + 5, _("Bitrate:")));
 	add_subwindow(new MPEGBitrate(x1, y, this));
 	add_subwindow(fixed_bitrate = new MPEGFixedBitrate(x2, y, this));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, "Quantization:"));
+	add_subwindow(new BC_Title(x, y, _("Quantization:")));
 	MPEGQuant *quant = new MPEGQuant(x1, y, this);
 	quant->create_objects();
 	add_subwindow(fixed_quant = new MPEGFixedQuant(x2, y, this));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, "I frame distance:"));
+	add_subwindow(new BC_Title(x, y, _("I frame distance:")));
 	MPEGIFrameDistance *iframe_distance = 
 		new MPEGIFrameDistance(x1, y, this);
 	iframe_distance->create_objects();
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, "Color model:"));
+	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	add_subwindow(cmodel = new MPEGColorModel(x1, y, this));
 	cmodel->create_objects();
 	y += 30;
 	
-//	add_subwindow(new BC_Title(x, y, "P frame distance:"));
+//	add_subwindow(new BC_Title(x, y, _("P frame distance:")));
 //	y += 30;
 
 
-	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_progressive, "Progressive frames"));
+	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_progressive, _("Progressive frames")));
 	y += 30;
-	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_denoise, "Denoise"));
+	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_denoise, _("Denoise")));
 	y += 30;
-	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_seq_codes, "Sequence start codes in every GOP"));
+	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_seq_codes, _("Sequence start codes in every GOP")));
 
 	add_subwindow(new BC_OKButton(this));
 	show_window();
@@ -1074,15 +1084,15 @@ char* MPEGDerivative::derivative_to_string(int derivative)
 	switch(derivative)
 	{
 		case 1:
-			return "MPEG-1";
+			return _("MPEG-1");
 			break;
 		
 		case 2:
-			return "MPEG-2";
+			return _("MPEG-2");
 			break;
 			
 		default:
-			return "MPEG-1";
+			return _("MPEG-1");
 			break;
 	}
 }
@@ -1126,7 +1136,7 @@ int MPEGQuant::handle_event()
 };
 
 MPEGFixedBitrate::MPEGFixedBitrate(int x, int y, MPEGConfigVideo *gui)
- : BC_Radial(x, y, gui->asset->vmpeg_fix_bitrate, "Fixed bitrate")
+ : BC_Radial(x, y, gui->asset->vmpeg_fix_bitrate, _("Fixed bitrate"))
 {
 	this->gui = gui;
 }
@@ -1140,7 +1150,7 @@ int MPEGFixedBitrate::handle_event()
 };
 
 MPEGFixedQuant::MPEGFixedQuant(int x, int y, MPEGConfigVideo *gui)
- : BC_Radial(x, y, !gui->asset->vmpeg_fix_bitrate, "Fixed quantization")
+ : BC_Radial(x, y, !gui->asset->vmpeg_fix_bitrate, _("Fixed quantization"))
 {
 	this->gui = gui;
 }
@@ -1205,15 +1215,15 @@ char* MPEGColorModel::cmodel_to_string(int cmodel)
 	switch(cmodel)
 	{
 		case 0:
-			return "YUV 4:2:0";
+			return _("YUV 4:2:0");
 			break;
 		
 		case 1:
-			return "YUV 4:2:2";
+			return _("YUV 4:2:2");
 			break;
 			
 		default:
-			return "YUV 4:2:0";
+			return _("YUV 4:2:0");
 			break;
 	}
 }

@@ -3,6 +3,7 @@
 #include "channeledit.h"
 #include "channelpicker.h"
 #include "chantables.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "record.h"
@@ -337,7 +338,7 @@ int ChannelEditWindow::change_channel_from_list(int channel_number)
 }
 
 ChannelEditSelect::ChannelEditSelect(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Select")
+ : BC_GenericButton(x, y, _("Select"))
 {
 	this->window = window;
 }
@@ -351,7 +352,7 @@ int ChannelEditSelect::handle_event()
 }
 
 ChannelEditAdd::ChannelEditAdd(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Add...")
+ : BC_GenericButton(x, y, _("Add..."))
 {
 	this->window = window;
 }
@@ -382,7 +383,7 @@ int ChannelEditList::handle_event()
 }
 
 ChannelEditMoveUp::ChannelEditMoveUp(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Move up")
+ : BC_GenericButton(x, y, _("Move up"))
 {
 	this->window = window;
 }
@@ -397,7 +398,7 @@ int ChannelEditMoveUp::handle_event()
 }
 
 ChannelEditMoveDown::ChannelEditMoveDown(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Move down")
+ : BC_GenericButton(x, y, _("Move down"))
 {
 	this->window = window;
 }
@@ -412,7 +413,7 @@ int ChannelEditMoveDown::handle_event()
 }
 
 ChannelEditDel::ChannelEditDel(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Delete")
+ : BC_GenericButton(x, y, _("Delete"))
 {
 	this->window = window;
 }
@@ -425,7 +426,7 @@ int ChannelEditDel::handle_event()
 }
 
 ChannelEdit::ChannelEdit(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Edit...")
+ : BC_GenericButton(x, y, _("Edit..."))
 {
 	this->window = window;
 }
@@ -438,7 +439,7 @@ int ChannelEdit::handle_event()
 }
 
 ChannelEditPicture::ChannelEditPicture(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Picture...")
+ : BC_GenericButton(x, y, _("Picture..."))
 {
 	this->window = window;
 }
@@ -501,37 +502,37 @@ char *ChannelEditEditThread::value_to_freqtable(int value)
 	switch(value)
 	{
 		case NTSC_BCAST:
-			return "NTSC_BCAST";
+			return _("NTSC_BCAST");
 			break;
 		case NTSC_CABLE:
-			return "NTSC_CABLE";
+			return _("NTSC_CABLE");
 			break;
 		case NTSC_HRC:
-			return "NTSC_HRC";
+			return _("NTSC_HRC");
 			break;
 		case NTSC_BCAST_JP:
-			return "NTSC_BCAST_JP";
+			return _("NTSC_BCAST_JP");
 			break;
 		case NTSC_CABLE_JP:
-			return "NTSC_CABLE_JP";
+			return _("NTSC_CABLE_JP");
 			break;
 		case PAL_AUSTRALIA:
-			return "PAL_AUSTRALIA";
+			return _("PAL_AUSTRALIA");
 			break;
 		case PAL_EUROPE:
-			return "PAL_EUROPE";
+			return _("PAL_EUROPE");
 			break;
 		case PAL_E_EUROPE:
-			return "PAL_E_EUROPE";
+			return _("PAL_E_EUROPE");
 			break;
 		case PAL_ITALY:
-			return "PAL_ITALY";
+			return _("PAL_ITALY");
 			break;
 		case PAL_IRELAND:
-			return "PAL_IRELAND";
+			return _("PAL_IRELAND");
 			break;
 		case PAL_NEWZEALAND:
-			return "PAL_NEWZEALAND";
+			return _("PAL_NEWZEALAND");
 			break;
 	}
 }
@@ -541,13 +542,13 @@ char* ChannelEditEditThread::value_to_norm(int value)
 	switch(value)
 	{
 		case NTSC:
-			return "NTSC";
+			return _("NTSC");
 			break;
 		case PAL:
-			return "PAL";
+			return _("PAL");
 			break;
 		case SECAM:
-			return "SECAM";
+			return _("SECAM");
 			break;
 	}
 }
@@ -557,7 +558,7 @@ char* ChannelEditEditThread::value_to_input(int value)
 	if(channel_picker->get_video_inputs()->total > value)
 		return channel_picker->get_video_inputs()->values[value];
 	else
-		return "None";
+		return _("None");
 }
 
 void ChannelEditEditThread::set_device()
@@ -669,32 +670,32 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 	this->new_channel = channel;
 
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Title:"));
+	add_subwindow(new BC_Title(x, y, _("Title:")));
 	add_subwindow(new ChannelEditEditTitle(x, y + 20, thread));
 	x += 170;
-	add_subwindow(new BC_Title(x, y, "Source:"));
+	add_subwindow(new BC_Title(x, y, _("Source:")));
 	y += 20;
 	add_subwindow(thread->source_text = new ChannelEditEditSource(x, y, thread));
 	x += 160;
 	add_subwindow(new ChannelEditEditSourceTumbler(x, y, thread));
 	y += 40;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Fine:"));
+	add_subwindow(new BC_Title(x, y, _("Fine:")));
 	add_subwindow(new ChannelEditEditFine(x + 130, y, thread));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Norm:"));
+	add_subwindow(new BC_Title(x, y, _("Norm:")));
 	ChannelEditEditNorm *norm;
 	add_subwindow(norm = new ChannelEditEditNorm(x + 130, y, thread));
 	norm->add_items();
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Frequency table:"));
+	add_subwindow(new BC_Title(x, y, _("Frequency table:")));
 	ChannelEditEditFreqtable *table;
 	add_subwindow(table = new ChannelEditEditFreqtable(x + 130, y, thread));
 	table->add_items();
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Input:"));
+	add_subwindow(new BC_Title(x, y, _("Input:")));
 	ChannelEditEditInput *input;
 	add_subwindow(input = new ChannelEditEditInput(x + 130, y, thread, thread->record));
 	input->add_items();
@@ -952,19 +953,19 @@ ChannelEditPictureWindow::~ChannelEditPictureWindow()
 int ChannelEditPictureWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y + 10, "Brightness:"));
+	add_subwindow(new BC_Title(x, y + 10, _("Brightness:")));
 	add_subwindow(new ChannelEditBright(x + 100, y, channel_picker, channel_picker->get_brightness()));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 10, "Contrast:"));
+	add_subwindow(new BC_Title(x, y + 10, _("Contrast:")));
 	add_subwindow(new ChannelEditContrast(x + 135, y, channel_picker, channel_picker->get_contrast()));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 10, "Color:"));
+	add_subwindow(new BC_Title(x, y + 10, _("Color:")));
 	add_subwindow(new ChannelEditColor(x + 100, y, channel_picker, channel_picker->get_color()));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 10, "Hue:"));
+	add_subwindow(new BC_Title(x, y + 10, _("Hue:")));
 	add_subwindow(new ChannelEditHue(x + 135, y, channel_picker, channel_picker->get_hue()));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 10, "Whiteness:"));
+	add_subwindow(new BC_Title(x, y + 10, _("Whiteness:")));
 	add_subwindow(new ChannelEditWhiteness(x + 100, y, channel_picker, channel_picker->get_whiteness()));
 	y += 50;
 	x += 70;
@@ -986,7 +987,16 @@ ChannelEditBright::ChannelEditBright(int x, int y, ChannelPicker *channel_picker
 ChannelEditBright::~ChannelEditBright() {}
 int ChannelEditBright::handle_event()
 {
-	channel_picker->set_brightness(get_value());
+	return 1;
+}
+int ChannelEditBright::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_brightness(get_value());
+		return 1;
+	}
+	return 0;
 }
 
 ChannelEditContrast::ChannelEditContrast(int x, int y, ChannelPicker *channel_picker, int value)
@@ -1001,8 +1011,18 @@ ChannelEditContrast::ChannelEditContrast(int x, int y, ChannelPicker *channel_pi
 ChannelEditContrast::~ChannelEditContrast() {}
 int ChannelEditContrast::handle_event()
 {
-	channel_picker->set_contrast(get_value());
+	return 1;
 }
+int ChannelEditContrast::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_contrast(get_value());
+		return 1;
+	}
+	return 0;
+}
+
 
 ChannelEditColor::ChannelEditColor(int x, int y, ChannelPicker *channel_picker, int value)
  : BC_IPot(x, 
@@ -1016,7 +1036,16 @@ ChannelEditColor::ChannelEditColor(int x, int y, ChannelPicker *channel_picker, 
 ChannelEditColor::~ChannelEditColor() {}
 int ChannelEditColor::handle_event()
 {
-	channel_picker->set_color(get_value());
+	return 1;
+}
+int ChannelEditColor::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_color(get_value());
+		return 1;
+	}
+	return 0;
 }
 
 ChannelEditHue::ChannelEditHue(int x, int y, ChannelPicker *channel_picker, int value)
@@ -1031,7 +1060,16 @@ ChannelEditHue::ChannelEditHue(int x, int y, ChannelPicker *channel_picker, int 
 ChannelEditHue::~ChannelEditHue() {}
 int ChannelEditHue::handle_event()
 {
-	channel_picker->set_hue(get_value());
+	return 1;
+}
+int ChannelEditHue::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_hue(get_value());
+		return 1;
+	}
+	return 0;
 }
 
 ChannelEditWhiteness::ChannelEditWhiteness(int x, int y, ChannelPicker *channel_picker, int value)
@@ -1046,5 +1084,17 @@ ChannelEditWhiteness::ChannelEditWhiteness(int x, int y, ChannelPicker *channel_
 ChannelEditWhiteness::~ChannelEditWhiteness() {}
 int ChannelEditWhiteness::handle_event()
 {
-	channel_picker->set_whiteness(get_value());
+	return 1;
 }
+int ChannelEditWhiteness::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_whiteness(get_value());
+		return 1;
+	}
+	return 0;
+}
+
+
+

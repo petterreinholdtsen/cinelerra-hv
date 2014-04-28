@@ -18,7 +18,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  *
- * $Id: bitstream.c,v 1.1 2003/07/29 04:17:51 heroine Exp $
+ * $Id: bitstream.c,v 1.1.1.1 2003/10/14 07:54:37 heroine Exp $
  */
 
 

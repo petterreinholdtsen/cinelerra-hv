@@ -7,6 +7,7 @@ TIFF_DIR := ../tiff-v3.5.7
 UUID_DIR := ../uuid
 TOOLAME_DIR := ../toolame-02l
 LAME_DIR := ../quicktime/lame-3.93.1/include
+SNDFILE_DIR := $(shell expr ../libsndfile* )
 include ../global_config
 
 OBJS = \
@@ -14,7 +15,6 @@ OBJS = \
 	$(OBJDIR)/aautomation.o \
 	$(OBJDIR)/aboutprefs.o \
 	$(OBJDIR)/adeviceprefs.o \
-	$(OBJDIR)/adrivermenu.o \
 	$(OBJDIR)/aedit.o \
 	$(OBJDIR)/aedits.o \
 	$(OBJDIR)/amodule.o \
@@ -27,6 +27,7 @@ OBJS = \
 	$(OBJDIR)/assetpopup.o \
 	$(OBJDIR)/assetremove.o \
 	$(OBJDIR)/assets.o \
+	$(OBJDIR)/asset.o \
 	$(OBJDIR)/atrack.o \
 	$(OBJDIR)/attachmentpoint.o \
 	$(OBJDIR)/audio1394.o \
@@ -44,6 +45,7 @@ OBJS = \
 	$(OBJDIR)/awindowgui.o \
 	$(OBJDIR)/awindowmenu.o \
 	$(OBJDIR)/batch.o \
+	$(OBJDIR)/batchrender.o \
 	$(OBJDIR)/bezierauto.o \
 	$(OBJDIR)/bezierautos.o \
 	$(OBJDIR)/bitspopup.o \
@@ -146,7 +148,6 @@ OBJS = \
 	$(OBJDIR)/mwindowmove.o \
 	$(OBJDIR)/new.o \
 	$(OBJDIR)/newfolder.o \
-	$(OBJDIR)/neworappend.o \
 	$(OBJDIR)/overlayframe.o \
 	$(OBJDIR)/packagedispatcher.o \
 	$(OBJDIR)/packagerenderer.o \
@@ -265,11 +266,11 @@ OBJS = \
 OUTPUT = $(OBJDIR)/cinelerra
 
 
-#ifeq ($(HAVE_AVIFILE), yes)
+#ifeq ($(HAVE_AVIFILE), y)
 AVIFILE_DIR := $(shell expr ../avifile* )
 #endif
 
-ifeq ($(HAVE_ALSA), yes)
+ifeq ($(HAVE_ALSA), y)
 ALSA_CFLAGS := -DHAVE_ALSA -I$(ALSA_DIR)/include
 ALSA_LIBS := $(ALSA_DIR)/$(OBJDIR)/libasound.a
 endif
@@ -281,7 +282,7 @@ STATICLIBS = \
 	$(TIFF_DIR)/$(OBJDIR)/libtiff.a \
 	../guicast/$(OBJDIR)/libguicast.a \
 	../libmpeg3/$(OBJDIR)/libmpeg3.a \
-	../libsndfile/$(OBJDIR)/libsndfile.a \
+	$(SNDFILE_DIR)/$(OBJDIR)/libsndfile.a \
 	$(UUID_DIR)/$(OBJDIR)/libuuid.a \
 	../mpeg2enc/$(OBJDIR)/mpeg2enc.a \
 	$(TOOLAME_DIR)/$(OBJDIR)/toolame.a
@@ -315,6 +316,10 @@ LIBS += \
 	-ldl
 
 
+ifeq ($(HAVE_XFT), y)
+LIBS += -lXft
+endif
+
 CFLAGS += \
 	-I../guicast \
 	-I../quicktime \
@@ -329,14 +334,12 @@ CFLAGS += \
 	-I$(LAME_DIR) \
 	-I../audiofile \
 	-I../libmpeg3 \
-	-I../libsndfile \
+	-I$(SNDFILE_DIR)/src \
 	-I../libavc/common \
 	-I../libavc/libavc1394 \
 	-I../libavc/librom1394 \
 	$(ESOUNDCFLAGS) \
-	$(ALSA_CFLAGS) \
-	`glib-config --cflags`
-
+	$(ALSA_CFLAGS)
 
 
 # Speed up linking with this linking sequence
@@ -380,7 +383,7 @@ endif
 
 
 # Enable AVIFile support
-ifeq ($(HAVE_AVIFILE), yes)
+ifeq ($(HAVE_AVIFILE), y)
 
 CFLAGS += -DUSE_AVIFILE -I$(AVIFILE_DIR)/include
 LIBS += \
@@ -405,6 +408,8 @@ $(shell echo $(LDFLAGS1) $(OBJS) $(AVIOBJS) $(CXXREPOSITORY) $(STATICLIBS) $(LIB
 # Static linking is not possible because of the way the plugins are loaded
 $(OUTPUT): $(OBJS) $(BOOTSTRAP)
 	$(LINKER) `cat $(OBJDIR)/objs`
+	strip $(OUTPUT)
+	../guicast/$(OBJDIR)/bootstrap $(OUTPUT) data/mode_*.png
 
 $(OBJDIR)/test: 
 	$(CC) -shared -o $(OBJDIR)/test.so \
@@ -427,7 +432,6 @@ wc:
 	cat *.C *.h | wc
 
 install:
-	strip $(OUTPUT)
 	rm -f /usr/bin/cinelerra
 	cp $(OUTPUT) /usr/bin
 
@@ -439,7 +443,6 @@ $(OBJDIR)/aattachmentpoint.o: 			  aattachmentpoint.C
 $(OBJDIR)/aautomation.o: 			  aautomation.C
 $(OBJDIR)/aboutprefs.o:                           aboutprefs.C
 $(OBJDIR)/adeviceprefs.o: 			  adeviceprefs.C
-$(OBJDIR)/adrivermenu.o: 			  adrivermenu.C
 $(OBJDIR)/aedit.o: 				  aedit.C
 $(OBJDIR)/aedits.o: 				  aedits.C
 $(OBJDIR)/amodule.o: 				  amodule.C
@@ -449,6 +452,7 @@ $(OBJDIR)/aplugin.o: 				  aplugin.C
 $(OBJDIR)/apluginarray.o: 			  apluginarray.C
 $(OBJDIR)/apluginset.o: 			  apluginset.C
 $(OBJDIR)/arender.o: 				  arender.C
+$(OBJDIR)/asset.o:                                asset.C
 $(OBJDIR)/assetedit.o:  			  assetedit.C
 $(OBJDIR)/assetmanager.o: 			  assetmanager.C
 $(OBJDIR)/assetpopup.o: 			  assetpopup.C
@@ -474,6 +478,7 @@ $(OBJDIR)/awindow.o: 				  awindow.C
 $(OBJDIR)/awindowgui.o: 			  awindowgui.C
 $(OBJDIR)/awindowmenu.o: 			  awindowmenu.C
 $(OBJDIR)/batch.o: 				  batch.C
+$(OBJDIR)/batchrender.o:			  batchrender.C
 $(OBJDIR)/bezierauto.o: 			  bezierauto.C
 $(OBJDIR)/bezierautos.o: 			  bezierautos.C
 $(OBJDIR)/bitspopup.o:  			  bitspopup.C
@@ -580,7 +585,6 @@ $(OBJDIR)/mwindowgui.o: 			  mwindowgui.C
 $(OBJDIR)/mwindowmove.o: 			  mwindowmove.C
 $(OBJDIR)/new.o: 				  new.C
 $(OBJDIR)/newfolder.o:  			  newfolder.C
-$(OBJDIR)/neworappend.o: 			  neworappend.C
 $(OBJDIR)/overlayframe.o: 			  overlayframe.C
 $(OBJDIR)/packagedispatcher.o:                    packagedispatcher.C
 $(OBJDIR)/packagerenderer.o: 			  packagerenderer.C

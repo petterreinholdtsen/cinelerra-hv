@@ -1,5 +1,5 @@
 /******************************************************************************
- * $Id: tiffset.c,v 1.1 2003/07/25 03:27:40 heroine Exp $
+ * $Id: tiffset.c,v 1.1.1.1 2003/10/14 07:54:39 heroine Exp $
  *
  * Project:  libtiff tools
  * Purpose:  Mainline for setting metadata in existing TIFF files.
@@ -29,6 +29,9 @@
  ******************************************************************************
  *
  * $Log: tiffset.c,v $
+ * Revision 1.1.1.1  2003/10/14 07:54:39  heroine
+ *
+ *
  * Revision 1.1  2003/07/25 03:27:40  heroine
  * *** empty log message ***
  *

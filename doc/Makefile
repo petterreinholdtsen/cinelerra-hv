@@ -36,3 +36,6 @@ all:
 install:
 	cp $(IMAGES) /amazon/httpd/html/cinelerra
 	cp cinelerra.html /amazon/httpd/html/cinelerra
+
+clean:
+	rm -f $(IMAGES) $(OUTPUT)

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: utility main for building thresh/pigeonhole encode hints
- last mod: $Id: latticehint.c,v 1.1 2002/07/22 12:33:54 myrina Exp $
+ last mod: $Id: latticehint.c,v 1.1.1.1 2003/10/14 07:54:36 heroine Exp $
 
  ********************************************************************/
 

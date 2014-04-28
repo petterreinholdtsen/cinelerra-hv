@@ -23,7 +23,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/* $Id: tools.h,v 1.1 2003/07/29 04:17:52 heroine Exp $ */
+/* $Id: tools.h,v 1.1.1.1 2003/10/14 07:54:37 heroine Exp $ */
 
 #ifndef LAME_TOOLS_H
 #define LAME_TOOLS_H

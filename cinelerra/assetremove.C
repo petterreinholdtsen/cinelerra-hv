@@ -1,6 +1,9 @@
 #include "assetremove.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+
+
 
 AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Remove assets", 
@@ -19,7 +22,7 @@ AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
 void AssetRemoveWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Permanently remove from disk?"));
+	add_subwindow(new BC_Title(x, y, _("Permanently remove from disk?")));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();

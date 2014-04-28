@@ -1,5 +1,5 @@
 #include "aboutprefs.h"
-#include "assets.h"
+#include "asset.h"
 #include "audiodevice.inc"
 #include "cache.h"
 #include "cplayback.h"
@@ -12,6 +12,7 @@
 #include "fonts.h"
 #include "interfaceprefs.h"
 #include "keys.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "meterpanel.h"
@@ -32,7 +33,7 @@
 #include <string.h>
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
- : BC_MenuItem("Preferences...", "Shift+P", 'P')
+ : BC_MenuItem(_("Preferences..."), "Shift+P", 'P')
 {
 	this->mwindow = mwindow; 
 
@@ -138,7 +139,7 @@ int PreferencesThread::apply_settings()
 		(edl->session->audio_module_fragment != mwindow->edl->session->audio_module_fragment) ||
 		(edl->session->audio_read_length != mwindow->edl->session->audio_read_length) ||
 		(edl->session->playback_strategy != mwindow->edl->session->playback_strategy) ||
-		(edl->session->force_uniprocessor != mwindow->edl->session->force_uniprocessor) ||
+		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
@@ -153,28 +154,28 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_meters)
 	{
-		mwindow->cwindow->gui->lock_window();
+		mwindow->cwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->cwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->cwindow->gui->unlock_window();
 
 
 
-		mwindow->vwindow->gui->lock_window();
+		mwindow->vwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->vwindow->gui->unlock_window();
 
 
 
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
 		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->gui->unlock_window();
 
 
 
-		mwindow->lwindow->gui->lock_window();
+		mwindow->lwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->lwindow->gui->panel->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->lwindow->gui->unlock_window();
@@ -182,7 +183,7 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_overlays)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 2");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
@@ -190,7 +191,7 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_times)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 3");
 		mwindow->gui->update(0, 0, 1, 0, 0, 1, 0);
 		mwindow->gui->redraw_time_dependancies();
 		mwindow->gui->unlock_window();
@@ -216,22 +217,22 @@ char* PreferencesThread::category_to_text(int category)
 	switch(category)
 	{
 		case 0:
-			return "Playback";
+			return _("Playback");
 			break;
 		case 1:
-			return "Recording";
+			return _("Recording");
 			break;
 		case 2:
-			return "Performance";
+			return _("Performance");
 			break;
 		case 3:
-			return "Interface";
+			return _("Interface");
 			break;
 // 		case 4:
-// 			return "Plugin Set";
+// 			return _("Plugin Set");
 // 			break;
 		case 4:
-			return "About";
+			return _("About");
 			break;
 	}
 	return "";
@@ -304,7 +305,7 @@ int PreferencesWindow::create_objects()
 //printf("PreferencesWindow::create_objects 1\n");
 	for(int i = 0; i < CATEGORIES; i++)
 		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
-//	add_subwindow(new BC_Title(x, y, "Category:", LARGEFONT_3D, RED));
+//	add_subwindow(new BC_Title(x, y, _("Category:"), LARGEFONT_3D, RED));
 	category = new PreferencesCategory(mwindow, thread, x, y);
 	category->create_objects();
 
@@ -332,7 +333,7 @@ int PreferencesWindow::create_objects()
 
 int PreferencesWindow::update_framerate()
 {
-	lock_window();
+	lock_window("PreferencesWindow::update_framerate");
 //printf("PreferencesWindow::update_framerate 1\n");
 	if(thread->current_dialog == 0)
 	{
@@ -412,7 +413,7 @@ PreferencesDialog::~PreferencesDialog()
 
 
 PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread, int x, int y)
- : BC_GenericButton(x, y, "Apply")
+ : BC_GenericButton(x, y, _("Apply"))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

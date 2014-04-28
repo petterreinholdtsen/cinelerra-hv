@@ -1,6 +1,3 @@
-FREETYPE_DIR = ../../freetype-2.1.4
-CFLAGS += -I$(FREETYPE_DIR)/include -I../../
-
 include ../../global_config
 
 OBJS = $(OBJDIR)/title.o  \
@@ -11,6 +8,9 @@ OBJS = $(OBJDIR)/title.o  \
 
 
 OUTPUT_PLUGIN = ../$(OBJDIR)/titler.plugin
+FREETYPE_DIR = ../../freetype-2.1.4
+CFLAGS += -I$(FREETYPE_DIR)/include -I../../
+
 
 $(OUTPUT_PLUGIN): $(OBJS)
 	$(LDLINKER) -o $(OUTPUT_PLUGIN) \

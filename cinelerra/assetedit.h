@@ -1,7 +1,7 @@
 #ifndef ASSETEDIT_H
 #define ASSETEDIT_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "awindow.inc"
 #include "guicast.h"
 #include "bitspopup.inc"
@@ -9,6 +9,11 @@
 #include "formatpopup.h"
 #include "mwindow.h"
 #include "thread.h"
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 class AssetEditByteOrderHILO;
 class AssetEditByteOrderLOHI;
@@ -58,7 +63,7 @@ public:
 class AssetEditPath : public BrowseButton
 {
 public:
-	AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, BC_TextBox *textbox, int y, char *text, char *window_title = "2000: Path", char *window_caption = "Select a file");
+	AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, BC_TextBox *textbox, int y, char *text, char *window_title = "2000: Path", char *window_caption = _("Select a file"));
 	~AssetEditPath();
 	
 	AssetEditWindow *fwindow;

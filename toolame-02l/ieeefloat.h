@@ -43,9 +43,12 @@
  * conversions, and accommodated conversions involving +/- infinity,
  * NaN's, and denormalized numbers.
  *
- * $Id: ieeefloat.h,v 1.1 2003/07/29 04:17:52 heroine Exp $
+ * $Id: ieeefloat.h,v 1.1.1.1 2003/10/14 07:54:43 heroine Exp $
  *
  * $Log: ieeefloat.h,v $
+ * Revision 1.1.1.1  2003/10/14 07:54:43  heroine
+ *
+ *
  * Revision 1.1  2003/07/29 04:17:52  heroine
  * *** empty log message ***
  *

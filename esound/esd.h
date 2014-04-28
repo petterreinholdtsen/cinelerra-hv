@@ -8,7 +8,9 @@ extern "C" {
 
 /* path and name of the default EsounD domain socket */
 #define ESD_UNIX_SOCKET_DIR	"/tmp/.esd"
-#define ESD_UNIX_SOCKET_NAME	ESD_UNIX_SOCKET_DIR ## "/" ## "socket"
+/* Won't compile on GCC 3.3 */
+//#define ESD_UNIX_SOCKET_NAME	ESD_UNIX_SOCKET_DIR ## "/" ## "socket"
+#define ESD_UNIX_SOCKET_NAME	ESD_UNIX_SOCKET_DIR "/socket"
 
 /* length of the audio buffer size */
 #define ESD_BUF_SIZE (4 * 1024)

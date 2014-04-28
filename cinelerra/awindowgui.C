@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assetedit.h"
 #include "assetpopup.h"
 #include "assets.h"
@@ -14,6 +15,7 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -25,6 +27,9 @@
 #include "vframe.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
+
+
+
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
@@ -260,8 +265,8 @@ int AWindowGUI::create_objects()
 	AssetPicon *picon;
 
 //printf("AWindowGUI::create_objects 1\n");
-	asset_titles[0] = "Title";
-	asset_titles[1] = "Comments";
+	asset_titles[0] = _("Title");
+	asset_titles[1] = _("Comments");
 
 	set_icon(mwindow->theme->awindow_icon);
 	file_icon = new BC_Pixmap(this, 
@@ -425,7 +430,7 @@ int AWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_awindow = 0;
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("AWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_awindow->set_checked(0);
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
@@ -1064,7 +1069,7 @@ int AWindowAssets::handle_event()
 		else
 		{
 //printf("AWindowAssets::handle_event 2 %d %d\n", get_buttonpress(), get_selection(0, 0));
-			mwindow->vwindow->gui->lock_window();
+			mwindow->vwindow->gui->lock_window("AWindowAssets::handle_event");
 			
 			if(((AssetPicon*)get_selection(0, 0))->asset)
 				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->asset);
@@ -1190,15 +1195,15 @@ int AWindowAssets::drag_motion_event()
 {
 	BC_ListBox::drag_motion_event();
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->gui->drag_motion();
 	mwindow->gui->unlock_window();
 
-	mwindow->vwindow->gui->lock_window();
+	mwindow->vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->vwindow->gui->drag_motion();
 	mwindow->vwindow->gui->unlock_window();
 
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->cwindow->gui->drag_motion();
 	mwindow->cwindow->gui->unlock_window();
 	return 0;
@@ -1213,21 +1218,21 @@ int AWindowAssets::drag_stop_event()
 
 	if(!result)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->gui->drag_stop();
 		mwindow->gui->unlock_window();
 	}
 
 	if(!result) 
 	{
-		mwindow->vwindow->gui->lock_window();
+		mwindow->vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->vwindow->gui->drag_stop();
 		mwindow->vwindow->gui->unlock_window();
 	}
 
 	if(!result) 
 	{
-		mwindow->cwindow->gui->lock_window();
+		mwindow->cwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->cwindow->gui->drag_stop();
 		mwindow->cwindow->gui->unlock_window();
 	}
@@ -1263,7 +1268,7 @@ AWindowNewFolder::AWindowNewFolder(MWindow *mwindow, AWindowGUI *gui, int x, int
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("New bin");
+	set_tooltip(_("New bin"));
 }
 
 int AWindowNewFolder::handle_event()
@@ -1277,7 +1282,7 @@ AWindowDeleteFolder::AWindowDeleteFolder(MWindow *mwindow, AWindowGUI *gui, int 
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Delete bin");
+	set_tooltip(_("Delete bin"));
 }
 
 int AWindowDeleteFolder::handle_event()
@@ -1295,7 +1300,7 @@ AWindowRenameFolder::AWindowRenameFolder(MWindow *mwindow, AWindowGUI *gui, int 
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Rename bin");
+	set_tooltip(_("Rename bin"));
 }
 
 int AWindowRenameFolder::handle_event()
@@ -1308,7 +1313,7 @@ AWindowDeleteDisk::AWindowDeleteDisk(MWindow *mwindow, AWindowGUI *gui, int x, i
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Delete asset from disk");
+	set_tooltip(_("Delete asset from disk"));
 }
 
 int AWindowDeleteDisk::handle_event()
@@ -1321,7 +1326,7 @@ AWindowDeleteProject::AWindowDeleteProject(MWindow *mwindow, AWindowGUI *gui, in
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Delete asset from project");
+	set_tooltip(_("Delete asset from project"));
 }
 
 int AWindowDeleteProject::handle_event()
@@ -1334,7 +1339,7 @@ AWindowInfo::AWindowInfo(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Edit information on asset");
+	set_tooltip(_("Edit information on asset"));
 }
 
 int AWindowInfo::handle_event()
@@ -1348,7 +1353,7 @@ AWindowRedrawIndex::AWindowRedrawIndex(MWindow *mwindow, AWindowGUI *gui, int x,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Redraw index");
+	set_tooltip(_("Redraw index"));
 }
 
 int AWindowRedrawIndex::handle_event()
@@ -1361,7 +1366,7 @@ AWindowPaste::AWindowPaste(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Paste asset on recordable tracks");
+	set_tooltip(_("Paste asset on recordable tracks"));
 }
 
 int AWindowPaste::handle_event()
@@ -1374,7 +1379,7 @@ AWindowAppend::AWindowAppend(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Append asset in new tracks");
+	set_tooltip(_("Append asset in new tracks"));
 }
 
 int AWindowAppend::handle_event()
@@ -1387,7 +1392,7 @@ AWindowView::AWindowView(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("View asset");
+	set_tooltip(_("View asset"));
 }
 
 int AWindowView::handle_event()

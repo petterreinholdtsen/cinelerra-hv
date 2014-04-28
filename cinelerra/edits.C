@@ -246,6 +246,13 @@ void Edits::resample(double old_rate, double new_rate)
 		if(!NEXT) current->length = Units::to_int64((double)current->length /
 			old_rate *
 			new_rate);
+		if(current->transition)
+		{
+			current->transition->length = Units::to_int64(
+				(double)current->transition->length /
+				old_rate *
+				new_rate);
+		}
 		current->resample(old_rate, new_rate);
 	}
 }

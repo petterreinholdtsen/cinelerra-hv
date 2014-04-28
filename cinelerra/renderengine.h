@@ -29,8 +29,7 @@ public:
 		TransportCommand *command, 
 		Canvas *output,
 		ArrayList<PluginServer*> *plugindb,
-		ChannelDB *channeldb,
-		int head_number);
+		ChannelDB *channeldb);
 	~RenderEngine();
 
 	int total_playable_channels();
@@ -79,7 +78,6 @@ public:
 // Update preferences window
 	void update_framerate(float framerate);
 
-	int head_number;
 // Copy of command
 	TransportCommand *command;
 // EDL to be used by renderengine since not all commands involve an EDL change

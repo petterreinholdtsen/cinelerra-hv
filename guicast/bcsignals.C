@@ -6,24 +6,18 @@
 
 BC_Signals* BC_Signals::global_signals = 0;
 static int signal_done = 0;
+static int table_id = 0;
 
-
-// Need to use structs to avoid the memory manager
-typedef struct 
-{
-	void *ptr;
-	char *title;
-	char *location;
-	int is_lock;
-} bc_locktrace_t;
-
-static bc_locktrace_t* new_bc_locktrace(void *ptr, char *title, char *location, int is_lock)
+static bc_locktrace_t* new_bc_locktrace(void *ptr, 
+	char *title, 
+	char *location)
 {
 	bc_locktrace_t *result = (bc_locktrace_t*)malloc(sizeof(bc_locktrace_t));
 	result->ptr = ptr;
 	result->title = title;
 	result->location = location;
-	result->is_lock = is_lock;
+	result->is_owner = 0;
+	result->id = table_id++;
 	return result;
 }
 
@@ -160,7 +154,7 @@ static void signal_entry(int signum)
 	pthread_mutex_unlock(handler_lock);
 
 
-	printf("signal_entry: got %s my pid=%d execution table %d:\n", 
+	printf("signal_entry: got %s my pid=%d execution table size=%d:\n", 
 		signal_titles[signum],
 		getpid(),
 		execution_table.size);
@@ -194,15 +188,15 @@ void BC_Signals::dump_traces()
 void BC_Signals::dump_locks()
 {
 // Dump lock table
-	printf("signal_entry: lock table %d\n", lock_table.size);
+	printf("signal_entry: lock table size=%d\n", lock_table.size);
 	for(int i = 0; i < lock_table.size; i++)
 	{
 		bc_locktrace_t *table = (bc_locktrace_t*)lock_table.values[i];
-		if(table->is_lock)
-			printf("    %p %s %s\n", 
-				table->ptr,
-				table->title,
-				table->location);
+		printf("    %p %s %s %s\n", 
+			table->ptr,
+			table->title,
+			table->location,
+			table->is_owner ? "*" : "");
 	}
 
 }
@@ -211,7 +205,7 @@ void BC_Signals::dump_buffers()
 {
 	pthread_mutex_lock(lock);
 // Dump buffer table
-	printf("BC_Signals::dump_buffers: buffer table %d\n", memory_table.size);
+	printf("BC_Signals::dump_buffers: buffer table size=%d\n", memory_table.size);
 	for(int i = 0; i < memory_table.size; i++)
 	{
 		bc_buffertrace_t *entry = (bc_buffertrace_t*)memory_table.values[i];
@@ -305,64 +299,99 @@ void BC_Signals::delete_traces()
 	pthread_mutex_unlock(lock);
 }
 
-void BC_Signals::set_lock(void *ptr, char *title, char *location)
+#define TOTAL_LOCKS 100
+
+int BC_Signals::set_lock(void *ptr, 
+	char *title, 
+	char *location)
+{
+	if(!global_signals) return 0;
+	bc_locktrace_t *table = 0;
+	int id_return = 0;
+
+	pthread_mutex_lock(lock);
+	if(lock_table.size >= TOTAL_LOCKS)
+		clear_table(&lock_table, 0);
+
+// Put new lock entry
+	table = new_bc_locktrace(ptr, title, location);
+	append_table(&lock_table, table);
+	id_return = table->id;
+
+	pthread_mutex_unlock(lock);
+	return id_return;
+}
+
+void BC_Signals::set_lock2(int table_id)
 {
 	if(!global_signals) return;
 
+	bc_locktrace_t *table = 0;
 	pthread_mutex_lock(lock);
-// Take off previous unlock entry.  Without this, our table explodes.
-	int got_it = 0;
-	for(int i = 0; i < lock_table.size; i++)
+	for(int i = lock_table.size - 1; i >= 0; i--)
 	{
-		bc_locktrace_t *table = (bc_locktrace_t*)lock_table.values[i];
-		if(table->ptr == ptr && !table->is_lock)
+		table = (bc_locktrace_t*)lock_table.values[i];
+// Got it.  Hasn't been unlocked/deleted yet.
+		if(table->id == table_id)
 		{
-			clear_table_entry(&lock_table, i, 1);
-			got_it = 1;
-			break;
+			table->is_owner = 1;
+			pthread_mutex_unlock(lock);
+			return;
 		}
 	}
+	pthread_mutex_unlock(lock);
+}
 
-// Put new lock entry
-	if(!got_it)
+void BC_Signals::unset_lock2(int table_id)
+{
+	if(!global_signals) return;
+
+	bc_locktrace_t *table = 0;
+	pthread_mutex_lock(lock);
+	for(int i = lock_table.size - 1; i >= 0; i--)
 	{
-		bc_locktrace_t *table = new_bc_locktrace(ptr, title, location, 1);
-		append_table(&lock_table, table);
+		table = (bc_locktrace_t*)lock_table.values[i];
+		if(table->id == table_id)
+		{
+			clear_table_entry(&lock_table, i, 1);
+			pthread_mutex_unlock(lock);
+			return;
+		}
 	}
-
 	pthread_mutex_unlock(lock);
 }
 
 void BC_Signals::unset_lock(void *ptr)
 {
 	if(!global_signals) return;
+
+	bc_locktrace_t *table = 0;
 	pthread_mutex_lock(lock);
-// Take off previous lock entry
-	int got_it = 0;
+
+// Take off currently held entry
 	for(int i = 0; i < lock_table.size; i++)
 	{
-		bc_locktrace_t *table = (bc_locktrace_t*)lock_table.values[i];
-		if(table->ptr == ptr && table->is_lock)
+		table = (bc_locktrace_t*)lock_table.values[i];
+		if(table->ptr == ptr)
 		{
-			clear_table_entry(&lock_table, i, 1);
-			break;
+			if(table->is_owner)
+			{
+				clear_table_entry(&lock_table, i, 1);
+				pthread_mutex_unlock(lock);
+				return;
+			}
 		}
 	}
-// Put new unlock entry
-	if(!got_it)
-	{
-		bc_locktrace_t *table = new_bc_locktrace(ptr, 0, 0, 0);
-		append_table(&lock_table, table);
-	}
+
 	pthread_mutex_unlock(lock);
 }
+
 
 void BC_Signals::unset_all_locks(void *ptr)
 {
 	if(!global_signals) return;
 	pthread_mutex_lock(lock);
 // Take off previous lock entry
-	int got_it = 0;
 	for(int i = 0; i < lock_table.size; i++)
 	{
 		bc_locktrace_t *table = (bc_locktrace_t*)lock_table.values[i];

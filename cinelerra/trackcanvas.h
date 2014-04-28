@@ -178,6 +178,9 @@ public:
 		double &zoom_sample,
 		double &zoom_units);
 
+	void synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs);
+
+
 	void draw_brender_start();
 	void draw_loop_points();
 	void draw_transitions();

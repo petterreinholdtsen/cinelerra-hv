@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "file.h"
 #include "filelist.h"
 #include "guicast.h"
@@ -28,7 +29,7 @@ FileList::FileList(Asset *asset,
 	this->file_extension = file_extension;
 	this->frame_type = frame_type;
 	this->list_type = list_type;
-	table_lock = new Mutex;
+	table_lock = new Mutex("FileList::table_lock");
 }
 
 FileList::~FileList()
@@ -292,14 +293,12 @@ int FileList::read_frame(VFrame *frame)
 	else
 	{
 
-//printf("FileList::read_frame 1\n");
 // Allocate and decompress once into temporary
 		if(!temp || temp->get_color_model() != frame->get_color_model())
 		{
 			if(temp) delete temp;
 			temp = 0;
 		
-//printf("FileList::read_frame 2\n");
 			FILE *fd = fopen(asset->path, "rb");
 			if(fd)
 			{
@@ -325,7 +324,6 @@ int FileList::read_frame(VFrame *frame)
 						break;
 				}
 
-//printf("FileList::read_frame 3\n");
 				fclose(fd);
 			}
 			else
@@ -335,7 +333,6 @@ int FileList::read_frame(VFrame *frame)
 			}
 		}
 
-//printf("FileList::read_frame 4\n");
 		if(!temp) return result;
 
 		if(frame->get_color_model() == temp->get_color_model())
@@ -380,6 +377,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 {
 	return_value = 0;
 
+//printf("FileList::write_frames 1\n");
 	if(frames[0][0]->get_color_model() == BC_COMPRESSED)
 	{
 		for(int i = 0; i < asset->layers && !return_value; i++)
@@ -408,7 +406,9 @@ int FileList::write_frames(VFrame ***frames, int len)
 	}
 	else
 	{
+//printf("FileList::write_frames 2\n");
 		writer->write_frames(frames, len);
+//printf("FileList::write_frames 100\n");
 	}
 	return return_value;
 }
@@ -423,7 +423,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 
 void FileList::add_return_value(int amount)
 {
-	table_lock->lock();
+	table_lock->lock("FileList::add_return_value");
 	return_value += amount;
 	table_lock->unlock();
 }
@@ -461,7 +461,7 @@ char* FileList::create_path(int number_override)
 {
 	if(asset->format != list_type) return asset->path;
 
-	table_lock->lock();
+	table_lock->lock("FileList::create_path");
 
 
 
@@ -511,6 +511,16 @@ int FileList::get_memory_usage()
 	return result;
 }
 
+int FileList::get_units()
+{
+	if(writer) return writer->get_total_clients();
+	return 0;
+}
+
+FrameWriterUnit* FileList::get_unit(int number)
+{
+	if(writer) return (FrameWriterUnit*)writer->get_client(number);
+}
 
 
 
@@ -551,11 +561,12 @@ FrameWriterUnit::~FrameWriterUnit()
 
 void FrameWriterUnit::process_package(LoadPackage *package)
 {
+//printf("FrameWriterUnit::process_package 1\n");
 	FrameWriterPackage *ptr = (FrameWriterPackage*)package;
 
 	FILE *file;
 
-//printf("FrameWriterUnit::process_package 1 %s\n", ptr->path);
+//printf("FrameWriterUnit::process_package 2 %s\n", ptr->path);
 	if(!(file = fopen(ptr->path, "wb")))
 	{
 		printf("FrameWriterUnit::process_package %s: %s\n",
@@ -563,14 +574,19 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 			strerror(errno));
 		return;
 	}
-	
-	
+//printf("FrameWriterUnit::process_package 3");
+
+
 	int result = server->file->write_frame(ptr->input, output, this);
 	
+//printf("FrameWriterUnit::process_package 4");
 	if(!result) result = !fwrite(output->get_data(), output->get_compressed_size(), 1, file);
+//TRACE("FrameWriterUnit::process_package 4");
 	fclose(file);
-	
+//TRACE("FrameWriterUnit::process_package 5");
+
 	server->file->add_return_value(result);
+//TRACE("FrameWriterUnit::process_package 6");
 }
 
 

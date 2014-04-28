@@ -11,6 +11,7 @@ class TimeFormatFrames;
 class TimeFormatHex;
 class TimeFormatFeet;
 class MeterMinDB;
+class MeterMaxDB;
 class MeterVUDB;
 class MeterVUInt;
 class ViewBehaviourText;
@@ -47,6 +48,7 @@ public:
 	TimeFormatFeet *feet;
 
 	MeterMinDB *min_db;
+	MeterMaxDB *max_db;
 	MeterVUDB *vu_db;
 //	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
@@ -147,7 +149,16 @@ public:
 class MeterMinDB : public BC_TextBox
 {
 public:
-	MeterMinDB(PreferencesWindow *pwindow, char *text, int y);
+	MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+
+class MeterMaxDB : public BC_TextBox
+{
+public:
+	MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

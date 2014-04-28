@@ -97,9 +97,11 @@ void Theme::flush_images()
 
 void Theme::initialize()
 {
-// Force to use executable for images
-	unset_path();
+// Force to use local data for images
+	extern unsigned char _binary_theme_data_start[];
+	set_data(_binary_theme_data_start);
 
+// Set images which weren't set by subclass
 	new_image("mode_add", "mode_add.png");
 	new_image("mode_divide", "mode_divide.png");
 	new_image("mode_multiply", "mode_multiply.png");

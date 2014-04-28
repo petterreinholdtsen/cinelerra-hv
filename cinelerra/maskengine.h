@@ -2,6 +2,7 @@
 #define MASKENGINE_H
 
 
+#include "condition.inc"
 #include "loadbalance.h"
 #include "maskautos.inc"
 #include "maskauto.inc"
@@ -27,7 +28,7 @@ public:
 
 	int row1, row2;
 	int part;
-	Mutex *apply_mutex;
+	Condition *apply_mutex;
 };
 
 class MaskUnit : public LoadClient

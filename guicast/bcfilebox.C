@@ -1,11 +1,13 @@
 #include "bcfilebox.h"
+#include "bclistboxitem.h"
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bctitle.h"
 #include "clip.h"
+#include "condition.h"
 #include "filesystem.h"
-#include "bclistboxitem.h"
 #include "language.h"
+#include "mutex.h"
 #include <string.h>
 #include <sys/stat.h>
 
@@ -57,21 +59,27 @@ BC_NewFolderThread::BC_NewFolderThread(BC_FileBox *filebox)
 {
 	this->filebox = filebox;
 	window = 0;
+	change_lock = new Mutex("BC_NewFolderThread::change_lock");
+	completion_lock = new Condition(1, "BC_NewFolderThread::completion_lock");
 }
 
 BC_NewFolderThread::~BC_NewFolderThread() 
 {
  	interrupt();
+	delete change_lock;
+	delete completion_lock;
 }
 
 void BC_NewFolderThread::run()
 {
-	change_lock.lock();
-	window = new BC_NewFolder(filebox->get_abs_cursor_x(), 
-		filebox->get_abs_cursor_y(),
+	int x = filebox->get_abs_cursor_x(1);
+	int y = filebox->get_abs_cursor_y(1);
+	change_lock->lock("BC_NewFolderThread::run 1");
+	window = new BC_NewFolder(x, 
+		y,
 		filebox);
 	window->create_objects();
-	change_lock.unlock();
+	change_lock->unlock();
 
 
 	int result = window->run_window();
@@ -81,51 +89,51 @@ void BC_NewFolderThread::run()
 		char new_folder[BCTEXTLEN];
 		filebox->fs->join_names(new_folder, filebox->fs->get_current_dir(), window->get_text());
 		mkdir(new_folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-		filebox->lock_window();
+		filebox->lock_window("BC_NewFolderThread::run");
 		filebox->refresh();
 		filebox->unlock_window();
 	}
 
-	change_lock.lock();
+	change_lock->lock("BC_NewFolderThread::run 2");
 	delete window;
 	window = 0;
-	change_lock.unlock();
+	change_lock->unlock();
 
-	completion_lock.unlock();
+	completion_lock->unlock();
 }
 
 int BC_NewFolderThread::interrupt()
 {
-	change_lock.lock();
+	change_lock->lock("BC_NewFolderThread::interrupt");
 	if(window)
 	{
-		window->lock_window();
+		window->lock_window("BC_NewFolderThread::interrupt");
 		window->set_done(1);
 		window->unlock_window();
 	}
 
-	change_lock.unlock();
+	change_lock->unlock();
 
-	completion_lock.lock();
-	completion_lock.unlock();
+	completion_lock->lock("BC_NewFolderThread::interrupt");
+	completion_lock->unlock();
 	return 0;
 }
 
 int BC_NewFolderThread::start_new_folder()
 {
-	change_lock.lock();
+	change_lock->lock();
 
 	if(window)
 	{
-		window->lock_window();
+		window->lock_window("BC_NewFolderThread::start_new_folder");
 		window->raise_window();
 		window->unlock_window();
-		change_lock.unlock();
+		change_lock->unlock();
 	}
 	else
 	{
-		change_lock.unlock();
-		completion_lock.lock();
+		change_lock->unlock();
+		completion_lock->lock("BC_NewFolderThread::start_new_folder");
 
 		Thread::start();
 	}

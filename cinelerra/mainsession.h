@@ -52,6 +52,7 @@ public:
 	ArrayList<Asset*> *drag_assets;
 	ArrayList<EDL*> *drag_clips;
 	Auto *drag_auto;
+	ArrayList<Auto*> *drag_auto_gang;
 
 // Edit whose handle is being dragged
 	Edit *drag_edit;

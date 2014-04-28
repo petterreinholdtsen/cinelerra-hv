@@ -1,15 +1,11 @@
 #include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mwindow.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "interfaceprefs.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #if 0
 N_("Drag all following edits")
@@ -163,9 +159,20 @@ int InterfacePrefs::create_objects()
 	text->create_objects();
 
 	y += 40;
-	add_subwindow(new BC_Title(x, y, _("Min DB for meter:")));
-	sprintf(string, "%.0f", pwindow->thread->edl->session->min_meter_db);
-	add_subwindow(min_db = new MeterMinDB(pwindow, string, y));
+	int x1 = x;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
+	x += title->get_w() + 10;
+	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);
+	add_subwindow(min_db = new MeterMinDB(pwindow, string, x, y));
+
+	x += min_db->get_w() + 10;
+	add_subwindow(title = new BC_Title(x, y + 5, _("Max DB:")));
+	x += title->get_w() + 10;
+	sprintf(string, "%d", pwindow->thread->edl->session->max_meter_db);
+	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
+
+	x = x1;
 	y += 30;
 // 	add_subwindow(new BC_Title(x, y, _("Format for meter:")));
 // 	add_subwindow(vu_db = new MeterVUDB(pwindow, _("DB"), y));
@@ -225,6 +232,7 @@ InterfacePrefs::~InterfacePrefs()
 	delete hex;
 	delete feet;
 	delete min_db;
+	delete max_db;
 //	delete vu_db;
 //	delete vu_int;
 	delete thumbnails;
@@ -437,9 +445,11 @@ int ViewBehaviourItem::handle_event()
 
 
 
-MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int y)
- : BC_TextBox(145, y, 50, 1, text)
-{ this->pwindow = pwindow; }
+MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y)
+ : BC_TextBox(x, y, 50, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
 
 int MeterMinDB::handle_event()
 { 
@@ -448,6 +458,21 @@ int MeterMinDB::handle_event()
 	return 0;
 }
 
+
+
+
+MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y)
+ : BC_TextBox(x, y, 50, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
+
+int MeterMaxDB::handle_event()
+{ 
+	pwindow->thread->redraw_meters = 1;
+	pwindow->thread->edl->session->max_meter_db = atol(get_text()); 
+	return 0;
+}
 
 
 

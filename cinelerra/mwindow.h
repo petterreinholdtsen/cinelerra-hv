@@ -136,7 +136,10 @@ public:
 
 	
 	int load_filenames(ArrayList<char*> *filenames, 
-		int load_mode = LOAD_REPLACE);
+		int load_mode = LOAD_REPLACE,
+// Cause the project filename on the top of the window to be updated.
+// Not wanted for loading backups.
+		int update_filename = 1);
 	
 	int interrupt_indexes();  // Stop index building
 

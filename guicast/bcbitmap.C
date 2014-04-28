@@ -1,6 +1,7 @@
 #include "bcbitmap.h"
 #include "bcipc.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindow.h"
 #include "colormodels.h"
 #include "vframe.h"
@@ -237,6 +238,7 @@ int BC_Bitmap::allocate_data()
 			perror("BC_Bitmap::allocate_data XShmAttach");
 		}
 
+// This causes it to automatically delete when the program exits.
 		shmctl(shm_info.shmid, IPC_RMID, 0);
 	}
 	else
@@ -419,7 +421,9 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 //printf("BC_Bitmap::write_drawable 1 %p %d\n", this, current_ringbuffer);fflush(stdout);
     if(use_shm)
 	{
+//TRACE("BC_Bitmap::write_drawable 1");
 		if(dont_wait) XSync(top_level->display, False);
+//TRACE("BC_Bitmap::write_drawable 2");
 
 		if(hardware_scaling())
 		{
@@ -436,6 +440,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 //	pixmap, 
 //	gc,
 //	xv_image[current_ringbuffer]);
+//TRACE("BC_Bitmap::write_drawable 3");
 			XvShmPutImage(top_level->display, 
 				xv_portid, 
 				pixmap, 
@@ -450,7 +455,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 				dest_w, 
 				dest_h, 
 				False);
-//printf("BC_Bitmap::write_drawable 2\n");
+//TRACE("BC_Bitmap::write_drawable 4");
 // Need to pass these to the XvStopVideo
 			last_pixmap = pixmap;
 			last_pixmap_used = 1;
@@ -481,6 +486,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 // Force the X server into processing all requests.
 // This allows the shared memory to be written to again.
 		if(!dont_wait) XSync(top_level->display, False);
+//TRACE("BC_Bitmap::write_drawable 5");
 	}
     else
 	{

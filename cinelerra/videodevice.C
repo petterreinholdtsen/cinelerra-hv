@@ -99,7 +99,7 @@ int KeepaliveThread::stop()
 VideoDevice::VideoDevice()
 {
 	in_config = new VideoInConfig;
-	out_config = new VideoOutConfig(0, 0);
+	out_config = new VideoOutConfig;
 	channel = new Channel;
 	picture = new Picture;
 	sharing_lock = new Mutex("VideoDevice::sharing_lock");
@@ -162,6 +162,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 	this->input_z = -1;   // Force initialization.
 	this->frame_rate = frame_rate;
 
+
 	switch(in_config->driver)
 	{
 		case VIDEO4LINUX:
@@ -172,7 +173,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 			break;
 
 
-#ifdef HAVE_V4L2
+#ifdef HAVE_VIDEO4LINUX2
 		case VIDEO4LINUX2:
 			input_base = new VDeviceV4L2(this);
 			result = input_base->open_input();

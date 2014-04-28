@@ -1,7 +1,7 @@
 #include "audio1394.h"
+#include "audioalsa.h"
 #include "audioconfig.h"
 #include "audiodevice.h"
-#include "audioalsa.h"
 #include "audioesound.h"
 #include "audiooss.h"
 #include "condition.h"
@@ -10,7 +10,7 @@
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
-
+#include "sema.h"
 
 
 
@@ -32,15 +32,16 @@ AudioDevice::AudioDevice()
  : Thread(1, 0, 0)
 {
 	initialize();
-	this->out_config = new AudioOutConfig(0, 0, 0);
+	this->out_config = new AudioOutConfig(0);
 	this->in_config = new AudioInConfig;
+	this->vconfig = new VideoInConfig;
 	startup_lock = new Condition(0, "AudioDevice::startup_lock");
 	duplex_lock = new Condition(0, "AudioDevice::duplex_lock");
 	timer_lock = new Mutex("AudioDevice::timer_lock");
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-		play_lock[i] = new Condition(0, "AudioDevice::play_lock");
-		arm_lock[i] = new Condition(1, "AudioDevice::arm_lock");
+		play_lock[i] = new Sema(0, "AudioDevice::play_lock");
+		arm_lock[i] = new Sema(1, "AudioDevice::arm_lock");
 	}
 }
 
@@ -48,6 +49,7 @@ AudioDevice::~AudioDevice()
 {
 	delete out_config;
 	delete in_config;
+	delete vconfig;
 	delete startup_lock;
 	delete duplex_lock;
 	delete timer_lock;
@@ -131,11 +133,15 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 	return 0;
 }
 
-int AudioDevice::open_input(AudioInConfig *config, int rate, int samples)
+int AudioDevice::open_input(AudioInConfig *config, 
+	VideoInConfig *vconfig, 
+	int rate, 
+	int samples)
 {
 	r = 1;
 	duplex_init = 0;
-	*this->in_config = *config;
+	this->in_config->copy_from(config);
+	this->vconfig->copy_from(vconfig);
 //printf("AudioDevice::open_input %s\n", this->in_config->oss_in_device[0]);
 	in_samplerate = rate;
 	in_samples = samples;

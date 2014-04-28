@@ -223,6 +223,7 @@ void Module::update_transition(int64_t current_position,
 	if(transition && !this->transition)
 	{
 		this->transition = transition;
+
 		if(renderengine)
 		{
 			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
@@ -264,10 +265,7 @@ void Module::dump()
 	printf("   Plugins total_attachments=%d\n", total_attachments);
 	for(int i = 0; i < total_attachments; i++)
 	{
-		if(attachments[i])
-			attachments[i]->dump();
-		else
-			printf("    No Plugin\n");
+		attachments[i]->dump();
 	}
 }
 

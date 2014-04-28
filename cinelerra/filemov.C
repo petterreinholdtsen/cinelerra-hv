@@ -42,6 +42,8 @@ N_("MP3")
 #endif
 
 #define DIVX_NAME "MPEG-4"
+#define MP4V_NAME "MPEG-4 Video"
+#define H263_NAME "H.263"
 #define HV60_NAME "Heroine 60"
 #define DIV3_NAME "Microsoft MPEG-4"
 #define DV_NAME "DV"
@@ -378,6 +380,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
 			break;
 		case PLAYBACK_DV1394:
@@ -407,6 +411,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(!strncasecmp(asset->vcodec, QUICKTIME_HV60, 4)) return BC_YUV420P;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_DIVX, 4)) return BC_YUV420P;
+			else
+			if(!strncasecmp(asset->vcodec, QUICKTIME_H263, 4)) return BC_YUV420P;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_DIV3, 4)) return BC_YUV420P;
 			break;
@@ -557,6 +563,7 @@ int FileMOV::write_samples(double **buffer, int64_t len)
 
 int FileMOV::write_frames(VFrame ***frames, int len)
 {
+//printf("FileMOV::write_frames 1\n");
 	int i, j, k, result = 0;
 	int default_compressor = 1;
 	if(!fd) return 0;
@@ -582,6 +589,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 // Determine keyframe status.
 // Write VOL header in the first frame if none exists
 				if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
+					!strcmp(asset->vcodec, QUICKTIME_H263) ||
 					!strcmp(asset->vcodec, QUICKTIME_HV60))
 				{
 					if(quicktime_mpeg4_is_key(frame->get_data(), 
@@ -601,7 +609,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 						int bytes = quicktime_mpeg4_write_vol(temp_frame->get_data(),
 							asset->width, 
 							asset->height, 
-							30000, 
+							60000, 
 							asset->frame_rate);
 						memcpy(temp_frame->get_data() + bytes, 
 							frame->get_data(), 
@@ -641,6 +649,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 				if(!strcmp(asset->vcodec, QUICKTIME_MJPA))
 				{
 					long field2_offset;
+
 // Create extra space for markers
 					if(frame->get_compressed_allocated() - frame->get_compressed_size() < 0x100)
 						frame->allocate_compressed_data(frame->get_compressed_size() + 0x100);
@@ -698,7 +707,6 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 				VFrame *frame = frames[i][j];
 //printf("FileMOV::write_frames 1 %d\n", frame->get_color_model());
 				quicktime_set_cmodel(fd, frame->get_color_model());
-//printf("FileMOV::write_frames 1 %d\n", cmodel_is_planar(frame->get_color_model()));
 				if(cmodel_is_planar(frame->get_color_model()))
 				{
 					unsigned char *planes[3];
@@ -792,15 +800,11 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					planes[0] = frame->get_y();
 					planes[1] = frame->get_u();
 					planes[2] = frame->get_v();
-//printf("FileMOV::write_frames 6\n");
 					result = quicktime_encode_video(fd, planes, i);
-//printf("FileMOV::write_frames 7\n");
 				}
 				else
 				{
-//printf("FileMOV::write_frames 8\n");
 					result = quicktime_encode_video(fd, frame->get_rows(), i);
-//printf("FileMOV::write_frames 9\n");
 				}
 			}
 		}
@@ -808,6 +812,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	}
 
 
+//printf("FileMOV::write_frames 100\n");
 	return result;
 }
 
@@ -818,7 +823,6 @@ int FileMOV::read_frame(VFrame *frame)
 	if(!fd) return 1;
 	int result = 0;
 
-//printf("FileMOV::read_frame 1\n");
 	switch(frame->get_color_model())
 	{
 		case BC_COMPRESSED:
@@ -848,7 +852,6 @@ int FileMOV::read_frame(VFrame *frame)
 // Packed
 		default:
 			quicktime_set_cmodel(fd, frame->get_color_model());
-//printf("FileMOV::read_frame 100 %p %p\n", frame->get_color_model(), frame->get_rows()[0]);
 			result = quicktime_decode_video(fd, 
 				frame->get_rows(),
 				file->current_layer);
@@ -858,7 +861,6 @@ int FileMOV::read_frame(VFrame *frame)
 
 
 
-//printf("FileMOV::read_frame 100\n");
 	return result;
 }
 
@@ -979,6 +981,8 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 char* FileMOV::strtocompression(char *string)
 {
 	if(!strcasecmp(string, _(DIVX_NAME))) return QUICKTIME_DIVX;
+	if(!strcasecmp(string, _(MP4V_NAME))) return QUICKTIME_MP4V;
+	if(!strcasecmp(string, _(H263_NAME))) return QUICKTIME_H263;
 	if(!strcasecmp(string, _(HV60_NAME))) return QUICKTIME_HV60;
 	if(!strcasecmp(string, _(DIV3_NAME))) return QUICKTIME_DIV3;
 	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
@@ -1009,7 +1013,9 @@ char* FileMOV::strtocompression(char *string)
 
 char* FileMOV::compressiontostr(char *string)
 {
+	if(match4(string, QUICKTIME_H263)) return _(H263_NAME);
 	if(match4(string, QUICKTIME_DIVX)) return _(DIVX_NAME);
+	if(match4(string, QUICKTIME_MP4V)) return _(MP4V_NAME);
 	if(match4(string, QUICKTIME_HV60)) return _(HV60_NAME);
 	if(match4(string, QUICKTIME_DIV3)) return _(DIV3_NAME);
 	if(match4(string, QUICKTIME_DV)) return _(DV_NAME);
@@ -1186,8 +1192,8 @@ void FileMOVThread::run()
 
 MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	350,
 	250)
 {
@@ -1453,8 +1459,8 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	Asset *asset, 
 	int lock_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	420,
 	420)
 {
@@ -1478,7 +1484,8 @@ int MOVConfigVideo::create_objects()
 
 	if(asset->format == FILE_MOV)
 	{
-		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+//		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP4V_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(HV60_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DIV3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DV_NAME)));
@@ -1649,6 +1656,7 @@ void MOVConfigVideo::update_parameters()
 	else
 // OpenDivx parameters
 	if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
+		!strcmp(asset->vcodec, QUICKTIME_H263) ||
 		!strcmp(asset->vcodec, QUICKTIME_HV60))
 	{
 		int x = param_x, y = param_y;

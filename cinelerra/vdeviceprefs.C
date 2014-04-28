@@ -1,6 +1,7 @@
 #include "channelpicker.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "../hvirtual_config.h"
 #include "language.h"
 #include "mwindow.h"
 #include "vdeviceprefs.h"
@@ -124,7 +125,6 @@ int VDevicePrefs::delete_objects()
 	{
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
-			delete device_text;
 			delete output_title;
 			delete channel_picker;
 			delete buz_swap_channels;
@@ -420,8 +420,10 @@ int VDriverMenu::create_objects()
 	if(do_input)
 	{
 		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
+#ifdef HAVE_VIDEO4LINUX2
 		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
 		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
+#endif
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
 		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));

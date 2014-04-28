@@ -204,11 +204,9 @@ int FileJPEG::read_frame_header(char *path)
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
-//printf("FileJPEG::read_frame 1\n");
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
-//printf("FileJPEG::read_frame 1\n");
 	mjpeg_decompress((mjpeg_t*)decompressor, 
 		input->get_data(), 
 		input->get_compressed_size(),
@@ -219,8 +217,6 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		output->get_v(),
 		output->get_color_model(),
 		1);
-//printf("FileJPEG::read_frame 1\n");
-//printf("FileJPEG::read_frame 2\n");
 	
 	
 	return 0;
@@ -255,8 +251,8 @@ JPEGUnit::~JPEGUnit()
 
 JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	400,
 	100)
 {

@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "edl.h"
@@ -39,6 +40,19 @@ EDL* TransportCommand::get_edl()
 {
 	return edl;
 }
+
+void TransportCommand::delete_edl()
+{
+	delete edl;
+	edl = 0;
+}
+
+void TransportCommand::new_edl()
+{
+	edl = new EDL;
+	edl->create_objects();
+}
+
 
 void TransportCommand::copy_from(TransportCommand *command)
 {
@@ -251,7 +265,6 @@ int TransportQue::send_command(int command,
 			change_type == CHANGE_ALL)
 		{
 // Copy EDL
-//printf("TransportQue::send_command 1 %p %p\n", this->command.get_edl(), new_edl);
 			this->command.get_edl()->copy_all(new_edl);
 		}
 		else
@@ -264,11 +277,9 @@ int TransportQue::send_command(int command,
 		this->command.set_playback_range(new_edl);
 	}
 
-//printf("TransportQue::send_command 3\n");
-//printf("TransportQue::send_command 2 %p %d %d\n", new_edl, this->command.playbackstart);
 	input_lock->unlock();
+
 	output_lock->unlock();
-//printf("TransportQue::send_command 4\n");
 	return 0;
 }
 

@@ -53,6 +53,7 @@ public:
 	int update(float value);
 	void disable();
 	void enable();
+	int get_enabled();
 
 	int initialize();
 

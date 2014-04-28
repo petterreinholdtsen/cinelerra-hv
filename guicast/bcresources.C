@@ -40,8 +40,11 @@ VFrame* BC_Resources::type_to_icon[] =
 };
 
 char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
+char* BC_Resources::small_font2 = N_("-*-helvetica-medium-r-normal-*-11-*");
 char* BC_Resources::medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
+char* BC_Resources::medium_font2 = N_("-*-helvetica-bold-r-normal-*-14-*");
 char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
+char* BC_Resources::large_font2 = N_("-*-helvetica-bold-r-normal-*-20-*");
 
 char* BC_Resources::small_fontset = "6x12,*";
 char* BC_Resources::medium_fontset = "7x14,*";
@@ -380,11 +383,13 @@ BC_Resources::BC_Resources()
 #include "images/xmeter_green_png.h"
 #include "images/xmeter_red_png.h"
 #include "images/xmeter_yellow_png.h"
+#include "images/xmeter_white_png.h"
 #include "images/over_horiz_png.h"
 #include "images/ymeter_normal_png.h"
 #include "images/ymeter_green_png.h"
 #include "images/ymeter_red_png.h"
 #include "images/ymeter_yellow_png.h"
+#include "images/ymeter_white_png.h"
 #include "images/over_vertical_png.h"
 	static VFrame* default_xmeter_data[] =
 	{
@@ -392,6 +397,7 @@ BC_Resources::BC_Resources()
 		new VFrame(xmeter_green_png),
 		new VFrame(xmeter_red_png),
 		new VFrame(xmeter_yellow_png),
+		new VFrame(xmeter_white_png),
 		new VFrame(over_horiz_png)
 	};
 
@@ -401,6 +407,7 @@ BC_Resources::BC_Resources()
 		new VFrame(ymeter_green_png),
 		new VFrame(ymeter_red_png),
 		new VFrame(ymeter_yellow_png),
+		new VFrame(ymeter_white_png),
 		new VFrame(over_vertical_png)
 	};
 
@@ -468,7 +475,7 @@ BC_Resources::BC_Resources()
 	};
 	hscroll_data = default_hscroll_data;
 	vscroll_data = default_vscroll_data;
-
+	scroll_minhandle = 10;
 
 
 
@@ -480,6 +487,9 @@ BC_Resources::BC_Resources()
 	bg_shadow2 = BLACK;
 	bg_light1 = WHITE;
 	bg_light2 = bg_color;
+
+	default_text_color = BLACK;
+	disabled_text_color = MEGREY;
 
 	button_light = WHITE;           // bright corner
 	button_highlighted = LTGREY;  // face when highlighted
@@ -545,6 +555,7 @@ BC_Resources::BC_Resources()
 	pot_x1 = pot_images[0]->get_w() / 2 - 2;
 	pot_y1 = pot_images[0]->get_h() / 2 - 2;;
 	pot_r = pot_x1;
+	pot_needle_color = BLACK;
 
 	progress_images = default_progress_images;
 

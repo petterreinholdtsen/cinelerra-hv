@@ -8,6 +8,7 @@
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "auto.h"
 
 MainSession::MainSession(MWindow *mwindow)
 {
@@ -26,6 +27,7 @@ MainSession::MainSession(MWindow *mwindow)
 	drag_pluginservers = new ArrayList<PluginServer*>;
 	drag_plugin = 0;
 	drag_assets = new ArrayList<Asset*>;
+	drag_auto_gang = new ArrayList<Auto*>;
 	drag_clips = new ArrayList<EDL*>;
 	drag_edits = new ArrayList<Edit*>;
 	drag_edit = 0;
@@ -38,6 +40,7 @@ MainSession::~MainSession()
 {
 	delete drag_pluginservers;
 	delete drag_assets;
+	delete drag_auto_gang;
 	delete drag_clips;
 	delete drag_edits;
 }

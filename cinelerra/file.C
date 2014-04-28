@@ -113,7 +113,7 @@ void File::reset_parameters()
 	current_channel = 0;
 	current_layer = 0;
 	normalized_sample = 0;
-	normalized_sample_rate = 0;
+//	normalized_sample_rate = 0;
 	use_cache = 0;
 	preferences = 0;
 	playback_subtitle = -1;
@@ -505,7 +505,9 @@ int File::open_file(Preferences *preferences,
 
 			asset->load_defaults(&table, "", 1, 1, 1, 1, 1);
 			this->asset->load_defaults(&table, "", 1, 1, 1, 1, 1);
+//this->asset->dump();
 		}
+//printf("File::open_file %d\n", __LINE__);
 
 
 // If it's a scene renderer, close it & reopen it locally to get the 
@@ -701,6 +703,7 @@ int File::open_file(Preferences *preferences,
 			break;
 
 		case FILE_CR2:
+		case FILE_CR2_LIST:
 			file = new FileCR2(this->asset, this);
 			break;
 
@@ -846,10 +849,10 @@ int File::close_file(int ignore_thread)
 			asset->video_length = current_frame = *(int64_t*)(file_fork->result_data + sizeof(int64_t));
 		}
 
-		if(debug) printf("File::close_file current_sample=%lld current_frame=%lld\n", 
+		if(debug) printf("File::close_file %d current_sample=%lld current_frame=%lld\n", 
 			__LINE__,
-			current_sample,
-			current_frame);
+			(long long)current_sample,
+			(long long)current_frame);
 
 		delete file_fork;
 		file_fork = 0;
@@ -986,11 +989,18 @@ int File::start_video_thread(int buffer_size,
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
+// This resets variables
+		delete_temp_frame_buffer();
+
+		this->video_ring_buffers = ring_buffers;
+		this->video_buffer_size = buffer_size;
+
 		unsigned char buffer[sizeof(int) * 4];
 		*(int*)(buffer) = buffer_size;
 		*(int*)(buffer + sizeof(int)) = color_model;
 		*(int*)(buffer + sizeof(int) * 2) = video_ring_buffers;
 		*(int*)(buffer + sizeof(int) * 3) = compressed;
+// Buffers are allocated
 		file_fork->send_command(FileFork::START_VIDEO_THREAD, 
 			buffer, 
 			sizeof(buffer));
@@ -998,7 +1008,7 @@ int File::start_video_thread(int buffer_size,
 
 
 // Create server copy of buffer
-		delete_temp_frame_buffer();
+//printf("File::start_video_thread %d %d\n", __LINE__, video_ring_buffers);
 		temp_frame_buffer = new VFrame***[video_ring_buffers];
 		for(int i = 0; i < video_ring_buffers; i++)
 		{
@@ -1006,6 +1016,7 @@ int File::start_video_thread(int buffer_size,
 			for(int j = 0; j < asset->layers; j++)
 			{
 				temp_frame_buffer[i][j] = new VFrame*[video_buffer_size];
+//printf("File::start_video_thread %d %p\n", __LINE__, temp_frame_buffer[i][j]);
 				for(int k = 0; k < video_buffer_size; k++)
 				{
 					temp_frame_buffer[i][j][k] = new VFrame;
@@ -1240,18 +1251,18 @@ int64_t File::get_audio_position()
 #endif
 
 
-	int64_t base_samplerate = -1;
-	if(base_samplerate > 0)
-	{
-		if(normalized_sample_rate == base_samplerate)
-			return normalized_sample;
-		else
-			return (int64_t)((double)current_sample / 
-				asset->sample_rate * 
-				base_samplerate + 
-				0.5);
-	}
-	else
+// 	int64_t base_samplerate = -1;
+// 	if(base_samplerate > 0)
+// 	{
+// 		if(normalized_sample_rate == base_samplerate)
+// 			return normalized_sample;
+// 		else
+// 			return (int64_t)((double)current_sample / 
+// 				asset->sample_rate * 
+// 				base_samplerate + 
+// 				0.5);
+// 	}
+// 	else
 		return current_sample;
 }
 
@@ -1265,7 +1276,9 @@ int File::set_audio_position(int64_t position)
 #ifdef USE_FILEFORK
 	if(file_fork)
 	{
-		file_fork->send_command(FileFork::SET_AUDIO_POSITION, (unsigned char*)&position, sizeof(position));
+		file_fork->send_command(FileFork::SET_AUDIO_POSITION, 
+			(unsigned char*)&position, 
+			sizeof(position));
 		int result = file_fork->read_result();
 		return result;
 	}
@@ -1280,6 +1293,13 @@ int File::set_audio_position(int64_t position)
 
 
 	float base_samplerate = asset->sample_rate;
+
+// printf("File::set_audio_position %d base_samplerate=%f normalized_sample=%ld current_sample=%ld position=%ld\n", 
+// __LINE__, 
+// base_samplerate, 
+// normalized_sample,
+// current_sample, 
+// position);
 
 	if((base_samplerate && REPOSITION(normalized_sample, position)) ||
 		(!base_samplerate && REPOSITION(current_sample, position)))
@@ -1308,18 +1328,26 @@ int File::set_audio_position(int64_t position)
 // 		}
 // 		else
 		{
-			current_sample = position;
-			normalized_sample = Units::round((double)position / 
-					asset->sample_rate * 
-					normalized_sample_rate);
+// Resampling is now done in AModule
+			normalized_sample = current_sample = position;
+// 			normalized_sample = Units::round((double)position / 
+// 					asset->sample_rate * 
+// 					normalized_sample_rate);
 // Can not set the normalized sample rate since this would reset the resampler.
 		}
 
+
+// printf("File::set_audio_position %d normalized_sample=%ld\n", 
+// __LINE__, 
+// normalized_sample);
 		result = file->set_audio_position(current_sample);
 
 		if(result)
 			printf("File::set_audio_position position=%d base_samplerate=%f asset=%p asset->sample_rate=%d\n",
-				position, base_samplerate, asset, asset->sample_rate);
+				(int)position, 
+				base_samplerate, 
+				asset, 
+				(int)asset->sample_rate);
 	}
 
 //printf("File::set_audio_position %d %d %d\n", current_channel, current_sample, position);
@@ -1334,6 +1362,7 @@ int File::set_video_position(int64_t position,
 // Thread should only call in the fork
 	if(!is_fork && !is_thread)
 	{
+//printf("File::set_video_position %d %lld\n", __LINE__, position);
 		file_fork->send_command(FileFork::SET_VIDEO_POSITION, (unsigned char*)&position, sizeof(position));
 		int result = file_fork->read_result();
 		return result;
@@ -1427,13 +1456,12 @@ int File::write_samples(Samples **buffer, int64_t len)
 // parallel.
 int File::write_frames(VFrame ***frames, int len)
 {
+//printf("File::write_frames %d\n", __LINE__);
 #ifdef USE_FILEFORK
-
 	if(file_fork)
 	{
-PRINT_TRACE
+//printf("File::write_frames %d\n", __LINE__);
 		int entry_size = frames[0][0]->filefork_size();
-//PRINT_TRACE
 		unsigned char fork_buffer[entry_size * asset->layers * len + sizeof(int)];
 		for(int i = 0; i < asset->layers; i++)
 		{
@@ -1464,7 +1492,7 @@ PRINT_TRACE
 		int result = file_fork->read_result();
 
 
-PRINT_TRACE
+//printf("File::write_frames %d\n", __LINE__);
 		return result;
 	}
 
@@ -1529,16 +1557,32 @@ int File::write_video_buffer(int64_t len)
 	if(file_fork)
 	{
 // Copy over sequence numbers for background rendering
+// frame sizes for direct copy
 //printf("File::write_video_buffer %d\n", __LINE__);
-		int fork_buffer_size = sizeof(int64_t) * (asset->layers * len + 1);
+		int fork_buffer_size = sizeof(int64_t) +
+			VFrame::filefork_size() * asset->layers * len;
 		unsigned char fork_buffer[fork_buffer_size];
 		*(int64_t*)(fork_buffer) = len;
 		for(int i = 0; i < asset->layers; i++)
 		{
 			for(int j = 0; j < len; j++)
 			{
-				*(int64_t*)(fork_buffer + sizeof(int64_t) * (i * len + j + 1)) = 
-					current_frame_buffer[i][j]->get_number();
+// Send memory state
+				current_frame_buffer[i][j]->to_filefork(fork_buffer + 
+					sizeof(int64_t) +
+					VFrame::filefork_size() * (len * i + j));
+// printf("File::write_video_buffer %d size=%d %d %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+// __LINE__, 
+// current_frame_buffer[i][j]->get_shmid(),
+// current_frame_buffer[i][j]->get_compressed_size(),
+// current_frame_buffer[i][j]->get_data()[0],
+// current_frame_buffer[i][j]->get_data()[1],
+// current_frame_buffer[i][j]->get_data()[2],
+// current_frame_buffer[i][j]->get_data()[3],
+// current_frame_buffer[i][j]->get_data()[4],
+// current_frame_buffer[i][j]->get_data()[5],
+// current_frame_buffer[i][j]->get_data()[6],
+// current_frame_buffer[i][j]->get_data()[7]);
 			}
 		}
 
@@ -1704,7 +1748,7 @@ int File::read_samples(Samples *samples, int64_t len)
 // Resample recursively calls this with the asset sample rate
 		if(base_samplerate == 0) base_samplerate = asset->sample_rate;
 
-//printf("File::read_samples 2 %d %d\n", base_samplerate, asset->sample_rate);
+//printf("File::read_samples %d %lld %lld\n", __LINE__, current_sample, len);
 // Load with resampling	
 // 		if(base_samplerate != asset->sample_rate)
 // 		{
@@ -1912,7 +1956,13 @@ int File::read_frame(VFrame *frame, int is_thread)
 			temp_frame->copy_stacks(frame);
 			file->read_frame(temp_frame);
 //for(int i = 0; i < 1000 * 1000; i++) ((float*)temp_frame->get_rows()[0])[i] = 1.0;
-//printf("File::read_frame %d %d\n", temp_frame->get_color_model(), frame->get_color_model());
+// printf("File::read_frame %d %d %d %d %d %d\n", 
+// temp_frame->get_color_model(), 
+// temp_frame->get_w(),
+// temp_frame->get_h(),
+// frame->get_color_model(),
+// frame->get_w(),
+// frame->get_h());
 			cmodel_transfer(frame->get_rows(), 
 				temp_frame->get_rows(),
 				frame->get_y(),
@@ -2052,6 +2102,8 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	else
 	if(!strcasecmp(format, _(CR2_NAME))) return FILE_CR2;
 	else
+	if(!strcasecmp(format, _(CR2_LIST_NAME))) return FILE_CR2_LIST;
+	else
 	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
 	else
 	if(!strcasecmp(format, _(AMPEG_NAME))) return FILE_AMPEG;
@@ -2127,6 +2179,9 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 			break;
 		case FILE_CR2:
 			return _(CR2_NAME);
+			break;
+		case FILE_CR2_LIST:
+			return _(CR2_LIST_NAME);
 			break;
 		case FILE_EXR:
 			return _(EXR_NAME);
@@ -2325,6 +2380,7 @@ int File::get_best_colormodel(Asset *asset, int driver)
 			break;
 		
 		case FILE_CR2:
+		case FILE_CR2_LIST:
 			return FileCR2::get_best_colormodel(asset, driver);
 			break;
 	}
@@ -2419,6 +2475,7 @@ int File::supports_video(int format)
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
 		case FILE_CR2:
+		case FILE_CR2_LIST:
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 		case FILE_PNG:

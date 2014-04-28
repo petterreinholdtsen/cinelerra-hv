@@ -27,7 +27,7 @@ class BrightnessMain;
 
 #include "brightnesswindow.h"
 #include "loadbalance.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 
 class BrightnessConfig
@@ -62,8 +62,6 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
 	int handle_opengl();
 
 

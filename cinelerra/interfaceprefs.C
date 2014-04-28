@@ -50,6 +50,7 @@ void InterfacePrefs::create_objects()
 {
 	int y, x, value;
 	BC_Resources *resources = BC_WindowBase::get_resources();
+	int margin = mwindow->theme->widget_border;
 	char string[BCTEXTLEN];
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
@@ -93,15 +94,19 @@ void InterfacePrefs::create_objects()
 		x, 
 		y));
 	y += 20;
+	int x1 = x;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, 
 		this, 
 		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES, 
-		x, 
+		x1, 
 		y));
-	add_subwindow(new BC_Title(260, y, _("frames per foot")));
+	x1 += feet->get_w() + margin;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x1, y, _("Frames per foot:")));
+	x1 += title->get_w() + margin;
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
 	add_subwindow(new TimeFormatFeetSetting(pwindow, 
-		x + 155, 
+		x1, 
 		y - 5, 
 		string));
 	y += 20;
@@ -150,7 +155,7 @@ void InterfacePrefs::create_objects()
 	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
 	y += 30;
 	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, resources->text_default));
-	sprintf(string, "%ld", pwindow->thread->preferences->index_count);
+	sprintf(string, "%ld", (long)pwindow->thread->preferences->index_count);
 	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
 	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
 
@@ -198,8 +203,7 @@ void InterfacePrefs::create_objects()
 	text->create_objects();
 
 	y += 40;
-	int x1 = x;
-	BC_Title *title;
+	x1 = x;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
 	x += title->get_w() + 10;
 	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);

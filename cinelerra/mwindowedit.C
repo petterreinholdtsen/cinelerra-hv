@@ -1,6 +1,6 @@
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	undo->update_undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	gui->get_scrollbars();
+	gui->get_scrollbars(0);
 	gui->canvas->draw();
 	gui->patchbay->update();
 	gui->cursor->draw(1);
@@ -107,7 +107,7 @@ void MWindow::add_video_track_entry(Track *dst)
 	undo->update_undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	gui->get_scrollbars();
+	gui->get_scrollbars(0);
 	gui->canvas->draw();
 	gui->patchbay->update();
 	gui->cursor->draw(1);
@@ -136,6 +136,96 @@ int MWindow::add_video_track(int above, Track *dst)
 	save_backup();
 	return 0;
 }
+
+
+
+
+void MWindow::asset_to_all()
+{
+	if(!session->drag_assets->size()) return;
+	Indexable *indexable = session->drag_assets->get(0);
+
+//	if(indexable->have_video())
+	{
+		int w, h;
+
+		undo->update_undo_before();
+
+// Get w and h
+		w = indexable->get_w();
+		h = indexable->get_h();
+		double new_framerate = session->drag_assets->get(0)->get_frame_rate();
+		double old_framerate = edl->session->frame_rate;
+		int old_samplerate = edl->session->sample_rate;
+		int new_samplerate = session->drag_assets->get(0)->get_sample_rate();
+
+
+		if(indexable->have_video())
+		{
+			edl->session->output_w = w;
+			edl->session->output_h = h;
+			edl->session->frame_rate = new_framerate;
+			create_aspect_ratio(edl->session->aspect_w, 
+				edl->session->aspect_h, 
+				w, 
+				h);
+
+			for(Track *current = edl->tracks->first;
+				current;
+				current = NEXT)
+			{
+				if(current->data_type == TRACK_VIDEO &&
+					current->record)
+				{
+					current->track_w = w;
+					current->track_h = h;
+				}
+			}
+
+
+			if(((edl->session->output_w % 4) || 
+				(edl->session->output_h % 4)) && 
+				edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+			{
+				MainError::show_error(
+					_("This project's dimensions are not multiples of 4 so\n"
+					"it can't be rendered by OpenGL."));
+			}
+
+
+// Get aspect ratio
+			if(defaults->get("AUTOASPECT", 0))
+			{
+				create_aspect_ratio(edl->session->aspect_w, 
+					edl->session->aspect_h, 
+					w, 
+					h);
+			}
+		}
+		
+		if(indexable->have_audio())
+		{
+			edl->session->sample_rate = new_samplerate;
+			edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
+			edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
+		}
+
+
+		save_backup();
+
+		undo->update_undo_after(_("asset to all"), LOAD_ALL);
+		restart_brender();
+		gui->update(1,
+			2,
+			1,
+			1,
+			1, 
+			1,
+			0);
+		sync_parameters(CHANGE_ALL);
+	}
+}
+
 
 
 
@@ -312,7 +402,7 @@ void MWindow::clear_labels()
 		edl->local_session->get_selectionend()); 
 	undo->update_undo_after(_("clear labels"), LOAD_TIMEBAR);
 	
-	gui->timebar->update();
+	gui->timebar->update(1);
 	cwindow->update(0, 0, 0, 0, 1);
 	save_backup();
 }
@@ -365,7 +455,12 @@ int MWindow::copy(double start, double end)
 // File is now terminated and rewound
 
 //printf("MWindow::copy 1\n");
-	gui->get_clipboard()->to_clipboard(file.string, strlen(file.string), SECONDARY_SELECTION);
+	gui->get_clipboard()->to_clipboard(file.string, 
+		strlen(file.string), 
+		SECONDARY_SELECTION);
+	gui->get_clipboard()->to_clipboard(file.string, 
+		strlen(file.string), 
+		BC_PRIMARY_SELECTION);
 //printf("MWindow::copy\n%s\n", file.string);
 //printf("MWindow::copy 2\n");
 	save_backup();
@@ -382,6 +477,9 @@ int MWindow::copy_automation()
 		1);
 	gui->get_clipboard()->to_clipboard(file.string, 
 		strlen(file.string), 
+		BC_PRIMARY_SELECTION);
+	gui->get_clipboard()->to_clipboard(file.string, 
+		strlen(file.string), 
 		SECONDARY_SELECTION);
 	return 0;
 }
@@ -394,6 +492,9 @@ int MWindow::copy_default_keyframe()
 		&file,
 		1,
 		0);
+	gui->get_clipboard()->to_clipboard(file.string,
+		strlen(file.string),
+		BC_PRIMARY_SELECTION);
 	gui->get_clipboard()->to_clipboard(file.string,
 		strlen(file.string),
 		SECONDARY_SELECTION);
@@ -1132,7 +1233,7 @@ void MWindow::paste()
 
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
-			SECONDARY_SELECTION);
+			BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
 
@@ -1293,7 +1394,7 @@ int MWindow::paste_automation()
 		char *string = new char[len + 1];
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
-			SECONDARY_SELECTION);
+			BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
 
@@ -1330,7 +1431,7 @@ int MWindow::paste_default_keyframe()
 		char *string = new char[len + 1];
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
-			SECONDARY_SELECTION);
+			BC_PRIMARY_SELECTION);
 		FileXML file;
 		file.read_from_string(string);
 		edl->tracks->paste_automation(edl->local_session->get_selectionstart(), 
@@ -1373,7 +1474,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 //PRINT_TRACE
 	double original_length = edl->tracks->total_playable_length();
-	double original_preview_end = edl->local_session->preview_end;
+//	double original_preview_end = edl->local_session->preview_end;
 //PRINT_TRACE
 
 // Delete current project
@@ -1409,7 +1510,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		edit_plugins = 1;
 // Force reset of preview
 		original_length = 0;
-		original_preview_end = -1;
+//		original_preview_end = -1;
 	}
 
 
@@ -1669,13 +1770,21 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			edl->add_clip(new_edl->clips.values[j]);
 		}
 
-		if(new_edl->vwindow_edl)
+		if(new_edl->total_vwindow_edls())
 		{
-			if(edl->vwindow_edl) 
-				edl->vwindow_edl->Garbage::remove_user();
-			edl->vwindow_edl = new EDL(edl);
-			edl->vwindow_edl->create_objects();
-			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
+//			if(edl->vwindow_edl) 
+//				edl->vwindow_edl->Garbage::remove_user();
+//			edl->vwindow_edl = new EDL(edl);
+//			edl->vwindow_edl->create_objects();
+//			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
+
+			for(int j = 0; j < new_edl->total_vwindow_edls(); j++)
+			{
+				EDL *vwindow_edl = new EDL(edl);
+				vwindow_edl->create_objects();
+				vwindow_edl->copy_all(new_edl->get_vwindow_edl(j));
+				edl->append_vwindow_edl(vwindow_edl, 0);
+			}
 		}
 	}
 
@@ -1687,10 +1796,10 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 //	update_project(load_mode);
 
 // Fix preview range
-	if(EQUIV(original_length, original_preview_end))
-	{
-		edl->local_session->preview_end = edl->tracks->total_playable_length();
-	}
+//	if(EQUIV(original_length, original_preview_end))
+//	{
+//		edl->local_session->preview_end = edl->tracks->total_playable_length();
+//	}
 
 
 // Start examining next batch of index files
@@ -1870,6 +1979,7 @@ void MWindow::shuffle_edits()
 	undo->update_undo_after(_("shuffle edits"), LOAD_EDITS | LOAD_TIMEBAR);
 
 	sync_parameters(CHANGE_EDL);
+	restart_brender();
 	gui->update(0, 1, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
@@ -1888,6 +1998,7 @@ void MWindow::align_edits()
 	undo->update_undo_after(_("align edits"), LOAD_EDITS | LOAD_TIMEBAR);
 
 	sync_parameters(CHANGE_EDL);
+	restart_brender();
 	gui->update(0, 1, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
@@ -1906,6 +2017,7 @@ void MWindow::set_edit_length(double length)
 	undo->update_undo_after(_("edit length"), LOAD_EDITS | LOAD_TIMEBAR);
 
 	sync_parameters(CHANGE_EDL);
+	restart_brender();
 	gui->update(0, 1, 1, 0, 0, 0, 0);
 	gui->unlock_window();
 }
@@ -1945,6 +2057,7 @@ void MWindow::set_transition_length(double length)
 
 	edl->session->default_transition_length = length;
 	sync_parameters(CHANGE_PARAMS);
+	restart_brender();
 	gui->update(0, 1, 0, 0, 0, 0, 0);
 	gui->unlock_window();
 }
@@ -1959,16 +2072,22 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 		CHANGE_NONE, 
 		0,
 		0);
-	vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
 	cwindow->playback_engine->interrupt_playback(0);
-	vwindow->playback_engine->interrupt_playback(0);
 
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		vwindows.get(i)->playback_engine->que->send_command(STOP,
+			CHANGE_NONE, 
+			0,
+			0);
+		vwindows.get(i)->playback_engine->interrupt_playback(0);
+	}
 
 	cwindow->gui->lock_window("MWindow::redo_entry");
-	vwindow->gui->lock_window("MWindow::undo_entry 2");
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		vwindows.get(i)->gui->lock_window("MWindow::redo_entry 2");
+	}
 	gui->lock_window();
 
 	undo->redo(); 
@@ -1984,8 +2103,13 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 		cwindow->gui->unlock_window();
 	if (calling_window_gui != gui)
 		gui->unlock_window();
-	if (calling_window_gui != vwindow->gui)
-		vwindow->gui->unlock_window();
+
+
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		if (calling_window_gui != vwindows.get(i)->gui)
+			vwindows.get(i)->gui->unlock_window();
+	}
 
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 	    		   CHANGE_ALL,
@@ -2024,8 +2148,7 @@ void MWindow::set_inpoint(int is_mwindow)
 	{
 		gui->lock_window("MWindow::set_inpoint 1");
 	}
-	gui->timebar->update();
-	gui->flush();
+	gui->timebar->update(1);
 	if(!is_mwindow)
 	{
 		gui->unlock_window();
@@ -2035,8 +2158,7 @@ void MWindow::set_inpoint(int is_mwindow)
 	{
 		cwindow->gui->lock_window("MWindow::set_inpoint 2");
 	}
-	cwindow->gui->timebar->update();
-	cwindow->gui->flush();
+	cwindow->gui->timebar->update(1);
 	if(is_mwindow)
 	{
 		cwindow->gui->unlock_window();
@@ -2055,8 +2177,7 @@ void MWindow::set_outpoint(int is_mwindow)
 	{
 		gui->lock_window("MWindow::set_outpoint 1");
 	}
-	gui->timebar->update();
-	gui->flush();
+	gui->timebar->update(1);
 	if(!is_mwindow)
 	{
 		gui->unlock_window();
@@ -2066,8 +2187,7 @@ void MWindow::set_outpoint(int is_mwindow)
 	{
 		cwindow->gui->lock_window("MWindow::set_outpoint 2");
 	}
-	cwindow->gui->timebar->update();
-	cwindow->gui->flush();
+	cwindow->gui->timebar->update(1);
 	if(is_mwindow)
 	{
 		cwindow->gui->unlock_window();
@@ -2185,7 +2305,7 @@ int MWindow::toggle_label(int is_mwindow)
 	{
 		gui->lock_window("MWindow::toggle_label 1");
 	}
-	gui->timebar->update();
+	gui->timebar->update(0);
 	gui->canvas->activate();
 	gui->flush();
 	if(!is_mwindow)
@@ -2197,8 +2317,7 @@ int MWindow::toggle_label(int is_mwindow)
 	{
 		cwindow->gui->lock_window("MWindow::toggle_label 2");
 	}
-	cwindow->gui->timebar->update();
-	cwindow->gui->flush();
+	cwindow->gui->timebar->update(1);
 	if(is_mwindow)
 	{
 		cwindow->gui->unlock_window();
@@ -2239,15 +2358,23 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 		CHANGE_NONE, 
 		0,
 		0);
-	vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
 	cwindow->playback_engine->interrupt_playback(0);
-	vwindow->playback_engine->interrupt_playback(0);
+
+
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		vwindows.get(i)->playback_engine->que->send_command(STOP,
+			CHANGE_NONE, 
+			0,
+			0);
+		vwindows.get(i)->playback_engine->interrupt_playback(0);
+	}
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
-	vwindow->gui->lock_window("MWindow::undo_entry 4");
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		vwindows.get(i)->gui->lock_window("MWindow::undo_entry 4");
+	}
 	gui->lock_window("MWindow::undo_entry 2");
 
 	undo->undo(); 
@@ -2267,8 +2394,13 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 
 	if (calling_window_gui != cwindow->gui) 
 		cwindow->gui->unlock_window();
-	if (calling_window_gui != vwindow->gui)
-		vwindow->gui->unlock_window();
+
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		if (calling_window_gui != vwindows.get(i)->gui)
+			vwindows.get(i)->gui->unlock_window();
+	}
+	
 	if (calling_window_gui != gui)
 		gui->unlock_window();
 	
@@ -2316,6 +2448,7 @@ void MWindow::select_point(double position)
 	gui->cursor->draw(1);
 	gui->mainclock->update(edl->local_session->get_selectionstart(1));
 	gui->zoombar->update();
+	gui->timebar->update(0);
 	gui->canvas->flash();
 	gui->flush();
 }

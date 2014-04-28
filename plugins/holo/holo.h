@@ -30,7 +30,7 @@ class HoloEngine;
 #include "holowindow.h"
 #include "loadbalance.h"
 #include "mutex.h"
-#include "plugincolors.inc"
+#include "cicolors.inc"
 #include "pluginvclient.h"
 
 #include <stdint.h>
@@ -90,8 +90,6 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-	int load_defaults();
-	int save_defaults();
 	void reconfigure();
 
 

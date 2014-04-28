@@ -138,6 +138,24 @@ public:
 	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
 // error window
 	int ewindow_w, ewindow_h;
+// Channel edit window
+	int channels_x, channels_y;
+// Picture edit window
+	int picture_x, picture_y;
+// Recording scope window
+	int scope_x, scope_y, scope_w, scope_h;
+// Recording histogram window
+	int histogram_x, histogram_y, histogram_w, histogram_h;
+// Recording scopes enabled
+	int record_scope;
+// Recording scope parameters
+	int use_hist;
+	int use_wave;
+	int use_vector;
+	int use_hist_parade;
+	int use_wave_parade;
+
+
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;
 	int plugindialog_w, plugindialog_h;

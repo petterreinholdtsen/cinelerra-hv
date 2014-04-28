@@ -82,6 +82,7 @@ int APatchGUI::reposition(int x, int y)
 
 	if(meter) meter->reposition_window(meter->get_x(),
 		y1 + y,
+		-1,
 		meter->get_w());
 	y1 += mwindow->theme->meter_h;
 
@@ -360,11 +361,12 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 			mwindow->edl->session->max_meter_db, 
 			mwindow->edl->session->meter_format, 
 			0,
-			TRACKING_RATE * 10,
-			TRACKING_RATE)
+			-1)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
+	set_delays(TRACKING_RATE * 10,
+			TRACKING_RATE);
 }
 
 int AMeterPatch::button_press_event()

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,24 @@
  * 
  */
 
+// Originally from the following:
+/* vocoder.c
+   Version 0.3
+
+   LADSPA Unique ID: 1441
+
+   Version 0.3
+   Added support for changing bands in real time 2003-12-09
+
+   Version 0.2
+   Adapted to LADSPA by Josh Green <jgreen@users.sourceforge.net>
+   15.6.2001 (for the LinuxTag 2001!)
+
+   Original program can be found at:
+   http://www.sirlab.de/linux/
+   Author: Achim Settelmeier <settel-linux@sirlab.de>
+*/
+
 #ifndef VOCODER_H
 #define VOCODER_H
 
@@ -26,16 +44,13 @@
 #include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
-#include "../parametric/fourier.h"
+#include "fourier.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
 
 
-// This vocoder multiplies the FFT of all the tracks & writes the output
-// to a user specified output track.
 
-
-#define WINDOW_SIZE 16384
+#define MAX_BANDS 32
 
 class Vocoder;
 class VocoderWindow;
@@ -58,9 +73,10 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 
-	float wetness;
 	int carrier_track;
-	float bandwidth;
+	int bands;
+	double level;
+	double wetness;
 };
 
 
@@ -79,10 +95,33 @@ public:
 
 
 
+class VocoderLevel : public BC_FPot
+{
+public:
+	VocoderLevel(Vocoder *plugin, int x, int y);
+	int handle_event();
+	Vocoder *plugin;
+};
+
+
+
+
 class VocoderCarrier : public BC_TumbleTextBox
 {
 public:
 	VocoderCarrier(Vocoder *plugin, 
+		VocoderWindow *window, 
+		int x, 
+		int y);
+	int handle_event();
+	Vocoder *plugin;
+};
+
+
+class VocoderBands : public BC_TumbleTextBox
+{
+public:
+	VocoderBands(Vocoder *plugin, 
 		VocoderWindow *window, 
 		int x, 
 		int y);
@@ -104,26 +143,38 @@ public:
 	void update_gui();
 
 	VocoderCarrier  *output;
+	VocoderBands *bands;
 	VocoderWetness *wetness;
+	VocoderLevel *level;
 	Vocoder *plugin;
 };
 
-class VocoderFFT : public CrossfadeFFT
+class VocoderBand
 {
 public:
-	VocoderFFT(Vocoder *plugin);
-	~VocoderFFT();
+	VocoderBand();
+	void reset();
+	void copy_from(VocoderBand *src);
 	
-	int signal_process();
-	int read_samples(int64_t output_sample, 
-		int samples, 
-		Samples *buffer);
+	double c, f, att;
 
-	Vocoder *plugin;
-	int is_carrier;
-	int channel;
+	double freq;
+	double low1, low2;
+	double mid1, mid2;
+	double high1, high2;
+	double y;
 };
 
+class VocoderOut
+{
+public:
+	VocoderOut();
+	void reset();
+	
+	double decay;
+	double oldval;
+	double level;		/* 0.0 - 1.0 level of this output band */
+};
 
 class Vocoder : public PluginAClient
 {
@@ -140,24 +191,19 @@ public:
 		int64_t start_position,
 		int sample_rate);
 
-	int load_defaults();
-	int save_defaults();
 	void reset();
 	void reconfigure();
 	void update_gui();
 
+	void do_bandpasses(VocoderBand *bands, double sample);
+	VocoderBand formant_bands[MAX_BANDS];
+	VocoderBand carrier_bands[MAX_BANDS];
+	VocoderOut output_bands[MAX_BANDS];
+	int current_bands;
 
 	int need_reconfigure;
-	PLUGIN_CLASS_MEMBERS(VocoderConfig)
-// 1 FFT for each track
-	VocoderFFT **fft;
-
-// Carrier windows
-// Need 1 buffer for each FFT window
-	double **carrier_real;
-    double **carrier_imag;
-	int carrier_windows;
-	int current_window;
+	PLUGIN_CLASS_MEMBERS2(VocoderConfig)
+	
 };
 
 

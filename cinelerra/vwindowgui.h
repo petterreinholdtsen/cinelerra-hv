@@ -56,7 +56,7 @@ public:
 	void create_objects();
 	int resize_event(int w, int h);
 	int translation_event();
-	int close_event();
+//	int close_event();
 	int keypress_event();
 	int button_press_event();
 	int cursor_leave_event();
@@ -77,7 +77,10 @@ public:
 
 // Meters are numbered from right to left
 	VWindowCanvas *canvas;
+#ifdef USE_SLIDER
 	VWindowSlider *slider;
+#endif
+
 	BC_Title *fps_title;
 	MainClock *clock;
 	VTimeBar *timebar;
@@ -115,7 +118,7 @@ public:
 	VWindowCanvas(MWindow *mwindow, VWindowGUI *gui);
 
 	void zoom_resize_window(float percentage);
-	void draw_refresh();
+	void draw_refresh(int flush = 1);
 	void draw_overlays();
 	void close_source();
 	int get_fullscreen();

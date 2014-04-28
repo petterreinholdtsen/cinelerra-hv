@@ -49,6 +49,7 @@ public:
 
 
 	static int calculate_h();
+	static int calculate_w();
 	int initialize();
 	virtual float get_percentage() { return 0; };
 	virtual int percentage_to_value(float percentage) { return 0; };
@@ -57,6 +58,9 @@ public:
 	virtual int increase_value() { return 0; };
 	virtual int decrease_value() { return 0; };
 	void set_use_caption(int value);
+	void enable();
+	void disable();
+	
 
 	int reposition_window(int x, int y);
 	int repeat_event(int64_t repeat_id);
@@ -69,7 +73,7 @@ public:
 
 private:
 	int set_data(VFrame **data);
-	int draw();
+	int draw(int flush);
 	float percentage_to_angle(float percentage);
 	float angle_to_percentage(float angle);
 	int angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle);
@@ -86,6 +90,7 @@ private:
 	float start_needle_angle;
 	float prev_angle, angle_correction;
 	int use_caption;
+	int enabled;
 };
 
 class BC_FPot : public BC_Pot

@@ -237,7 +237,7 @@ if(debug) printf("FileFFMPEG::get_format_string %d\n", __LINE__);
 	if(in)
 	{
 if(debug) printf("FileFFMPEG::get_format_string %d\n", __LINE__);
-		fread(test, sizeof(test), 1, in);
+		int temp = fread(test, sizeof(test), 1, in);
 // printf("FileFFMPEG %d %02x %02x %02x %02x \n", 
 // __LINE__, 
 // test[0], 
@@ -421,7 +421,7 @@ if(debug) printf("FileFFMPEG::open_file %d decoder_context->codec_id=%d\n", __LI
 							int64_t audio_length = (int64_t)(((AVFormatContext*)new_stream->ffmpeg_file_context)->duration * 
 								asset->sample_rate / 
 								AV_TIME_BASE);
-if(debug) printf("FileFFMPEG::open_file %d audio_length=%lld\n", __LINE__, audio_length);
+if(debug) printf("FileFFMPEG::open_file %d audio_length=%lld\n", __LINE__, (long long)audio_length);
 							asset->audio_length = MAX(asset->audio_length, audio_length);
 						}
             			break;
@@ -582,13 +582,13 @@ void FileFFMPEG::dump_context(void *ptr)
 	printf("    frame_number=%d\n", context->frame_number);
 	printf("    real_pict_num=%d\n", context->real_pict_num);
 	printf("    delay=%d\n", context->delay);
-	printf("    qcompress=%d\n", context->qcompress);
-	printf("    qblur=%d\n", context->qblur);
+	printf("    qcompress=%f\n", context->qcompress);
+	printf("    qblur=%f\n", context->qblur);
 	printf("    qmin=%d\n", context->qmin);
 	printf("    qmax=%d\n", context->qmax);
 	printf("    max_qdiff=%d\n", context->max_qdiff);
 	printf("    max_b_frames=%d\n", context->max_b_frames);
-	printf("    b_quant_factor=%d\n", context->b_quant_factor);
+	printf("    b_quant_factor=%f\n", context->b_quant_factor);
 	printf("    b_frame_strategy=%d\n", context->b_frame_strategy);
 	printf("    hurry_up=%d\n", context->hurry_up);
 	printf("    rtp_payload_size=%d\n", context->rtp_payload_size);
@@ -603,7 +603,7 @@ void FileFFMPEG::dump_context(void *ptr)
 	printf("    slice_count=%d\n", context->slice_count);
 	printf("    slice_offset=%p\n", context->slice_offset);
 	printf("    error_concealment=%d\n", context->error_concealment);
-	printf("    dsp_mask=%p\n", context->dsp_mask);
+	printf("    dsp_mask=%x\n", context->dsp_mask);
 //	printf("    bits_per_sample=%d\n", context->bits_per_sample);
 	printf("    slice_flags=%d\n", context->slice_flags);
 	printf("    xvmc_acceleration=%d\n", context->xvmc_acceleration);
@@ -705,8 +705,8 @@ int FileFFMPEG::read_frame(VFrame *frame)
 	{
 		if(debug) printf("FileFFMPEG::read_frame %d stream->current_frame=%lld file->current_frame=%lld\n", 
 		__LINE__, 
-		stream->current_frame, 
-		file->current_frame);
+		(long long)stream->current_frame, 
+		(long long)file->current_frame);
 
 		int64_t timestamp = (int64_t)((double)file->current_frame * 
 			ffmpeg_stream->time_base.den /
@@ -741,8 +741,8 @@ int FileFFMPEG::read_frame(VFrame *frame)
 		got_it = 0;
 		if(debug) printf("FileFFMPEG::read_frame %d stream->current_frame=%lld file->current_frame=%lld\n", 
 			__LINE__,
-			stream->current_frame,
-			file->current_frame);
+			(long long)stream->current_frame,
+			(long long)file->current_frame);
 
 		while(!got_it && !error)
 		{
@@ -914,14 +914,14 @@ int FileFFMPEG::read_samples(double *buffer, int64_t len)
 	AVCodecContext *decoder_context = ffmpeg_stream->codec;
 
 	stream->update_pcm_history(file->current_sample, len);
-	if(debug) printf("FileFFMPEG::read_samples %d len=%d\n", __LINE__, len);
+	if(debug) printf("FileFFMPEG::read_samples %d len=%d\n", __LINE__, (int)len);
 
 
 
 	if(debug) printf("FileFFMPEG::read_samples %d decode_start=%lld decode_end=%lld\n",
 		__LINE__,
-		stream->decode_start,
-		stream->decode_end);
+		(long long)stream->decode_start,
+		(long long)stream->decode_end);
 
 // Seek occurred
 	if(stream->decode_start != stream->decode_end)
@@ -947,7 +947,7 @@ int FileFFMPEG::read_samples(double *buffer, int64_t len)
 
 	if(debug) printf("FileFFMPEG::read_samples %d stream->decode_len=%d\n", 
 		__LINE__,
-		stream->decode_len);
+		(int)stream->decode_len);
 
 
 

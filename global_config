@@ -57,12 +57,15 @@ GCC = gcc
 
 
 ifneq ($(HAVE_CFLAGS), y)
-CFLAGS = -O2 -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2
+CFLAGS = -O2 
 endif
 
 ifeq ($(HAVE_GL), y)
 CFLAGS += -DHAVE_GL
 endif
+
+
+
 
 
 ifeq ($(HAVE_ESOUND), y)

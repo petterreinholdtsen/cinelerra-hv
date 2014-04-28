@@ -44,6 +44,9 @@
 #define KP4                 270
 #define KP5                 271
 #define KP6                 272
+#define KP7                 279
+#define KP8                 280
+#define KP9                 281
 #define KPINS               273
 #define KPDEL               274
 

@@ -99,7 +99,7 @@ public:
 		long prev_frame, 
 		long next_frame, 
 		long current_frame);
-
+	void limits();
 
 // Font information
 	char font[BCTEXTLEN];
@@ -134,6 +134,9 @@ public:
 	char text[BCTEXTLEN];
 // Encoding to convert from 
 	char encoding[BCTEXTLEN];
+
+// Size of window
+	int window_w, window_h;
 };
 
 class FontEntry
@@ -175,6 +178,8 @@ public:
 	int width, height, pitch, advance_w, left, top, freetype_index;
 	VFrame *data;
 };
+
+
 
 
 
@@ -372,8 +377,6 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
 
 
 
@@ -400,8 +403,6 @@ public:
 
 	static const char* motion_to_text(int motion);
 	static int text_to_motion(char *text);
-// Size of window
-	int window_w, window_h;
 
 	static ArrayList<FontEntry*> *fonts;
 

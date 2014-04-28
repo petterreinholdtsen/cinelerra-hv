@@ -55,7 +55,7 @@ int CTimeBar::resize_event()
 		mwindow->theme->ctimebar_y,
 		mwindow->theme->ctimebar_w,
 		mwindow->theme->ctimebar_h);
-	update();
+	update(0);
 	return 1;
 }
 
@@ -67,15 +67,32 @@ EDL* CTimeBar::get_edl()
 
 void CTimeBar::draw_time()
 {
-	get_edl_length();
+//	get_edl_length();
 	draw_range();
 }
 
 
-void CTimeBar::update_preview()
+// void CTimeBar::update_preview()
+// {
+// 	gui->slider->set_position();
+// }
+
+
+double CTimeBar::pixel_to_position(int pixel)
 {
-	gui->slider->set_position();
+	double edl_length = get_edl_length();
+
+
+	return (double)pixel * edl_length / get_w();
 }
+
+
+void CTimeBar::update_cursor()
+{
+	double position = pixel_to_position(get_cursor_x());
+	mwindow->cwindow->update_position(position);
+}
+
 
 
 void CTimeBar::select_label(double position)

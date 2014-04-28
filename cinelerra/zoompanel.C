@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -134,6 +135,11 @@ void ZoomPanel::calculate_menu()
 			zoom_table.append(new ZoomHash(zoom, value_to_text(zoom, 0)));
 		}
 	}
+}
+
+int ZoomPanel::calculate_w(int menu_w)
+{
+	return BC_PopupMenu::calculate_w(menu_w) + BC_Tumbler::calculate_w();
 }
 
 void ZoomPanel::update_menu()

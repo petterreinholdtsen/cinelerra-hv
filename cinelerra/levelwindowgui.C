@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,14 +54,18 @@ LevelWindowGUI::~LevelWindowGUI()
 
 void LevelWindowGUI::create_objects()
 {
+	int border = mwindow->theme->widget_border;
 	lock_window("LevelWindowGUI::create_objects");
 	mwindow->theme->draw_lwindow_bg(this);
 	panel = new MeterPanel(mwindow, 
 		this, 
-		5, 
-		5,
-		get_h() - 10,
+		border, 
+		border,
+		get_w() - border * 2, 
+		get_h() - border * 2, 
 		mwindow->edl->session->audio_channels,
+		1,
+		0,
 		1);
 	panel->create_objects();
 	unlock_window();
@@ -70,6 +74,7 @@ void LevelWindowGUI::create_objects()
 
 int LevelWindowGUI::resize_event(int w, int h)
 {
+	int border = mwindow->theme->widget_border;
 	mwindow->session->lwindow_x = get_x();
 	mwindow->session->lwindow_y = get_y();
 	mwindow->session->lwindow_w = w;
@@ -79,7 +84,8 @@ int LevelWindowGUI::resize_event(int w, int h)
 
 	panel->reposition_window(panel->x,
 		panel->y,
-		h - 10);
+		w - border * 2,
+		h - border * 2);
 
 	BC_WindowBase::resize_event(w, h);
 	return 1;

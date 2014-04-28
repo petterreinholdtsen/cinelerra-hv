@@ -20,6 +20,7 @@
  */
 
 #include "asset.h"
+#include "bchash.h"
 #include "bcpbuffer.h"
 #include "bcsignals.h"
 #include "cache.h"
@@ -101,14 +102,14 @@ int VModule::import_frame(VFrame *output,
 	int64_t corrected_position;
 	int64_t corrected_position_project;
 // Translation of edit
-	float in_x1;
-	float in_y1;
-	float in_w1;
-	float in_h1;
-	float out_x1;
-	float out_y1;
-	float out_w1;
-	float out_h1;
+	float in_x;
+	float in_y;
+	float in_w;
+	float in_h;
+	float out_x;
+	float out_y;
+	float out_w;
+	float out_h;
 	int result = 0;
 	const int debug = 0;
 	double edl_rate = get_edl()->session->frame_rate;
@@ -116,12 +117,14 @@ int VModule::import_frame(VFrame *output,
 		edl_rate / 
 		frame_rate + 
 		0.001);
-	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
+	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
+	//output->dump_params();
+
 
 	if(debug) printf("VModule::import_frame %d this=%p input_position=%lld direction=%d\n", 
 		__LINE__,
 		this,
-		input_position,
+		(long long)input_position,
 		direction);
 
 // Convert to position going forward
@@ -132,7 +135,7 @@ int VModule::import_frame(VFrame *output,
 		corrected_position--;
 		input_position_project--;
 	}
-	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
+	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
 
 	VDeviceX11 *x11_device = 0;
 	if(use_opengl)
@@ -145,7 +148,8 @@ int VModule::import_frame(VFrame *output,
 		}
 	}
 
-	if(!output) printf("VModule::import_frame 10 output=%p x11_device=%p nested_edl=%p\n", 
+	if(!output) printf("VModule::import_frame %d output=%p x11_device=%p nested_edl=%p\n", 
+		__LINE__,
 		output,
 		x11_device,
 		nested_edl);
@@ -236,7 +240,7 @@ int VModule::import_frame(VFrame *output,
 	}
 	if(debug) printf("VModule::import_frame %d\n", __LINE__);
 
-	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
+	if(!output) printf("VModule::import_frame %d output=%p\n", __LINE__, output);
 
 	if(current_edit &&
 		(current_edit->asset ||
@@ -298,7 +302,8 @@ int VModule::import_frame(VFrame *output,
 				renderengine->command->single_frame();
 			int use_asynchronous = !use_cache && 
 				renderengine &&
-				renderengine->command->realtime &&
+// Try to make rendering go faster.  Don't know why realtime was required.
+//				renderengine->command->realtime &&
 				renderengine->get_edl()->session->video_asynchronous;
 
 			if(file)
@@ -336,39 +341,70 @@ int VModule::import_frame(VFrame *output,
 					nested_position++;
 			}
 			
-			
-			((VTrack*)track)->calculate_input_transfer(asset_w, 
-				asset_h,
-				input_position_project, 
-				direction, 
-				in_x1, 
-				in_y1, 
-				in_w1, 
-				in_h1,
-				out_x1, 
-				out_y1, 
-				out_w1, 
-				out_h1);
 
+// Auto scale if required
+			if(output->get_params()->get("AUTOSCALE", 0))
+			{
+				float autoscale_w = output->get_params()->get("AUTOSCALE_W", 1024);
+				float autoscale_h = output->get_params()->get("AUTOSCALE_H", 1024);
+				float x_scale = autoscale_w / asset_w;
+				float y_scale = autoscale_h / asset_h;
+
+// Overriding camera
+				in_x = 0;
+				in_y = 0;
+				in_w = asset_w;
+				in_h = asset_h;
+
+				if(x_scale < y_scale)
+				{
+					out_w = in_w * x_scale;
+					out_h = in_h * x_scale;
+				}
+				else
+				{
+					out_w = in_w * y_scale;
+					out_h = in_h * y_scale;
+				}
+
+				out_x = track->track_w / 2 - out_w / 2;
+				out_y = track->track_h / 2 - out_h / 2;
+			}
+			else
+// Apply camera
+			{
+				((VTrack*)track)->calculate_input_transfer(asset_w, 
+					asset_h,
+					input_position_project, 
+					direction, 
+					in_x, 
+					in_y, 
+					in_w, 
+					in_h,
+					out_x, 
+					out_y, 
+					out_w, 
+					out_h);
+			}
 
 // printf("VModule::import_frame %d %f %d %f %d\n", 
 // __LINE__,
-// in_w1, 
+// in_w, 
 // asset_w,
-// in_h1,
+// in_h,
 // asset_h);
 
 // file -> temp -> output
-			if( !EQUIV(in_x1, 0) || 
-				!EQUIV(in_y1, 0) || 
-				!EQUIV(in_w1, track->track_w) || 
-				!EQUIV(in_h1, track->track_h) || 
-				!EQUIV(out_x1, 0) ||
-				!EQUIV(out_y1, 0) ||
-				!EQUIV(out_w1, track->track_w) ||
-				!EQUIV(out_h1, track->track_h) ||
-				!EQUIV(in_w1, asset_w) ||
-				!EQUIV(in_h1, asset_h))
+			if( !EQUIV(in_x, 0) || 
+				!EQUIV(in_y, 0) || 
+				!EQUIV(in_w, track->track_w) || 
+				!EQUIV(in_h, track->track_h) || 
+				!EQUIV(out_x, 0) ||
+				!EQUIV(out_y, 0) ||
+				!EQUIV(out_w, track->track_w) ||
+				!EQUIV(out_h, track->track_h) ||
+				!EQUIV(in_w, asset_w) ||
+				!EQUIV(in_h, asset_h))
 			{
 				if(debug) printf("VModule::import_frame %d file -> temp -> output\n", __LINE__);
 
@@ -576,14 +612,14 @@ output);
 					overlayer = overlay_temp;
 				}
 // printf("VModule::import_frame 1 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
-// 	in_x1, 
-// 	in_y1, 
-// 	in_w1, 
-// 	in_h1, 
-// 	out_x1, 
-// 	out_y1, 
-// 	out_w1, 
-// 	out_h1);
+// 	in_x, 
+// 	in_y, 
+// 	in_w, 
+// 	in_h, 
+// 	out_x, 
+// 	out_y, 
+// 	out_w, 
+// 	out_h);
 
 // temp -> output
 // for(int j = 0; j < output->get_w() * 3 * 5; j++)
@@ -593,14 +629,14 @@ output);
 				{
 					x11_device->do_camera(output,
 						(*input), 
-						in_x1,
-						in_y1,
-						in_x1 + in_w1,
-						in_y1 + in_h1,
-						out_x1,
-						out_y1,
-						out_x1 + out_w1,
-						out_y1 + out_h1);
+						in_x,
+						in_y,
+						in_x + in_w,
+						in_y + in_h,
+						out_x,
+						out_y,
+						out_x + out_w,
+						out_y + out_h);
 if(debug) printf("VModule::import_frame %d %d %d\n", 
 __LINE__, 
 output->get_opengl_state(),
@@ -624,14 +660,14 @@ output->get_opengl_state(),
 					if(debug) printf("VModule::import_frame %d temp -> output\n", __LINE__);
 					overlayer->overlay(output,
 						(*input), 
-						in_x1,
-						in_y1,
-						in_x1 + in_w1,
-						in_y1 + in_h1,
-						out_x1,
-						out_y1,
-						out_x1 + out_w1,
-						out_y1 + out_h1,
+						in_x,
+						in_y,
+						in_x + in_w,
+						in_y + in_h,
+						out_x,
+						out_y,
+						out_x + out_w,
+						out_y + out_h,
 						1,
 						mode,
 						get_edl()->session->interpolation_type);
@@ -833,11 +869,12 @@ int VModule::render(VFrame *output,
 		direction,
 		0);
 	VEdit* previous_edit = 0;
+//printf("VModule::render %d %p %ld %d\n", __LINE__, current_edit, start_position_project, direction);
 
 	if(debug_render)
 		printf("    VModule::render %d %lld %s transition=%p opengl=%d current_edit=%p output=%p\n", 
 			use_nudge, 
-			start_position_project,
+			(long long)start_position_project,
 			track->title,
 			transition,
 			use_opengl,
@@ -887,6 +924,8 @@ int VModule::render(VFrame *output,
 				get_edl()->session->color_model,
 				-1);
 		}
+		
+		(*transition_input)->copy_stacks(output);
 
 //printf("VModule::render %d\n", __LINE__);
 		result = import_frame((*transition_input), 

@@ -233,9 +233,11 @@ public:
 	CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread);
 	~CWindowEyedropGUI();
 
+	void handle_event();
 	void create_objects();
 	void update();
 
+	CWindowCoord *radius;
 	BC_Title *red, *green, *blue;
 	BC_SubWindow *sample;
 };

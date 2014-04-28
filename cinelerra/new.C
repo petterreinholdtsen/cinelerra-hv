@@ -91,12 +91,17 @@ int New::create_new_project()
 		CHANGE_NONE, 
 		0,
 		0);
-	mwindow->vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
+
+	for(int i = 0; i < mwindow->vwindows.size(); i++)
+	{
+		mwindow->vwindows.get(i)->playback_engine->que->send_command(STOP,
+			CHANGE_NONE, 
+			0,
+			0);
+		mwindow->vwindows.get(i)->playback_engine->interrupt_playback(0);
+	}
+
 	mwindow->cwindow->playback_engine->interrupt_playback(0);
-	mwindow->vwindow->playback_engine->interrupt_playback(0);
 
 	mwindow->gui->lock_window();
 	mwindow->reset_caches();
@@ -114,7 +119,7 @@ int New::create_new_project()
 	mwindow->set_filename("");
 
 	mwindow->hide_plugins();
-	delete mwindow->edl;
+	mwindow->edl->Garbage::remove_user();
 	mwindow->edl = new_edl;
 	new_edl = 0;
 	mwindow->save_defaults();
@@ -169,7 +174,7 @@ void NewThread::handle_close_event(int result)
 	if(result)
 	{
 // Aborted
-		delete new_project->new_edl;
+		new_project->new_edl->Garbage::remove_user();
 		new_project->new_edl = 0;
 	}
 	else
@@ -662,7 +667,7 @@ FrameSizePulldown::FrameSizePulldown(Theme *theme,
  : BC_ListBox(x,
  	y,
 	100,
-	200,
+	250,
 	LISTBOX_TEXT,
 	&theme->frame_sizes,
 	0,

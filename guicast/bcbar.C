@@ -49,7 +49,7 @@ int BC_Bar::initialize()
 // Create the subwindow
 	BC_SubWindow::initialize();
 
-	draw();
+	draw(0);
 	return 0;
 }
 
@@ -63,7 +63,7 @@ void BC_Bar::set_image(VFrame *data)
 int BC_Bar::reposition_window(int x, int y, int w)
 {
 	BC_WindowBase::reposition_window(x, y, w, -1);
-	draw();
+	draw(0);
 	return 0;
 }
 
@@ -74,9 +74,9 @@ int BC_Bar::resize_event(int w, int h)
 }
 
 
-void BC_Bar::draw()
+void BC_Bar::draw(int flush)
 {
 	draw_top_background(parent_window, 0, 0,w, h);
 	draw_3segmenth(0, 0, w, 0, w, image);
-	flash();
+	flash(flush);
 }

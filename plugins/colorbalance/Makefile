@@ -1,8 +1,7 @@
 include ../../global_config
 
 OBJS = $(OBJDIR)/colorbalance.o  \
-	$(OBJDIR)/colorbalancewindow.o \
-	../colors/$(OBJDIR)/plugincolors.o
+	$(OBJDIR)/colorbalancewindow.o
 
 OUTPUT = $(PLUGIN_DIR)/colorbalance.plugin
 

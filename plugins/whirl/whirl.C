@@ -150,8 +150,6 @@ public:
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
 	void update_gui();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
@@ -393,28 +391,6 @@ LOAD_CONFIGURATION_MACRO(WhirlEffect, WhirlConfig)
 
 
 
-int WhirlEffect::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%swhirl.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.angle = defaults->get("ANGLE", config.angle);
-	config.pinch = defaults->get("PINCH", config.pinch);
-	config.radius = defaults->get("RADIUS", config.radius);
-}
-
-int WhirlEffect::save_defaults()
-{
-	defaults->update("ANGLE", config.angle);
-	defaults->update("PINCH", config.pinch);
-	defaults->update("RADIUS", config.radius);
-	defaults->save();
-}
 
 void WhirlEffect::save_data(KeyFrame *keyframe)
 {

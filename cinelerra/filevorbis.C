@@ -73,7 +73,7 @@ int FileVorbis::check_sig(Asset *asset)
 	{
 		fseek(fd, 4, SEEK_SET);
 		char data[4];
-		fread(data, 4, 1, fd);
+		int temp = fread(data, 4, 1, fd);
 		if(data[0] == 'm' &&
 			data[1] == 'd' &&
 			data[2] == 'a' &&

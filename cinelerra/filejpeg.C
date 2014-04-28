@@ -33,6 +33,8 @@
 #include "videodevice.inc"
 
 
+#include <errno.h>
+
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
  : FileList(asset, file, "JPEGLIST", ".jpg", FILE_JPEG, FILE_JPEG_LIST)
@@ -53,7 +55,7 @@ int FileJPEG::check_sig(Asset *asset)
 	if(stream)
 	{
 		char test[10];
-		fread(test, 10, 1, stream);
+		int temp = fread(test, 10, 1, stream);
 		fclose(stream);
 
 		if(test[6] == 'J' && test[7] == 'F' && test[8] == 'I' && test[9] == 'F')
@@ -202,13 +204,13 @@ int FileJPEG::read_frame_header(char *path)
 
 	if(!(stream = fopen(path, "rb")))
 	{
-		perror("FileJPEG::read_frame_header");
+		printf("FileJPEG::read_frame_header %d %s: %s\n", __LINE__, path, strerror(errno));
 		return 1;
 	}
 	
 
 	unsigned char test[2];
-	fread(test, 2, 1, stream);
+	int temp = fread(test, 2, 1, stream);
 	fseek(stream, 0, SEEK_SET);
 	if(test[0] != 0xff ||
 		test[1] != 0xd8)
@@ -321,6 +323,7 @@ void JPEGConfigVideo::create_objects()
 		&asset->jpeg_quality));
 
 	add_subwindow(new BC_OKButton(this));
+	show_window(1);
 	unlock_window();
 }
 

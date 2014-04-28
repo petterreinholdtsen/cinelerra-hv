@@ -61,7 +61,7 @@ public:
 	static int translate_pixel(MWindow *mwindow, int pixel);
 	virtual int handle_event();
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
-	void reposition();
+	void reposition(int flush = 1);
 
 	MWindow *mwindow;
 	VWindowGUI *gui;
@@ -127,29 +127,34 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
+	int cursor_leave_event();
+
 	int repeat_event(int64_t duration);
 
 // Synchronize label, in/out, presentation display with master EDL
-	void update(int do_range = 1, int do_others = 1);
+	void update(int flush);
 	virtual void draw_time();
 // Called by update and draw_time.
 	virtual void draw_range();
 	virtual void select_label(double position);
 	virtual void stop_playback();
 	virtual EDL* get_edl();
-	virtual int test_preview(int buttonpress);
-	virtual void update_preview();
+//	virtual int test_preview(int buttonpress);
+//	virtual void update_preview();
 	virtual int64_t position_to_pixel(double position);
-	int move_preview(int &redraw);
+	virtual double pixel_to_position(int pixel);
+	virtual void handle_mwindow_drag();
+//	int move_preview(int &redraw);
+// Get highlight status when the cursor is over the timeline.
+	virtual double test_highlight();
 
 
 	void update_labels();
 	void update_points();
-	void update_presentations();
 // Make sure widgets are highlighted according to selection status
 	void update_highlights();
 // Update highlight cursor during a drag
-	void update_cursor();
+	virtual void update_cursor();
 
 // ================================= file operations
 
@@ -165,25 +170,25 @@ public:
 // ========================================= editing
 
 	int select_region(double position);
-	void get_edl_length();
+	double get_edl_length();
 
 	MWindow *mwindow;
 	BC_WindowBase *gui;
 	int flip_vertical(int w, int h);
 	int delete_arrows();    // for flipping vertical
 
-// Operation started by a buttonpress
-	int current_operation;
-
 
 private:
-	int get_preview_pixels(int &x1, int &x2);
+//	int get_preview_pixels(int &x1, int &x2);
 	int draw_bevel();
 	ArrayList<LabelGUI*> labels;
 	InPointGUI *in_point;
 	OutPointGUI *out_point;
 	ArrayList<PresentationGUI*> presentations;
 
+
+// Operation started by a buttonpress
+	int current_operation;
 
 // Records for dragging operations
 	double start_position;
@@ -192,6 +197,7 @@ private:
 	double time_per_pixel;
 	double edl_length;
 	int start_cursor_x;
+	int highlighted;
 };
 
 

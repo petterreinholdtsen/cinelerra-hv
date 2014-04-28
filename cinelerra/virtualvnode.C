@@ -114,7 +114,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s opengl=%d\n", 
-			start_position,
+			(long long)start_position,
 			frame_rate,
 			track->title, 
 			use_opengl);

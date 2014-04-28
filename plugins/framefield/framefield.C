@@ -128,8 +128,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -584,26 +582,6 @@ int FrameField::load_configuration()
 	return !old_config.equivalent(config);
 }
 
-int FrameField::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sframefield.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
-	return 0;
-}
-
-int FrameField::save_defaults()
-{
-	defaults->update("DOMINANCE", config.field_dominance);
-	defaults->save();
-	return 0;
-}
 
 void FrameField::save_data(KeyFrame *keyframe)
 {

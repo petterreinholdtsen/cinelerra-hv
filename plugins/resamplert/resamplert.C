@@ -24,6 +24,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "resamplert.h"
+#include "theme.h"
 #include "transportque.h"
 
 #include <string.h>
@@ -89,6 +90,10 @@ ResampleRTWindow::~ResampleRTWindow()
 void ResampleRTWindow::create_objects()
 {
 	int x = 10, y = 10;
+
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, "Scale by amount:"));
+	y += title->get_h() + plugin->get_theme()->widget_border;
 
 	scale = new ResampleRTScale(this,
 		plugin, 
@@ -180,6 +185,7 @@ ResampleRT::~ResampleRT()
 
 const char* ResampleRT::plugin_title() { return N_("ResampleRT"); }
 int ResampleRT::is_realtime() { return 1; }
+int ResampleRT::is_synthesis() { return 1; }
 
 #include "picon_png.h"
 NEW_PICON_MACRO(ResampleRT)
@@ -196,7 +202,7 @@ int ResampleRT::process_buffer(int64_t size,
 {
 	if(!resample) resample = new ResampleRTResample(this);
 
-	need_reconfigure = load_configuration();
+	need_reconfigure |= load_configuration();
 	
 	
 	if(start_position != dest_start) need_reconfigure = 1;
@@ -244,26 +250,6 @@ void ResampleRT::render_stop()
 
 
 
-int ResampleRT::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sresamplert.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.scale = defaults->get("SCALE", config.scale);
-	return 0;
-}
-
-int ResampleRT::save_defaults()
-{
-	defaults->update("SCALE", config.scale);
-	defaults->save();
-	return 0;
-}
 
 void ResampleRT::save_data(KeyFrame *keyframe)
 {
@@ -298,10 +284,12 @@ void ResampleRT::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window("ResampleRT::update_gui");
-		((ResampleRTWindow*)thread->window)->scale->update((float)config.scale);
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			thread->window->lock_window("ResampleRT::update_gui");
+			((ResampleRTWindow*)thread->window)->scale->update((float)config.scale);
+			thread->window->unlock_window();
+		}
 	}
 }
 

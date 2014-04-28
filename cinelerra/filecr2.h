@@ -23,7 +23,7 @@
 #define FILECR2_H
 
 
-#include "filebase.h"
+#include "filelist.h"
 
 
 // This uses a program from a guy called Coffin to do the decoding.
@@ -37,7 +37,7 @@
 // <path>
 // Decode the file.
 
-class FileCR2 : public FileBase
+class FileCR2 : public FileList
 {
 public:
 	FileCR2(Asset *asset, File *file);
@@ -45,16 +45,19 @@ public:
 
 	void reset();
 	static int check_sig(Asset *asset);
+	int use_path();
+
 
 // Open file and set asset properties but don't decode.
-	int open_file(int rd, int wr);
-	int close_file();
+//	int open_file(int rd, int wr);
+//	int close_file();
 // Open file and decode.
-	int read_frame(VFrame *frame);
+	int read_frame(VFrame *frame, char *path);
 // Get best colormodel for decoding.
 	int colormodel_supported(int colormodel);
 	static int get_best_colormodel(Asset *asset, int driver);
-	int64_t get_memory_usage();
+//	int64_t get_memory_usage();
+	int read_frame_header(char *path);
 
 private:
 	void format_to_asset();

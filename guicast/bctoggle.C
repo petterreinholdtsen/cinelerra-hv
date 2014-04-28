@@ -41,7 +41,7 @@ BC_Toggle::BC_Toggle(int x, int y,
  : BC_SubWindow(x, y, 0, 0, -1)
 {
 	this->data = data;
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < TOGGLE_IMAGES; i++)
 		images[i] = 0;
 	bg_image = 0;
 	status = value ? BC_Toggle::TOGGLE_CHECKED : BC_Toggle::TOGGLE_UP;
@@ -62,7 +62,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 
 BC_Toggle::~BC_Toggle()
 {
-	for(int i = 0; i < 5; i++) if(images[i]) delete images[i];
+	for(int i = 0; i < TOGGLE_IMAGES; i++) if(images[i]) delete images[i];
 	delete bg_image;
 }
 
@@ -87,9 +87,9 @@ int BC_Toggle::initialize()
 
 // Create the subwindow
 	BC_SubWindow::initialize();
-	set_cursor(UPRIGHT_ARROW_CURSOR);
+	set_cursor(UPRIGHT_ARROW_CURSOR, 0, 0);
 // Display the bitmap
-	draw_face();
+	draw_face(1, 0);
 	return 0;
 }
 
@@ -160,7 +160,7 @@ int BC_Toggle::set_images(VFrame **data)
 {
 	delete bg_image;
 	bg_image = 0;
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < TOGGLE_IMAGES; i++)
 	{
 		if(images[i]) delete images[i];
 		images[i] = new BC_Pixmap(top_level, data[i], PIXMAP_ALPHA);
@@ -186,7 +186,7 @@ void BC_Toggle::set_select_drag(int value)
 	this->select_drag = value;
 }
 
-int BC_Toggle::draw_face()
+int BC_Toggle::draw_face(int flash, int flush)
 {
 	BC_Resources *resources = get_resources();
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
@@ -203,6 +203,7 @@ int BC_Toggle::draw_face()
 				int x = text_x;
 				int y = text_line - get_text_ascent(MEDIUMFONT) / 2 - 
 						bg_image->get_h() / 2;
+				y = MAX(y, 0);
 				int w = text_w;
 				draw_3segmenth(x, 
 					y, 
@@ -224,7 +225,7 @@ int BC_Toggle::draw_face()
 		if(enabled)
 			set_color(color);
 		else
-			set_color(MEGREY);
+			set_color(get_resources()->disabled_text_color);
 		set_font(font);
 		draw_text(text_x + resources->toggle_text_margin, 
 			text_line, 
@@ -243,20 +244,21 @@ int BC_Toggle::draw_face()
 	}
 
 	draw_pixmap(images[status]);
-	flash();
+	if(flash) this->flash(0);
+	if(flush) this->flush();
 	return 0;
 }
 
 void BC_Toggle::enable()
 {
 	enabled = 1;
-	if(parent_window) draw_face();
+	if(parent_window) draw_face(1, 1);
 }
 
 void BC_Toggle::disable()
 {
 	enabled = 0;
-	if(parent_window) draw_face();
+	if(parent_window) draw_face(1, 1);
 }
 
 void BC_Toggle::set_status(int value)
@@ -288,7 +290,7 @@ int BC_Toggle::cursor_enter_event()
 			status = BC_Toggle::TOGGLE_DOWN;
 		else
 			status = value ? BC_Toggle::TOGGLE_CHECKEDHI : BC_Toggle::TOGGLE_UPHI;
-		draw_face();
+		draw_face(1, 1);
 	}
 	return 0;
 }
@@ -299,13 +301,13 @@ int BC_Toggle::cursor_leave_event()
 	if(!value && status == BC_Toggle::TOGGLE_UPHI)
 	{
 		status = BC_Toggle::TOGGLE_UP;
-		draw_face();
+		draw_face(1, 1);
 	}
 	else
 	if(status == BC_Toggle::TOGGLE_CHECKEDHI)
 	{
 		status = BC_Toggle::TOGGLE_CHECKED;
-		draw_face();
+		draw_face(1, 1);
 	}
 	return 0;
 }
@@ -330,7 +332,7 @@ int BC_Toggle::button_press_event()
 			handle_event();
 		}
 
-		draw_face();
+		draw_face(1, 1);
 		return 1;
 	}
 	return 0;
@@ -369,7 +371,7 @@ int BC_Toggle::button_release_event()
 			}
 			result = handle_event();
 		}
-		draw_face();
+		draw_face(1, 1);
 		return result;
 	}
 	return 0;
@@ -387,13 +389,13 @@ int BC_Toggle::cursor_motion_event()
 				status = BC_Toggle::TOGGLE_CHECKED;
 			else
 				status = BC_Toggle::TOGGLE_UP;
-			draw_face();
+			draw_face(1, 1);
 		}
 		else
 		if(status == BC_Toggle::TOGGLE_UPHI)
 		{
 			status = BC_Toggle::TOGGLE_CHECKEDHI;
-			draw_face();
+			draw_face(1, 1);
 		}
 	}
 	return 0;
@@ -431,7 +433,7 @@ int BC_Toggle::set_value(int value, int draw)
 				status = BC_Toggle::TOGGLE_UPHI;
 				break;
 		}
-		if(draw) draw_face();
+		if(draw) draw_face(1, 1);
 	}
 	return 0;
 }
@@ -444,7 +446,7 @@ int BC_Toggle::update(int value, int draw)
 void BC_Toggle::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
-	draw_face();
+	draw_face(1, 0);
 }
 
 

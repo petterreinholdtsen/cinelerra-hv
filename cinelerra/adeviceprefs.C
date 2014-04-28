@@ -134,6 +134,7 @@ int ADevicePrefs::initialize(int creation)
 			create_cine_objs();
 			break;
 	}
+	
 	return 0;
 }
 
@@ -630,7 +631,8 @@ int ADriverItem::handle_event()
 {
 	popup->set_text(get_text());
 	*(popup->output) = driver;
-	popup->device_prefs->initialize();
+	popup->device_prefs->initialize(0);
+	popup->device_prefs->pwindow->show_window();
 	return 1;
 }
 

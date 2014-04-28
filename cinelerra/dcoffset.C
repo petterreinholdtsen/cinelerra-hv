@@ -21,13 +21,9 @@
 
 #include "bcprogressbox.h"
 #include "dcoffset.h"
+#include "language.h"
 #include "mutex.h"
 #include "recordgui.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -85,7 +81,7 @@ void DC_Offset::run()
 	for(i = 0; i < input_channels; i++) output[i] = dc_offset[i];
 	for(i = 0; i < input_channels; i++)
 	{
-		sprintf(string, "%ld", dc_offset[i]);
+		sprintf(string, "%ld", (long)dc_offset[i]);
 		dc_offset_text[i]->update(string);
 	}
 }

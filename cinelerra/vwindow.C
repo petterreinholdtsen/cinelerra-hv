@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "clip.h"
 #include "clipedit.h"
 #include "bchash.h"
 #include "edl.h"
@@ -31,6 +32,8 @@
 #include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
+#include "mainmenu.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "playbackengine.h"
@@ -43,10 +46,11 @@
 #include "vwindowgui.h"
 
 
-VWindow::VWindow(MWindow *mwindow) : Thread()
+VWindow::VWindow(MWindow *mwindow) : BC_DialogThread()
 {
 	this->mwindow = mwindow;
 	indexable = 0;
+	edl = 0;
 }
 
 
@@ -56,23 +60,37 @@ VWindow::~VWindow()
 	delete playback_engine;
 //printf("VWindow::~VWindow 1\n");
 	delete playback_cursor;
-	delete_edl();
+	delete_source(1, 0);
 	delete clip_edit;
 //printf("VWindow::~VWindow 2\n");
 }
 
-void VWindow::delete_edl()
+void VWindow::delete_source(int do_main_edl, int update_gui)
 {
-//printf("VWindow::delete_edl 1\n");
-	if(mwindow->edl->vwindow_edl && !mwindow->edl->vwindow_edl_shared)
+	if(do_main_edl) mwindow->edl->remove_vwindow_edl(get_edl());
+
+
+	if(edl)
 	{
-		delete mwindow->edl->vwindow_edl;
-		mwindow->edl->vwindow_edl = 0;
-		mwindow->edl->vwindow_edl_shared = 0;
+//printf("VWindow::delete_source %d %p\n", __LINE__, edl);
+		edl->Garbage::remove_user();
+//printf("VWindow::delete_source %d\n", __LINE__);
+		edl = 0;
 	}
 
+// 	if(mwindow->edl->vwindow_edl && !mwindow->edl->vwindow_edl_shared)
+// 	{
+// 		mwindow->edl->vwindow_edl->Garbage::remove_user();
+// 		mwindow->edl->vwindow_edl = 0;
+//		mwindow->edl->vwindow_edl_shared = 0;
+// 	}
+
+//printf("VWindow::delete_source %d\n", __LINE__);
 	if(indexable) indexable->Garbage::remove_user();
+//printf("VWindow::delete_source %d\n", __LINE__);
 	indexable = 0;
+
+	if(update_gui) gui->change_source(0, _("Viewer"));
 }
 
 
@@ -81,6 +99,45 @@ void VWindow::load_defaults()
 }
 
 void VWindow::create_objects()
+{
+}
+
+
+void VWindow::handle_close_event(int result)
+{
+	delete_source(1, 0);
+	delete playback_engine;
+	delete playback_cursor;
+	delete clip_edit;
+	playback_engine = 0;
+	playback_cursor = 0;
+	clip_edit = 0;
+
+	int total = 0;
+	for(int i = 0; i < mwindow->vwindows.size(); i++)
+	{
+
+//printf("VWindow::handle_close_event %d %d\n", __LINE__, mwindow->vwindows.get(i)->is_running());
+		if(mwindow->vwindows.get(i)->is_running()) total++;
+	}
+// subtract ourselves
+	total--;
+
+// Update the menu if no viewers visible
+	if(!total)
+	{
+ 		mwindow->gui->lock_window("VWindowGUI::close_event");
+ 		mwindow->gui->mainmenu->show_vwindow->set_checked(0);
+ 		mwindow->gui->unlock_window();
+		
+		mwindow->session->show_vwindow = 0;
+ 		mwindow->save_defaults();
+	}
+}
+
+
+
+BC_Window* VWindow::new_gui()
 {
 //printf("VWindow::create_objects 1\n");
 	gui = new VWindowGUI(mwindow, this);
@@ -102,17 +159,14 @@ void VWindow::create_objects()
 //printf("VWindow::create_objects 2\n");
 
 	clip_edit = new ClipEdit(mwindow, 0, this);
+	return gui;
 }
 
-void VWindow::run()
-{
-	gui->run_window();
-}
 
 EDL* VWindow::get_edl()
 {
-//printf("VWindow::get_edl 1 %p\n", edl);
-	return mwindow->edl->vwindow_edl;
+//	return mwindow->edl->vwindow_edl;
+	return edl;
 }
 
 Indexable* VWindow::get_source()
@@ -120,25 +174,31 @@ Indexable* VWindow::get_source()
 	return this->indexable;
 }
 
-void VWindow::change_source()
+void VWindow::change_source(int edl_number)
 {
-//printf("VWindow::change_source() %d %p\n", __LINE__, mwindow->edl->vwindow_edl);
-	if(mwindow->edl->vwindow_edl)
+	if(!running()) return;
+
+//printf("VWindow::change_source %d %p\n", __LINE__, mwindow->edl->get_vwindow_edl(edl_number));
+	if(mwindow->edl->get_vwindow_edl(edl_number))
 	{
-		gui->change_source(get_edl(), "");
+		this->edl = mwindow->edl->get_vwindow_edl(edl_number);
+		this->edl->Garbage::add_user();
+		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1, 1);
 	}
 	else
 	{
-		if(indexable) indexable->Garbage::remove_user();
-		indexable = 0;
-		mwindow->edl->vwindow_edl_shared = 0;
+		delete_source(1, 1);
+//		if(indexable) indexable->Garbage::remove_user();
+//		indexable = 0;
+//		mwindow->edl->vwindow_edl_shared = 0;
 	}
 }
 
 void VWindow::change_source(Indexable *indexable)
 {
-//printf("VWindow::change_source 1\n");
+	if(!running()) return;
+//printf("VWindow::change_source %d\n", __LINE__);
 // 	if(asset && this->asset &&
 // 		asset->id == this->asset->id &&
 // 		asset == this->asset) return;
@@ -150,7 +210,7 @@ void VWindow::change_source(Indexable *indexable)
 	fs.extract_name(title, indexable->path);
 //printf("VWindow::change_source 1\n");
 
-	delete_edl();
+	delete_source(1, 0);
 //printf("VWindow::change_source 1\n");
 
 // Generate EDL off of main EDL for cutting
@@ -168,18 +228,23 @@ void VWindow::change_source(Indexable *indexable)
 		nested_edl->copy_all((EDL*)indexable);
 	}
 
-	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
-	mwindow->edl->vwindow_edl_shared = 0;
-	mwindow->edl->vwindow_edl->create_objects();
+// Create EDL
+	this->edl = new EDL(mwindow->edl);
+	this->edl->create_objects();
+	mwindow->edl->append_vwindow_edl(this->edl, 1);
+
+//	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
+//	mwindow->edl->vwindow_edl_shared = 0;
+//	mwindow->edl->vwindow_edl->create_objects();
 
 //printf("VWindow::change_source 1 %d %p %p\n", __LINE__, asset, nested_edl);
 	if(asset)
-		mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
+		mwindow->asset_to_edl(this->edl, asset);
 	else
-		mwindow->edl_to_nested(mwindow->edl->vwindow_edl, nested_edl);
+		mwindow->edl_to_nested(this->edl, nested_edl);
 
 // Update GUI
-	gui->change_source(mwindow->edl->vwindow_edl, title);
+	gui->change_source(this->edl, title);
 	update_position(CHANGE_ALL, 1, 1, 1);
 
 
@@ -189,19 +254,25 @@ void VWindow::change_source(Indexable *indexable)
 
 void VWindow::change_source(EDL *edl)
 {
-//printf("VWindow::change_source(EDL *edl) 1\n");
-//printf("VWindow::change_source %p\n", edl);
+	if(!running()) return;
+//printf("VWindow::change_source %d %p\n", __LINE__, edl);
 // EDLs are identical
-	if(edl && mwindow->edl->vwindow_edl && 
-		edl->id == mwindow->edl->vwindow_edl->id) return;
+//	if(edl && mwindow->edl->vwindow_edl && 
+//		edl->id == mwindow->edl->vwindow_edl->id) return;
+	if(edl && get_edl() && edl->id == get_edl()->id) return;
 
-	delete_edl();
+	delete_source(1, 0);
 
 	if(edl)
 	{
-		mwindow->edl->vwindow_edl = edl;
+		mwindow->edl->append_vwindow_edl(edl, 1);
+		this->edl = edl;
+		this->edl->Garbage::add_user();
+
+//		mwindow->edl->vwindow_edl = edl;
 // in order not to later delete edl if it is shared
-		mwindow->edl->vwindow_edl_shared = 1;
+//		edl->Garbage::add_user();
+//		mwindow->edl->vwindow_edl_shared = 1;
 
 // Update GUI
 		gui->change_source(edl, edl->local_session->clip_title);
@@ -211,17 +282,11 @@ void VWindow::change_source(EDL *edl)
 		gui->change_source(edl, _("Viewer"));
 }
 
-
-void VWindow::remove_source()
-{
-	delete_edl();
-	gui->change_source(0, _("Viewer"));
-}
-
 void VWindow::change_source(char *folder, int item)
 {
-//printf("VWindow::change_source(char *folder, int item) 1\n");
+//printf("VWindow::change_source %d\n", __LINE__);
 	int result = 0;
+	if(!running()) return;
 // Search EDLs
 	if(!strcasecmp(folder, CLIP_FOLDER))
 	{
@@ -248,7 +313,7 @@ void VWindow::change_source(char *folder, int item)
 	
 	if(!result)
 	{
-		remove_source();
+		delete_source(1, 1);
 	}
 }
 
@@ -285,7 +350,7 @@ void VWindow::goto_end()
 void VWindow::update(int do_timebar)
 {
 	if(do_timebar)
-		gui->timebar->update();
+		gui->timebar->update(1);
 }
 
 void VWindow::update_position(int change_type, 
@@ -296,6 +361,9 @@ void VWindow::update_position(int change_type,
 	EDL *edl = get_edl();
 	if(edl)
 	{
+
+#ifdef USE_SLIDER
+
 		if(use_slider) 
 		{
 			edl->local_session->set_selectionstart(gui->slider->get_value());
@@ -306,6 +374,9 @@ void VWindow::update_position(int change_type,
 		{
 			gui->slider->set_position();
 		}
+
+#endif
+
 
 //printf("VWindow::update_position %d\n", __LINE__);
 //edl->dump();
@@ -320,13 +391,40 @@ void VWindow::update_position(int change_type,
 	}
 }
 
+
+
+
+
+int VWindow::update_position(double position)
+{
+	EDL *edl = get_edl();
+	if(edl)
+	{
+		gui->unlock_window();
+
+		playback_engine->interrupt_playback(1);
+
+		position = mwindow->edl->align_to_frame(position, 0);
+		position = MAX(0, position);
+
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
+
+		gui->lock_window("VWindow::update_position 1");
+		update_position(CHANGE_NONE, 0, 1, 0);
+	}
+
+	return 1;
+}
+
+
 void VWindow::set_inpoint()
 {
 	EDL *edl = get_edl();
 	if(edl)
 	{
 		edl->set_inpoint(edl->local_session->get_selectionstart(1));
-		gui->timebar->update();
+		gui->timebar->update(1);
 	}
 }
 
@@ -336,7 +434,7 @@ void VWindow::set_outpoint()
 	if(edl)
 	{
 		edl->set_outpoint(edl->local_session->get_selectionstart(1));
-		gui->timebar->update();
+		gui->timebar->update(1);
 	}
 }
 
@@ -346,7 +444,7 @@ void VWindow::clear_inpoint()
 	if(edl)
 	{
 		edl->local_session->unset_inpoint();
-		gui->timebar->update();
+		gui->timebar->update(1);
 	}
 }
 
@@ -356,7 +454,7 @@ void VWindow::clear_outpoint()
 	if(edl)
 	{
 		edl->local_session->unset_outpoint();
-		gui->timebar->update();
+		gui->timebar->update(1);
 	}
 }
 
@@ -380,6 +478,9 @@ void VWindow::copy()
 		mwindow->gui->get_clipboard()->to_clipboard(file.string,
 			strlen(file.string),
 			SECONDARY_SELECTION);
+		mwindow->gui->get_clipboard()->to_clipboard(file.string,
+			strlen(file.string),
+			BC_PRIMARY_SELECTION);
 		mwindow->gui->unlock_window();
 	}
 }

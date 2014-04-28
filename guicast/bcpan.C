@@ -114,7 +114,7 @@ int BC_Pan::initialize()
 	rotater = new RotateFrame(1,
 		get_resources()->pan_data[PAN_CHANNEL]->get_w(),
 		get_resources()->pan_data[PAN_CHANNEL]->get_h());
-	draw();
+	draw(1, 0);
 	return 0;
 }
 
@@ -167,7 +167,7 @@ int BC_Pan::button_release_event()
 	{
 		hide_tooltip();
 		deactivate();
-		draw();
+		draw(1, 1);
 		return 1;
 	}
 	return 0;
@@ -194,7 +194,7 @@ int BC_Pan::cursor_enter_event()
 	{
 		tooltip_done = 0;
 		highlighted = 1;
-		draw();
+		draw(1, 1);
 	}
 	return 0;
 }
@@ -205,7 +205,7 @@ int BC_Pan::cursor_leave_event()
 	{
 		highlighted = 0;
 		hide_tooltip();
-		draw();
+		draw(1, 1);
 	}
 	return 0;
 }
@@ -259,7 +259,7 @@ int BC_Pan::update(int x, int y)
 		stick_x = x;
 		stick_y = y;
 		stick_to_values();
-		draw();
+		draw(1, 1);
 	}
 	return 0;
 }
@@ -308,7 +308,7 @@ void BC_Pan::draw_popup()
 #define PICON_W 6
 #define PICON_H 6
 
-void BC_Pan::draw()
+void BC_Pan::draw(int flash, int flush)
 {
 	draw_top_background(parent_window, 0, 0, w, h);
 	
@@ -355,7 +355,8 @@ void BC_Pan::draw()
 //  	draw_line(x1, y1, x2, y2);
 //  	draw_line(x2, y1, x1, y2);
 
-	flash();
+	if(flash) this->flash(0);
+	if(flush) this->flush();
 }
 
 int BC_Pan::stick_to_values()
@@ -456,7 +457,7 @@ int BC_Pan::change_channels(int new_channels, int *value_positions)
 		virtual_r,
 		total_values);
 	stick_to_values();
-	draw();
+	draw(1, 1);
 	return 0;
 }
 

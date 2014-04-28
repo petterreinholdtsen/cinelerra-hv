@@ -216,32 +216,6 @@ int SwapMain::is_realtime()  { return 1; }
 NEW_PICON_MACRO(SwapMain)
 NEW_WINDOW_MACRO(SwapMain, SwapWindow)
 
-int SwapMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sswapchannels.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.red = defaults->get("RED", config.red);
-	config.green = defaults->get("GREEN", config.green);
-	config.blue = defaults->get("BLUE", config.blue);
-	config.alpha = defaults->get("ALPHA", config.alpha);
-	return 0;
-}
-
-int SwapMain::save_defaults()
-{
-	defaults->update("RED", config.red);
-	defaults->update("GREEN", config.green);
-	defaults->update("BLUE", config.blue);
-	defaults->update("ALPHA", config.alpha);
-	defaults->save();
-	return 0;
-}
 
 void SwapMain::save_data(KeyFrame *keyframe)
 {

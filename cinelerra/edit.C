@@ -371,7 +371,8 @@ int Edit::dump()
 		printf("      TRANSITION %p\n", transition);
 		transition->dump();
 	}
-	printf("      startsource %lld startproject %lld length %lld\n", startsource, startproject, length); fflush(stdout);
+	printf("      startsource %lld startproject %lld length %lld\n", (long long)startsource, (long long)startproject, (long long)length); 
+	fflush(stdout);
 	return 0;
 }
 

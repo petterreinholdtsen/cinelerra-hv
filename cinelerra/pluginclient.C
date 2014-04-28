@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,11 @@
 #include "bcdisplayinfo.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "filesystem.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
@@ -34,6 +36,9 @@
 #include "preferences.h"
 #include "transportque.inc"
 
+
+#include <ctype.h>
+#include <errno.h>
 #include <string.h>
 
 
@@ -61,8 +66,8 @@ void PluginClientThread::run()
 {
 	BC_DisplayInfo info;
 	int result = 0;
-	client->window_x = info.get_abs_cursor_x();
-	client->window_y = info.get_abs_cursor_y();
+	if(client->window_x < 0) client->window_x = info.get_abs_cursor_x();
+	if(client->window_y < 0) client->window_y = info.get_abs_cursor_y();
 	window = client->new_window();
 
 	if(window)
@@ -75,16 +80,16 @@ void PluginClientThread::run()
  		client->thread = this;
 		init_complete->unlock();
 
-//printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		result = window->run_window();
 		window->lock_window("PluginClientThread::run");
+//printf("PluginClientThread::run %p %d\n", this, __LINE__);
 		window->hide_window(1);
 		window->unlock_window();
 
 
 // Can't save defaults in the destructor because it's not called immediately
 // after closing.
-		if(client->defaults) client->save_defaults();
+		/* if(client->defaults) */ client->save_defaults_xml();
 /* This is needed when the GUI is closed from itself */
 		if(result) client->client_side_close();
 	}
@@ -109,6 +114,27 @@ PluginClient* PluginClientThread::get_client()
 
 
 
+
+
+PluginClientFrame::PluginClientFrame(int data_size, 
+	int period_n, 
+	int period_d)
+{
+	this->data_size = data_size;
+	force = 0;
+	this->period_n = period_n;
+	this->period_d = period_d;
+}
+
+PluginClientFrame::~PluginClientFrame()
+{
+	
+}
+
+
+
+
+
 PluginClientWindow::PluginClientWindow(PluginClient *client, 
 	int w,
 	int h,
@@ -116,10 +142,8 @@ PluginClientWindow::PluginClientWindow(PluginClient *client,
 	int min_h,
 	int allow_resize)
  : BC_Window(client->gui_string, 
-	client->window_x - w / 2, 
-	client->window_y - h / 2, 
-//	0,
-//	0,
+	client->window_x /* - w / 2 */, 
+	client->window_y /* - h / 2 */, 
 	w, 
 	h, 
 	min_w, 
@@ -131,10 +155,43 @@ PluginClientWindow::PluginClientWindow(PluginClient *client,
 	this->client = client;
 }
 
+PluginClientWindow::PluginClientWindow(const char *title, 
+	int x,
+	int y,
+	int w,
+	int h,
+	int min_w,
+	int min_h,
+	int allow_resize)
+ : BC_Window(title, 
+	x, 
+	y, 
+	w, 
+	h, 
+	min_w, 
+	min_h,
+	allow_resize, 
+	0,
+	1)
+{
+	this->client = 0;
+}
+
 PluginClientWindow::~PluginClientWindow()
 {
 }
 
+
+int PluginClientWindow::translation_event()
+{
+	if(client)
+	{
+		client->window_x = get_x();
+		client->window_y = get_y();
+	}
+
+	return 1;
+}
 
 int PluginClientWindow::close_event()
 {
@@ -152,6 +209,7 @@ PluginClient::PluginClient(PluginServer *server)
 	reset();
 	this->server = server;
 	defaults = 0;
+	update_timer = new Timer;
 // Virtual functions don't work here.
 }
 
@@ -166,10 +224,14 @@ PluginClient::~PluginClient()
 
 // Virtual functions don't work here.
 	if(defaults) delete defaults;
+	frame_buffer.remove_all_objects();
+	delete update_timer;
 }
 
 int PluginClient::reset()
 {
+	window_x = -1;
+	window_y = -1;
 	interactive = 0;
 	show_initially = 0;
 	wr = rd = 0;
@@ -184,6 +246,7 @@ int PluginClient::reset()
 	total_len = 0;
 	direction = PLAY_FORWARD;
 	thread = 0;
+	using_defaults = 0;
 }
 
 
@@ -259,7 +322,7 @@ MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
 }
 
 
-
+// Non realtime parameters
 int PluginClient::plugin_get_parameters()
 {
 	int result = get_parameters();
@@ -275,9 +338,11 @@ int PluginClient::is_realtime() { return 0; }
 int PluginClient::is_fileio() { return 0; }
 int PluginClient::delete_buffer_ptrs() { return 0; }
 const char* PluginClient::plugin_title() { return _("Untitled"); }
+
+// This is no longer used
 VFrame* PluginClient::new_picon() 
 { 
-	printf("PluginClient::new_picon not defined in %s\n", plugin_title());
+//	printf("PluginClient::new_picon not defined in %s\n", plugin_title());
 	return 0; 
 }
 Theme* PluginClient::new_theme() { return 0; }
@@ -332,21 +397,263 @@ int PluginClient::set_string()
 	return 0;
 }
 
+
+
+
+
+void PluginClient::begin_process_buffer()
+{
+// Delete all unused GUI frames
+	frame_buffer.remove_all_objects();
+}
+
+
+void PluginClient::end_process_buffer()
+{
+	if(frame_buffer.size())
+	{
+		send_render_gui();
+	}
+}
+
+
+
+void PluginClient::plugin_update_gui()
+{
+	
+	update_gui();
+	
+// Delete unused GUI frames
+	while(frame_buffer.size() > MAX_FRAME_BUFFER)
+		frame_buffer.remove_object_number(0);
+
+}
+
+void PluginClient::update_gui()
+{
+}
+
+int PluginClient::get_gui_update_frames()
+{
+	if(frame_buffer.size())
+	{
+		PluginClientFrame *frame = frame_buffer.get(0);
+		int total_frames = update_timer->get_difference() * 
+			frame->period_d / 
+			frame->period_n / 
+			1000;
+		if(total_frames) update_timer->subtract(total_frames * 
+			frame->period_n * 
+			1000 / 
+			frame->period_d);
+
+// printf("PluginClient::get_gui_update_frames %d %ld %d %d %d\n", 
+// __LINE__, 
+// update_timer->get_difference(),
+// frame->period_n * 1000 / frame->period_d,
+// total_frames,
+// frame_buffer.size());
+
+// Add forced frames
+		for(int i = 0; i < frame_buffer.size(); i++)
+			if(frame_buffer.get(i)->force) total_frames++;
+		total_frames = MIN(frame_buffer.size(), total_frames);
+
+
+		return total_frames;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+PluginClientFrame* PluginClient::get_gui_frame()
+{
+	if(frame_buffer.size())
+	{
+		PluginClientFrame *frame = frame_buffer.get(0);
+		frame_buffer.remove_number(0);
+		return frame;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void PluginClient::add_gui_frame(PluginClientFrame *frame)
+{
+	frame_buffer.append(frame);
+}
+
+void PluginClient::send_render_gui()
+{
+	server->send_render_gui(&frame_buffer);
+}
+
+void PluginClient::send_render_gui(void *data)
+{
+	server->send_render_gui(data);
+}
+
+void PluginClient::send_render_gui(void *data, int size)
+{
+	server->send_render_gui(data, size);
+}
+
+void PluginClient::plugin_render_gui(void *data, int size)
+{
+	render_gui(data, size);
+}
+
+
+void PluginClient::plugin_render_gui(void *data)
+{
+	render_gui(data);
+}
+
+void PluginClient::render_gui(void *data)
+{
+	if(thread)
+	{
+		thread->get_window()->lock_window("AudioScope::render_gui");
+		
+// Set all previous frames to draw immediately
+		for(int i = 0; i < frame_buffer.size(); i++)
+			frame_buffer.get(i)->force = 1;
+
+		ArrayList<PluginClientFrame*> *src = 
+			(ArrayList<PluginClientFrame*>*)data;
+
+// Shift GUI data to GUI client
+		while(src->size())
+		{
+			this->frame_buffer.append(src->get(0));
+			src->remove_number(0);
+		}
+		
+// Start the timer for the current buffer
+		update_timer->update();
+		thread->get_window()->unlock_window();
+	}
+}
+
+void PluginClient::render_gui(void *data, int size)
+{
+	printf("PluginClient::render_gui %d\n", __LINE__);
+}
+
+
+
+
+
+
+
+
 int PluginClient::is_audio() { return 0; }
 int PluginClient::is_video() { return 0; }
 int PluginClient::is_theme() { return 0; }
 int PluginClient::uses_gui() { return 1; }
 int PluginClient::is_transition() { return 0; }
 int PluginClient::load_defaults() 
-{ 
+{
 //	printf("PluginClient::load_defaults undefined in %s.\n", plugin_title());
 	return 0; 
 }
+
 int PluginClient::save_defaults() 
 { 
+	save_defaults_xml();
 //	printf("PluginClient::save_defaults undefined in %s.\n", plugin_title());
 	return 0; 
 }
+
+void PluginClient::load_defaults_xml() 
+{
+	char path[BCTEXTLEN];
+	server->get_defaults_path(path);
+	FileSystem fs;
+	fs.complete_path(path);
+	using_defaults = 1;
+//printf("PluginClient::load_defaults_xml %d %s\n", __LINE__, path);
+	
+	KeyFrame temp_keyframe;
+	FILE *fd = fopen(path, "r");
+	if(fd)
+	{
+		fseek(fd, 0, SEEK_END);
+		int data_size = ftell(fd);
+		fseek(fd, 0, SEEK_SET);
+		if(data_size < MESSAGESIZE)
+		{
+			int temp = fread(temp_keyframe.get_data(), data_size, 1, fd);
+// Get window extents
+			char *data = temp_keyframe.get_data();
+			int state = 0;
+			for(int i = 0; i < data_size - 8; i++)
+			{
+				if(data[i] == '<') break;
+				if(isdigit(data[i]))
+				{
+					if(state == 0)
+					{
+						window_x = atoi(data + i);
+						state++;
+					}
+					else
+					{
+						window_y = atoi(data + i);
+						break;
+					}
+					while(i < data_size && isdigit(data[i])) i++;
+				}
+			}
+		}
+
+		fclose(fd);
+
+
+		read_data(&temp_keyframe);
+	}
+	using_defaults = 0;
+//printf("PluginClient::load_defaults_xml %d %s\n", __LINE__, path);
+}
+
+void PluginClient::save_defaults_xml() 
+{
+	char path[BCTEXTLEN];
+	server->get_defaults_path(path);
+	FileSystem fs;
+	fs.complete_path(path);
+	using_defaults = 1;
+
+	KeyFrame temp_keyframe;
+
+	save_data(&temp_keyframe);
+	FILE *fd = fopen(path, "w");
+	if(fd)
+	{
+		fprintf(fd, "%d\n%d\n", window_x, window_y);
+		if(!fwrite(temp_keyframe.get_data(), strlen(temp_keyframe.get_data()), 1, fd))
+		{
+			fprintf(stderr, "PluginClient::save_defaults_xml %d \"%s\" %d bytes: %s\n",
+				__LINE__,
+				path,
+				(int)strlen(temp_keyframe.get_data()),
+				strerror(errno));
+		}
+
+		fclose(fd);
+	}
+	using_defaults = 0;
+}
+
+int PluginClient::is_defaults()
+{
+	return using_defaults;
+}
+
 BC_Hash* PluginClient::get_defaults()
 {
 	return defaults;
@@ -540,6 +847,7 @@ int PluginClient::get_buffer_size()
 
 int PluginClient::get_project_smp()
 {
+//printf("PluginClient::get_project_smp %d %d\n", __LINE__, smp);
 	return smp;
 }
 

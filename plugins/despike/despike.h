@@ -63,10 +63,6 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 
-// non realtime support
-	int load_defaults();
-	int save_defaults();
-
 	double last_sample;
 };
 

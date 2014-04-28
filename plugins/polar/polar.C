@@ -37,7 +37,6 @@
 #include <stdint.h>
 
 
-#define SQR(x) ((x) * (x))
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
 
 
@@ -132,8 +131,6 @@ public:
 	PLUGIN_CLASS_MEMBERS(PolarConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -310,28 +307,6 @@ void PolarEffect::update_gui()
 LOAD_CONFIGURATION_MACRO(PolarEffect, PolarConfig)
 
 
-int PolarEffect::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%spolar.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.depth = defaults->get("DEPTH", config.depth);
-	config.angle = defaults->get("ANGLE", config.angle);
-	return 0;
-}
-
-int PolarEffect::save_defaults()
-{
-	defaults->update("DEPTH", config.depth);
-	defaults->update("ANGLE", config.angle);
-	defaults->save();
-	return 0;
-}
 
 void PolarEffect::save_data(KeyFrame *keyframe)
 {

@@ -39,6 +39,14 @@ int Timer::update()
 	return 0;
 }
 
+void Timer::subtract(int64_t value)
+{
+	current_time.tv_usec += 1000 * (value % 1000);
+	current_time.tv_sec += value / 1000 + current_time.tv_usec / 1000000;
+	current_time.tv_usec %= 1000000;
+	if(get_difference() < 0) current_time = new_time;
+}
+
 int64_t Timer::get_difference(struct timeval *result)
 {
 	gettimeofday(&new_time, 0);

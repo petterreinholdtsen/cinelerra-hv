@@ -98,7 +98,7 @@ public:
 	float* get_values();
 
 private:
-	void draw();
+	void draw(int flash, int flush);
 	void draw_popup();
 // update values from stick position
 	static float distance(int x1, int x2, int y1, int y2);

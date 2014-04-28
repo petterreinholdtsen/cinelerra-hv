@@ -196,16 +196,6 @@ int PluginVClient::process_buffer(VFrame *frame,
 // 		process_realtime(input[0], output[0]);
 // }
 
-void PluginVClient::plugin_render_gui(void *data)
-{
-	render_gui(data);
-}
-
-void PluginVClient::send_render_gui(void *data)
-{
-	server->send_render_gui(data);
-}
-
 int PluginVClient::plugin_start_loop(int64_t start, 
 	int64_t end, 
 	int64_t buffer_size, 

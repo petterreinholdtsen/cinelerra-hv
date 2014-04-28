@@ -299,7 +299,7 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 				nested_renderengine->arm_command(nested_command);
 			}
 		}
-if(debug) printf("AModule::import_samples %d fragment_len=%d\n", __LINE__, fragment_len);
+if(debug) printf("AModule::import_samples %d fragment_len=%d\n", __LINE__, (int)fragment_len);
 
 // Allocate output buffers for all channels
 		for(int i = 0; i < nested_edl->session->audio_channels; i++)
@@ -339,8 +339,8 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 
 if(debug) printf("AModule::import_samples %d %d %d\n", 
 __LINE__,
-sample_rate,
-nested_edl->session->sample_rate);
+(int)sample_rate,
+(int)nested_edl->session->sample_rate);
 			result = resample->resample(buffer,
 				fragment_len,
 				nested_edl->session->sample_rate,
@@ -429,16 +429,16 @@ asset->sample_rate);
 			else
 			{
 
-if(debug) printf("AModule::import_samples %d %p\n", __LINE__, buffer);
+if(debug) printf("AModule::import_samples %d channel=%d start_source=%ld len=%d\n", __LINE__, edit->channel, start_source, (int)fragment_len);
 				file->set_audio_position(start_source);
 				file->set_channel(edit->channel);
 				result = file->read_samples(buffer, fragment_len);
 // Reverse fragment so ::render can apply transitions going forward.
 if(debug) printf("AModule::import_samples %d buffer=%p data=%p fragment_len=%d\n", 
 __LINE__, 
-buffer,
-buffer->get_data(), 
-fragment_len);
+(void*)buffer,
+(void*)buffer->get_data(), 
+(int)fragment_len);
 				if(direction == PLAY_REVERSE)
 				{
 					Resample::reverse_buffer(buffer->get_data(), fragment_len);
@@ -461,7 +461,9 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 	{
 		nested_edl = 0;
 		asset = 0;
-		bzero(buffer->get_data(), fragment_len * sizeof(double));
+if(debug) printf("AModule::import_samples %d %p %d\n", __LINE__, buffer->get_data(), (int)fragment_len);
+		if(fragment_len > 0) bzero(buffer->get_data(), fragment_len * sizeof(double));
+if(debug) printf("AModule::import_samples %d\n", __LINE__);
 	}
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 
@@ -550,7 +552,7 @@ if(debug) printf("AModule::render %d\n", __LINE__);
 	{
 		int64_t fragment_len = input_len;
 
-if(debug) printf("AModule::render %d %lld %lld\n", __LINE__, start_position, end_position);
+if(debug) printf("AModule::render %d %lld %lld\n", __LINE__, (long long)start_position, (long long)end_position);
 // Clamp fragment to end of input
 		if(direction == PLAY_FORWARD &&
 			start_position + fragment_len > end_position)
@@ -559,7 +561,7 @@ if(debug) printf("AModule::render %d %lld %lld\n", __LINE__, start_position, end
 		if(direction == PLAY_REVERSE &&
 			start_position - fragment_len < end_position)
 			fragment_len = start_position - end_position;
-if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, (long long)fragment_len);
 
 // Normalize position here since update_transition is a boolean operation.
 		update_transition(start_position * 
@@ -575,12 +577,12 @@ if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 			int64_t edit_startproject = playable_edit->startproject;
 			int64_t edit_endproject = playable_edit->startproject + playable_edit->length;
 			int64_t edit_startsource = playable_edit->startsource;
-if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, (long long)fragment_len);
 
 			edit_startproject = edit_startproject * sample_rate / edl_rate;
 			edit_endproject = edit_endproject * sample_rate / edl_rate;
 			edit_startsource = edit_startsource * sample_rate / edl_rate;
-if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, (long long)fragment_len);
 
 
 
@@ -592,7 +594,7 @@ if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 			if(direction == PLAY_REVERSE &&
 				start_position - fragment_len < edit_startproject)
 				fragment_len = start_position - edit_startproject;
-if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, (long long)fragment_len);
 
 // Clamp to end of transition
 			int64_t transition_len = 0;
@@ -615,8 +617,8 @@ if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 			}
 if(debug) printf("AModule::render %d buffer_offset=%d fragment_len=%lld\n", 
 __LINE__, 
-buffer_offset,
-fragment_len);
+(int)buffer_offset,
+(long long)fragment_len);
 
 			Samples output(buffer);
 			output.set_offset(output.get_offset() + buffer_offset);
@@ -663,7 +665,7 @@ if(debug) printf("AModule::render %d\n", __LINE__);
 					transition_temp_alloc = fragment_len;
 				}
 
-if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, (long long)fragment_len);
 
 				if(transition_fragment_len > 0)
 				{
@@ -707,9 +709,9 @@ if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 			}
 if(debug) printf("AModule::render %d start_position=%lld end_position=%lld fragment_len=%lld\n", 
 __LINE__, 
-start_position,
-end_position,
-fragment_len);
+(long long)start_position,
+(long long)end_position,
+(long long)fragment_len);
 
 			if(direction == PLAY_REVERSE)
 			{

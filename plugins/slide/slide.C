@@ -221,28 +221,6 @@ VFrame* SlideMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int SlideMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sslide.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	motion_direction = defaults->get("MOTION_DIRECTION", motion_direction);
-	direction = defaults->get("DIRECTION", direction);
-	return 0;
-}
-
-int SlideMain::save_defaults()
-{
-	defaults->update("MOTION_DIRECTION", motion_direction);
-	defaults->update("DIRECTION", direction);
-	defaults->save();
-	return 0;
-}
 
 void SlideMain::save_data(KeyFrame *keyframe)
 {

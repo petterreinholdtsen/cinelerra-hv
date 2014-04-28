@@ -118,7 +118,7 @@ int FileItem::get_is_dir()
 FileSystem::FileSystem()
 {
 	reset_parameters();
-	getcwd(current_dir, BCTEXTLEN);
+	char *temp = getcwd(current_dir, BCTEXTLEN);
 	
 }
 

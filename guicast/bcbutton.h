@@ -40,7 +40,7 @@ public:
 
 	virtual int handle_event() { return 0; };
 	int repeat_event(int64_t repeat_id);
-	virtual int draw_face();
+	virtual int draw_face(int flash = 1);
 	void disable();
 	void enable();
 
@@ -75,7 +75,7 @@ public:
 	BC_GenericButton(int x, int y, const char *text, VFrame **data = 0);
 	BC_GenericButton(int x, int y, int w, const char *text, VFrame **data = 0);
 	int set_images(VFrame **data);
-	int draw_face();
+	int draw_face(int flash = 1);
 	static int calculate_w(BC_WindowBase *gui, char *text);
 	static int calculate_h();
 

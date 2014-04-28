@@ -75,7 +75,7 @@ int SampleScroll::resize_event()
 	return 0;
 }
 
-int SampleScroll::set_position()
+int SampleScroll::set_position(int flush)
 {
 	if(!gui->canvas) return 0;
 	long length = Units::round(mwindow->edl->tracks->total_length() * 
@@ -87,7 +87,8 @@ int SampleScroll::set_position()
 
 	update_length(length, 
 			position, 
-			handle_size);
+			handle_size,
+			flush);
 
 	oldposition = position;
 	return 0;
@@ -101,11 +102,11 @@ int SampleScroll::handle_event()
 	mwindow->gui->canvas->draw();
 	mwindow->gui->cursor->draw(1);
 
-	mwindow->gui->canvas->flash();
+	mwindow->gui->canvas->flash(0);
 
 	mwindow->gui->patchbay->update();
 
-	mwindow->gui->timebar->update();
+	mwindow->gui->timebar->update(1);
 
 //printf("SampleScroll::handle_event %d %d\n", __LINE__, get_window_lock());
 

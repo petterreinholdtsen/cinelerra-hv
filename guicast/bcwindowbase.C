@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,12 +130,20 @@ BC_WindowBase::~BC_WindowBase()
 #ifdef HAVE_GL
 	if(!gl_win_context || !get_resources()->get_synchronous())
 #endif
+	{
 		XDestroyWindow(top_level->display, win);
+	}
 
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
 	if(temp_bitmap) delete temp_bitmap;
-
+	if(_7segment_pixmaps)
+	{
+		for(int i = 0; i < TOTAL_7SEGMENT; i++)
+			delete _7segment_pixmaps[i];
+		
+		delete [] _7segment_pixmaps;
+	}
 
 
 
@@ -172,7 +180,7 @@ BC_WindowBase::~BC_WindowBase()
 	}
 	else
 	{
-		flush();
+//		flush();
 	}
 
 // Must be last reference to display.
@@ -211,6 +219,8 @@ int BC_WindowBase::initialize()
 	w = 0; 
 	h = 0;
 	bg_color = -1;
+	line_width = 1;
+	line_dashes = 0;
 	top_level = 0;
 	parent_window = 0;
 	subwindows = 0;
@@ -235,6 +245,7 @@ int BC_WindowBase::initialize()
 	active_subwindow = 0;
 	pixmap = 0;
 	bg_pixmap = 0;
+	_7segment_pixmaps = 0;
 	tooltip_text[0] = 0;
 	persistant_tooltip = 0;
 //	next_repeat_id = 0;
@@ -573,7 +584,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			mask, 
 			&attr);
 		init_window_shape();
-		XMapWindow(top_level->display, win);
+		if(!hidden) XMapWindow(top_level->display, win);
 	}
 
 // Create pixmap for all windows
@@ -603,7 +614,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		need_lock = 1;
 		lock_window("BC_WindowBase::create_window");
 	}
-	flash();
+
+
+	flash(-1, -1, -1, -1, 0);
 	if(need_lock) unlock_window();
 
 // Set up options for popup window
@@ -991,7 +1004,7 @@ __LINE__, title, event);
 			if(keysym > 0xffe0 && keysym < 0xffff) break;
 
 
-			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", keysym);
+			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", (int)keysym);
 
 
   			switch(keysym)
@@ -1044,6 +1057,12 @@ __LINE__, title, event);
 				case XK_KP_Begin:       key_pressed = KP5;       break;
 				case XK_KP_6:
 				case XK_KP_Right:       key_pressed = KP6;       break;
+				case XK_KP_7:
+				case XK_KP_Home:        key_pressed = KP7;       break;
+				case XK_KP_8:
+				case XK_KP_Up:          key_pressed = KP8;       break;
+				case XK_KP_9:
+				case XK_KP_Page_Up:     key_pressed = KP9;       break;
 				case XK_KP_0:
 				case XK_KP_Insert:      key_pressed = KPINS;     break;
 				case XK_KP_Decimal:
@@ -1196,8 +1215,15 @@ int BC_WindowBase::dispatch_motion_event()
 				result = dispatch_drag_start();
 			}
 		}
+
 		cursor_x = last_motion_x;
 		cursor_y = last_motion_y;
+
+// printf("BC_WindowBase::dispatch_motion_event %d %p %p %p\n", 
+// __LINE__,
+// active_menubar,
+// active_popup_menu,
+// active_subwindow);
 
 		if(active_menubar && !result) result = active_menubar->dispatch_motion_event();
 		if(active_popup_menu && !result) result = active_popup_menu->dispatch_motion_event();
@@ -1374,9 +1400,9 @@ void BC_WindowBase::unhide_cursor()
 	{
 		is_transparent = 0;
 		if(top_level->is_hourglass)
-			set_cursor(HOURGLASS_CURSOR, 1);
+			set_cursor(HOURGLASS_CURSOR, 1, 0);
 		else
-			set_cursor(current_cursor, 1);
+			set_cursor(current_cursor, 1, 0);
 	}
 	cursor_timer->update();
 }
@@ -1389,7 +1415,7 @@ void BC_WindowBase::update_video_cursor()
 		if(cursor_timer->get_difference() > VIDEO_CURSOR_TIMEOUT && !is_transparent)
 		{
 			is_transparent = 1;
-			set_cursor(TRANSPARENT_CURSOR, 1);
+			set_cursor(TRANSPARENT_CURSOR, 1, 1);
 			cursor_timer->update();
 		}
 	}
@@ -1580,7 +1606,7 @@ int BC_WindowBase::set_repeat(int64_t duration)
 {
 	if(duration <= 0)
 	{
-		printf("BC_WindowBase::set_repeat duration=%d\n", duration);
+		printf("BC_WindowBase::set_repeat duration=%d\n", (int)duration);
 		return 0;
 	}
 	if(window_type != MAIN_WINDOW) return top_level->set_repeat(duration);
@@ -1905,6 +1931,10 @@ int BC_WindowBase::init_gc()
 	gcvalues.font = mediumfont->fid;        // set the font
 	gcvalues.graphics_exposures = 0;        // prevent expose events for every redraw
 	gc = XCreateGC(display, rootwin, gcmask, &gcvalues);
+
+// gcmask = GCCapStyle | GCJoinStyle;
+// XGetGCValues(display, gc, gcmask, &gcvalues);
+// printf("BC_WindowBase::init_gc %d %d %d\n", __LINE__, gcvalues.cap_style, gcvalues.join_style);
 	return 0;
 }
 
@@ -2165,6 +2195,42 @@ void BC_WindowBase::set_inverse()
 	XSetFunction(top_level->display, top_level->gc, GXxor);
 }
 
+void BC_WindowBase::set_line_width(int value)
+{
+	this->line_width = value;
+	XSetLineAttributes(top_level->display, 
+		top_level->gc, 
+    	value,	/* line_width */
+    	line_dashes == 0 ? LineSolid : LineOnOffDash,			/* line_style */
+    	CapButt,			/* cap_style */
+    	JoinMiter			/* join_style */
+		);
+
+	if(line_dashes > 0)
+	{
+		const char dashes = line_dashes;
+		XSetDashes(top_level->display, 
+			top_level->gc,
+    		0,
+    		&dashes,
+    		1);
+	}
+
+// XGCValues gcvalues;
+// unsigned long gcmask;
+// gcmask = GCCapStyle | GCJoinStyle;
+// XGetGCValues(top_level->display, top_level->gc, gcmask, &gcvalues);
+// printf("BC_WindowBase::set_line_width %d %d %d\n", __LINE__, gcvalues.cap_style, gcvalues.join_style);
+}
+
+void BC_WindowBase::set_line_dashes(int value)
+{
+	line_dashes = value;
+// call XSetLineAttributes
+	set_line_width(line_width);
+}
+
+
 Cursor BC_WindowBase::get_cursor_struct(int cursor)
 {
 	switch(cursor)
@@ -2188,14 +2254,14 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 	return 0;
 }
 
-void BC_WindowBase::set_cursor(int cursor, int override)
+void BC_WindowBase::set_cursor(int cursor, int override, int flush)
 {
 // don't change cursor if overridden
 	if((!top_level->is_hourglass && !is_transparent) || 
 		override)
 	{
 		XDefineCursor(top_level->display, win, get_cursor_struct(cursor));
-		flush();
+		if(flush) this->flush();
 	}
 
 	if(!override) current_cursor = cursor;
@@ -2236,7 +2302,7 @@ void BC_WindowBase::start_hourglass_recursive()
 
 	if(!is_transparent)
 	{
-		set_cursor(HOURGLASS_CURSOR, 1);
+		set_cursor(HOURGLASS_CURSOR, 1, 0);
 		for(int i = 0; i < subwindows->total; i++)
 		{
 			subwindows->values[i]->start_hourglass_recursive();
@@ -2258,7 +2324,7 @@ void BC_WindowBase::stop_hourglass_recursive()
 
 // Cause set_cursor to perform change
 		if(!is_transparent)
-			set_cursor(current_cursor, 1);
+			set_cursor(current_cursor, 1, 0);
 
 		for(int i = 0; i < subwindows->total; i++)
 		{
@@ -2679,6 +2745,11 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 
 int BC_WindowBase::show_window(int flush) 
 {
+	for(int i = 0; i < subwindows->size(); i++)
+	{
+		subwindows->get(i)->show_window(0);
+	}
+
 	XMapWindow(top_level->display, win); 
 	if(flush) XFlush(top_level->display);
 //	XSync(top_level->display, 0);
@@ -2688,6 +2759,11 @@ int BC_WindowBase::show_window(int flush)
 
 int BC_WindowBase::hide_window(int flush) 
 { 
+	for(int i = 0; i < subwindows->size(); i++)
+	{
+		subwindows->get(i)->hide_window(0);
+	}
+
 	XUnmapWindow(top_level->display, win); 
 	if(flush) this->flush();
 	hidden = 1; 
@@ -2746,6 +2822,7 @@ BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 
 int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {
+//printf("BC_WindowBase::flash %d %d %d %d %d\n", __LINE__, w, h, this->w, this->h);
 	set_opaque();
 	XSetWindowBackgroundPixmap(top_level->display, win, pixmap->opaque_pixmap);
 	if(x >= 0)
@@ -2771,6 +2848,7 @@ void BC_WindowBase::flush()
 {
 	if(!get_window_lock())
 		printf("BC_WindowBase::flush %s not locked\n", top_level->title);
+//printf("BC_WindowBase::flush %p %d\n", this, __LINE__);
 	XFlush(top_level->display);
 }
 
@@ -3014,6 +3092,11 @@ BC_Synchronous* BC_WindowBase::get_synchronous()
 int BC_WindowBase::get_bg_color()
 {
 	return bg_color;
+}
+
+void BC_WindowBase::set_bg_color(int color)
+{
+	this->bg_color = color;
 }
 
 BC_Pixmap* BC_WindowBase::get_bg_pixmap()
@@ -3260,12 +3343,12 @@ int BC_WindowBase::get_cursor_over_window()
 
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
-	Window temp_win1, temp_win2;
+	Window root_return, child_return;
 
 	if (!XQueryPointer(display, 
 		win, 
-		&temp_win1, 
-		&temp_win2,
+		&root_return, 
+		&child_return,
 		&abs_x, 
 		&abs_y, 
 		&win_x, 
@@ -3273,7 +3356,13 @@ int BC_WindowBase::get_cursor_over_window()
 		&temp_mask))
 		return 0;
 
-	int result = match_window(temp_win2)	;
+// printf("BC_WindowBase::get_cursor_over_window %d %s 0x%x 0x%x\n", 
+// __LINE__,
+// title,
+// win,
+// child_return);
+
+	int result = match_window(child_return);
 	return result;
 }
 
@@ -3327,11 +3416,11 @@ int BC_WindowBase::get_cursor_y()
 
 int BC_WindowBase::dump_windows()
 {
-	printf("\tBC_WindowBase::dump_windows window=%p win=%p\n", this, this->win);
+	printf("\tBC_WindowBase::dump_windows window=%p win=%p\n", this, (void*)this->win);
 	for(int i = 0; i < subwindows->size(); i++)
 		subwindows->get(i)->dump_windows();
 	for(int i = 0; i < popups.size(); i++)
-		printf("\tBC_WindowBase::dump_windows popup=%p win=%p\n", popups.get(i), popups.get(i)->win);
+		printf("\tBC_WindowBase::dump_windows popup=%p win=%p\n", popups.get(i), (void*)popups.get(i)->win);
 }
 
 int BC_WindowBase::is_event_win()
@@ -3397,6 +3486,8 @@ int BC_WindowBase::get_bgcolor()
 
 int BC_WindowBase::resize_window(int w, int h)
 {
+	if(this->w == w && this->h == h) return 0;
+
 	if(window_type == MAIN_WINDOW && !allow_resize)
 	{
 		XSizeHints size_hints;
@@ -3438,6 +3529,13 @@ int BC_WindowBase::resize_event(int w, int h)
 	}
 	return 0;
 }
+
+int BC_WindowBase::reposition_window(int x, int y)
+{
+	reposition_window(x, y, -1, -1);
+	return 0;
+}
+
 
 int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 {

@@ -157,8 +157,8 @@ int ForkWrapper::send_command(int token,
 // bytes);
 	*(int*)(buffer + 0) = token;
 	*(int*)(buffer + sizeof(int)) = bytes;
-	write(parent_fd, buffer, sizeof(buffer));
-	if(data && bytes) write(parent_fd, data, bytes);
+	int temp = write(parent_fd, buffer, sizeof(buffer));
+	if(data && bytes) temp = write(parent_fd, data, bytes);
 	return 0;
 }
 
@@ -166,7 +166,7 @@ int ForkWrapper::read_command()
 {
 	unsigned char buffer[sizeof(int) * 2];
 //printf("ForkWrapper::read_command %d child_fd=%d\n", __LINE__, child_fd);
-	read(child_fd, buffer, sizeof(buffer));
+	int temp = read(child_fd, buffer, sizeof(buffer));
 //printf("ForkWrapper::read_command %d child_fd=%d\n", __LINE__, child_fd);
 	command_token = *(int*)(buffer + 0);
 	command_bytes = *(int*)(buffer + sizeof(int));
@@ -181,7 +181,7 @@ int ForkWrapper::read_command()
 		command_data = new unsigned char[command_bytes];
 		command_allocated = command_bytes;
 	}
-	if(command_bytes) read(child_fd, command_data, command_bytes);
+	if(command_bytes) int temp = read(child_fd, command_data, command_bytes);
 	return 0;
 }
 
@@ -190,8 +190,8 @@ int ForkWrapper::send_result(int64_t value, unsigned char *data, int data_size)
 	unsigned char buffer[sizeof(int64_t) + sizeof(int)];
 	*(int64_t*)(buffer + 0) = value;
 	*(int*)(buffer + sizeof(int64_t)) = data_size;
-	write(child_fd, buffer, sizeof(buffer));
-	if(data && data_size) write(child_fd, data, data_size);
+	int temp = write(child_fd, buffer, sizeof(buffer));
+	if(data && data_size) temp = write(child_fd, data, data_size);
 	return 0;
 }
 

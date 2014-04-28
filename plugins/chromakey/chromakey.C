@@ -31,7 +31,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "playback3d.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -363,7 +363,6 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 #define RGB_TO_VALUE(r, g, b) \
 ((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
 
-#define SQR(x) ((x) * (x))
 
 #define OUTER_VARIABLES(plugin) \
 	YUV yuv; \
@@ -581,40 +580,6 @@ NEW_PICON_MACRO(ChromaKey)
 
 LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
 
-int ChromaKey::load_defaults()
-{
-SET_TRACE
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%schromakey.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.red = defaults->get("RED", config.red);
-	config.green = defaults->get("GREEN", config.green);
-	config.blue = defaults->get("BLUE", config.blue);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.slope = defaults->get("SLOPE", config.slope);
-	config.use_value = defaults->get("USE_VALUE", config.use_value);
-SET_TRACE
-	return 0;
-}
-
-int ChromaKey::save_defaults()
-{
-SET_TRACE
-	defaults->update("RED", config.red);
-	defaults->update("GREEN", config.green);
-	defaults->update("BLUE", config.blue);
-    defaults->update("THRESHOLD", config.threshold);
-    defaults->update("SLOPE", config.slope);
-    defaults->update("USE_VALUE", config.use_value);
-	defaults->save();
-SET_TRACE
-	return 0;
-}
 
 void ChromaKey::save_data(KeyFrame *keyframe)
 {
@@ -675,7 +640,7 @@ int ChromaKey::handle_opengl()
 	
 
 
-	static char *uniform_frag =
+	static const char *uniform_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float min_v;\n"
 		"uniform float max_v;\n"
@@ -684,19 +649,19 @@ int ChromaKey::handle_opengl()
 		"uniform float threshold_run;\n"
 		"uniform vec3 key;\n";
 
-	static char *get_yuvvalue_frag =
+	static const char *get_yuvvalue_frag =
 		"float get_value(vec4 color)\n"
 		"{\n"
 		"	return abs(color.r);\n"
 		"}\n";
 		
-	static char *get_rgbvalue_frag = 
+	static const char *get_rgbvalue_frag = 
 		"float get_value(vec4 color)\n"
 		"{\n"
 		"	return dot(color.rgb, vec3(0.29900, 0.58700, 0.11400));\n"
 		"}\n";
 
-	static char *value_frag =
+	static const char *value_frag =
 		"void main()\n"
 		"{\n"
 		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
@@ -718,7 +683,7 @@ int ChromaKey::handle_opengl()
 		"	gl_FragColor = vec4(color.rgb, alpha);\n"
 		"}\n";
 
-	static char *cube_frag = 
+	static const char *cube_frag = 
 		"void main()\n"
 		"{\n"
 		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
@@ -737,7 +702,7 @@ int ChromaKey::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
-	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 
 	shader_stack[current_shader++] = uniform_frag;

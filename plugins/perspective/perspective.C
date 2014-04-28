@@ -140,7 +140,7 @@ void PerspectiveWindow::create_objects()
 		y, 
 		get_w() - 20, 
 		get_h() - 140));
-	canvas->set_cursor(CROSS_CURSOR);
+	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 	y += canvas->get_h() + 10;
 	add_subwindow(new BC_Title(x, y, _("Current X:")));
 	x += 80;
@@ -201,7 +201,6 @@ void PerspectiveWindow::create_objects()
 		_("Reverse")));
 
 	show_window();
-	flush();
 }
 
 
@@ -226,7 +225,8 @@ void PerspectiveWindow::update_canvas()
 // y3,
 // x4,
 // y4);
-	canvas->set_color(BLACK);
+// Draw divisions
+	canvas->set_color(WHITE);
 
 #define DIVISIONS 10
 	for(int i = 0; i <= DIVISIONS; i++)
@@ -268,7 +268,6 @@ void PerspectiveWindow::update_canvas()
 		canvas->draw_circle(x4 - RADIUS, y4 - RADIUS, RADIUS * 2, RADIUS * 2);
 
 	canvas->flash();
-	canvas->flush();
 }
 
 void PerspectiveWindow::update_mode()
@@ -330,7 +329,7 @@ PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin,
 	int y, 
 	int w,
 	int h)
- : BC_SubWindow(x, y, w, h, 0xffffff)
+ : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->plugin = plugin;
 	state = PerspectiveCanvas::NONE;
@@ -647,51 +646,6 @@ void PerspectiveMain::update_gui()
 }
 
 
-int PerspectiveMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sperspective.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.x1 = defaults->get("X1", config.x1);
-	config.x2 = defaults->get("X2", config.x2);
-	config.x3 = defaults->get("X3", config.x3);
-	config.x4 = defaults->get("X4", config.x4);
-	config.y1 = defaults->get("Y1", config.y1);
-	config.y2 = defaults->get("Y2", config.y2);
-	config.y3 = defaults->get("Y3", config.y3);
-	config.y4 = defaults->get("Y4", config.y4);
-
-	config.mode = defaults->get("MODE", config.mode);
-	config.forward = defaults->get("FORWARD", config.forward);
-	config.window_w = defaults->get("WINDOW_W", config.window_w);
-	config.window_h = defaults->get("WINDOW_H", config.window_h);
-	return 0;
-}
-
-
-int PerspectiveMain::save_defaults()
-{
-	defaults->update("X1", config.x1);
-	defaults->update("X2", config.x2);
-	defaults->update("X3", config.x3);
-	defaults->update("X4", config.x4);
-	defaults->update("Y1", config.y1);
-	defaults->update("Y2", config.y2);
-	defaults->update("Y3", config.y3);
-	defaults->update("Y4", config.y4);
-
-	defaults->update("MODE", config.mode);
-	defaults->update("FORWARD", config.forward);
-	defaults->update("WINDOW_W", config.window_w);
-	defaults->update("WINDOW_H", config.window_h);
-	defaults->save();
-	return 0;
-}
 
 
 

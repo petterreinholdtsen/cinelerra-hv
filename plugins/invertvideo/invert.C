@@ -26,7 +26,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -83,8 +83,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -225,28 +223,6 @@ void InvertVideoEffect::update_gui()
 	}
 }
 
-int InvertVideoEffect::load_defaults()
-{
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%sinvertvideo.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
-	return 0;
-}
-
-int InvertVideoEffect::save_defaults()
-{
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
-	defaults->save();
-	return 0;
-}
 
 void InvertVideoEffect::save_data(KeyFrame *keyframe)
 {

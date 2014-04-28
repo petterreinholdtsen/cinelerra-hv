@@ -53,6 +53,8 @@ public:
 		VFrame **data = 0);
 	virtual ~BC_PopupMenu();
 
+// Adds popupmenu_margin to width
+	static int calculate_w(int w_argument);
 	static int calculate_h(VFrame **data = 0);
 	virtual int handle_event() { return 0; };
 	char* get_text();
@@ -66,7 +68,7 @@ public:
 // Set icon of menu.  Disables text.
 	void set_icon(BC_Pixmap *pixmap);
 // Draw title of menu
-	int draw_title();
+	int draw_title(int flush);
 	int reposition_window(int x, int y);
 	int deactivate();
 	int activate_menu();

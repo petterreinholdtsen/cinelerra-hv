@@ -32,7 +32,7 @@
 
 // ==================================== Menu ===================================
 
-BC_Menu::BC_Menu(char *text)
+BC_Menu::BC_Menu(const char *text)
 {
 	strcpy(this->text, text);
 	menu_bar = 0;
@@ -60,7 +60,7 @@ int BC_Menu::initialize(BC_WindowBase *top_level,
 	this->top_level = top_level;
 	menu_popup = new BC_MenuPopup;
 	menu_popup->initialize(top_level, menu_bar, this, 0, 0);
-	draw_title();
+	draw_title(1, 0);
 	return 0;
 }
 
@@ -176,7 +176,7 @@ int BC_Menu::dispatch_motion_event()
 				cursor_y < y || cursor_y >= y + h)
 			{
 				highlighted = 0;
-				draw_title();
+				draw_title(1, 1);
 			}
 		}
 		else
@@ -186,7 +186,7 @@ int BC_Menu::dispatch_motion_event()
 			{
 				menu_bar->unhighlight();
 				highlighted = 1;
-				draw_title();
+				draw_title(1, 1);
 				result = 1;
 			}
 		}
@@ -233,7 +233,7 @@ int BC_Menu::activate_menu()
 		menu_popup->activate_menu(x, y, w, h, 1, 1);
 
 	active = 1;
-	draw_title();
+	draw_title(1, 1);
 	return 0;
 }
 
@@ -245,11 +245,11 @@ void BC_Menu::draw_items()
 int BC_Menu::set_text(char *text)
 {
 	strcpy(this->text, text);
-	draw_title();
+	draw_title(1, 1);
 	return 0;
 }
 
-int BC_Menu::draw_title()
+int BC_Menu::draw_title(int flash, int flush)
 {
 	BC_Resources *resources = top_level->get_resources();
 	int text_offset = 0;
@@ -311,7 +311,7 @@ int BC_Menu::draw_title()
 	menu_bar->draw_text(x + 10 + text_offset, 
 		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
 		text);
-	menu_bar->flash();
+	if(flash) menu_bar->flash(flush);
 
 	return 0;
 }
@@ -322,7 +322,7 @@ int BC_Menu::deactivate_menu()
 	{
 		menu_popup->deactivate_menu();
 		active = 0;
-		draw_title();
+		draw_title(1, 1);
 	}
 	return 0;
 }
@@ -332,7 +332,7 @@ int BC_Menu::unhighlight()
 	if(highlighted)
 	{
 		highlighted = 0;
-		draw_title();
+		draw_title(1, 1);
 	}
 	return 0;
 }

@@ -1,0 +1,10 @@
+ ###########################################################################
+ ## This file is created automatically from your config file.
+ ## Do not hand edit.
+ ## Created:Sat Jan 8 14:14:29 PST 2011
+ ###########################################################################
+
+OSTYPE:=RedHatLinux
+MACHINETYPE:=unknown
+OSREV:=
+SYSTEM_LOADED:=1

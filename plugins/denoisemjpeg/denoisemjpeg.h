@@ -192,8 +192,6 @@ public:
 	int show_gui();
 	int load_configuration();
 	int set_string();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void raise_window();
@@ -202,7 +200,6 @@ public:
 	float *accumulation;
 	DenoiseMJPEGThread *thread;
 	DenoiseMJPEGConfig config;
-	BC_Hash *defaults;
 };
 
 

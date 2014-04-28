@@ -19,6 +19,7 @@
  * 
  */
 
+#include "bcsignals.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "editpanel.h"
@@ -59,7 +60,6 @@ void MButtons::create_objects()
 {
 	int x = 3, y = 0;
 	BC_SubWindow *button;
-
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	transport = new MainTransport(mwindow, this, x, y);
 	transport->create_objects();
@@ -72,7 +72,7 @@ void MButtons::create_objects()
 	edit_panel->create_objects();
 	
 	x += edit_panel->get_w();
-	flash();
+	flash(0);
 }
 
 int MButtons::resize_event()
@@ -82,7 +82,7 @@ int MButtons::resize_event()
 		mwindow->theme->mbuttons_w, 
 		mwindow->theme->mbuttons_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	flash();
+	flash(0);
 }
 
 int MButtons::keypress_event()

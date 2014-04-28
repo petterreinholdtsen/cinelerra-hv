@@ -21,7 +21,7 @@
 
 #include "colormodels.h"
 #include "effecttv.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "vframe.h"
 
 #include <stdint.h> 

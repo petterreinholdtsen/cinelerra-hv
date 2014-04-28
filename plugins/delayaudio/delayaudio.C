@@ -89,25 +89,6 @@ int DelayAudio::load_configuration()
 	return 0;
 }
 
-int DelayAudio::load_defaults()
-{
-	char directory[BCTEXTLEN];
-
-	sprintf(directory, "%sdelayaudio.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.length = defaults->get("LENGTH", (double)1);
-	return 0;
-}
-
-
-
-int DelayAudio::save_defaults()
-{
-	defaults->update("LENGTH", config.length);
-	defaults->save();
-	return 0;
-}
 
 void DelayAudio::read_data(KeyFrame *keyframe)
 {
@@ -242,10 +223,14 @@ DelayAudioWindow::~DelayAudioWindow()
 void DelayAudioWindow::create_objects()
 {
 	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
-	add_subwindow(length = new DelayAudioTextBox(plugin, 10, 40));
+	length = new DelayAudioTextBox(
+		plugin, 
+		this,
+		10, 
+		40);
+	length->create_objects();
 	update_gui();
 	show_window();
-	flush();
 }
 
 void DelayAudioWindow::update_gui()
@@ -266,10 +251,21 @@ void DelayAudioWindow::update_gui()
 
 
 
-DelayAudioTextBox::DelayAudioTextBox(DelayAudio *plugin, int x, int y)
- : BC_TextBox(x, y, 150, 1, "")
+DelayAudioTextBox::DelayAudioTextBox(
+	DelayAudio *plugin, 
+	DelayAudioWindow *window,
+	int x, 
+	int y)
+ : BC_TumbleTextBox(window,
+ 	(float)plugin->config.length,
+	(float)0,
+	(float)10,
+ 	x, 
+	y, 
+	100)
 {
 	this->plugin = plugin;
+	set_increment(0.01);
 }
 
 DelayAudioTextBox::~DelayAudioTextBox()

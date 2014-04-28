@@ -230,6 +230,13 @@ public:
 	int get_video_layers();
 	int64_t get_video_frames();
 
+	EDL* get_vwindow_edl(int number);
+	int total_vwindow_edls();
+	void remove_vwindow_edls();
+	void remove_vwindow_edl(EDL *edl);
+// Adds to list of EDLs & increase garbage collection counter
+// Does nothing if EDL already exists
+	void append_vwindow_edl(EDL *edl, int increase_counter);
 
 // Titles of all subfolders
 	ArrayList<char*> folders;
@@ -237,10 +244,10 @@ public:
 	ArrayList<EDL*> clips;
 // Nested EDLs
 	NestedEDLs *nested_edls;
-// VWindow
-	EDL *vwindow_edl;
+// EDLs being shown in VWindows
+	ArrayList<EDL*> vwindow_edls;
 // is the vwindow_edl shared and therefore should not be deleted in destructor
-	int vwindow_edl_shared;
+//	int vwindow_edl_shared;
 
 // Media files
 // Shared between all EDLs

@@ -90,6 +90,8 @@ public:
 	int color_model;
 // Coords for cropping operation
 	int crop_x1, crop_x2, crop_y1, crop_y2;
+// radius of eyedropper
+	int eyedrop_radius;
 	float ruler_x1, ruler_y1;
 	float ruler_x2, ruler_y2;
 // Ruler points relative to the output frame.
@@ -160,8 +162,10 @@ public:
 	int record_software_position;
 // Sync the drives during recording
 	int record_sync_drives;
-// Speed of meters
+// Speed of meters when recording
 	int record_speed;
+// Samples to read from device at a time
+	int record_fragment_size;
 // Samples to write to disk at a time
 	int64_t record_write_length;
 // Show title and action safe regions in CWindow

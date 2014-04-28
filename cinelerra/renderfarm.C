@@ -30,6 +30,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "mutex.h"
+#include "mwindow.h"
 #include "packagedispatcher.h"
 #include "preferences.h"
 #include "render.h"
@@ -55,7 +56,9 @@
 
 
 
-RenderFarmServer::RenderFarmServer(PackageDispatcher *packages,
+RenderFarmServer::RenderFarmServer(
+	MWindow *mwindow,
+	PackageDispatcher *packages,
 	Preferences *preferences,
 	int use_local_rate,
 	int *result_return,
@@ -65,6 +68,7 @@ RenderFarmServer::RenderFarmServer(PackageDispatcher *packages,
 	EDL *edl,
 	BRender *brender)
 {
+	this->mwindow = mwindow;
 	this->packages = packages;
 	this->preferences = preferences;
 	this->use_local_rate = use_local_rate;
@@ -609,10 +613,21 @@ void RenderFarmServerThread::set_progress(unsigned char *buffer)
 {
 	server->total_return_lock->lock("RenderFarmServerThread::set_progress");
 	*server->total_return += (int64_t)(((u_int32_t)buffer[0]) << 24) |
-											(((u_int32_t)buffer[1]) << 16) |
-											(((u_int32_t)buffer[2]) << 8)  |
-											((u_int32_t)buffer[3]);
+		(((u_int32_t)buffer[1]) << 16) |
+		(((u_int32_t)buffer[2]) << 8)  |
+		((u_int32_t)buffer[3]);
+	frames_per_second = (double)((((u_int32_t)buffer[4]) << 24) |
+		(((u_int32_t)buffer[5]) << 16) |
+		(((u_int32_t)buffer[6]) << 8)  |
+		((u_int32_t)buffer[7])) / 
+		65536.0;
 	server->total_return_lock->unlock();
+	
+	server->preferences->set_rate(frames_per_second, number);
+
+// This locks the preferences
+	if(server->mwindow) server->mwindow->preferences->copy_rates_from(
+		server->preferences);
 }
 
 int RenderFarmServerThread::set_video_map(unsigned char *buffer)

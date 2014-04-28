@@ -222,8 +222,6 @@ public:
 	double calculate_output(double x);
 
 
-	int load_defaults();
-	int save_defaults();
 	void reset();
 	void update_gui();
 	void delete_dsp();

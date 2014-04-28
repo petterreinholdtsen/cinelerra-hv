@@ -68,9 +68,9 @@ MotionConfig::MotionConfig()
 	global_positions = 256;
 	magnitude = 100;
 	return_speed = 0;
-	action = STABILIZE;
-	calculation = NO_CALCULATE;
-	mode3 = MotionConfig::TRACK_SINGLE;
+	action = MotionScan::STABILIZE;
+	calculation = MotionScan::NO_CALCULATE;
+	tracking_object = MotionScan::TRACK_SINGLE;
 	track_frame = 0;
 	bottom_is_master = 1;
 	horizontal_only = 0;
@@ -113,7 +113,7 @@ int MotionConfig::equivalent(MotionConfig &that)
 		return_speed != that.return_speed ||
 		action != that.action ||
 		calculation != that.calculation || 
-		mode3 != that.mode3 ||
+		tracking_object != that.tracking_object ||
 		track_frame != that.track_frame ||
 		bottom_is_master != that.bottom_is_master ||
 		horizontal_only != that.horizontal_only ||
@@ -144,7 +144,7 @@ void MotionConfig::copy_from(MotionConfig &that)
 	return_speed = that.return_speed;
 	action = that.action;
 	calculation = that.calculation;
-	mode3 = that.mode3;
+	tracking_object = that.tracking_object;
 	track_frame = that.track_frame;
 	bottom_is_master = that.bottom_is_master;
 	horizontal_only = that.horizontal_only;
@@ -179,7 +179,7 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	return_speed = prev.return_speed;
 	action = prev.action;
 	calculation = prev.calculation;
-	mode3 = prev.mode3;
+	tracking_object = prev.tracking_object;
 	track_frame = prev.track_frame;
 	bottom_is_master = prev.bottom_is_master;
 	horizontal_only = prev.horizontal_only;
@@ -286,11 +286,11 @@ void MotionMain2::update_gui()
 			((MotionWindow*)thread->window)->return_speed->update(config.return_speed);
 
 
-			((MotionWindow*)thread->window)->track_single->update(config.mode3 == MotionConfig::TRACK_SINGLE);
+			((MotionWindow*)thread->window)->track_single->update(config.tracking_object == MotionScan::TRACK_SINGLE);
 			((MotionWindow*)thread->window)->track_frame_number->update(config.track_frame);
-			((MotionWindow*)thread->window)->track_previous->update(config.mode3 == MotionConfig::TRACK_PREVIOUS);
-			((MotionWindow*)thread->window)->previous_same->update(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK);
-			if(config.mode3 != MotionConfig::TRACK_SINGLE)
+			((MotionWindow*)thread->window)->track_previous->update(config.tracking_object == MotionScan::TRACK_PREVIOUS);
+			((MotionWindow*)thread->window)->previous_same->update(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK);
+			if(config.tracking_object != MotionScan::TRACK_SINGLE)
 				((MotionWindow*)thread->window)->track_frame_number->disable();
 			else
 				((MotionWindow*)thread->window)->track_frame_number->enable();
@@ -299,8 +299,8 @@ void MotionMain2::update_gui()
 				Action::to_text(config.action));
 			((MotionWindow*)thread->window)->calculation->set_text(
 				Calculation::to_text(config.calculation));
-			((MotionWindow*)thread->window)->mode3->set_text(
-				Mode3::to_text(config.horizontal_only, config.vertical_only));
+			((MotionWindow*)thread->window)->tracking_direction->set_text(
+				TrackingDirection::to_text(config.horizontal_only, config.vertical_only));
 			((MotionWindow*)thread->window)->master_layer->set_text(
 				MasterLayer::to_text(config.bottom_is_master));
 
@@ -312,95 +312,6 @@ void MotionMain2::update_gui()
 }
 
 
-int MotionMain2::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%smotion2.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	for(int i = 0; i < TOTAL_POINTS; i++)
-	{
-		sprintf(string, "GLOBAL%d", i);
-		config.global[i] = defaults->get(string, config.global[i]);
-		sprintf(string, "GLOBAL_BLOCK_W%d", i);
-		config.global_block_w[i] = defaults->get(string, config.global_block_w[i]);
-		sprintf(string, "GLOBAL_BLOCK_H%d", i);
-		config.global_block_h[i] = defaults->get(string, config.global_block_h[i]);
-		sprintf(string, "BLOCK_X%d", i);
-		config.block_x[i] = defaults->get(string, config.block_x[i]);
-		sprintf(string, "BLOCK_Y%d", i);
-		config.block_y[i] = defaults->get(string, config.block_y[i]);
-		sprintf(string, "GLOBAL_RANGE_W%d", i);
-		config.global_range_w[i] = defaults->get(string, config.global_range_w[i]);
-		sprintf(string, "GLOBAL_RANGE_H%d", i);
-		config.global_range_h[i] = defaults->get(string, config.global_range_h[i]);
-		sprintf(string, "GLOBAL_ORIGIN_X%d", i);
-		config.global_origin_x[i] = defaults->get(string, config.global_origin_x[i]);
-		sprintf(string, "GLOBAL_ORIGIN_y%d", i);
-		config.global_origin_y[i] = defaults->get(string, config.global_origin_y[i]);
-		sprintf(string, "DRAW_VECTORS%d", i);
-		config.draw_vectors[i] = defaults->get(string, config.draw_vectors[i]);
-	}
-
-	config.global_positions = defaults->get("GLOBAL_POSITIONS", config.global_positions);
-	config.magnitude = defaults->get("MAGNITUDE", config.magnitude);
-	config.return_speed = defaults->get("RETURN_SPEED", config.return_speed);
-	config.action = defaults->get("MODE1", config.action);
-	config.calculation = defaults->get("MODE2", config.calculation);
-	config.mode3 = defaults->get("MODE3", config.mode3);
-	config.track_frame = defaults->get("TRACK_FRAME", config.track_frame);
-	config.bottom_is_master = defaults->get("BOTTOM_IS_MASTER", config.bottom_is_master);
-	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
-	config.vertical_only = defaults->get("VERTICAL_ONLY", config.vertical_only);
-	config.boundaries();
-	return 0;
-}
-
-
-int MotionMain2::save_defaults()
-{
-	char string[BCTEXTLEN];
-	for(int i = 0; i < TOTAL_POINTS; i++)
-	{
-		sprintf(string, "GLOBAL%d", i);
-		defaults->update(string, config.global[i]);
-		sprintf(string, "GLOBAL_BLOCK_W%d", i);
-		defaults->update(string, config.global_block_w[i]);
-		sprintf(string, "GLOBAL_BLOCK_H%d", i);
-		defaults->update(string, config.global_block_h[i]);
-		sprintf(string, "BLOCK_X%d", i);
-		defaults->update(string, config.block_x[i]);
-		sprintf(string, "BLOCK_Y%d", i);
-		defaults->update(string, config.block_y[i]);
-		sprintf(string, "GLOBAL_RANGE_W%d", i);
-		defaults->update(string, config.global_range_w[i]);
-		sprintf(string, "GLOBAL_RANGE_H%d", i);
-		defaults->update(string, config.global_range_h[i]);
-		sprintf(string, "GLOBAL_ORIGIN_X%d", i);
-		defaults->update(string, config.global_origin_x[i]);
-		sprintf(string, "GLOBAL_ORIGIN_Y%d", i);
-		defaults->update(string, config.global_origin_y[i]);
-		sprintf(string, "DRAW_VECTORS%d", i);
-		defaults->update(string, config.draw_vectors[i]);
-	}
-
-	defaults->update("GLOBAL_POSITIONS", config.global_positions);
-	defaults->update("MAGNITUDE", config.magnitude);
-	defaults->update("RETURN_SPEED", config.return_speed);
-	defaults->update("MODE1", config.action);
-	defaults->update("MODE2", config.calculation);
-	defaults->update("MODE3", config.mode3);
-	defaults->update("TRACK_FRAME", config.track_frame);
-	defaults->update("BOTTOM_IS_MASTER", config.bottom_is_master);
-	defaults->update("HORIZONTAL_ONLY", config.horizontal_only);
-	defaults->update("VERTICAL_ONLY", config.vertical_only);
-	defaults->save();
-	return 0;
-}
 
 
 
@@ -440,9 +351,9 @@ void MotionMain2::save_data(KeyFrame *keyframe)
 	output.tag.set_property("GLOBAL_POSITIONS", config.global_positions);
 	output.tag.set_property("MAGNITUDE", config.magnitude);
 	output.tag.set_property("RETURN_SPEED", config.return_speed);
-	output.tag.set_property("MODE1", config.action);
-	output.tag.set_property("MODE2", config.calculation);
-	output.tag.set_property("MODE3", config.mode3);
+	output.tag.set_property("ACTION_TYPE", config.action);
+	output.tag.set_property("TRACKING_TYPE", config.calculation);
+	output.tag.set_property("TRACKING_OBJECT", config.tracking_object);
 	output.tag.set_property("TRACK_FRAME", config.track_frame);
 	output.tag.set_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
@@ -495,9 +406,9 @@ void MotionMain2::read_data(KeyFrame *keyframe)
 				config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
 				config.magnitude = input.tag.get_property("MAGNITUDE", config.magnitude);
 				config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
-				config.action = input.tag.get_property("MODE1", config.action);
-				config.calculation = input.tag.get_property("MODE2", config.calculation);
-				config.mode3 = input.tag.get_property("MODE3", config.mode3);
+				config.action = input.tag.get_property("ACTION_TYPE", config.action);
+				config.calculation = input.tag.get_property("TRACKING_TYPE", config.calculation);
+				config.tracking_object = input.tag.get_property("TRACKING_OBJECT", config.tracking_object);
 				config.track_frame = input.tag.get_property("TRACK_FRAME", config.track_frame);
 				config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 				config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
@@ -545,7 +456,7 @@ void MotionMain2::scan_motion(int point)
 		config.global_block_h[point],
 		config.block_x[point],
 		config.block_y[point],
-		config.mode3,
+		config.tracking_object,
 		config.calculation,
 		config.action,
 		config.horizontal_only,
@@ -555,16 +466,17 @@ void MotionMain2::scan_motion(int point)
 		total_dx[point],
 		total_dy[point],
 		config.global_origin_x[point],
-		config.global_origin_y[point],
-		0,
-		0,
-		0,
-		0);
+		config.global_origin_y[point]);
+
+//		0,
+//		0,
+//		0,
+//		0);
 	current_dx[point] = engine->dx_result;
 	current_dy[point] = engine->dy_result;
 
 // Add current motion vector to accumulation vector.
-	if(config.mode3 != MotionConfig::TRACK_SINGLE)
+	if(config.tracking_object != MotionScan::TRACK_SINGLE)
 	{
 // Retract over time
 		total_dx[point] = (int64_t)total_dx[point] * (100 - config.return_speed) / 100;
@@ -633,7 +545,7 @@ void MotionMain2::scan_motion(int point)
 
 void MotionMain2::apply_motion()
 {
-	if(config.mode3 != MotionConfig::TRACK_SINGLE)
+	if(config.tracking_object != MotionScan::TRACK_SINGLE)
 	{
 // Transfer current reference frame to previous reference frame and update
 // counter.
@@ -695,26 +607,26 @@ zoom);
 	float dy = 0.0;
 	switch(config.action)
 	{
-		case MotionConfig::NOTHING:
+		case MotionScan::NOTHING:
 			global_target_dst->copy_from(global_target_src);
 			break;
-		case MotionConfig::TRACK:
+		case MotionScan::TRACK:
 			interpolation = CUBIC_LINEAR;
 			dx = (float)total_dx[0] / OVERSAMPLE;
 			dy = (float)total_dy[0] / OVERSAMPLE;
 			break;
-		case MotionConfig::TRACK_PIXEL:
+		case MotionScan::TRACK_PIXEL:
 			interpolation = NEAREST_NEIGHBOR;
 			dx = (int)(total_dx[0] / OVERSAMPLE);
 			dy = (int)(total_dy[0] / OVERSAMPLE);
 			break;
-		case MotionConfig::STABILIZE_PIXEL:
+		case MotionScan::STABILIZE_PIXEL:
 			interpolation = NEAREST_NEIGHBOR;
 			dx = -(int)(total_dx[0] / OVERSAMPLE);
 			dy = -(int)(total_dy[0] / OVERSAMPLE);
 			angle *= -1;
 			break;
-		case MotionConfig::STABILIZE:
+		case MotionScan::STABILIZE:
 			interpolation = CUBIC_LINEAR;
 			dx = -(float)total_dx[0] / OVERSAMPLE;
 			dy = -(float)total_dy[0] / OVERSAMPLE;
@@ -726,7 +638,7 @@ zoom);
 
 
 
-	if(config.action != MotionConfig::NOTHING)
+	if(config.action != MotionScan::NOTHING)
 	{
 		double w = get_output()->get_w();
 		double h = get_output()->get_h();
@@ -801,7 +713,7 @@ int MotionMain2::process_buffer(VFrame **frame,
 	
 
 #ifdef DEBUG
-printf("MotionMain2::process_buffer 1 start_position=%lld\n", start_position);
+printf("MotionMain2::process_buffer 1 start_position=%lld\n", (long long)start_position);
 #endif
 
 
@@ -825,7 +737,7 @@ printf("MotionMain2::process_buffer 1 start_position=%lld\n", start_position);
 	int skip_current = 0;
 
 
-	if(config.mode3 == MotionConfig::TRACK_SINGLE)
+	if(config.tracking_object == MotionScan::TRACK_SINGLE)
 	{
 		actual_previous_number = config.track_frame;
 		if(get_direction() == PLAY_REVERSE)
@@ -872,7 +784,7 @@ printf("MotionMain2::process_buffer 1 start_position=%lld\n", start_position);
 // Point 0 must be tracked for any other points to be tracked
 	if(!config.global[0] ||
 // Action and Calculation must be something
-		config.action == MotionConfig::NOTHING && config.calculation == MotionConfig::NO_CALCULATE) 
+		config.action == MotionScan::NOTHING && config.calculation == MotionScan::NO_CALCULATE) 
 		skip_current = 1;
 
 
@@ -1160,7 +1072,7 @@ void MotionMain2::get_current_vector(float *origin_x,
 // Get vector
 // Start of vector is center of previous block.
 // End of vector is total accumulation.
-		if(config.mode3 == MotionConfig::TRACK_SINGLE)
+		if(config.tracking_object == MotionScan::TRACK_SINGLE)
 		{
 			(*origin_x) = (*current_x1) = ((float)config.block_x[point] * 
 				w / 
@@ -1174,7 +1086,7 @@ void MotionMain2::get_current_vector(float *origin_x,
 		else
 // Start of vector is center of previous block.
 // End of vector is current change.
-		if(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK)
+		if(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK)
 		{
 			(*origin_x) = (*current_x1) = ((float)config.block_x[point] * 
 				w / 
@@ -1246,8 +1158,8 @@ void MotionMain2::draw_vectors(VFrame *frame, int point)
 
 
 // Draw destination rectangle
-		if(config.action == MotionConfig::NOTHING || 
-			config.action == MotionConfig::TRACK)
+		if(config.action == MotionScan::NOTHING || 
+			config.action == MotionScan::TRACK)
 		{
 			block_x = (int)global_x2;
 			block_y = (int)global_y2;
@@ -1932,7 +1844,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 // Offset to location of previous block.  This offset needn't be very accurate
 // since it's the offset of the previous image and current image we want.
-	if(plugin->config.mode3 == MotionConfig::TRACK_PREVIOUS)
+	if(plugin->config.tracking_object == MotionScan::TRACK_PREVIOUS)
 	{
 		block_x1 += plugin->total_dx[point] / OVERSAMPLE;
 		block_y1 += plugin->total_dy[point] / OVERSAMPLE;
@@ -1945,13 +1857,13 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	switch(plugin->config.calculation)
 	{
 // Don't calculate
-		case MotionConfig::NO_CALCULATE:
+		case MotionScan::NO_CALCULATE:
 			dx_result = 0;
 			dy_result = 0;
 			skip = 1;
 			break;
 
-		case MotionConfig::LOAD:
+		case MotionScan::LOAD:
 		{
 printf("MotionScan::scan_frame %d\n", __LINE__);
 // Load result from disk
@@ -2188,9 +2100,9 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 				if(total_steps >= total_pixels)
 				{
 // Single pixel accuracy reached.  Now do exhaustive subpixel search.
-					if(plugin->config.action == MotionConfig::STABILIZE ||
-						plugin->config.action == MotionConfig::TRACK ||
-						plugin->config.action == MotionConfig::NOTHING)
+					if(plugin->config.action == MotionScan::STABILIZE ||
+						plugin->config.action == MotionScan::TRACK ||
+						plugin->config.action == MotionScan::NOTHING)
 					{
 						x_result /= OVERSAMPLE;
 						y_result /= OVERSAMPLE;
@@ -2227,7 +2139,7 @@ printf("MotionScan::scan_frame %d\n", __LINE__);
 
 
 // Write results
-	if(plugin->config.calculation == MotionConfig::SAVE)
+	if(plugin->config.calculation == MotionScan::SAVE)
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, 

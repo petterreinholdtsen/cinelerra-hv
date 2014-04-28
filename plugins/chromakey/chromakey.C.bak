@@ -9,7 +9,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "playback3d.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -555,36 +555,6 @@ NEW_PICON_MACRO(ChromaKey)
 
 LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
 
-int ChromaKey::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%schromakey.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.red = defaults->get("RED", config.red);
-	config.green = defaults->get("GREEN", config.green);
-	config.blue = defaults->get("BLUE", config.blue);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.slope = defaults->get("SLOPE", config.slope);
-	config.use_value = defaults->get("USE_VALUE", config.use_value);
-	return 0;
-}
-
-int ChromaKey::save_defaults()
-{
-	defaults->update("RED", config.red);
-	defaults->update("GREEN", config.green);
-	defaults->update("BLUE", config.blue);
-    defaults->update("THRESHOLD", config.threshold);
-    defaults->update("SLOPE", config.slope);
-    defaults->update("USE_VALUE", config.use_value);
-	defaults->save();
-	return 0;
-}
 
 void ChromaKey::save_data(KeyFrame *keyframe)
 {

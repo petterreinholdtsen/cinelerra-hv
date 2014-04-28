@@ -72,6 +72,7 @@ public:
 	~ChannelEditWindow();
 
 	void create_objects();
+	int translation_event();
 	int close_event();
 	int add_channel();  // Start the thread for adding a channel
 	int delete_channel(int channel);
@@ -421,21 +422,17 @@ public:
 
 class ChannelEditPictureWindow;
 
-class ChannelEditPictureThread : public Thread
+class ChannelEditPictureThread : public BC_DialogThread
 {
 public:
-	ChannelEditPictureThread(ChannelPicker *channel_picker, ChannelEditWindow *window);
+	ChannelEditPictureThread(ChannelPicker *channel_picker);
 	~ChannelEditPictureThread();
 
-	void run();
-	int close_threads();
+	void handle_done_event(int result);
+	BC_Window* new_gui();
 	int edit_picture();
 
-	int in_progress;   // Allow only 1 thread at a time
-	Condition *completion;
 	ChannelPicker *channel_picker;
-	ChannelEditWindow *window;
-	ChannelEditPictureWindow *edit_window;
 };
 
 class ChannelEditPictureWindow : public BC_Window
@@ -446,7 +443,9 @@ public:
 	~ChannelEditPictureWindow();
 
 	int calculate_h(ChannelPicker *channel_picker);
+	int calculate_w(ChannelPicker *channel_picker);
 	void create_objects();
+	int translation_event();
 
 	ChannelEditPictureThread *thread;
 	ChannelPicker *channel_picker;
@@ -514,6 +513,7 @@ public:;
 	~ChannelEditCommon();
 	int handle_event();
 	int button_release_event();
+	int keypress_event();
 	ChannelPicker *channel_picker;
 	int device_id;
 };

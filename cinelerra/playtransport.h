@@ -43,8 +43,12 @@ public:
 
 	virtual void goto_start();
 	virtual void goto_end();
+#ifdef USE_SLIDER
+
 // Set a slider to control if there is one
 	void set_slider(BC_Slider *slider);
+#endif
+
 // Set the playback engine to control
 	void set_engine(PlaybackEngine *engine);
 	static int get_transport_width(MWindow *mwindow);
@@ -84,7 +88,10 @@ public:
 	EndButton *end_button;
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
+#ifdef USE_SLIDER
 	BC_Slider *slider;
+#endif
+
 	PlaybackEngine *engine;
 	int status;
 	int x, y;

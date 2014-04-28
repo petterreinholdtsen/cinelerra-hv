@@ -69,8 +69,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(LoopVideoConfig)
 
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -251,26 +249,6 @@ int LoopVideo::load_configuration()
 	return old_frames != config.frames;
 }
 
-int LoopVideo::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sloopaudio.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.frames = defaults->get("FRAMES", config.frames);
-	return 0;
-}
-
-int LoopVideo::save_defaults()
-{
-	defaults->update("FRAMES", config.frames);
-	defaults->save();
-	return 0;
-}
 
 void LoopVideo::save_data(KeyFrame *keyframe)
 {

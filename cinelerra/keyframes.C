@@ -150,8 +150,8 @@ void KeyFrames::update_parameter(KeyFrame *src)
 if(debug) printf("KeyFrames::update_parameter %d params=%p position=%lld start=%lld\n", 
 __LINE__,  
 params,
-current->position,
-track->to_units(start, 0));
+(long long)current->position,
+(long long)track->to_units(start, 0));
 
 if(debug && params)
 {
@@ -170,7 +170,7 @@ params->get_value(i));
 		{
 if(debug) printf("KeyFrames::update_parameter %d position=%lld\n", 
 __LINE__,
-current->position);
+(long long)current->position);
 			current->update_parameter(params, 
 				text,
 				extra);

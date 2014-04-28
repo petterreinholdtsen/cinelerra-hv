@@ -351,34 +351,6 @@ NEW_WINDOW_MACRO(ShapeWipeMain, ShapeWipeWindow);
 
 NEW_PICON_MACRO(ShapeWipeMain)
 
-int ShapeWipeMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sshapewipe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	direction = defaults->get("DIRECTION", direction);
-	antialias = defaults->get("ANTIALIAS", antialias);
-	preserve_aspect = defaults->get("PRESERVE_ASPECT", preserve_aspect);
-	defaults->get("FILENAME", filename);
-	defaults->get("SHAPE_NAME", shape_name);
-	return 0;
-}
-
-int ShapeWipeMain::save_defaults()
-{
-	defaults->update("DIRECTION", direction);
-	defaults->update("ANTIALIAS", antialias);
-	defaults->update("PRESERVE_ASPECT", preserve_aspect);
-	defaults->update("FILENAME", filename);
-	defaults->update("SHAPE_NAME", shape_name);
-	defaults->save();
-	return 0;
-}
 
 void ShapeWipeMain::save_data(KeyFrame *keyframe)
 {

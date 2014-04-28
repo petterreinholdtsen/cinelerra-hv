@@ -66,6 +66,7 @@
 #define FILE_EXR                26
 #define FILE_EXR_LIST           27
 #define FILE_CR2                28
+#define FILE_CR2_LIST           35
 #define FILE_VORBIS             31
 #define FILE_FFMPEG             33
 #define FILE_SCENE              34
@@ -120,6 +121,7 @@ N_("EXR Sequence")
 #define AVI_AVIFILE_NAME "AVI Avifile"
 #define AVI_LAVTOOLS_NAME "AVI Lavtools"
 #define JPEG_LIST_NAME "JPEG Sequence"
+#define CR2_LIST_NAME "CR2 Sequence"
 #define JPEG_NAME "JPEG"
 #define MOV_NAME "Quicktime for Linux"
 #define MPEG_NAME "MPEG"           // For decoding only

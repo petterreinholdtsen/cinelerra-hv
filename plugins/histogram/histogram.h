@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "histogramconfig.h"
 #include "histogramwindow.inc"
 #include "loadbalance.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 
 
@@ -41,8 +41,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -53,8 +51,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(HistogramConfig)
 
 // Interpolate quantized transfer table to linear output
-	float calculate_linear(float input, int mode, int do_value);
-	float calculate_smooth(float input, int subscript);
+	float calculate_level(float input, int mode, int do_value);
 // Convert input to smoothed output by looking up in smooth table.
 	float calculate_curve(float input);
 // Calculate automatic settings
@@ -72,8 +69,6 @@ public:
 	VFrame *input, *output;
 	HistogramEngine *engine;
 	int *lookup[HISTOGRAM_MODES];
-	float *smoothed[HISTOGRAM_MODES];
-	float *linear[HISTOGRAM_MODES];
 // No value applied to this
 	int *preview_lookup[HISTOGRAM_MODES];
 	int *accum[HISTOGRAM_MODES];
@@ -84,6 +79,8 @@ public:
 	int dragging_point;
 	int point_x_offset;
 	int point_y_offset;
+	int w, h;
+	int parade;
 };
 
 class HistogramPackage : public LoadPackage

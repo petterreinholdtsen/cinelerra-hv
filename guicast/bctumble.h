@@ -50,7 +50,7 @@ public:
 	virtual void set_increment(float value) {};
 
 private:
-	int draw_face();
+	int draw_face(int flush = 1);
 
 	BC_Pixmap *images[4];
 	int status;

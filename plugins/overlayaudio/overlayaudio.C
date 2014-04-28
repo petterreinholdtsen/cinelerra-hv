@@ -23,14 +23,17 @@
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
-#include "picon_png.h"
 #include "pluginaclient.h"
 #include "samples.h"
+#include "theme.h"
 #include <string.h>
 
 
 class OverlayAudioWindow;
 class OverlayAudio;
+
+#define AUDIO_TRANSFER_TYPES 2
+
 
 class OverlayAudioConfig
 {
@@ -44,19 +47,39 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 	static const char* output_to_text(int output_layer);
+	static const char* mode_to_text(int mode);
 	int output_track;
 	enum
 	{
 		TOP,
 		BOTTOM
 	};
-	
+
+
+	int mode;
+	enum
+	{
+		ADD,
+		MULTIPLY
+	};
 };
 
 class OutputTrack : public BC_PopupMenu
 {
 public:
 	OutputTrack(OverlayAudio *plugin, int x, int y);
+	void create_objects();
+	int handle_event();
+	OverlayAudio *plugin;
+};
+
+
+class OverlayMode : public BC_PopupMenu
+{
+public:
+	OverlayMode(OverlayAudio *plugin,
+		int x, 
+		int y);
 	void create_objects();
 	int handle_event();
 	OverlayAudio *plugin;
@@ -72,6 +95,7 @@ public:
 
 	OverlayAudio *plugin;
 	OutputTrack *output;
+	OverlayMode *mode;
 };
 
 
@@ -90,12 +114,10 @@ public:
 		Samples **buffer,
 		int64_t start_position,
 		int sample_rate);
-	int load_defaults();
-	int save_defaults();
 	void update_gui();
 
 
-	PLUGIN_CLASS_MEMBERS(OverlayAudioConfig)
+	PLUGIN_CLASS_MEMBERS2(OverlayAudioConfig)
 };
 
 
@@ -108,16 +130,20 @@ public:
 OverlayAudioConfig::OverlayAudioConfig()
 {
 	output_track = OverlayAudioConfig::TOP;
+	mode = OverlayAudioConfig::ADD;
+
 }
 
 int OverlayAudioConfig::equivalent(OverlayAudioConfig &that)
 {
-	return that.output_track == output_track;
+	return that.output_track == output_track &&
+		that.mode == mode;
 }
 
 void OverlayAudioConfig::copy_from(OverlayAudioConfig &that)
 {
 	output_track = that.output_track;
+	mode = that.mode;
 }
 
 void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev, 
@@ -127,6 +153,7 @@ void OverlayAudioConfig::interpolate(OverlayAudioConfig &prev,
 	int64_t current_frame)
 {
 	output_track = prev.output_track;
+	mode = prev.mode;
 }
 
 const char* OverlayAudioConfig::output_to_text(int output_layer)
@@ -135,6 +162,17 @@ const char* OverlayAudioConfig::output_to_text(int output_layer)
 	{
 		case OverlayAudioConfig::TOP:    return _("Top");
 		case OverlayAudioConfig::BOTTOM: return _("Bottom");
+	}
+	return "";
+}
+
+
+const char* OverlayAudioConfig::mode_to_text(int mode)
+{
+	switch(mode)
+	{
+		case OverlayAudioConfig::ADD:    return _("Add");
+		case OverlayAudioConfig::MULTIPLY: return _("Multiply");
 	}
 	return "";
 }
@@ -159,11 +197,21 @@ OverlayAudioWindow::OverlayAudioWindow(OverlayAudio *plugin)
 void OverlayAudioWindow::create_objects()
 {
 	int x = 10, y = 10;
+	int x1 = x;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, "Output track:"));
-	x += title->get_w() + 10;
+	x += title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(output = new OutputTrack(plugin, x, y));
 	output->create_objects();
+
+	y += output->get_h() + plugin->get_theme()->widget_border;
+	x = x1;
+	add_subwindow(title = new BC_Title(x, y, "Mode:"));
+	x += title->get_w() + plugin->get_theme()->widget_border;
+	add_subwindow(mode = new OverlayMode(plugin, x, y));
+	mode->create_objects();
+	
+	
 	show_window();
 }
 
@@ -216,6 +264,54 @@ int OutputTrack::handle_event()
 
 
 
+
+
+
+
+
+OverlayMode::OverlayMode(OverlayAudio *plugin,
+	int x, 
+	int y)
+ : BC_PopupMenu(x,
+ 	y,
+	150,
+	OverlayAudioConfig::mode_to_text(plugin->config.mode),
+	1)
+{
+	this->plugin = plugin;
+}
+
+void OverlayMode::create_objects()
+{
+	for(int i = 0; i < AUDIO_TRANSFER_TYPES; i++)
+		add_item(new BC_MenuItem(OverlayAudioConfig::mode_to_text(i)));
+}
+
+int OverlayMode::handle_event()
+{
+	char *text = get_text();
+
+	for(int i = 0; i < AUDIO_TRANSFER_TYPES; i++)
+	{
+		if(!strcmp(text, OverlayAudioConfig::mode_to_text(i)))
+		{
+			plugin->config.mode = i;
+			break;
+		}
+	}
+
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+
+
 REGISTER_PLUGIN(OverlayAudio)
 
 
@@ -253,6 +349,7 @@ void OverlayAudio::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("OVERLAY"))
 			{
 				config.output_track = input.tag.get_property("OUTPUT", config.output_track);
+				config.mode = input.tag.get_property("MODE", config.mode);
 			}
 		}
 	}
@@ -265,29 +362,12 @@ void OverlayAudio::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("OUTPUT", config.output_track);
+	output.tag.set_property("MODE", config.mode);
 	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }
 
-int OverlayAudio::load_defaults()
-{
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%soverlayaudio.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.output_track = defaults->get("OUTPUT", config.output_track);
-	return 0;
-}
-
-int OverlayAudio::save_defaults()
-{
-	defaults->update("OUTPUT", config.output_track);
-	defaults->save();
-
-	return 0;
-}
 
 
 void OverlayAudio::update_gui()
@@ -299,12 +379,13 @@ void OverlayAudio::update_gui()
 			thread->window->lock_window("OverlayAudio::update_gui");
 			((OverlayAudioWindow*)thread->window)->output->set_text(
 				OverlayAudioConfig::output_to_text(config.output_track));
+			((OverlayAudioWindow*)thread->window)->mode->set_text(
+				OverlayAudioConfig::mode_to_text(config.mode));
 			thread->window->unlock_window();
 		}
 	}
 }
 
-NEW_PICON_MACRO(OverlayAudio)
 NEW_WINDOW_MACRO(OverlayAudio, OverlayAudioWindow)
 LOAD_CONFIGURATION_MACRO(OverlayAudio, OverlayAudioConfig)
 
@@ -340,9 +421,23 @@ int OverlayAudio::process_buffer(int64_t size,
 				sample_rate,
 				start_position,
 				size);
-			for(int j = 0; j < size; j++)
+			
+			switch(config.mode)
 			{
-				output_buffer->get_data()[j] += input_buffer->get_data()[j];
+				case OverlayAudioConfig::ADD:
+					for(int j = 0; j < size; j++)
+					{
+						output_buffer->get_data()[j] += input_buffer->get_data()[j];
+					}
+					break;
+					
+					
+				case OverlayAudioConfig::MULTIPLY:
+					for(int j = 0; j < size; j++)
+					{
+						output_buffer->get_data()[j] *= input_buffer->get_data()[j];
+					}
+					break;
 			}
 		}
 	}

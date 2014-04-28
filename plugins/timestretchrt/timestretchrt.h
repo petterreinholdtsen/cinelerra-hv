@@ -46,6 +46,7 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 	double scale;
+	int size;
 };
 
 
@@ -60,6 +61,17 @@ public:
 	TimeStretchRT *plugin;
 };
 
+
+class TimeStretchRTSize : public BC_TumbleTextBox
+{
+public:
+	TimeStretchRTSize(TimeStretchRTWindow *window, TimeStretchRT *plugin, int x, int y);
+
+	int handle_event();
+
+	TimeStretchRT *plugin;
+};
+
 class TimeStretchRTWindow : public PluginClientWindow
 {
 public:
@@ -69,6 +81,7 @@ public:
 
 	TimeStretchRT *plugin;
 	TimeStretchRTScale *scale;
+	TimeStretchRTSize *size;
 };
 
 
@@ -82,8 +95,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(TimeStretchRTConfig)
 
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();

@@ -26,7 +26,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -83,8 +83,6 @@ public:
 	PLUGIN_CLASS_MEMBERS(YUVConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -228,27 +226,6 @@ void YUVEffect::update_gui()
 		((YUVWindow*)thread->window)->v->update(config.v);
 		thread->window->unlock_window();
 	}
-}
-
-int YUVEffect::load_defaults()
-{
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%syuv.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.y = defaults->get("Y", config.y);
-	config.u = defaults->get("U", config.u);
-	config.v = defaults->get("V", config.v);
-	return 0;
-}
-
-int YUVEffect::save_defaults()
-{
-	defaults->update("Y", config.y);
-	defaults->update("U", config.u);
-	defaults->update("V", config.v);
-	defaults->save();
-	return 0;
 }
 
 void YUVEffect::save_data(KeyFrame *keyframe)

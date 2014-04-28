@@ -1,0 +1,3245 @@
+main 557: Opening source /root/Azureus Downloads/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD.m2ts
+main 578: Decoding encoding parameters
+main 625: Transcoding
+decode_nal 420 type=0x09 0x10 offset=0 video_eof=0
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x30 offset=96162 video_eof=0
+write_frame 181 pass=0 96162
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 00 81 01 buf_size=96162
+write_frame 197 96162
+decode_nal 420 type=0x09 0x50 offset=77550 video_eof=0
+write_frame 181 pass=0 77550
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 01 00 01 buf_size=77550
+write_frame 197 77550
+decode_nal 420 type=0x09 0x30 offset=44863 video_eof=0
+write_frame 181 pass=0 44863
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 01 81 81 buf_size=44863
+write_frame 197 44863
+decode_nal 420 type=0x09 0x50 offset=85129 video_eof=0
+write_frame 181 pass=0 85129
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 02 00 01 buf_size=85129
+write_frame 197 85129
+decode_nal 420 type=0x09 0x50 offset=64966 video_eof=0
+write_frame 181 pass=0 64966
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 02 80 01 buf_size=64966
+write_frame 197 64966
+decode_nal 420 type=0x09 0x30 offset=40853 video_eof=0
+write_frame 181 pass=0 40853
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 03 01 81 buf_size=40853
+write_frame 197 40853
+decode_nal 420 type=0x09 0x50 offset=86474 video_eof=0
+write_frame 181 pass=0 86474
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 03 80 01 buf_size=86474
+write_frame 197 86474
+decode_nal 420 type=0x09 0x50 offset=61905 video_eof=0
+write_frame 181 pass=0 61905
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 04 00 01 buf_size=61905
+write_frame 197 61905
+decode_nal 420 type=0x09 0x30 offset=40138 video_eof=0
+write_frame 181 pass=0 40138
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 04 81 81 buf_size=40138
+write_frame 197 40138
+decode_nal 420 type=0x09 0x50 offset=86983 video_eof=0
+write_frame 181 pass=0 86983
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 05 00 01 buf_size=86983
+write_frame 197 86983
+decode_nal 420 type=0x09 0x50 offset=62559 video_eof=0
+write_frame 181 pass=0 62559
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 05 80 01 buf_size=62559
+write_frame 197 62559
+decode_nal 420 type=0x09 0x30 offset=41271 video_eof=0
+write_frame 181 pass=0 41271
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 06 01 81 buf_size=41271
+write_frame 197 41271
+decode_nal 420 type=0x09 0x50 offset=84861 video_eof=0
+write_frame 181 pass=0 84861
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 06 80 01 buf_size=84861
+write_frame 197 84861
+decode_nal 420 type=0x09 0x50 offset=62259 video_eof=0
+write_frame 181 pass=0 62259
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 07 00 01 buf_size=62259
+write_frame 197 62259
+decode_nal 420 type=0x09 0x30 offset=36853 video_eof=0
+write_frame 181 pass=0 36853
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 07 81 81 buf_size=36853
+write_frame 197 36853
+decode_nal 420 type=0x09 0x50 offset=82883 video_eof=0
+write_frame 181 pass=0 82883
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 08 00 01 buf_size=82883
+write_frame 197 82883
+decode_nal 420 type=0x09 0x50 offset=53719 video_eof=0
+write_frame 181 pass=0 53719
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 08 80 01 buf_size=53719
+write_frame 197 53719
+decode_nal 420 type=0x09 0x30 offset=45063 video_eof=0
+write_frame 181 pass=0 45063
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 09 01 81 buf_size=45063
+write_frame 197 45063
+decode_nal 420 type=0x09 0x50 offset=83218 video_eof=0
+write_frame 181 pass=0 83218
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 09 80 01 buf_size=83218
+write_frame 197 83218
+decode_nal 420 type=0x09 0x50 offset=61145 video_eof=0
+write_frame 181 pass=0 61145
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 0a 00 01 buf_size=61145
+write_frame 197 61145
+decode_nal 420 type=0x09 0x30 offset=36713 video_eof=0
+write_frame 181 pass=0 36713
+decode_frame 2953 buf=00 00 00 01 09 30 00 00 01 06 01 04 00 0a 81 81 buf_size=36713
+write_frame 197 36713
+decode_nal 420 type=0x09 0x50 offset=75599 video_eof=0
+write_frame 181 pass=0 75599
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 0b 00 01 buf_size=75599
+write_frame 197 75599
+decode_nal 420 type=0x09 0x50 offset=50791 video_eof=0
+write_frame 181 pass=0 50791
+decode_frame 2953 buf=00 00 00 01 09 50 00 00 01 06 01 04 00 0b 80 01 buf_size=50791
+write_frame 197 50791
+/root/Azureus Downloads/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD.m2ts format:
+width=1920
+height=1080
+framerate=23.976024
+audio_track=1
+samplerate=48000
+channels=6
+decode_nal 420 type=0x09 0x10 offset=0 video_eof=0
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x30 offset=96162 video_eof=0
+write_frame 298 96162
+write_frame 322: video_eof=0 frames_written=1         
+decode_nal 420 type=0x09 0x50 offset=77550 video_eof=0
+write_frame 298 77550
+write_frame 322: video_eof=0 frames_written=2         
+decode_nal 420 type=0x09 0x30 offset=44863 video_eof=0
+write_frame 298 44863
+write_frame 322: video_eof=0 frames_written=3         
+decode_nal 420 type=0x09 0x50 offset=85129 video_eof=0
+write_frame 298 85129
+write_frame 322: video_eof=0 frames_written=4         
+decode_nal 420 type=0x09 0x50 offset=64966 video_eof=0
+write_frame 298 64966
+write_frame 322: video_eof=0 frames_written=5         
+decode_nal 420 type=0x09 0x30 offset=40853 video_eof=0
+write_frame 298 40853
+write_frame 322: video_eof=0 frames_written=6         
+decode_nal 420 type=0x09 0x50 offset=86474 video_eof=0
+write_frame 298 86474
+write_frame 322: video_eof=0 frames_written=7         
+decode_nal 420 type=0x09 0x50 offset=61905 video_eof=0
+write_frame 298 61905
+write_frame 322: video_eof=0 frames_written=8         
+decode_nal 420 type=0x09 0x30 offset=40138 video_eof=0
+write_frame 298 40138
+write_frame 322: video_eof=0 frames_written=9         
+decode_nal 420 type=0x09 0x50 offset=86983 video_eof=0
+write_frame 298 86983
+write_frame 322: video_eof=0 frames_written=10         
+decode_nal 420 type=0x09 0x50 offset=62559 video_eof=0
+write_frame 298 62559
+write_frame 322: video_eof=0 frames_written=11         
+decode_nal 420 type=0x09 0x30 offset=41271 video_eof=0
+write_frame 298 41271
+write_frame 322: video_eof=0 frames_written=12         
+decode_nal 420 type=0x09 0x50 offset=84861 video_eof=0
+write_frame 298 84861
+write_frame 322: video_eof=0 frames_written=13         
+decode_nal 420 type=0x09 0x50 offset=62259 video_eof=0
+write_frame 298 62259
+write_frame 322: video_eof=0 frames_written=14         
+decode_nal 420 type=0x09 0x30 offset=36853 video_eof=0
+write_frame 298 36853
+write_frame 322: video_eof=0 frames_written=15         
+decode_nal 420 type=0x09 0x50 offset=82883 video_eof=0
+write_frame 298 82883
+write_frame 322: video_eof=0 frames_written=16         
+decode_nal 420 type=0x09 0x50 offset=53719 video_eof=0
+write_frame 298 53719
+write_frame 322: video_eof=0 frames_written=17         
+decode_nal 420 type=0x09 0x30 offset=45063 video_eof=0
+write_frame 298 45063
+write_frame 322: video_eof=0 frames_written=18         
+decode_nal 420 type=0x09 0x50 offset=83218 video_eof=0
+write_frame 298 83218
+write_frame 322: video_eof=0 frames_written=19         
+decode_nal 420 type=0x09 0x50 offset=61145 video_eof=0
+write_frame 298 61145
+write_frame 322: video_eof=0 frames_written=20         
+decode_nal 420 type=0x09 0x30 offset=36713 video_eof=0
+write_frame 298 36713
+write_frame 322: video_eof=0 frames_written=21         
+decode_nal 420 type=0x09 0x50 offset=75599 video_eof=0
+write_frame 298 75599
+write_frame 322: video_eof=0 frames_written=22         
+decode_nal 420 type=0x09 0x50 offset=50791 video_eof=0
+write_frame 298 50791
+write_frame 322: video_eof=0 frames_written=23         
+decode_nal 420 type=0x09 0x10 offset=40093 video_eof=0
+write_frame 298 40093
+write_frame 322: video_eof=0 frames_written=24         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=103955 video_eof=0
+write_frame 298 103955
+write_frame 322: video_eof=0 frames_written=25         
+decode_nal 420 type=0x09 0x50 offset=65952 video_eof=0
+write_frame 298 65952
+write_frame 322: video_eof=0 frames_written=26         
+decode_nal 420 type=0x09 0x30 offset=48571 video_eof=0
+write_frame 298 48571
+write_frame 322: video_eof=0 frames_written=27         
+decode_nal 420 type=0x09 0x50 offset=89401 video_eof=0
+write_frame 298 89401
+write_frame 322: video_eof=0 frames_written=28         
+decode_nal 420 type=0x09 0x50 offset=57467 video_eof=0
+write_frame 298 57467
+write_frame 322: video_eof=0 frames_written=29         
+decode_nal 420 type=0x09 0x30 offset=35737 video_eof=0
+write_frame 298 35737
+write_frame 322: video_eof=0 frames_written=30         
+write_frame 345: video_eof=0 samples_written=0
+decode_nal 420 type=0x09 0x50 offset=88663 video_eof=0
+write_frame 298 88663
+write_frame 322: video_eof=0 frames_written=31         
+decode_nal 420 type=0x09 0x50 offset=63792 video_eof=0
+write_frame 298 63792
+write_frame 322: video_eof=0 frames_written=32         
+decode_nal 420 type=0x09 0x30 offset=52657 video_eof=0
+write_frame 298 52657
+write_frame 322: video_eof=0 frames_written=33         
+decode_nal 420 type=0x09 0x50 offset=76650 video_eof=0
+write_frame 298 76650
+write_frame 322: video_eof=0 frames_written=34         
+decode_nal 420 type=0x09 0x50 offset=60172 video_eof=0
+write_frame 298 60172
+write_frame 322: video_eof=0 frames_written=35         
+decode_nal 420 type=0x09 0x30 offset=45953 video_eof=0
+write_frame 298 45953
+write_frame 322: video_eof=0 frames_written=36         
+decode_nal 420 type=0x09 0x50 offset=92171 video_eof=0
+write_frame 298 92171
+write_frame 322: video_eof=0 frames_written=37         
+decode_nal 420 type=0x09 0x50 offset=47442 video_eof=0
+write_frame 298 47442
+write_frame 322: video_eof=0 frames_written=38         
+decode_nal 420 type=0x09 0x30 offset=31377 video_eof=0
+write_frame 298 31377
+write_frame 322: video_eof=0 frames_written=39         
+decode_nal 420 type=0x09 0x50 offset=92828 video_eof=0
+write_frame 298 92828
+write_frame 322: video_eof=0 frames_written=40         
+decode_nal 420 type=0x09 0x50 offset=47121 video_eof=0
+write_frame 298 47121
+write_frame 322: video_eof=0 frames_written=41         
+decode_nal 420 type=0x09 0x30 offset=37421 video_eof=0
+write_frame 298 37421
+write_frame 322: video_eof=0 frames_written=42         
+decode_nal 420 type=0x09 0x50 offset=70910 video_eof=0
+write_frame 298 70910
+write_frame 322: video_eof=0 frames_written=43         
+decode_nal 420 type=0x09 0x50 offset=49907 video_eof=0
+write_frame 298 49907
+write_frame 322: video_eof=0 frames_written=44         
+decode_nal 420 type=0x09 0x30 offset=46905 video_eof=0
+write_frame 298 46905
+write_frame 322: video_eof=0 frames_written=45         
+decode_nal 420 type=0x09 0x50 offset=87795 video_eof=0
+write_frame 298 87795
+write_frame 322: video_eof=0 frames_written=46         
+decode_nal 420 type=0x09 0x50 offset=70122 video_eof=0
+write_frame 298 70122
+write_frame 322: video_eof=0 frames_written=47         
+decode_nal 420 type=0x09 0x10 offset=41291 video_eof=0
+write_frame 298 41291
+write_frame 322: video_eof=0 frames_written=48         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=71303 video_eof=0
+write_frame 298 71303
+write_frame 322: video_eof=0 frames_written=49         
+decode_nal 420 type=0x09 0x50 offset=39394 video_eof=0
+write_frame 298 39394
+write_frame 322: video_eof=0 frames_written=50         
+decode_nal 420 type=0x09 0x30 offset=29165 video_eof=0
+write_frame 298 29165
+write_frame 322: video_eof=0 frames_written=51         
+decode_nal 420 type=0x09 0x50 offset=49615 video_eof=0
+write_frame 298 49615
+write_frame 322: video_eof=0 frames_written=52         
+decode_nal 420 type=0x09 0x30 offset=29531 video_eof=0
+write_frame 298 29531
+write_frame 322: video_eof=0 frames_written=53         
+write_frame 345: video_eof=0 samples_written=65536
+decode_nal 420 type=0x09 0x50 offset=47020 video_eof=0
+write_frame 298 47020
+write_frame 322: video_eof=0 frames_written=54         
+decode_nal 420 type=0x09 0x50 offset=32507 video_eof=0
+write_frame 298 32507
+write_frame 322: video_eof=0 frames_written=55         
+decode_nal 420 type=0x09 0x30 offset=25061 video_eof=0
+write_frame 298 25061
+write_frame 322: video_eof=0 frames_written=56         
+decode_nal 420 type=0x09 0x50 offset=45373 video_eof=0
+write_frame 298 45373
+write_frame 322: video_eof=0 frames_written=57         
+decode_nal 420 type=0x09 0x50 offset=137477 video_eof=0
+write_frame 298 137477
+write_frame 322: video_eof=0 frames_written=58         
+decode_nal 420 type=0x09 0x30 offset=161580 video_eof=0
+write_frame 298 161580
+write_frame 322: video_eof=0 frames_written=59         
+decode_nal 420 type=0x09 0x50 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=60         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=61         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=62         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=63         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=64         
+decode_nal 420 type=0x09 0x50 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=65         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=66         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=67         
+decode_nal 420 type=0x09 0x50 offset=171428 video_eof=0
+write_frame 298 171428
+write_frame 322: video_eof=0 frames_written=68         
+decode_nal 420 type=0x09 0x50 offset=151872 video_eof=0
+write_frame 298 151872
+write_frame 322: video_eof=0 frames_written=69         
+decode_nal 420 type=0x09 0x30 offset=161615 video_eof=0
+write_frame 298 161615
+write_frame 322: video_eof=0 frames_written=70         
+decode_nal 420 type=0x09 0x50 offset=185281 video_eof=0
+write_frame 298 185281
+write_frame 322: video_eof=0 frames_written=71         
+decode_nal 420 type=0x09 0x10 offset=137962 video_eof=0
+write_frame 298 137962
+write_frame 322: video_eof=0 frames_written=72         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=218638 video_eof=0
+write_frame 298 218638
+write_frame 322: video_eof=0 frames_written=73         
+decode_nal 420 type=0x09 0x50 offset=173294 video_eof=0
+write_frame 298 173294
+write_frame 322: video_eof=0 frames_written=74         
+decode_nal 420 type=0x09 0x30 offset=142657 video_eof=0
+write_frame 298 142657
+write_frame 322: video_eof=0 frames_written=75         
+decode_nal 420 type=0x09 0x50 offset=197323 video_eof=0
+write_frame 298 197323
+write_frame 322: video_eof=0 frames_written=76         
+write_frame 345: video_eof=0 samples_written=131072
+decode_nal 420 type=0x09 0x30 offset=141764 video_eof=0
+write_frame 298 141764
+write_frame 322: video_eof=0 frames_written=77         
+decode_nal 420 type=0x09 0x50 offset=200079 video_eof=0
+write_frame 298 200079
+write_frame 322: video_eof=0 frames_written=78         
+decode_nal 420 type=0x09 0x30 offset=139522 video_eof=0
+write_frame 298 139522
+write_frame 322: video_eof=0 frames_written=79         
+decode_nal 420 type=0x09 0x50 offset=201693 video_eof=0
+write_frame 298 201693
+write_frame 322: video_eof=0 frames_written=80         
+decode_nal 420 type=0x09 0x50 offset=166654 video_eof=0
+write_frame 298 166654
+write_frame 322: video_eof=0 frames_written=81         
+decode_nal 420 type=0x09 0x30 offset=125831 video_eof=0
+write_frame 298 125831
+write_frame 322: video_eof=0 frames_written=82         
+decode_nal 420 type=0x09 0x50 offset=189028 video_eof=0
+write_frame 298 189028
+write_frame 322: video_eof=0 frames_written=83         
+decode_nal 420 type=0x09 0x50 offset=153651 video_eof=0
+write_frame 298 153651
+write_frame 322: video_eof=0 frames_written=84         
+decode_nal 420 type=0x09 0x30 offset=124106 video_eof=0
+write_frame 298 124106
+write_frame 322: video_eof=0 frames_written=85         
+decode_nal 420 type=0x09 0x50 offset=185224 video_eof=0
+write_frame 298 185224
+write_frame 322: video_eof=0 frames_written=86         
+decode_nal 420 type=0x09 0x50 offset=149974 video_eof=0
+write_frame 298 149974
+write_frame 322: video_eof=0 frames_written=87         
+decode_nal 420 type=0x09 0x30 offset=122127 video_eof=0
+write_frame 298 122127
+write_frame 322: video_eof=0 frames_written=88         
+decode_nal 420 type=0x09 0x50 offset=184149 video_eof=0
+write_frame 298 184149
+write_frame 322: video_eof=0 frames_written=89         
+decode_nal 420 type=0x09 0x50 offset=149761 video_eof=0
+write_frame 298 149761
+write_frame 322: video_eof=0 frames_written=90         
+decode_nal 420 type=0x09 0x30 offset=122521 video_eof=0
+write_frame 298 122521
+write_frame 322: video_eof=0 frames_written=91         
+decode_nal 420 type=0x09 0x50 offset=186250 video_eof=0
+write_frame 298 186250
+write_frame 322: video_eof=0 frames_written=92         
+decode_nal 420 type=0x09 0x50 offset=150846 video_eof=0
+write_frame 298 150846
+write_frame 322: video_eof=0 frames_written=93         
+decode_nal 420 type=0x09 0x30 offset=122599 video_eof=0
+write_frame 298 122599
+write_frame 322: video_eof=0 frames_written=94         
+decode_nal 420 type=0x09 0x50 offset=173550 video_eof=0
+write_frame 298 173550
+write_frame 322: video_eof=0 frames_written=95         
+decode_nal 420 type=0x09 0x10 offset=136931 video_eof=0
+write_frame 298 136931
+write_frame 322: video_eof=0 frames_written=96         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=195755 video_eof=0
+write_frame 298 195755
+write_frame 322: video_eof=0 frames_written=97         
+decode_nal 420 type=0x09 0x50 offset=132373 video_eof=0
+write_frame 298 132373
+write_frame 322: video_eof=0 frames_written=98         
+decode_nal 420 type=0x09 0x30 offset=99935 video_eof=0
+write_frame 298 99935
+write_frame 322: video_eof=0 frames_written=99         
+write_frame 345: video_eof=0 samples_written=196608
+decode_nal 420 type=0x09 0x50 offset=162838 video_eof=0
+write_frame 298 162838
+write_frame 322: video_eof=0 frames_written=100         
+decode_nal 420 type=0x09 0x50 offset=130978 video_eof=0
+write_frame 298 130978
+write_frame 322: video_eof=0 frames_written=101         
+decode_nal 420 type=0x09 0x30 offset=98541 video_eof=0
+write_frame 298 98541
+write_frame 322: video_eof=0 frames_written=102         
+decode_nal 420 type=0x09 0x50 offset=161079 video_eof=0
+write_frame 298 161079
+write_frame 322: video_eof=0 frames_written=103         
+decode_nal 420 type=0x09 0x50 offset=127532 video_eof=0
+write_frame 298 127532
+write_frame 322: video_eof=0 frames_written=104         
+decode_nal 420 type=0x09 0x30 offset=97767 video_eof=0
+write_frame 298 97767
+write_frame 322: video_eof=0 frames_written=105         
+decode_nal 420 type=0x09 0x50 offset=168417 video_eof=0
+write_frame 298 168417
+write_frame 322: video_eof=0 frames_written=106         
+decode_nal 420 type=0x09 0x50 offset=132395 video_eof=0
+write_frame 298 132395
+write_frame 322: video_eof=0 frames_written=107         
+decode_nal 420 type=0x09 0x30 offset=102274 video_eof=0
+write_frame 298 102274
+write_frame 322: video_eof=0 frames_written=108         
+decode_nal 420 type=0x09 0x50 offset=162242 video_eof=0
+write_frame 298 162242
+write_frame 322: video_eof=0 frames_written=109         
+decode_nal 420 type=0x09 0x50 offset=128423 video_eof=0
+write_frame 298 128423
+write_frame 322: video_eof=0 frames_written=110         
+decode_nal 420 type=0x09 0x30 offset=100136 video_eof=0
+write_frame 298 100136
+write_frame 322: video_eof=0 frames_written=111         
+decode_nal 420 type=0x09 0x50 offset=171036 video_eof=0
+write_frame 298 171036
+write_frame 322: video_eof=0 frames_written=112         
+decode_nal 420 type=0x09 0x50 offset=134756 video_eof=0
+write_frame 298 134756
+write_frame 322: video_eof=0 frames_written=113         
+decode_nal 420 type=0x09 0x30 offset=101273 video_eof=0
+write_frame 298 101273
+write_frame 322: video_eof=0 frames_written=114         
+decode_nal 420 type=0x09 0x50 offset=165789 video_eof=0
+write_frame 298 165789
+write_frame 322: video_eof=0 frames_written=115         
+decode_nal 420 type=0x09 0x50 offset=131820 video_eof=0
+write_frame 298 131820
+write_frame 322: video_eof=0 frames_written=116         
+decode_nal 420 type=0x09 0x30 offset=101581 video_eof=0
+write_frame 298 101581
+write_frame 322: video_eof=0 frames_written=117         
+decode_nal 420 type=0x09 0x50 offset=165901 video_eof=0
+write_frame 298 165901
+write_frame 322: video_eof=0 frames_written=118         
+decode_nal 420 type=0x09 0x50 offset=133956 video_eof=0
+write_frame 298 133956
+write_frame 322: video_eof=0 frames_written=119         
+decode_nal 420 type=0x09 0x10 offset=102452 video_eof=0
+write_frame 298 102452
+write_frame 322: video_eof=0 frames_written=120         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=186420 video_eof=0
+write_frame 298 186420
+write_frame 322: video_eof=0 frames_written=121         
+decode_nal 420 type=0x09 0x50 offset=133845 video_eof=0
+write_frame 298 133845
+write_frame 322: video_eof=0 frames_written=122         
+decode_nal 420 type=0x09 0x30 offset=99446 video_eof=0
+write_frame 298 99446
+write_frame 322: video_eof=0 frames_written=123         
+decode_nal 420 type=0x09 0x50 offset=166199 video_eof=0
+write_frame 298 166199
+write_frame 322: video_eof=0 frames_written=124         
+decode_nal 420 type=0x09 0x50 offset=133119 video_eof=0
+write_frame 298 133119
+write_frame 322: video_eof=0 frames_written=125         
+decode_nal 420 type=0x09 0x30 offset=99101 video_eof=0
+write_frame 298 99101
+write_frame 322: video_eof=0 frames_written=126         
+decode_nal 420 type=0x09 0x50 offset=171187 video_eof=0
+write_frame 298 171187
+write_frame 322: video_eof=0 frames_written=127         
+decode_nal 420 type=0x09 0x50 offset=134560 video_eof=0
+write_frame 298 134560
+write_frame 322: video_eof=0 frames_written=128         
+decode_nal 420 type=0x09 0x30 offset=99857 video_eof=0
+write_frame 298 99857
+write_frame 322: video_eof=0 frames_written=129         
+decode_nal 420 type=0x09 0x50 offset=165482 video_eof=0
+write_frame 298 165482
+write_frame 322: video_eof=0 frames_written=130         
+decode_nal 420 type=0x09 0x50 offset=133616 video_eof=0
+write_frame 298 133616
+write_frame 322: video_eof=0 frames_written=131         
+decode_nal 420 type=0x09 0x30 offset=99518 video_eof=0
+write_frame 298 99518
+write_frame 322: video_eof=0 frames_written=132         
+decode_nal 420 type=0x09 0x50 offset=170043 video_eof=0
+write_frame 298 170043
+write_frame 322: video_eof=0 frames_written=133         
+decode_nal 420 type=0x09 0x50 offset=135014 video_eof=0
+write_frame 298 135014
+write_frame 322: video_eof=0 frames_written=134         
+decode_nal 420 type=0x09 0x30 offset=104657 video_eof=0
+write_frame 298 104657
+write_frame 322: video_eof=0 frames_written=135         
+decode_nal 420 type=0x09 0x50 offset=165485 video_eof=0
+write_frame 298 165485
+write_frame 322: video_eof=0 frames_written=136         
+decode_nal 420 type=0x09 0x50 offset=133915 video_eof=0
+write_frame 298 133915
+write_frame 322: video_eof=0 frames_written=137         
+decode_nal 420 type=0x09 0x30 offset=100551 video_eof=0
+write_frame 298 100551
+write_frame 322: video_eof=0 frames_written=138         
+decode_nal 420 type=0x09 0x50 offset=167394 video_eof=0
+write_frame 298 167394
+write_frame 322: video_eof=0 frames_written=139         
+decode_nal 420 type=0x09 0x50 offset=134027 video_eof=0
+write_frame 298 134027
+write_frame 322: video_eof=0 frames_written=140         
+decode_nal 420 type=0x09 0x30 offset=102201 video_eof=0
+write_frame 298 102201
+write_frame 322: video_eof=0 frames_written=141         
+decode_nal 420 type=0x09 0x50 offset=160902 video_eof=0
+write_frame 298 160902
+write_frame 322: video_eof=0 frames_written=142         
+decode_nal 420 type=0x09 0x50 offset=132887 video_eof=0
+write_frame 298 132887
+write_frame 322: video_eof=0 frames_written=143         
+decode_nal 420 type=0x09 0x10 offset=102258 video_eof=0
+write_frame 298 102258
+write_frame 322: video_eof=0 frames_written=144         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=181516 video_eof=0
+write_frame 298 181516
+write_frame 322: video_eof=0 frames_written=145         
+write_frame 345: video_eof=0 samples_written=262144
+decode_nal 420 type=0x09 0x50 offset=134011 video_eof=0
+write_frame 298 134011
+write_frame 322: video_eof=0 frames_written=146         
+decode_nal 420 type=0x09 0x30 offset=103083 video_eof=0
+write_frame 298 103083
+write_frame 322: video_eof=0 frames_written=147         
+decode_nal 420 type=0x09 0x50 offset=168504 video_eof=0
+write_frame 298 168504
+write_frame 322: video_eof=0 frames_written=148         
+decode_nal 420 type=0x09 0x50 offset=135361 video_eof=0
+write_frame 298 135361
+write_frame 322: video_eof=0 frames_written=149         
+decode_nal 420 type=0x09 0x30 offset=102701 video_eof=0
+write_frame 298 102701
+write_frame 322: video_eof=0 frames_written=150         
+decode_nal 420 type=0x09 0x50 offset=166614 video_eof=0
+write_frame 298 166614
+write_frame 322: video_eof=0 frames_written=151         
+decode_nal 420 type=0x09 0x50 offset=132731 video_eof=0
+write_frame 298 132731
+write_frame 322: video_eof=0 frames_written=152         
+decode_nal 420 type=0x09 0x30 offset=100467 video_eof=0
+write_frame 298 100467
+write_frame 322: video_eof=0 frames_written=153         
+decode_nal 420 type=0x09 0x50 offset=162068 video_eof=0
+write_frame 298 162068
+write_frame 322: video_eof=0 frames_written=154         
+decode_nal 420 type=0x09 0x50 offset=133169 video_eof=0
+write_frame 298 133169
+write_frame 322: video_eof=0 frames_written=155         
+decode_nal 420 type=0x09 0x30 offset=100994 video_eof=0
+write_frame 298 100994
+write_frame 322: video_eof=0 frames_written=156         
+decode_nal 420 type=0x09 0x50 offset=167539 video_eof=0
+write_frame 298 167539
+write_frame 322: video_eof=0 frames_written=157         
+decode_nal 420 type=0x09 0x50 offset=130580 video_eof=0
+write_frame 298 130580
+write_frame 322: video_eof=0 frames_written=158         
+decode_nal 420 type=0x09 0x30 offset=104874 video_eof=0
+write_frame 298 104874
+write_frame 322: video_eof=0 frames_written=159         
+decode_nal 420 type=0x09 0x50 offset=161963 video_eof=0
+write_frame 298 161963
+write_frame 322: video_eof=0 frames_written=160         
+decode_nal 420 type=0x09 0x50 offset=132741 video_eof=0
+write_frame 298 132741
+write_frame 322: video_eof=0 frames_written=161         
+decode_nal 420 type=0x09 0x30 offset=98602 video_eof=0
+write_frame 298 98602
+write_frame 322: video_eof=0 frames_written=162         
+decode_nal 420 type=0x09 0x50 offset=166213 video_eof=0
+write_frame 298 166213
+write_frame 322: video_eof=0 frames_written=163         
+decode_nal 420 type=0x09 0x50 offset=134226 video_eof=0
+write_frame 298 134226
+write_frame 322: video_eof=0 frames_written=164         
+decode_nal 420 type=0x09 0x30 offset=103229 video_eof=0
+write_frame 298 103229
+write_frame 322: video_eof=0 frames_written=165         
+decode_nal 420 type=0x09 0x50 offset=157809 video_eof=0
+write_frame 298 157809
+write_frame 322: video_eof=0 frames_written=166         
+decode_nal 420 type=0x09 0x50 offset=130929 video_eof=0
+write_frame 298 130929
+write_frame 322: video_eof=0 frames_written=167         
+decode_nal 420 type=0x09 0x10 offset=103430 video_eof=0
+write_frame 298 103430
+write_frame 322: video_eof=0 frames_written=168         
+write_frame 345: video_eof=0 samples_written=327680
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=177434 video_eof=0
+write_frame 298 177434
+write_frame 322: video_eof=0 frames_written=169         
+decode_nal 420 type=0x09 0x50 offset=136396 video_eof=0
+write_frame 298 136396
+write_frame 322: video_eof=0 frames_written=170         
+decode_nal 420 type=0x09 0x30 offset=104685 video_eof=0
+write_frame 298 104685
+write_frame 322: video_eof=0 frames_written=171         
+decode_nal 420 type=0x09 0x50 offset=155763 video_eof=0
+write_frame 298 155763
+write_frame 322: video_eof=0 frames_written=172         
+decode_nal 420 type=0x09 0x50 offset=124755 video_eof=0
+write_frame 298 124755
+write_frame 322: video_eof=0 frames_written=173         
+decode_nal 420 type=0x09 0x30 offset=97816 video_eof=0
+write_frame 298 97816
+write_frame 322: video_eof=0 frames_written=174         
+decode_nal 420 type=0x09 0x50 offset=169198 video_eof=0
+write_frame 298 169198
+write_frame 322: video_eof=0 frames_written=175         
+decode_nal 420 type=0x09 0x50 offset=134710 video_eof=0
+write_frame 298 134710
+write_frame 322: video_eof=0 frames_written=176         
+decode_nal 420 type=0x09 0x30 offset=98523 video_eof=0
+write_frame 298 98523
+write_frame 322: video_eof=0 frames_written=177         
+decode_nal 420 type=0x09 0x50 offset=160460 video_eof=0
+write_frame 298 160460
+write_frame 322: video_eof=0 frames_written=178         
+decode_nal 420 type=0x09 0x50 offset=130200 video_eof=0
+write_frame 298 130200
+write_frame 322: video_eof=0 frames_written=179         
+decode_nal 420 type=0x09 0x30 offset=102415 video_eof=0
+write_frame 298 102415
+write_frame 322: video_eof=0 frames_written=180         
+decode_nal 420 type=0x09 0x50 offset=168704 video_eof=0
+write_frame 298 168704
+write_frame 322: video_eof=0 frames_written=181         
+decode_nal 420 type=0x09 0x50 offset=133482 video_eof=0
+write_frame 298 133482
+write_frame 322: video_eof=0 frames_written=182         
+decode_nal 420 type=0x09 0x30 offset=101490 video_eof=0
+write_frame 298 101490
+write_frame 322: video_eof=0 frames_written=183         
+decode_nal 420 type=0x09 0x50 offset=174829 video_eof=0
+write_frame 298 174829
+write_frame 322: video_eof=0 frames_written=184         
+decode_nal 420 type=0x09 0x50 offset=137415 video_eof=0
+write_frame 298 137415
+write_frame 322: video_eof=0 frames_written=185         
+decode_nal 420 type=0x09 0x30 offset=104078 video_eof=0
+write_frame 298 104078
+write_frame 322: video_eof=0 frames_written=186         
+decode_nal 420 type=0x09 0x50 offset=171581 video_eof=0
+write_frame 298 171581
+write_frame 322: video_eof=0 frames_written=187         
+decode_nal 420 type=0x09 0x50 offset=133988 video_eof=0
+write_frame 298 133988
+write_frame 322: video_eof=0 frames_written=188         
+decode_nal 420 type=0x09 0x30 offset=97733 video_eof=0
+write_frame 298 97733
+write_frame 322: video_eof=0 frames_written=189         
+decode_nal 420 type=0x09 0x50 offset=169303 video_eof=0
+write_frame 298 169303
+write_frame 322: video_eof=0 frames_written=190         
+decode_nal 420 type=0x09 0x50 offset=132286 video_eof=0
+write_frame 298 132286
+write_frame 322: video_eof=0 frames_written=191         
+decode_nal 420 type=0x09 0x10 offset=99473 video_eof=0
+write_frame 298 99473
+write_frame 322: video_eof=0 frames_written=192         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=203454 video_eof=0
+write_frame 298 203454
+write_frame 322: video_eof=0 frames_written=193         
+decode_nal 420 type=0x09 0x50 offset=137648 video_eof=0
+write_frame 298 137648
+write_frame 322: video_eof=0 frames_written=194         
+decode_nal 420 type=0x09 0x30 offset=102530 video_eof=0
+write_frame 298 102530
+write_frame 322: video_eof=0 frames_written=195         
+decode_nal 420 type=0x09 0x50 offset=179819 video_eof=0
+write_frame 298 179819
+write_frame 322: video_eof=0 frames_written=196         
+decode_nal 420 type=0x09 0x50 offset=138447 video_eof=0
+write_frame 298 138447
+write_frame 322: video_eof=0 frames_written=197         
+decode_nal 420 type=0x09 0x30 offset=100434 video_eof=0
+write_frame 298 100434
+write_frame 322: video_eof=0 frames_written=198         
+decode_nal 420 type=0x09 0x50 offset=172173 video_eof=0
+write_frame 298 172173
+write_frame 322: video_eof=0 frames_written=199         
+decode_nal 420 type=0x09 0x50 offset=128976 video_eof=0
+write_frame 298 128976
+write_frame 322: video_eof=0 frames_written=200         
+decode_nal 420 type=0x09 0x30 offset=95803 video_eof=0
+write_frame 298 95803
+write_frame 322: video_eof=0 frames_written=201         
+decode_nal 420 type=0x09 0x50 offset=177805 video_eof=0
+write_frame 298 177805
+write_frame 322: video_eof=0 frames_written=202         
+decode_nal 420 type=0x09 0x50 offset=136771 video_eof=0
+write_frame 298 136771
+write_frame 322: video_eof=0 frames_written=203         
+decode_nal 420 type=0x09 0x30 offset=97929 video_eof=0
+write_frame 298 97929
+write_frame 322: video_eof=0 frames_written=204         
+decode_nal 420 type=0x09 0x50 offset=172431 video_eof=0
+write_frame 298 172431
+write_frame 322: video_eof=0 frames_written=205         
+decode_nal 420 type=0x09 0x50 offset=128660 video_eof=0
+write_frame 298 128660
+write_frame 322: video_eof=0 frames_written=206         
+decode_nal 420 type=0x09 0x30 offset=98191 video_eof=0
+write_frame 298 98191
+write_frame 322: video_eof=0 frames_written=207         
+decode_nal 420 type=0x09 0x50 offset=176923 video_eof=0
+write_frame 298 176923
+write_frame 322: video_eof=0 frames_written=208         
+decode_nal 420 type=0x09 0x50 offset=133555 video_eof=0
+write_frame 298 133555
+write_frame 322: video_eof=0 frames_written=209         
+decode_nal 420 type=0x09 0x30 offset=97417 video_eof=0
+write_frame 298 97417
+write_frame 322: video_eof=0 frames_written=210         
+decode_nal 420 type=0x09 0x50 offset=175128 video_eof=0
+write_frame 298 175128
+write_frame 322: video_eof=0 frames_written=211         
+decode_nal 420 type=0x09 0x50 offset=132672 video_eof=0
+write_frame 298 132672
+write_frame 322: video_eof=0 frames_written=212         
+decode_nal 420 type=0x09 0x30 offset=97005 video_eof=0
+write_frame 298 97005
+write_frame 322: video_eof=0 frames_written=213         
+decode_nal 420 type=0x09 0x50 offset=171102 video_eof=0
+write_frame 298 171102
+write_frame 322: video_eof=0 frames_written=214         
+write_frame 345: video_eof=0 samples_written=393216
+decode_nal 420 type=0x09 0x50 offset=131222 video_eof=0
+write_frame 298 131222
+write_frame 322: video_eof=0 frames_written=215         
+decode_nal 420 type=0x09 0x10 offset=97880 video_eof=0
+write_frame 298 97880
+write_frame 322: video_eof=0 frames_written=216         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=211307 video_eof=0
+write_frame 298 211307
+write_frame 322: video_eof=0 frames_written=217         
+decode_nal 420 type=0x09 0x50 offset=133150 video_eof=0
+write_frame 298 133150
+write_frame 322: video_eof=0 frames_written=218         
+decode_nal 420 type=0x09 0x30 offset=101893 video_eof=0
+write_frame 298 101893
+write_frame 322: video_eof=0 frames_written=219         
+decode_nal 420 type=0x09 0x50 offset=182490 video_eof=0
+write_frame 298 182490
+write_frame 322: video_eof=0 frames_written=220         
+decode_nal 420 type=0x09 0x50 offset=136950 video_eof=0
+write_frame 298 136950
+write_frame 322: video_eof=0 frames_written=221         
+decode_nal 420 type=0x09 0x30 offset=100824 video_eof=0
+write_frame 298 100824
+write_frame 322: video_eof=0 frames_written=222         
+decode_nal 420 type=0x09 0x50 offset=175942 video_eof=0
+write_frame 298 175942
+write_frame 322: video_eof=0 frames_written=223         
+decode_nal 420 type=0x09 0x50 offset=128735 video_eof=0
+write_frame 298 128735
+write_frame 322: video_eof=0 frames_written=224         
+decode_nal 420 type=0x09 0x30 offset=94811 video_eof=0
+write_frame 298 94811
+write_frame 322: video_eof=0 frames_written=225         
+decode_nal 420 type=0x09 0x50 offset=176115 video_eof=0
+write_frame 298 176115
+write_frame 322: video_eof=0 frames_written=226         
+decode_nal 420 type=0x09 0x50 offset=130747 video_eof=0
+write_frame 298 130747
+write_frame 322: video_eof=0 frames_written=227         
+decode_nal 420 type=0x09 0x30 offset=95461 video_eof=0
+write_frame 298 95461
+write_frame 322: video_eof=0 frames_written=228         
+decode_nal 420 type=0x09 0x50 offset=173537 video_eof=0
+write_frame 298 173537
+write_frame 322: video_eof=0 frames_written=229         
+decode_nal 420 type=0x09 0x50 offset=128386 video_eof=0
+write_frame 298 128386
+write_frame 322: video_eof=0 frames_written=230         
+decode_nal 420 type=0x09 0x30 offset=98985 video_eof=0
+write_frame 298 98985
+write_frame 322: video_eof=0 frames_written=231         
+decode_nal 420 type=0x09 0x50 offset=178562 video_eof=0
+write_frame 298 178562
+write_frame 322: video_eof=0 frames_written=232         
+decode_nal 420 type=0x09 0x50 offset=129893 video_eof=0
+write_frame 298 129893
+write_frame 322: video_eof=0 frames_written=233         
+decode_nal 420 type=0x09 0x30 offset=96003 video_eof=0
+write_frame 298 96003
+write_frame 322: video_eof=0 frames_written=234         
+decode_nal 420 type=0x09 0x50 offset=175327 video_eof=0
+write_frame 298 175327
+write_frame 322: video_eof=0 frames_written=235         
+decode_nal 420 type=0x09 0x50 offset=127142 video_eof=0
+write_frame 298 127142
+write_frame 322: video_eof=0 frames_written=236         
+decode_nal 420 type=0x09 0x30 offset=96360 video_eof=0
+write_frame 298 96360
+write_frame 322: video_eof=0 frames_written=237         
+write_frame 345: video_eof=0 samples_written=458752
+decode_nal 420 type=0x09 0x50 offset=170707 video_eof=0
+write_frame 298 170707
+write_frame 322: video_eof=0 frames_written=238         
+decode_nal 420 type=0x09 0x50 offset=125898 video_eof=0
+write_frame 298 125898
+write_frame 322: video_eof=0 frames_written=239         
+decode_nal 420 type=0x09 0x10 offset=100663 video_eof=0
+write_frame 298 100663
+write_frame 322: video_eof=0 frames_written=240         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=234176 video_eof=0
+write_frame 298 234176
+write_frame 322: video_eof=0 frames_written=241         
+decode_nal 420 type=0x09 0x50 offset=132597 video_eof=0
+write_frame 298 132597
+write_frame 322: video_eof=0 frames_written=242         
+decode_nal 420 type=0x09 0x30 offset=100898 video_eof=0
+write_frame 298 100898
+write_frame 322: video_eof=0 frames_written=243         
+decode_nal 420 type=0x09 0x50 offset=184240 video_eof=0
+write_frame 298 184240
+write_frame 322: video_eof=0 frames_written=244         
+decode_nal 420 type=0x09 0x50 offset=131456 video_eof=0
+write_frame 298 131456
+write_frame 322: video_eof=0 frames_written=245         
+decode_nal 420 type=0x09 0x30 offset=100571 video_eof=0
+write_frame 298 100571
+write_frame 322: video_eof=0 frames_written=246         
+decode_nal 420 type=0x09 0x50 offset=179301 video_eof=0
+write_frame 298 179301
+write_frame 322: video_eof=0 frames_written=247         
+decode_nal 420 type=0x09 0x50 offset=128605 video_eof=0
+write_frame 298 128605
+write_frame 322: video_eof=0 frames_written=248         
+decode_nal 420 type=0x09 0x30 offset=95694 video_eof=0
+write_frame 298 95694
+write_frame 322: video_eof=0 frames_written=249         
+decode_nal 420 type=0x09 0x50 offset=175540 video_eof=0
+write_frame 298 175540
+write_frame 322: video_eof=0 frames_written=250         
+decode_nal 420 type=0x09 0x50 offset=128192 video_eof=0
+write_frame 298 128192
+write_frame 322: video_eof=0 frames_written=251         
+decode_nal 420 type=0x09 0x30 offset=96846 video_eof=0
+write_frame 298 96846
+write_frame 322: video_eof=0 frames_written=252         
+decode_nal 420 type=0x09 0x50 offset=175741 video_eof=0
+write_frame 298 175741
+write_frame 322: video_eof=0 frames_written=253         
+decode_nal 420 type=0x09 0x50 offset=127678 video_eof=0
+write_frame 298 127678
+write_frame 322: video_eof=0 frames_written=254         
+decode_nal 420 type=0x09 0x30 offset=97940 video_eof=0
+write_frame 298 97940
+write_frame 322: video_eof=0 frames_written=255         
+decode_nal 420 type=0x09 0x50 offset=173881 video_eof=0
+write_frame 298 173881
+write_frame 322: video_eof=0 frames_written=256         
+decode_nal 420 type=0x09 0x50 offset=125613 video_eof=0
+write_frame 298 125613
+write_frame 322: video_eof=0 frames_written=257         
+decode_nal 420 type=0x09 0x30 offset=96484 video_eof=0
+write_frame 298 96484
+write_frame 322: video_eof=0 frames_written=258         
+decode_nal 420 type=0x09 0x50 offset=171856 video_eof=0
+write_frame 298 171856
+write_frame 322: video_eof=0 frames_written=259         
+decode_nal 420 type=0x09 0x50 offset=125686 video_eof=0
+write_frame 298 125686
+write_frame 322: video_eof=0 frames_written=260         
+decode_nal 420 type=0x09 0x30 offset=95064 video_eof=0
+write_frame 298 95064
+write_frame 322: video_eof=0 frames_written=261         
+decode_nal 420 type=0x09 0x50 offset=168916 video_eof=0
+write_frame 298 168916
+write_frame 322: video_eof=0 frames_written=262         
+decode_nal 420 type=0x09 0x50 offset=124467 video_eof=0
+write_frame 298 124467
+write_frame 322: video_eof=0 frames_written=263         
+decode_nal 420 type=0x09 0x10 offset=95508 video_eof=0
+write_frame 298 95508
+write_frame 322: video_eof=0 frames_written=264         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=241440 video_eof=0
+write_frame 298 241440
+write_frame 322: video_eof=0 frames_written=265         
+decode_nal 420 type=0x09 0x50 offset=127474 video_eof=0
+write_frame 298 127474
+write_frame 322: video_eof=0 frames_written=266         
+decode_nal 420 type=0x09 0x30 offset=99873 video_eof=0
+write_frame 298 99873
+write_frame 322: video_eof=0 frames_written=267         
+decode_nal 420 type=0x09 0x50 offset=181131 video_eof=0
+write_frame 298 181131
+write_frame 322: video_eof=0 frames_written=268         
+decode_nal 420 type=0x09 0x50 offset=132566 video_eof=0
+write_frame 298 132566
+write_frame 322: video_eof=0 frames_written=269         
+decode_nal 420 type=0x09 0x30 offset=96403 video_eof=0
+write_frame 298 96403
+write_frame 322: video_eof=0 frames_written=270         
+decode_nal 420 type=0x09 0x50 offset=172710 video_eof=0
+write_frame 298 172710
+write_frame 322: video_eof=0 frames_written=271         
+decode_nal 420 type=0x09 0x50 offset=124819 video_eof=0
+write_frame 298 124819
+write_frame 322: video_eof=0 frames_written=272         
+decode_nal 420 type=0x09 0x30 offset=94738 video_eof=0
+write_frame 298 94738
+write_frame 322: video_eof=0 frames_written=273         
+decode_nal 420 type=0x09 0x50 offset=173209 video_eof=0
+write_frame 298 173209
+write_frame 322: video_eof=0 frames_written=274         
+decode_nal 420 type=0x09 0x50 offset=124252 video_eof=0
+write_frame 298 124252
+write_frame 322: video_eof=0 frames_written=275         
+decode_nal 420 type=0x09 0x30 offset=92776 video_eof=0
+write_frame 298 92776
+write_frame 322: video_eof=0 frames_written=276         
+decode_nal 420 type=0x09 0x50 offset=173730 video_eof=0
+write_frame 298 173730
+write_frame 322: video_eof=0 frames_written=277         
+decode_nal 420 type=0x09 0x50 offset=125386 video_eof=0
+write_frame 298 125386
+write_frame 322: video_eof=0 frames_written=278         
+decode_nal 420 type=0x09 0x30 offset=94511 video_eof=0
+write_frame 298 94511
+write_frame 322: video_eof=0 frames_written=279         
+decode_nal 420 type=0x09 0x50 offset=170835 video_eof=0
+write_frame 298 170835
+write_frame 322: video_eof=0 frames_written=280         
+decode_nal 420 type=0x09 0x50 offset=122288 video_eof=0
+write_frame 298 122288
+write_frame 322: video_eof=0 frames_written=281         
+decode_nal 420 type=0x09 0x30 offset=94065 video_eof=0
+write_frame 298 94065
+write_frame 322: video_eof=0 frames_written=282         
+decode_nal 420 type=0x09 0x50 offset=171733 video_eof=0
+write_frame 298 171733
+write_frame 322: video_eof=0 frames_written=283         
+write_frame 345: video_eof=0 samples_written=524288
+decode_nal 420 type=0x09 0x50 offset=123338 video_eof=0
+write_frame 298 123338
+write_frame 322: video_eof=0 frames_written=284         
+decode_nal 420 type=0x09 0x30 offset=93663 video_eof=0
+write_frame 298 93663
+write_frame 322: video_eof=0 frames_written=285         
+decode_nal 420 type=0x09 0x50 offset=164105 video_eof=0
+write_frame 298 164105
+write_frame 322: video_eof=0 frames_written=286         
+decode_nal 420 type=0x09 0x50 offset=121676 video_eof=0
+write_frame 298 121676
+write_frame 322: video_eof=0 frames_written=287         
+decode_nal 420 type=0x09 0x10 offset=95140 video_eof=0
+write_frame 298 95140
+write_frame 322: video_eof=0 frames_written=288         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=232188 video_eof=0
+write_frame 298 232188
+write_frame 322: video_eof=0 frames_written=289         
+decode_nal 420 type=0x09 0x50 offset=113505 video_eof=0
+write_frame 298 113505
+write_frame 322: video_eof=0 frames_written=290         
+decode_nal 420 type=0x09 0x30 offset=89032 video_eof=0
+write_frame 298 89032
+write_frame 322: video_eof=0 frames_written=291         
+decode_nal 420 type=0x09 0x50 offset=181758 video_eof=0
+write_frame 298 181758
+write_frame 322: video_eof=0 frames_written=292         
+decode_nal 420 type=0x09 0x50 offset=128123 video_eof=0
+write_frame 298 128123
+write_frame 322: video_eof=0 frames_written=293         
+decode_nal 420 type=0x09 0x30 offset=99135 video_eof=0
+write_frame 298 99135
+write_frame 322: video_eof=0 frames_written=294         
+decode_nal 420 type=0x09 0x50 offset=185211 video_eof=0
+write_frame 298 185211
+write_frame 322: video_eof=0 frames_written=295         
+decode_nal 420 type=0x09 0x50 offset=144358 video_eof=0
+write_frame 298 144358
+write_frame 322: video_eof=0 frames_written=296         
+decode_nal 420 type=0x09 0x30 offset=120056 video_eof=0
+write_frame 298 120056
+write_frame 322: video_eof=0 frames_written=297         
+decode_nal 420 type=0x09 0x50 offset=184799 video_eof=0
+write_frame 298 184799
+write_frame 322: video_eof=0 frames_written=298         
+decode_nal 420 type=0x09 0x50 offset=143493 video_eof=0
+write_frame 298 143493
+write_frame 322: video_eof=0 frames_written=299         
+decode_nal 420 type=0x09 0x30 offset=110232 video_eof=0
+write_frame 298 110232
+write_frame 322: video_eof=0 frames_written=300         
+decode_nal 420 type=0x09 0x50 offset=182454 video_eof=0
+write_frame 298 182454
+write_frame 322: video_eof=0 frames_written=301         
+decode_nal 420 type=0x09 0x50 offset=134256 video_eof=0
+write_frame 298 134256
+write_frame 322: video_eof=0 frames_written=302         
+decode_nal 420 type=0x09 0x30 offset=99584 video_eof=0
+write_frame 298 99584
+write_frame 322: video_eof=0 frames_written=303         
+decode_nal 420 type=0x09 0x50 offset=184316 video_eof=0
+write_frame 298 184316
+write_frame 322: video_eof=0 frames_written=304         
+decode_nal 420 type=0x09 0x50 offset=130663 video_eof=0
+write_frame 298 130663
+write_frame 322: video_eof=0 frames_written=305         
+decode_nal 420 type=0x09 0x30 offset=97915 video_eof=0
+write_frame 298 97915
+write_frame 322: video_eof=0 frames_written=306         
+write_frame 345: video_eof=0 samples_written=589824
+decode_nal 420 type=0x09 0x50 offset=186349 video_eof=0
+write_frame 298 186349
+write_frame 322: video_eof=0 frames_written=307         
+decode_nal 420 type=0x09 0x50 offset=133282 video_eof=0
+write_frame 298 133282
+write_frame 322: video_eof=0 frames_written=308         
+decode_nal 420 type=0x09 0x30 offset=101881 video_eof=0
+write_frame 298 101881
+write_frame 322: video_eof=0 frames_written=309         
+decode_nal 420 type=0x09 0x50 offset=178166 video_eof=0
+write_frame 298 178166
+write_frame 322: video_eof=0 frames_written=310         
+decode_nal 420 type=0x09 0x50 offset=129071 video_eof=0
+write_frame 298 129071
+write_frame 322: video_eof=0 frames_written=311         
+decode_nal 420 type=0x09 0x10 offset=96297 video_eof=0
+write_frame 298 96297
+write_frame 322: video_eof=0 frames_written=312         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=249552 video_eof=0
+write_frame 298 249552
+write_frame 322: video_eof=0 frames_written=313         
+decode_nal 420 type=0x09 0x50 offset=130626 video_eof=0
+write_frame 298 130626
+write_frame 322: video_eof=0 frames_written=314         
+decode_nal 420 type=0x09 0x30 offset=99491 video_eof=0
+write_frame 298 99491
+write_frame 322: video_eof=0 frames_written=315         
+decode_nal 420 type=0x09 0x50 offset=189242 video_eof=0
+write_frame 298 189242
+write_frame 322: video_eof=0 frames_written=316         
+decode_nal 420 type=0x09 0x50 offset=134219 video_eof=0
+write_frame 298 134219
+write_frame 322: video_eof=0 frames_written=317         
+decode_nal 420 type=0x09 0x30 offset=102375 video_eof=0
+write_frame 298 102375
+write_frame 322: video_eof=0 frames_written=318         
+decode_nal 420 type=0x09 0x50 offset=185731 video_eof=0
+write_frame 298 185731
+write_frame 322: video_eof=0 frames_written=319         
+decode_nal 420 type=0x09 0x50 offset=131900 video_eof=0
+write_frame 298 131900
+write_frame 322: video_eof=0 frames_written=320         
+decode_nal 420 type=0x09 0x30 offset=99779 video_eof=0
+write_frame 298 99779
+write_frame 322: video_eof=0 frames_written=321         
+decode_nal 420 type=0x09 0x50 offset=181751 video_eof=0
+write_frame 298 181751
+write_frame 322: video_eof=0 frames_written=322         
+decode_nal 420 type=0x09 0x50 offset=129270 video_eof=0
+write_frame 298 129270
+write_frame 322: video_eof=0 frames_written=323         
+decode_nal 420 type=0x09 0x30 offset=98113 video_eof=0
+write_frame 298 98113
+write_frame 322: video_eof=0 frames_written=324         
+decode_nal 420 type=0x09 0x50 offset=184572 video_eof=0
+write_frame 298 184572
+write_frame 322: video_eof=0 frames_written=325         
+decode_nal 420 type=0x09 0x50 offset=128740 video_eof=0
+write_frame 298 128740
+write_frame 322: video_eof=0 frames_written=326         
+decode_nal 420 type=0x09 0x30 offset=99568 video_eof=0
+write_frame 298 99568
+write_frame 322: video_eof=0 frames_written=327         
+decode_nal 420 type=0x09 0x50 offset=184952 video_eof=0
+write_frame 298 184952
+write_frame 322: video_eof=0 frames_written=328         
+decode_nal 420 type=0x09 0x50 offset=129719 video_eof=0
+write_frame 298 129719
+write_frame 322: video_eof=0 frames_written=329         
+write_frame 345: video_eof=0 samples_written=655360
+decode_nal 420 type=0x09 0x30 offset=99230 video_eof=0
+write_frame 298 99230
+write_frame 322: video_eof=0 frames_written=330         
+decode_nal 420 type=0x09 0x50 offset=185047 video_eof=0
+write_frame 298 185047
+write_frame 322: video_eof=0 frames_written=331         
+decode_nal 420 type=0x09 0x50 offset=130495 video_eof=0
+write_frame 298 130495
+write_frame 322: video_eof=0 frames_written=332         
+decode_nal 420 type=0x09 0x30 offset=98675 video_eof=0
+write_frame 298 98675
+write_frame 322: video_eof=0 frames_written=333         
+decode_nal 420 type=0x09 0x50 offset=178854 video_eof=0
+write_frame 298 178854
+write_frame 322: video_eof=0 frames_written=334         
+decode_nal 420 type=0x09 0x50 offset=129123 video_eof=0
+write_frame 298 129123
+write_frame 322: video_eof=0 frames_written=335         
+decode_nal 420 type=0x09 0x10 offset=99144 video_eof=0
+write_frame 298 99144
+write_frame 322: video_eof=0 frames_written=336         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=183258 video_eof=0
+write_frame 298 183258
+write_frame 322: video_eof=0 frames_written=337         
+decode_nal 420 type=0x09 0x50 offset=80901 video_eof=0
+write_frame 298 80901
+write_frame 322: video_eof=0 frames_written=338         
+decode_nal 420 type=0x09 0x30 offset=56449 video_eof=0
+write_frame 298 56449
+write_frame 322: video_eof=0 frames_written=339         
+decode_nal 420 type=0x09 0x50 offset=131222 video_eof=0
+write_frame 298 131222
+write_frame 322: video_eof=0 frames_written=340         
+decode_nal 420 type=0x09 0x50 offset=72433 video_eof=0
+write_frame 298 72433
+write_frame 322: video_eof=0 frames_written=341         
+decode_nal 420 type=0x09 0x30 offset=59272 video_eof=0
+write_frame 298 59272
+write_frame 322: video_eof=0 frames_written=342         
+decode_nal 420 type=0x09 0x50 offset=129374 video_eof=0
+write_frame 298 129374
+write_frame 322: video_eof=0 frames_written=343         
+decode_nal 420 type=0x09 0x50 offset=76387 video_eof=0
+write_frame 298 76387
+write_frame 322: video_eof=0 frames_written=344         
+decode_nal 420 type=0x09 0x30 offset=58095 video_eof=0
+write_frame 298 58095
+write_frame 322: video_eof=0 frames_written=345         
+decode_nal 420 type=0x09 0x50 offset=144118 video_eof=0
+write_frame 298 144118
+write_frame 322: video_eof=0 frames_written=346         
+decode_nal 420 type=0x09 0x50 offset=77978 video_eof=0
+write_frame 298 77978
+write_frame 322: video_eof=0 frames_written=347         
+decode_nal 420 type=0x09 0x30 offset=103986 video_eof=0
+write_frame 298 103986
+write_frame 322: video_eof=0 frames_written=348         
+decode_nal 420 type=0x09 0x50 offset=164952 video_eof=0
+write_frame 298 164952
+write_frame 322: video_eof=0 frames_written=349         
+decode_nal 420 type=0x09 0x50 offset=158324 video_eof=0
+write_frame 298 158324
+write_frame 322: video_eof=0 frames_written=350         
+decode_nal 420 type=0x09 0x30 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=351         
+decode_nal 420 type=0x09 0x50 offset=171651 video_eof=0
+write_frame 298 171651
+write_frame 322: video_eof=0 frames_written=352         
+decode_nal 420 type=0x09 0x50 offset=151625 video_eof=0
+write_frame 298 151625
+write_frame 322: video_eof=0 frames_written=353         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=354         
+decode_nal 420 type=0x09 0x50 offset=190852 video_eof=0
+write_frame 298 190852
+write_frame 322: video_eof=0 frames_written=355         
+decode_nal 420 type=0x09 0x50 offset=132423 video_eof=0
+write_frame 298 132423
+write_frame 322: video_eof=0 frames_written=356         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=357         
+decode_nal 420 type=0x09 0x50 offset=206935 video_eof=0
+write_frame 298 206935
+write_frame 322: video_eof=0 frames_written=358         
+decode_nal 420 type=0x09 0x50 offset=148189 video_eof=0
+write_frame 298 148189
+write_frame 322: video_eof=0 frames_written=359         
+decode_nal 420 type=0x09 0x10 offset=129755 video_eof=0
+write_frame 298 129755
+write_frame 322: video_eof=0 frames_written=360         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=225819 video_eof=0
+write_frame 298 225819
+write_frame 322: video_eof=0 frames_written=361         
+decode_nal 420 type=0x09 0x50 offset=136765 video_eof=0
+write_frame 298 136765
+write_frame 322: video_eof=0 frames_written=362         
+decode_nal 420 type=0x09 0x30 offset=114228 video_eof=0
+write_frame 298 114228
+write_frame 322: video_eof=0 frames_written=363         
+decode_nal 420 type=0x09 0x50 offset=200957 video_eof=0
+write_frame 298 200957
+write_frame 322: video_eof=0 frames_written=364         
+decode_nal 420 type=0x09 0x50 offset=143443 video_eof=0
+write_frame 298 143443
+write_frame 322: video_eof=0 frames_written=365         
+decode_nal 420 type=0x09 0x30 offset=127161 video_eof=0
+write_frame 298 127161
+write_frame 322: video_eof=0 frames_written=366         
+decode_nal 420 type=0x09 0x50 offset=207529 video_eof=0
+write_frame 298 207529
+write_frame 322: video_eof=0 frames_written=367         
+decode_nal 420 type=0x09 0x50 offset=153125 video_eof=0
+write_frame 298 153125
+write_frame 322: video_eof=0 frames_written=368         
+decode_nal 420 type=0x09 0x30 offset=137976 video_eof=0
+write_frame 298 137976
+write_frame 322: video_eof=0 frames_written=369         
+decode_nal 420 type=0x09 0x50 offset=207722 video_eof=0
+write_frame 298 207722
+write_frame 322: video_eof=0 frames_written=370         
+decode_nal 420 type=0x09 0x50 offset=160782 video_eof=0
+write_frame 298 160782
+write_frame 322: video_eof=0 frames_written=371         
+decode_nal 420 type=0x09 0x30 offset=141080 video_eof=0
+write_frame 298 141080
+write_frame 322: video_eof=0 frames_written=372         
+decode_nal 420 type=0x09 0x50 offset=208174 video_eof=0
+write_frame 298 208174
+write_frame 322: video_eof=0 frames_written=373         
+decode_nal 420 type=0x09 0x50 offset=158375 video_eof=0
+write_frame 298 158375
+write_frame 322: video_eof=0 frames_written=374         
+decode_nal 420 type=0x09 0x30 offset=138003 video_eof=0
+write_frame 298 138003
+write_frame 322: video_eof=0 frames_written=375         
+write_frame 345: video_eof=0 samples_written=720896
+decode_nal 420 type=0x09 0x50 offset=201210 video_eof=0
+write_frame 298 201210
+write_frame 322: video_eof=0 frames_written=376         
+decode_nal 420 type=0x09 0x50 offset=153133 video_eof=0
+write_frame 298 153133
+write_frame 322: video_eof=0 frames_written=377         
+decode_nal 420 type=0x09 0x30 offset=132437 video_eof=0
+write_frame 298 132437
+write_frame 322: video_eof=0 frames_written=378         
+decode_nal 420 type=0x09 0x50 offset=195881 video_eof=0
+write_frame 298 195881
+write_frame 322: video_eof=0 frames_written=379         
+decode_nal 420 type=0x09 0x50 offset=146137 video_eof=0
+write_frame 298 146137
+write_frame 322: video_eof=0 frames_written=380         
+decode_nal 420 type=0x09 0x30 offset=124108 video_eof=0
+write_frame 298 124108
+write_frame 322: video_eof=0 frames_written=381         
+decode_nal 420 type=0x09 0x50 offset=186077 video_eof=0
+write_frame 298 186077
+write_frame 322: video_eof=0 frames_written=382         
+decode_nal 420 type=0x09 0x50 offset=138235 video_eof=0
+write_frame 298 138235
+write_frame 322: video_eof=0 frames_written=383         
+decode_nal 420 type=0x09 0x10 offset=119432 video_eof=0
+write_frame 298 119432
+write_frame 322: video_eof=0 frames_written=384         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=263046 video_eof=0
+write_frame 298 263046
+write_frame 322: video_eof=0 frames_written=385         
+decode_nal 420 type=0x09 0x50 offset=162573 video_eof=0
+write_frame 298 162573
+write_frame 322: video_eof=0 frames_written=386         
+decode_nal 420 type=0x09 0x30 offset=135998 video_eof=0
+write_frame 298 135998
+write_frame 322: video_eof=0 frames_written=387         
+decode_nal 420 type=0x09 0x50 offset=218006 video_eof=0
+write_frame 298 218006
+write_frame 322: video_eof=0 frames_written=388         
+decode_nal 420 type=0x09 0x50 offset=158344 video_eof=0
+write_frame 298 158344
+write_frame 322: video_eof=0 frames_written=389         
+decode_nal 420 type=0x09 0x30 offset=130731 video_eof=0
+write_frame 298 130731
+write_frame 322: video_eof=0 frames_written=390         
+decode_nal 420 type=0x09 0x50 offset=210833 video_eof=0
+write_frame 298 210833
+write_frame 322: video_eof=0 frames_written=391         
+decode_nal 420 type=0x09 0x50 offset=152998 video_eof=0
+write_frame 298 152998
+write_frame 322: video_eof=0 frames_written=392         
+decode_nal 420 type=0x09 0x30 offset=125861 video_eof=0
+write_frame 298 125861
+write_frame 322: video_eof=0 frames_written=393         
+decode_nal 420 type=0x09 0x50 offset=208251 video_eof=0
+write_frame 298 208251
+write_frame 322: video_eof=0 frames_written=394         
+decode_nal 420 type=0x09 0x50 offset=147482 video_eof=0
+write_frame 298 147482
+write_frame 322: video_eof=0 frames_written=395         
+decode_nal 420 type=0x09 0x30 offset=121029 video_eof=0
+write_frame 298 121029
+write_frame 322: video_eof=0 frames_written=396         
+decode_nal 420 type=0x09 0x50 offset=209036 video_eof=0
+write_frame 298 209036
+write_frame 322: video_eof=0 frames_written=397         
+decode_nal 420 type=0x09 0x50 offset=146704 video_eof=0
+write_frame 298 146704
+write_frame 322: video_eof=0 frames_written=398         
+write_frame 345: video_eof=0 samples_written=786432
+decode_nal 420 type=0x09 0x30 offset=119823 video_eof=0
+write_frame 298 119823
+write_frame 322: video_eof=0 frames_written=399         
+decode_nal 420 type=0x09 0x50 offset=203029 video_eof=0
+write_frame 298 203029
+write_frame 322: video_eof=0 frames_written=400         
+decode_nal 420 type=0x09 0x50 offset=141744 video_eof=0
+write_frame 298 141744
+write_frame 322: video_eof=0 frames_written=401         
+decode_nal 420 type=0x09 0x30 offset=115063 video_eof=0
+write_frame 298 115063
+write_frame 322: video_eof=0 frames_written=402         
+decode_nal 420 type=0x09 0x50 offset=200974 video_eof=0
+write_frame 298 200974
+write_frame 322: video_eof=0 frames_written=403         
+decode_nal 420 type=0x09 0x50 offset=138138 video_eof=0
+write_frame 298 138138
+write_frame 322: video_eof=0 frames_written=404         
+decode_nal 420 type=0x09 0x30 offset=113566 video_eof=0
+write_frame 298 113566
+write_frame 322: video_eof=0 frames_written=405         
+decode_nal 420 type=0x09 0x50 offset=191328 video_eof=0
+write_frame 298 191328
+write_frame 322: video_eof=0 frames_written=406         
+decode_nal 420 type=0x09 0x50 offset=133721 video_eof=0
+write_frame 298 133721
+write_frame 322: video_eof=0 frames_written=407         
+decode_nal 420 type=0x09 0x10 offset=109894 video_eof=0
+write_frame 298 109894
+write_frame 322: video_eof=0 frames_written=408         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=269725 video_eof=0
+write_frame 298 269725
+write_frame 322: video_eof=0 frames_written=409         
+decode_nal 420 type=0x09 0x50 offset=147289 video_eof=0
+write_frame 298 147289
+write_frame 322: video_eof=0 frames_written=410         
+decode_nal 420 type=0x09 0x30 offset=117854 video_eof=0
+write_frame 298 117854
+write_frame 322: video_eof=0 frames_written=411         
+decode_nal 420 type=0x09 0x50 offset=218408 video_eof=0
+write_frame 298 218408
+write_frame 322: video_eof=0 frames_written=412         
+decode_nal 420 type=0x09 0x50 offset=149531 video_eof=0
+write_frame 298 149531
+write_frame 322: video_eof=0 frames_written=413         
+decode_nal 420 type=0x09 0x30 offset=121833 video_eof=0
+write_frame 298 121833
+write_frame 322: video_eof=0 frames_written=414         
+decode_nal 420 type=0x09 0x50 offset=217765 video_eof=0
+write_frame 298 217765
+write_frame 322: video_eof=0 frames_written=415         
+decode_nal 420 type=0x09 0x50 offset=146659 video_eof=0
+write_frame 298 146659
+write_frame 322: video_eof=0 frames_written=416         
+decode_nal 420 type=0x09 0x30 offset=115630 video_eof=0
+write_frame 298 115630
+write_frame 322: video_eof=0 frames_written=417         
+decode_nal 420 type=0x09 0x50 offset=211744 video_eof=0
+write_frame 298 211744
+write_frame 322: video_eof=0 frames_written=418         
+decode_nal 420 type=0x09 0x50 offset=142669 video_eof=0
+write_frame 298 142669
+write_frame 322: video_eof=0 frames_written=419         
+decode_nal 420 type=0x09 0x30 offset=114418 video_eof=0
+write_frame 298 114418
+write_frame 322: video_eof=0 frames_written=420         
+decode_nal 420 type=0x09 0x50 offset=215643 video_eof=0
+write_frame 298 215643
+write_frame 322: video_eof=0 frames_written=421         
+decode_nal 420 type=0x09 0x50 offset=145147 video_eof=0
+write_frame 298 145147
+write_frame 322: video_eof=0 frames_written=422         
+decode_nal 420 type=0x09 0x30 offset=115259 video_eof=0
+write_frame 298 115259
+write_frame 322: video_eof=0 frames_written=423         
+decode_nal 420 type=0x09 0x50 offset=217596 video_eof=0
+write_frame 298 217596
+write_frame 322: video_eof=0 frames_written=424         
+decode_nal 420 type=0x09 0x50 offset=144880 video_eof=0
+write_frame 298 144880
+write_frame 322: video_eof=0 frames_written=425         
+decode_nal 420 type=0x09 0x30 offset=116284 video_eof=0
+write_frame 298 116284
+write_frame 322: video_eof=0 frames_written=426         
+decode_nal 420 type=0x09 0x50 offset=213584 video_eof=0
+write_frame 298 213584
+write_frame 322: video_eof=0 frames_written=427         
+decode_nal 420 type=0x09 0x50 offset=141635 video_eof=0
+write_frame 298 141635
+write_frame 322: video_eof=0 frames_written=428         
+decode_nal 420 type=0x09 0x30 offset=114734 video_eof=0
+write_frame 298 114734
+write_frame 322: video_eof=0 frames_written=429         
+decode_nal 420 type=0x09 0x50 offset=207524 video_eof=0
+write_frame 298 207524
+write_frame 322: video_eof=0 frames_written=430         
+decode_nal 420 type=0x09 0x50 offset=140156 video_eof=0
+write_frame 298 140156
+write_frame 322: video_eof=0 frames_written=431         
+decode_nal 420 type=0x09 0x10 offset=113344 video_eof=0
+write_frame 298 113344
+write_frame 322: video_eof=0 frames_written=432         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=298296 video_eof=0
+write_frame 298 298296
+write_frame 322: video_eof=0 frames_written=433         
+decode_nal 420 type=0x09 0x50 offset=149871 video_eof=0
+write_frame 298 149871
+write_frame 322: video_eof=0 frames_written=434         
+decode_nal 420 type=0x09 0x30 offset=120858 video_eof=0
+write_frame 298 120858
+write_frame 322: video_eof=0 frames_written=435         
+decode_nal 420 type=0x09 0x50 offset=222897 video_eof=0
+write_frame 298 222897
+write_frame 322: video_eof=0 frames_written=436         
+decode_nal 420 type=0x09 0x50 offset=151029 video_eof=0
+write_frame 298 151029
+write_frame 322: video_eof=0 frames_written=437         
+decode_nal 420 type=0x09 0x30 offset=119274 video_eof=0
+write_frame 298 119274
+write_frame 322: video_eof=0 frames_written=438         
+decode_nal 420 type=0x09 0x50 offset=217144 video_eof=0
+write_frame 298 217144
+write_frame 322: video_eof=0 frames_written=439         
+decode_nal 420 type=0x09 0x50 offset=144444 video_eof=0
+write_frame 298 144444
+write_frame 322: video_eof=0 frames_written=440         
+decode_nal 420 type=0x09 0x30 offset=116053 video_eof=0
+write_frame 298 116053
+write_frame 322: video_eof=0 frames_written=441         
+decode_nal 420 type=0x09 0x50 offset=214262 video_eof=0
+write_frame 298 214262
+write_frame 322: video_eof=0 frames_written=442         
+decode_nal 420 type=0x09 0x50 offset=144565 video_eof=0
+write_frame 298 144565
+write_frame 322: video_eof=0 frames_written=443         
+decode_nal 420 type=0x09 0x30 offset=113873 video_eof=0
+write_frame 298 113873
+write_frame 322: video_eof=0 frames_written=444         
+write_frame 345: video_eof=0 samples_written=851968
+decode_nal 420 type=0x09 0x50 offset=213670 video_eof=0
+write_frame 298 213670
+write_frame 322: video_eof=0 frames_written=445         
+decode_nal 420 type=0x09 0x50 offset=141438 video_eof=0
+write_frame 298 141438
+write_frame 322: video_eof=0 frames_written=446         
+decode_nal 420 type=0x09 0x30 offset=112511 video_eof=0
+write_frame 298 112511
+write_frame 322: video_eof=0 frames_written=447         
+decode_nal 420 type=0x09 0x50 offset=213552 video_eof=0
+write_frame 298 213552
+write_frame 322: video_eof=0 frames_written=448         
+decode_nal 420 type=0x09 0x50 offset=141510 video_eof=0
+write_frame 298 141510
+write_frame 322: video_eof=0 frames_written=449         
+decode_nal 420 type=0x09 0x30 offset=109028 video_eof=0
+write_frame 298 109028
+write_frame 322: video_eof=0 frames_written=450         
+decode_nal 420 type=0x09 0x50 offset=212542 video_eof=0
+write_frame 298 212542
+write_frame 322: video_eof=0 frames_written=451         
+decode_nal 420 type=0x09 0x50 offset=141169 video_eof=0
+write_frame 298 141169
+write_frame 322: video_eof=0 frames_written=452         
+decode_nal 420 type=0x09 0x30 offset=110230 video_eof=0
+write_frame 298 110230
+write_frame 322: video_eof=0 frames_written=453         
+decode_nal 420 type=0x09 0x50 offset=204115 video_eof=0
+write_frame 298 204115
+write_frame 322: video_eof=0 frames_written=454         
+decode_nal 420 type=0x09 0x50 offset=139225 video_eof=0
+write_frame 298 139225
+write_frame 322: video_eof=0 frames_written=455         
+decode_nal 420 type=0x09 0x10 offset=106817 video_eof=0
+write_frame 298 106817
+write_frame 322: video_eof=0 frames_written=456         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=308890 video_eof=0
+write_frame 298 308890
+write_frame 322: video_eof=0 frames_written=457         
+decode_nal 420 type=0x09 0x50 offset=145984 video_eof=0
+write_frame 298 145984
+write_frame 322: video_eof=0 frames_written=458         
+decode_nal 420 type=0x09 0x30 offset=118975 video_eof=0
+write_frame 298 118975
+write_frame 322: video_eof=0 frames_written=459         
+decode_nal 420 type=0x09 0x50 offset=221441 video_eof=0
+write_frame 298 221441
+write_frame 322: video_eof=0 frames_written=460         
+decode_nal 420 type=0x09 0x50 offset=148080 video_eof=0
+write_frame 298 148080
+write_frame 322: video_eof=0 frames_written=461         
+decode_nal 420 type=0x09 0x30 offset=117304 video_eof=0
+write_frame 298 117304
+write_frame 322: video_eof=0 frames_written=462         
+decode_nal 420 type=0x09 0x50 offset=218160 video_eof=0
+write_frame 298 218160
+write_frame 322: video_eof=0 frames_written=463         
+decode_nal 420 type=0x09 0x50 offset=146371 video_eof=0
+write_frame 298 146371
+write_frame 322: video_eof=0 frames_written=464         
+decode_nal 420 type=0x09 0x30 offset=115731 video_eof=0
+write_frame 298 115731
+write_frame 322: video_eof=0 frames_written=465         
+decode_nal 420 type=0x09 0x50 offset=213730 video_eof=0
+write_frame 298 213730
+write_frame 322: video_eof=0 frames_written=466         
+decode_nal 420 type=0x09 0x50 offset=142125 video_eof=0
+write_frame 298 142125
+write_frame 322: video_eof=0 frames_written=467         
+write_frame 345: video_eof=0 samples_written=917504
+decode_nal 420 type=0x09 0x30 offset=113381 video_eof=0
+write_frame 298 113381
+write_frame 322: video_eof=0 frames_written=468         
+decode_nal 420 type=0x09 0x50 offset=210916 video_eof=0
+write_frame 298 210916
+write_frame 322: video_eof=0 frames_written=469         
+decode_nal 420 type=0x09 0x50 offset=143285 video_eof=0
+write_frame 298 143285
+write_frame 322: video_eof=0 frames_written=470         
+decode_nal 420 type=0x09 0x30 offset=113937 video_eof=0
+write_frame 298 113937
+write_frame 322: video_eof=0 frames_written=471         
+decode_nal 420 type=0x09 0x50 offset=206302 video_eof=0
+write_frame 298 206302
+write_frame 322: video_eof=0 frames_written=472         
+decode_nal 420 type=0x09 0x50 offset=143634 video_eof=0
+write_frame 298 143634
+write_frame 322: video_eof=0 frames_written=473         
+decode_nal 420 type=0x09 0x30 offset=114145 video_eof=0
+write_frame 298 114145
+write_frame 322: video_eof=0 frames_written=474         
+decode_nal 420 type=0x09 0x50 offset=209943 video_eof=0
+write_frame 298 209943
+write_frame 322: video_eof=0 frames_written=475         
+decode_nal 420 type=0x09 0x50 offset=142295 video_eof=0
+write_frame 298 142295
+write_frame 322: video_eof=0 frames_written=476         
+decode_nal 420 type=0x09 0x30 offset=111324 video_eof=0
+write_frame 298 111324
+write_frame 322: video_eof=0 frames_written=477         
+decode_nal 420 type=0x09 0x50 offset=197956 video_eof=0
+write_frame 298 197956
+write_frame 322: video_eof=0 frames_written=478         
+decode_nal 420 type=0x09 0x50 offset=139532 video_eof=0
+write_frame 298 139532
+write_frame 322: video_eof=0 frames_written=479         
+decode_nal 420 type=0x09 0x10 offset=111881 video_eof=0
+write_frame 298 111881
+write_frame 322: video_eof=0 frames_written=480         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=307416 video_eof=0
+write_frame 298 307416
+write_frame 322: video_eof=0 frames_written=481         
+decode_nal 420 type=0x09 0x50 offset=144457 video_eof=0
+write_frame 298 144457
+write_frame 322: video_eof=0 frames_written=482         
+decode_nal 420 type=0x09 0x30 offset=118059 video_eof=0
+write_frame 298 118059
+write_frame 322: video_eof=0 frames_written=483         
+decode_nal 420 type=0x09 0x50 offset=212444 video_eof=0
+write_frame 298 212444
+write_frame 322: video_eof=0 frames_written=484         
+decode_nal 420 type=0x09 0x50 offset=146973 video_eof=0
+write_frame 298 146973
+write_frame 322: video_eof=0 frames_written=485         
+decode_nal 420 type=0x09 0x30 offset=118533 video_eof=0
+write_frame 298 118533
+write_frame 322: video_eof=0 frames_written=486         
+decode_nal 420 type=0x09 0x50 offset=208360 video_eof=0
+write_frame 298 208360
+write_frame 322: video_eof=0 frames_written=487         
+decode_nal 420 type=0x09 0x50 offset=147486 video_eof=0
+write_frame 298 147486
+write_frame 322: video_eof=0 frames_written=488         
+decode_nal 420 type=0x09 0x30 offset=117382 video_eof=0
+write_frame 298 117382
+write_frame 322: video_eof=0 frames_written=489         
+decode_nal 420 type=0x09 0x50 offset=207325 video_eof=0
+write_frame 298 207325
+write_frame 322: video_eof=0 frames_written=490         
+decode_nal 420 type=0x09 0x50 offset=145506 video_eof=0
+write_frame 298 145506
+write_frame 322: video_eof=0 frames_written=491         
+decode_nal 420 type=0x09 0x30 offset=117049 video_eof=0
+write_frame 298 117049
+write_frame 322: video_eof=0 frames_written=492         
+decode_nal 420 type=0x09 0x50 offset=207153 video_eof=0
+write_frame 298 207153
+write_frame 322: video_eof=0 frames_written=493         
+decode_nal 420 type=0x09 0x50 offset=145391 video_eof=0
+write_frame 298 145391
+write_frame 322: video_eof=0 frames_written=494         
+decode_nal 420 type=0x09 0x30 offset=117609 video_eof=0
+write_frame 298 117609
+write_frame 322: video_eof=0 frames_written=495         
+decode_nal 420 type=0x09 0x50 offset=207454 video_eof=0
+write_frame 298 207454
+write_frame 322: video_eof=0 frames_written=496         
+decode_nal 420 type=0x09 0x50 offset=146162 video_eof=0
+write_frame 298 146162
+write_frame 322: video_eof=0 frames_written=497         
+decode_nal 420 type=0x09 0x30 offset=116575 video_eof=0
+write_frame 298 116575
+write_frame 322: video_eof=0 frames_written=498         
+decode_nal 420 type=0x09 0x50 offset=206126 video_eof=0
+write_frame 298 206126
+write_frame 322: video_eof=0 frames_written=499         
+decode_nal 420 type=0x09 0x50 offset=143871 video_eof=0
+write_frame 298 143871
+write_frame 322: video_eof=0 frames_written=500         
+decode_nal 420 type=0x09 0x30 offset=117255 video_eof=0
+write_frame 298 117255
+write_frame 322: video_eof=0 frames_written=501         
+decode_nal 420 type=0x09 0x50 offset=200239 video_eof=0
+write_frame 298 200239
+write_frame 322: video_eof=0 frames_written=502         
+decode_nal 420 type=0x09 0x50 offset=142061 video_eof=0
+write_frame 298 142061
+write_frame 322: video_eof=0 frames_written=503         
+decode_nal 420 type=0x09 0x10 offset=117124 video_eof=0
+write_frame 298 117124
+write_frame 322: video_eof=0 frames_written=504         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=303843 video_eof=0
+write_frame 298 303843
+write_frame 322: video_eof=0 frames_written=505         
+decode_nal 420 type=0x09 0x50 offset=144049 video_eof=0
+write_frame 298 144049
+write_frame 322: video_eof=0 frames_written=506         
+decode_nal 420 type=0x09 0x30 offset=115588 video_eof=0
+write_frame 298 115588
+write_frame 322: video_eof=0 frames_written=507         
+decode_nal 420 type=0x09 0x50 offset=203345 video_eof=0
+write_frame 298 203345
+write_frame 322: video_eof=0 frames_written=508         
+decode_nal 420 type=0x09 0x50 offset=145669 video_eof=0
+write_frame 298 145669
+write_frame 322: video_eof=0 frames_written=509         
+decode_nal 420 type=0x09 0x30 offset=115728 video_eof=0
+write_frame 298 115728
+write_frame 322: video_eof=0 frames_written=510         
+decode_nal 420 type=0x09 0x50 offset=198774 video_eof=0
+write_frame 298 198774
+write_frame 322: video_eof=0 frames_written=511         
+decode_nal 420 type=0x09 0x50 offset=142508 video_eof=0
+write_frame 298 142508
+write_frame 322: video_eof=0 frames_written=512         
+decode_nal 420 type=0x09 0x30 offset=114527 video_eof=0
+write_frame 298 114527
+write_frame 322: video_eof=0 frames_written=513         
+write_frame 345: video_eof=0 samples_written=983040
+decode_nal 420 type=0x09 0x50 offset=199684 video_eof=0
+write_frame 298 199684
+write_frame 322: video_eof=0 frames_written=514         
+decode_nal 420 type=0x09 0x50 offset=143312 video_eof=0
+write_frame 298 143312
+write_frame 322: video_eof=0 frames_written=515         
+decode_nal 420 type=0x09 0x30 offset=113202 video_eof=0
+write_frame 298 113202
+write_frame 322: video_eof=0 frames_written=516         
+decode_nal 420 type=0x09 0x50 offset=198351 video_eof=0
+write_frame 298 198351
+write_frame 322: video_eof=0 frames_written=517         
+decode_nal 420 type=0x09 0x50 offset=142341 video_eof=0
+write_frame 298 142341
+write_frame 322: video_eof=0 frames_written=518         
+decode_nal 420 type=0x09 0x30 offset=112849 video_eof=0
+write_frame 298 112849
+write_frame 322: video_eof=0 frames_written=519         
+decode_nal 420 type=0x09 0x50 offset=199031 video_eof=0
+write_frame 298 199031
+write_frame 322: video_eof=0 frames_written=520         
+decode_nal 420 type=0x09 0x50 offset=144089 video_eof=0
+write_frame 298 144089
+write_frame 322: video_eof=0 frames_written=521         
+decode_nal 420 type=0x09 0x30 offset=112814 video_eof=0
+write_frame 298 112814
+write_frame 322: video_eof=0 frames_written=522         
+decode_nal 420 type=0x09 0x50 offset=198708 video_eof=0
+write_frame 298 198708
+write_frame 322: video_eof=0 frames_written=523         
+decode_nal 420 type=0x09 0x50 offset=142774 video_eof=0
+write_frame 298 142774
+write_frame 322: video_eof=0 frames_written=524         
+decode_nal 420 type=0x09 0x30 offset=114669 video_eof=0
+write_frame 298 114669
+write_frame 322: video_eof=0 frames_written=525         
+decode_nal 420 type=0x09 0x50 offset=196979 video_eof=0
+write_frame 298 196979
+write_frame 322: video_eof=0 frames_written=526         
+decode_nal 420 type=0x09 0x50 offset=142390 video_eof=0
+write_frame 298 142390
+write_frame 322: video_eof=0 frames_written=527         
+decode_nal 420 type=0x09 0x10 offset=112256 video_eof=0
+write_frame 298 112256
+write_frame 322: video_eof=0 frames_written=528         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=304517 video_eof=0
+write_frame 298 304517
+write_frame 322: video_eof=0 frames_written=529         
+decode_nal 420 type=0x09 0x50 offset=141537 video_eof=0
+write_frame 298 141537
+write_frame 322: video_eof=0 frames_written=530         
+decode_nal 420 type=0x09 0x30 offset=114065 video_eof=0
+write_frame 298 114065
+write_frame 322: video_eof=0 frames_written=531         
+decode_nal 420 type=0x09 0x50 offset=203733 video_eof=0
+write_frame 298 203733
+write_frame 322: video_eof=0 frames_written=532         
+decode_nal 420 type=0x09 0x50 offset=141873 video_eof=0
+write_frame 298 141873
+write_frame 322: video_eof=0 frames_written=533         
+decode_nal 420 type=0x09 0x30 offset=112154 video_eof=0
+write_frame 298 112154
+write_frame 322: video_eof=0 frames_written=534         
+decode_nal 420 type=0x09 0x50 offset=188946 video_eof=0
+write_frame 298 188946
+write_frame 322: video_eof=0 frames_written=535         
+decode_nal 420 type=0x09 0x30 offset=116059 video_eof=0
+write_frame 298 116059
+write_frame 322: video_eof=0 frames_written=536         
+write_frame 345: video_eof=0 samples_written=1048576
+decode_nal 420 type=0x09 0x50 offset=200623 video_eof=0
+write_frame 298 200623
+write_frame 322: video_eof=0 frames_written=537         
+decode_nal 420 type=0x09 0x50 offset=140873 video_eof=0
+write_frame 298 140873
+write_frame 322: video_eof=0 frames_written=538         
+decode_nal 420 type=0x09 0x30 offset=110706 video_eof=0
+write_frame 298 110706
+write_frame 322: video_eof=0 frames_written=539         
+decode_nal 420 type=0x09 0x50 offset=203566 video_eof=0
+write_frame 298 203566
+write_frame 322: video_eof=0 frames_written=540         
+decode_nal 420 type=0x09 0x50 offset=142606 video_eof=0
+write_frame 298 142606
+write_frame 322: video_eof=0 frames_written=541         
+decode_nal 420 type=0x09 0x30 offset=112327 video_eof=0
+write_frame 298 112327
+write_frame 322: video_eof=0 frames_written=542         
+decode_nal 420 type=0x09 0x50 offset=188774 video_eof=0
+write_frame 298 188774
+write_frame 322: video_eof=0 frames_written=543         
+decode_nal 420 type=0x09 0x30 offset=115323 video_eof=0
+write_frame 298 115323
+write_frame 322: video_eof=0 frames_written=544         
+decode_nal 420 type=0x09 0x50 offset=203244 video_eof=0
+write_frame 298 203244
+write_frame 322: video_eof=0 frames_written=545         
+decode_nal 420 type=0x09 0x50 offset=140023 video_eof=0
+write_frame 298 140023
+write_frame 322: video_eof=0 frames_written=546         
+decode_nal 420 type=0x09 0x30 offset=110155 video_eof=0
+write_frame 298 110155
+write_frame 322: video_eof=0 frames_written=547         
+decode_nal 420 type=0x09 0x50 offset=189549 video_eof=0
+write_frame 298 189549
+write_frame 322: video_eof=0 frames_written=548         
+decode_nal 420 type=0x09 0x30 offset=115536 video_eof=0
+write_frame 298 115536
+write_frame 322: video_eof=0 frames_written=549         
+decode_nal 420 type=0x09 0x50 offset=198507 video_eof=0
+write_frame 298 198507
+write_frame 322: video_eof=0 frames_written=550         
+decode_nal 420 type=0x09 0x50 offset=141613 video_eof=0
+write_frame 298 141613
+write_frame 322: video_eof=0 frames_written=551         
+decode_nal 420 type=0x09 0x10 offset=113400 video_eof=0
+write_frame 298 113400
+write_frame 322: video_eof=0 frames_written=552         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=298706 video_eof=0
+write_frame 298 298706
+write_frame 322: video_eof=0 frames_written=553         
+decode_nal 420 type=0x09 0x50 offset=134761 video_eof=0
+write_frame 298 134761
+write_frame 322: video_eof=0 frames_written=554         
+decode_nal 420 type=0x09 0x30 offset=108383 video_eof=0
+write_frame 298 108383
+write_frame 322: video_eof=0 frames_written=555         
+decode_nal 420 type=0x09 0x50 offset=207606 video_eof=0
+write_frame 298 207606
+write_frame 322: video_eof=0 frames_written=556         
+decode_nal 420 type=0x09 0x50 offset=141629 video_eof=0
+write_frame 298 141629
+write_frame 322: video_eof=0 frames_written=557         
+decode_nal 420 type=0x09 0x30 offset=109535 video_eof=0
+write_frame 298 109535
+write_frame 322: video_eof=0 frames_written=558         
+decode_nal 420 type=0x09 0x50 offset=203546 video_eof=0
+write_frame 298 203546
+write_frame 322: video_eof=0 frames_written=559         
+write_frame 345: video_eof=0 samples_written=1114112
+decode_nal 420 type=0x09 0x50 offset=135295 video_eof=0
+write_frame 298 135295
+write_frame 322: video_eof=0 frames_written=560         
+decode_nal 420 type=0x09 0x30 offset=108986 video_eof=0
+write_frame 298 108986
+write_frame 322: video_eof=0 frames_written=561         
+decode_nal 420 type=0x09 0x50 offset=205194 video_eof=0
+write_frame 298 205194
+write_frame 322: video_eof=0 frames_written=562         
+decode_nal 420 type=0x09 0x50 offset=136051 video_eof=0
+write_frame 298 136051
+write_frame 322: video_eof=0 frames_written=563         
+decode_nal 420 type=0x09 0x30 offset=107676 video_eof=0
+write_frame 298 107676
+write_frame 322: video_eof=0 frames_written=564         
+decode_nal 420 type=0x09 0x50 offset=203917 video_eof=0
+write_frame 298 203917
+write_frame 322: video_eof=0 frames_written=565         
+decode_nal 420 type=0x09 0x50 offset=135032 video_eof=0
+write_frame 298 135032
+write_frame 322: video_eof=0 frames_written=566         
+decode_nal 420 type=0x09 0x30 offset=107659 video_eof=0
+write_frame 298 107659
+write_frame 322: video_eof=0 frames_written=567         
+decode_nal 420 type=0x09 0x50 offset=204171 video_eof=0
+write_frame 298 204171
+write_frame 322: video_eof=0 frames_written=568         
+decode_nal 420 type=0x09 0x50 offset=134027 video_eof=0
+write_frame 298 134027
+write_frame 322: video_eof=0 frames_written=569         
+decode_nal 420 type=0x09 0x30 offset=106676 video_eof=0
+write_frame 298 106676
+write_frame 322: video_eof=0 frames_written=570         
+decode_nal 420 type=0x09 0x50 offset=202890 video_eof=0
+write_frame 298 202890
+write_frame 322: video_eof=0 frames_written=571         
+decode_nal 420 type=0x09 0x50 offset=133614 video_eof=0
+write_frame 298 133614
+write_frame 322: video_eof=0 frames_written=572         
+decode_nal 420 type=0x09 0x30 offset=106154 video_eof=0
+write_frame 298 106154
+write_frame 322: video_eof=0 frames_written=573         
+decode_nal 420 type=0x09 0x50 offset=197772 video_eof=0
+write_frame 298 197772
+write_frame 322: video_eof=0 frames_written=574         
+decode_nal 420 type=0x09 0x50 offset=131921 video_eof=0
+write_frame 298 131921
+write_frame 322: video_eof=0 frames_written=575         
+decode_nal 420 type=0x09 0x10 offset=107752 video_eof=0
+write_frame 298 107752
+write_frame 322: video_eof=0 frames_written=576         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=288943 video_eof=0
+write_frame 298 288943
+write_frame 322: video_eof=0 frames_written=577         
+decode_nal 420 type=0x09 0x50 offset=132190 video_eof=0
+write_frame 298 132190
+write_frame 322: video_eof=0 frames_written=578         
+decode_nal 420 type=0x09 0x30 offset=105676 video_eof=0
+write_frame 298 105676
+write_frame 322: video_eof=0 frames_written=579         
+decode_nal 420 type=0x09 0x50 offset=187909 video_eof=0
+write_frame 298 187909
+write_frame 322: video_eof=0 frames_written=580         
+decode_nal 420 type=0x09 0x30 offset=111033 video_eof=0
+write_frame 298 111033
+write_frame 322: video_eof=0 frames_written=581         
+decode_nal 420 type=0x09 0x50 offset=186131 video_eof=0
+write_frame 298 186131
+write_frame 322: video_eof=0 frames_written=582         
+decode_nal 420 type=0x09 0x30 offset=108563 video_eof=0
+write_frame 298 108563
+write_frame 322: video_eof=0 frames_written=583         
+decode_nal 420 type=0x09 0x50 offset=199621 video_eof=0
+write_frame 298 199621
+write_frame 322: video_eof=0 frames_written=584         
+decode_nal 420 type=0x09 0x50 offset=131893 video_eof=0
+write_frame 298 131893
+write_frame 322: video_eof=0 frames_written=585         
+decode_nal 420 type=0x09 0x30 offset=106046 video_eof=0
+write_frame 298 106046
+write_frame 322: video_eof=0 frames_written=586         
+decode_nal 420 type=0x09 0x50 offset=182292 video_eof=0
+write_frame 298 182292
+write_frame 322: video_eof=0 frames_written=587         
+decode_nal 420 type=0x09 0x30 offset=107529 video_eof=0
+write_frame 298 107529
+write_frame 322: video_eof=0 frames_written=588         
+decode_nal 420 type=0x09 0x50 offset=195584 video_eof=0
+write_frame 298 195584
+write_frame 322: video_eof=0 frames_written=589         
+decode_nal 420 type=0x09 0x50 offset=132218 video_eof=0
+write_frame 298 132218
+write_frame 322: video_eof=0 frames_written=590         
+decode_nal 420 type=0x09 0x30 offset=107527 video_eof=0
+write_frame 298 107527
+write_frame 322: video_eof=0 frames_written=591         
+decode_nal 420 type=0x09 0x50 offset=196139 video_eof=0
+write_frame 298 196139
+write_frame 322: video_eof=0 frames_written=592         
+decode_nal 420 type=0x09 0x50 offset=133515 video_eof=0
+write_frame 298 133515
+write_frame 322: video_eof=0 frames_written=593         
+decode_nal 420 type=0x09 0x30 offset=107260 video_eof=0
+write_frame 298 107260
+write_frame 322: video_eof=0 frames_written=594         
+decode_nal 420 type=0x09 0x50 offset=198181 video_eof=0
+write_frame 298 198181
+write_frame 322: video_eof=0 frames_written=595         
+decode_nal 420 type=0x09 0x50 offset=132754 video_eof=0
+write_frame 298 132754
+write_frame 322: video_eof=0 frames_written=596         
+decode_nal 420 type=0x09 0x30 offset=107048 video_eof=0
+write_frame 298 107048
+write_frame 322: video_eof=0 frames_written=597         
+decode_nal 420 type=0x09 0x50 offset=193935 video_eof=0
+write_frame 298 193935
+write_frame 322: video_eof=0 frames_written=598         
+decode_nal 420 type=0x09 0x50 offset=132605 video_eof=0
+write_frame 298 132605
+write_frame 322: video_eof=0 frames_written=599         
+decode_nal 420 type=0x09 0x10 offset=110561 video_eof=0
+write_frame 298 110561
+write_frame 322: video_eof=0 frames_written=600         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=293916 video_eof=0
+write_frame 298 293916
+write_frame 322: video_eof=0 frames_written=601         
+decode_nal 420 type=0x09 0x50 offset=133140 video_eof=0
+write_frame 298 133140
+write_frame 322: video_eof=0 frames_written=602         
+decode_nal 420 type=0x09 0x30 offset=110936 video_eof=0
+write_frame 298 110936
+write_frame 322: video_eof=0 frames_written=603         
+decode_nal 420 type=0x09 0x50 offset=201238 video_eof=0
+write_frame 298 201238
+write_frame 322: video_eof=0 frames_written=604         
+decode_nal 420 type=0x09 0x50 offset=136954 video_eof=0
+write_frame 298 136954
+write_frame 322: video_eof=0 frames_written=605         
+write_frame 345: video_eof=0 samples_written=1179648
+decode_nal 420 type=0x09 0x30 offset=110733 video_eof=0
+write_frame 298 110733
+write_frame 322: video_eof=0 frames_written=606         
+decode_nal 420 type=0x09 0x50 offset=198376 video_eof=0
+write_frame 298 198376
+write_frame 322: video_eof=0 frames_written=607         
+decode_nal 420 type=0x09 0x50 offset=134558 video_eof=0
+write_frame 298 134558
+write_frame 322: video_eof=0 frames_written=608         
+decode_nal 420 type=0x09 0x30 offset=109650 video_eof=0
+write_frame 298 109650
+write_frame 322: video_eof=0 frames_written=609         
+decode_nal 420 type=0x09 0x50 offset=196645 video_eof=0
+write_frame 298 196645
+write_frame 322: video_eof=0 frames_written=610         
+decode_nal 420 type=0x09 0x50 offset=133599 video_eof=0
+write_frame 298 133599
+write_frame 322: video_eof=0 frames_written=611         
+decode_nal 420 type=0x09 0x30 offset=110269 video_eof=0
+write_frame 298 110269
+write_frame 322: video_eof=0 frames_written=612         
+decode_nal 420 type=0x09 0x50 offset=196115 video_eof=0
+write_frame 298 196115
+write_frame 322: video_eof=0 frames_written=613         
+decode_nal 420 type=0x09 0x50 offset=134670 video_eof=0
+write_frame 298 134670
+write_frame 322: video_eof=0 frames_written=614         
+decode_nal 420 type=0x09 0x30 offset=111329 video_eof=0
+write_frame 298 111329
+write_frame 322: video_eof=0 frames_written=615         
+decode_nal 420 type=0x09 0x50 offset=194913 video_eof=0
+write_frame 298 194913
+write_frame 322: video_eof=0 frames_written=616         
+decode_nal 420 type=0x09 0x50 offset=133635 video_eof=0
+write_frame 298 133635
+write_frame 322: video_eof=0 frames_written=617         
+decode_nal 420 type=0x09 0x30 offset=108433 video_eof=0
+write_frame 298 108433
+write_frame 322: video_eof=0 frames_written=618         
+decode_nal 420 type=0x09 0x50 offset=191924 video_eof=0
+write_frame 298 191924
+write_frame 322: video_eof=0 frames_written=619         
+decode_nal 420 type=0x09 0x50 offset=133162 video_eof=0
+write_frame 298 133162
+write_frame 322: video_eof=0 frames_written=620         
+decode_nal 420 type=0x09 0x30 offset=108821 video_eof=0
+write_frame 298 108821
+write_frame 322: video_eof=0 frames_written=621         
+decode_nal 420 type=0x09 0x50 offset=187239 video_eof=0
+write_frame 298 187239
+write_frame 322: video_eof=0 frames_written=622         
+decode_nal 420 type=0x09 0x50 offset=132358 video_eof=0
+write_frame 298 132358
+write_frame 322: video_eof=0 frames_written=623         
+decode_nal 420 type=0x09 0x10 offset=108077 video_eof=0
+write_frame 298 108077
+write_frame 322: video_eof=0 frames_written=624         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=299504 video_eof=0
+write_frame 298 299504
+write_frame 322: video_eof=0 frames_written=625         
+decode_nal 420 type=0x09 0x50 offset=135676 video_eof=0
+write_frame 298 135676
+write_frame 322: video_eof=0 frames_written=626         
+decode_nal 420 type=0x09 0x30 offset=113662 video_eof=0
+write_frame 298 113662
+write_frame 322: video_eof=0 frames_written=627         
+decode_nal 420 type=0x09 0x50 offset=202488 video_eof=0
+write_frame 298 202488
+write_frame 322: video_eof=0 frames_written=628         
+write_frame 345: video_eof=0 samples_written=1245184
+decode_nal 420 type=0x09 0x50 offset=140849 video_eof=0
+write_frame 298 140849
+write_frame 322: video_eof=0 frames_written=629         
+decode_nal 420 type=0x09 0x30 offset=113558 video_eof=0
+write_frame 298 113558
+write_frame 322: video_eof=0 frames_written=630         
+decode_nal 420 type=0x09 0x50 offset=195369 video_eof=0
+write_frame 298 195369
+write_frame 322: video_eof=0 frames_written=631         
+decode_nal 420 type=0x09 0x50 offset=135312 video_eof=0
+write_frame 298 135312
+write_frame 322: video_eof=0 frames_written=632         
+decode_nal 420 type=0x09 0x30 offset=110025 video_eof=0
+write_frame 298 110025
+write_frame 322: video_eof=0 frames_written=633         
+decode_nal 420 type=0x09 0x50 offset=191296 video_eof=0
+write_frame 298 191296
+write_frame 322: video_eof=0 frames_written=634         
+decode_nal 420 type=0x09 0x50 offset=134876 video_eof=0
+write_frame 298 134876
+write_frame 322: video_eof=0 frames_written=635         
+decode_nal 420 type=0x09 0x30 offset=106910 video_eof=0
+write_frame 298 106910
+write_frame 322: video_eof=0 frames_written=636         
+decode_nal 420 type=0x09 0x50 offset=187876 video_eof=0
+write_frame 298 187876
+write_frame 322: video_eof=0 frames_written=637         
+decode_nal 420 type=0x09 0x50 offset=131549 video_eof=0
+write_frame 298 131549
+write_frame 322: video_eof=0 frames_written=638         
+decode_nal 420 type=0x09 0x30 offset=107426 video_eof=0
+write_frame 298 107426
+write_frame 322: video_eof=0 frames_written=639         
+decode_nal 420 type=0x09 0x50 offset=185728 video_eof=0
+write_frame 298 185728
+write_frame 322: video_eof=0 frames_written=640         
+decode_nal 420 type=0x09 0x50 offset=130892 video_eof=0
+write_frame 298 130892
+write_frame 322: video_eof=0 frames_written=641         
+decode_nal 420 type=0x09 0x30 offset=104713 video_eof=0
+write_frame 298 104713
+write_frame 322: video_eof=0 frames_written=642         
+decode_nal 420 type=0x09 0x50 offset=185065 video_eof=0
+write_frame 298 185065
+write_frame 322: video_eof=0 frames_written=643         
+decode_nal 420 type=0x09 0x50 offset=128853 video_eof=0
+write_frame 298 128853
+write_frame 322: video_eof=0 frames_written=644         
+decode_nal 420 type=0x09 0x30 offset=104081 video_eof=0
+write_frame 298 104081
+write_frame 322: video_eof=0 frames_written=645         
+decode_nal 420 type=0x09 0x50 offset=177393 video_eof=0
+write_frame 298 177393
+write_frame 322: video_eof=0 frames_written=646         
+decode_nal 420 type=0x09 0x50 offset=125515 video_eof=0
+write_frame 298 125515
+write_frame 322: video_eof=0 frames_written=647         
+decode_nal 420 type=0x09 0x10 offset=103521 video_eof=0
+write_frame 298 103521
+write_frame 322: video_eof=0 frames_written=648         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=313151 video_eof=0
+write_frame 298 313151
+write_frame 322: video_eof=0 frames_written=649         
+decode_nal 420 type=0x09 0x50 offset=133162 video_eof=0
+write_frame 298 133162
+write_frame 322: video_eof=0 frames_written=650         
+decode_nal 420 type=0x09 0x30 offset=109904 video_eof=0
+write_frame 298 109904
+write_frame 322: video_eof=0 frames_written=651         
+decode_nal 420 type=0x09 0x50 offset=195934 video_eof=0
+write_frame 298 195934
+write_frame 322: video_eof=0 frames_written=652         
+decode_nal 420 type=0x09 0x50 offset=135905 video_eof=0
+write_frame 298 135905
+write_frame 322: video_eof=0 frames_written=653         
+decode_nal 420 type=0x09 0x30 offset=107169 video_eof=0
+write_frame 298 107169
+write_frame 322: video_eof=0 frames_written=654         
+decode_nal 420 type=0x09 0x50 offset=189987 video_eof=0
+write_frame 298 189987
+write_frame 322: video_eof=0 frames_written=655         
+decode_nal 420 type=0x09 0x50 offset=131512 video_eof=0
+write_frame 298 131512
+write_frame 322: video_eof=0 frames_written=656         
+decode_nal 420 type=0x09 0x30 offset=102463 video_eof=0
+write_frame 298 102463
+write_frame 322: video_eof=0 frames_written=657         
+decode_nal 420 type=0x09 0x50 offset=183070 video_eof=0
+write_frame 298 183070
+write_frame 322: video_eof=0 frames_written=658         
+decode_nal 420 type=0x09 0x50 offset=126568 video_eof=0
+write_frame 298 126568
+write_frame 322: video_eof=0 frames_written=659         
+decode_nal 420 type=0x09 0x30 offset=102400 video_eof=0
+write_frame 298 102400
+write_frame 322: video_eof=0 frames_written=660         
+decode_nal 420 type=0x09 0x50 offset=184052 video_eof=0
+write_frame 298 184052
+write_frame 322: video_eof=0 frames_written=661         
+decode_nal 420 type=0x09 0x50 offset=127157 video_eof=0
+write_frame 298 127157
+write_frame 322: video_eof=0 frames_written=662         
+decode_nal 420 type=0x09 0x30 offset=101546 video_eof=0
+write_frame 298 101546
+write_frame 322: video_eof=0 frames_written=663         
+decode_nal 420 type=0x09 0x50 offset=181310 video_eof=0
+write_frame 298 181310
+write_frame 322: video_eof=0 frames_written=664         
+decode_nal 420 type=0x09 0x50 offset=124909 video_eof=0
+write_frame 298 124909
+write_frame 322: video_eof=0 frames_written=665         
+decode_nal 420 type=0x09 0x30 offset=100178 video_eof=0
+write_frame 298 100178
+write_frame 322: video_eof=0 frames_written=666         
+decode_nal 420 type=0x09 0x50 offset=180810 video_eof=0
+write_frame 298 180810
+write_frame 322: video_eof=0 frames_written=667         
+decode_nal 420 type=0x09 0x50 offset=124971 video_eof=0
+write_frame 298 124971
+write_frame 322: video_eof=0 frames_written=668         
+decode_nal 420 type=0x09 0x30 offset=99873 video_eof=0
+write_frame 298 99873
+write_frame 322: video_eof=0 frames_written=669         
+decode_nal 420 type=0x09 0x50 offset=175072 video_eof=0
+write_frame 298 175072
+write_frame 322: video_eof=0 frames_written=670         
+decode_nal 420 type=0x09 0x50 offset=124275 video_eof=0
+write_frame 298 124275
+write_frame 322: video_eof=0 frames_written=671         
+decode_nal 420 type=0x09 0x10 offset=100878 video_eof=0
+write_frame 298 100878
+write_frame 322: video_eof=0 frames_written=672         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=318108 video_eof=0
+write_frame 298 318108
+write_frame 322: video_eof=0 frames_written=673         
+decode_nal 420 type=0x09 0x50 offset=125515 video_eof=0
+write_frame 298 125515
+write_frame 322: video_eof=0 frames_written=674         
+write_frame 345: video_eof=0 samples_written=1310720
+decode_nal 420 type=0x09 0x30 offset=103783 video_eof=0
+write_frame 298 103783
+write_frame 322: video_eof=0 frames_written=675         
+decode_nal 420 type=0x09 0x50 offset=192653 video_eof=0
+write_frame 298 192653
+write_frame 322: video_eof=0 frames_written=676         
+decode_nal 420 type=0x09 0x50 offset=134465 video_eof=0
+write_frame 298 134465
+write_frame 322: video_eof=0 frames_written=677         
+decode_nal 420 type=0x09 0x30 offset=105104 video_eof=0
+write_frame 298 105104
+write_frame 322: video_eof=0 frames_written=678         
+decode_nal 420 type=0x09 0x50 offset=183788 video_eof=0
+write_frame 298 183788
+write_frame 322: video_eof=0 frames_written=679         
+decode_nal 420 type=0x09 0x50 offset=128969 video_eof=0
+write_frame 298 128969
+write_frame 322: video_eof=0 frames_written=680         
+decode_nal 420 type=0x09 0x30 offset=103585 video_eof=0
+write_frame 298 103585
+write_frame 322: video_eof=0 frames_written=681         
+decode_nal 420 type=0x09 0x50 offset=181494 video_eof=0
+write_frame 298 181494
+write_frame 322: video_eof=0 frames_written=682         
+decode_nal 420 type=0x09 0x50 offset=127305 video_eof=0
+write_frame 298 127305
+write_frame 322: video_eof=0 frames_written=683         
+decode_nal 420 type=0x09 0x30 offset=101173 video_eof=0
+write_frame 298 101173
+write_frame 322: video_eof=0 frames_written=684         
+decode_nal 420 type=0x09 0x50 offset=181579 video_eof=0
+write_frame 298 181579
+write_frame 322: video_eof=0 frames_written=685         
+decode_nal 420 type=0x09 0x50 offset=127280 video_eof=0
+write_frame 298 127280
+write_frame 322: video_eof=0 frames_written=686         
+decode_nal 420 type=0x09 0x30 offset=102279 video_eof=0
+write_frame 298 102279
+write_frame 322: video_eof=0 frames_written=687         
+decode_nal 420 type=0x09 0x50 offset=179790 video_eof=0
+write_frame 298 179790
+write_frame 322: video_eof=0 frames_written=688         
+decode_nal 420 type=0x09 0x50 offset=126999 video_eof=0
+write_frame 298 126999
+write_frame 322: video_eof=0 frames_written=689         
+decode_nal 420 type=0x09 0x30 offset=100894 video_eof=0
+write_frame 298 100894
+write_frame 322: video_eof=0 frames_written=690         
+decode_nal 420 type=0x09 0x50 offset=180350 video_eof=0
+write_frame 298 180350
+write_frame 322: video_eof=0 frames_written=691         
+decode_nal 420 type=0x09 0x50 offset=126223 video_eof=0
+write_frame 298 126223
+write_frame 322: video_eof=0 frames_written=692         
+decode_nal 420 type=0x09 0x30 offset=100893 video_eof=0
+write_frame 298 100893
+write_frame 322: video_eof=0 frames_written=693         
+decode_nal 420 type=0x09 0x50 offset=172543 video_eof=0
+write_frame 298 172543
+write_frame 322: video_eof=0 frames_written=694         
+decode_nal 420 type=0x09 0x50 offset=125151 video_eof=0
+write_frame 298 125151
+write_frame 322: video_eof=0 frames_written=695         
+decode_nal 420 type=0x09 0x10 offset=99605 video_eof=0
+write_frame 298 99605
+write_frame 322: video_eof=0 frames_written=696         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=318187 video_eof=0
+write_frame 298 318187
+write_frame 322: video_eof=0 frames_written=697         
+write_frame 345: video_eof=0 samples_written=1376256
+decode_nal 420 type=0x09 0x50 offset=123255 video_eof=0
+write_frame 298 123255
+write_frame 322: video_eof=0 frames_written=698         
+decode_nal 420 type=0x09 0x30 offset=99009 video_eof=0
+write_frame 298 99009
+write_frame 322: video_eof=0 frames_written=699         
+decode_nal 420 type=0x09 0x50 offset=188548 video_eof=0
+write_frame 298 188548
+write_frame 322: video_eof=0 frames_written=700         
+decode_nal 420 type=0x09 0x50 offset=132420 video_eof=0
+write_frame 298 132420
+write_frame 322: video_eof=0 frames_written=701         
+decode_nal 420 type=0x09 0x30 offset=106543 video_eof=0
+write_frame 298 106543
+write_frame 322: video_eof=0 frames_written=702         
+decode_nal 420 type=0x09 0x50 offset=187044 video_eof=0
+write_frame 298 187044
+write_frame 322: video_eof=0 frames_written=703         
+decode_nal 420 type=0x09 0x50 offset=130520 video_eof=0
+write_frame 298 130520
+write_frame 322: video_eof=0 frames_written=704         
+decode_nal 420 type=0x09 0x30 offset=99904 video_eof=0
+write_frame 298 99904
+write_frame 322: video_eof=0 frames_written=705         
+decode_nal 420 type=0x09 0x50 offset=177123 video_eof=0
+write_frame 298 177123
+write_frame 322: video_eof=0 frames_written=706         
+decode_nal 420 type=0x09 0x50 offset=127109 video_eof=0
+write_frame 298 127109
+write_frame 322: video_eof=0 frames_written=707         
+decode_nal 420 type=0x09 0x30 offset=105803 video_eof=0
+write_frame 298 105803
+write_frame 322: video_eof=0 frames_written=708         
+decode_nal 420 type=0x09 0x50 offset=181448 video_eof=0
+write_frame 298 181448
+write_frame 322: video_eof=0 frames_written=709         
+decode_nal 420 type=0x09 0x50 offset=124918 video_eof=0
+write_frame 298 124918
+write_frame 322: video_eof=0 frames_written=710         
+decode_nal 420 type=0x09 0x30 offset=98478 video_eof=0
+write_frame 298 98478
+write_frame 322: video_eof=0 frames_written=711         
+decode_nal 420 type=0x09 0x50 offset=177963 video_eof=0
+write_frame 298 177963
+write_frame 322: video_eof=0 frames_written=712         
+decode_nal 420 type=0x09 0x50 offset=125869 video_eof=0
+write_frame 298 125869
+write_frame 322: video_eof=0 frames_written=713         
+decode_nal 420 type=0x09 0x30 offset=99702 video_eof=0
+write_frame 298 99702
+write_frame 322: video_eof=0 frames_written=714         
+decode_nal 420 type=0x09 0x50 offset=177269 video_eof=0
+write_frame 298 177269
+write_frame 322: video_eof=0 frames_written=715         
+decode_nal 420 type=0x09 0x50 offset=125471 video_eof=0
+write_frame 298 125471
+write_frame 322: video_eof=0 frames_written=716         
+decode_nal 420 type=0x09 0x30 offset=101228 video_eof=0
+write_frame 298 101228
+write_frame 322: video_eof=0 frames_written=717         
+decode_nal 420 type=0x09 0x50 offset=171902 video_eof=0
+write_frame 298 171902
+write_frame 322: video_eof=0 frames_written=718         
+decode_nal 420 type=0x09 0x50 offset=126762 video_eof=0
+write_frame 298 126762
+write_frame 322: video_eof=0 frames_written=719         
+decode_nal 420 type=0x09 0x10 offset=102746 video_eof=0
+write_frame 298 102746
+write_frame 322: video_eof=0 frames_written=720         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=322167 video_eof=0
+write_frame 298 322167
+write_frame 322: video_eof=0 frames_written=721         
+decode_nal 420 type=0x09 0x50 offset=124496 video_eof=0
+write_frame 298 124496
+write_frame 322: video_eof=0 frames_written=722         
+decode_nal 420 type=0x09 0x30 offset=101151 video_eof=0
+write_frame 298 101151
+write_frame 322: video_eof=0 frames_written=723         
+decode_nal 420 type=0x09 0x50 offset=184808 video_eof=0
+write_frame 298 184808
+write_frame 322: video_eof=0 frames_written=724         
+decode_nal 420 type=0x09 0x50 offset=129453 video_eof=0
+write_frame 298 129453
+write_frame 322: video_eof=0 frames_written=725         
+decode_nal 420 type=0x09 0x30 offset=103823 video_eof=0
+write_frame 298 103823
+write_frame 322: video_eof=0 frames_written=726         
+decode_nal 420 type=0x09 0x50 offset=179491 video_eof=0
+write_frame 298 179491
+write_frame 322: video_eof=0 frames_written=727         
+decode_nal 420 type=0x09 0x50 offset=130304 video_eof=0
+write_frame 298 130304
+write_frame 322: video_eof=0 frames_written=728         
+decode_nal 420 type=0x09 0x30 offset=102254 video_eof=0
+write_frame 298 102254
+write_frame 322: video_eof=0 frames_written=729         
+decode_nal 420 type=0x09 0x50 offset=176256 video_eof=0
+write_frame 298 176256
+write_frame 322: video_eof=0 frames_written=730         
+decode_nal 420 type=0x09 0x50 offset=125307 video_eof=0
+write_frame 298 125307
+write_frame 322: video_eof=0 frames_written=731         
+decode_nal 420 type=0x09 0x30 offset=98181 video_eof=0
+write_frame 298 98181
+write_frame 322: video_eof=0 frames_written=732         
+decode_nal 420 type=0x09 0x50 offset=172485 video_eof=0
+write_frame 298 172485
+write_frame 322: video_eof=0 frames_written=733         
+decode_nal 420 type=0x09 0x50 offset=125150 video_eof=0
+write_frame 298 125150
+write_frame 322: video_eof=0 frames_written=734         
+decode_nal 420 type=0x09 0x30 offset=101217 video_eof=0
+write_frame 298 101217
+write_frame 322: video_eof=0 frames_written=735         
+decode_nal 420 type=0x09 0x50 offset=175516 video_eof=0
+write_frame 298 175516
+write_frame 322: video_eof=0 frames_written=736         
+decode_nal 420 type=0x09 0x50 offset=125133 video_eof=0
+write_frame 298 125133
+write_frame 322: video_eof=0 frames_written=737         
+decode_nal 420 type=0x09 0x30 offset=99302 video_eof=0
+write_frame 298 99302
+write_frame 322: video_eof=0 frames_written=738         
+decode_nal 420 type=0x09 0x50 offset=171946 video_eof=0
+write_frame 298 171946
+write_frame 322: video_eof=0 frames_written=739         
+decode_nal 420 type=0x09 0x50 offset=124233 video_eof=0
+write_frame 298 124233
+write_frame 322: video_eof=0 frames_written=740         
+decode_nal 420 type=0x09 0x30 offset=99515 video_eof=0
+write_frame 298 99515
+write_frame 322: video_eof=0 frames_written=741         
+decode_nal 420 type=0x09 0x50 offset=168717 video_eof=0
+write_frame 298 168717
+write_frame 322: video_eof=0 frames_written=742         
+decode_nal 420 type=0x09 0x50 offset=126400 video_eof=0
+write_frame 298 126400
+write_frame 322: video_eof=0 frames_written=743         
+write_frame 345: video_eof=0 samples_written=1441792
+decode_nal 420 type=0x09 0x10 offset=101608 video_eof=0
+write_frame 298 101608
+write_frame 322: video_eof=0 frames_written=744         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=318538 video_eof=0
+write_frame 298 318538
+write_frame 322: video_eof=0 frames_written=745         
+decode_nal 420 type=0x09 0x50 offset=122584 video_eof=0
+write_frame 298 122584
+write_frame 322: video_eof=0 frames_written=746         
+decode_nal 420 type=0x09 0x30 offset=100018 video_eof=0
+write_frame 298 100018
+write_frame 322: video_eof=0 frames_written=747         
+decode_nal 420 type=0x09 0x50 offset=183971 video_eof=0
+write_frame 298 183971
+write_frame 322: video_eof=0 frames_written=748         
+decode_nal 420 type=0x09 0x50 offset=128233 video_eof=0
+write_frame 298 128233
+write_frame 322: video_eof=0 frames_written=749         
+decode_nal 420 type=0x09 0x30 offset=100576 video_eof=0
+write_frame 298 100576
+write_frame 322: video_eof=0 frames_written=750         
+decode_nal 420 type=0x09 0x50 offset=175809 video_eof=0
+write_frame 298 175809
+write_frame 322: video_eof=0 frames_written=751         
+decode_nal 420 type=0x09 0x50 offset=127949 video_eof=0
+write_frame 298 127949
+write_frame 322: video_eof=0 frames_written=752         
+decode_nal 420 type=0x09 0x30 offset=100259 video_eof=0
+write_frame 298 100259
+write_frame 322: video_eof=0 frames_written=753         
+decode_nal 420 type=0x09 0x50 offset=171714 video_eof=0
+write_frame 298 171714
+write_frame 322: video_eof=0 frames_written=754         
+decode_nal 420 type=0x09 0x50 offset=121258 video_eof=0
+write_frame 298 121258
+write_frame 322: video_eof=0 frames_written=755         
+decode_nal 420 type=0x09 0x30 offset=97766 video_eof=0
+write_frame 298 97766
+write_frame 322: video_eof=0 frames_written=756         
+decode_nal 420 type=0x09 0x50 offset=173416 video_eof=0
+write_frame 298 173416
+write_frame 322: video_eof=0 frames_written=757         
+decode_nal 420 type=0x09 0x50 offset=124936 video_eof=0
+write_frame 298 124936
+write_frame 322: video_eof=0 frames_written=758         
+decode_nal 420 type=0x09 0x30 offset=109363 video_eof=0
+write_frame 298 109363
+write_frame 322: video_eof=0 frames_written=759         
+decode_nal 420 type=0x09 0x50 offset=169993 video_eof=0
+write_frame 298 169993
+write_frame 322: video_eof=0 frames_written=760         
+decode_nal 420 type=0x09 0x50 offset=153283 video_eof=0
+write_frame 298 153283
+write_frame 322: video_eof=0 frames_written=761         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=762         
+decode_nal 420 type=0x09 0x50 offset=170551 video_eof=0
+write_frame 298 170551
+write_frame 322: video_eof=0 frames_written=763         
+decode_nal 420 type=0x09 0x50 offset=152724 video_eof=0
+write_frame 298 152724
+write_frame 322: video_eof=0 frames_written=764         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=765         
+decode_nal 420 type=0x09 0x50 offset=242497 video_eof=0
+write_frame 298 242497
+write_frame 322: video_eof=0 frames_written=766         
+write_frame 345: video_eof=0 samples_written=1507328
+decode_nal 420 type=0x09 0x50 offset=136781 video_eof=0
+write_frame 298 136781
+write_frame 322: video_eof=0 frames_written=767         
+decode_nal 420 type=0x09 0x10 offset=105601 video_eof=0
+write_frame 298 105601
+write_frame 322: video_eof=0 frames_written=768         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=349366 video_eof=0
+write_frame 298 349366
+write_frame 322: video_eof=0 frames_written=769         
+decode_nal 420 type=0x09 0x50 offset=200106 video_eof=0
+write_frame 298 200106
+write_frame 322: video_eof=0 frames_written=770         
+decode_nal 420 type=0x09 0x30 offset=177624 video_eof=0
+write_frame 298 177624
+write_frame 322: video_eof=0 frames_written=771         
+decode_nal 420 type=0x09 0x50 offset=287907 video_eof=0
+write_frame 298 287907
+write_frame 322: video_eof=0 frames_written=772         
+decode_nal 420 type=0x09 0x30 offset=184930 video_eof=0
+write_frame 298 184930
+write_frame 322: video_eof=0 frames_written=773         
+decode_nal 420 type=0x09 0x50 offset=267000 video_eof=0
+write_frame 298 267000
+write_frame 322: video_eof=0 frames_written=774         
+decode_nal 420 type=0x09 0x30 offset=172603 video_eof=0
+write_frame 298 172603
+write_frame 322: video_eof=0 frames_written=775         
+decode_nal 420 type=0x09 0x50 offset=224005 video_eof=0
+write_frame 298 224005
+write_frame 322: video_eof=0 frames_written=776         
+decode_nal 420 type=0x09 0x50 offset=177516 video_eof=0
+write_frame 298 177516
+write_frame 322: video_eof=0 frames_written=777         
+decode_nal 420 type=0x09 0x30 offset=142572 video_eof=0
+write_frame 298 142572
+write_frame 322: video_eof=0 frames_written=778         
+decode_nal 420 type=0x09 0x50 offset=164737 video_eof=0
+write_frame 298 164737
+write_frame 322: video_eof=0 frames_written=779         
+decode_nal 420 type=0x09 0x50 offset=138050 video_eof=0
+write_frame 298 138050
+write_frame 322: video_eof=0 frames_written=780         
+decode_nal 420 type=0x09 0x30 offset=108734 video_eof=0
+write_frame 298 108734
+write_frame 322: video_eof=0 frames_written=781         
+decode_nal 420 type=0x09 0x50 offset=120510 video_eof=0
+write_frame 298 120510
+write_frame 322: video_eof=0 frames_written=782         
+decode_nal 420 type=0x09 0x50 offset=110430 video_eof=0
+write_frame 298 110430
+write_frame 322: video_eof=0 frames_written=783         
+decode_nal 420 type=0x09 0x30 offset=87368 video_eof=0
+write_frame 298 87368
+write_frame 322: video_eof=0 frames_written=784         
+decode_nal 420 type=0x09 0x50 offset=103702 video_eof=0
+write_frame 298 103702
+write_frame 322: video_eof=0 frames_written=785         
+decode_nal 420 type=0x09 0x50 offset=97060 video_eof=0
+write_frame 298 97060
+write_frame 322: video_eof=0 frames_written=786         
+decode_nal 420 type=0x09 0x30 offset=76299 video_eof=0
+write_frame 298 76299
+write_frame 322: video_eof=0 frames_written=787         
+decode_nal 420 type=0x09 0x50 offset=97364 video_eof=0
+write_frame 298 97364
+write_frame 322: video_eof=0 frames_written=788         
+decode_nal 420 type=0x09 0x30 offset=76722 video_eof=0
+write_frame 298 76722
+write_frame 322: video_eof=0 frames_written=789         
+write_frame 345: video_eof=0 samples_written=1572864
+decode_nal 420 type=0x09 0x50 offset=96447 video_eof=0
+write_frame 298 96447
+write_frame 322: video_eof=0 frames_written=790         
+decode_nal 420 type=0x09 0x50 offset=88377 video_eof=0
+write_frame 298 88377
+write_frame 322: video_eof=0 frames_written=791         
+decode_nal 420 type=0x09 0x10 offset=83751 video_eof=0
+write_frame 298 83751
+write_frame 322: video_eof=0 frames_written=792         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=104082 video_eof=0
+write_frame 298 104082
+write_frame 322: video_eof=0 frames_written=793         
+decode_nal 420 type=0x09 0x50 offset=48259 video_eof=0
+write_frame 298 48259
+write_frame 322: video_eof=0 frames_written=794         
+decode_nal 420 type=0x09 0x30 offset=64420 video_eof=0
+write_frame 298 64420
+write_frame 322: video_eof=0 frames_written=795         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=796         
+decode_nal 420 type=0x09 0x50 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=797         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=798         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=799         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=800         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=801         
+decode_nal 420 type=0x09 0x50 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=802         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=803         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=804         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=805         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=806         
+decode_nal 420 type=0x09 0x30 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=807         
+decode_nal 420 type=0x09 0x50 offset=201418 video_eof=0
+write_frame 298 201418
+write_frame 322: video_eof=0 frames_written=808         
+decode_nal 420 type=0x09 0x50 offset=138272 video_eof=0
+write_frame 298 138272
+write_frame 322: video_eof=0 frames_written=809         
+decode_nal 420 type=0x09 0x30 offset=145222 video_eof=0
+write_frame 298 145222
+write_frame 322: video_eof=0 frames_written=810         
+decode_nal 420 type=0x09 0x50 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=811         
+decode_nal 420 type=0x09 0x50 offset=161639 video_eof=0
+write_frame 298 161639
+write_frame 322: video_eof=0 frames_written=812         
+decode_nal 420 type=0x09 0x30 offset=161640 video_eof=0
+write_frame 298 161640
+write_frame 322: video_eof=0 frames_written=813         
+decode_nal 420 type=0x09 0x50 offset=199388 video_eof=0
+write_frame 298 199388
+write_frame 322: video_eof=0 frames_written=814         
+decode_nal 420 type=0x09 0x50 offset=149209 video_eof=0
+write_frame 298 149209
+write_frame 322: video_eof=0 frames_written=815         
+decode_nal 420 type=0x09 0x10 offset=136282 video_eof=0
+write_frame 298 136282
+write_frame 322: video_eof=0 frames_written=816         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=174163 video_eof=0
+write_frame 298 174163
+write_frame 322: video_eof=0 frames_written=817         
+decode_nal 420 type=0x09 0x50 offset=125434 video_eof=0
+write_frame 298 125434
+write_frame 322: video_eof=0 frames_written=818         
+decode_nal 420 type=0x09 0x30 offset=92858 video_eof=0
+write_frame 298 92858
+write_frame 322: video_eof=0 frames_written=819         
+decode_nal 420 type=0x09 0x50 offset=163547 video_eof=0
+write_frame 298 163547
+write_frame 322: video_eof=0 frames_written=820         
+decode_nal 420 type=0x09 0x50 offset=129090 video_eof=0
+write_frame 298 129090
+write_frame 322: video_eof=0 frames_written=821         
+decode_nal 420 type=0x09 0x30 offset=95082 video_eof=0
+write_frame 298 95082
+write_frame 322: video_eof=0 frames_written=822         
+decode_nal 420 type=0x09 0x50 offset=169704 video_eof=0
+write_frame 298 169704
+write_frame 322: video_eof=0 frames_written=823         
+decode_nal 420 type=0x09 0x50 offset=130669 video_eof=0
+write_frame 298 130669
+write_frame 322: video_eof=0 frames_written=824         
+decode_nal 420 type=0x09 0x30 offset=105817 video_eof=0
+write_frame 298 105817
+write_frame 322: video_eof=0 frames_written=825         
+decode_nal 420 type=0x09 0x50 offset=177958 video_eof=0
+write_frame 298 177958
+write_frame 322: video_eof=0 frames_written=826         
+decode_nal 420 type=0x09 0x50 offset=145239 video_eof=0
+write_frame 298 145239
+write_frame 322: video_eof=0 frames_written=827         
+decode_nal 420 type=0x09 0x30 offset=161607 video_eof=0
+write_frame 298 161607
+write_frame 322: video_eof=0 frames_written=828         
+decode_nal 420 type=0x09 0x50 offset=183325 video_eof=0
+write_frame 298 183325
+write_frame 322: video_eof=0 frames_written=829         
+decode_nal 420 type=0x09 0x50 offset=145570 video_eof=0
+write_frame 298 145570
+write_frame 322: video_eof=0 frames_written=830         
+decode_nal 420 type=0x09 0x30 offset=156027 video_eof=0
+write_frame 298 156027
+write_frame 322: video_eof=0 frames_written=831         
+decode_nal 420 type=0x09 0x50 offset=189645 video_eof=0
+write_frame 298 189645
+write_frame 322: video_eof=0 frames_written=832         
+decode_nal 420 type=0x09 0x50 offset=150537 video_eof=0
+write_frame 298 150537
+write_frame 322: video_eof=0 frames_written=833         
+decode_nal 420 type=0x09 0x30 offset=144752 video_eof=0
+write_frame 298 144752
+write_frame 322: video_eof=0 frames_written=834         
+decode_nal 420 type=0x09 0x50 offset=195727 video_eof=0
+write_frame 298 195727
+write_frame 322: video_eof=0 frames_written=835         
+write_frame 345: video_eof=0 samples_written=1638400
+decode_nal 420 type=0x09 0x50 offset=155425 video_eof=0
+write_frame 298 155425
+write_frame 322: video_eof=0 frames_written=836         
+decode_nal 420 type=0x09 0x30 offset=133781 video_eof=0
+write_frame 298 133781
+write_frame 322: video_eof=0 frames_written=837         
+decode_nal 420 type=0x09 0x50 offset=194602 video_eof=0
+write_frame 298 194602
+write_frame 322: video_eof=0 frames_written=838         
+decode_nal 420 type=0x09 0x50 offset=160920 video_eof=0
+write_frame 298 160920
+write_frame 322: video_eof=0 frames_written=839         
+decode_nal 420 type=0x09 0x10 offset=129302 video_eof=0
+write_frame 298 129302
+write_frame 322: video_eof=0 frames_written=840         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=205372 video_eof=0
+write_frame 298 205372
+write_frame 322: video_eof=0 frames_written=841         
+decode_nal 420 type=0x09 0x50 offset=144605 video_eof=0
+write_frame 298 144605
+write_frame 322: video_eof=0 frames_written=842         
+decode_nal 420 type=0x09 0x30 offset=109167 video_eof=0
+write_frame 298 109167
+write_frame 322: video_eof=0 frames_written=843         
+decode_nal 420 type=0x09 0x50 offset=188811 video_eof=0
+write_frame 298 188811
+write_frame 322: video_eof=0 frames_written=844         
+decode_nal 420 type=0x09 0x50 offset=144598 video_eof=0
+write_frame 298 144598
+write_frame 322: video_eof=0 frames_written=845         
+decode_nal 420 type=0x09 0x30 offset=106633 video_eof=0
+write_frame 298 106633
+write_frame 322: video_eof=0 frames_written=846         
+decode_nal 420 type=0x09 0x50 offset=189891 video_eof=0
+write_frame 298 189891
+write_frame 322: video_eof=0 frames_written=847         
+decode_nal 420 type=0x09 0x50 offset=146888 video_eof=0
+write_frame 298 146888
+write_frame 322: video_eof=0 frames_written=848         
+decode_nal 420 type=0x09 0x30 offset=110714 video_eof=0
+write_frame 298 110714
+write_frame 322: video_eof=0 frames_written=849         
+decode_nal 420 type=0x09 0x50 offset=193966 video_eof=0
+write_frame 298 193966
+write_frame 322: video_eof=0 frames_written=850         
+decode_nal 420 type=0x09 0x50 offset=145464 video_eof=0
+write_frame 298 145464
+write_frame 322: video_eof=0 frames_written=851         
+decode_nal 420 type=0x09 0x30 offset=124723 video_eof=0
+write_frame 298 124723
+write_frame 322: video_eof=0 frames_written=852         
+decode_nal 420 type=0x09 0x50 offset=198411 video_eof=0
+write_frame 298 198411
+write_frame 322: video_eof=0 frames_written=853         
+decode_nal 420 type=0x09 0x50 offset=152513 video_eof=0
+write_frame 298 152513
+write_frame 322: video_eof=0 frames_written=854         
+decode_nal 420 type=0x09 0x30 offset=133988 video_eof=0
+write_frame 298 133988
+write_frame 322: video_eof=0 frames_written=855         
+decode_nal 420 type=0x09 0x50 offset=202294 video_eof=0
+write_frame 298 202294
+write_frame 322: video_eof=0 frames_written=856         
+decode_nal 420 type=0x09 0x50 offset=152332 video_eof=0
+write_frame 298 152332
+write_frame 322: video_eof=0 frames_written=857         
+decode_nal 420 type=0x09 0x30 offset=130285 video_eof=0
+write_frame 298 130285
+write_frame 322: video_eof=0 frames_written=858         
+write_frame 345: video_eof=0 samples_written=1703936
+decode_nal 420 type=0x09 0x50 offset=206038 video_eof=0
+write_frame 298 206038
+write_frame 322: video_eof=0 frames_written=859         
+decode_nal 420 type=0x09 0x50 offset=157580 video_eof=0
+write_frame 298 157580
+write_frame 322: video_eof=0 frames_written=860         
+decode_nal 420 type=0x09 0x30 offset=121558 video_eof=0
+write_frame 298 121558
+write_frame 322: video_eof=0 frames_written=861         
+decode_nal 420 type=0x09 0x50 offset=201121 video_eof=0
+write_frame 298 201121
+write_frame 322: video_eof=0 frames_written=862         
+decode_nal 420 type=0x09 0x50 offset=157999 video_eof=0
+write_frame 298 157999
+write_frame 322: video_eof=0 frames_written=863         
+decode_nal 420 type=0x09 0x10 offset=125490 video_eof=0
+write_frame 298 125490
+write_frame 322: video_eof=0 frames_written=864         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=220796 video_eof=0
+write_frame 298 220796
+write_frame 322: video_eof=0 frames_written=865         
+decode_nal 420 type=0x09 0x50 offset=142968 video_eof=0
+write_frame 298 142968
+write_frame 322: video_eof=0 frames_written=866         
+decode_nal 420 type=0x09 0x30 offset=107685 video_eof=0
+write_frame 298 107685
+write_frame 322: video_eof=0 frames_written=867         
+decode_nal 420 type=0x09 0x50 offset=193285 video_eof=0
+write_frame 298 193285
+write_frame 322: video_eof=0 frames_written=868         
+decode_nal 420 type=0x09 0x50 offset=143861 video_eof=0
+write_frame 298 143861
+write_frame 322: video_eof=0 frames_written=869         
+decode_nal 420 type=0x09 0x30 offset=105361 video_eof=0
+write_frame 298 105361
+write_frame 322: video_eof=0 frames_written=870         
+decode_nal 420 type=0x09 0x50 offset=191594 video_eof=0
+write_frame 298 191594
+write_frame 322: video_eof=0 frames_written=871         
+decode_nal 420 type=0x09 0x50 offset=143598 video_eof=0
+write_frame 298 143598
+write_frame 322: video_eof=0 frames_written=872         
+decode_nal 420 type=0x09 0x30 offset=107887 video_eof=0
+write_frame 298 107887
+write_frame 322: video_eof=0 frames_written=873         
+decode_nal 420 type=0x09 0x50 offset=198653 video_eof=0
+write_frame 298 198653
+write_frame 322: video_eof=0 frames_written=874         
+decode_nal 420 type=0x09 0x50 offset=148454 video_eof=0
+write_frame 298 148454
+write_frame 322: video_eof=0 frames_written=875         
+decode_nal 420 type=0x09 0x30 offset=135922 video_eof=0
+write_frame 298 135922
+write_frame 322: video_eof=0 frames_written=876         
+decode_nal 420 type=0x09 0x50 offset=209691 video_eof=0
+write_frame 298 209691
+write_frame 322: video_eof=0 frames_written=877         
+decode_nal 420 type=0x09 0x50 offset=153452 video_eof=0
+write_frame 298 153452
+write_frame 322: video_eof=0 frames_written=878         
+decode_nal 420 type=0x09 0x30 offset=121768 video_eof=0
+write_frame 298 121768
+write_frame 322: video_eof=0 frames_written=879         
+decode_nal 420 type=0x09 0x50 offset=208166 video_eof=0
+write_frame 298 208166
+write_frame 322: video_eof=0 frames_written=880         
+decode_nal 420 type=0x09 0x50 offset=153539 video_eof=0
+write_frame 298 153539
+write_frame 322: video_eof=0 frames_written=881         
+decode_nal 420 type=0x09 0x30 offset=123207 video_eof=0
+write_frame 298 123207
+write_frame 322: video_eof=0 frames_written=882         
+decode_nal 420 type=0x09 0x50 offset=208744 video_eof=0
+write_frame 298 208744
+write_frame 322: video_eof=0 frames_written=883         
+decode_nal 420 type=0x09 0x50 offset=155668 video_eof=0
+write_frame 298 155668
+write_frame 322: video_eof=0 frames_written=884         
+decode_nal 420 type=0x09 0x30 offset=120763 video_eof=0
+write_frame 298 120763
+write_frame 322: video_eof=0 frames_written=885         
+decode_nal 420 type=0x09 0x50 offset=206308 video_eof=0
+write_frame 298 206308
+write_frame 322: video_eof=0 frames_written=886         
+decode_nal 420 type=0x09 0x50 offset=156676 video_eof=0
+write_frame 298 156676
+write_frame 322: video_eof=0 frames_written=887         
+decode_nal 420 type=0x09 0x10 offset=121627 video_eof=0
+write_frame 298 121627
+write_frame 322: video_eof=0 frames_written=888         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=166090 video_eof=0
+write_frame 298 166090
+write_frame 322: video_eof=0 frames_written=889         
+decode_nal 420 type=0x09 0x50 offset=88913 video_eof=0
+write_frame 298 88913
+write_frame 322: video_eof=0 frames_written=890         
+decode_nal 420 type=0x09 0x30 offset=57641 video_eof=0
+write_frame 298 57641
+write_frame 322: video_eof=0 frames_written=891         
+decode_nal 420 type=0x09 0x50 offset=131850 video_eof=0
+write_frame 298 131850
+write_frame 322: video_eof=0 frames_written=892         
+decode_nal 420 type=0x09 0x50 offset=81082 video_eof=0
+write_frame 298 81082
+write_frame 322: video_eof=0 frames_written=893         
+decode_nal 420 type=0x09 0x30 offset=50914 video_eof=0
+write_frame 298 50914
+write_frame 322: video_eof=0 frames_written=894         
+decode_nal 420 type=0x09 0x50 offset=116293 video_eof=0
+write_frame 298 116293
+write_frame 322: video_eof=0 frames_written=895         
+decode_nal 420 type=0x09 0x50 offset=67079 video_eof=0
+write_frame 298 67079
+write_frame 322: video_eof=0 frames_written=896         
+decode_nal 420 type=0x09 0x30 offset=62507 video_eof=0
+write_frame 298 62507
+write_frame 322: video_eof=0 frames_written=897         
+decode_nal 420 type=0x09 0x50 offset=127923 video_eof=0
+write_frame 298 127923
+write_frame 322: video_eof=0 frames_written=898         
+decode_nal 420 type=0x09 0x50 offset=74027 video_eof=0
+write_frame 298 74027
+write_frame 322: video_eof=0 frames_written=899         
+decode_nal 420 type=0x09 0x30 offset=50389 video_eof=0
+write_frame 298 50389
+write_frame 322: video_eof=0 frames_written=900         
+decode_nal 420 type=0x09 0x50 offset=141810 video_eof=0
+write_frame 298 141810
+write_frame 322: video_eof=0 frames_written=901         
+decode_nal 420 type=0x09 0x50 offset=89971 video_eof=0
+write_frame 298 89971
+write_frame 322: video_eof=0 frames_written=902         
+decode_nal 420 type=0x09 0x30 offset=63740 video_eof=0
+write_frame 298 63740
+write_frame 322: video_eof=0 frames_written=903         
+decode_nal 420 type=0x09 0x50 offset=136451 video_eof=0
+write_frame 298 136451
+write_frame 322: video_eof=0 frames_written=904         
+write_frame 345: video_eof=0 samples_written=1769472
+decode_nal 420 type=0x09 0x50 offset=83549 video_eof=0
+write_frame 298 83549
+write_frame 322: video_eof=0 frames_written=905         
+decode_nal 420 type=0x09 0x30 offset=61300 video_eof=0
+write_frame 298 61300
+write_frame 322: video_eof=0 frames_written=906         
+decode_nal 420 type=0x09 0x50 offset=138541 video_eof=0
+write_frame 298 138541
+write_frame 322: video_eof=0 frames_written=907         
+decode_nal 420 type=0x09 0x50 offset=87916 video_eof=0
+write_frame 298 87916
+write_frame 322: video_eof=0 frames_written=908         
+decode_nal 420 type=0x09 0x30 offset=60787 video_eof=0
+write_frame 298 60787
+write_frame 322: video_eof=0 frames_written=909         
+decode_nal 420 type=0x09 0x50 offset=129689 video_eof=0
+write_frame 298 129689
+write_frame 322: video_eof=0 frames_written=910         
+decode_nal 420 type=0x09 0x50 offset=84144 video_eof=0
+write_frame 298 84144
+write_frame 322: video_eof=0 frames_written=911         
+decode_nal 420 type=0x09 0x10 offset=61725 video_eof=0
+write_frame 298 61725
+write_frame 322: video_eof=0 frames_written=912         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=163239 video_eof=0
+write_frame 298 163239
+write_frame 322: video_eof=0 frames_written=913         
+decode_nal 420 type=0x09 0x50 offset=80838 video_eof=0
+write_frame 298 80838
+write_frame 322: video_eof=0 frames_written=914         
+decode_nal 420 type=0x09 0x30 offset=64301 video_eof=0
+write_frame 298 64301
+write_frame 322: video_eof=0 frames_written=915         
+decode_nal 420 type=0x09 0x50 offset=157139 video_eof=0
+write_frame 298 157139
+write_frame 322: video_eof=0 frames_written=916         
+decode_nal 420 type=0x09 0x50 offset=106418 video_eof=0
+write_frame 298 106418
+write_frame 322: video_eof=0 frames_written=917         
+decode_nal 420 type=0x09 0x30 offset=69088 video_eof=0
+write_frame 298 69088
+write_frame 322: video_eof=0 frames_written=918         
+decode_nal 420 type=0x09 0x50 offset=149524 video_eof=0
+write_frame 298 149524
+write_frame 322: video_eof=0 frames_written=919         
+decode_nal 420 type=0x09 0x50 offset=97196 video_eof=0
+write_frame 298 97196
+write_frame 322: video_eof=0 frames_written=920         
+decode_nal 420 type=0x09 0x30 offset=69610 video_eof=0
+write_frame 298 69610
+write_frame 322: video_eof=0 frames_written=921         
+decode_nal 420 type=0x09 0x50 offset=153987 video_eof=0
+write_frame 298 153987
+write_frame 322: video_eof=0 frames_written=922         
+decode_nal 420 type=0x09 0x50 offset=100724 video_eof=0
+write_frame 298 100724
+write_frame 322: video_eof=0 frames_written=923         
+decode_nal 420 type=0x09 0x30 offset=69550 video_eof=0
+write_frame 298 69550
+write_frame 322: video_eof=0 frames_written=924         
+decode_nal 420 type=0x09 0x50 offset=154539 video_eof=0
+write_frame 298 154539
+write_frame 322: video_eof=0 frames_written=925         
+decode_nal 420 type=0x09 0x50 offset=101525 video_eof=0
+write_frame 298 101525
+write_frame 322: video_eof=0 frames_written=926         
+decode_nal 420 type=0x09 0x30 offset=72983 video_eof=0
+write_frame 298 72983
+write_frame 322: video_eof=0 frames_written=927         
+write_frame 345: video_eof=0 samples_written=1835008
+decode_nal 420 type=0x09 0x50 offset=155265 video_eof=0
+write_frame 298 155265
+write_frame 322: video_eof=0 frames_written=928         
+decode_nal 420 type=0x09 0x50 offset=99526 video_eof=0
+write_frame 298 99526
+write_frame 322: video_eof=0 frames_written=929         
+decode_nal 420 type=0x09 0x30 offset=72776 video_eof=0
+write_frame 298 72776
+write_frame 322: video_eof=0 frames_written=930         
+decode_nal 420 type=0x09 0x50 offset=154924 video_eof=0
+write_frame 298 154924
+write_frame 322: video_eof=0 frames_written=931         
+decode_nal 420 type=0x09 0x50 offset=100434 video_eof=0
+write_frame 298 100434
+write_frame 322: video_eof=0 frames_written=932         
+decode_nal 420 type=0x09 0x30 offset=73232 video_eof=0
+write_frame 298 73232
+write_frame 322: video_eof=0 frames_written=933         
+decode_nal 420 type=0x09 0x50 offset=147979 video_eof=0
+write_frame 298 147979
+write_frame 322: video_eof=0 frames_written=934         
+decode_nal 420 type=0x09 0x50 offset=98350 video_eof=0
+write_frame 298 98350
+write_frame 322: video_eof=0 frames_written=935         
+decode_nal 420 type=0x09 0x10 offset=76282 video_eof=0
+write_frame 298 76282
+write_frame 322: video_eof=0 frames_written=936         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=192886 video_eof=0
+write_frame 298 192886
+write_frame 322: video_eof=0 frames_written=937         
+decode_nal 420 type=0x09 0x50 offset=106476 video_eof=0
+write_frame 298 106476
+write_frame 322: video_eof=0 frames_written=938         
+decode_nal 420 type=0x09 0x30 offset=72260 video_eof=0
+write_frame 298 72260
+write_frame 322: video_eof=0 frames_written=939         
+decode_nal 420 type=0x09 0x50 offset=161822 video_eof=0
+write_frame 298 161822
+write_frame 322: video_eof=0 frames_written=940         
+decode_nal 420 type=0x09 0x50 offset=99378 video_eof=0
+write_frame 298 99378
+write_frame 322: video_eof=0 frames_written=941         
+decode_nal 420 type=0x09 0x30 offset=60875 video_eof=0
+write_frame 298 60875
+write_frame 322: video_eof=0 frames_written=942         
+decode_nal 420 type=0x09 0x50 offset=125859 video_eof=0
+write_frame 298 125859
+write_frame 322: video_eof=0 frames_written=943         
+decode_nal 420 type=0x09 0x50 offset=77010 video_eof=0
+write_frame 298 77010
+write_frame 322: video_eof=0 frames_written=944         
+decode_nal 420 type=0x09 0x30 offset=69125 video_eof=0
+write_frame 298 69125
+write_frame 322: video_eof=0 frames_written=945         
+decode_nal 420 type=0x09 0x50 offset=141431 video_eof=0
+write_frame 298 141431
+write_frame 322: video_eof=0 frames_written=946         
+decode_nal 420 type=0x09 0x50 offset=80642 video_eof=0
+write_frame 298 80642
+write_frame 322: video_eof=0 frames_written=947         
+decode_nal 420 type=0x09 0x30 offset=53999 video_eof=0
+write_frame 298 53999
+write_frame 322: video_eof=0 frames_written=948         
+decode_nal 420 type=0x09 0x50 offset=141187 video_eof=0
+write_frame 298 141187
+write_frame 322: video_eof=0 frames_written=949         
+decode_nal 420 type=0x09 0x50 offset=84794 video_eof=0
+write_frame 298 84794
+write_frame 322: video_eof=0 frames_written=950         
+write_frame 345: video_eof=0 samples_written=1900544
+decode_nal 420 type=0x09 0x30 offset=59502 video_eof=0
+write_frame 298 59502
+write_frame 322: video_eof=0 frames_written=951         
+decode_nal 420 type=0x09 0x50 offset=126347 video_eof=0
+write_frame 298 126347
+write_frame 322: video_eof=0 frames_written=952         
+decode_nal 420 type=0x09 0x50 offset=77256 video_eof=0
+write_frame 298 77256
+write_frame 322: video_eof=0 frames_written=953         
+decode_nal 420 type=0x09 0x30 offset=58204 video_eof=0
+write_frame 298 58204
+write_frame 322: video_eof=0 frames_written=954         
+decode_nal 420 type=0x09 0x50 offset=130301 video_eof=0
+write_frame 298 130301
+write_frame 322: video_eof=0 frames_written=955         
+decode_nal 420 type=0x09 0x50 offset=74871 video_eof=0
+write_frame 298 74871
+write_frame 322: video_eof=0 frames_written=956         
+decode_nal 420 type=0x09 0x30 offset=55925 video_eof=0
+write_frame 298 55925
+write_frame 322: video_eof=0 frames_written=957         
+decode_nal 420 type=0x09 0x50 offset=123311 video_eof=0
+write_frame 298 123311
+write_frame 322: video_eof=0 frames_written=958         
+decode_nal 420 type=0x09 0x50 offset=73314 video_eof=0
+write_frame 298 73314
+write_frame 322: video_eof=0 frames_written=959         
+decode_nal 420 type=0x09 0x10 offset=54667 video_eof=0
+write_frame 298 54667
+write_frame 322: video_eof=0 frames_written=960         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=186886 video_eof=0
+write_frame 298 186886
+write_frame 322: video_eof=0 frames_written=961         
+decode_nal 420 type=0x09 0x50 offset=94618 video_eof=0
+write_frame 298 94618
+write_frame 322: video_eof=0 frames_written=962         
+decode_nal 420 type=0x09 0x30 offset=72209 video_eof=0
+write_frame 298 72209
+write_frame 322: video_eof=0 frames_written=963         
+decode_nal 420 type=0x09 0x50 offset=146558 video_eof=0
+write_frame 298 146558
+write_frame 322: video_eof=0 frames_written=964         
+decode_nal 420 type=0x09 0x30 offset=71467 video_eof=0
+write_frame 298 71467
+write_frame 322: video_eof=0 frames_written=965         
+decode_nal 420 type=0x09 0x50 offset=132642 video_eof=0
+write_frame 298 132642
+write_frame 322: video_eof=0 frames_written=966         
+decode_nal 420 type=0x09 0x30 offset=68433 video_eof=0
+write_frame 298 68433
+write_frame 322: video_eof=0 frames_written=967         
+decode_nal 420 type=0x09 0x50 offset=132956 video_eof=0
+write_frame 298 132956
+write_frame 322: video_eof=0 frames_written=968         
+decode_nal 420 type=0x09 0x50 offset=80217 video_eof=0
+write_frame 298 80217
+write_frame 322: video_eof=0 frames_written=969         
+decode_nal 420 type=0x09 0x30 offset=54992 video_eof=0
+write_frame 298 54992
+write_frame 322: video_eof=0 frames_written=970         
+decode_nal 420 type=0x09 0x50 offset=136326 video_eof=0
+write_frame 298 136326
+write_frame 322: video_eof=0 frames_written=971         
+decode_nal 420 type=0x09 0x50 offset=86676 video_eof=0
+write_frame 298 86676
+write_frame 322: video_eof=0 frames_written=972         
+decode_nal 420 type=0x09 0x30 offset=69860 video_eof=0
+write_frame 298 69860
+write_frame 322: video_eof=0 frames_written=973         
+decode_nal 420 type=0x09 0x50 offset=131114 video_eof=0
+write_frame 298 131114
+write_frame 322: video_eof=0 frames_written=974         
+decode_nal 420 type=0x09 0x30 offset=67541 video_eof=0
+write_frame 298 67541
+write_frame 322: video_eof=0 frames_written=975         
+decode_nal 420 type=0x09 0x50 offset=146977 video_eof=0
+write_frame 298 146977
+write_frame 322: video_eof=0 frames_written=976         
+decode_nal 420 type=0x09 0x50 offset=92756 video_eof=0
+write_frame 298 92756
+write_frame 322: video_eof=0 frames_written=977         
+decode_nal 420 type=0x09 0x30 offset=67561 video_eof=0
+write_frame 298 67561
+write_frame 322: video_eof=0 frames_written=978         
+decode_nal 420 type=0x09 0x50 offset=142765 video_eof=0
+write_frame 298 142765
+write_frame 322: video_eof=0 frames_written=979         
+decode_nal 420 type=0x09 0x50 offset=89559 video_eof=0
+write_frame 298 89559
+write_frame 322: video_eof=0 frames_written=980         
+decode_nal 420 type=0x09 0x30 offset=64451 video_eof=0
+write_frame 298 64451
+write_frame 322: video_eof=0 frames_written=981         
+decode_nal 420 type=0x09 0x50 offset=134263 video_eof=0
+write_frame 298 134263
+write_frame 322: video_eof=0 frames_written=982         
+decode_nal 420 type=0x09 0x50 offset=85305 video_eof=0
+write_frame 298 85305
+write_frame 322: video_eof=0 frames_written=983         
+decode_nal 420 type=0x09 0x10 offset=62487 video_eof=0
+write_frame 298 62487
+write_frame 322: video_eof=0 frames_written=984         
+decode_nal 420 type=0x07 0x64 offset=6 video_eof=0
+decode_nal 420 type=0x08 0xea offset=53 video_eof=0
+decode_nal 420 type=0x09 0x50 offset=208788 video_eof=0
+write_frame 298 208788
+write_frame 322: video_eof=0 frames_written=985         
+decode_nal 420 type=0x09 0x50 offset=105001 video_eof=0
+write_frame 298 105001
+write_frame 322: video_eof=0 frames_written=986         
+decode_nal 420 type=0x09 0x30 offset=72319 video_eof=0
+write_frame 298 72319
+write_frame 322: video_eof=0 frames_written=987         
+decode_nal 420 type=0x09 0x50 offset=157367 video_eof=0
+write_frame 298 157367
+write_frame 322: video_eof=0 frames_written=988         
+decode_nal 420 type=0x09 0x50 offset=95140 video_eof=0
+write_frame 298 95140
+write_frame 322: video_eof=0 frames_written=989         
+decode_nal 420 type=0x09 0x30 offset=79503 video_eof=0
+write_frame 298 79503
+write_frame 322: video_eof=0 frames_written=990         
+decode_nal 420 type=0x09 0x50 offset=167979 video_eof=0
+write_frame 298 167979
+write_frame 322: video_eof=0 frames_written=991         
+decode_nal 420 type=0x09 0x50 offset=102372 video_eof=0
+write_frame 298 102372
+write_frame 322: video_eof=0 frames_written=992         
+decode_nal 420 type=0x09 0x30 offset=69000 video_eof=0
+write_frame 298 69000
+write_frame 322: video_eof=0 frames_written=993         
+decode_nal 420 type=0x09 0x50 offset=162878 video_eof=0
+write_frame 298 162878
+write_frame 322: video_eof=0 frames_written=994         
+decode_nal 420 type=0x09 0x50 offset=97025 video_eof=0
+write_frame 298 97025
+write_frame 322: video_eof=0 frames_written=995         
+decode_nal 420 type=0x09 0x30 offset=77257 video_eof=0
+write_frame 298 77257
+write_frame 322: video_eof=0 frames_written=996         
+write_frame 345: video_eof=0 samples_written=1966080
+decode_nal 420 type=0x09 0x50 offset=161283 video_eof=0
+write_frame 298 161283
+write_frame 322: video_eof=0 frames_written=997         
+decode_nal 420 type=0x09 0x50 offset=96059 video_eof=0
+write_frame 298 96059
+write_frame 322: video_eof=0 frames_written=998         
+decode_nal 420 type=0x09 0x30 offset=71109 video_eof=0
+write_frame 298 71109
+write_frame 322: video_eof=0 frames_written=999         
+decode_nal 420 type=0x09 0x50 offset=155646 video_eof=0
+write_frame 298 155646
+write_frame 322: video_eof=0 frames_written=1000         
+decode_nal 420 type=0x09 0x50 offset=93342 video_eof=0
+write_frame 298 93342
+write_frame 322: video_eof=0 frames_written=1001         
+decode_nal 420 type=0x09 0x30 offset=70421 video_eof=0
+write_frame 298 70421
+write_frame 322: video_eof=0 frames_written=1002         
+decode_nal 420 type=0x09 0x50 offset=150050 video_eof=0
+write_frame 298 150050
+write_frame 322: video_eof=0 frames_written=1003         
+decode_nal 420 type=0x09 0x50 offset=90576 video_eof=0
+write_frame 298 90576
+write_frame 322: video_eof=0 frames_written=1004         
+decode_nal 420 type=0x09 0x30 offset=68241 video_eof=0
+write_frame 298 68241
+write_frame 322: video_eof=0 frames_written=1005         
+decode_nal 420 type=0x09 0x50 offset=140550 video_eof=0
+write_frame 298 140550
+write_frame 322: video_eof=0 frames_written=1006         
+decode_nal 420 type=0x09 0x50 offset=87319 video_eof=0
+write_frame 298 87319
+write_frame 322: video_eof=0 frames_written=1007         
+write_frame 298 25257
+write_frame 322: video_eof=0 frames_written=1008         
+main 736: Wrote 1008 frames

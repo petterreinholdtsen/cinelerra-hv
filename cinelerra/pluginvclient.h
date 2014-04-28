@@ -72,11 +72,6 @@ public:
 		double frame_rate);
 
 
-// Called by plugin server to render the GUI with rendered data.
-	void plugin_render_gui(void *data);
-	virtual void render_gui(void *data) { };
-// Called by client to cause GUI to be rendered with data.
-	void send_render_gui(void *data);
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
 	int plugin_process_loop(VFrame **buffers, int64_t &write_length);

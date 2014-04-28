@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,52 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <string.h>
+
+
+
+// Webcam data
+#define DHT_SIZE 420
+#define HEADERFRAME1 0xaf
+
+
+static unsigned char dht_data[DHT_SIZE] = {
+  0xff, 0xc4, 0x01, 0xa2, 0x00, 0x00, 0x01, 0x05, 0x01, 0x01, 0x01, 0x01,
+  0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02,
+  0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x01, 0x00, 0x03,
+  0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+  0x0a, 0x0b, 0x10, 0x00, 0x02, 0x01, 0x03, 0x03, 0x02, 0x04, 0x03, 0x05,
+  0x05, 0x04, 0x04, 0x00, 0x00, 0x01, 0x7d, 0x01, 0x02, 0x03, 0x00, 0x04,
+  0x11, 0x05, 0x12, 0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07, 0x22,
+  0x71, 0x14, 0x32, 0x81, 0x91, 0xa1, 0x08, 0x23, 0x42, 0xb1, 0xc1, 0x15,
+  0x52, 0xd1, 0xf0, 0x24, 0x33, 0x62, 0x72, 0x82, 0x09, 0x0a, 0x16, 0x17,
+  0x18, 0x19, 0x1a, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x34, 0x35, 0x36,
+  0x37, 0x38, 0x39, 0x3a, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a,
+  0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x63, 0x64, 0x65, 0x66,
+  0x67, 0x68, 0x69, 0x6a, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
+  0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95,
+  0x96, 0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8,
+  0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xc2,
+  0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5,
+  0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7,
+  0xe8, 0xe9, 0xea, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9,
+  0xfa, 0x11, 0x00, 0x02, 0x01, 0x02, 0x04, 0x04, 0x03, 0x04, 0x07, 0x05,
+  0x04, 0x04, 0x00, 0x01, 0x02, 0x77, 0x00, 0x01, 0x02, 0x03, 0x11, 0x04,
+  0x05, 0x21, 0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71, 0x13, 0x22,
+  0x32, 0x81, 0x08, 0x14, 0x42, 0x91, 0xa1, 0xb1, 0xc1, 0x09, 0x23, 0x33,
+  0x52, 0xf0, 0x15, 0x62, 0x72, 0xd1, 0x0a, 0x16, 0x24, 0x34, 0xe1, 0x25,
+  0xf1, 0x17, 0x18, 0x19, 0x1a, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x35, 0x36,
+  0x37, 0x38, 0x39, 0x3a, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a,
+  0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x63, 0x64, 0x65, 0x66,
+  0x67, 0x68, 0x69, 0x6a, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
+  0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94,
+  0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+  0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba,
+  0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4,
+  0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7,
+  0xe8, 0xe9, 0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa
+};
+
 
 
 
@@ -177,20 +223,23 @@ VDeviceV4L2Thread::~VDeviceV4L2Thread()
 	{
 		for(int i = 0; i < total_buffers; i++)
 		{
-			if(color_model == BC_COMPRESSED)
+			if(device_buffers[i]->get_data()) 
 			{
-				if(device_buffers[i]->get_data()) 
+				if(device_buffers[i]->get_compressed_allocated())
+				{
 					munmap(device_buffers[i]->get_data(),
 						device_buffers[i]->get_compressed_allocated());
-			}
-			else
-			{
-				if(device_buffers[i]->get_data()) 
+				}
+				else
+				{
 					munmap(device_buffers[i]->get_data(),
 						device_buffers[i]->get_data_size());
+				}
 			}
+
 			delete device_buffers[i];
 		}
+
 		delete [] device_buffers;
 	}
 
@@ -249,6 +298,7 @@ void VDeviceV4L2Thread::run()
 	int error = 0;
 	Thread::enable_cancel();
 
+//printf("VDeviceV4L2Thread::run %d\n", __LINE__);
 
 
 	if((input_fd = open(device->in_config->v4l2_in_device, 
@@ -318,13 +368,147 @@ void VDeviceV4L2Thread::run()
 		v4l2_params.fmt.pix.width = device->in_config->w;
 		v4l2_params.fmt.pix.height = device->in_config->h;
 
-		if(color_model == BC_COMPRESSED)
+
+
+
+// Probe the compression format
+		int pixel_formats[] =
+		{
+/* RGB formats */
+			V4L2_PIX_FMT_RGB332,
+			V4L2_PIX_FMT_RGB444,
+			V4L2_PIX_FMT_RGB555,
+			V4L2_PIX_FMT_RGB565,
+			V4L2_PIX_FMT_RGB555X,
+			V4L2_PIX_FMT_RGB565X,
+			V4L2_PIX_FMT_BGR24  ,
+			V4L2_PIX_FMT_RGB24  ,
+			V4L2_PIX_FMT_BGR32  ,
+			V4L2_PIX_FMT_RGB32  ,
+
+/* Grey formats */
+			V4L2_PIX_FMT_GREY ,
+			V4L2_PIX_FMT_Y10  ,
+			V4L2_PIX_FMT_Y16  ,
+
+/* Palette formats */
+			V4L2_PIX_FMT_PAL8 ,
+
+/* Luminance+Chrominance formats */
+			V4L2_PIX_FMT_YVU410 ,
+			V4L2_PIX_FMT_YVU420 ,
+			V4L2_PIX_FMT_YUYV   ,
+			V4L2_PIX_FMT_YYUV   ,
+			V4L2_PIX_FMT_YVYU   ,
+			V4L2_PIX_FMT_UYVY   ,
+			V4L2_PIX_FMT_VYUY   ,
+			V4L2_PIX_FMT_YUV422P,
+			V4L2_PIX_FMT_YUV411P,
+			V4L2_PIX_FMT_Y41P   ,
+			V4L2_PIX_FMT_YUV444 ,
+			V4L2_PIX_FMT_YUV555 ,
+			V4L2_PIX_FMT_YUV565 ,
+			V4L2_PIX_FMT_YUV32  ,
+			V4L2_PIX_FMT_YUV410 ,
+			V4L2_PIX_FMT_YUV420 ,
+			V4L2_PIX_FMT_HI240  ,
+			V4L2_PIX_FMT_HM12   ,
+
+/* two planes -- one Y, one Cr + Cb interleaved  */
+			V4L2_PIX_FMT_NV12 ,
+			V4L2_PIX_FMT_NV21 ,
+			V4L2_PIX_FMT_NV16 ,
+			V4L2_PIX_FMT_NV61 ,
+
+/* Bayer formats - see http://www.siliconimaging.com/RGB%20Bayer.htm */
+			V4L2_PIX_FMT_SBGGR8,
+			V4L2_PIX_FMT_SGBRG8,
+			V4L2_PIX_FMT_SGRBG8,
+			V4L2_PIX_FMT_SRGGB8,
+			V4L2_PIX_FMT_SBGGR10,
+			V4L2_PIX_FMT_SGBRG10,
+			V4L2_PIX_FMT_SGRBG10,
+			V4L2_PIX_FMT_SRGGB10,
+/* 10bit raw bayer DPCM compressed to 8 bits */
+			V4L2_PIX_FMT_SGRBG10DPCM8,
+/*
+ * 10bit raw bayer, expanded to 16 bits
+ * xxxxrrrrrrrrrrxxxxgggggggggg xxxxggggggggggxxxxbbbbbbbbbb...
+ */
+			V4L2_PIX_FMT_SBGGR16,
+
+/* compressed formats */
+			V4L2_PIX_FMT_MJPEG,
+			V4L2_PIX_FMT_JPEG ,
+			V4L2_PIX_FMT_DV   ,
+			V4L2_PIX_FMT_MPEG ,
+
+/*  Vendor-specific formats   */
+			V4L2_PIX_FMT_CPIA1  ,
+			V4L2_PIX_FMT_WNVA   ,
+			V4L2_PIX_FMT_SN9C10X,
+			V4L2_PIX_FMT_SN9C20X_I420,
+			V4L2_PIX_FMT_PWC1    ,
+			V4L2_PIX_FMT_PWC2    ,
+			V4L2_PIX_FMT_ET61X251,
+			V4L2_PIX_FMT_SPCA501 ,
+			V4L2_PIX_FMT_SPCA505 ,
+			V4L2_PIX_FMT_SPCA508 ,
+			V4L2_PIX_FMT_SPCA561 ,
+			V4L2_PIX_FMT_PAC207  ,
+			V4L2_PIX_FMT_MR97310A,
+			V4L2_PIX_FMT_SN9C2028,
+			V4L2_PIX_FMT_SQ905C  ,
+			V4L2_PIX_FMT_PJPG    ,
+			V4L2_PIX_FMT_OV511   ,
+			V4L2_PIX_FMT_OV518   ,
+			V4L2_PIX_FMT_STV0680
+
+		};
+
+// Show formats
+#if 1
+   		for(int i = 0; i < sizeof(pixel_formats) / sizeof(int); i++)
+   		{
+   			v4l2_params.fmt.pix.pixelformat = pixel_formats[i];
+   			if(ioctl(input_fd, VIDIOC_S_FMT, &v4l2_params) >= 0)
+   			{
+   				printf("VDeviceV4L2Thread::run %d format %d %c%c%c%c is good\n", 
+   					__LINE__, 
+   					i,
+   					((unsigned char*)&pixel_formats[i])[0],
+   					((unsigned char*)&pixel_formats[i])[1],
+   					((unsigned char*)&pixel_formats[i])[2],
+   					((unsigned char*)&pixel_formats[i])[3]);
+   			}
+   		}
+#endif
+
+
+printf("VDeviceV4L2Thread::run %d\n", __LINE__);
+
+
+		if(device->in_config->driver == VIDEO4LINUX2JPEG)
 			v4l2_params.fmt.pix.pixelformat = 
 				V4L2_PIX_FMT_MJPEG;
+		else
+		if(device->in_config->driver == CAPTURE_JPEG_WEBCAM)
+			v4l2_params.fmt.pix.pixelformat = 
+				V4L2_PIX_FMT_MJPEG;
+		else
+		if(device->in_config->driver == CAPTURE_YUYV_WEBCAM)
+			v4l2_params.fmt.pix.pixelformat = 
+				V4L2_PIX_FMT_YUYV;
 		else
 			v4l2_params.fmt.pix.pixelformat = 
 				VDeviceV4L2::cmodel_to_device(color_model);
 
+   		printf("VDeviceV4L2Thread::run %d using format %c%c%c%c\n", 
+   			__LINE__, 
+   			((unsigned char*)&v4l2_params.fmt.pix.pixelformat)[0],
+   			((unsigned char*)&v4l2_params.fmt.pix.pixelformat)[1],
+   			((unsigned char*)&v4l2_params.fmt.pix.pixelformat)[2],
+   			((unsigned char*)&v4l2_params.fmt.pix.pixelformat)[3]);
 
 		if(ioctl(input_fd, VIDIOC_S_FMT, &v4l2_params) < 0)
 			perror("VDeviceV4L2Thread::run VIDIOC_S_FMT");
@@ -458,13 +642,15 @@ void VDeviceV4L2Thread::run()
 		{
 			if(ioctl(input_fd, VIDIOC_S_TUNER, &tuner) < 0)
 				perror("VDeviceV4L2Thread::run VIDIOC_S_TUNER");
+
 // Set frequency
 			struct v4l2_frequency frequency;
 			frequency.tuner = device->channel->tuner;
 			frequency.type = V4L2_TUNER_ANALOG_TV;
 			frequency.frequency = (int)(chanlists[
 				device->channel->freqtable].list[
-					device->channel->entry].freq * 0.016);
+					device->channel->entry].freq * 0.016) +
+					device->channel->fine_tune;
 // printf("VDeviceV4L2Thread::run tuner=%d freq=%d norm=%d\n",
 // device->channel->tuner,
 // frequency.frequency,
@@ -476,7 +662,8 @@ void VDeviceV4L2Thread::run()
 
 
 // Set compression
-		if(color_model == BC_COMPRESSED)
+		if(device->in_config->driver == VIDEO4LINUX2JPEG ||
+			device->in_config->driver == CAPTURE_JPEG_WEBCAM)
 		{
 			struct v4l2_jpegcompression jpeg_arg;
 			if(ioctl(input_fd, VIDIOC_G_JPEGCOMP, &jpeg_arg) < 0)
@@ -490,7 +677,7 @@ void VDeviceV4L2Thread::run()
 		Thread::disable_cancel();
 		struct v4l2_requestbuffers requestbuffers;
 
-printf("VDeviceV4L2Thread::run requested %d buffers\n", total_buffers);
+//		printf("VDeviceV4L2Thread::run requested %d buffers\n", total_buffers);
 		requestbuffers.count = total_buffers;
 		requestbuffers.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		requestbuffers.memory = V4L2_MEMORY_MMAP;
@@ -531,7 +718,8 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 				}
 
 				VFrame *frame = device_buffers[i];
-				if(color_model == BC_COMPRESSED)
+				if(device->in_config->driver == VIDEO4LINUX2JPEG ||
+					device->in_config->driver == CAPTURE_JPEG_WEBCAM)
 				{
 					frame->set_compressed_memory(data,
 						0,
@@ -604,6 +792,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 
 // Read buffers continuously
 	first_frame = 0;
+	int total_errors = 0;
 	while(!done && !error)
 	{
 
@@ -627,7 +816,12 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 
 		if(result < 0)
 		{
-			perror("VDeviceV4L2Thread::run VIDIOC_DQBUF");
+			if(total_errors < 10)
+			{
+				printf("VDeviceV4L2Thread::run %d %s\n", __LINE__, strerror(errno));
+				total_errors++;
+			}
+			
 			Thread::enable_cancel();
 // Crystal Eye driver returns invalid result
 //			usleep(100000);
@@ -644,6 +838,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 			{
 				device_buffers[current_inbuffer]->set_compressed_size(
 					buffer.bytesused);
+//printf("VDeviceV4L2Thread::run %d %d %d\n", __LINE__, current_inbuffer, buffer.bytesused);
 			}
 
 			if(!buffer_valid[current_inbuffer])
@@ -882,6 +1077,10 @@ int VDeviceV4L2::has_signal()
 	return 0;
 }
 
+
+
+
+
 int VDeviceV4L2::read_buffer(VFrame *frame)
 {
 	int result = 0;
@@ -898,6 +1097,23 @@ int VDeviceV4L2::read_buffer(VFrame *frame)
 		device->picture_changed = 0;
 		thread = new VDeviceV4L2Thread(device, frame->get_color_model());
 		thread->start();
+
+
+// Have to make sure the 1st frame is valid for the single frame capture mode.
+// Wait for device to start
+		sleep(1);
+// Flush starting frames
+		for(int i = 0; i < thread->total_buffers; i++)
+		{
+			int timed_out;
+			VFrame *buffer = thread->get_buffer(&timed_out);
+			if(buffer)
+			{
+				thread->put_buffer();
+			}
+			
+			if(timed_out) break;
+		}
 	}
 
 // Get buffer from thread
@@ -905,13 +1121,27 @@ int VDeviceV4L2::read_buffer(VFrame *frame)
 	VFrame *buffer = thread->get_buffer(&timed_out);
 	if(buffer)
 	{
+// translate webcam data into JPEG
+		if(device->in_config->driver == CAPTURE_JPEG_WEBCAM)
+		{
+			frame->allocate_compressed_data(
+				buffer->get_compressed_size() + DHT_SIZE);
+    		memcpy (frame->get_data(), 
+				buffer->get_data(), 
+				HEADERFRAME1);
+    		memcpy (frame->get_data() + HEADERFRAME1, 
+				dht_data, 
+				DHT_SIZE);
+    		memcpy (frame->get_data() + HEADERFRAME1 + DHT_SIZE,
+	    		buffer->get_data() + HEADERFRAME1,
+	    		buffer->get_compressed_size() - HEADERFRAME1);
+			frame->set_compressed_size(buffer->get_compressed_size() + DHT_SIZE);
+		}
+		else
+		{
+			frame->copy_from(buffer);
+		}
 
-printf("VDeviceV4L2::read_buffer %d %p %p\n", 
-__LINE__, 
-frame, 
-buffer->get_rows()[0]);
-
-		frame->copy_from(buffer);
 		thread->put_buffer();
 
 // printf("VDeviceV4L2::read_buffer %d\n", 

@@ -219,9 +219,13 @@ int Plugin::is_synthesis(int64_t position,
 				printf("Plugin::is_synthesis track not defined\n");
 				return 0;
 			}
+
+
 			PluginServer *plugin_server = MWindow::scan_plugindb(title,
 				track->data_type);
-			return plugin_server->synthesis;
+//printf("Plugin::is_synthesis %d %p %d\n", __LINE__, plugin_server, plugin_server->get_synthesis());
+//plugin_server->dump();
+			return plugin_server->get_synthesis();
 			break;
 		}
 
@@ -485,7 +489,7 @@ void Plugin::load(FileXML *file)
 			else
 			if(file->tag.title_is("SHOW"))
 			{
-//				show = 1;
+				show = 1;
 			}
 			else
 			if(file->tag.title_is("ON"))
@@ -576,7 +580,7 @@ void Plugin::dump()
 		on, 
 		shared_location.module, 
 		shared_location.plugin);
-	printf("    startproject %lld length %lld\n", startproject, length);
+	printf("    startproject %lld length %lld\n", (long long)startproject, (long long)length);
 
 	keyframes->dump();
 }

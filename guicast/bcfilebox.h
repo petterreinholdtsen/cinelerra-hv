@@ -63,7 +63,7 @@ public:
 	int column_resize_event();
 	int sort_order_event();
 	int move_column_event();
-	int evaluate_query(int list_item, char *string);
+	int evaluate_query(char *string);
 
 	BC_FileBox *filebox;
 };

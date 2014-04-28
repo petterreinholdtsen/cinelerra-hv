@@ -87,6 +87,9 @@ public:
 	void dump();
 // Release any objects which are required after playback stops.
 	void render_stop();
+// Write entry into plugin table
+	void write_table(FILE *fd);
+	int read_table(char *text);
 
 // queries
 	void set_title(const char *string);
@@ -261,6 +264,10 @@ public:
 	int get_project_samplerate();            // get samplerate of project data before processing
 	double get_project_framerate();         // get framerate of project data before processing
 	int set_path(char *path);    // required first
+	char* get_path();
+	int get_synthesis();
+	void get_defaults_path(char *path);
+	void save_defaults();
 // Used by PluginArray and MenuEffects to get user parameters and progress bar.
 // Set pointer to mwindow for opening GUI and reconfiguring EDL.
 	void set_mwindow(MWindow *mwindow);
@@ -377,6 +384,7 @@ private:
 
 // LAD support
 	int is_lad;
+	int lad_index;
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
 	int use_opengl;

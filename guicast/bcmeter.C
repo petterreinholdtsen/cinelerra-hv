@@ -51,18 +51,19 @@ BC_Meter::BC_Meter(int x,
 	int max,
 	int mode, 
 	int use_titles,
-	long over_delay,
-	long peak_delay)
+	int span)
  : BC_SubWindow(x, y, -1, -1)
 {
+	this->over_delay = 150;
+	this->peak_delay = 15;
 	this->use_titles = use_titles;
-	this->over_delay = over_delay;
-	this->peak_delay = peak_delay;
 	this->min = min;
 	this->max = max;
 	this->mode = mode;
 	this->orientation = orientation;
 	this->pixels = pixels;
+	this->span = span;
+//printf("BC_Meter::draw_face %d w=%d pixels=%d\n", __LINE__, w, pixels);
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) images[i] = 0;
 	db_titles.set_array_delete();
 }
@@ -82,7 +83,7 @@ int BC_Meter::get_title_w()
 
 int BC_Meter::get_meter_w()
 {
-	return get_resources()->ymeter_images[0]->get_w() + 2;
+	return get_resources()->ymeter_images[0]->get_w();
 }
 
 
@@ -105,8 +106,13 @@ int BC_Meter::initialize()
 	{
 		set_images(get_resources()->ymeter_images);
 		h = pixels;
-		w = images[0]->get_w();
-		if(use_titles) w += get_title_w();
+		if(span < 0) 
+		{
+			w = images[0]->get_w();
+			if(use_titles) w += get_title_w();
+		}
+		else 
+			w = span;
 	}
 	else
 	{
@@ -120,8 +126,9 @@ int BC_Meter::initialize()
 	get_divisions();
 
 	BC_SubWindow::initialize();
-	draw_titles();
-	draw_face();
+	draw_titles(0);
+	draw_face(0);
+	show_window(0);
 	return 0;
 }
 
@@ -132,12 +139,16 @@ void BC_Meter::set_images(VFrame **data)
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 }
 
-int BC_Meter::reposition_window(int x, int y, int pixels)
+int BC_Meter::reposition_window(int x, int y, int span, int pixels)
 {
 	if(pixels < 0) pixels = this->pixels;
+	this->span = span;
 	this->pixels = pixels;
 	if(orientation == METER_VERT)
-		BC_SubWindow::reposition_window(x, y, get_w(), pixels);
+		BC_SubWindow::reposition_window(x, 
+			y, 
+			this->span < 0 ? w : span, 
+			pixels);
 	else
 		BC_SubWindow::reposition_window(x, y, pixels, get_h());
 
@@ -148,8 +159,8 @@ int BC_Meter::reposition_window(int x, int y, int pixels)
 //draw_box(0, 0, w, h);
 //flash();	
 //return 0;
-	draw_titles();
-	draw_face();
+	draw_titles(0);
+	draw_face(0);
 	return 0;
 }
 
@@ -161,7 +172,7 @@ int BC_Meter::reset()
 	peak_timer = 0;
 	over_timer = 0;
 	over_count = 0;
-	draw_face();
+	draw_face(1);
 	return 0;
 }
 
@@ -187,7 +198,7 @@ int BC_Meter::change_format(int mode, int min, int max)
 	this->mode = mode;
 	this->min = min;
 	this->max = max;
-	reposition_window(get_x(), get_y(), pixels);
+	reposition_window(get_x(), get_y(), w, pixels);
 	return 0;
 }
 
@@ -250,7 +261,7 @@ void BC_Meter::get_divisions()
 					METER_MARGIN * 2) * 
 					(current - min) /
 					(max - min);
-				sprintf(string, "%d", labs(current));
+				sprintf(string, "%d", (int)labs(current));
 				new_string = new char[strlen(string) + 1];
 				strcpy(new_string, string);
 				db_titles.append(new_string);
@@ -287,7 +298,7 @@ void BC_Meter::get_divisions()
 // low_division, medium_division, high_division, pixels);
 }
 
-void BC_Meter::draw_titles()
+void BC_Meter::draw_titles(int flush)
 {
 	if(!use_titles) return;
 
@@ -302,7 +313,7 @@ void BC_Meter::draw_titles()
 			draw_text(0, title_pixels.values[i], db_titles.values[i]);
 		}
 
-		flash(0, 0, get_w(), get_title_w());
+		flash(0, 0, get_w(), get_title_w(), flush);
 	}
 	else
 	if(orientation == METER_VERT)
@@ -341,7 +352,7 @@ void BC_Meter::draw_titles()
 			}
 		}
 
-		flash(0, 0, get_title_w(), get_h());
+		flash(0, 0, get_title_w(), get_h(), flush);
 	}
 }
 
@@ -374,7 +385,7 @@ int BC_Meter::region_pixels(int region)
 	return result;
 }
 
-void BC_Meter::draw_face()
+void BC_Meter::draw_face(int flush)
 {
 	VFrame **reference_images = get_resources()->xmeter_images;
 	int level_pixel = level_to_pixel(level);
@@ -386,10 +397,17 @@ void BC_Meter::draw_face()
 	int image_number = 0, region = 0;
 	int in_span, in_start;
 	int x = use_titles ? get_title_w() : 0;
-	int w = use_titles ? this->w - get_title_w() : this->w;
+	int w = use_titles ? (this->w - get_title_w()) : this->w;
 
 	draw_top_background(parent_window, x, 0, w, h);
-//printf("BC_Meter::draw_face %d %d\n", w, h);
+
+// printf("BC_Meter::draw_face %d span=%d this->w=%d get_title_w()=%d %d %d\n", 
+// __LINE__, 
+// span, 
+// this->w,
+// get_title_w(),
+// w, 
+// h);
 
 	while(pixel < pixels)
 	{
@@ -467,6 +485,7 @@ void BC_Meter::draw_face()
 //printf("BC_Meter::draw_face image_number %d pixel %d pixels %d in_start %d in_span %d\n", image_number, pixel, pixels, in_start, in_span);
 //printf("BC_Meter::draw_face %d %d %d %d\n", orientation, region, images[image_number]->get_h() - in_start - in_span);
 			if(orientation == METER_HORIZ)
+			{
 				draw_pixmap(images[image_number], 
 					pixel, 
 					x, 
@@ -474,14 +493,52 @@ void BC_Meter::draw_face()
 					get_h(), 
 					in_start, 
 					0);
+			}
 			else
-				draw_pixmap(images[image_number],
-					x,
-					get_h() - pixel - in_span,
-					get_w(),
-					in_span + 1,
-					0,
-					images[image_number]->get_h() - in_start - in_span);
+			{
+//printf("BC_Meter::draw_face %d %d\n", __LINE__, span);
+				if(span < 0)
+				{
+					draw_pixmap(images[image_number],
+						x,
+						get_h() - pixel - in_span,
+						get_w(),
+						in_span + 1,
+						0,
+						images[image_number]->get_h() - in_start - in_span);
+				}
+				else
+				{
+					int total_w = get_w() - x;
+					int third = images[image_number]->get_w() / 3 + 1;
+
+
+					for(int x1 = 0; x1 < total_w; x1 += third)
+					{
+						int in_x = 0;
+						int in_w = third;
+						if(x1 >= third) in_x = third;
+						if(x1 >= total_w - third)
+						{
+							in_x = images[image_number]->get_w() - 
+								(total_w - x1);
+							in_w = total_w - x1;
+						}
+
+						int in_y = images[image_number]->get_h() - in_start - in_span;
+//printf("BC_Meter::draw_face %d %d %d\n", __LINE__, get_w(), x + x1 + in_w, in_x, in_y, in_w, span);
+
+
+						draw_pixmap(images[image_number],
+							x + x1,
+							get_h() - pixel - in_span,
+							in_w,
+							in_span + 1,
+							in_x,
+							in_y);
+					}
+				}
+			}
 
 			pixel += in_span;
 		}
@@ -507,10 +564,9 @@ void BC_Meter::draw_face()
 	}
 
    	if(orientation == METER_HORIZ)
-		flash(0, 0, pixels, get_h());
+		flash(0, 0, pixels, get_h(), flush);
 	else
-		flash(x, 0, w, pixels);
-	flush();
+		flash(x, 0, w, pixels, flush);
 }
 
 int BC_Meter::update(float new_value, int over)
@@ -536,6 +592,6 @@ int BC_Meter::update(float new_value, int over)
 	if(over) over_timer = over_delay;	
 // only draw if window is visible
 
-	draw_face();
+	draw_face(1);
 	return 0;
 }

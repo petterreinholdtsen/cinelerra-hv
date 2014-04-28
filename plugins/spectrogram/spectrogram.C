@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,14 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
+#include "cursors.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
-#include "picon_png.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "samples.h"
 #include "spectrogram.h"
+#include "theme.h"
 #include "transportque.inc"
 #include "units.h"
 #include "vframe.h"
@@ -45,24 +46,37 @@ SpectrogramConfig::SpectrogramConfig()
 {
 	level = 0.0;
 	window_size = MAX_WINDOW;
-	window_fragment = MAX_FRAGMENT;
+	xzoom = 1;
+	frequency = 440;
 	normalize = 0;
+	mode = VERTICAL;
+	history_size = 4;
 }
 
 int SpectrogramConfig::equivalent(SpectrogramConfig &that)
 {
 	return EQUIV(level, that.level) &&
+		xzoom == that.xzoom &&
+		frequency == that.frequency &&
 		window_size == that.window_size &&
-		window_fragment == that.window_fragment &&
-		normalize == that.normalize;
+		normalize == that.normalize &&
+		mode == that.mode &&
+		history_size == that.history_size;
 }
 
 void SpectrogramConfig::copy_from(SpectrogramConfig &that)
 {
 	level = that.level;
+	xzoom = that.xzoom;
+	frequency = that.frequency;
 	window_size = that.window_size;
-	window_fragment = that.window_fragment;
 	normalize = that.normalize;
+	mode = that.mode;
+	history_size = that.history_size;
+
+	CLAMP(history_size, MIN_HISTORY, MAX_HISTORY);
+	CLAMP(frequency, MIN_FREQ, MAX_FREQ);
+	CLAMP(xzoom, MIN_XZOOM, MAX_XZOOM);
 }
 
 void SpectrogramConfig::interpolate(SpectrogramConfig &prev, 
@@ -76,14 +90,14 @@ void SpectrogramConfig::interpolate(SpectrogramConfig &prev,
 
 
 
-SpectrogramColumn::SpectrogramColumn(int data_size, int fragment_number)
+SpectrogramFrame::SpectrogramFrame(int data_size)
 {
-	this->fragment_number = fragment_number;
+	this->data_size = data_size;
 	data = new float[data_size];
 	force = 0;
 }
 
-SpectrogramColumn::~SpectrogramColumn()
+SpectrogramFrame::~SpectrogramFrame()
 {
 	delete [] data;
 }
@@ -102,6 +116,82 @@ int SpectrogramLevel::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
+
+
+
+
+SpectrogramMode::SpectrogramMode(Spectrogram *plugin, 
+	int x, 
+	int y)
+ : BC_PopupMenu(x, 
+	y, 
+	120, 
+	mode_to_text(plugin->config.mode))
+{
+	this->plugin = plugin;
+}
+
+void SpectrogramMode::create_objects()
+{
+	add_item(new BC_MenuItem(mode_to_text(VERTICAL)));
+	add_item(new BC_MenuItem(mode_to_text(HORIZONTAL)));
+}
+
+int SpectrogramMode::handle_event()
+{
+	if(plugin->config.mode != text_to_mode(get_text()))
+	{
+		SpectrogramWindow *window = (SpectrogramWindow*)plugin->thread->window;
+		window->probe_x = -1;
+		window->probe_y = -1;
+		plugin->config.mode = text_to_mode(get_text());
+		window->canvas->clear_box(0, 0, window->canvas->get_w(), window->canvas->get_h());
+		plugin->send_configure_change();
+	}
+	return 1;
+}
+
+const char* SpectrogramMode::mode_to_text(int mode)
+{
+	switch(mode)
+	{
+		case VERTICAL:
+			return "Vertical";
+		case HORIZONTAL:
+		default:
+			return "Horizontal";
+	}
+}
+
+int SpectrogramMode::text_to_mode(const char *text)
+{
+	if(!strcmp(mode_to_text(VERTICAL), text)) return VERTICAL;
+	return HORIZONTAL;
+}
+
+
+
+
+SpectrogramHistory::SpectrogramHistory(Spectrogram *plugin,
+	int x, 
+	int y)
+ : BC_IPot(x, y, plugin->config.history_size, MIN_HISTORY, MAX_HISTORY)
+{
+	this->plugin = plugin;
+}
+
+int SpectrogramHistory::handle_event()
+{
+	plugin->config.history_size = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
 
 SpectrogramWindowSize::SpectrogramWindowSize(Spectrogram *plugin, 
 	int x, 
@@ -154,56 +244,6 @@ int SpectrogramWindowSizeTumbler::handle_down_event()
 }
 
 
-SpectrogramFragmentSize::SpectrogramFragmentSize(Spectrogram *plugin, 
-	int x, 
-	int y,
-	char *text)
- : BC_PopupMenu(x, 
-	y, 
-	80, 
-	text)
-{
-	this->plugin = plugin;
-}
-
-int SpectrogramFragmentSize::handle_event()
-{
-	plugin->config.window_fragment = atoi(get_text());
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-SpectrogramFragmentSizeTumbler::SpectrogramFragmentSizeTumbler(Spectrogram *plugin, int x, int y)
- : BC_Tumbler(x, 
- 	y)
-{
-	this->plugin = plugin;
-}
-
-int SpectrogramFragmentSizeTumbler::handle_up_event()
-{
-	plugin->config.window_fragment *= 2;
-	if(plugin->config.window_fragment > MAX_FRAGMENT)
-		plugin->config.window_fragment = MAX_FRAGMENT;
-	char string[BCTEXTLEN];
-	sprintf(string, "%d", plugin->config.window_fragment);
-	((SpectrogramWindow*)plugin->get_thread()->get_window())->window_fragment->set_text(string);
-	plugin->send_configure_change();
-}
-
-int SpectrogramFragmentSizeTumbler::handle_down_event()
-{
-	plugin->config.window_fragment /= 2;
-	if(plugin->config.window_fragment < MIN_FRAGMENT)
-		plugin->config.window_fragment = MIN_FRAGMENT;
-	char string[BCTEXTLEN];
-	sprintf(string, "%d", plugin->config.window_fragment);
-	((SpectrogramWindow*)plugin->get_thread()->get_window())->window_fragment->set_text(string);
-	plugin->send_configure_change();
-	return 1;
-}
-
 
 
 
@@ -223,6 +263,112 @@ int SpectrogramNormalize::handle_event()
 
 
 
+SpectrogramFreq::SpectrogramFreq(Spectrogram *plugin, int x, int y)
+ : BC_TextBox(x, 
+		y, 
+		100, 
+		1, 
+		(int)plugin->config.frequency)
+{
+	this->plugin = plugin;
+}
+
+int SpectrogramFreq::handle_event()
+{
+	plugin->config.frequency = atoi(get_text());
+	CLAMP(plugin->config.frequency, MIN_FREQ, MAX_FREQ);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+SpectrogramXZoom::SpectrogramXZoom(Spectrogram *plugin, int x, int y)
+ : BC_IPot(x, y, plugin->config.xzoom, MIN_XZOOM, MAX_XZOOM)
+{
+	this->plugin = plugin;
+}
+
+int SpectrogramXZoom::handle_event()
+{
+	plugin->config.xzoom = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+SpectrogramCanvas::SpectrogramCanvas(Spectrogram *plugin, int x, int y, int w, int h)
+ : BC_SubWindow(x, y, w, h, BLACK)
+{
+	this->plugin = plugin;
+	current_operation = NONE;
+}
+
+int SpectrogramCanvas::button_press_event()
+{
+	if(is_event_win() && cursor_inside())
+	{
+		calculate_point();
+		current_operation = DRAG;
+		plugin->send_configure_change();
+		return 1;
+	}
+	return 0;
+}
+
+int SpectrogramCanvas::button_release_event()
+{
+	if(current_operation == DRAG)
+	{
+		current_operation = NONE;
+		return 1;
+	}
+	return 0;
+}
+
+int SpectrogramCanvas::cursor_motion_event()
+{
+	if(current_operation == DRAG)
+	{
+		calculate_point();
+	}
+}
+
+
+void SpectrogramCanvas::calculate_point()
+{
+	int x = get_cursor_x();
+	int y = get_cursor_y();
+	CLAMP(x, 0, get_w() - 1);
+	CLAMP(y, 0, get_h() - 1);
+	
+	((SpectrogramWindow*)plugin->thread->window)->calculate_frequency(
+		x, 
+		y,
+		1);
+
+//printf("SpectrogramCanvas::calculate_point %d %d\n", __LINE__, Freq::tofreq(freq_index));
+}
+
+void SpectrogramCanvas::draw_overlay()
+{
+	SpectrogramWindow *window = (SpectrogramWindow*)plugin->thread->window;
+	if(window->probe_x >= 0 || window->probe_y >= 0)
+	{
+		set_color(GREEN);
+		set_inverse();
+		if(plugin->config.mode == HORIZONTAL) draw_line(0, window->probe_y, get_w(), window->probe_y);
+		draw_line(window->probe_x, 0, window->probe_x, get_h());
+		set_opaque();
+	}
+}
+
+
+
+
 
 
 
@@ -231,11 +377,12 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin)
  : PluginClientWindow(plugin, 
 	plugin->w, 
 	plugin->h, 
-	640, 
-	480,
+	320, 
+	320,
 	1)
 {
 	this->plugin = plugin;
+	probe_x = probe_y = -1;
 }
 
 SpectrogramWindow::~SpectrogramWindow()
@@ -244,39 +391,44 @@ SpectrogramWindow::~SpectrogramWindow()
 
 void SpectrogramWindow::create_objects()
 {
-	int x = DIVISION_W, y = MARGIN;
+	int x = plugin->get_theme()->widget_border;
+	int y = x;
+	int x1 = x;
+	int y1 = y;
 	char string[BCTEXTLEN];
 
-	add_subwindow(canvas = new BC_SubWindow(x, 
-		y, 
-		get_w() - x - MARGIN, 
-		get_h() - BC_Pot::calculate_h() - MARGIN - MARGIN - y - 20,
-		BLACK));
-	x = MARGIN;
 
-	for(int i = 0; i <= DIVISIONS; i++)
-	{
-		sprintf(string, "%d", 
-			Freq::tofreq((int)((float)TOTALFREQS / DIVISIONS * (DIVISIONS - i))));
-		x = DIVISION_W - BC_Title::calculate_w(this, string);
-		y = (int)((float)(canvas->get_h() - MARGIN) / DIVISIONS * i) + MARGIN;
-		add_subwindow(division[i] = new BC_Title(x, y, string));
-	}
 
-	x = canvas->get_x();
-	y = canvas->get_y() + canvas->get_h() + 5;
+	add_subwindow(canvas = new SpectrogramCanvas(plugin,
+		0, 
+		0, 
+		get_w(), 
+		get_h() - 
+			BC_Pot::calculate_h() * 2 - 
+			plugin->get_theme()->widget_border * 3));
+	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 
-	y += MARGIN;
+	x = plugin->get_theme()->widget_border;
+	y = canvas->get_y() + canvas->get_h() + plugin->get_theme()->widget_border;
+
+	x1 = x;
+	y1 = y;
 	add_subwindow(level_title = new BC_Title(x, y, _("Level:")));
-	x += level_title->get_w() + MARGIN;
+	x += level_title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(level = new SpectrogramLevel(plugin, x, y));
-	x += level->get_w() + MARGIN;
+	x += level->get_w() + plugin->get_theme()->widget_border;
+	y += level->get_h() + plugin->get_theme()->widget_border;
+
+	add_subwindow(normalize = new SpectrogramNormalize(plugin, x1, y));
+
+	x = x1 + level_title->get_w() + level->get_w() + plugin->get_theme()->widget_border * 2;
+	x1 = x;
+	y = y1;
 
 	sprintf(string, "%d", plugin->config.window_size);
-	add_subwindow(window_size_title = new BC_Title(x, y, _("Resolution:")));
+	add_subwindow(window_size_title = new BC_Title(x, y, _("Window size:")));
 
-	add_subwindow(normalize = new SpectrogramNormalize(plugin, x, y + window_size_title->get_h() + MARGIN));
-	x += window_size_title->get_w() + MARGIN;
+	x += window_size_title->get_w() + plugin->get_theme()->widget_border;
 	add_subwindow(window_size = new SpectrogramWindowSize(plugin, x, y, string));
 	x += window_size->get_w();
 	add_subwindow(window_size_tumbler = new SpectrogramWindowSizeTumbler(plugin, x, y));
@@ -287,73 +439,182 @@ void SpectrogramWindow::create_objects()
 		window_size->add_item(new BC_MenuItem(string));
 	}
 
-	x += window_size_tumbler->get_w() + MARGIN;
-	sprintf(string, "%d", plugin->config.window_fragment);
-	add_subwindow(window_fragment_title = new BC_Title(x, y, _("Zoom X:")));
-	x += window_fragment_title->get_w() + MARGIN;
-	add_subwindow(window_fragment = new SpectrogramFragmentSize(plugin, x, y, string));
-	x += window_fragment->get_w();
-	add_subwindow(window_fragment_tumbler = new SpectrogramFragmentSizeTumbler(plugin, x, y));
-	x += window_fragment_tumbler->get_w() + MARGIN;
+//	x += window_size_tumbler->get_w() + plugin->get_theme()->widget_border;
+	x = x1;
+	y += window_size->get_h() + plugin->get_theme()->widget_border;
 
 
-	for(int i = MIN_FRAGMENT; i <= MAX_FRAGMENT; i *= 2)
-	{
-		sprintf(string, "%d", i);
-		window_fragment->add_item(new BC_MenuItem(string));
-	}
-	
+
+	add_subwindow(mode_title = new BC_Title(x, y, _("Mode:")));
+	x += mode_title->get_w() + plugin->get_theme()->widget_border;
+	add_subwindow(mode = new SpectrogramMode(plugin,
+		x, 
+		y));
+	mode->create_objects();
+	x += mode->get_w() + plugin->get_theme()->widget_border;
+
+	x = x1 = window_size_tumbler->get_x() + 
+		window_size_tumbler->get_w() + 
+		plugin->get_theme()->widget_border;
+	y = y1;
+	add_subwindow(history_title = new BC_Title(x, y, _("History:")));
+	x += history_title->get_w() + plugin->get_theme()->widget_border;
+	add_subwindow(history = new SpectrogramHistory(plugin,
+		x, 
+		y));
+
+	x = x1;
+	y += history->get_h() + plugin->get_theme()->widget_border;
+	add_subwindow(xzoom_title = new BC_Title(x, y, _("X Zoom:")));
+	x += xzoom_title->get_w() + plugin->get_theme()->widget_border;
+	add_subwindow(xzoom = new SpectrogramXZoom(plugin, x, y));
+	x += xzoom->get_w() + plugin->get_theme()->widget_border;
+
+	y = y1;
+	x1 = x;
+	add_subwindow(freq_title = new BC_Title(x1, y, _("Freq: 0 Hz")));
+//	x += freq_title->get_w() + plugin->get_theme()->widget_border;
+	y += freq_title->get_h() + plugin->get_theme()->widget_border;
+//	add_subwindow(freq = new SpectrogramFreq(plugin, x, y));
+//	y += freq->get_h() + plugin->get_theme()->widget_border;
+	x = x1;
+	add_subwindow(amplitude_title = new BC_Title(x, y, "Amplitude: 0 dB"));
+
+
+
 	show_window();
-	flush();
 }
 
 int SpectrogramWindow::resize_event(int w, int h)
 {
-	int x = DIVISION_W, y = MARGIN;
-	canvas->reposition_window(x, 
-		y, 
-		w - x - MARGIN, 
-		h - BC_Pot::calculate_h() - MARGIN - MARGIN - y - 20);
+	int canvas_h = canvas->get_h();
+	int canvas_difference = get_h() - canvas_h;
+
+	canvas->reposition_window(0, 
+		0, 
+		w, 
+		h - canvas_difference);
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+	probe_x = -1;
+	probe_y = -1;
+
+	int y_diff = -canvas_h + canvas->get_h();
+
 // Remove all columns which may be a different size.
-	plugin->column_buffer.remove_all_objects();
+	plugin->frame_buffer.remove_all_objects();
+	plugin->frame_history.remove_all_objects();
 
-	x = MARGIN;
-	for(int i = 0; i <= DIVISIONS; i++)
-	{
-		y = (int)((float)(canvas->get_h() - MARGIN) / DIVISIONS * i) + MARGIN;
-		division[i]->reposition_window(division[i]->get_x(), y);
-	}
+	level_title->reposition_window(
+		level_title->get_x(), 
+		level_title->get_y() + y_diff);
+	level->reposition_window(level->get_x(), 
+		level->get_y() + y_diff);
+	
+	window_size_title->reposition_window(
+		window_size_title->get_x(), 
+		window_size_title->get_y() + y_diff);
+	
+	normalize->reposition_window(normalize->get_x(), 
+		normalize->get_y() + y_diff);
+	window_size->reposition_window(window_size->get_x(), 
+		window_size->get_y() + y_diff);
+	window_size_tumbler->reposition_window(window_size_tumbler->get_x(), 
+		window_size_tumbler->get_y() + y_diff);
 
-	x = canvas->get_x();
-	y = canvas->get_y() + canvas->get_h() + 5;
-	y += MARGIN;
-	level_title->reposition_window(x, y);
-	x += level_title->get_w() + MARGIN;
-	level->reposition_window(x, y);
-	x += level->get_w() + MARGIN;
-	
-	window_size_title->reposition_window(x, y);
-	
-	normalize->reposition_window(x, y + window_size_title->get_h() + MARGIN);
-	x += window_size_title->get_w() + MARGIN;
-	window_size->reposition_window(x, y);
-	x += window_size->get_w();
-	window_size_tumbler->reposition_window(x, y);
-	x += window_size_tumbler->get_w() + MARGIN;
-	
-	window_fragment_title->reposition_window(x, y);
-	x += window_fragment_title->get_w() + MARGIN;
-	window_fragment->reposition_window(x, y);
-	x += window_fragment->get_w();
-	window_fragment_tumbler->reposition_window(x, y);
-	x += window_fragment_tumbler->get_w() + MARGIN;
+
+
+	mode_title->reposition_window(mode_title->get_x(), 
+		mode_title->get_y() + y_diff);
+	mode->reposition_window(mode->get_x(), 
+		mode->get_y() + y_diff);
+
+
+	history_title->reposition_window(history_title->get_x(), 
+		history_title->get_y() + y_diff);
+	history->reposition_window(history->get_x(), 
+		history->get_y() + y_diff);
+
+	xzoom_title->reposition_window(xzoom_title->get_x(), 
+		xzoom_title->get_y() + y_diff);
+	xzoom->reposition_window(xzoom->get_x(), 
+		xzoom->get_y() + y_diff);
+	freq_title->reposition_window(freq_title->get_x(), 
+		freq_title->get_y() + y_diff);
+//	freq->reposition_window(freq->get_x(), 
+//		freq->get_y() + y_diff);
+	amplitude_title->reposition_window(amplitude_title->get_x(), 
+		amplitude_title->get_y() + y_diff);
+
+	flush();
 	plugin->w = w;
 	plugin->h = h;
-	plugin->save_defaults();
 	return 0;
 }
 
+
+void SpectrogramWindow::calculate_frequency(int x, int y, int do_overlay)
+{
+	if(x < 0 && y < 0) return;
+
+// Clear previous overlay
+	if(do_overlay) canvas->draw_overlay();
+
+// New probe position
+	probe_x = x;
+	probe_y = y;
+
+// Convert to coordinates in frame history
+	int freq_pixel, time_pixel;
+	if(plugin->config.mode == VERTICAL)
+	{
+		freq_pixel = get_w() - x;
+		time_pixel = 0;
+	}
+	else
+	{
+		freq_pixel = y;
+		time_pixel = get_w() - x;
+	}
+
+	CLAMP(time_pixel, 0, plugin->frame_history.size() - 1);
+	if(plugin->frame_history.size())
+	{
+		SpectrogramFrame *ptr = plugin->frame_history.get(
+			plugin->frame_history.size() - time_pixel - 1);
+
+		int pixels;
+		int freq_index;
+		if(plugin->config.mode == VERTICAL)
+		{
+			pixels = canvas->get_w();
+			freq_index = (pixels - freq_pixel) * TOTALFREQS / pixels;
+		}
+		else
+		{
+			pixels = canvas->get_h();
+			freq_index = (pixels - freq_pixel)  * TOTALFREQS / pixels;
+		}
+
+		int freq = Freq::tofreq(freq_index);
+		
+		
+		CLAMP(freq_pixel, 0, ptr->data_size - 1);
+		double level = ptr->data[freq_pixel];
+		
+		char string[BCTEXTLEN];
+		sprintf(string, "Freq: %d Hz", freq);
+		freq_title->update(string);
+		
+		sprintf(string, "Amplitude: %.2f dB", level);
+		amplitude_title->update(string);
+	}
+	
+	if(do_overlay) 
+	{
+		canvas->draw_overlay();
+		canvas->flash();
+	}
+}
 
 
 
@@ -363,8 +624,13 @@ void SpectrogramWindow::update_gui()
 	level->update(plugin->config.level);
 	sprintf(string, "%d", plugin->config.window_size);
 	window_size->set_text(string);
-	sprintf(string, "%d", plugin->config.window_fragment);
-	window_fragment->set_text(string);
+
+	mode->set_text(mode->mode_to_text(plugin->config.mode));
+	history->update(plugin->config.history_size);
+
+//	sprintf(string, "%d", plugin->config.window_fragment);
+//	window_fragment->set_text(string);
+
 	normalize->set_value(plugin->config.normalize);
 }
 
@@ -397,6 +663,8 @@ Spectrogram::Spectrogram(PluginServer *server)
 {
 	reset();
 	timer = new Timer;
+	w = 640;
+	h = 480;
 }
 
 Spectrogram::~Spectrogram()
@@ -407,7 +675,8 @@ Spectrogram::~Spectrogram()
 	delete [] freq_real;
 	delete [] freq_imag;
 	delete timer;
-	column_buffer.remove_all_objects();
+	frame_buffer.remove_all_objects();
+	frame_history.remove_all_objects();
 }
 
 
@@ -422,11 +691,8 @@ void Spectrogram::reset()
 	freq_real = 0;
 	freq_imag = 0;
 	allocated_data = 0;
-	last_fragment = 0;
-	total_fragments = 0;
+	total_windows = 0;
 	bzero(&header, sizeof(data_header_t));
-	w = 640;
-	h = 480;
 }
 
 
@@ -438,6 +704,14 @@ int Spectrogram::process_buffer(int64_t size,
 		int64_t start_position,
 		int sample_rate)
 {
+// Pass through
+	read_samples(buffer,
+		0,
+		sample_rate,
+		start_position,
+		size);
+
+
 	load_configuration();
 
 // Reset audio buffer
@@ -447,8 +721,7 @@ int Spectrogram::process_buffer(int64_t size,
 		window_size = config.window_size;
 	}
 
-// The size of a fragment
-	int fragment_size = MIN(config.window_size, config.window_fragment);
+
 
 
 
@@ -474,122 +747,51 @@ int Spectrogram::process_buffer(int64_t size,
 		audio_buffer = new Samples(MAX_WINDOW);
 	}
 
-// Total fragments rendered in this call
-	int total_fragments = 0;
 
-// process 1 fragment at a time
-	int64_t current_start_position = start_position;
-// printf("Spectrogram::process_buffer %d %lld %lld\n", 
-// __LINE__, 
-// start_position,
-// audio_buffer_start);
-	for(int sample = 0; 
-		sample < size; 
-		sample += fragment_size)
+// Accumulate audio
+	int needed = buffer_size + size;
+	if(audio_buffer->get_allocated() < needed)
 	{
-		int current_fragment_size = fragment_size;
-		if(current_fragment_size + sample > size)
-			current_fragment_size = size - sample;
+		Samples *new_samples = new Samples(needed);
+		memcpy(new_samples->get_data(), 
+			audio_buffer->get_data(), 
+			sizeof(double) * buffer_size);
+		delete audio_buffer;
+		audio_buffer = new_samples;
+	}
 
-// Keep audio buffer full.
-// Forward playback.
-		if(get_direction() == PLAY_FORWARD &&
-			current_start_position >= audio_buffer_start &&
-			current_start_position < audio_buffer_start + config.window_size)
-		{
-			int64_t difference = current_start_position - audio_buffer_start;
-			if(difference)
-			{
-				int64_t old_chunk = config.window_size - difference;
-				memcpy(audio_buffer->get_data(), 
-					audio_buffer->get_data() + difference,
-					old_chunk * sizeof(double));
-//printf("Spectrogram::process_buffer %d %d\n", __LINE__, current_start_position + old_chunk);
-				audio_buffer->set_offset(old_chunk);
-				read_samples(audio_buffer,
-					0,
-					get_samplerate(),
-					current_start_position + old_chunk,
-					difference);
-				audio_buffer->set_offset(0);
-			}
+	memcpy(audio_buffer->get_data() + buffer_size, 
+		buffer->get_data(),
+		sizeof(double) * size);
+	buffer_size += size;
 
-			memcpy(buffer->get_data() + sample, 
-				audio_buffer->get_data(), 
-				current_fragment_size * sizeof(double));
-			audio_buffer_start = current_start_position;
-		}
-		else
-// Reverse playback.
-		if(get_direction() == PLAY_REVERSE &&
-			current_start_position <= audio_buffer_start &&
-			current_start_position > audio_buffer_start - config.window_size)
-		{
-// buffer should end at current_start_position + current_fragment_size
-			int64_t difference = audio_buffer_start - current_start_position;
-			int64_t old_chunk = config.window_size - difference;
-			if(difference)
-			{
-				memcpy(audio_buffer->get_data(),
-					audio_buffer->get_data() + difference, 
-					old_chunk * sizeof(double));
 
-// printf("Spectrogram::process_buffer %d %lld %lld\n", 
-// __LINE__, 
-// current_start_position - old_chunk,
-// difference);
-				read_samples(audio_buffer,
-					0,
-					get_samplerate(),
-					current_start_position + old_chunk,
-					difference);
-			}
+//printf("Spectrogram::process_buffer %d %d\n", __LINE__, buffer_size);
 
-			memcpy(buffer->get_data() + sample, 
-				audio_buffer->get_data(), 
-				current_fragment_size * sizeof(double));
-			audio_buffer_start = current_start_position;
-		}
-		else
-// New buffer
-		if(get_direction() == PLAY_FORWARD)
-		{
-			read_samples(audio_buffer,
-				0,
-				get_samplerate(),
-				current_start_position,
-				config.window_size);
-			memcpy(buffer->get_data() + sample, 
-				audio_buffer->get_data(), 
-				current_fragment_size * sizeof(double));
-			audio_buffer_start = current_start_position;
-		}
-		else
-		{
-//printf("Spectrogram::process_buffer %d %d\n", __LINE__, current_start_position);
-			read_samples(audio_buffer,
-				0,
-				get_samplerate(),
-				current_start_position,
-				config.window_size);
-			memcpy(buffer->get_data() + sample, 
-				audio_buffer->get_data(), 
-				current_fragment_size * sizeof(double));
-			audio_buffer_start = current_start_position;
-		}
-		
+// Append a windows to end of GUI buffer
+	total_windows = 0;
+	while(buffer_size >= window_size)
+	{		
 // Process FFT
-		fft->do_fft(config.window_size,  // must be a power of 2
+		fft->do_fft(window_size,  // must be a power of 2
     		0,         // 0 = forward FFT, 1 = inverse
     		audio_buffer->get_data(),     // array of input's real samples
     		0,     // array of input's imag samples
     		freq_real,    // array of output's reals
     		freq_imag);
 
-// Append to end of data buffer
-		if(allocated_data < (total_fragments + 1) * HALF_WINDOW)
+// Get peak in waveform
+		double max = 0;
+		for(int i = 0; i < window_size; i++)
 		{
-			int new_allocation = (total_fragments + 1) * HALF_WINDOW;
+			double sample = fabs(audio_buffer->get_data()[i]);
+			if(sample > max) max = sample;
+		}
+
+// Append to end of data buffer
+		if(allocated_data < (total_windows + 1) * (HALF_WINDOW + 1))
+		{
+			int new_allocation = (total_windows + 1) * (HALF_WINDOW + 1);
 			unsigned char *new_data = new unsigned char[sizeof(data_header_t) +
 				sizeof(float) * new_allocation];
 			data_header_t *new_header = (data_header_t*)new_data;
@@ -603,44 +805,47 @@ int Spectrogram::process_buffer(int64_t size,
 		}
 
 		data_header_t *header = (data_header_t*)data;
-		float *sample_output = header->samples + total_fragments * HALF_WINDOW;
+		float *sample_output = header->samples + total_windows * (HALF_WINDOW + 1);
+// 1st sample is maximum
+		sample_output[0] = max;
 		for(int i = 0; i < HALF_WINDOW; i++)
 		{
-			sample_output[i] = sqrt(freq_real[i] * freq_real[i] +
+			sample_output[i + 1] = sqrt(freq_real[i] * freq_real[i] +
 				freq_imag[i] * freq_imag[i]);
 		}
 
+// Shift audio buffer out
+		memcpy(audio_buffer->get_data(), 
+			audio_buffer->get_data() + window_size,
+			(buffer_size - window_size) * sizeof(double));
 
-		if(get_direction() == PLAY_REVERSE)
-			current_start_position -= fragment_size;
-		else
-			current_start_position += fragment_size;
-		total_fragments++;
+		total_windows++;
+		buffer_size -= window_size;
 	}
 
 	data_header_t *header = (data_header_t*)data;
-	header->window_size = config.window_size;
-	header->window_fragment = config.window_fragment;
+	header->window_size = window_size;
 	header->sample_rate = sample_rate;
-	header->total_fragments = total_fragments;
+	header->total_windows = total_windows;
 // Linear output level
 	header->level = DB::fromdb(config.level);
 
 	send_render_gui(data, 
 		sizeof(data_header_t) + 
-			sizeof(float) * total_fragments * HALF_WINDOW);
+			sizeof(float) * total_windows * (HALF_WINDOW + 1));
 
 	return 0;
 }
 
 void Spectrogram::render_stop()
 {
+	buffer_size = 0;
 	audio_buffer_start = -MAX_WINDOW * 2;
-	column_buffer.remove_all_objects();
+	frame_buffer.remove_all_objects();
+	frame_history.remove_all_objects();
 }
 
 
-NEW_PICON_MACRO(Spectrogram)
 
 
 NEW_WINDOW_MACRO(Spectrogram, SpectrogramWindow)
@@ -649,107 +854,213 @@ void Spectrogram::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
+		int result = load_configuration();
 		SpectrogramWindow *window = (SpectrogramWindow*)thread->get_window();
 		window->lock_window("Spectrogram::update_gui");
-		window->update_gui();
+		if(result) window->update_gui();
+		
+		
 //printf("Spectrogram::update_gui %d\n", __LINE__);
 // Shift in accumulated canvas columns
-		if(column_buffer.size())
+		if(frame_buffer.size())
 		{
-			BC_SubWindow *canvas = window->canvas;
-// Columns to draw in this iteration
-			int total_columns = timer->get_difference() * 
+			SpectrogramCanvas *canvas = (SpectrogramCanvas*)window->canvas;
+			canvas->draw_overlay();
+// Z to draw in this iteration
+			int total_frames = timer->get_difference() * 
 				header.sample_rate / 
-				header.window_fragment / 
-				1000 + 1;
+				header.window_size / 
+				1000;
+
+//printf("Spectrogram::update_gui %d %d %ld\n", __LINE__, frame_buffer.size(), timer->get_difference());
+			if(total_frames) timer->subtract(total_frames * 
+				header.window_size * 
+				1000 / 
+				header.sample_rate);
+
 // Add forced column drawing
-			for(int i = total_columns; i < column_buffer.size(); i++)
-				if(column_buffer.get(i)->force) total_columns++;
-			total_columns = MIN(column_buffer.size(), total_columns);
-			total_columns = MIN(canvas->get_w(), total_columns);
-//printf("Spectrogram::update_gui %d %d %d\n", __LINE__, total_columns, column_buffer.size());
+			for(int i = 0; i < frame_buffer.size(); i++)
+				if(frame_buffer.get(i)->force) total_frames++;
+			total_frames = MIN(frame_buffer.size(), total_frames);
 
+// Limit to canvas width
+			if(config.mode == HORIZONTAL) 
+				total_frames = MIN(canvas->get_w(), total_frames);
+
+
+
+			if(config.mode == HORIZONTAL)
+			{
 // Shift left
-			int h = canvas->get_h();
-			canvas->copy_area(total_columns, 
-				0, 
-				0, 
-				0, 
-				canvas->get_w() - total_columns,
-				canvas->get_h());
-
+				int pixels = canvas->get_h();
+				canvas->copy_area(total_frames * config.xzoom, 
+					0, 
+					0, 
+					0, 
+					canvas->get_w() - total_frames * config.xzoom,
+					canvas->get_h());
 
 
 // Draw new columns
-			for(int column = 0;
-				column < total_columns;
-				column++)
-			{
-				int x = canvas->get_w() - total_columns + column;
-				SpectrogramColumn *column_data = column_buffer.get(0);
-				for(int i = 0; i < h; i++)
+				for(int frame = 0;
+					frame < total_frames;
+					frame++)
 				{
-// 					int64_t color = (int)((double)0xff * column_data->data[i]);
-// 
-// 					if(color < 0) color = 0;
-// 					if(color > 0xff) color = 0xff;
-					float db = DB::todb(column_data->data[i]);
-					float h, s, v;
-					float r_out, g_out, b_out;
-					int r, g, b;
+					int x = canvas->get_w() - (total_frames - frame) * config.xzoom;
+					SpectrogramFrame *ptr = frame_buffer.get(0);
+
+					for(int i = 0; i < pixels; i++)
+					{
+						float db = ptr->data[
+							MIN(i, ptr->data_size - 1)];
+						float h, s, v;
+						float r_out, g_out, b_out;
+						int r, g, b;
 
 #define DIVISION1 0.0
 #define DIVISION2 -20.0
 #define DIVISION3 INFINITYGAIN
-					if(db > DIVISION2)
-					{
-						h = 240 - (float)(db - DIVISION2) / (DIVISION1 - DIVISION2) *
-							240;
-						CLAMP(h, 0, 240);
-						s = 1.0;
-						v = 1.0;
-						HSV::hsv_to_rgb(r_out, g_out, b_out, h, s, v);
-						r = (int)(r_out * 0xff);
-						g = (int)(g_out * 0xff);
-						b = (int)(b_out * 0xff);
+						if(db > DIVISION2)
+						{
+							h = 240 - (float)(db - DIVISION2) / (DIVISION1 - DIVISION2) *
+								240;
+							CLAMP(h, 0, 240);
+							s = 1.0;
+							v = 1.0;
+							HSV::hsv_to_rgb(r_out, g_out, b_out, h, s, v);
+							r = (int)(r_out * 0xff);
+							g = (int)(g_out * 0xff);
+							b = (int)(b_out * 0xff);
+						}
+						else
+						if(db > DIVISION3)
+						{
+							h = 0.0;
+							s = 0.0;
+							v = (float)(db - DIVISION3) / (DIVISION2 - DIVISION3);
+							HSV::hsv_to_rgb(r_out, g_out, b_out, h, s, v);
+							r = (int)(r_out * 0xff);
+							g = (int)(g_out * 0xff);
+							b = (int)(b_out * 0xff);
+						}
+						else
+						{
+							r = g = b = 0;
+						}
+
+						canvas->set_color((r << 16) |
+							(g << 8) |
+							(b));
+						if(config.xzoom == 1)
+							canvas->draw_pixel(x, i);
+						else
+							canvas->draw_line(x,
+								i,
+								x + config.xzoom,
+								i);
 					}
-					else
-					if(db > DIVISION3)
+					
+// Push frames onto history
+					for(int i = 0; i < config.xzoom; i++)
 					{
-						h = 0.0;
-						s = 0.0;
-						v = (float)(db - DIVISION3) / (DIVISION2 - DIVISION3);
-						HSV::hsv_to_rgb(r_out, g_out, b_out, h, s, v);
-						r = (int)(r_out * 0xff);
-						g = (int)(g_out * 0xff);
-						b = (int)(b_out * 0xff);
-					}
-					else
-					{
-						r = g = b = 0;
+						SpectrogramFrame *new_frame = new SpectrogramFrame(
+							ptr->data_size);
+						frame_history.append(new_frame);
+						memcpy(new_frame->data, ptr->data, sizeof(float) * ptr->data_size);
 					}
 
-					canvas->set_color((r << 16) |
-						(g << 8) |
-						(b));
-					canvas->draw_pixel(x, i);
+// Clip history to canvas size
+					while(frame_history.size() > canvas->get_w())
+						frame_history.remove_object_number(0);
+					
+					frame_buffer.remove_object_number(0);
 				}
-				column_buffer.remove_object_number(0);
+			}
+			else
+// mode == VERTICAL
+			{
+// Shift frames into history
+				for(int frame = 0; frame < total_frames; frame++)
+				{
+					if(frame_history.size() >= config.history_size)
+						frame_history.remove_object_number(0);
+
+					frame_history.append(frame_buffer.get(0));
+					frame_buffer.remove_number(0);
+				}
+
+// Reduce history size
+				while(frame_history.size() > config.history_size)
+					frame_history.remove_object_number(0);
+
+// Draw frames from history
+				canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+				for(int frame = 0; frame < frame_history.size(); frame++)
+				{
+					SpectrogramFrame *ptr = frame_history.get(frame);
+//printf("%d %d\n", canvas->get_w(), ptr->data_size);
+
+					int luma = (frame + 1) * 0x80 / frame_history.size();
+					if(frame == frame_history.size() - 1)
+					{
+						canvas->set_color(WHITE);
+						canvas->set_line_width(2);
+					}
+					else
+						canvas->set_color((luma << 16) |
+							(luma << 8) |
+							luma);
+
+
+					int x1 = 0;
+					int y1 = 0;
+					int w = canvas->get_w();
+					int h = canvas->get_h();
+					int number = 0;
+
+//printf("Spectrogram::update_gui %d ", __LINE__);
+
+					for(int x2 = 0; x2 < w; x2++)
+					{
+						float db = ptr->data[
+							MIN((w - x2), ptr->data_size - 1)];
+//if(x2 > w - 10) printf("%.02f ", ptr->data[x2]);
+						int y2 = h - 1 - (int)((db - INFINITYGAIN) / 
+							(0 - INFINITYGAIN) * 
+							h);
+						CLAMP(y2, 0, h - 1);
+
+						if(number)
+						{
+							canvas->draw_line(x1, y1, x2, y2);
+						}
+						else
+						{
+							number++;
+						}
+
+						x1 = x2;
+						y1 = y2;
+					}
+					
+					canvas->set_line_width(1);
+//printf("\n");
+				}
+
 			}
 
 
+// Recompute probe level
+			window->calculate_frequency(window->probe_x, window->probe_y, 0);
 
-
+			canvas->draw_overlay();
 			canvas->flash();
-			canvas->flush();
 		}
-		timer->update();
 
-		while(column_buffer.size() > MAX_COLUMNS)
-			column_buffer.remove_object_number(0);
+		while(frame_buffer.size() > MAX_COLUMNS)
+			frame_buffer.remove_object_number(0);
 
-		thread->get_window()->unlock_window();
+		window->unlock_window();
 	}
 }
 
@@ -761,30 +1072,37 @@ void Spectrogram::render_gui(void *data, int size)
 		data_header_t *header = (data_header_t*)data;
 		memcpy(&this->header, header, sizeof(data_header_t));
 		BC_SubWindow *canvas = ((SpectrogramWindow*)thread->get_window())->canvas;
-		int h = canvas->get_h();
+		int pixels = canvas->get_w();
+		if(config.mode == HORIZONTAL) pixels = canvas->get_h();
 
 // Set all previous columns to draw immediately
-		for(int i = 0; i < column_buffer.size(); i++)
-			column_buffer.get(i)->force = 1;
-		for(int current_fragment = 0; 
-			current_fragment < header->total_fragments;
-			current_fragment++)
+		for(int i = 0; i < frame_buffer.size(); i++)
+			frame_buffer.get(i)->force = 1;
+
+
+		for(int current_window = 0; 
+			current_window < header->total_windows;
+			current_window++)
 		{
 			float *frame = header->samples + 
-				current_fragment * header->window_size / 2;
+				current_window * (header->window_size / 2 + 1);
+			float frame_max = *frame;
+			frame++;
 			int niquist = get_project_samplerate() / 2;
 			int total_slots = header->window_size / 2;
 			int max_slot = total_slots - 1;
 //			int slot1 = total_slots - 1;
-			SpectrogramColumn *column_data = new SpectrogramColumn(h, total_fragments);
+			SpectrogramFrame *ptr = 
+				new SpectrogramFrame(
+					pixels);
 
-// Scale slots to canvas height
-			for(int i = 0; i < h; i++)
+// Scale slots to pixels
+			for(int i = 0; i < pixels; i++)
 			{
 // Low frequency of row
-				int freq_index1 = (int)((h - i) * TOTALFREQS / h);
+				int freq_index1 = (int)((pixels - i) * TOTALFREQS / pixels);
 // High frequency of row
-				int freq_index2 = (int)((h - i + 1) * TOTALFREQS / h);
+				int freq_index2 = (int)((pixels - i + 1) * TOTALFREQS / pixels);
 				int freq1 = Freq::tofreq(freq_index1);
 				int freq2 = Freq::tofreq(freq_index2);
 				float slot1_f = (float)freq1 * max_slot / niquist;
@@ -812,36 +1130,69 @@ void Spectrogram::render_gui(void *data, int size)
 						frame[slot3] * weight;
 				}
 
-				column_data->data[i] = sum;
+				ptr->data[i] = sum;
 //				slot1 = slot2;
 			}
 
 // Normalize
 			if(config.normalize)
 			{
+// Get the maximum level in the spectrogram
 				float max = 0;
-				for(int i = 0; i < h; i++)
+				for(int i = 0; i < pixels; i++)
 				{
-					if(column_data->data[i] > max) max = column_data->data[i];
+					if(ptr->data[i] > max) max = ptr->data[i];
 				}
 
-				for(int i = 0; i < h; i++)
+// Scale all levels
+				for(int i = 0; i < pixels; i++)
 				{
-					column_data->data[i] = header->level * column_data->data[i] / max;
+					ptr->data[i] = header->level * 
+						ptr->data[i] / 
+						max;
 				}
 			}
 			else
 			{
-				for(int i = 0; i < h; i++)
+// Get the maximum level in the spectrogram
+				float max = 0;
+				for(int i = 0; i < pixels; i++)
 				{
-					column_data->data[i] = header->level * column_data->data[i];
+					if(ptr->data[i] > max) max = ptr->data[i];
 				}
+
+// Maximum level in spectrogram is the maximum waveform level
+				for(int i = 0; i < pixels; i++)
+				{
+					ptr->data[i] = header->level * 
+						frame_max * 
+						ptr->data[i] /
+						max;
+				}
+
+
+// 				for(int i = 0; i < pixels; i++)
+// 				{
+// 					ptr->data[i] = header->level * ptr->data[i];
+// 				}
 			}
 
-			column_buffer.append(column_data);
-			total_fragments++;
+// DB conversion
+//printf("Spectrogram::render_gui %d ", __LINE__);
+			for(int i = 0; i < pixels; i++)
+			{
+				ptr->data[i] = DB::todb(ptr->data[i]);
+//if(i > pixels - 10) printf("%.02f ", ptr->data[i]);
+
+			}
+//printf("\n");
+
+
+			frame_buffer.append(ptr);
+			total_windows++;
 		}
 
+		timer->update();
 		thread->get_window()->unlock_window();
 	}
 }
@@ -865,7 +1216,14 @@ void Spectrogram::read_data(KeyFrame *keyframe)
 				config.level = input.tag.get_property("LEVEL", config.level);
 				config.normalize = input.tag.get_property("NORMALIZE", config.normalize);
 				config.window_size = input.tag.get_property("WINDOW_SIZE", config.window_size);
-				config.window_fragment = input.tag.get_property("WINDOW_FRAGMENT", config.window_fragment);
+				config.xzoom = input.tag.get_property("XZOOM", config.xzoom);
+				config.mode = input.tag.get_property("MODE", config.mode);
+				config.history_size = input.tag.get_property("HISTORY_SIZE", config.history_size);
+				if(is_defaults())
+				{
+					w = input.tag.get_property("W", w);
+					h = input.tag.get_property("H", h);
+				}
 			}
 		}
 	}
@@ -880,39 +1238,16 @@ void Spectrogram::save_data(KeyFrame *keyframe)
 	output.tag.set_property("LEVEL", (double)config.level);
 	output.tag.set_property("NORMALIZE", (double)config.normalize);
 	output.tag.set_property("WINDOW_SIZE", (int)config.window_size);
-	output.tag.set_property("WINDOW_FRAGMENT", (int)config.window_fragment);
+	output.tag.set_property("XZOOM", (int)config.xzoom);
+	output.tag.set_property("MODE", (int)config.mode);
+	output.tag.set_property("HISTORY_SIZE", (int)config.history_size);
+	output.tag.set_property("W", (int)w);
+	output.tag.set_property("H", (int)h);
 	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }
 
-int Spectrogram::load_defaults()
-{
-	char directory[BCTEXTLEN];
-
-	sprintf(directory, "%sspectrogram.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.level = defaults->get("LEVEL", config.level);
-	config.normalize = defaults->get("NORMALIZE", config.normalize);
-	config.window_size = defaults->get("WINDOW_SIZE", config.window_size);
-	config.window_fragment = defaults->get("WINDOW_FRAGMENT", config.window_fragment);
-	w = defaults->get("W", w);
-	h = defaults->get("H", h);
-	return 0;
-}
-
-int Spectrogram::save_defaults()
-{
-	defaults->update("LEVEL", config.level);
-	defaults->update("NORMALIZE", config.normalize);
-	defaults->update("WINDOW_SIZE", config.window_size);
-	defaults->update("WINDOW_FRAGMENT", config.window_fragment);
-	defaults->update("W", w);
-	defaults->update("H", h);
-	defaults->save();
-	return 0;
-}
 
 
 

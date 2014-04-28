@@ -138,6 +138,7 @@ void ConfirmSaveWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
+	show_window(1);
 	unlock_window();
 }
 

@@ -163,8 +163,6 @@ public:
 
 
 
-	int load_defaults();
-	int save_defaults();
 	void update_gui();
 
 
@@ -511,38 +509,6 @@ void FreeverbEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int FreeverbEffect::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sfreeverb.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.gain = defaults->get("GAIN", config.gain);
-	config.roomsize = defaults->get("ROOMSIZE", config.roomsize);
-	config.damp = defaults->get("DAMP", config.damp);
-	config.wet = defaults->get("WET", config.wet);
-	config.dry = defaults->get("DRY", config.dry);
-	config.width = defaults->get("WIDTH", config.width);
-	config.mode = defaults->get("MODE", config.mode);
-	return 0;
-}
-
-int FreeverbEffect::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-	defaults->update("GAIN", config.gain);
-	defaults->update("ROOMSIZE", config.roomsize);
-	defaults->update("DAMP", config.damp);
-	defaults->update("WET", config.wet);
-	defaults->update("DRY", config.dry);
-	defaults->update("WIDTH", config.width);
-	defaults->update("MODE", config.mode);
-	defaults->save();
-
-	return 0;
-}
 
 LOAD_CONFIGURATION_MACRO(FreeverbEffect, FreeverbConfig)
 

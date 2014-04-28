@@ -69,6 +69,7 @@ public:
 // Set frame rate for a node.  Node -1 is the master node.
 // The node number is relative to the enabled nodes.
 	void set_rate(float rate, int node);
+	float get_rate(int node);
 // Calculate the number of cpus to use.  
 // Determined by /proc/cpuinfo and force_uniprocessor.
 // interactive forces it to ignore force_uniprocessor

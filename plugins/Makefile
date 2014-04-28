@@ -8,18 +8,20 @@ include ../global_config
 DIRS = \
 	1080to540 \
 	720to480 \
-	colors \
+	audioscope \
+	burn \
 	bandslide \
 	bandwipe \
 	blur \
 	brightness \
-	burn \
+	brighttheme \
 	parametric \
 	aging \
 	cdripper \
 	chromakey \
 	chromakeyhsv \
 	colorbalance \
+	color3way \
 	compressor \
 	crossfade \
 	dcoffset \
@@ -77,6 +79,7 @@ DIRS = \
 	radialblur \
 	reframe \
 	reframert \
+	removegaps \
 	resample \
 	resamplert \
 	reverb \
@@ -111,17 +114,19 @@ DIRS = \
 	zoom \
 	zoomblur
 
+#	findobject \
+
 # Make static table of all plugins
 ifeq ($(DO_STATIC), y)
 
 endif
 
 
-all: $(DIRS) $(OBJS)
-	@ for i in $(DIRS) ; \
-	do \
-		 $(MAKE) -C $$i ; \
-	done
+all: $(DIRS)
+
+# force parallel compilation of all directories
+$(DIRS): /proc/uptime
+	$(MAKE) -C $@
 
 clean:
 	find \( -name core \

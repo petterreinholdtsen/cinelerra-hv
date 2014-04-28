@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "freezeframe.h"
 #include "language.h"
 #include "picon_png.h"
+#include "transportque.inc"
 
 
 
@@ -240,28 +241,6 @@ void FreezeFrameMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int FreezeFrameMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sfreezeframe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.enabled = defaults->get("ENABLED", config.enabled);
-	config.line_double = defaults->get("LINE_DOUBLE", config.line_double);
-	return 0;
-}
-
-int FreezeFrameMain::save_defaults()
-{
-	defaults->update("ENABLED", config.enabled);
-	defaults->update("LINE_DOUBLE", config.line_double);
-	defaults->save();
-	return 0;
-}
 
 
 
@@ -285,10 +264,11 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame->get_h(),
 				frame->get_color_model(),
 				-1);
-printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
+//printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
+
 		read_frame(first_frame, 
 				0, 
-				first_frame_position,
+				get_direction() == PLAY_REVERSE ? first_frame_position + 1 : first_frame_position,
 				frame_rate,
 				get_use_opengl());
 		if(get_use_opengl()) return run_opengl();
@@ -325,7 +305,7 @@ printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
 		{
 			read_frame(first_frame, 
 				0, 
-				first_frame_position,
+				get_direction() == PLAY_REVERSE ? first_frame_position + 1 : first_frame_position,
 				frame_rate,
 				get_use_opengl());
 		}

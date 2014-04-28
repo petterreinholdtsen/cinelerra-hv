@@ -1,7 +1,6 @@
-;
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +26,7 @@
 #include "batchrender.h"
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"
@@ -198,23 +198,22 @@ MWindow::~MWindow()
 // Give up and go to a movie
 	exit(0);
 
-	delete mainprogress;
-	delete audio_cache;             // delete the cache after the assets
-	delete video_cache;             // delete the cache after the assets
-	delete frame_cache;
-	if(gui) delete gui;
-	delete undo;
-	delete preferences;
-	delete defaults;
-	delete render;
-//	delete renderlist;
-	delete awindow;
-	delete vwindow;
-	delete cwindow;
-	delete lwindow;
-	plugin_guis->remove_all_objects();
-	delete plugin_guis;
-	delete plugin_gui_lock;
+// 	delete mainprogress;
+// 	delete audio_cache;             // delete the cache after the assets
+// 	delete video_cache;             // delete the cache after the assets
+// 	delete frame_cache;
+// 	if(gui) delete gui;
+// 	delete undo;
+// 	delete preferences;
+// 	delete defaults;
+// 	delete render;
+// 	delete awindow;
+// 	delete vwindow;
+// 	delete cwindow;
+// 	delete lwindow;
+// 	plugin_guis->remove_all_objects();
+// 	delete plugin_guis;
+// 	delete plugin_gui_lock;
 }
 
 
@@ -243,7 +242,7 @@ void MWindow::init_error()
 	new MainError(this);
 }
 
-void MWindow::create_defaults_path(char *string)
+void MWindow::create_defaults_path(char *string, const char *config_file)
 {
 // set the .bcast path
 	FileSystem fs;
@@ -256,7 +255,7 @@ void MWindow::create_defaults_path(char *string)
 	}
 
 // load the defaults
-	strcat(string, CONFIG_FILE);
+	strcat(string, config_file);
 }
 
 void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
@@ -269,88 +268,231 @@ void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 	}
 	else
 	{
-		create_defaults_path(path);
+		create_defaults_path(path, CONFIG_FILE);
 	}
 
 	defaults = new BC_Hash(path);
 	defaults->load();
 }
 
+
+
+// init plugins with splash screen
+// void MWindow::init_plugin_path(Preferences *preferences, 
+// 	FileSystem *fs,
+// 	SplashGUI *splash_window,
+// 	int *counter)
+// {
+// 	const int debug = 0;
+// 	int result = 0;
+// 	PluginServer *newplugin;
+// 	Timer total_time;
+// 
+// 	if(debug) PRINT_TRACE
+// 
+// 	if(!result)
+// 	{
+// 		for(int i = 0; i < fs->dir_list.total; i++)
+// 		{
+// 			char path[BCTEXTLEN];
+// 			strcpy(path, fs->dir_list.values[i]->path);
+// 
+// // File is a directory
+// 			if(fs->is_dir(path))
+// 			{
+// 				continue;
+// 			}
+// 			else
+// 			{
+// // Try to query the plugin
+// 				Timer timer;
+// 				fs->complete_path(path);
+// //				if(debug) printf("MWindow::init_plugin_path %d %s\n", __LINE__, path);
+// 				PluginServer *new_plugin = new PluginServer(path);
+// 				int result = new_plugin->open_plugin(1, preferences, 0, 0, -1);
+// 
+// 				if(!result)
+// 				{
+// 					plugindb->append(new_plugin);
+// 					new_plugin->close_plugin();
+// //					if(splash_window)
+// //						splash_window->operation->update(_(new_plugin->title));
+// 				}
+// 				else
+// 				if(result == PLUGINSERVER_IS_LAD)
+// 				{
+// 					delete new_plugin;
+// // Open LAD subplugins
+// 					int id = 0;
+// 					do
+// 					{
+// 						new_plugin = new PluginServer(path);
+// 						result = new_plugin->open_plugin(1,
+// 							preferences,
+// 							0,
+// 							0,
+// 							id);
+// 						id++;
+// 						if(!result)
+// 						{
+// 							plugindb->append(new_plugin);
+// 							new_plugin->close_plugin();
+// //							if(splash_window)
+// //								splash_window->operation->update(_(new_plugin->title));
+// //							else
+// //							{
+// //							}
+// 						}
+// 					}while(!result);
+// 				}
+// 				else
+// 				{
+// // Plugin failed to open
+// 					delete new_plugin;
+// 				}
+// 				
+// //				if(debug) printf("MWindow::init_plugin_path %d %d\n", __LINE__, (int)timer.get_difference());
+// 			}
+// 
+// 			if(splash_window) splash_window->progress->update((*counter)++);
+// 		}
+// 	}
+// 	
+// 	if(debug) printf("MWindow::init_plugin_path %d total_time=%d\n", __LINE__, (int)total_time.get_difference());
+// 
+// }
+
+
+// init plugins with index
 void MWindow::init_plugin_path(Preferences *preferences, 
-	FileSystem *fs,
-	SplashGUI *splash_window,
-	int *counter)
+	char *path,
+	int is_lad)
 {
 	const int debug = 0;
 	int result = 0;
 	PluginServer *newplugin;
+	Timer total_time;
+	FileSystem fs;
+	char index_path[BCTEXTLEN];
+	FILE *index_fd = 0;
+	
+	sprintf(index_path, "%s/%s", path, PLUGIN_FILE);
+//printf("MWindow::init_plugin_path %d %s plugindb=%p\n", __LINE__, index_path, plugindb);
 
-	if(debug) PRINT_TRACE
 
-	if(!result)
+// Try loading index
+	index_fd = fopen(index_path, "r");
+	int index_version = -1;
+	if(index_fd)
 	{
-		for(int i = 0; i < fs->dir_list.total; i++)
+// Get version
+		int temp = fscanf(index_fd, "%d", &index_version);
+	}
+
+	if(index_fd && index_version == PLUGIN_FILE_VERSION)
+	{
+		while(!feof(index_fd))
 		{
-			char path[BCTEXTLEN];
-			strcpy(path, fs->dir_list.values[i]->path);
+			char index_line[BCTEXTLEN];
+			char *result2 = fgets(index_line, BCTEXTLEN, index_fd);
 
-// File is a directory
-			if(fs->is_dir(path))
+			if(result2)
 			{
-				continue;
-			}
-			else
-			{
-// Try to query the plugin
-				fs->complete_path(path);
-				if(debug) printf("MWindow::init_plugin_path %d %s\n", __LINE__, path);
+// Create plugin server from index entry
 				PluginServer *new_plugin = new PluginServer(path);
-				int result = new_plugin->open_plugin(1, preferences, 0, 0, -1);
-
+				result = new_plugin->read_table(index_line);
+//printf("%p new_plugin=%p %s", result2, new_plugin, index_line);
 				if(!result)
 				{
 					plugindb->append(new_plugin);
-					new_plugin->close_plugin();
-//					if(splash_window)
-//						splash_window->operation->update(_(new_plugin->title));
-				}
-				else
-				if(result == PLUGINSERVER_IS_LAD)
-				{
-					delete new_plugin;
-// Open LAD subplugins
-					int id = 0;
-					do
-					{
-						new_plugin = new PluginServer(path);
-						result = new_plugin->open_plugin(1,
-							preferences,
-							0,
-							0,
-							id);
-						id++;
-						if(!result)
-						{
-							plugindb->append(new_plugin);
-							new_plugin->close_plugin();
-//							if(splash_window)
-//								splash_window->operation->update(_(new_plugin->title));
-//							else
-//							{
-//							}
-						}
-					}while(!result);
 				}
 				else
 				{
-// Plugin failed to open
 					delete new_plugin;
 				}
 			}
-
-			if(splash_window) splash_window->progress->update((*counter)++);
 		}
 	}
+	else
+	{
+		index_fd = fopen(index_path, "w");
+
+// Version of the index file
+		fprintf(index_fd, "%d\n", PLUGIN_FILE_VERSION);
+
+
+// Get directories
+		if(is_lad)
+			fs.set_filter("*.so");
+		else
+			fs.set_filter("[*.plugin][*.so]");
+
+		result = fs.update(path);
+
+		if(debug) PRINT_TRACE
+
+		if(!result)
+		{
+			for(int i = 0; i < fs.dir_list.total; i++)
+			{
+				char path[BCTEXTLEN];
+				strcpy(path, fs.dir_list.values[i]->path);
+
+// File is a directory
+				if(fs.is_dir(path))
+				{
+					continue;
+				}
+				else
+				{
+// Try to query the plugin
+					Timer timer;
+					fs.complete_path(path);
+					PluginServer *new_plugin = new PluginServer(path);
+					result = new_plugin->open_plugin(1, preferences, 0, 0, -1);
+
+					if(!result)
+					{
+						new_plugin->write_table(index_fd);
+						plugindb->append(new_plugin);
+						new_plugin->close_plugin();
+					}
+					else
+					if(result == PLUGINSERVER_IS_LAD)
+					{
+						delete new_plugin;
+// Open LAD subplugins
+						int id = 0;
+						do
+						{
+							new_plugin = new PluginServer(path);
+							result = new_plugin->open_plugin(1,
+								preferences,
+								0,
+								0,
+								id);
+							id++;
+							if(!result)
+							{
+								new_plugin->write_table(index_fd);
+								plugindb->append(new_plugin);
+								new_plugin->close_plugin();
+							}
+						}while(!result);
+					}
+					else
+					{
+// Plugin failed to open
+						delete new_plugin;
+					}
+				}
+			}
+		}
+	}
+	
+	fclose(index_fd);
+	if(debug) printf("MWindow::init_plugin_path %d total_time=%d\n", __LINE__, (int)total_time.get_difference());
+
 }
 
 void MWindow::init_plugins(Preferences *preferences, 
@@ -360,27 +502,7 @@ void MWindow::init_plugins(Preferences *preferences,
 	if(!plugindb) plugindb = new ArrayList<PluginServer*>;
 
 
-
-	FileSystem cinelerra_fs;
-	ArrayList<FileSystem*> lad_fs;
-	int result = 0;
-
-	if(debug) PRINT_TRACE
-
-// Get directories
-	cinelerra_fs.set_filter("[*.plugin][*.so]");
-	result = cinelerra_fs.update(preferences->plugin_dir);
-
-	if(debug) PRINT_TRACE
-
-	if(result)
-	{
-		fprintf(stderr, 
-			_("MWindow::init_plugins: couldn't open %s directory\n"),
-			preferences->plugin_dir);
-	}
-
-	if(debug) PRINT_TRACE
+	init_plugin_path(preferences, preferences->plugin_dir, 0);
 
 // Parse LAD environment variable
 	char *env = getenv("LADSPA_PATH");
@@ -407,18 +529,7 @@ void MWindow::init_plugins(Preferences *preferences,
 				memcpy(string, ptr1, len);
 				string[len] = 0;
 
-
-				FileSystem *fs = new FileSystem;
-				lad_fs.append(fs);
-				fs->set_filter("*.so");
-				result = fs->update(string);
-
-				if(result)
-				{
-					fprintf(stderr, 
-						_("MWindow::init_plugins: couldn't open %s directory\n"),
-						string);
-				}
+				init_plugin_path(preferences, string, 1);
 			}
 
 			if(ptr)
@@ -428,38 +539,119 @@ void MWindow::init_plugins(Preferences *preferences,
 		};
 	}
 
-	if(debug) PRINT_TRACE
 
-	int total = cinelerra_fs.total_files();
-	int counter = 0;
-	for(int i = 0; i < lad_fs.total; i++)
-		total += lad_fs.values[i]->total_files();
-	if(splash_window) splash_window->progress->update_length(total);
-
-	if(debug) PRINT_TRACE
+// the rest was for the splash dialog
 
 
-// Cinelerra
-#ifndef DO_STATIC
-	init_plugin_path(preferences,
-		&cinelerra_fs,
-		splash_window,
-		&counter);
-#else
-// Call automatically generated routine to get plugins
-#endif
 
-// LAD
-	for(int i = 0; i < lad_fs.total; i++)
-		init_plugin_path(preferences,
-			lad_fs.values[i],
-			splash_window,
-			&counter);
 
-	if(debug) PRINT_TRACE
+// 	FileSystem cinelerra_fs;
+// 	ArrayList<FileSystem*> lad_fs;
+// 	int result = 0;
+// 
+// 	if(debug) PRINT_TRACE
+// 
+// // Get directories
+// 	cinelerra_fs.set_filter("[*.plugin][*.so]");
+// 	result = cinelerra_fs.update(preferences->plugin_dir);
+// 
+// 	if(debug) PRINT_TRACE
+// 
+// 	if(result)
+// 	{
+// 		fprintf(stderr, 
+// 			_("MWindow::init_plugins: couldn't open %s directory\n"),
+// 			preferences->plugin_dir);
+// 	}
+// 
+// 	if(debug) PRINT_TRACE
+// 	
+// 	
+// 	
+// 	
+// 	
+// 	
+// 	
+// 	
+// 	
+// 	
+// 
+// // Parse LAD environment variable
+// 	char *env = getenv("LADSPA_PATH");
+// 	if(env)
+// 	{
+// 		char string[BCTEXTLEN];
+// 		char *ptr1 = env;
+// 		while(ptr1)
+// 		{
+// 			char *ptr = strchr(ptr1, ':');
+// 			char *end;
+// 			if(ptr)
+// 			{
+// 				end = ptr;
+// 			}
+// 			else
+// 			{
+// 				end = env + strlen(env);
+// 			}
+// 
+// 			if(end > ptr1)
+// 			{
+// 				int len = end - ptr1;
+// 				memcpy(string, ptr1, len);
+// 				string[len] = 0;
+// 
+// 
+// 				FileSystem *fs = new FileSystem;
+// 				lad_fs.append(fs);
+// 				fs->set_filter("*.so");
+// 				result = fs->update(string);
+// 
+// 				if(result)
+// 				{
+// 					fprintf(stderr, 
+// 						_("MWindow::init_plugins: couldn't open %s directory\n"),
+// 						string);
+// 				}
+// 			}
+// 
+// 			if(ptr)
+// 				ptr1 = ptr + 1;
+// 			else
+// 				ptr1 = ptr;
+// 		};
+// 	}
+// 
+// 	if(debug) PRINT_TRACE
+// 
+// 	int total = cinelerra_fs.total_files();
+// 	int counter = 0;
+// 	for(int i = 0; i < lad_fs.total; i++)
+// 		total += lad_fs.values[i]->total_files();
+// 	if(splash_window) splash_window->progress->update_length(total);
+// 
+// 	if(debug) PRINT_TRACE
+// 
+// 
+// // Cinelerra
+// 	init_plugin_path(preferences,
+// 		&cinelerra_fs,
+// 		splash_window,
+// 		&counter);
+// 
+// // LAD
+// 	for(int i = 0; i < lad_fs.total; i++)
+// 		init_plugin_path(preferences,
+// 			lad_fs.values[i],
+// 			splash_window,
+// 			&counter);
+// 
+// 	if(debug) PRINT_TRACE
+// 
+// 	lad_fs.remove_all_objects();
+// 	if(debug) PRINT_TRACE
 
-	lad_fs.remove_all_objects();
-	if(debug) PRINT_TRACE
+
 
 }
 
@@ -516,18 +708,20 @@ void MWindow::search_plugindb(int do_audio,
 PluginServer* MWindow::scan_plugindb(char *title,
 		int data_type)
 {
-	if(data_type < 0)
-	{
-		printf("MWindow::scan_plugindb data_type < 0\n");
-		return 0;
-	}
+// 	if(data_type < 0)
+// 	{
+// 		printf("MWindow::scan_plugindb data_type < 0\n");
+// 		return 0;
+// 	}
 
 	for(int i = 0; i < plugindb->total; i++)
 	{
 		PluginServer *server = plugindb->values[i];
-		if(!strcasecmp(server->title, title) &&
-		((data_type == TRACK_AUDIO && server->audio) ||
-		(data_type == TRACK_VIDEO && server->video))) 
+		if(server->title &&
+			!strcasecmp(server->title, title) &&
+			(data_type < 0 ||
+				(data_type == TRACK_AUDIO && server->audio) ||
+				(data_type == TRACK_VIDEO && server->video))) 
 			return plugindb->values[i];
 	}
 	return 0;
@@ -637,6 +831,7 @@ void MWindow::init_tipwindow()
 
 void MWindow::init_theme()
 {
+	Timer timer;
 	theme = 0;
 
 // Replace blond theme with SUV since it doesn't work
@@ -672,6 +867,8 @@ void MWindow::init_theme()
 	init_menus();
 
 	theme->check_used();
+
+//printf("MWindow::init_theme %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 }
 
 void MWindow::init_3d()
@@ -701,11 +898,15 @@ void MWindow::init_levelwindow()
 	lwindow->create_objects();
 }
 
-void MWindow::init_viewer()
+VWindow* MWindow::new_viewer(int start_it)
 {
-	vwindow = new VWindow(this);
+// Default vwindow
+	VWindow *vwindow = new VWindow(this);
+	vwindows.append(vwindow);
 	vwindow->load_defaults();
 	vwindow->create_objects();
+	if(start_it) vwindow->start();
+	return vwindow;
 }
 
 void MWindow::init_cache()
@@ -850,6 +1051,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 	ArrayList<Asset*> new_assets;
 	ArrayList<File*> new_files;
 	const int debug = 0;
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 //	save_defaults();
 	gui->start_hourglass();
@@ -860,13 +1062,21 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 		CHANGE_NONE, 
 		0,
 		0);
-	vwindow->playback_engine->que->send_command(STOP,
-		CHANGE_NONE, 
-		0,
-		0);
 	cwindow->playback_engine->interrupt_playback(0);
-	vwindow->playback_engine->interrupt_playback(0);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		VWindow *vwindow = vwindows.get(i);
+		if(vwindow->running())
+		{
+			vwindow->playback_engine->que->send_command(STOP,
+				CHANGE_NONE, 
+				0,
+				0);
+			vwindow->playback_engine->interrupt_playback(0);
+		}
+	}
 
 	undo->update_undo_before();
 
@@ -888,8 +1098,10 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		sprintf(string, "Loading %s", new_asset->path);
 		gui->show_message(string);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 		result = new_file->open_file(preferences, new_asset, 1, 0);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 
 		switch(result)
@@ -912,7 +1124,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 				if(load_mode != LOADMODE_RESOURCESONLY)
 				{
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 					asset_to_edl(new_edl, new_asset);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 					new_edls.append(new_edl);
 					new_asset->Garbage::remove_user();
 					new_asset = 0;
@@ -1039,7 +1253,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			case FILE_IS_XML:
 			{
 				FileXML xml_file;
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				xml_file.read_from_file(filenames->values[i]);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 				if(load_mode == LOADMODE_NESTED)
 				{
@@ -1056,7 +1272,9 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				{
 // Load EDL for pasting
 					new_edl->load_xml(&xml_file, LOAD_ALL);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 					test_plugins(new_edl, filenames->values[i]);
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 					if(load_mode == LOADMODE_REPLACE || 
 						load_mode == LOADMODE_REPLACE_CONCATENATE)
@@ -1102,7 +1320,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Paste them.
 // Don't back up here.
-	if(new_edls.total)
+	if(new_edls.size())
 	{
 // For pasting, clear the active region
 		if(load_mode == LOADMODE_PASTE ||
@@ -1142,21 +1360,22 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 			got_indexes = 1;
 			edl->nested_edls->update_index(new_edl->nested_edls->get(j));
 		}
+
 	}
 
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
-	if(new_assets.total)
+	if(new_assets.size())
 	{
-		for(int i = 0; i < new_assets.total; i++)
+		for(int i = 0; i < new_assets.size(); i++)
 		{
-			Asset *new_asset = new_assets.values[i];
+			Asset *new_asset = new_assets.get(i);
 
 			File *new_file = 0;
 			File *index_file = 0;
 			int got_it = 0;
-			for(int j = 0; j < new_files.total; j++)
+			for(int j = 0; j < new_files.size(); j++)
 			{
-				new_file = new_files.values[j];
+				new_file = new_files.get(j);
 				if(!strcmp(new_file->asset->path,
 					new_asset->path))
 				{
@@ -1179,6 +1398,39 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 // Start examining next batch of index files
 	if(got_indexes) mainindexes->start_build();
 if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
+
+// Open plugin GUIs
+	Track *track = edl->tracks->first;
+	while(track)
+	{
+		for(int j = 0; j < track->plugin_set.size(); j++)
+		{
+			PluginSet *plugins = track->plugin_set.get(j);
+			Plugin *plugin = plugins->get_first_plugin();
+
+			while(plugin)
+			{
+				if(load_mode == LOADMODE_REPLACE ||
+					load_mode == LOADMODE_REPLACE_CONCATENATE)
+				{
+					if(plugin->plugin_type == PLUGIN_STANDALONE &&
+						plugin->show)
+					{
+						show_plugin(plugin);
+					}
+				}
+				else
+				{
+					plugin->show = 0;
+				}
+
+				plugin = (Plugin*)plugin->next;
+			}
+		}
+
+		track = track->next;
+	}
+
 
 	update_project(load_mode);
 
@@ -1204,9 +1456,13 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
+	{
 		session->changes_made = 0;
+	}
 	else
+	{
 		session->changes_made = 1;
+	}
 
 	gui->stop_hourglass();
 
@@ -1221,6 +1477,7 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 void MWindow::test_plugins(EDL *new_edl, char *path)
 {
 	char string[BCTEXTLEN];
+
 // Do a check weather plugins exist
 	for(Track *track = new_edl->tracks->first; track; track = track->next)
 	{
@@ -1228,22 +1485,25 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 		{
 			PluginSet *plugin_set = track->plugin_set.values[k];
 			for(Plugin *plugin = (Plugin*)plugin_set->first; 
-			plugin; 
-			plugin = (Plugin*)plugin->next)
+				plugin; 
+				plugin = (Plugin*)plugin->next)
 			{
 				if(plugin->plugin_type == PLUGIN_STANDALONE)
 				{
-					// ok we need to find it in plugindb
+// ok we need to find it in plugindb
 					int plugin_found = 0;
-					for(int j = 0; j < plugindb->total; j++)
+
+					for(int j = 0; j < plugindb->size(); j++)
 					{
-						PluginServer *server = plugindb->values[j];
-						if(!strcasecmp(server->title, plugin->title) &&
+						PluginServer *server = plugindb->get(j);
+						if(server->title &&
+							!strcasecmp(server->title, plugin->title) &&
 							((track->data_type == TRACK_AUDIO && server->audio) ||
 							(track->data_type == TRACK_VIDEO && server->video)) &&
 							(!server->transition))
 							plugin_found = 1;
 					}
+
 					if (!plugin_found) 
 					{
 						sprintf(string, 
@@ -1256,23 +1516,27 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 				}
 			}
 		}
+
 		for(Edit *edit = (Edit*)track->edits->first; 
-		edit; 
-		edit = (Edit*)edit->next)
+			edit; 
+			edit = (Edit*)edit->next)
 		{
 			if (edit->transition)
 			{
-				// ok we need to find transition in plugindb
+// ok we need to find transition in plugindb
+
 				int transition_found = 0;
-				for(int j = 0; j < plugindb->total; j++)
+				for(int j = 0; j < plugindb->size(); j++)
 				{
-					PluginServer *server = plugindb->values[j];
-					if(!strcasecmp(server->title, edit->transition->title) &&
+					PluginServer *server = plugindb->get(j);
+					if(server->title &&
+						!strcasecmp(server->title, edit->transition->title) &&
 						((track->data_type == TRACK_AUDIO && server->audio) ||
 						(track->data_type == TRACK_VIDEO && server->video)) &&
 						(server->transition))
 						transition_found = 1;
 				}
+
 				if (!transition_found) 
 				{
 					sprintf(string, 
@@ -1307,7 +1571,10 @@ void MWindow::init_shm()
 	}
 
 	int64_t result = 0;
-	fscanf(fd, "%lld", &result);
+	long long temp;
+	int temp2;
+	temp2 = fscanf(fd, "%lld", &temp);
+	result = temp;
 	fclose(fd);
 	fd = 0;
 	if(result < 0x7fffffff)
@@ -1315,7 +1582,7 @@ void MWindow::init_shm()
 		char string[BCTEXTLEN];
 		sprintf(string, "MWindow::init_shm: /proc/sys/kernel/shmmax is 0x%llx.\n"
 			"It should be at least 0x7fffffff for Cinelerra.\n",
-			result);
+			(long long)result);
 		MainError::show_error(string);
 	}
 }
@@ -1394,63 +1661,103 @@ void MWindow::create_objects(int want_gui,
 	init_edl();
 	if(debug) PRINT_TRACE
 
-
-	init_awindow();
-	if(debug) PRINT_TRACE
+	Timer timer;
 
 	init_compositor();
-	if(debug) PRINT_TRACE
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
-	init_levelwindow();
-	if(debug) PRINT_TRACE
-
-	init_viewer();
-	if(debug) PRINT_TRACE
-
-	init_cache();
-	if(debug) PRINT_TRACE
-
-	init_indexes();
-	if(debug) PRINT_TRACE
-
-	init_channeldb();
-	if(debug) PRINT_TRACE
-
+//printf("MWindow::create_objects %d session->show_vwindow=%d\n", __LINE__, session->show_vwindow);
+	if(session->show_vwindow) new_viewer(1);
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
 	init_gui();
-	init_gwindow();
-	init_render();
-	init_brender();
-	mainprogress = new MainProgress(this, gui);
-	undo = new MainUndo(this);
-	if(debug) PRINT_TRACE
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
+	init_awindow();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
+	init_levelwindow();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
+	init_cache();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
+	init_indexes();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
+	init_channeldb();
+
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+	init_gwindow();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+	init_render();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+	init_brender();
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+	mainprogress = new MainProgress(this, gui);
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+	undo = new MainUndo(this);
+
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 
 	plugin_guis = new ArrayList<PluginServer*>;
 	dead_plugins = new ArrayList<PluginServer*>;
 	keyframe_threads = new ArrayList<KeyFrameThread*>;
-	if(debug) PRINT_TRACE
 
-	if(session->show_vwindow) vwindow->gui->show_window();
+	if(debug) printf("MWindow::create_objects %d vwindows=%d show_vwindow=%d\n", 
+		__LINE__, 
+		vwindows.size(),
+		session->show_vwindow);
+
+// Show all vwindows
+// 	if(session->show_vwindow)
+// 	{
+// 		for(int j = 0; j < vwindows.size(); j++)
+// 		{
+// 			VWindow *vwindow = vwindows.get(j);
+// 			if(debug) printf("MWindow::create_objects %d vwindow=%p\n", 
+// 				__LINE__, 
+// 				vwindow);
+// 			if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+// 			vwindow->gui->lock_window("MWindow::create_objects 1");
+// 			if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+// 			vwindow->gui->show_window();
+// 			if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+// 			vwindow->gui->unlock_window();
+// 		}
+// 	}
+
+
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+
 	if(session->show_cwindow) 
 	{
 		cwindow->gui->lock_window("MWindow::create_objects 1");
 		cwindow->gui->show_window();
 		cwindow->gui->unlock_window();
 	}
+
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
 	if(session->show_awindow)
 	{
 		awindow->gui->lock_window("MWindow::create_objects 1");
 		awindow->gui->show_window();
 		awindow->gui->unlock_window();
 	}
-	if(session->show_lwindow) 
+
+	if(debug) printf("MWindow::create_objects %d total_time=%d\n", __LINE__, (int)timer.get_difference());
+	if(session->show_lwindow)
 	{
 		lwindow->gui->lock_window("MWindow::create_objects 1");
 		lwindow->gui->show_window();
 		lwindow->gui->unlock_window();
 	}
-	if(session->show_gwindow) 
+
+	if(debug) printf("MWindow::create_objects %d total_time=%d gwindow=%p\n", 
+		__LINE__, 
+		(int)timer.get_difference(),
+		gwindow->gui);
+	if(session->show_gwindow)
 	{
 		gwindow->gui->lock_window("MWindow::create_objects 1");
 		gwindow->gui->show_window();
@@ -1509,7 +1816,7 @@ void MWindow::hide_splash()
 void MWindow::start()
 {
 ENABLE_BUFFER
-	vwindow->start();
+//	vwindows.get(DEFAULT_VWINDOW)->start();
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
@@ -1525,12 +1832,41 @@ void MWindow::run()
 
 void MWindow::show_vwindow()
 {
+	int total_running = 0;
 	session->show_vwindow = 1;
-	vwindow->gui->lock_window("MWindow::show_vwindow");
-	vwindow->gui->show_window();
-	vwindow->gui->raise_window();
-	vwindow->gui->flush();
-	vwindow->gui->unlock_window();
+
+
+// Raise all windows which are visible
+	for(int j = 0; j < vwindows.size(); j++)
+	{
+		VWindow *vwindow = vwindows.get(j);
+		if(vwindow->is_running())
+		{
+			vwindow->gui->lock_window("MWindow::show_vwindow");
+			vwindow->gui->show_window(0);
+			vwindow->gui->raise_window();
+			vwindow->gui->flush();
+			vwindow->gui->unlock_window();
+			total_running++;
+		}
+	}
+
+//printf("MWindow::show_vwindow %d %d\n", __LINE__, vwindows.size());
+// If no windows visible but thread exists, start it
+	if(!total_running)
+	{
+		if(vwindows.size())
+		{
+			vwindows.get(DEFAULT_VWINDOW)->start();
+		}
+	}
+
+// No visible windows & no existing thread
+	if(!vwindows.size())
+	{
+		vwindows.append(new_viewer(1));
+	}
+
 	gui->mainmenu->show_vwindow->set_checked(1);
 }
 
@@ -1627,7 +1963,7 @@ int MWindow::set_editing_mode(int new_editing_mode, int lock_mwindow, int lock_c
 	edl->session->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->editing_mode = edl->session->editing_mode;
 	gui->mbuttons->edit_panel->update();
-	gui->canvas->update_cursor();
+	gui->canvas->update_cursor(1);
 	if(lock_mwindow) gui->unlock_window();
 
 
@@ -1903,7 +2239,7 @@ void MWindow::hide_keyframe_gui(Plugin *plugin)
 void MWindow::update_keyframe_guis()
 {
 // Send new configuration to keyframe GUI's
-	keyframe_gui_lock->lock("MWindow::update_plugin_guis");
+	keyframe_gui_lock->lock("MWindow::update_keyframe_guis");
 	for(int i = 0; i < keyframe_threads->size(); i++)
 	{
 		KeyFrameThread *ptr = keyframe_threads->get(i);
@@ -1937,7 +2273,39 @@ void MWindow::update_plugin_guis(int do_keyframe_guis)
 			delete_plugin(ptr);
 		}
 	}
+
+
+// Change plugin variable if not visible
+	Track *track = edl->tracks->first;
+	while(track)
+	{
+		for(int i = 0; i < track->plugin_set.size(); i++)
+		{
+			Plugin *plugin = (Plugin*)track->plugin_set.get(i)->first;
+			while(plugin)
+			{
+				int got_it = 0;
+				for(int i = 0; i < plugin_guis->size(); i++)
+				{
+					PluginServer *server = plugin_guis->get(i);
+					if(server->plugin == plugin) 
+					{
+						got_it = 1;
+						break;
+					}
+				}
+				
+				if(!got_it) plugin->show = 0;
+
+				plugin = (Plugin*)plugin->next;
+			}
+		}
+		
+		track = track->next;
+	}
+
 	plugin_gui_lock->unlock();
+
 
 	if(do_keyframe_guis) update_keyframe_guis();
 }
@@ -2154,23 +2522,47 @@ void MWindow::update_project(int load_mode)
 
 	if(debug) PRINT_TRACE
 
+// Close all the vwindows
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
 	{
-		vwindow->change_source();
+		if(debug) PRINT_TRACE
+		int first_vwindow = 0;
+		if(session->show_vwindow) first_vwindow = 1;
+// Change visible windows to no source
+		for(int i = 0; i < first_vwindow && i < vwindows.size(); i++)
+		{
+			vwindows.get(i)->change_source(0);
+		}
+
+// Close remaining windows
+		for(int i = first_vwindow; i < vwindows.size(); i++)
+		{
+			vwindows.get(i)->close_window();
+		}
+		if(debug) PRINT_TRACE
 	}
 	else
+	if(vwindows.size())
 	{
-		vwindow->gui->lock_window("MWindow::update_project");
-		vwindow->update(1);
-		vwindow->gui->unlock_window();
+		VWindow *vwindow = vwindows.get(DEFAULT_VWINDOW);
+		if(vwindow->is_running())
+		{
+			vwindow->gui->lock_window("MWindow::update_project");
+			vwindow->update(1);
+			vwindow->gui->unlock_window();
+		}
 	}
 
+	if(debug) PRINT_TRACE
 	cwindow->gui->lock_window("MWindow::update_project 2");
+#ifdef USE_SLIDER
 	cwindow->gui->slider->set_position();
-	cwindow->gui->timebar->update(1, 1);
+#endif
+	cwindow->gui->timebar->update(0);
 	cwindow->gui->unlock_window();
 
+	if(debug) PRINT_TRACE
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 		CHANGE_ALL,
 		edl,
@@ -2262,10 +2654,18 @@ void MWindow::reset_caches()
 		cwindow->playback_engine->audio_cache->remove_all();
 	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
 		cwindow->playback_engine->video_cache->remove_all();
-	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-		vwindow->playback_engine->audio_cache->remove_all();
-	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-		vwindow->playback_engine->video_cache->remove_all();
+	
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		VWindow *vwindow = vwindows.get(i);
+		if(vwindow->is_running())
+		{
+			if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+				vwindow->playback_engine->audio_cache->remove_all();
+			if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+				vwindow->playback_engine->video_cache->remove_all();
+		}
+	}
 }
 
 void MWindow::remove_asset_from_caches(Asset *asset)
@@ -2278,10 +2678,17 @@ void MWindow::remove_asset_from_caches(Asset *asset)
 		cwindow->playback_engine->audio_cache->delete_entry(asset);
 	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
 		cwindow->playback_engine->video_cache->delete_entry(asset);
-	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
-		vwindow->playback_engine->audio_cache->delete_entry(asset);
-	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
-		vwindow->playback_engine->video_cache->delete_entry(asset);
+	for(int i = 0; i < vwindows.size(); i++)
+	{
+		VWindow *vwindow = vwindows.get(i);
+		if(vwindow->is_running())
+		{
+			if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+				vwindow->playback_engine->audio_cache->delete_entry(asset);
+			if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+				vwindow->playback_engine->video_cache->delete_entry(asset);
+		}
+	}
 }
 
 
@@ -2297,21 +2704,35 @@ void MWindow::remove_assets_from_project(int push_undo)
 // Remove from VWindow.
 	for(int i = 0; i < session->drag_clips->total; i++)
 	{
-		if(session->drag_clips->values[i] == vwindow->get_edl())
+		for(int j = 0; j < vwindows.size(); j++)
 		{
-			vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
-			vwindow->remove_source();
-			vwindow->gui->unlock_window();
+			VWindow *vwindow = vwindows.get(j);
+			if(vwindow->is_running())
+			{
+				if(session->drag_clips->values[i] == vwindow->get_edl())
+				{
+					vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
+					vwindow->delete_source(1, 1);
+					vwindow->gui->unlock_window();
+				}
+			}
 		}
 	}
 	
 	for(int i = 0; i < session->drag_assets->size(); i++)
 	{
-		if(session->drag_assets->get(i) == vwindow->get_source())
+		for(int j = 0; j < vwindows.size(); j++)
 		{
-			vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
-			vwindow->remove_source();
-			vwindow->gui->unlock_window();
+			VWindow *vwindow = vwindows.get(j);
+			if(vwindow->is_running())
+			{
+				if(session->drag_assets->get(i) == vwindow->get_source())
+				{
+					vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
+					vwindow->delete_source(1, 1);
+					vwindow->gui->unlock_window();
+				}
+			}
 		}
 	}
 	
@@ -2356,10 +2777,12 @@ void MWindow::dump_plugins()
 {
 	for(int i = 0; i < plugindb->total; i++)
 	{
-		printf("audio=%d video=%d realtime=%d transition=%d theme=%d %s\n",
+		printf("audio=%d video=%d rt=%d multi=%d synth=%d transition=%d theme=%d %s\n",
 			plugindb->values[i]->audio,
 			plugindb->values[i]->video,
 			plugindb->values[i]->realtime,
+			plugindb->values[i]->multichannel,
+			plugindb->values[i]->get_synthesis(),
 			plugindb->values[i]->transition,
 			plugindb->values[i]->theme,
 			plugindb->values[i]->title);
@@ -2396,6 +2819,12 @@ int MWindow::save_defaults()
 	edl->save_defaults(defaults);
 	session->save_defaults(defaults);
 	preferences->save_defaults(defaults);
+
+	for(int i = 0; i < plugin_guis->total; i++)
+	{
+// Pointer comparison
+		plugin_guis->values[i]->save_defaults();
+	}
 
 	defaults->save();
 	return 0;
@@ -2559,9 +2988,16 @@ int MWindow::reset_meters()
 	cwindow->gui->meters->reset_meters();
 	cwindow->gui->unlock_window();
 
-	vwindow->gui->lock_window("MWindow::reset_meters 2");
-	vwindow->gui->meters->reset_meters();
-	vwindow->gui->unlock_window();
+	for(int j = 0; j < vwindows.size(); j++)
+	{
+		VWindow *vwindow = vwindows.get(j);
+		if(vwindow->is_running())
+		{
+			vwindow->gui->lock_window("MWindow::reset_meters 2");
+			vwindow->gui->meters->reset_meters();
+			vwindow->gui->unlock_window();
+		}
+	}
 
 	lwindow->gui->lock_window("MWindow::reset_meters 3");
 	lwindow->gui->panel->reset_meters();

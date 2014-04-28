@@ -77,10 +77,10 @@ public:
 	MotionWindow *gui;
 };
 
-class Mode3 : public BC_PopupMenu
+class TrackingDirection : public BC_PopupMenu
 {
 public:
-	Mode3(MotionMain2 *plugin, MotionWindow *gui, int x, int y);
+	TrackingDirection(MotionMain2 *plugin, MotionWindow *gui, int x, int y);
 	int handle_event();
 	void create_objects();
 	static int calculate_w(MotionWindow *gui);
@@ -295,7 +295,7 @@ public:
 	MasterLayer *master_layer;
 	Action *action;
 	Calculation *calculation;
-	Mode3 *mode3;
+	TrackingDirection *tracking_direction;
 
 	MotionMain2 *plugin;
 };

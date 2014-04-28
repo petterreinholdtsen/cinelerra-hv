@@ -49,7 +49,7 @@ public:
 	~MWindowGUI();
 
 	void create_objects();
-	void get_scrollbars();
+	void get_scrollbars(int flush);
 
 // ======================== event handlers
 

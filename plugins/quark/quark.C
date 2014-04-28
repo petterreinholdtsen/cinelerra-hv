@@ -43,7 +43,6 @@ SharpenMain::SharpenMain(PluginServer *server)
 {
 	sharpness = 0;
 	thread = 0;
-	load_defaults();
 }
 
 SharpenMain::~SharpenMain()
@@ -56,8 +55,6 @@ SharpenMain::~SharpenMain()
 		delete thread;
 	}
 
-	save_defaults();
-	delete defaults;
 }
 
 char* SharpenMain::plugin_title() { return N_("Quark"); }
@@ -150,32 +147,6 @@ void SharpenMain::raise_window()
 	}
 }
 
-int SharpenMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%squark.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	sharpness = defaults->get("SHARPNESS", 50);
-	interlace = defaults->get("INTERLACE", 0);
-	horizontal = defaults->get("HORIZONTAL", 0);
-	luminance = defaults->get("LUMINANCE", 0);
-	return 0;
-}
-
-int SharpenMain::save_defaults()
-{
-	defaults->update("SHARPNESS", sharpness);
-	defaults->update("INTERLACE", interlace);
-	defaults->update("HORIZONTAL", horizontal);
-	defaults->update("LUMINANCE", luminance);
-	defaults->save();
-	return 0;
-}
 
 void SharpenMain::load_configuration()
 {

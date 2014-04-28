@@ -108,7 +108,9 @@ public:
 		int data_allocated);
 
 // Read a PNG into the frame with alpha
-	int read_png(unsigned char *data);
+	int read_png(const unsigned char *data);
+// Write a PNG for debugging
+	int write_png(const char *path);
 
 // if frame points to the same data as this return 1
 	int equals(VFrame *frame);
@@ -413,7 +415,8 @@ private:
 
 // Data pointer is pointing to someone else's buffer.
 //	long shm_offset;
-// ID of shared memory if using IPC
+// ID of shared memory if using IPC.
+// The 1st 1 after reboot is 0.
 	int shmid;
 // Local setting for shm usage
 	int use_shm;
@@ -438,7 +441,7 @@ private:
 // Dimensions of frame
 	int w, h;
 // Info for reading png images
-	unsigned char *image;
+	const unsigned char *image;
 	long image_offset;
 	long image_size;
 // For writing discontinuous frames in background rendering

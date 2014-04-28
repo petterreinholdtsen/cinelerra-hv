@@ -395,8 +395,7 @@ void FLACConfigAudio::create_objects()
 	bits_popup->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
-	show_window();
-	flush();
+	show_window(1);
 	unlock_window();
 }
 

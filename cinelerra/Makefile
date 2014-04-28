@@ -83,6 +83,8 @@ OBJS = \
 	$(OBJDIR)/channelpicker.o \
 	$(OBJDIR)/chantables.o \
 	$(OBJDIR)/clipedit.o \
+	$(OBJDIR)/cicolors.o \
+	$(OBJDIR)/colorpicker.o \
 	$(OBJDIR)/commonrender.o \
 	$(OBJDIR)/confirmsave.o \
 	$(OBJDIR)/confirmquit.o \
@@ -140,6 +142,7 @@ OBJS = \
 	$(OBJDIR)/formatpresets.o \
 	$(OBJDIR)/formatpopup.o \
 	$(OBJDIR)/formattools.o \
+	$(OBJDIR)/fourier.o \
 	$(OBJDIR)/framecache.o \
 	$(OBJDIR)/garbage.o \
 	$(OBJDIR)/gwindow.o \
@@ -239,6 +242,7 @@ OBJS = \
 	$(OBJDIR)/recordlabel.o \
 	$(OBJDIR)/recordmonitor.o \
 	$(OBJDIR)/recordprefs.o \
+	$(OBJDIR)/recordscopes.o \
 	$(OBJDIR)/recordthread.o \
 	$(OBJDIR)/recordtransport.o \
 	$(OBJDIR)/recordvideo.o \
@@ -256,6 +260,7 @@ OBJS = \
 	$(OBJDIR)/samplescroll.o \
 	$(OBJDIR)/savefile.o \
 	$(OBJDIR)/scenegraph.o \
+	$(OBJDIR)/scopewindow.o \
 	$(OBJDIR)/setformat.o \
 	$(OBJDIR)/sharedlocation.o \
 	$(OBJDIR)/shmemory.o \
@@ -400,6 +405,7 @@ LIBS += -lXft
 endif
 
 CFLAGS += \
+	-c \
 	-I../guicast \
 	-I../quicktime \
 	-I$(JPEG_DIR) \
@@ -489,7 +495,7 @@ $(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(FFMPEG_OBJS) 
 # Static linking is not possible because the plugins depend on symbols
 # in the main executable.
 # Also VFS only overrides the C library when dynamic linking is used.
-$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(THEME_DATA) $(SNDFILE_LIB)
+$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(THEME_DATA) $(SNDFILE_LIB) ../guicast/$(OBJDIR)/libguicast.a
 	$(LINKER) `cat $(OBJDIR)/objs`
 	strip $(OUTPUT)
 
@@ -524,19 +530,19 @@ wc:
 
 
 $(LIBOBJS) $(OBJS):
-	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(FILEEXR): fileexr.C
-	$(CC) -c `cat $(OBJDIR)/c_flags` $(EXR_INCLUDES) $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) `cat $(OBJDIR)/c_flags` $(EXR_INCLUDES) $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(FILEFLAC): fileflac.C
-	$(CC) -c `cat $(OBJDIR)/c_flags` -I$(FLAC_DIR)/include $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) `cat $(OBJDIR)/c_flags` -I$(FLAC_DIR)/include $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(FFMPEG_OBJS):
-	$(CC) -c `cat $(OBJDIR)/ffmpeg_cflags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) `cat $(OBJDIR)/ffmpeg_cflags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
 
 $(DCRAW): dcraw.c
-	$(GCC) -c `cat $(OBJDIR)/c_flags` dcraw.c -o $*.o
+	$(GCC) `cat $(OBJDIR)/c_flags` dcraw.c -o $*.o
 
 $(THEME_DATA):
 	cd $(OBJDIR) && \
@@ -601,6 +607,8 @@ $(OBJDIR)/channeledit.o: 			  channeledit.C
 $(OBJDIR)/channelpicker.o: 			  channelpicker.C
 $(OBJDIR)/chantables.o: 			  chantables.C
 $(OBJDIR)/clipedit.o: 			  	  clipedit.C
+$(OBJDIR)/cicolors.o:                             cicolors.C
+$(OBJDIR)/colorpicker.o:                          colorpicker.C
 $(OBJDIR)/commonrender.o: 			  commonrender.C
 $(OBJDIR)/confirmsave.o: 			  confirmsave.C
 $(OBJDIR)/confirmquit.o: 			  confirmquit.C
@@ -665,6 +673,7 @@ $(OBJDIR)/formatcheck.o: 			  formatcheck.C
 $(OBJDIR)/formatpopup.o: 			  formatpopup.C
 $(OBJDIR)/formatpresets.o:                        formatpresets.C
 $(OBJDIR)/formattools.o: 			  formattools.C
+$(OBJDIR)/fourier.o:                              fourier.C
 $(OBJDIR)/framecache.o:                           framecache.C
 $(OBJDIR)/garbage.o:                              garbage.C
 $(OBJDIR)/gwindow.o:                              gwindow.C
@@ -770,6 +779,7 @@ $(OBJDIR)/recordlabel.o: 			  recordlabel.C
 $(OBJDIR)/recordmonitor.o: 			  recordmonitor.C
 $(OBJDIR)/recordprefs.o:                          recordprefs.C
 $(OBJDIR)/recordpreview.o: 			  recordpreview.C
+$(OBJDIR)/recordscopes.o: 			  recordscopes.C
 $(OBJDIR)/recordthread.o: 			  recordthread.C
 $(OBJDIR)/recordtransport.o: 			  recordtransport.C
 $(OBJDIR)/recordvideo.o: 			  recordvideo.C
@@ -788,6 +798,7 @@ $(OBJDIR)/resourcethread.o:                       resourcethread.C
 $(OBJDIR)/samples.o: 			          samples.C
 $(OBJDIR)/samplescroll.o: 			  samplescroll.C
 $(OBJDIR)/savefile.o: 				  savefile.C
+$(OBJDIR)/scopewindow.o:                          scopewindow.C
 $(OBJDIR)/scenegraph.o:                           scenegraph.C
 $(OBJDIR)/setformat.o:                            setformat.C
 $(OBJDIR)/sharedlocation.o: 			  sharedlocation.C

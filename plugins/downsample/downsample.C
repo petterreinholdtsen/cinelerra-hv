@@ -120,8 +120,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -448,41 +446,6 @@ void DownSampleMain::update_gui()
 }
 
 
-int DownSampleMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sdownsample.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
-	config.vertical = defaults->get("VERTICAL", config.vertical);
-	config.horizontal_x = defaults->get("HORIZONTAL_X", config.horizontal_x);
-	config.vertical_y = defaults->get("VERTICAL_Y", config.vertical_y);
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
-	return 0;
-}
-
-
-int DownSampleMain::save_defaults()
-{
-	defaults->update("HORIZONTAL", config.horizontal);
-	defaults->update("VERTICAL", config.vertical);
-	defaults->update("HORIZONTAL_X", config.horizontal_x);
-	defaults->update("VERTICAL_Y", config.vertical_y);
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
-	defaults->save();
-	return 0;
-}
 
 
 

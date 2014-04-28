@@ -180,6 +180,8 @@ int Track::is_synthesis(int64_t position,
 			else
 				is_synthesis = plugin->is_synthesis(position, 
 					direction);
+
+//printf("Track::is_synthesis %d %d\n", __LINE__, is_synthesis);
 			if(is_synthesis) break;
 		}
 	}
@@ -659,12 +661,12 @@ void Track::resample(double old_rate, double new_rate)
 
 void Track::detach_shared_effects(int module)
 {
-	for(int i = 0; i < plugin_set.total; i++)
+	for(int i = 0; i < plugin_set.size(); i++)
 	{
-		PluginSet *plugin_set = this->plugin_set.values[i];
+		PluginSet *plugin_set = this->plugin_set.get(i);
 		for(Plugin *dest = (Plugin*)plugin_set->first; 
 			dest; 
-			dest = (Plugin*)dest->next)
+			)
 		{
 			if ((dest->plugin_type == PLUGIN_SHAREDPLUGIN ||
 				dest->plugin_type == PLUGIN_SHAREDMODULE)
@@ -677,14 +679,18 @@ void Track::detach_shared_effects(int module)
 				plugin_set->clear(start, end);
 				plugin_set->paste_silence(start, end);
 
-// Delete 0 length pluginsets	
+// Delete 0 length pluginsets
 				plugin_set->optimize();
 				if(!plugin_set->length())  
 				{
 					this->plugin_set.remove_object_number(i);
+					dest = 0;
 					--i;
 				}
+				
 			}
+
+			if(dest) dest = (Plugin*)dest->next;
 		}
 	}
 }
@@ -1673,10 +1679,10 @@ int Track::plugin_used(int64_t position, int64_t direction)
 			0,
 			0);
 
-//printf("Track::plugin_used 2 %p\n", current_plugin);
+//printf("Track::plugin_used 2 %p %d %d\n", current_plugin, current_plugin->on, current_plugin->plugin_type);
 		if(current_plugin && 
-			(current_plugin->on && 
-			current_plugin->plugin_type != PLUGIN_NONE))
+			current_plugin->on && 
+			current_plugin->plugin_type != PLUGIN_NONE)
 		{
 			return 1;
 		}

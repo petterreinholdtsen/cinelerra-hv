@@ -1,7 +1,6 @@
 include ../../global_config
 
-OBJS = ../parametric/$(OBJDIR)/fourier.o \
-	$(OBJDIR)/denoisefft.o
+OBJS = $(OBJDIR)/denoisefft.o
 
 OUTPUT = $(PLUGIN_DIR)/denoisefft.plugin
 

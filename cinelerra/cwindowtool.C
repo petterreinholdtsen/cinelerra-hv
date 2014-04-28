@@ -46,7 +46,6 @@
 #include "trackcanvas.h"
 #include "transportque.h"
 
-#define SQR(x) ((x) * (x))
 
 CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
  : Thread()
@@ -481,8 +480,8 @@ CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
  : CWindowToolGUI(mwindow, 
  	thread,
 	PROGRAM_NAME ": Color",
-	150,
-	150)
+	200,
+	200)
 {
 }
 
@@ -492,23 +491,35 @@ CWindowEyedropGUI::~CWindowEyedropGUI()
 
 void CWindowEyedropGUI::create_objects()
 {
-	int x = 10;
-	int y = 10;
+	int margin = mwindow->theme->widget_border;
+	int x = margin;
+	int y = margin;
 	int x2 = 70;
 	lock_window("CWindowEyedropGUI::create_objects");
-	BC_Title *title1, *title2, *title3;
+	BC_Title *title1, *title2, *title3, *title4;
+	add_subwindow(title4 = new BC_Title(x, y, "Radius:"));
+	y += BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1) + margin;
+	
 	add_subwindow(title1 = new BC_Title(x, y, "Red:"));
-	y += title1->get_h() + 5;
+	y += title1->get_h() + margin;
 	add_subwindow(title2 = new BC_Title(x, y, "Green:"));
-	y += title2->get_h() + 5;
+	y += title2->get_h() + margin;
 	add_subwindow(title3 = new BC_Title(x, y, "Blue:"));
+
+
+	radius = new CWindowCoord(this,
+		x2,
+		title4->get_y(),
+		mwindow->edl->session->eyedrop_radius);
+	radius->create_objects();
+	radius->set_boundaries((int64_t)0, (int64_t)255);
 
 
 	add_subwindow(red = new BC_Title(x2, title1->get_y(), "0"));
 	add_subwindow(green = new BC_Title(x2, title2->get_y(), "0"));
 	add_subwindow(blue = new BC_Title(x2, title3->get_y(), "0"));
 
-	y = blue->get_y() + blue->get_h() + 5;
+	y = blue->get_y() + blue->get_h() + margin;
 	add_subwindow(sample = new BC_SubWindow(x, y, 50, 50));
 	update();
 	unlock_window();
@@ -516,6 +527,8 @@ void CWindowEyedropGUI::create_objects()
 
 void CWindowEyedropGUI::update()
 {
+	radius->update((int64_t)mwindow->edl->session->eyedrop_radius);
+
 	red->update(mwindow->edl->local_session->red);
 	green->update(mwindow->edl->local_session->green);
 	blue->update(mwindow->edl->local_session->blue);
@@ -528,6 +541,32 @@ void CWindowEyedropGUI::update()
 	sample->set_color(BLACK);
 	sample->draw_rectangle(0, 0, sample->get_w(), sample->get_h());
 	sample->flash();
+}
+
+void CWindowEyedropGUI::handle_event()
+{
+	int new_radius = atoi(radius->get_text());
+	if(new_radius != mwindow->edl->session->eyedrop_radius)
+	{
+		CWindowGUI *gui = mwindow->cwindow->gui;
+		if(gui->eyedrop_visible)
+		{
+			gui->lock_window("CWindowEyedropGUI::handle_event");
+// hide it
+			int rerender;
+			gui->canvas->do_eyedrop(rerender, 0, 1);
+		}
+
+		mwindow->edl->session->eyedrop_radius = new_radius;
+
+		if(gui->eyedrop_visible)
+		{
+// draw it
+			int rerender;
+			gui->canvas->do_eyedrop(rerender, 0, 1);
+			gui->unlock_window();
+		}
+	}
 }
 
 
@@ -580,6 +619,8 @@ void CWindowCameraGUI::create_objects()
 		y, 
 		x_auto ? x_auto->value : (float)0);
 	this->x->create_objects();
+
+	
 	y += 30;
 	x = 10;
 	add_subwindow(title = new BC_Title(x, y, _("Y:")));
@@ -598,6 +639,7 @@ void CWindowCameraGUI::create_objects()
 		y, 
 		z_auto ? z_auto->value : (float)1);
 	this->z->create_objects();
+	this->z->set_increment(0.01);
 
 	y += 30;
 	x1 = 10;
@@ -1052,6 +1094,7 @@ void CWindowProjectorGUI::create_objects()
 		y, 
 		z_auto ? z_auto->value : (float)1);
 	this->z->create_objects();
+	this->z->set_increment(0.01);
 
 	y += 30;
 	x1 = 10;

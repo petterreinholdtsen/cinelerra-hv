@@ -21,6 +21,7 @@
 
 #include "autos.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "ctracking.h"
@@ -224,9 +225,11 @@ void CWindow::update(int position,
 
 	if(position)
 	{
+#ifdef USE_SLIDER
 		gui->lock_window("CWindow::update 1");
 		gui->slider->set_position();
 		gui->unlock_window();
+#endif
 
 		playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,
@@ -259,7 +262,7 @@ void CWindow::update(int position,
 
 	if(timebar)
 	{
-		gui->timebar->update(1, 1);
+		gui->timebar->update(1);
 	}
 
 	if(!mwindow->edl->session->cwindow_scrollbars)
@@ -285,5 +288,34 @@ void CWindow::update(int position,
 
 
 }
+
+
+
+
+int CWindow::update_position(double position)
+{
+	gui->unlock_window();
+
+	playback_engine->interrupt_playback(1);
+	
+	position = mwindow->edl->align_to_frame(position, 0);
+	position = MAX(0, position);
+
+	mwindow->gui->lock_window("CWindowSlider::handle_event 2");
+	mwindow->select_point(position);
+	mwindow->gui->unlock_window();
+
+	gui->lock_window("CWindow::update_position 1");
+	return 1;
+}
+
+
+
+
+
+
+
+
+
 
 

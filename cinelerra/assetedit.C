@@ -44,6 +44,7 @@
 #include "mwindowgui.h"
 #include "new.h"
 #include "preferences.h"
+#include "theme.h"
 #include "transportque.h"
 
 #include <string.h>
@@ -287,7 +288,7 @@ void AssetEditWindow::create_objects()
 		add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb, 
 				asset->format), 
 			MEDIUMFONT, 
-			YELLOW));
+			mwindow->theme->assetedit_color));
 		x = x1;
 		y += 20;
 
@@ -303,11 +304,11 @@ void AssetEditWindow::create_objects()
 			bytes = fs.get_size(asset->path);
 		}
 		add_subwindow(new BC_Title(x, y, _("Bytes:")));
-		sprintf(string, "%lld", bytes);
+		sprintf(string, "%lld", (long long)bytes);
 		Units::punctuate(string);
 	
 
-		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
+		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 		y += 20;
 		x = x1;
 
@@ -322,10 +323,10 @@ void AssetEditWindow::create_objects()
 		else
 			bitrate = bytes;
 		add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
-		sprintf(string, "%lld", bitrate);
+		sprintf(string, "%lld", (long long)bitrate);
 
 		Units::punctuate(string);
-		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, YELLOW));
+		add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 
 		y += 30;
 		x = x1;
@@ -350,7 +351,7 @@ void AssetEditWindow::create_objects()
 					y, 
 					asset->get_compression_text(1, 0), 
 					MEDIUMFONT, 
-					YELLOW));
+					mwindow->theme->assetedit_color));
 				y += vmargin;
 				x = x1;
 			}
@@ -371,7 +372,7 @@ void AssetEditWindow::create_objects()
 		}
 		else
 		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 			y += 20;
 		}
 
@@ -389,7 +390,7 @@ void AssetEditWindow::create_objects()
 		}
 		else
 		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 		}
 
 		y += 30;
@@ -413,7 +414,7 @@ void AssetEditWindow::create_objects()
 				bitspopup->create_objects();
 			}
 			else
-				add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, YELLOW));
+				add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, mwindow->theme->assetedit_color));
 
 
 			x = x1;
@@ -425,7 +426,7 @@ void AssetEditWindow::create_objects()
 			if(allow_edits)
 				add_subwindow(new AssetEditHeader(this, string, x, y));
 			else
-				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 
 			y += vmargin;
 			x = x1;
@@ -451,9 +452,9 @@ void AssetEditWindow::create_objects()
 			{
 				x = x2;
 				if(asset->byte_order)
-					add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, YELLOW));
+					add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, mwindow->theme->assetedit_color));
 				else
-					add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, YELLOW));
+					add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, mwindow->theme->assetedit_color));
 				y += vmargin;
 			}
 
@@ -495,7 +496,7 @@ void AssetEditWindow::create_objects()
 				y, 
 				asset->get_compression_text(0,1), 
 				MEDIUMFONT, 
-				YELLOW));
+				mwindow->theme->assetedit_color));
 			y += vmargin;
 			x = x1;
 		}
@@ -514,7 +515,7 @@ void AssetEditWindow::create_objects()
 		}
 		else
 		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 		}
 
 		y += 30;
@@ -522,14 +523,14 @@ void AssetEditWindow::create_objects()
 		add_subwindow(new BC_Title(x, y, _("Width:")));
 		x = x2;
 		sprintf(string, "%d", asset_edit->changed_params->width);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 
 		y += vmargin;
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Height:")));
 		x = x2;
 		sprintf(string, "%d", asset_edit->changed_params->height);
-		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 		y += title->get_h() + 5;
 
 		if(asset && asset->format == FILE_MPEG)
@@ -538,7 +539,7 @@ void AssetEditWindow::create_objects()
 			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
 			x = x2;
 			sprintf(string, "%d", subtitle_tracks);
-			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->assetedit_color));
 			y += title->get_h() + 5;
 		}
 	}

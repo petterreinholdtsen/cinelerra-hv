@@ -125,12 +125,10 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int load_configuration();
-	int load_defaults();
 	VFrame* new_picon();
 	char* plugin_title();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int save_defaults();
 	int show_gui();
 	void raise_window();
 	int set_string();
@@ -168,7 +166,6 @@ public:
 
 	double *dsp_buffer;
 	int need_reconfigure;
-	BC_Hash *defaults;
 	PianoThread *thread;
 	PianoConfig config;
 	int w, h;

@@ -1,9 +1,7 @@
 include ../../global_config
 
 OBJS = \
-	../colors/$(OBJDIR)/colorpicker.o \
-	$(OBJDIR)/gradient.o \
-	../colors/$(OBJDIR)/plugincolors.o
+	$(OBJDIR)/gradient.o
 
 OUTPUT = $(PLUGIN_DIR)/gradient.plugin
 

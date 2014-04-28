@@ -35,8 +35,10 @@
 
 #include <string.h>
 
-
+// FFT window size
 #define WINDOW_SIZE 4096
+// Time stretch window time
+#define WINDOW_TIME 40
 #define INPUT_SIZE 65536
 
 
@@ -77,6 +79,7 @@ int TimeStretchFreq::handle_event()
 	plugin->use_fft = 1;
 	update(1);
 	gui->time->update(0);
+	return 1;
 }
 
 
@@ -99,6 +102,7 @@ int TimeStretchTime::handle_event()
 	plugin->use_fft = 0;
 	update(1);
 	gui->freq->update(0);
+	return 1;
 }
 
 
@@ -392,7 +396,9 @@ int TimeStretch::start_loop()
 // The windowing case
 	{
 // Must be short enough to mask beating but long enough to mask humming.
-		stretch = new TimeStretchEngine(scale, PluginAClient::project_sample_rate);
+		stretch = new TimeStretchEngine(scale, 
+			PluginAClient::project_sample_rate,
+			WINDOW_TIME);
 	}
 
 

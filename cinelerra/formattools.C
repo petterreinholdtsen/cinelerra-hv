@@ -283,6 +283,9 @@ void FormatTools::update_driver(int driver)
 
 		case CAPTURE_IEC61883:
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_BUZ:
+		case VIDEO4LINUX2JPEG:
+		case CAPTURE_JPEG_WEBCAM:
 			if(asset->format != FILE_AVI &&
 				asset->format != FILE_MOV)
 			{
@@ -291,26 +294,34 @@ void FormatTools::update_driver(int driver)
 			}
 			else
 				format_text->update(File::formattostr(asset->format));
-			locked_compressor = (char*)QUICKTIME_DVSD;
-			strcpy(asset->vcodec, QUICKTIME_DVSD);
+
+			switch(driver)
+			{
+				case CAPTURE_IEC61883:
+				case CAPTURE_FIREWIRE:
+					locked_compressor = (char*)QUICKTIME_DVSD;
+					strcpy(asset->vcodec, QUICKTIME_DVSD);
+					break;
+
+				case CAPTURE_BUZ:
+				case VIDEO4LINUX2JPEG:
+					locked_compressor = (char*)QUICKTIME_MJPA;
+					strcpy(asset->vcodec, QUICKTIME_MJPA);
+					break;
+
+				case CAPTURE_JPEG_WEBCAM:
+					locked_compressor = (char*)QUICKTIME_JPEG;
+					strcpy(asset->vcodec, QUICKTIME_JPEG);
+					break;
+			}
+
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
 			break;
 
-		case CAPTURE_BUZ:
-		case VIDEO4LINUX2JPEG:
-			if(asset->format != FILE_AVI &&
-				asset->format != FILE_MOV)
-			{
-				format_text->update(MOV_NAME);
-				asset->format = FILE_MOV;
-			}
-			else
-				format_text->update(File::formattostr(asset->format));
-			locked_compressor = (char*)QUICKTIME_MJPA;
-			audio_switch->update(asset->audio_data);
-			video_switch->update(asset->video_data);
-			break;
+
+
+
 
 		default:
 			format_text->update(File::formattostr(asset->format));

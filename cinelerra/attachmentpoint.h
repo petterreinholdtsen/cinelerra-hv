@@ -71,8 +71,8 @@ public:
 // all virtual plugins attached to this must be waiting for a render
 //	int sort(VirtualNode *virtual_plugin);
 // Called by plugin server to render GUI with data.
-	void render_gui(void *data);
-	void render_gui(void *data, int size);
+	void render_gui(void *data, PluginServer *server);
+	void render_gui(void *data, int size, PluginServer *server);
 	int gui_open();
 	virtual int get_buffer_size() { return 0; };
 

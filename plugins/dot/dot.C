@@ -87,15 +87,6 @@ NEW_PICON_MACRO(DotMain)
 NEW_WINDOW_MACRO(DotMain, DotWindow)
 
 
-int DotMain::load_defaults()
-{
-	return 0;
-}
-
-int DotMain::save_defaults()
-{
-	return 0;
-}
 
 int DotMain::load_configuration()
 {

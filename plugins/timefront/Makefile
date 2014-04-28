@@ -1,7 +1,6 @@
 include ../../global_config
 
-OBJS = $(OBJDIR)/timefront.o \
-	../colors/$(OBJDIR)/plugincolors.o
+OBJS = $(OBJDIR)/timefront.o
 
 OUTPUT = $(PLUGIN_DIR)/timefront.plugin
 

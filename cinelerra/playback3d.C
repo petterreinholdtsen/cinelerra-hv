@@ -1286,9 +1286,6 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 					points->values[0] : 
 					points->values[i + 1];
 
-#ifndef SQR
-#define SQR(x) ((x) * (x))
-#endif
 
 // This is very slow.
 				float x, y;

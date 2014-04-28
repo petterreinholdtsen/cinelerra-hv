@@ -1,0 +1,800 @@
+Script started on Fri 22 Oct 2010 12:40:05 AM PDT
+]0;root@heroine:~/hvirtual/quicktime[?1034hheroine:/root/hvirtual/quicktime% x86_64/mts2mp4 ~/Azureus\ Downloads/Alice.in.W onderland.2010.Blu-Ray.1080p.h264.DTS-HD/Alice.in.Wonderland.2010.Blu-Ray.1080p. h264.DTS-HD.m2ts /hmov/alice_in_wonderland.mp4
+main 515: Opening source /root/Azureus Downloads/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD.m2ts
+main 536: Decoding encoding parameters
+main 572: Transcoding
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000000
+write_frame 164 pass=0 96162
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 96162
+write_frame 145: test000001
+write_frame 164 pass=0 77550
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 77550
+write_frame 145: test000002
+write_frame 164 pass=0 44863
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 44863
+write_frame 145: test000003
+write_frame 164 pass=0 85129
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 85129
+write_frame 145: test000004
+write_frame 164 pass=0 64966
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 64966
+write_frame 145: test000005
+write_frame 164 pass=0 40853
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 40853
+write_frame 145: test000006
+write_frame 164 pass=0 86474
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 86474
+write_frame 145: test000007
+write_frame 164 pass=0 61905
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 61905
+write_frame 145: test000008
+write_frame 164 pass=0 40138
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 40138
+write_frame 145: test000009
+write_frame 164 pass=0 86983
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 86983
+write_frame 145: test000010
+write_frame 164 pass=0 62559
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 62559
+write_frame 145: test000011
+write_frame 164 pass=0 41271
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 41271
+write_frame 145: test000012
+write_frame 164 pass=0 84861
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 84861
+write_frame 145: test000013
+write_frame 164 pass=0 62259
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 62259
+write_frame 145: test000014
+write_frame 164 pass=0 36853
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 36853
+write_frame 145: test000015
+write_frame 164 pass=0 158627
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 158627
+write_frame 145: test000016
+write_frame 164 pass=0 53719
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 53719
+write_frame 145: test000017
+write_frame 164 pass=0 45063
+[h264 @ 0x1b99950]non-existing SPS 32 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 45063
+write_frame 145: test000018
+write_frame 164 pass=0 83218
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 83218
+write_frame 145: test000019
+write_frame 164 pass=0 61145
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 61145
+write_frame 145: test000020
+write_frame 164 pass=0 36713
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing PPS referenced
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 36713
+write_frame 145: test000021
+write_frame 164 pass=0 75599
+[h264 @ 0x1b99950]non-existing SPS 31 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]no frame!
+write_frame 180 75599
+write_frame 145: test000022
+write_frame 164 pass=0 50791
+[h264 @ 0x1b99950]non-existing SPS 0 referenced in buffering period
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]B picture before any references, skipping
+[h264 @ 0x1b99950]decode_slice_header error
+[h264 @ 0x1b99950]number of reference frames exceeds max (probably corrupt input), discarding one
+    Last message repeated 10 times
+[h264 @ 0x1b99950]error while decoding MB 100 6, bytestream (-4)
+[h264 @ 0x1b99950]concealing 7389 DC, 7389 AC, 7389 MV errors
+write_frame 180 50791
+/root/Azureus Downloads/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD/Alice.in.Wonderland.2010.Blu-Ray.1080p.h264.DTS-HD.m2ts format:
+width=1920
+height=1080
+framerate=23.976024
+samplerate=48000
+channels=0
+write_frame 145: test000023
+write_frame 289: video_eof=0 frames_written=1         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000024
+write_frame 289: video_eof=0 frames_written=2         
+write_frame 145: test000025
+write_frame 289: video_eof=0 frames_written=3         
+write_frame 145: test000026
+write_frame 289: video_eof=0 frames_written=4         
+write_frame 145: test000027
+write_frame 289: video_eof=0 frames_written=5         
+write_frame 145: test000028
+write_frame 289: video_eof=0 frames_written=6         
+write_frame 145: test000029
+write_frame 289: video_eof=0 frames_written=7         
+write_frame 145: test000030
+write_frame 289: video_eof=0 frames_written=8         
+write_frame 145: test000031
+write_frame 289: video_eof=0 frames_written=9         
+write_frame 145: test000032
+write_frame 289: video_eof=0 frames_written=10         
+write_frame 145: test000033
+write_frame 289: video_eof=0 frames_written=11         
+write_frame 145: test000034
+write_frame 289: video_eof=0 frames_written=12         
+write_frame 145: test000035
+write_frame 289: video_eof=0 frames_written=13         
+write_frame 145: test000036
+write_frame 289: video_eof=0 frames_written=14         
+write_frame 145: test000037
+write_frame 289: video_eof=0 frames_written=15         
+write_frame 145: test000038
+write_frame 289: video_eof=0 frames_written=16         
+write_frame 145: test000039
+write_frame 289: video_eof=0 frames_written=17         
+write_frame 145: test000040
+write_frame 289: video_eof=0 frames_written=18         
+write_frame 145: test000041
+write_frame 289: video_eof=0 frames_written=19         
+write_frame 145: test000042
+write_frame 289: video_eof=0 frames_written=20         
+write_frame 145: test000043
+write_frame 289: video_eof=0 frames_written=21         
+write_frame 145: test000044
+write_frame 289: video_eof=0 frames_written=22         
+write_frame 145: test000045
+write_frame 289: video_eof=0 frames_written=23         
+write_frame 145: test000046
+write_frame 289: video_eof=0 frames_written=24         
+write_frame 145: test000047
+write_frame 289: video_eof=0 frames_written=25         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000048
+write_frame 289: video_eof=0 frames_written=26         
+write_frame 145: test000049
+write_frame 289: video_eof=0 frames_written=27         
+write_frame 145: test000050
+write_frame 289: video_eof=0 frames_written=28         
+write_frame 145: test000051
+write_frame 289: video_eof=0 frames_written=29         
+write_frame 145: test000052
+write_frame 289: video_eof=0 frames_written=30         
+write_frame 145: test000053
+write_frame 289: video_eof=0 frames_written=31         
+write_frame 145: test000054
+write_frame 289: video_eof=0 frames_written=32         
+write_frame 145: test000055
+write_frame 289: video_eof=0 frames_written=33         
+write_frame 145: test000056
+write_frame 289: video_eof=0 frames_written=34         
+write_frame 145: test000057
+write_frame 289: video_eof=0 frames_written=35         
+write_frame 145: test000058
+write_frame 289: video_eof=0 frames_written=36         
+write_frame 145: test000059
+write_frame 289: video_eof=0 frames_written=37         
+write_frame 145: test000060
+write_frame 289: video_eof=0 frames_written=38         
+write_frame 145: test000061
+write_frame 289: video_eof=0 frames_written=39         
+write_frame 145: test000062
+write_frame 289: video_eof=0 frames_written=40         
+write_frame 145: test000063
+write_frame 289: video_eof=0 frames_written=41         
+write_frame 145: test000064
+write_frame 289: video_eof=0 frames_written=42         
+write_frame 145: test000065
+write_frame 289: video_eof=0 frames_written=43         
+write_frame 145: test000066
+write_frame 289: video_eof=0 frames_written=44         
+write_frame 145: test000067
+write_frame 289: video_eof=0 frames_written=45         
+write_frame 145: test000068
+write_frame 289: video_eof=0 frames_written=46         
+write_frame 145: test000069
+write_frame 289: video_eof=0 frames_written=47         
+write_frame 145: test000070
+write_frame 289: video_eof=0 frames_written=48         
+write_frame 145: test000071
+write_frame 289: video_eof=0 frames_written=49         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000072
+write_frame 289: video_eof=0 frames_written=50         
+write_frame 145: test000073
+write_frame 289: video_eof=0 frames_written=51         
+write_frame 145: test000074
+write_frame 289: video_eof=0 frames_written=52         
+write_frame 145: test000075
+write_frame 289: video_eof=0 frames_written=53         
+write_frame 145: test000076
+write_frame 289: video_eof=0 frames_written=54         
+write_frame 145: test000077
+write_frame 289: video_eof=0 frames_written=55         
+write_frame 145: test000078
+write_frame 289: video_eof=0 frames_written=56         
+write_frame 145: test000079
+write_frame 289: video_eof=0 frames_written=57         
+write_frame 145: test000080
+write_frame 289: video_eof=0 frames_written=58         
+write_frame 145: test000081
+write_frame 289: video_eof=0 frames_written=59         
+write_frame 145: test000082
+write_frame 289: video_eof=0 frames_written=60         
+write_frame 145: test000083
+write_frame 289: video_eof=0 frames_written=61         
+write_frame 145: test000084
+write_frame 289: video_eof=0 frames_written=62         
+write_frame 145: test000085
+write_frame 289: video_eof=0 frames_written=63         
+write_frame 145: test000086
+write_frame 289: video_eof=0 frames_written=64         
+write_frame 145: test000087
+write_frame 289: video_eof=0 frames_written=65         
+write_frame 145: test000088
+write_frame 289: video_eof=0 frames_written=66         
+write_frame 145: test000089
+write_frame 289: video_eof=0 frames_written=67         
+write_frame 145: test000090
+write_frame 289: video_eof=0 frames_written=68         
+write_frame 145: test000091
+write_frame 289: video_eof=0 frames_written=69         
+write_frame 145: test000092
+write_frame 289: video_eof=0 frames_written=70         
+write_frame 145: test000093
+write_frame 289: video_eof=0 frames_written=71         
+write_frame 145: test000094
+write_frame 289: video_eof=0 frames_written=72         
+write_frame 145: test000095
+write_frame 289: video_eof=0 frames_written=73         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000096
+write_frame 289: video_eof=0 frames_written=74         
+write_frame 145: test000097
+write_frame 289: video_eof=0 frames_written=75         
+write_frame 145: test000098
+write_frame 289: video_eof=0 frames_written=76         
+write_frame 145: test000099
+write_frame 289: video_eof=0 frames_written=77         
+write_frame 145: test000100
+write_frame 289: video_eof=0 frames_written=78         
+write_frame 145: test000101
+write_frame 289: video_eof=0 frames_written=79         
+write_frame 145: test000102
+write_frame 289: video_eof=0 frames_written=80         
+write_frame 145: test000103
+write_frame 289: video_eof=0 frames_written=81         
+write_frame 145: test000104
+write_frame 289: video_eof=0 frames_written=82         
+write_frame 145: test000105
+write_frame 289: video_eof=0 frames_written=83         
+write_frame 145: test000106
+write_frame 289: video_eof=0 frames_written=84         
+write_frame 145: test000107
+write_frame 289: video_eof=0 frames_written=85         
+write_frame 145: test000108
+write_frame 289: video_eof=0 frames_written=86         
+write_frame 145: test000109
+write_frame 289: video_eof=0 frames_written=87         
+write_frame 145: test000110
+write_frame 289: video_eof=0 frames_written=88         
+write_frame 145: test000111
+write_frame 289: video_eof=0 frames_written=89         
+write_frame 145: test000112
+write_frame 289: video_eof=0 frames_written=90         
+write_frame 145: test000113
+write_frame 289: video_eof=0 frames_written=91         
+write_frame 145: test000114
+write_frame 289: video_eof=0 frames_written=92         
+write_frame 145: test000115
+write_frame 289: video_eof=0 frames_written=93         
+write_frame 145: test000116
+write_frame 289: video_eof=0 frames_written=94         
+write_frame 145: test000117
+write_frame 289: video_eof=0 frames_written=95         
+write_frame 145: test000118
+write_frame 289: video_eof=0 frames_written=96         
+write_frame 145: test000119
+write_frame 289: video_eof=0 frames_written=97         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000120
+write_frame 289: video_eof=0 frames_written=98         
+write_frame 145: test000121
+write_frame 289: video_eof=0 frames_written=99         
+write_frame 145: test000122
+write_frame 289: video_eof=0 frames_written=100         
+write_frame 145: test000123
+write_frame 289: video_eof=0 frames_written=101         
+write_frame 145: test000124
+write_frame 289: video_eof=0 frames_written=102         
+write_frame 145: test000125
+write_frame 289: video_eof=0 frames_written=103         
+write_frame 145: test000126
+write_frame 289: video_eof=0 frames_written=104         
+write_frame 145: test000127
+write_frame 289: video_eof=0 frames_written=105         
+write_frame 145: test000128
+write_frame 289: video_eof=0 frames_written=106         
+write_frame 145: test000129
+write_frame 289: video_eof=0 frames_written=107         
+write_frame 145: test000130
+write_frame 289: video_eof=0 frames_written=108         
+write_frame 145: test000131
+write_frame 289: video_eof=0 frames_written=109         
+write_frame 145: test000132
+write_frame 289: video_eof=0 frames_written=110         
+write_frame 145: test000133
+write_frame 289: video_eof=0 frames_written=111         
+write_frame 145: test000134
+write_frame 289: video_eof=0 frames_written=112         
+write_frame 145: test000135
+write_frame 289: video_eof=0 frames_written=113         
+write_frame 145: test000136
+write_frame 289: video_eof=0 frames_written=114         
+write_frame 145: test000137
+write_frame 289: video_eof=0 frames_written=115         
+write_frame 145: test000138
+write_frame 289: video_eof=0 frames_written=116         
+write_frame 145: test000139
+write_frame 289: video_eof=0 frames_written=117         
+write_frame 145: test000140
+write_frame 289: video_eof=0 frames_written=118         
+write_frame 145: test000141
+write_frame 289: video_eof=0 frames_written=119         
+write_frame 145: test000142
+write_frame 289: video_eof=0 frames_written=120         
+write_frame 145: test000143
+write_frame 289: video_eof=0 frames_written=121         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000144
+write_frame 289: video_eof=0 frames_written=122         
+write_frame 145: test000145
+write_frame 289: video_eof=0 frames_written=123         
+write_frame 145: test000146
+write_frame 289: video_eof=0 frames_written=124         
+write_frame 145: test000147
+write_frame 289: video_eof=0 frames_written=125         
+write_frame 145: test000148
+write_frame 289: video_eof=0 frames_written=126         
+write_frame 145: test000149
+write_frame 289: video_eof=0 frames_written=127         
+write_frame 145: test000150
+write_frame 289: video_eof=0 frames_written=128         
+write_frame 145: test000151
+write_frame 289: video_eof=0 frames_written=129         
+write_frame 145: test000152
+write_frame 289: video_eof=0 frames_written=130         
+write_frame 145: test000153
+write_frame 289: video_eof=0 frames_written=131         
+write_frame 145: test000154
+write_frame 289: video_eof=0 frames_written=132         
+write_frame 145: test000155
+write_frame 289: video_eof=0 frames_written=133         
+write_frame 145: test000156
+write_frame 289: video_eof=0 frames_written=134         
+write_frame 145: test000157
+write_frame 289: video_eof=0 frames_written=135         
+write_frame 145: test000158
+write_frame 289: video_eof=0 frames_written=136         
+write_frame 145: test000159
+write_frame 289: video_eof=0 frames_written=137         
+write_frame 145: test000160
+write_frame 289: video_eof=0 frames_written=138         
+write_frame 145: test000161
+write_frame 289: video_eof=0 frames_written=139         
+write_frame 145: test000162
+write_frame 289: video_eof=0 frames_written=140         
+write_frame 145: test000163
+write_frame 289: video_eof=0 frames_written=141         
+write_frame 145: test000164
+write_frame 289: video_eof=0 frames_written=142         
+write_frame 145: test000165
+write_frame 289: video_eof=0 frames_written=143         
+write_frame 145: test000166
+write_frame 289: video_eof=0 frames_written=144         
+write_frame 145: test000167
+write_frame 289: video_eof=0 frames_written=145         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000168
+write_frame 289: video_eof=0 frames_written=146         
+write_frame 145: test000169
+write_frame 289: video_eof=0 frames_written=147         
+write_frame 145: test000170
+write_frame 289: video_eof=0 frames_written=148         
+write_frame 145: test000171
+write_frame 289: video_eof=0 frames_written=149         
+write_frame 145: test000172
+write_frame 289: video_eof=0 frames_written=150         
+write_frame 145: test000173
+write_frame 289: video_eof=0 frames_written=151         
+write_frame 145: test000174
+write_frame 289: video_eof=0 frames_written=152         
+write_frame 145: test000175
+write_frame 289: video_eof=0 frames_written=153         
+write_frame 145: test000176
+write_frame 289: video_eof=0 frames_written=154         
+write_frame 145: test000177
+write_frame 289: video_eof=0 frames_written=155         
+write_frame 145: test000178
+write_frame 289: video_eof=0 frames_written=156         
+write_frame 145: test000179
+write_frame 289: video_eof=0 frames_written=157         
+write_frame 145: test000180
+write_frame 289: video_eof=0 frames_written=158         
+write_frame 145: test000181
+write_frame 289: video_eof=0 frames_written=159         
+write_frame 145: test000182
+write_frame 289: video_eof=0 frames_written=160         
+write_frame 145: test000183
+write_frame 289: video_eof=0 frames_written=161         
+write_frame 145: test000184
+write_frame 289: video_eof=0 frames_written=162         
+write_frame 145: test000185
+write_frame 289: video_eof=0 frames_written=163         
+write_frame 145: test000186
+write_frame 289: video_eof=0 frames_written=164         
+write_frame 145: test000187
+write_frame 289: video_eof=0 frames_written=165         
+write_frame 145: test000188
+write_frame 289: video_eof=0 frames_written=166         
+write_frame 145: test000189
+write_frame 289: video_eof=0 frames_written=167         
+write_frame 145: test000190
+write_frame 289: video_eof=0 frames_written=168         
+write_frame 145: test000191
+write_frame 289: video_eof=0 frames_written=169         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000192
+write_frame 289: video_eof=0 frames_written=170         
+write_frame 145: test000193
+write_frame 289: video_eof=0 frames_written=171         
+write_frame 145: test000194
+write_frame 289: video_eof=0 frames_written=172         
+write_frame 145: test000195
+write_frame 289: video_eof=0 frames_written=173         
+write_frame 145: test000196
+write_frame 289: video_eof=0 frames_written=174         
+write_frame 145: test000197
+write_frame 289: video_eof=0 frames_written=175         
+write_frame 145: test000198
+write_frame 289: video_eof=0 frames_written=176         
+write_frame 145: test000199
+write_frame 289: video_eof=0 frames_written=177         
+write_frame 145: test000200
+write_frame 289: video_eof=0 frames_written=178         
+write_frame 145: test000201
+write_frame 289: video_eof=0 frames_written=179         
+write_frame 145: test000202
+write_frame 289: video_eof=0 frames_written=180         
+write_frame 145: test000203
+write_frame 289: video_eof=0 frames_written=181         
+write_frame 145: test000204
+write_frame 289: video_eof=0 frames_written=182         
+write_frame 145: test000205
+write_frame 289: video_eof=0 frames_written=183         
+write_frame 145: test000206
+write_frame 289: video_eof=0 frames_written=184         
+write_frame 145: test000207
+write_frame 289: video_eof=0 frames_written=185         
+write_frame 145: test000208
+write_frame 289: video_eof=0 frames_written=186         
+write_frame 145: test000209
+write_frame 289: video_eof=0 frames_written=187         
+write_frame 145: test000210
+write_frame 289: video_eof=0 frames_written=188         
+write_frame 145: test000211
+write_frame 289: video_eof=0 frames_written=189         
+write_frame 145: test000212
+write_frame 289: video_eof=0 frames_written=190         
+write_frame 145: test000213
+write_frame 289: video_eof=0 frames_written=191         
+write_frame 145: test000214
+write_frame 289: video_eof=0 frames_written=192         
+write_frame 145: test000215
+write_frame 289: video_eof=0 frames_written=193         
+decode_nal 409 type=0x07 0x64 offset=6
+write_frame 145: test000216
+write_frame 289: video_eof=0 frames_written=194         
+write_frame 145: test000217
+write_frame 289: video_eof=0 frames_written=195         
+write_frame 145: test000218
+write_frame 289: video_eof=0 frames_written=196         
+write_frame 145: test000219
+write_frame 289: video_eof=0 frames_written=197         
+write_frame 145: test000220
+write_frame 289: video_eof=0 frames_written=198         
+write_frame 145: test000221
+write_frame 289: video_eof=0 frames_written=199         
+write_frame 145: test000222
+write_frame 289: video_eof=0 frames_written=200         
+write_frame 145: test000223
+write_frame 289: video_eof=0 frames_written=201         
+x264 [info]: using cpu capabilities MMX MMXEXT SSE SSE2 3DNow! 
+x264 [info]: slice I:1     Avg QP:23.00  size:   318  PSNR Mean Y:100.00 U:100.00 V:100.00 Avg:100.00 Global:100.00
+x264 [info]: mb I  I16..4: 100.0%  0.0%  0.0%
+x264 [info]: PSNR Mean Y:100.000 U:100.000 V:100.000 Avg:100.000 Global:100.000 kb/s:61.00
+main 683: Wrote 201 frames
+]0;root@heroine:~/hvirtual/quicktimeheroine:/root/hvirtual/quicktime% .
+exit
+
+Script done on Fri 22 Oct 2010 12:40:39 AM PDT

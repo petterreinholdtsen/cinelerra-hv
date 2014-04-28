@@ -2,8 +2,6 @@ include global_config
 
 
 all:
-	make -C libmpeg3
-	make -C quicktime
 	make -C guicast
 	make -C mix2005
 

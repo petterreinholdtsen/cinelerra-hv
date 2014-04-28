@@ -737,6 +737,8 @@ int quicktime_write_frame(quicktime_t *file,
 	quicktime_video_map_t *vtrack = &file->vtracks[track];
 	quicktime_trak_t *trak = vtrack->track;
 
+	if(!bytes) return 0;
+
 	quicktime_write_chunk_header(file, trak, &chunk_atom);
 	result = !quicktime_write_data(file, video_buffer, bytes);
 	quicktime_write_chunk_footer(file, 
@@ -1273,7 +1275,9 @@ int quicktime_check_sig(char *path)
 		{
 			result2 = 1;
 		}
-		
+
+
+
 /*
  * 		if(!result2)
  * // Check for Microsoft ASF

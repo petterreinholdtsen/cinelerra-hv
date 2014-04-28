@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@
 #include "clip.h"
 #include "condition.h"
 #include "language.h"
+#include "mainsession.h"
+#include "mwindow.h"
 #include "picture.h"
 #include "theme.h"
 #include "videodevice.h"
@@ -101,7 +103,6 @@ void ChannelEditThread::run()
 	channel_picker->handle_channel_edit(result);
 
 	window.edit_thread->close_threads();
-	window.picture_thread->close_threads();
 
 	completion->unlock();
 	in_progress = 0;
@@ -113,7 +114,6 @@ int ChannelEditThread::close_threads()
 	if(in_progress && window)
 	{
 		window->edit_thread->close_threads();
-		window->picture_thread->close_threads();
 		window->set_done(1);
 		completion->lock("ChannelEditThread::close_threads");
 		completion->unlock();
@@ -193,8 +193,8 @@ char* ChannelEditThread::value_to_input(int value)
 ChannelEditWindow::ChannelEditWindow(ChannelEditThread *thread, 
 	ChannelPicker *channel_picker)
  : BC_Window(PROGRAM_NAME ": Channels", 
- 	channel_picker->parent_window->get_abs_cursor_x(1) - 330, 
-	channel_picker->parent_window->get_abs_cursor_y(1), 
+ 	channel_picker->mwindow->session->channels_x, 
+	channel_picker->mwindow->session->channels_y, 
 	350, 
 	400, 
 	350, 
@@ -267,7 +267,7 @@ void ChannelEditWindow::create_objects()
 
 	edit_thread = new ChannelEditEditThread(this, 
 		channel_picker);
-	picture_thread = new ChannelEditPictureThread(channel_picker, this);
+	picture_thread = new ChannelEditPictureThread(channel_picker);
 	show_window();
 }
 
@@ -275,6 +275,14 @@ int ChannelEditWindow::close_event()
 {
 	set_done(0);
 }
+
+int ChannelEditWindow::translation_event()
+{
+	channel_picker->mwindow->session->channels_x = get_x();
+	channel_picker->mwindow->session->channels_y = get_y();
+	return 0;
+}
+
 
 int ChannelEditWindow::add_channel()
 {
@@ -954,13 +962,9 @@ int ChannelEditEditThread::set_freqtable(int value)
 
 void ChannelEditEditThread::run()
 {
-SET_TRACE
 	ChannelEditEditWindow edit_window(this, window, channel_picker);
-SET_TRACE
 	edit_window.create_objects(&new_channel);
-SET_TRACE
 	this->edit_window = &edit_window;
-SET_TRACE
 	int result = edit_window.run_window();
 	this->edit_window = 0;
 
@@ -1014,7 +1018,6 @@ void ChannelEditEditWindow::create_objects(Channel *channel)
 	Channel *channel_usage = channel_picker->get_channel_usage();
 	title_text = 0;
 
-SET_TRACE
 	int x = 10, y = 10;
 // 	if(!channel_usage ||
 // 		(!channel_usage->use_frequency && 
@@ -1034,7 +1037,6 @@ SET_TRACE
 
 	if(channel_usage && channel_usage->use_frequency)
 	{
-SET_TRACE
 		add_subwindow(new BC_Title(x, y, _("Channel:")));
 		y += 20;
 		add_subwindow(thread->source_text = new ChannelEditEditSource(x, y, thread));
@@ -1051,7 +1053,6 @@ SET_TRACE
 		y += 30;
 	}
 
-SET_TRACE
 	if(channel_usage && channel_usage->use_fine)
 	{
 		add_subwindow(new BC_Title(x, y, _("Fine:")));
@@ -1059,7 +1060,6 @@ SET_TRACE
 		y += 30;
 	}
 
-SET_TRACE
 	if(channel_usage && channel_usage->use_norm)
 	{
 		add_subwindow(new BC_Title(x, y, _("Norm:")));
@@ -1071,7 +1071,6 @@ SET_TRACE
 		norm->add_items();
 		y += 30;
 	}
-SET_TRACE
 
 	if(channel_usage && channel_usage->use_input ||
 		!channel_usage)
@@ -1086,12 +1085,10 @@ SET_TRACE
 		y += 30;
 	}
 
-SET_TRACE
 	add_subwindow(new BC_OKButton(this));
 	x += 200;
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-SET_TRACE
 }
 
 ChannelEditEditTitle::ChannelEditEditTitle(int x, 
@@ -1356,73 +1353,47 @@ int ChannelEditEditFine::button_release_event()
 
 // ========================== picture quality
 
-ChannelEditPictureThread::ChannelEditPictureThread(ChannelPicker *channel_picker, ChannelEditWindow *window)
- : Thread()
+ChannelEditPictureThread::ChannelEditPictureThread(
+	ChannelPicker *channel_picker)
+ : BC_DialogThread()
 {
 	this->channel_picker = channel_picker;
-	this->window = window;
-	in_progress = 0;
-	edit_window = 0;
-	completion = new Condition(1, "ChannelEditPictureThread::completion");
 }
 ChannelEditPictureThread::~ChannelEditPictureThread()
 {
-	delete completion;
+}
+
+void ChannelEditPictureThread::handle_done_event(int result)
+{
+	if(channel_picker->get_picture_usage())
+		channel_picker->get_picture_usage()->save_defaults();
+}
+
+BC_Window* ChannelEditPictureThread::new_gui()
+{
+	ChannelEditPictureWindow *edit_window = new ChannelEditPictureWindow(this, 
+		channel_picker);
+	edit_window->create_objects();
+	return edit_window;
 }
 
 int ChannelEditPictureThread::edit_picture()
 {
-	if(in_progress) 
-	{
-		edit_window->lock_window("ChannelEditPictureThread::edit_picture");
-		edit_window->raise_window(1);
-		edit_window->unlock_window();
-		return 1;
-	}
-	in_progress = 1;
-	completion->lock("ChannelEditPictureThread::edit_picture");
-	set_synchronous(0);
-	Thread::start();
+	start();
+	return 0;
 }
 
-void ChannelEditPictureThread::run()
-{
-SET_TRACE
-	ChannelEditPictureWindow edit_window(this, 
-		channel_picker);
-SET_TRACE
-	edit_window.create_objects();
-SET_TRACE
-	this->edit_window = &edit_window;
-SET_TRACE
-	int result = edit_window.run_window();
-SET_TRACE
-	this->edit_window = 0;
-SET_TRACE
-	completion->unlock();
-SET_TRACE
-	in_progress = 0;
-}
 
-int ChannelEditPictureThread::close_threads()
-{
-	if(edit_window)
-	{
-		edit_window->set_done(1);
-		completion->lock("ChannelEditPictureThread::close_threads");
-		completion->unlock();
-	}
-}
 
 
 ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thread, 
 	ChannelPicker *channel_picker)
  : BC_Window(PROGRAM_NAME ": Picture", 
- 	channel_picker->parent_window->get_abs_cursor_x(1) - 200, 
-	channel_picker->parent_window->get_abs_cursor_y(1) - 220, 
- 	250, 
+ 	channel_picker->mwindow->session->picture_x, 
+	channel_picker->mwindow->session->picture_y, 
+ 	calculate_w(channel_picker), 
 	calculate_h(channel_picker), 
-	250, 
+	calculate_w(channel_picker), 
 	calculate_h(channel_picker))
 {
 	this->thread = thread;
@@ -1440,6 +1411,7 @@ int ChannelEditPictureWindow::calculate_h(ChannelPicker *channel_picker)
 		channel_picker->parent_window->get_text_height(MEDIUMFONT) + 5 + 
 		BC_OKButton::calculate_h();
 
+// Only used for Video4Linux 1
 	if(picture_usage)
 	{
 		if(picture_usage->use_brightness)
@@ -1453,21 +1425,87 @@ int ChannelEditPictureWindow::calculate_h(ChannelPicker *channel_picker)
 		if(picture_usage->use_whiteness)
 			result += pad;
 	}
+
 	result += channel_picker->get_controls() * pad;
 	return result;
 }
 
+int ChannelEditPictureWindow::calculate_w(ChannelPicker *channel_picker)
+{
+	PictureConfig *picture_usage = channel_picker->get_picture_usage();
+	int widget_border = ((Theme*)channel_picker->get_theme())->widget_border;
+	int pad = BC_Pot::calculate_w() + 4 * widget_border;
+	int result = 0;
+
+// Only used for Video4Linux 1
+	if(!picture_usage ||
+		(!picture_usage->use_brightness &&
+		!picture_usage->use_contrast &&
+		!picture_usage->use_color &&
+		!picture_usage->use_hue &&
+		!picture_usage->use_whiteness &&
+		!channel_picker->get_controls()))
+	{
+		result = BC_Title::calculate_w(channel_picker->parent_window, 
+			"Device has no picture controls." + 
+			2 * widget_border);
+	}
+
+// Only used for Video4Linux 1
+	if(picture_usage)
+	{
+		if(picture_usage->use_brightness)
+		{
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Brightness:") + pad;
+			result = MAX(result, new_w);
+		}
+		if(picture_usage->use_contrast)
+		{
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Contrast:") + pad;
+			result = MAX(result, new_w);
+		}
+		if(picture_usage->use_color)
+		{
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Color:") + pad;
+			result = MAX(result, new_w);
+		}
+		if(picture_usage->use_hue)
+		{
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Hue:") + pad;
+			result = MAX(result, new_w);
+		}
+		if(picture_usage->use_whiteness)
+		{
+			int new_w = BC_Title::calculate_w(channel_picker->parent_window, "Whiteness:") + pad;
+			result = MAX(result, new_w);
+		}
+	}
+	
+	for(int i = 0; i < channel_picker->get_controls(); i++)
+	{
+		int new_w = BC_Title::calculate_w(channel_picker->parent_window, 
+				channel_picker->get_control(i)->name) +
+			pad;
+		result = MAX(result, new_w);
+	}
+	
+	return result;
+}
+
+
 void ChannelEditPictureWindow::create_objects()
 {
 	int x = 10, y = 10;
-	int x1 = 110, x2 = 145;
+	int widget_border = ((Theme*)channel_picker->get_theme())->widget_border;
+	int x1 = get_w() - BC_Pot::calculate_w() * 2 - widget_border * 2;
+	int x2 = get_w() - BC_Pot::calculate_w() - widget_border;
 	int pad = BC_Pot::calculate_h();
+
 #define SWAP_X x1 ^= x2; x2 ^= x1; x1 ^= x2;
 
-SET_TRACE
 	PictureConfig *picture_usage = channel_picker->get_picture_usage();
-SET_TRACE
 
+// Only used for Video4Linux 1
 	if(!picture_usage ||
 		(!picture_usage->use_brightness &&
 		!picture_usage->use_contrast &&
@@ -1480,7 +1518,7 @@ SET_TRACE
 		y += 50;
 	}
 
-SET_TRACE
+// Only used for Video4Linux 1
 	if(picture_usage && picture_usage->use_brightness)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Brightness:")));
@@ -1490,7 +1528,6 @@ SET_TRACE
 		
 	}
 
-SET_TRACE
 	if(picture_usage && picture_usage->use_contrast)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Contrast:")));
@@ -1499,7 +1536,6 @@ SET_TRACE
 		SWAP_X
 	}
 
-SET_TRACE
 	if(picture_usage && picture_usage->use_color)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Color:")));
@@ -1508,7 +1544,6 @@ SET_TRACE
 		SWAP_X
 	}
 
-SET_TRACE
 	if(picture_usage && picture_usage->use_hue)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Hue:")));
@@ -1517,7 +1552,6 @@ SET_TRACE
 		SWAP_X
 	}
 
-SET_TRACE
 	if(picture_usage && picture_usage->use_whiteness)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Whiteness:")));
@@ -1526,13 +1560,18 @@ SET_TRACE
 		SWAP_X
 	}
 
-SET_TRACE
 	for(int i = 0; i < channel_picker->get_controls(); i++)
 	{
-		add_subwindow(new BC_Title(x, 
+		BC_Title *title;
+		add_subwindow(title = new BC_Title(x, 
 			y + 10, 
 			_(channel_picker->get_control(i)->name)));
-		add_subwindow(new ChannelEditCommon(x1, 
+
+		int x3 = x1;
+		if(x3 < title->get_x() + title->get_w() + widget_border)
+			x3 = title->get_x() + title->get_w() + widget_border;
+
+		add_subwindow(new ChannelEditCommon(x3, 
 			y, 
 			channel_picker,
 			channel_picker->get_control(i)));
@@ -1540,10 +1579,17 @@ SET_TRACE
 		SWAP_X
 	}
 
-SET_TRACE
 
 	y += pad;
 	add_subwindow(new BC_OKButton(this));
+	show_window();
+}
+
+int ChannelEditPictureWindow::translation_event()
+{
+	channel_picker->mwindow->session->picture_x = get_x();
+	channel_picker->mwindow->session->picture_y = get_y();
+	return 0;
 }
 
 
@@ -1705,6 +1751,18 @@ int ChannelEditCommon::button_release_event()
 	}
 	return 0;
 }
+
+int ChannelEditCommon::keypress_event()
+{
+	if(BC_Pot::keypress_event())
+	{
+		channel_picker->set_picture(device_id, get_value());
+		return 1;
+	}
+	return 0;
+}
+
+
 
 
 

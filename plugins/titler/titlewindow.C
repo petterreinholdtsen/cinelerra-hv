@@ -20,6 +20,7 @@
  */
 
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "language.h"
 #include "titlewindow.h"
 
@@ -44,12 +45,13 @@
 
 TitleWindow::TitleWindow(TitleMain *client)
  : PluginClientWindow(client,
-	client->window_w, 
-	client->window_h, 
+	client->config.window_w, 
+	client->config.window_h, 
 	100, 
 	100, 
 	1)
-{ 
+{
+//printf("TitleWindow::TitleWindow %d %d %d\n", __LINE__, client->config.window_w, client->config.window_h);
 	this->client = client; 
 }
 
@@ -70,7 +72,9 @@ void TitleWindow::create_objects()
 	int x = 10, y = 10;
 #define COLOR_W 50
 #define COLOR_H 30
-	
+	client->build_fonts();
+
+
 	encodings.append(new BC_ListBoxItem("ISO8859-1"));
 	encodings.append(new BC_ListBoxItem("ISO8859-2"));
 	encodings.append(new BC_ListBoxItem("ISO8859-3"));
@@ -287,6 +291,7 @@ void TitleWindow::create_objects()
 
 	x = 10;
 	y += 30;
+
 	text = new TitleText(client, 
 		this, 
 		x, 
@@ -297,14 +302,13 @@ void TitleWindow::create_objects()
 
 	update_color();
 
-	show_window();
-	flush();
+	show_window(1);
 }
 
 int TitleWindow::resize_event(int w, int h)
 {
-	client->window_w = w;
-	client->window_h = h;
+	client->config.window_w = w;
+	client->config.window_h = h;
 
 	clear_box(0, 0, w, h);
 	font_title->reposition_window(font_title->get_x(), font_title->get_y());

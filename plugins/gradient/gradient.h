@@ -37,7 +37,7 @@ class GradientServer;
 #include "guicast.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -240,8 +240,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();

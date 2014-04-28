@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ int BC_ScrollBar::initialize()
 
 	BC_SubWindow::initialize();
 //printf("BC_ScrollBar::initialize 1\n");
-	draw();
+	draw(0);
 	return 0;
 }
 
@@ -154,7 +154,7 @@ int BC_ScrollBar::get_arrow_pixels()
 }
 
 
-void BC_ScrollBar::draw()
+void BC_ScrollBar::draw(int flush)
 {
 	draw_top_background(parent_window, 0, 0, w, h);
 	get_handle_dimensions();
@@ -357,7 +357,7 @@ void BC_ScrollBar::draw()
 			}
 			break;
 	}
-	flash();
+	flash(flush);
 }
 
 void BC_ScrollBar::get_handle_dimensions()
@@ -422,7 +422,7 @@ int BC_ScrollBar::cursor_enter_event()
 		{
 			highlight_status = get_cursor_zone(top_level->cursor_x, 
 				top_level->cursor_y);
-			draw();
+			draw(1);
 		}
 		return 1;
 	}
@@ -434,7 +434,7 @@ int BC_ScrollBar::cursor_leave_event()
 	if(highlight_status)
 	{
 		highlight_status = 0;
-		draw();
+		draw(1);
 	}
 	return 0;
 }
@@ -450,7 +450,7 @@ int BC_ScrollBar::cursor_motion_event()
 			if(new_highlight_status != highlight_status)
 			{
 				highlight_status = new_highlight_status;
-				draw();
+				draw(1);
 			}
 		}
 		else
@@ -473,7 +473,7 @@ int BC_ScrollBar::cursor_motion_event()
 			{
 //printf("BC_ScrollBar::cursor_motion_event 3\n");
 				position = new_position;
-				draw();
+				draw(1);
 				handle_event();
 //printf("BC_ScrollBar::cursor_motion_event 4\n");
 			}
@@ -514,7 +514,7 @@ int BC_ScrollBar::button_press_event()
 				int64_t cursor_pixel = (orientation == SCROLL_HORIZ) ? top_level->cursor_x : top_level->cursor_y;
 				min_pixel = cursor_pixel - (int64_t)((double)position / length * total_pixels + .5);
 				max_pixel = (int)(cursor_pixel + total_pixels);
-				draw();
+				draw(1);
 			}
 			else
 			if(selection_status)
@@ -522,7 +522,7 @@ int BC_ScrollBar::button_press_event()
 				top_level->set_repeat(top_level->get_resources()->scroll_repeat);
 				repeat_count = 0;
 				repeat_event(top_level->get_resources()->scroll_repeat);
-				draw();
+				draw(1);
 			}
 		}
 		return 1;
@@ -535,8 +535,10 @@ int BC_ScrollBar::repeat_event(int64_t duration)
 	if(duration == top_level->get_resources()->scroll_repeat && 
 		selection_status)
 	{
+//printf("BC_ScrollBar::repeat_event %d %d\n", __LINE__, (int)repeat_count);
 		repeat_count++;
-		if(repeat_count == 2) return 0;
+// delay 1st repeat
+		if(repeat_count >= 2 && repeat_count < 5) return 0;
 		int64_t new_position = position;
 		switch(selection_status)
 		{
@@ -559,7 +561,7 @@ int BC_ScrollBar::repeat_event(int64_t duration)
 		if(new_position != position)
 		{
 			position = new_position;
-			draw();
+			draw(1);
 			handle_event();
 		}
 		return 1;
@@ -576,7 +578,7 @@ int BC_ScrollBar::button_release_event()
 			top_level->unset_repeat(top_level->get_resources()->scroll_repeat);
 
 		selection_status = 0;
-		draw();
+		draw(1);
 		return 1;
 	}
 	return 0;
@@ -655,16 +657,16 @@ int64_t BC_ScrollBar::get_handlelength()
 int BC_ScrollBar::update_value(int64_t value)
 {
 	this->position = value;
-	draw();
+	draw(1);
 	return 0;
 }
 
-int BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength)
+int BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength, int flush)
 {
 	this->length = length;
 	this->position = position;
 	this->handlelength = handlelength;
-	draw();
+	draw(flush);
 	return 0;
 }
 
@@ -677,7 +679,7 @@ int BC_ScrollBar::reposition_window(int x, int y, int pixels)
 		calculate_dimensions(new_w, new_h);
 		BC_WindowBase::reposition_window(x, y, new_w, new_h);
 	}
-	draw();
+	draw(0);
 	return 0;
 }
 

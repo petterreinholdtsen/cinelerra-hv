@@ -1,9 +1,8 @@
 ImathFun.lo: ImathFun.cpp ImathFun.h ImathLimits.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/float.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include-fixed/limits.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include-fixed/syslimits.h \
- /usr/include/limits.h /usr/include/features.h \
- /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/float.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/limits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/syslimits.h \
+ /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-64.h /usr/include/bits/posix1_lim.h \
  /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
@@ -14,17 +13,15 @@ ImathFun.h:
 
 ImathLimits.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/float.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/float.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include-fixed/limits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/limits.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include-fixed/syslimits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/syslimits.h:
 
 /usr/include/limits.h:
 
 /usr/include/features.h:
-
-/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 

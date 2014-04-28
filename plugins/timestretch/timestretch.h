@@ -23,7 +23,7 @@
 #define TIMESTRETCH_H
 
 #include "bchash.inc"
-#include "../parametric/fourier.h"
+#include "fourier.h"
 #include "guicast.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"

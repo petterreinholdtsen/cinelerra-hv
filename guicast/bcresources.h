@@ -83,9 +83,15 @@ public:
 	static void set_signals(BC_Signals *signal_handler);
 	static BC_Signals* get_signals();
 
+
 // These values should be changed before the first window is created.
 // colors
 	int bg_color;          // window backgrounds
+	int border_light1;
+	int border_light2;
+	int border_shadow1;
+	int border_shadow2;
+
 	int bg_shadow1;        // border for windows
 	int bg_shadow2;
 	int bg_light1;
@@ -208,6 +214,7 @@ public:
 	VFrame **listbox_column;
 	VFrame *listbox_up;
 	VFrame *listbox_dn;
+	int listbox_title_overlap;
 // Margin for titles in addition to listbox border
 	int listbox_title_margin;
 	int listbox_title_color;
@@ -341,6 +348,7 @@ private:
  	VFrame **list_pointers[100];
  	int list_lengths[100];
  	int list_total;
+	
 
 	Mutex *id_lock;
 

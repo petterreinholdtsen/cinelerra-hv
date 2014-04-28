@@ -1,24 +1,21 @@
 operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
  ../../config.h /usr/include/errno.h /usr/include/features.h \
- /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-64.h /usr/include/bits/errno.h \
- /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /usr/include/stdio.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/asm/errno.h /usr/include/asm-generic/errno.h \
+ /usr/include/asm-generic/errno-base.h /usr/include/stdio.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
- /usr/include/string.h /usr/include/xlocale.h /usr/include/bits/string.h \
- /usr/include/bits/string2.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/stdlib.h /usr/include/bits/string3.h options.h \
+ /usr/include/bits/stdio.h /usr/include/string.h /usr/include/xlocale.h \
+ /usr/include/bits/string.h /usr/include/bits/string2.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/stdlib.h options.h \
  ../../include/FLAC/format.h ../../include/FLAC/export.h \
  ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
  /usr/include/stdint.h /usr/include/bits/wchar.h \
  ../../include/share/getopt.h utils.h ../../include/FLAC/metadata.h \
  ../../include/FLAC/callback.h /usr/include/bits/waitflags.h \
@@ -26,9 +23,9 @@ operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
  /usr/include/time.h /usr/include/sys/select.h /usr/include/bits/select.h \
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
- /usr/include/alloca.h /usr/include/bits/stdlib.h \
- ../../include/FLAC/format.h ../../include/FLAC/assert.h \
- ../../include/share/grabbag.h ../../include/share/grabbag/cuesheet.h \
+ /usr/include/alloca.h ../../include/FLAC/format.h \
+ ../../include/FLAC/assert.h ../../include/share/grabbag.h \
+ ../../include/share/grabbag/cuesheet.h \
  ../../include/share/grabbag/file.h ../../include/FLAC/ordinals.h \
  ../../include/share/grabbag/picture.h \
  ../../include/share/grabbag/replaygain.h \
@@ -39,8 +36,6 @@ operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
 /usr/include/errno.h:
 
 /usr/include/features.h:
-
-/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -54,7 +49,7 @@ operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
 
 /usr/include/linux/errno.h:
 
-/usr/include/x86_64-linux-gnu/asm/errno.h:
+/usr/include/asm/errno.h:
 
 /usr/include/asm-generic/errno.h:
 
@@ -62,7 +57,7 @@ operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
 
 /usr/include/stdio.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/bits/types.h:
 
@@ -74,15 +69,13 @@ operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
 
 /usr/include/wchar.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
 /usr/include/bits/sys_errlist.h:
 
 /usr/include/bits/stdio.h:
-
-/usr/include/bits/stdio2.h:
 
 /usr/include/string.h:
 
@@ -100,8 +93,6 @@ operations_shorthand_cuesheet.o: operations_shorthand_cuesheet.c \
 
 /usr/include/stdlib.h:
 
-/usr/include/bits/string3.h:
-
 options.h:
 
 ../../include/FLAC/format.h:
@@ -111,8 +102,6 @@ options.h:
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
-
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 
@@ -147,8 +136,6 @@ utils.h:
 /usr/include/bits/pthreadtypes.h:
 
 /usr/include/alloca.h:
-
-/usr/include/bits/stdlib.h:
 
 ../../include/FLAC/format.h:
 

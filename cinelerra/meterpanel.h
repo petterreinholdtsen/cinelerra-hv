@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include "guicast.h"
 #include "mwindow.inc"
+#include "theme.inc"
 
 class MeterReset;
 class MeterMeter;
@@ -35,21 +36,29 @@ public:
 		BC_WindowBase *subwindow, 
 		int x, 
 		int y, 
+		int w, /* Ignored if -1 */
 		int h,
 		int meter_count,
-		int use_meters,
-		int use_recording = 0);
+		int visible,
+		int use_headroom /* = 0 */,
+		int use_titles);
 	~MeterPanel();
 
 	void create_objects();
-	int set_meters(int meter_count, int use_meters);
-	static int get_meters_width(int meter_count, int use_meters);
-	void reposition_window(int x, int y, int h);
+	int set_meters(int meter_count, int visible);
+	static int get_meters_width(Theme *theme, int meter_count, int visible);
+	void reposition_window(int x, 
+		int y, 
+		int w,  /* Ignored if -1 */
+		int h);
+	int get_title_x(int number, const char *text);
 	int get_reset_x();
 	int get_reset_y();
 	int get_meter_h();
+// Calculate meter width without border
 	int get_meter_w(int number);
 	void update(double *levels);
+	void update_peak(int number, float value);
 	void stop_meters();
 	void change_format(int mode, int min, int max);
 	virtual int change_status_event();
@@ -58,11 +67,14 @@ public:
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
 	ArrayList<MeterMeter*> meters;
+	ArrayList<BC_Title*> meter_titles;
+	ArrayList<float> meter_peaks;
 	MeterReset *reset;
 	int meter_count;
-	int use_meters;
-	int x, y, h;
-	int use_recording;
+	int visible;
+	int x, y, w, h;
+	int use_headroom;
+	int use_titles;
 };
 
 
@@ -89,7 +101,13 @@ public:
 class MeterMeter : public BC_Meter
 {
 public:
-	MeterMeter(MWindow *mwindow, MeterPanel *panel, int x, int y, int h, int titles);
+	MeterMeter(MWindow *mwindow, 
+		MeterPanel *panel, 
+		int x, 
+		int y, 
+		int w,
+		int h, 
+		int titles);
 	~MeterMeter();
 	
 	int button_press_event();

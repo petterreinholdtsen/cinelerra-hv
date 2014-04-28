@@ -22,6 +22,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "auto.h"
+#include "bctimer.h"
 #include "brender.h"
 #include "cache.h"
 #include "clip.h"
@@ -91,6 +92,8 @@ PackageRenderer::PackageRenderer()
 	video_cache = 0;
 	aconfig = 0;
 	vconfig = 0;
+	timer = new Timer;
+	frames_per_second = 0;
 }
 
 PackageRenderer::~PackageRenderer()
@@ -99,6 +102,7 @@ PackageRenderer::~PackageRenderer()
 	delete audio_cache;
 	delete video_cache;
 	delete vconfig;
+	delete timer;
 }
 
 int PackageRenderer::initialize(MWindow *mwindow,
@@ -340,6 +344,7 @@ void PackageRenderer::do_audio()
 
 void PackageRenderer::do_video()
 {
+	const int debug = 0;
 // Do video data
 	if(asset->video_data)
 	{
@@ -362,27 +367,35 @@ void PackageRenderer::do_video()
 // Switch back to background compression
 				if(direct_frame_copying)
 				{
+
 					file->start_video_thread(video_write_length, 
 						command->get_edl()->session->color_model,
 						preferences->processors > 1 ? 2 : 1,
 						0);
+//printf("PackageRenderer::do_video %d %d\n", __LINE__, preferences->processors);
 					direct_frame_copying = 0;
 				}
 
 // Try to use the rendering engine to write the frame.
 // Get a buffer for background writing.
 
-//printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
 				if(video_write_position == 0)
 					video_output = file->get_video_buffer();
 
-//printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
+				if(debug) printf("PackageRenderer::do_video %d %p\n", __LINE__, video_output);
+				if(debug) printf("PackageRenderer::do_video %d %p\n", __LINE__, video_output[0]);
 
 
 
 
 // Construct layered output buffer
 				video_output_ptr = video_output[0][video_write_position];
+				if(debug)
+				{
+					printf("PackageRenderer::do_video %d %p\n", __LINE__, video_output_ptr);
+					printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
+					video_output_ptr->dump();
+				}
 
  				if(!result)
 					result = render_engine->vrender->process_buffer(
@@ -391,6 +404,7 @@ void PackageRenderer::do_video()
 						0);
 
 
+				if(debug) printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
 
  				if(!result && 
 					mwindow && 
@@ -407,6 +421,7 @@ void PackageRenderer::do_video()
 						command->get_edl());
 				}
 
+				if(debug) printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
 
 
 // Don't write to file
@@ -445,7 +460,7 @@ void PackageRenderer::do_video()
 						video_write_position = 0;
 					}
 				}
-//printf("PackageRenderer::do_video %d %lld\n", __LINE__, video_position);
+				if(debug) printf("PackageRenderer::do_video %d %lld\n", __LINE__, (long long)video_position);
 
 
 			}
@@ -542,12 +557,14 @@ int PackageRenderer::render_package(RenderPackage *package)
 // Create render engine
 	if(!result)
 	{
-	if(debug) PRINT_TRACE
+if(debug) PRINT_TRACE
 		create_engine();
-	if(debug) PRINT_TRACE
+if(debug) PRINT_TRACE
 
 
 // Main loop
+		timer->update();
+		total_samples_rendered = 0;
 		while((!audio_done || !video_done) && !result)
 		{
 			int need_audio = 0, need_video = 0;
@@ -607,14 +624,26 @@ int PackageRenderer::render_package(RenderPackage *package)
 			}
 			if(debug) PRINT_TRACE
 
-//printf("PackageRenderer::render_package 1 %d %lld %lld\n", result, audio_read_length, video_read_length);
+			if(debug) printf("PackageRenderer::render_package %d %d %lld %lld\n", __LINE__, result, (long long)audio_read_length, (long long)video_read_length);
 			if(need_video && !result) do_video();
-//printf("PackageRenderer::render_package 7 %d %d\n", result, samples_rendered);
+			if(debug) printf("PackageRenderer::render_package %d %d %d\n", __LINE__, result, samples_rendered);
 			if(need_audio && !result) do_audio();
 
 
 			if(debug) PRINT_TRACE
-			if(!result) set_progress(samples_rendered);
+			if(!result)
+			{
+// Calculate frames per second for the renderfarm table.
+				total_samples_rendered += samples_rendered;
+				if(!video_done && timer->get_difference() > 30000)
+				{
+					frames_per_second = (double)total_samples_rendered *
+						asset->frame_rate / 
+						asset->sample_rate /
+						((double)timer->get_difference() / 1000);
+				}
+				set_progress(samples_rendered);
+			}
 			if(debug) PRINT_TRACE
 
 
@@ -631,6 +660,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 			else
 				result = get_result();
 		}
+
+// Final FPS readout
+		frames_per_second = (double)(package->video_end - package->video_start) / 
+			((double)timer->get_difference() / 1000);
+
 
 //PRINT_TRACE
 		stop_engine();

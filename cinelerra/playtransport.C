@@ -42,7 +42,9 @@ PlayTransport::PlayTransport(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->x = x;
 	this->y = y;
+#ifdef USE_SLIDER
 	this->slider = 0;
+#endif
 	this->engine = 0;
 }
 
@@ -65,10 +67,12 @@ void PlayTransport::set_engine(PlaybackEngine *engine)
 	this->engine = engine;
 }
 
+#ifdef USE_SLIDER
 void PlayTransport::set_slider(BC_Slider *slider)
 {
 	this->slider = slider;
 }
+#endif
 
 int PlayTransport::get_transport_width(MWindow *mwindow)
 {

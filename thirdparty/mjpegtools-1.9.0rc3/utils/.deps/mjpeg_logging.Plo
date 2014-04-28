@@ -1,8 +1,8 @@
 mjpeg_logging.lo: mjpeg_logging.c ../config.h /usr/include/stdlib.h \
- /usr/include/features.h /usr/include/bits/predefs.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
  /usr/include/bits/byteswap.h /usr/include/xlocale.h \
@@ -12,12 +12,11 @@ mjpeg_logging.lo: mjpeg_logging.c ../config.h /usr/include/stdlib.h \
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
  /usr/include/alloca.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h \
  /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
  /usr/include/wchar.h /usr/include/bits/stdio_lim.h \
  /usr/include/bits/sys_errlist.h /usr/include/assert.h \
  /usr/include/string.h mjpeg_logging.h mjpeg_types.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
  /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h
 
 ../config.h:
@@ -25,8 +24,6 @@ mjpeg_logging.lo: mjpeg_logging.c ../config.h /usr/include/stdlib.h \
 /usr/include/stdlib.h:
 
 /usr/include/features.h:
-
-/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -36,7 +33,7 @@ mjpeg_logging.lo: mjpeg_logging.c ../config.h /usr/include/stdlib.h \
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/bits/waitflags.h:
 
@@ -72,7 +69,7 @@ mjpeg_logging.lo: mjpeg_logging.c ../config.h /usr/include/stdlib.h \
 
 /usr/include/alloca.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h:
 
 /usr/include/stdio.h:
 
@@ -93,8 +90,6 @@ mjpeg_logging.lo: mjpeg_logging.c ../config.h /usr/include/stdlib.h \
 mjpeg_logging.h:
 
 mjpeg_types.h:
-
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 

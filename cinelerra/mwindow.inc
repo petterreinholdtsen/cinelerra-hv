@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,14 @@
 #define MWINDOW_INC
 
 #define PROGRAM_NAME "Cinelerra"
-#define CINELERRA_VERSION "4.3"
-#define COPYRIGHT_DATE 2011
+#define CINELERRA_VERSION "4.4"
+#define COPYRIGHT_DATE 2012
 #define DEFAULT_THEME "S.U.V."
 #define CONFIG_FILE "Cinelerra_rc"
 #define PRESETS_FILE "Cinelerra_presets"
-
+#define PICTURE_FILE "Cinelerra_picture"
+#define PLUGIN_FILE "Cinelerra_plugins"
+#define PLUGIN_FILE_VERSION 0
 
 // Behavior of region selections
 #define SELECTION_SAMPLES 0
@@ -39,6 +41,9 @@
 
 // Make tweeks span keyframes if a region is selected
 #define USE_KEYFRAME_SPANNING
+
+// Index of vwindow that always exists
+#define DEFAULT_VWINDOW 0
 
 class MWindow;
 

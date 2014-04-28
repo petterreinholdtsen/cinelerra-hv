@@ -59,14 +59,14 @@ void IndexState::dump()
 	printf("    channels=%d index_status=%d index_zoom=%lld index_bytes=%lld index_offsets=%p\n",
 		channels,
 		index_status,
-		index_zoom,
-		index_bytes,
-		index_offsets);
+		(long long)index_zoom,
+		(long long)index_bytes,
+		(void*)index_offsets);
 	if(index_sizes)
 	{
 		printf("    index_sizes=");
 		for(int i = 0; i < channels; i++)
-			printf("%lld ", index_sizes[i]);
+			printf("%lld ", (long long)index_sizes[i]);
 		printf("\n");
 	}
 }

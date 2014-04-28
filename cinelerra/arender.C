@@ -294,17 +294,17 @@ if(debug) printf("ARender::run %d %d\n", __LINE__, Thread::calculate_realtime())
 	{
 		current_input_length = renderengine->fragment_len;
 
-if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, current_position, current_input_length);
+if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, (long long)current_position, (long long)current_input_length);
 		get_boundaries(current_input_length);
 
-if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, current_position, current_input_length);
+if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, (long long)current_position, (long long)current_input_length);
 		if(current_input_length)
 		{
 			reconfigure = vconsole->test_reconfigure(current_position, 
 				current_input_length);
 			if(reconfigure) restart_playback();
 		}
-if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, current_position, current_input_length);
+if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, (long long)current_position, (long long)current_input_length);
 
 
 // Update tracking if no video is playing.
@@ -327,7 +327,7 @@ if(debug) printf("ARender::run %d %lld %lld\n", __LINE__, current_position, curr
 		}
 
 
-if(debug) printf("ARender::run %d %lld\n", __LINE__, current_input_length);
+if(debug) printf("ARender::run %d %lld\n", __LINE__, (long long)current_input_length);
 
 
 

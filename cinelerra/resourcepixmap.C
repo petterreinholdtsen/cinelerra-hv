@@ -488,7 +488,7 @@ void ResourcePixmap::draw_title(Edit *edit,
 		text_x = MAX(left_margin, text_x);
 //printf("ResourcePixmap::draw_title 1 %d\n", text_x);
 		canvas->draw_text(text_x, 
-			canvas->get_text_ascent(MEDIUMFONT_3D) + 2, 
+			canvas->get_text_ascent(mwindow->theme->title_font) + 2, 
 			title,
 			strlen(title),
 			this);
@@ -538,6 +538,8 @@ SET_TRACE
 						mwindow->edl->local_session->zoom_sample * 
 						asset_over_session)
 				{
+//printf("ResourcePixmap::draw_audio_resource %d\n", __LINE__);
+
 					draw_audio_source(edit, x, w);
 				}
 				else
@@ -678,6 +680,11 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				if(y1 > canvas->get_h()) y1 = canvas->get_h();
 				if(y2 < 0) y2 = 0;
 				if(y2 > canvas->get_h()) y2 = canvas->get_h();
+				if(y1 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1)
+					y1 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
+				if(y2 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1)
+					y2 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
+
 //printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
 				
 				canvas->draw_line(x1 - 1, 
@@ -724,6 +731,11 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 					item->low * mwindow->edl->local_session->zoom_y / 2);
 				y2 = (int)(center_pixel - 
 					item->high * mwindow->edl->local_session->zoom_y / 2);
+				if(y1 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1)
+					y1 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
+				if(y2 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1)
+					y2 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
+
 				if(first_pixel)
 				{
 					canvas->draw_line(x, 
@@ -734,14 +746,17 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 					first_pixel = 0;
 				}
 				else
+				{
 					canvas->draw_line(x, 
 						MIN(y1, prev_y2),
 						x,
 						MAX(y2, prev_y1),
 						this);
+				}
+				
+				
 
-
-//printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
+//printf("ResourcePixmap::draw_audio_source %d %d %d %d\n", __LINE__, x, y1, y2);
 
 				prev_y1 = y1;
 				prev_y2 = y2;
@@ -933,7 +948,12 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 void ResourcePixmap::dump()
 {
 	printf("ResourcePixmap %p\n", this);
-	printf(" edit %x edit_x %d pixmap_x %d pixmap_w %d visible %d\n", edit_id, edit_x, pixmap_x, pixmap_w, visible);
+	printf(" edit 0x%llx edit_x %d pixmap_x %d pixmap_w %d visible %d\n", 
+		(long long)edit_id, 
+		(int)edit_x, 
+		(int)pixmap_x, 
+		(int)pixmap_w, 
+		(int)visible);
 }
 
 

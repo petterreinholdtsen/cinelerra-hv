@@ -129,7 +129,6 @@ int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 {
 	Transition *transition = 0;
 
-//printf("VirtualNode::expand_as_module %d\n", __LINE__);
 // create the plugins for this module
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
@@ -139,6 +138,7 @@ int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 			0,
 			1);
 
+//printf("VirtualNode::expand_as_module %d plugin=%p\n", __LINE__, plugin);
 		int circular_reference = 0;
 // Switch off if circular reference.  This happens if a plugin set or a track is deleted.
 		if(plugin == real_plugin) circular_reference = 1;

@@ -194,28 +194,6 @@ VFrame* BandSlideMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int BandSlideMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sbandslide.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	bands = defaults->get("BANDS", bands);
-	direction = defaults->get("DIRECTION", direction);
-	return 0;
-}
-
-int BandSlideMain::save_defaults()
-{
-	defaults->update("BANDS", bands);
-	defaults->update("DIRECTION", direction);
-	defaults->save();
-	return 0;
-}
 
 void BandSlideMain::save_data(KeyFrame *keyframe)
 {

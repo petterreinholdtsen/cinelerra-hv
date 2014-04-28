@@ -208,16 +208,25 @@ int AttachmentPoint::singlechannel()
 }
 
 
-void AttachmentPoint::render_gui(void *data)
+void AttachmentPoint::render_gui(void *data, PluginServer *server)
 {
+//printf("AttachmentPoint::render_gui 1 %p %p\n", server, plugin_servers.get(0));
 	if(!this) printf("AttachmentPoint::render_gui 1 NULL\n");
+
+// Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
+	if(server != plugin_servers.get(0)) return;
+
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, plugin);
 }
 
-void AttachmentPoint::render_gui(void *data, int size)
+void AttachmentPoint::render_gui(void *data, int size, PluginServer *server)
 {
 	if(!this) printf("AttachmentPoint::render_gui 2 NULL\n");
+
+// Discard if not 1st plugin server, so single channel plugins don't get double GUI updates
+	if(server != plugin_servers.get(0)) return;
+
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, size, plugin);
 }
@@ -243,7 +252,7 @@ int AttachmentPoint::dump()
 {
 	if(this)
 	{
-		printf("    Attachmentpoint %x virtual_plugins=%d\n", this, new_virtual_plugins.total);
+		printf("    Attachmentpoint this=%p virtual_plugins=%d\n", this, new_virtual_plugins.total);
 		if(plugin_server) plugin_server->dump();
 	}
 	else

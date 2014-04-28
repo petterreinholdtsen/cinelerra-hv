@@ -174,6 +174,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	brender_start = defaults->get("BRENDER_START", brender_start);
 	cmodel_to_text(string, BC_RGBA8888);
 	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
+	eyedrop_radius = defaults->get("EYEDROP_RADIUS", 0);
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
 	crop_y1 = defaults->get("CROP_Y1", 0);
@@ -230,6 +231,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
 	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
 //	record_speed = defaults->get("RECORD_SPEED", 24);
+	record_fragment_size = defaults->get("RECORD_FRAGMENT_SIZE", 2048);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
 	recording_format->load_defaults(defaults,
 		"RECORD_", 
@@ -301,6 +303,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("BRENDER_START", brender_start);
 	cmodel_to_text(string, color_model);
 	defaults->update("COLOR_MODEL", string);
+	defaults->update("EYEDROP_RADIUS", eyedrop_radius);
 	defaults->update("CROP_X1", crop_x1);
 	defaults->update("CROP_X2", crop_x2);
 	defaults->update("CROP_Y1", crop_y1);
@@ -353,6 +356,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
     defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
 	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
 //	defaults->update("RECORD_SPEED", record_speed);  
+	defaults->update("RECORD_FRAGMENT_SIZE", record_fragment_size); 
 	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
 	recording_format->save_defaults(defaults,
 		"RECORD_",
@@ -420,6 +424,7 @@ void EDLSession::boundaries()
 	output_h /= 2;
 	output_h *= 2;
 
+	Workarounds::clamp(eyedrop_radius, 0, 255);
 	Workarounds::clamp(crop_x1, 0, output_w);
 	Workarounds::clamp(crop_x2, 0, output_w);
 	Workarounds::clamp(crop_y1, 0, output_h);
@@ -506,6 +511,7 @@ int EDLSession::load_xml(FileXML *file,
 		auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
 		autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 		brender_start = file->tag.get_property("BRENDER_START", brender_start);
+		eyedrop_radius = file->tag.get_property("EYEDROP_RADIUS", eyedrop_radius);
 		crop_x1 = file->tag.get_property("CROP_X1", crop_x1);
 		crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
 		crop_x2 = file->tag.get_property("CROP_X2", crop_x2);
@@ -524,9 +530,6 @@ int EDLSession::load_xml(FileXML *file,
 		cwindow_xscroll = file->tag.get_property("CWINDOW_XSCROLL", cwindow_xscroll);
 		cwindow_yscroll = file->tag.get_property("CWINDOW_YSCROLL", cwindow_yscroll);
 		cwindow_zoom = file->tag.get_property("CWINDOW_ZOOM", cwindow_zoom);
-		file->tag.get_property("DEFAULT_ATRANSITION", default_atransition);
-		file->tag.get_property("DEFAULT_VTRANSITION", default_vtransition);
-		default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
@@ -568,6 +571,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("AUTO_KEYFRAMES", auto_keyframes);
 	file->tag.set_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	file->tag.set_property("BRENDER_START", brender_start);
+	file->tag.set_property("EYEDROP_RADIUS", eyedrop_radius);
 	file->tag.set_property("CROP_X1", crop_x1);
 	file->tag.set_property("CROP_Y1", crop_y1);
 	file->tag.set_property("CROP_X2", crop_x2);
@@ -586,9 +590,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("CWINDOW_XSCROLL", cwindow_xscroll);
 	file->tag.set_property("CWINDOW_YSCROLL", cwindow_yscroll);
 	file->tag.set_property("CWINDOW_ZOOM", cwindow_zoom);
-	file->tag.set_property("DEFAULT_ATRANSITION", default_atransition);
-	file->tag.set_property("DEFAULT_VTRANSITION", default_vtransition);
-	file->tag.set_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
@@ -691,6 +692,7 @@ int EDLSession::copy(EDLSession *session)
 	autos_follow_edits = session->autos_follow_edits;
 	brender_start = session->brender_start;
 	color_model = session->color_model;
+	eyedrop_radius = session->eyedrop_radius;
 	crop_x1 = session->crop_x1;
 	crop_y1 = session->crop_y1;
 	crop_x2 = session->crop_x2;
@@ -747,6 +749,7 @@ int EDLSession::copy(EDLSession *session)
 	record_software_position = session->record_software_position;
 //	record_speed = session->record_speed;
 	record_sync_drives = session->record_sync_drives;
+	record_fragment_size = session->record_fragment_size;
 	record_write_length = session->record_write_length;
 	recording_format->copy_from(session->recording_format, 0);
 	safe_regions = session->safe_regions;
@@ -787,7 +790,7 @@ void EDLSession::dump()
 			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f decode subtitles=%d subtitle_number=%d\n", 
 		audio_tracks, 
 		audio_channels, 
-		sample_rate, 
+		(long long)sample_rate, 
 		video_tracks, 
 		frame_rate, 
 		output_w, 

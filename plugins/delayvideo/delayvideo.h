@@ -55,15 +55,20 @@ public:
 	float length;
 };
 
+class DelayVideoWindow;
 
-class DelayVideoSlider : public BC_TextBox
+class DelayVideoSlider : public BC_TumbleTextBox
 {
 public:
-	DelayVideoSlider(DelayVideo *plugin, int x, int y);
+	DelayVideoSlider(DelayVideoWindow *window,
+		DelayVideo *plugin, 
+		int x, 
+		int y);
 	
 	int handle_event();
 	
 	DelayVideo *plugin;
+	DelayVideoWindow *window;
 	
 };
 
@@ -102,8 +107,6 @@ public:
 
 
 
-	int load_defaults();
-	int save_defaults();
 	void update_gui();
 
 

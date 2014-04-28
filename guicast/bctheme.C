@@ -35,6 +35,8 @@ BC_Theme::BC_Theme()
 	contents_ptr = 0;
 	last_image = 0;
 	last_pointer = 0;
+
+
 }
 
 BC_Theme::~BC_Theme()
@@ -80,6 +82,13 @@ VFrame* BC_Theme::new_image(const char *path)
 // These create image sets which are stored in the image_sets table.
 VFrame** BC_Theme::new_image_set(const char *title, int total, va_list *args)
 {
+	if(!total)
+	{
+		printf("BC_Theme::new_image_set %d %s zero number of images\n",
+			__LINE__,
+			title);
+	}
+
 	VFrame **existing_image_set = title[0] ? get_image_set(title, 0) : 0;
 	if(existing_image_set) return existing_image_set;
 

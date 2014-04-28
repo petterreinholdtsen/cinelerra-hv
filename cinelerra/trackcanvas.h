@@ -259,8 +259,7 @@ public:
 	void plugin_dimensions(Plugin *plugin, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
 	void get_pixmap_size(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t &pixmap_x, int64_t &pixmap_w, int64_t &pixmap_h);
 	ResourcePixmap* create_pixmap(Edit *edit, int64_t edit_x, int64_t pixmap_x, int64_t pixmap_w, int64_t pixmap_h);
-	int set_index_file(int flash, Asset *asset);
-	void update_cursor();
+	void update_cursor(int flush);
 // Get edit and handle the cursor is over
 	int do_edit_handles(int cursor_x, 
 		int cursor_y, 
@@ -356,6 +355,8 @@ public:
 	int drag_scroll;
 // Don't stop hourglass if it was never started before the operation.
 	int hourglass_enabled;
+// position used by timebar, when the timebar needs to draw a highlight
+	double timebar_position;
 
 // Temporary for picon drawing
 	VFrame *temp_picon;
@@ -369,49 +370,14 @@ public:
 	ResourceThread *resource_thread;
 
 
-
-
-
-
-
-
-
-
-
-
 // event handlers
-	int button_release();
-	int draw_playback_cursor(int pixel, int flash = 1);
-	int draw_loop_point(int64_t position, int flash);
 	void draw_paste_destination();
 
-	int draw_floating_handle(int flash);
-
-
-private:
-	int end_translation();
-
 // ====================================== cursor selection type
-	int auto_selected;               // 1 if automation selected
-	int translate_selected;          // 1 if video translation selected
 
-	int handle_selected;       // if a handle is selected
-								// 1 if not floating yet
-								// 2 if floating
-	int which_handle;           // 1 left or 2 right handle
-	int64_t handle_oldposition;       // original position of handle
-	int64_t handle_position;           // current position of handle
-	int handle_pixel;                // original pixel position of pointer in window
-	int handle_mode;   // Determined by which button was pressed
 
-	int current_end;       // end of selection 1 left 2 right
-	double selection_midpoint1, selection_midpoint2;        // division between current ends
-	int region_selected;         // 1 if region selected
-	int selection_type;  // Whether an edit or a sample is selected
+	double selection_midpoint;        // division between current ends
 
-	int auto_reposition(int &cursor_x, int &cursor_y, int64_t cursor_position);
-	int update_selection(int64_t cursor_position);
-	int update_handle_selection(int64_t cursor_position);
 };
 
 #endif

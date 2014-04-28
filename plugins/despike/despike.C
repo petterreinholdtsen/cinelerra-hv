@@ -88,33 +88,6 @@ int Despike::process_realtime(int64_t size, Samples *input_ptr, Samples *output_
 }
 
 
-int Despike::load_defaults()
-{
-	char directory[1024];
-
-// set the default directory
-	sprintf(directory, "%sdespike.rc", get_defaultdir());
-	
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
-
-	config.level = defaults->get("LEVEL", (double)0);
-	config.slope = defaults->get("SLOPE", (double)0);
-
-	return 0;
-}
-
-int Despike::save_defaults()
-{
-	defaults->update("LEVEL", config.level);
-	defaults->update("SLOPE", config.slope);
-	defaults->save();
-	return 0;
-}
-
 
 void Despike::save_data(KeyFrame *keyframe)
 {

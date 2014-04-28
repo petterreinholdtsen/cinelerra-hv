@@ -127,8 +127,6 @@ public:
 	void load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
 	VFrame* new_picon();
 
 // parameters needed for sharpness
@@ -145,7 +143,6 @@ public:
 
 private:
 	int get_luts(int *pos_lut, int *neg_lut, int color_model);
-	BC_Hash *defaults;
 	QuarkEngine **engine;
 	int total_engines;
 };

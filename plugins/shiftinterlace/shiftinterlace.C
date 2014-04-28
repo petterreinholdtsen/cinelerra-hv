@@ -108,8 +108,6 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
 
 
 	void shift_row(VFrame *input_frame, 
@@ -275,28 +273,6 @@ LOAD_CONFIGURATION_MACRO(ShiftInterlaceMain, ShiftInterlaceConfig)
 NEW_WINDOW_MACRO(ShiftInterlaceMain, ShiftInterlaceWindow)
 
 
-int ShiftInterlaceMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sshiftinterlace.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.odd_offset = defaults->get("ODD_OFFSET", config.odd_offset);
-	config.even_offset = defaults->get("EVEN_OFFSET", config.even_offset);
-	return 0;
-}
-
-int ShiftInterlaceMain::save_defaults()
-{
-	defaults->update("ODD_OFFSET", config.odd_offset);
-	defaults->update("EVEN_OFFSET", config.even_offset);
-	defaults->save();
-	return 0;
-}
 
 void ShiftInterlaceMain::save_data(KeyFrame *keyframe)
 {

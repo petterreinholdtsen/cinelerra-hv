@@ -188,8 +188,6 @@ public:
 	PLUGIN_CLASS_MEMBERS(WaveConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -476,34 +474,6 @@ void WaveEffect::update_gui()
 
 LOAD_CONFIGURATION_MACRO(WaveEffect, WaveConfig)
 
-int WaveEffect::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%swave.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.mode = defaults->get("MODE", config.mode);
-	config.reflective = defaults->get("REFLECTIVE", config.reflective);
-	config.amplitude = defaults->get("AMPLITUDE", config.amplitude);
-	config.phase = defaults->get("PHASE", config.phase);
-	config.wavelength = defaults->get("WAVELENGTH", config.wavelength);
-	return 0;
-}
-
-int WaveEffect::save_defaults()
-{
-	defaults->update("MODE", config.mode);
-	defaults->update("REFLECTIVE", config.reflective);
-	defaults->update("AMPLITUDE", config.amplitude);
-	defaults->update("PHASE", config.phase);
-	defaults->update("WAVELENGTH", config.wavelength);
-	defaults->save();
-	return 0;
-}
 
 void WaveEffect::save_data(KeyFrame *keyframe)
 {

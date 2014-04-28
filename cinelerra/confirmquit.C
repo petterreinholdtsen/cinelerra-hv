@@ -56,6 +56,7 @@ void ConfirmQuitWindow::create_objects(char *string)
 	add_subwindow(new ConfirmQuitYesButton(mwindow, this));
 	add_subwindow(new ConfirmQuitNoButton(mwindow, this));
 	add_subwindow(new ConfirmQuitCancelButton(mwindow, this));
+	show_window(1);
 	unlock_window();
 }
 

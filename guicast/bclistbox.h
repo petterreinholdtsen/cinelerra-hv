@@ -155,7 +155,7 @@ public:
 		int selection_number,
 		int *counter = 0);
 
-	virtual int evaluate_query(int list_item, char *string);
+	virtual int evaluate_query(char *string);
 	void expand_item(BC_ListBoxItem *item, int expand);
 // Collapse all items
 	static void collapse_recursive(ArrayList<BC_ListBoxItem*> *data,
@@ -264,7 +264,11 @@ public:
 
 
 	void reset_query();
-	int reposition_window(int x, int y, int w = -1, int h = -1);
+	int reposition_window(int x, 
+		int y, 
+		int w = -1, 
+		int h = -1, 
+		int flush = 1);
 	BC_Pixmap* get_bg_surface();
 // Set all items for autoplacement with recursion into sublists
 	void set_autoplacement(ArrayList<BC_ListBoxItem*> *data,
@@ -311,6 +315,7 @@ public:
 
 // Draw the list items
 	int draw_items(int flash);
+	
 
 
 
@@ -326,10 +331,11 @@ private:
 		int *column_widths, 
 		int columns);
 // Draw the button for a popup listbox
-	int draw_button();
+	int draw_button(int flush);
 // Draw list border
 	int draw_border(int flash);
 // Draw column titles
+	void draw_title(int number);
 	int draw_titles(int flash);
 // Draw expanders
 	void draw_toggles(int flash);
@@ -425,7 +431,7 @@ private:
 	void clamp_positions();
 
 	int get_scrollbars();
-	void update_scrollbars();
+	void update_scrollbars(int flush);
 
 // Flat index of the item the cursor is over.  
 // Points *item_return to the first item in the row or 0 if no item was found.

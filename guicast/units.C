@@ -257,7 +257,7 @@ char* Units::totext(char *text,
 			break;
 		
 		case TIME_SAMPLES_HEX:
-  			sprintf(text, "%08x", to_int64(seconds * sample_rate));
+  			sprintf(text, "%08x", (int)to_int64(seconds * sample_rate));
 			break;
 		
 		case TIME_FRAMES:
@@ -378,8 +378,12 @@ int64_t Units::fromtext(char *text,
 			break;
 		
 		case TIME_SAMPLES_HEX:
-			sscanf(text, "%x", &total_samples);
+		{
+			int temp;
+			sscanf(text, "%x", &temp);
+			total_samples = temp;
 			return total_samples;
+		}
 		
 		case TIME_FRAMES:
 			return (int64_t)(atof(text) / frame_rate * samplerate);

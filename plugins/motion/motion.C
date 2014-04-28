@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -31,7 +32,6 @@
 #include "motionwindow.h"
 #include "mutex.h"
 #include "overlayframe.h"
-#include "picon_png.h"
 #include "rotateframe.h"
 #include "transportque.h"
 
@@ -58,8 +58,8 @@ MotionConfig::MotionConfig()
 	block_count = 1;
 	global_block_w = MIN_BLOCK;
 	global_block_h = MIN_BLOCK;
-	rotation_block_w = MIN_BLOCK;
-	rotation_block_h = MIN_BLOCK;
+//	rotation_block_w = MIN_BLOCK;
+//	rotation_block_h = MIN_BLOCK;
 	block_x = 50;
 	block_y = 50;
 	global_positions = 256;
@@ -68,12 +68,12 @@ MotionConfig::MotionConfig()
 	rotate_magnitude = 90;
 	return_speed = 0;
 	rotate_return_speed = 0;
-	mode1 = STABILIZE;
+	action_type = MotionScan::STABILIZE;
 	global = 1;
 	rotate = 1;
-	mode2 = NO_CALCULATE;
+	tracking_type = MotionScan::NO_CALCULATE;
 	draw_vectors = 1;
-	mode3 = MotionConfig::TRACK_SINGLE;
+	tracking_object = MotionScan::TRACK_SINGLE;
 	track_frame = 0;
 	bottom_is_master = 1;
 	horizontal_only = 0;
@@ -89,8 +89,8 @@ void MotionConfig::boundaries()
 	CLAMP(block_count, MIN_BLOCKS, MAX_BLOCKS);
 	CLAMP(global_block_w, MIN_BLOCK, MAX_BLOCK);
 	CLAMP(global_block_h, MIN_BLOCK, MAX_BLOCK);
-	CLAMP(rotation_block_w, MIN_BLOCK, MAX_BLOCK);
-	CLAMP(rotation_block_h, MIN_BLOCK, MAX_BLOCK);
+//	CLAMP(rotation_block_w, MIN_BLOCK, MAX_BLOCK);
+//	CLAMP(rotation_block_h, MIN_BLOCK, MAX_BLOCK);
 }
 
 int MotionConfig::equivalent(MotionConfig &that)
@@ -99,24 +99,24 @@ int MotionConfig::equivalent(MotionConfig &that)
 		global_range_h == that.global_range_h &&
 		rotation_range == that.rotation_range &&
 		rotation_center == that.rotation_center &&
-		mode1 == that.mode1 &&
+		action_type == that.action_type &&
 		global == that.global &&
 		rotate == that.rotate &&
 		draw_vectors == that.draw_vectors &&
 		block_count == that.block_count &&
 		global_block_w == that.global_block_w &&
 		global_block_h == that.global_block_h &&
-		rotation_block_w == that.rotation_block_w &&
-		rotation_block_h == that.rotation_block_h &&
+//		rotation_block_w == that.rotation_block_w &&
+//		rotation_block_h == that.rotation_block_h &&
 		EQUIV(block_x, that.block_x) &&
 		EQUIV(block_y, that.block_y) &&
 		global_positions == that.global_positions &&
 		rotate_positions == that.rotate_positions &&
 		magnitude == that.magnitude &&
-		EQUIV(return_speed, that.return_speed) &&
-		EQUIV(rotate_return_speed, that.rotate_return_speed) &&
+		return_speed == that.return_speed &&
+		rotate_return_speed == that.rotate_return_speed &&
 		rotate_magnitude == that.rotate_magnitude &&
-		mode3 == that.mode3 &&
+		tracking_object == that.tracking_object &&
 		track_frame == that.track_frame &&
 		bottom_is_master == that.bottom_is_master &&
 		horizontal_only == that.horizontal_only &&
@@ -129,10 +129,10 @@ void MotionConfig::copy_from(MotionConfig &that)
 	global_range_h = that.global_range_h;
 	rotation_range = that.rotation_range;
 	rotation_center = that.rotation_center;
-	mode1 = that.mode1;
+	action_type = that.action_type;
 	global = that.global;
 	rotate = that.rotate;
-	mode2 = that.mode2;
+	tracking_type = that.tracking_type;
 	draw_vectors = that.draw_vectors;
 	block_count = that.block_count;
 	block_x = that.block_x;
@@ -141,13 +141,13 @@ void MotionConfig::copy_from(MotionConfig &that)
 	rotate_positions = that.rotate_positions;
 	global_block_w = that.global_block_w;
 	global_block_h = that.global_block_h;
-	rotation_block_w = that.rotation_block_w;
-	rotation_block_h = that.rotation_block_h;
+//	rotation_block_w = that.rotation_block_w;
+//	rotation_block_h = that.rotation_block_h;
 	magnitude = that.magnitude;
 	return_speed = that.return_speed;
 	rotate_magnitude = that.rotate_magnitude;
 	rotate_return_speed = that.rotate_return_speed;
-	mode3 = that.mode3;
+	tracking_object = that.tracking_object;
 	track_frame = that.track_frame;
 	bottom_is_master = that.bottom_is_master;
 	horizontal_only = that.horizontal_only;
@@ -168,23 +168,23 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	global_range_h = prev.global_range_h;
 	rotation_range = prev.rotation_range;
 	rotation_center = prev.rotation_center;
-	mode1 = prev.mode1;
+	action_type = prev.action_type;
 	global = prev.global;
 	rotate = prev.rotate;
-	mode2 = prev.mode2;
+	tracking_type = prev.tracking_type;
 	draw_vectors = prev.draw_vectors;
 	block_count = prev.block_count;
 	global_positions = prev.global_positions;
 	rotate_positions = prev.rotate_positions;
 	global_block_w = prev.global_block_w;
 	global_block_h = prev.global_block_h;
-	rotation_block_w = prev.rotation_block_w;
-	rotation_block_h = prev.rotation_block_h;
+//	rotation_block_w = prev.rotation_block_w;
+//	rotation_block_h = prev.rotation_block_h;
 	magnitude = prev.magnitude;
 	return_speed = prev.return_speed;
 	rotate_magnitude = prev.rotate_magnitude;
 	rotate_return_speed = prev.rotate_return_speed;
-	mode3 = prev.mode3;
+	tracking_object = prev.tracking_object;
 	track_frame = prev.track_frame;
 	bottom_is_master = prev.bottom_is_master;
 	horizontal_only = prev.horizontal_only;
@@ -212,7 +212,6 @@ void MotionConfig::interpolate(MotionConfig &prev,
 MotionMain::MotionMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
 	engine = 0;
 	rotate_engine = 0;
 	motion_rotate = 0;
@@ -238,7 +237,7 @@ MotionMain::MotionMain(PluginServer *server)
 
 MotionMain::~MotionMain()
 {
-	
+
 	delete engine;
 	delete overlayer;
 	delete [] search_area;
@@ -262,7 +261,6 @@ const char* MotionMain::plugin_title() { return N_("Motion"); }
 int MotionMain::is_realtime() { return 1; }
 int MotionMain::is_multichannel() { return 1; }
 
-NEW_PICON_MACRO(MotionMain)
 
 NEW_WINDOW_MACRO(MotionMain, MotionWindow)
 
@@ -300,21 +298,21 @@ void MotionMain::update_gui()
 			((MotionWindow*)thread->window)->rotation_center->update(config.rotation_center);
 
 
-			((MotionWindow*)thread->window)->track_single->update(config.mode3 == MotionConfig::TRACK_SINGLE);
+			((MotionWindow*)thread->window)->track_single->update(config.tracking_object == MotionScan::TRACK_SINGLE);
 			((MotionWindow*)thread->window)->track_frame_number->update(config.track_frame);
-			((MotionWindow*)thread->window)->track_previous->update(config.mode3 == MotionConfig::TRACK_PREVIOUS);
-			((MotionWindow*)thread->window)->previous_same->update(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK);
-			if(config.mode3 != MotionConfig::TRACK_SINGLE)
+			((MotionWindow*)thread->window)->track_previous->update(config.tracking_object == MotionScan::TRACK_PREVIOUS);
+			((MotionWindow*)thread->window)->previous_same->update(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK);
+			if(config.tracking_object != MotionScan::TRACK_SINGLE)
 				((MotionWindow*)thread->window)->track_frame_number->disable();
 			else
 				((MotionWindow*)thread->window)->track_frame_number->enable();
 
-			((MotionWindow*)thread->window)->mode1->set_text(
-				Mode1::to_text(config.mode1));
-			((MotionWindow*)thread->window)->mode2->set_text(
-				Mode2::to_text(config.mode2));
-			((MotionWindow*)thread->window)->mode3->set_text(
-				Mode3::to_text(config.horizontal_only, config.vertical_only));
+			((MotionWindow*)thread->window)->action_type->set_text(
+				ActionType::to_text(config.action_type));
+			((MotionWindow*)thread->window)->tracking_type->set_text(
+				TrackingType::to_text(config.tracking_type));
+			((MotionWindow*)thread->window)->track_direction->set_text(
+				TrackDirection::to_text(config.horizontal_only, config.vertical_only));
 			((MotionWindow*)thread->window)->master_layer->set_text(
 				MasterLayer::to_text(config.bottom_is_master));
 
@@ -325,81 +323,6 @@ void MotionMain::update_gui()
 	}
 }
 
-
-int MotionMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%smotion.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.block_count = defaults->get("BLOCK_COUNT", config.block_count);
-	config.global_positions = defaults->get("GLOBAL_POSITIONS", config.global_positions);
-	config.rotate_positions = defaults->get("ROTATE_POSITIONS", config.rotate_positions);
-	config.global_block_w = defaults->get("GLOBAL_BLOCK_W", config.global_block_w);
-	config.global_block_h = defaults->get("GLOBAL_BLOCK_H", config.global_block_h);
-	config.rotation_block_w = defaults->get("ROTATION_BLOCK_W", config.rotation_block_w);
-	config.rotation_block_h = defaults->get("ROTATION_BLOCK_H", config.rotation_block_h);
-	config.block_x = defaults->get("BLOCK_X", config.block_x);
-	config.block_y = defaults->get("BLOCK_Y", config.block_y);
-	config.global_range_w = defaults->get("GLOBAL_RANGE_W", config.global_range_w);
-	config.global_range_h = defaults->get("GLOBAL_RANGE_H", config.global_range_h);
-	config.rotation_range = defaults->get("ROTATION_RANGE", config.rotation_range);
-	config.rotation_center = defaults->get("ROTATION_CENTER", config.rotation_center);
-	config.magnitude = defaults->get("MAGNITUDE", config.magnitude);
-	config.return_speed = defaults->get("RETURN_SPEED", config.return_speed);
-	config.rotate_magnitude = defaults->get("ROTATE_MAGNITUDE", config.rotate_magnitude);
-	config.rotate_return_speed = defaults->get("ROTATE_RETURN_SPEED", config.rotate_return_speed);
-	config.mode1 = defaults->get("MODE1", config.mode1);
-	config.global = defaults->get("GLOBAL", config.global);
-	config.rotate = defaults->get("ROTATE", config.rotate);
-	config.mode2 = defaults->get("MODE2", config.mode2);
-	config.draw_vectors = defaults->get("DRAW_VECTORS", config.draw_vectors);
-	config.mode3 = defaults->get("MODE3", config.mode3);
-	config.track_frame = defaults->get("TRACK_FRAME", config.track_frame);
-	config.bottom_is_master = defaults->get("BOTTOM_IS_MASTER", config.bottom_is_master);
-	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
-	config.vertical_only = defaults->get("VERTICAL_ONLY", config.vertical_only);
-	config.boundaries();
-	return 0;
-}
-
-
-int MotionMain::save_defaults()
-{
-	defaults->update("BLOCK_COUNT", config.block_count);
-	defaults->update("GLOBAL_POSITIONS", config.global_positions);
-	defaults->update("ROTATE_POSITIONS", config.rotate_positions);
-	defaults->update("GLOBAL_BLOCK_W", config.global_block_w);
-	defaults->update("GLOBAL_BLOCK_H", config.global_block_h);
-	defaults->update("ROTATION_BLOCK_W", config.rotation_block_w);
-	defaults->update("ROTATION_BLOCK_H", config.rotation_block_h);
-	defaults->update("BLOCK_X", config.block_x);
-	defaults->update("BLOCK_Y", config.block_y);
-	defaults->update("GLOBAL_RANGE_W", config.global_range_w);
-	defaults->update("GLOBAL_RANGE_H", config.global_range_h);
-	defaults->update("ROTATION_RANGE", config.rotation_range);
-	defaults->update("ROTATION_CENTER", config.rotation_center);
-	defaults->update("MAGNITUDE", config.magnitude);
-	defaults->update("RETURN_SPEED", config.return_speed);
-	defaults->update("ROTATE_MAGNITUDE", config.rotate_magnitude);
-	defaults->update("ROTATE_RETURN_SPEED", config.rotate_return_speed);
-	defaults->update("MODE1", config.mode1);
-	defaults->update("GLOBAL", config.global);
-	defaults->update("ROTATE", config.rotate);
-	defaults->update("MODE2", config.mode2);
-	defaults->update("DRAW_VECTORS", config.draw_vectors);
-	defaults->update("MODE3", config.mode3);
-	defaults->update("TRACK_FRAME", config.track_frame);
-	defaults->update("BOTTOM_IS_MASTER", config.bottom_is_master);
-	defaults->update("HORIZONTAL_ONLY", config.horizontal_only);
-	defaults->update("VERTICAL_ONLY", config.vertical_only);
-	defaults->save();
-	return 0;
-}
 
 
 
@@ -416,8 +339,8 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ROTATE_POSITIONS", config.rotate_positions);
 	output.tag.set_property("GLOBAL_BLOCK_W", config.global_block_w);
 	output.tag.set_property("GLOBAL_BLOCK_H", config.global_block_h);
-	output.tag.set_property("ROTATION_BLOCK_W", config.rotation_block_w);
-	output.tag.set_property("ROTATION_BLOCK_H", config.rotation_block_h);
+//	output.tag.set_property("ROTATION_BLOCK_W", config.rotation_block_w);
+//	output.tag.set_property("ROTATION_BLOCK_H", config.rotation_block_h);
 	output.tag.set_property("BLOCK_X", config.block_x);
 	output.tag.set_property("BLOCK_Y", config.block_y);
 	output.tag.set_property("GLOBAL_RANGE_W", config.global_range_w);
@@ -428,12 +351,12 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("RETURN_SPEED", config.return_speed);
 	output.tag.set_property("ROTATE_MAGNITUDE", config.rotate_magnitude);
 	output.tag.set_property("ROTATE_RETURN_SPEED", config.rotate_return_speed);
-	output.tag.set_property("MODE1", config.mode1);
+	output.tag.set_property("ACTION_TYPE", config.action_type);
 	output.tag.set_property("GLOBAL", config.global);
 	output.tag.set_property("ROTATE", config.rotate);
-	output.tag.set_property("MODE2", config.mode2);
+	output.tag.set_property("TRACKING_TYPE", config.tracking_type);
 	output.tag.set_property("DRAW_VECTORS", config.draw_vectors);
-	output.tag.set_property("MODE3", config.mode3);
+	output.tag.set_property("TRACKING_OBJECT", config.tracking_object);
 	output.tag.set_property("TRACK_FRAME", config.track_frame);
 	output.tag.set_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
@@ -463,8 +386,8 @@ void MotionMain::read_data(KeyFrame *keyframe)
 				config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);
 				config.global_block_w = input.tag.get_property("GLOBAL_BLOCK_W", config.global_block_w);
 				config.global_block_h = input.tag.get_property("GLOBAL_BLOCK_H", config.global_block_h);
-				config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
-				config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
+//				config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
+//				config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
 				config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
 				config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
 				config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
@@ -475,12 +398,12 @@ void MotionMain::read_data(KeyFrame *keyframe)
 				config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
 				config.rotate_magnitude = input.tag.get_property("ROTATE_MAGNITUDE", config.rotate_magnitude);
 				config.rotate_return_speed = input.tag.get_property("ROTATE_RETURN_SPEED", config.rotate_return_speed);
-				config.mode1 = input.tag.get_property("MODE1", config.mode1);
+				config.action_type = input.tag.get_property("ACTION_TYPE", config.action_type);
 				config.global = input.tag.get_property("GLOBAL", config.global);
 				config.rotate = input.tag.get_property("ROTATE", config.rotate);
-				config.mode2 = input.tag.get_property("MODE2", config.mode2);
+				config.tracking_type = input.tag.get_property("TRACKING_TYPE", config.tracking_type);
 				config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
-				config.mode3 = input.tag.get_property("MODE3", config.mode3);
+				config.tracking_object = input.tag.get_property("TRACKING_OBJECT", config.tracking_object);
 				config.track_frame = input.tag.get_property("TRACK_FRAME", config.track_frame);
 				config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
 				config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
@@ -515,6 +438,7 @@ void MotionMain::allocate_temp(int w, int h, int color_model)
 
 void MotionMain::process_global()
 {
+
 	if(!engine) engine = new MotionScan(PluginClient::get_project_smp() + 1,
 		PluginClient::get_project_smp() + 1);
 
@@ -527,9 +451,9 @@ void MotionMain::process_global()
 		config.global_block_h,
 		config.block_x,
 		config.block_y,
-		config.mode3,
-		config.mode2,
-		config.mode1,
+		config.tracking_object,
+		config.tracking_type,
+		config.action_type,
 		config.horizontal_only,
 		config.vertical_only,
 		get_source_position(),
@@ -537,25 +461,18 @@ void MotionMain::process_global()
 		total_dx,
 		total_dy,
 		0,
-		0,
-		config.rotate ? config.rotation_range : 0,
-		config.rotate ? total_angle : 0,
-		config.rotate ? config.rotate_positions : 0,
-		config.rotate ? config.rotation_center : 0);
+		0);
 	current_dx = engine->dx_result;
 	current_dy = engine->dy_result;
-	current_angle = engine->dangle_result;
 
 // Add current motion vector to accumulation vector.
-	if(config.mode3 != MotionConfig::TRACK_SINGLE)
+	if(config.tracking_object != MotionScan::TRACK_SINGLE)
 	{
 // Retract over time
-		total_dx = (int64_t)((float)total_dx * (100.0 - config.return_speed) / 100.0);
-		total_dy = (int64_t)((float)total_dy * (100.0 - config.return_speed) / 100.0);
+		total_dx = (int64_t)total_dx * (100 - config.return_speed) / 100;
+		total_dy = (int64_t)total_dy * (100 - config.return_speed) / 100;
 		total_dx += engine->dx_result;
 		total_dy += engine->dy_result;
-		total_angle += engine->dangle_result;
-
 // printf("MotionMain::process_global total_dx=%d engine->dx_result=%d\n", 
 // total_dx,
 // engine->dx_result);
@@ -565,11 +482,6 @@ void MotionMain::process_global()
 	{
 		total_dx = engine->dx_result;
 		total_dy = engine->dy_result;
-		total_angle = engine->dangle_result;
-printf("MotionMain::process_global %d engine->dx_result=%d engine->dy_result=%d\n", 
-__LINE__,
-engine->dx_result,
-engine->dy_result);
 	}
 
 // Clamp accumulation vector
@@ -607,12 +519,13 @@ engine->dy_result);
 		CLAMP(total_dy, min_block_y, max_block_y);
 	}
 
-printf("MotionMain::process_global %d total_dx=%d total_dy=%d\n", 
-__LINE__,
-total_dx,
-total_dy);
+#ifdef DEBUG
+printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n", 
+(float)total_dx / OVERSAMPLE,
+(float)total_dy / OVERSAMPLE);
+#endif
 
-	if(config.mode3 != MotionConfig::TRACK_SINGLE && !config.rotate)
+	if(config.tracking_object != MotionScan::TRACK_SINGLE && !config.rotate)
 	{
 // Transfer current reference frame to previous reference frame and update
 // counter.  Must wait for rotate to compare.
@@ -624,28 +537,28 @@ total_dy);
 	int interpolation;
 	float dx;
 	float dy;
-	switch(config.mode1)
+	switch(config.action_type)
 	{
-		case MotionConfig::NOTHING:
+		case MotionScan::NOTHING:
 			global_target_dst->copy_from(global_target_src);
 			break;
-		case MotionConfig::TRACK_PIXEL:
+		case MotionScan::TRACK_PIXEL:
 			interpolation = NEAREST_NEIGHBOR;
 			dx = (int)(total_dx / OVERSAMPLE);
 			dy = (int)(total_dy / OVERSAMPLE);
 			break;
-		case MotionConfig::STABILIZE_PIXEL:
+		case MotionScan::STABILIZE_PIXEL:
 			interpolation = NEAREST_NEIGHBOR;
 			dx = -(int)(total_dx / OVERSAMPLE);
 			dy = -(int)(total_dy / OVERSAMPLE);
 			break;
 			break;
-		case MotionConfig::TRACK:
+		case MotionScan::TRACK:
 			interpolation = CUBIC_LINEAR;
 			dx = (float)total_dx / OVERSAMPLE;
 			dy = (float)total_dy / OVERSAMPLE;
 			break;
-		case MotionConfig::STABILIZE:
+		case MotionScan::STABILIZE:
 			interpolation = CUBIC_LINEAR;
 			dx = -(float)total_dx / OVERSAMPLE;
 			dy = -(float)total_dy / OVERSAMPLE;
@@ -653,7 +566,7 @@ total_dy);
 	}
 
 
-	if(config.mode1 != MotionConfig::NOTHING)
+	if(config.action_type != MotionScan::NOTHING)
 	{
 		if(!overlayer) 
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
@@ -689,7 +602,7 @@ void MotionMain::process_rotation()
 			overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 		float dx;
 		float dy;
-		if(config.mode3 == MotionConfig::TRACK_SINGLE)
+		if(config.tracking_object == MotionScan::TRACK_SINGLE)
 		{
 			dx = (float)total_dx / OVERSAMPLE;
 			dy = (float)total_dy / OVERSAMPLE;
@@ -728,7 +641,7 @@ void MotionMain::process_rotation()
 // Use the global target output as the rotation target input
 		rotate_target_src->copy_from(global_target_dst);
 // Transfer current reference frame to previous reference frame for global.
-		if(config.mode3 != MotionConfig::TRACK_SINGLE)
+		if(config.tracking_object != MotionScan::TRACK_SINGLE)
 		{
 			prev_global_ref->copy_from(current_global_ref);
 			previous_frame_number = get_source_position();
@@ -748,26 +661,25 @@ void MotionMain::process_rotation()
 
 
 // Get rotation
-// Now done in global pass
-// 	if(!motion_rotate)
-// 		motion_rotate = new RotateScan(this, 
-// 			get_project_smp() + 1, 
-// 			get_project_smp() + 1);
-// 
-// 	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
-// 		current_rotate_ref,
-// 		block_x,
-// 		block_y);
+	if(!motion_rotate)
+		motion_rotate = new RotateScan(this, 
+			get_project_smp() + 1, 
+			get_project_smp() + 1);
+
+	current_angle = motion_rotate->scan_frame(prev_rotate_ref, 
+		current_rotate_ref,
+		block_x,
+		block_y);
 
 
 
 // Add current rotation to accumulation
-	if(config.mode3 != MotionConfig::TRACK_SINGLE)
+	if(config.tracking_object != MotionScan::TRACK_SINGLE)
 	{
 // Retract over time
-		total_angle = total_angle * (100.0 - config.rotate_return_speed) / 100.0;
+		total_angle = total_angle * (100 - config.rotate_return_speed) / 100;
 // Accumulate current rotation
-//		total_angle += current_angle;
+		total_angle += current_angle;
 
 // Clamp rotation accumulation
 		if(config.rotate_magnitude < 90)
@@ -785,7 +697,7 @@ void MotionMain::process_rotation()
 	}
 	else
 	{
-//		total_angle = current_angle;
+		total_angle = current_angle;
 	}
 
 #ifdef DEBUG
@@ -795,24 +707,24 @@ printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 
 // Calculate rotation parameters based on requested operation
 	float angle;
-	switch(config.mode1)
+	switch(config.action_type)
 	{
-		case MotionConfig::NOTHING:
+		case MotionScan::NOTHING:
 			rotate_target_dst->copy_from(rotate_target_src);
 			break;
-		case MotionConfig::TRACK:
-		case MotionConfig::TRACK_PIXEL:
+		case MotionScan::TRACK:
+		case MotionScan::TRACK_PIXEL:
 			angle = total_angle;
 			break;
-		case MotionConfig::STABILIZE:
-		case MotionConfig::STABILIZE_PIXEL:
+		case MotionScan::STABILIZE:
+		case MotionScan::STABILIZE_PIXEL:
 			angle = -total_angle;
 			break;
 	}
 
 
 
-	if(config.mode1 != MotionConfig::NOTHING)
+	if(config.action_type != MotionScan::NOTHING)
 	{
 		if(!rotate_engine)
 			rotate_engine = new AffineEngine(PluginClient::get_project_smp() + 1,
@@ -821,20 +733,27 @@ printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 		rotate_target_dst->clear_frame();
 
 // Determine pivot based on a number of factors.
-		switch(config.mode1)
+		switch(config.action_type)
 		{
-			case MotionConfig::TRACK:
-			case MotionConfig::TRACK_PIXEL:
+			case MotionScan::TRACK:
+			case MotionScan::TRACK_PIXEL:
 // Use destination of global tracking.
+//				rotate_engine->set_pivot(block_x, block_y);
 				rotate_engine->set_in_pivot(block_x, block_y);
 				rotate_engine->set_out_pivot(block_x, block_y);
 				break;
 
-			case MotionConfig::STABILIZE:
-			case MotionConfig::STABILIZE_PIXEL:
+			case MotionScan::STABILIZE:
+			case MotionScan::STABILIZE_PIXEL:
 				if(config.global)
 				{
 // Use origin of global stabilize operation
+// 					rotate_engine->set_pivot((int)(rotate_target_dst->get_w() * 
+// 							config.block_x / 
+// 							100),
+// 						(int)(rotate_target_dst->get_h() * 
+// 							config.block_y / 
+// 							100));
 					rotate_engine->set_in_pivot((int)(rotate_target_dst->get_w() * 
 							config.block_x / 
 							100),
@@ -852,6 +771,7 @@ printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 				else
 				{
 // Use origin
+//					rotate_engine->set_pivot(block_x, block_y);
 					rotate_engine->set_in_pivot(block_x, block_y);
 					rotate_engine->set_out_pivot(block_x, block_y);
 				}
@@ -936,7 +856,7 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 	int skip_current = 0;
 
 
-	if(config.mode3 == MotionConfig::TRACK_SINGLE)
+	if(config.tracking_object == MotionScan::TRACK_SINGLE)
 	{
 		actual_previous_number = config.track_frame;
 		if(get_direction() == PLAY_REVERSE)
@@ -985,8 +905,10 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 
 
 
-
-
+// printf("process_realtime %d %lld %lld\n", 
+// skip_current, 
+// previous_frame_number, 
+// actual_previous_number);
 // Load match frame and reset vectors
 	int need_reload = !skip_current && 
 		(previous_frame_number != actual_previous_number ||
@@ -1012,10 +934,6 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 
 
 
-// printf("Motion::process_realtime %d %lld %lld\n", 
-// skip_current, 
-// previous_frame_number, 
-// actual_previous_number);
 
 // Get the global pointers.  Here we walk through the sequence of events.
 	if(config.global)
@@ -1050,17 +968,10 @@ printf("MotionMain::process_buffer %d start_position=%lld\n", __LINE__, start_po
 			reference_layer, 
 			start_position, 
 			frame_rate);
-		if(reference_layer != target_layer)
-		{
-			read_frame(global_target_src,
-				target_layer,
-				start_position,
-				frame_rate);
-		}
-		else
-		{
-			global_target_src->copy_from(current_global_ref);
-		}
+		read_frame(global_target_src,
+			target_layer,
+			start_position,
+			frame_rate);
 
 
 
@@ -1208,7 +1119,7 @@ void MotionMain::draw_vectors(VFrame *frame)
 // Get vector
 // Start of vector is center of previous block.
 // End of vector is total accumulation.
-		if(config.mode3 == MotionConfig::TRACK_SINGLE)
+		if(config.tracking_object == MotionScan::TRACK_SINGLE)
 		{
 			global_x1 = (int64_t)(config.block_x * 
 				w / 
@@ -1218,19 +1129,12 @@ void MotionMain::draw_vectors(VFrame *frame)
 				100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
-printf("MotionMain::draw_vectors %d %d %d %d %d %d %d\n", 
-__LINE__, 
-total_dx, 
-total_dy, 
-global_x1, 
-global_y1, 
-global_x2, 
-global_y2);
+//printf("MotionMain::draw_vectors %d %d %d %d %d %d\n", total_dx, total_dy, global_x1, global_y1, global_x2, global_y2);
 		}
 		else
 // Start of vector is center of previous block.
 // End of vector is current change.
-		if(config.mode3 == MotionConfig::PREVIOUS_SAME_BLOCK)
+		if(config.tracking_object == MotionScan::PREVIOUS_SAME_BLOCK)
 		{
 			global_x1 = (int64_t)(config.block_x * 
 				w / 
@@ -1335,13 +1239,11 @@ global_y2);
 		block_y = (int64_t)(config.block_y * h / 100);
 	}
 
-//	block_w = config.rotation_block_w * w / 100;
-//	block_h = config.rotation_block_h * h / 100;
-    block_w = config.global_block_w * w / 100;
-    block_h = config.global_block_h * h / 100;
-	float angle = total_angle * 2 * M_PI / 360;
-	if(config.rotate && !EQUIV(angle, 0))
+	block_w = config.global_block_w * w / 100;
+	block_h = config.global_block_h * h / 100;
+	if(config.rotate)
 	{
+		float angle = total_angle * 2 * M_PI / 360;
 		double base_angle1 = atan((float)block_h / block_w);
 		double base_angle2 = atan((float)block_w / block_h);
 		double target_angle1 = base_angle1 + angle;
@@ -1582,6 +1484,10 @@ void RotateScanUnit::process_package(LoadPackage *package)
 
 
 // Rotate original block size
+// 		rotater->set_viewport(server->block_x1, 
+// 			server->block_y1,
+// 			server->block_x2 - server->block_x1,
+// 			server->block_y2 - server->block_y1);
 		rotater->set_in_viewport(server->block_x1, 
 			server->block_y1,
 			server->block_x2 - server->block_x1,
@@ -1590,6 +1496,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 			server->block_y1,
 			server->block_x2 - server->block_x1,
 			server->block_y2 - server->block_y1);
+//		rotater->set_pivot(server->block_x, server->block_y);
 		rotater->set_in_pivot(server->block_x, server->block_y);
 		rotater->set_out_pivot(server->block_x, server->block_y);
 //printf("RotateScanUnit::process_package %d\n", __LINE__);
@@ -1623,7 +1530,6 @@ void RotateScanUnit::process_package(LoadPackage *package)
 			pkg->difference = MotionScan::abs_diff(
 				temp->get_rows()[y1] + x1 * pixel_size,
 				server->current_frame->get_rows()[y1] + x1 * pixel_size,
-				row_bytes,
 				row_bytes,
 				x2 - x1,
 				y2 - y1,
@@ -1718,14 +1624,14 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	this->block_y = block_y;
 
 //printf("RotateScan::scan_frame %d\n", __LINE__);
-	switch(plugin->config.mode2)
+	switch(plugin->config.tracking_type)
 	{
-		case MotionConfig::NO_CALCULATE:
+		case MotionScan::NO_CALCULATE:
 			result = plugin->config.rotation_center;
 			skip = 1;
 			break;
 
-		case MotionConfig::LOAD:
+		case MotionScan::LOAD:
 		{
 			char string[BCTEXTLEN];
 			sprintf(string, 
@@ -1735,7 +1641,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 			FILE *input = fopen(string, "r");
 			if(input)
 			{
-				int result2 = fscanf(input, "%f", &result);
+				int temp = fscanf(input, "%f", &result);
 				fclose(input);
 				skip = 1;
 			}
@@ -1758,8 +1664,8 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	this->current_frame = current_frame;
 	int w = current_frame->get_w();
 	int h = current_frame->get_h();
-	int block_w = w * plugin->config.rotation_block_w / 100;
-	int block_h = h * plugin->config.rotation_block_h / 100;
+	int block_w = w * plugin->config.global_block_w / 100;
+	int block_h = h * plugin->config.global_block_h / 100;
 
 	if(this->block_x - block_w / 2 < 0) block_w = this->block_x * 2;
 	if(this->block_y - block_h / 2 < 0) block_h = this->block_y * 2;
@@ -1900,7 +1806,7 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 
 //printf("RotateScan::scan_frame %d\n", __LINE__);
 
-	if(!skip && plugin->config.mode2 == MotionConfig::SAVE)
+	if(!skip && plugin->config.tracking_type == MotionScan::SAVE)
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, 

@@ -108,7 +108,7 @@ void TransitionHandles::update()
 							edit_x,
 							edit_y);
 						trackcanvas->add_subwindow(handle);
-						handle->set_cursor(ARROW_CURSOR);
+						handle->set_cursor(ARROW_CURSOR, 0, 0);
 						append(handle);
 					}
 				}

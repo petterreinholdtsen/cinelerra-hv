@@ -109,6 +109,8 @@ void SUV::initialize()
 	resources->text_inactive_highlight = 0x707070;
 
 	resources->bg_color = 0x484848;
+	resources->border_light2 = resources->bg_color;
+	resources->border_shadow2 = resources->bg_color;
 	resources->default_text_color = 0xbfbfbf;
 	resources->menu_title_text = 0xbfbfbf;
 	resources->popup_title_text = 0xbfbfbf;
@@ -268,6 +270,28 @@ void SUV::initialize()
 		"new_bigbutton_dn.png",
 		"new_cancel_images");
 
+	resources->medium_7segment = new_image_set(TOTAL_7SEGMENT,
+		"0.png",
+		"1.png",
+		"2.png",
+		"3.png",
+		"4.png",
+		"5.png",
+		"6.png",
+		"7.png",
+		"8.png",
+		"9.png",
+		"colon.png",
+		"period.png",
+		"a.png",
+		"b.png",
+		"c.png",
+		"d.png",
+		"e.png",
+		"f.png",
+		"space.png",
+		"dash.png");
+
 	resources->bar_data = new_image("bar", "bar.png");
 
 
@@ -403,11 +427,6 @@ void SUV::initialize()
 
 
 // Record windows
-	rgui_batch = new_image("recordgui_batch.png");
-	rgui_controls = new_image("recordgui_controls.png");
-	rgui_list = new_image("recordgui_list.png");
-	rmonitor_panel = new_image("recordmonitor_panel.png");
-	rmonitor_meters = new_image("recordmonitor_meters.png");
 
 
 	preferences_category_overlap = 0;
@@ -421,8 +440,8 @@ void SUV::initialize()
 // MWindow
 	message_normal = resources->text_default;
 	audio_color = GREEN;
-	mtransport_margin = 30;
-	toggle_margin = 30;
+	mtransport_margin = 20;
+	toggle_margin = 20;
 
 	new_image("mbutton_bg", "mbutton_bg.png");
 	new_image("timebar_bg", "timebar_bg_flat.png");
@@ -465,7 +484,7 @@ void SUV::initialize()
 	new_image("setformat_bg", "setformat_bg.png");
 
 
-	timebar_view_data = new_image("timebar_view.png");
+//	timebar_view_data = new_image("timebar_view.png");
 
 	setformat_w = get_image("setformat_bg")->get_w();
 	setformat_h = get_image("setformat_bg")->get_h();
@@ -536,7 +555,6 @@ void SUV::initialize()
 		"expandpatch_dn.png",
 		"expandpatch_checkedhi.png");
 
-	build_icons();
 	build_bg_data();
 	build_overlays();
 
@@ -563,6 +581,14 @@ void SUV::initialize()
 		"labeltoggle_dn.png", 
 		"label_checkedhi.png");
 
+	new_image_set("histogram_carrot",
+		5,
+		"histogram_carrot_up.png", 
+		"histogram_carrot_hi.png", 
+		"histogram_carrot_checked.png", 
+		"histogram_carrot_dn.png", 
+		"histogram_carrot_checkedhi.png");
+
 
 	statusbar_cancel_data = new_image_set(3,
 		"statusbar_cancel_up.png",
@@ -580,6 +606,45 @@ void SUV::initialize()
 	new_button("bottom_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "bottom_justify");
 	new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "center_justify");
 	new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn, "channel");
+
+	new_toggle("histogram.png", 
+		editpanel_up, 
+		editpanel_hi, 
+		editpanel_checked, 
+		editpanel_dn, 
+		editpanel_checkedhi, 
+		"histogram_toggle");
+	new_toggle("histogram_rgb.png", 
+		editpanel_up, 
+		editpanel_hi, 
+		editpanel_checked, 
+		editpanel_dn, 
+		editpanel_checkedhi, 
+		"histogram_rgb_toggle");
+	new_toggle("waveform.png", 
+		editpanel_up, 
+		editpanel_hi, 
+		editpanel_checked, 
+		editpanel_dn, 
+		editpanel_checkedhi, 
+		"waveform_toggle");
+	new_toggle("waveform_rgb.png", 
+		editpanel_up, 
+		editpanel_hi, 
+		editpanel_checked, 
+		editpanel_dn, 
+		editpanel_checkedhi, 
+		"waveform_rgb_toggle");
+	new_toggle("scope.png", 
+		editpanel_up, 
+		editpanel_hi, 
+		editpanel_checked, 
+		editpanel_dn, 
+		editpanel_checkedhi, 
+		"scope_toggle");
+
+	new_button("picture.png", editpanel_up, editpanel_hi, editpanel_dn, "picture");
+	new_button("histogram.png", editpanel_up, editpanel_hi, editpanel_dn, "histogram");
 
 
 	new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn, "copy");
@@ -633,21 +698,6 @@ void SUV::initialize()
 	new_image("cwindow_active", "cwindow_active.png");
 
 
-	new_image_set("batch_render_start",
-		3,
-		"batchstart_up.png",
-		"batchstart_hi.png",
-		"batchstart_dn.png");
-	new_image_set("batch_render_stop",
-		3,
-		"batchstop_up.png",
-		"batchstop_hi.png",
-		"batchstop_dn.png");
-	new_image_set("batch_render_cancel",
-		3,
-		"batchcancel_up.png",
-		"batchcancel_hi.png",
-		"batchcancel_dn.png");
 
 	new_image_set("category_button",
 		3,
@@ -665,6 +715,11 @@ void SUV::initialize()
 
 
 
+	new_image_set("color3way_point", 
+		3,
+		"color3way_up.png", 
+		"color3way_hi.png", 
+		"color3way_dn.png");
 
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", transport_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
@@ -702,234 +757,21 @@ void SUV::initialize()
 	resources->meter_title_w = 25;
 }
 
-#define CWINDOW_METER_MARGIN 5
 #define VWINDOW_METER_MARGIN 5
 
-void SUV::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
-{
-	mbuttons_x = 0;
-	mbuttons_y = gui->mainmenu->get_h() + 1;
-	mbuttons_w = w;
-	mbuttons_h = get_image("mbutton_bg")->get_h();
-	mclock_x = 10;
-	mclock_y = mbuttons_y - 1 + mbuttons_h + CWINDOW_METER_MARGIN;
-	mclock_w = get_image("clock_bg")->get_w() - 40;
-	mclock_h = get_image("clock_bg")->get_h();
-	mtimebar_x = get_image("patchbay_bg")->get_w();
-	mtimebar_y = mbuttons_y - 1 + mbuttons_h;
-	mtimebar_w = w - mtimebar_x;
-	mtimebar_h = get_image("timebar_bg")->get_h();
-	mzoom_h = 25;
-	mzoom_x = 0;
-	mzoom_y = h - get_image("statusbar")->get_h();
-	mzoom_w = w;
-	mstatus_x = 0;
-	mstatus_y = mzoom_y + mzoom_h;
-	mstatus_w = w;
-	mstatus_h = h - mstatus_y;
-	mstatus_message_x = 10;
-	mstatus_message_y = 5;
-	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 240;
-	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h() - 3;
-	mstatus_progress_w = 230;
-	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
-	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
-	patchbay_x = 0;
-	patchbay_y = mtimebar_y + mtimebar_h;
-	patchbay_w = get_image("patchbay_bg")->get_w();
-	patchbay_h = mzoom_y - patchbay_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
-	mcanvas_x = patchbay_x + patchbay_w;
-	mcanvas_y = mtimebar_y + mtimebar_h;
-	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
-	mcanvas_h = patchbay_h;
-	mhscroll_x = 0;
-	mhscroll_y = mcanvas_y + mcanvas_h;
-	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
-	mvscroll_x = mcanvas_x + mcanvas_w;
-	mvscroll_y = mcanvas_y;
-	mvscroll_h = mcanvas_h;
-}
-
-void SUV::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
-{
-	if(cwindow_controls)
-	{
-SET_TRACE
-		ccomposite_x = 0;
-		ccomposite_y = 5;
-		ccomposite_w = get_image("cpanel_bg")->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - 
-			get_image("cbuttons_left")->get_h();
-		cslider_x = 5;
-		cslider_y = ccomposite_h + 20;
-		cedit_x = 10;
-		cedit_y = cslider_y + BC_Slider::get_span(0);
-		ctransport_x = 10;
-		ctransport_y = mwindow->session->cwindow_h - 
-			get_image_set("autokeyframe")[0]->get_h() - 5;
-		ccanvas_x = ccomposite_x + ccomposite_w;
-		ccanvas_y = 0;
-		ccanvas_h = ccomposite_h;
-		cstatus_x = 420;
-		cstatus_y = mwindow->session->cwindow_h - 
-			get_image("cwindow_active")->get_h() - 30;
-		if(mwindow->edl->session->cwindow_meter)
-		{
-			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
-				mwindow->edl->session->cwindow_meter);
-			ccanvas_w = cmeter_x - ccanvas_x - 5;
-		}
-		else
-		{
-			cmeter_x = mwindow->session->cwindow_w;
-			ccanvas_w = cmeter_x - ccanvas_x;
-		}
-SET_TRACE
-	}
-	else
-	{
-SET_TRACE
-		ccomposite_x = -get_image("cpanel_bg")->get_w();
-		ccomposite_y = 0;
-		ccomposite_w = get_image("cpanel_bg")->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
-
-		cslider_x = 5;
-		cslider_y = mwindow->session->cwindow_h;
-		cedit_x = 10;
-		cedit_y = cslider_y + 17;
-		ctransport_x = 10;
-		ctransport_y = cedit_y + 40;
-		ccanvas_x = 0;
-		ccanvas_y = 0;
-		ccanvas_w = mwindow->session->cwindow_w;
-		ccanvas_h = mwindow->session->cwindow_h;
-		cmeter_x = mwindow->session->cwindow_w;
-		cstatus_x = mwindow->session->cwindow_w;
-		cstatus_y = mwindow->session->cwindow_h;
-SET_TRACE
-	}
-
-SET_TRACE
-
-	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
-	czoom_y = ctransport_y + 5;
-
-
-	cmeter_y = 5;
-	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
-
-	cslider_w = ccanvas_x + ccanvas_w - cslider_x - 5;
-	ctimebar_x = ccanvas_x;
-	ctimebar_y = ccanvas_y + ccanvas_h;
-	ctimebar_w = ccanvas_w;
-	ctimebar_h = 16;
-
-
-// Not used
-	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
-	ctime_y = ctransport_y;
-	cdest_x = czoom_x;
-	cdest_y = czoom_y + 30;
-SET_TRACE
-}
-
-
-
-void SUV::get_recordgui_sizes(RecordGUI *gui, int w, int h)
-{
-	
-}
-
-void SUV::get_rmonitor_sizes(int do_audio, 
-	int do_video,
-	int do_channel,
-	int do_interlace,
-	int do_avc,
-	int audio_channels)
-{
-	Theme::get_rmonitor_sizes(do_audio, 
-		do_video,
-		do_channel,
-		do_interlace,
-		do_avc,
-		audio_channels);
-	if(!do_video && do_audio)
-	{
-		rmonitor_meter_y -= 30;
-		rmonitor_meter_h += 30;
-	}
-}
-
-
-void SUV::get_vwindow_sizes(VWindowGUI *gui)
-{
-	vmeter_y = 5;
-	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
-	vcanvas_x = 0;
-	vcanvas_y = 0;
-	vcanvas_h = mwindow->session->vwindow_h - get_image("vbuttons_left")->get_h();
-
-	if(mwindow->edl->session->vwindow_meter)
-	{
-		vmeter_x = mwindow->session->vwindow_w - 
-			VWINDOW_METER_MARGIN - 
-			MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
-			mwindow->edl->session->vwindow_meter);
-		vcanvas_w = vmeter_x - vcanvas_x - VWINDOW_METER_MARGIN;
-	}
-	else
-	{
-		vmeter_x = mwindow->session->vwindow_w;
-		vcanvas_w = mwindow->session->vwindow_w;
-	}
-
-	vtimebar_x = vcanvas_x;
-	vtimebar_y = vcanvas_y + vcanvas_h;
-	vtimebar_w = vcanvas_w;
-	vtimebar_h = 16;
-
-	vslider_x = 10;
-	vslider_y = vtimebar_y + 20;
-	vslider_w = vtimebar_w - vslider_x;
-	vedit_x = 10;
-	vedit_y = vslider_y + BC_Slider::get_span(0);
-	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - 
-		get_image_set("autokeyframe")[0]->get_h() - 5;
-	vtime_x = 303;
-	vtime_y = vedit_y + 20;
-	vtime_w = 150;
-
-
-
-
-	vzoom_x = vtime_x + 150;
-	vzoom_y = vtime_y;
-	vsource_x = vtime_x + 50;
-	vsource_y = vtransport_y + 5;
-}
 
 
 
 
 
-void SUV::build_icons()
-{
-	new_image("mwindow_icon", "heroine_icon.png");
-	new_image("vwindow_icon", "heroine_icon.png");
-	new_image("cwindow_icon", "heroine_icon.png");
-	new_image("awindow_icon", "heroine_icon.png");
-	new_image("record_icon", "heroine_icon.png");
-	new_image("clip_icon", "clip_icon.png");
-}
+
+
 
 
 
 void SUV::build_bg_data()
 {
 // Audio settings
-	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
 	channel_position_data = new VFrame(get_image_data("channel_position.png"));
 
 // Track bitmaps
@@ -1018,11 +860,11 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("mbutton_bg"));
 
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 238,
+		mbuttons_x + 228,
 		mbuttons_y - 1);
 
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 337,
+		mbuttons_x + 320,
 		mbuttons_y - 1);
 
 // Clock
@@ -1073,54 +915,54 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 
 void SUV::draw_cwindow_bg(CWindowGUI *gui)
 {
-	const int button_division = 450;
 	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
-	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
+
+	gui->draw_3segmenth(0, ccomposite_h, cstatus_x, get_image("cbuttons_left"));
+
 	if(mwindow->edl->session->cwindow_meter)
 	{
-		gui->draw_3segmenth(button_division, 
+		gui->draw_3segmenth(cstatus_x, 
 			ccomposite_h, 
-			cmeter_x - CWINDOW_METER_MARGIN - button_division, 
+			cmeter_x - widget_border - cstatus_x, 
 			get_image("cbuttons_right"));
-		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN, 
+		gui->draw_9segment(cmeter_x - widget_border, 
 			0, 
-			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN, 
+			mwindow->session->cwindow_w - cmeter_x + widget_border, 
 			mwindow->session->cwindow_h, 
 			get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(button_division, 
+		gui->draw_3segmenth(cstatus_x, 
 			ccomposite_h, 
-			cmeter_x - CWINDOW_METER_MARGIN - button_division + 100, 
+			cmeter_x - widget_border - cstatus_x + 100, 
 			get_image("cbuttons_right"));
 	}
 }
 
 void SUV::draw_vwindow_bg(VWindowGUI *gui)
 {
-	const int button_division = 325;
 	gui->draw_3segmenth(0, 
 		vcanvas_h, 
-		button_division, 
+		vdivision_x, 
 		get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
-		gui->draw_3segmenth(button_division, 
+		gui->draw_3segmenth(vdivision_x, 
 			vcanvas_h, 
-			vmeter_x - VWINDOW_METER_MARGIN - button_division, 
+			vmeter_x - widget_border - vdivision_x, 
 			get_image("cbuttons_right"));
-		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
+		gui->draw_9segment(vmeter_x - widget_border,
 			0,
-			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN, 
+			mwindow->session->vwindow_w - vmeter_x + widget_border, 
 			mwindow->session->vwindow_h, 
 			get_image("cmeter_bg"));
 	}
 	else
 	{
-		gui->draw_3segmenth(button_division, 
+		gui->draw_3segmenth(vdivision_x, 
 			vcanvas_h, 
-			vmeter_x - VWINDOW_METER_MARGIN - button_division + 100, 
+			vmeter_x - widget_border - vdivision_x + 100, 
 			get_image("cbuttons_right"));
 	}
 
@@ -1131,18 +973,10 @@ void SUV::draw_vwindow_bg(VWindowGUI *gui)
 		get_image("vclock"));
 }
 
-void SUV::get_preferences_sizes()
-{
-}
-
 
 void SUV::draw_preferences_bg(PreferencesWindow *gui)
 {
 	gui->draw_vframe(get_image("preferences_bg"), 0, 0);
-}
-
-void SUV::get_new_sizes(NewWindow *gui)
-{
 }
 
 void SUV::draw_new_bg(NewWindow *gui)
@@ -1156,30 +990,6 @@ void SUV::draw_setformat_bg(SetFormatWindow *gui)
 }
 
 
-void SUV::get_plugindialog_sizes()
-{
-	int x = 10, y = 30;
-	plugindialog_new_x = x;
-	plugindialog_new_y = y;
-	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
-	plugindialog_shared_y = y;
-	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
-	plugindialog_module_y = y;
-
-	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
-	plugindialog_new_h = mwindow->session->plugindialog_h - 100;
-	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
-	plugindialog_shared_h = mwindow->session->plugindialog_h - 100;
-	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
-	plugindialog_module_h = mwindow->session->plugindialog_h - 100;
-
-	plugindialog_newattach_x = plugindialog_new_x + 20;
-	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;
-	plugindialog_sharedattach_x = plugindialog_shared_x + 20;
-	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + 10;
-	plugindialog_moduleattach_x = plugindialog_module_x + 20;
-	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
-}
 
 
 

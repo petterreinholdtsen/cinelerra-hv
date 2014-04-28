@@ -28,7 +28,7 @@ class TitleThread;
 class TitleWindow;
 class TitleInterlace;
 
-#include "../colors/colorpicker.h"
+#include "colorpicker.h"
 #include "filexml.h"
 #include "mutex.h"
 #include "title.h"

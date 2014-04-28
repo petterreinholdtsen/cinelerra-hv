@@ -41,9 +41,13 @@ public:
 	void draw_range();
 	void stop_playback();
 	int resize_event();
-	int test_preview(int buttonpress);
+//	int test_preview(int buttonpress);
 	int64_t position_to_pixel(double position);
 	void select_label(double position);
+	double pixel_to_position(int pixel);
+	void handle_mwindow_drag();
+	void update_cursor();
+	double test_highlight();
 
 	MWindowGUI *gui;
 };

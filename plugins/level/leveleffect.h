@@ -86,8 +86,6 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr);
-	int load_defaults();
-	int save_defaults();
 	void reset();
 	void update_gui();
 	void render_gui(void *data, int size);

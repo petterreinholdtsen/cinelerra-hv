@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ public:
 	void disable();
 	void enable();
 	int get_enabled();
+	int get_rows();
 
 	int initialize();
 
@@ -126,6 +127,7 @@ public:
 
 
 // Compute suggestions for a path
+// If entries is null, just search absolute paths
 	int calculate_suggestions(ArrayList<BC_ListBoxItem*> *entries);
 
 
@@ -138,7 +140,7 @@ public:
 
 private:
 	int reset_parameters(int rows, int has_border, int font);
-	void draw();
+	void draw(int flush);
 	void draw_border();
 	void draw_cursor();
 	void copy_selection(int clipboard_num);
@@ -153,9 +155,17 @@ private:
 	void select_word(int &letter1, int &letter2, int ibeam_letter);
 	void select_line(int &letter1, int &letter2, int ibeam_letter);
 	int get_cursor_letter(int cursor_x, int cursor_y);
+	int get_cursor_letter2(int cursor_x, int cursor_y);
 	int get_row_h(int rows);
 	void default_keypress(int &dispatch_event, int &result);
 
+
+
+	int repeat_state;
+	enum
+	{
+		
+	};
 
 // Top left of text relative to window
 	int text_x, text_y;

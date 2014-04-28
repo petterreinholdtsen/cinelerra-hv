@@ -157,26 +157,6 @@ VFrame* WipeMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int WipeMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%swipe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	direction = defaults->get("DIRECTION", direction);
-	return 0;
-}
-
-int WipeMain::save_defaults()
-{
-	defaults->update("DIRECTION", direction);
-	defaults->save();
-	return 0;
-}
 
 void WipeMain::save_data(KeyFrame *keyframe)
 {

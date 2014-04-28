@@ -1,7 +1,6 @@
 include ../../global_config
 
-OBJS = ../parametric/$(OBJDIR)/fourier.o \
-	$(OBJDIR)/timestretch.o \
+OBJS = $(OBJDIR)/timestretch.o \
 	$(OBJDIR)/timestretchengine.o
 
 OUTPUT = $(PLUGIN_DIR)/timestretch.plugin

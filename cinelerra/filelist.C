@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,28 +94,32 @@ int FileList::open_file(int rd, int wr)
 // Determine type of file.
 // Header isn't used for background rendering, in which case everything known
 // by the file encoder is known by the decoder.
-//printf("FileList::open_file 1 %d\n", asset->use_header);
+//printf("FileList::open_file %d %d\n", __LINE__, asset->use_header);
 		if(asset->use_header)
 		{
 			FILE *stream = fopen(asset->path, "rb");
+//printf("FileList::open_file %d asset->path=%s\n", __LINE__, asset->path);
 			if(stream)
 			{
 				char string[BCTEXTLEN];
-				fread(string, strlen(list_prefix), 1, stream);
+				int temp = fread(string, strlen(list_prefix), 1, stream);
 				fclose(stream);
 
 				if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
 				{
 
+//printf("FileList::open_file %d\n", __LINE__);
 					asset->format = list_type;
 
 // Open index here or get frame size from file.
 					result = read_list_header();
+//printf("FileList::open_file %d %s\n", __LINE__, path_list.values[0]);
 					if(!result) result = read_frame_header(path_list.values[0]);
 				}
 				else
 				{
 //printf("FileList::open_file 2\n", asset->use_header);
+//printf("FileList::open_file %d\n", __LINE__);
 					asset->format = frame_type;
 					result = read_frame_header(asset->path);
 					asset->layers = 1;
@@ -209,7 +213,7 @@ int FileList::read_list_header()
 // Get information about the frames
 		do
 		{
-			fgets(string, BCTEXTLEN, stream);
+			char *temp = fgets(string, BCTEXTLEN, stream);
 		}while(!feof(stream) && (string[0] == '#' || string[0] == ' ' || isalpha(string[0])));
 
 // Don't want a user configured frame rate to get destroyed
@@ -218,13 +222,13 @@ int FileList::read_list_header()
 
 		do
 		{
-			fgets(string, BCTEXTLEN, stream);
+			char *temp = fgets(string, BCTEXTLEN, stream);
 		}while(!feof(stream) && (string[0] == '#' || string[0] == ' '));
 		asset->width = atol(string);
 
 		do
 		{
-			fgets(string, BCTEXTLEN, stream);
+			char *temp = fgets(string, BCTEXTLEN, stream);
 		}while(!feof(stream) && (string[0] == '#' || string[0] == ' '));
 		asset->height = atol(string);
 
@@ -235,7 +239,7 @@ int FileList::read_list_header()
 // Get all the paths
 		while(!feof(stream))
 		{
-			fgets(string, BCTEXTLEN, stream);
+			char *temp = fgets(string, BCTEXTLEN, stream);
 			if(strlen(string) && string[0] != '#' && string[0] != ' ' && !feof(stream))
 			{
 				string[strlen(string) - 1] = 0;
@@ -264,6 +268,7 @@ int FileList::read_frame(VFrame *frame)
 // asset->use_header,
 // file->current_frame,
 // path_list.total);
+
 	if(file->current_frame < 0 || 
 		(asset->use_header && file->current_frame >= path_list.total &&
 			asset->format == list_type))
@@ -281,8 +286,8 @@ int FileList::read_frame(VFrame *frame)
 		{
 			path = calculate_path(file->current_frame, string);
 		}
-		FILE *in;
 
+		FILE *in;
 
 // Fix path for VFS
 		if(!strncmp(asset->path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
@@ -290,76 +295,101 @@ int FileList::read_frame(VFrame *frame)
 		else
 			strcpy(string, path);
 
-		if(!(in = fopen(string, "rb")))
-		{
-			fprintf(stderr, "FileList::read_frame %s: %s\n", string, strerror(errno));
-		}
-		else
-		{
-			struct stat ostat;
-			stat(string, &ostat);
 
-			switch(frame->get_color_model())
+
+		if(!use_path() || frame->get_color_model() == BC_COMPRESSED)
+		{
+			if(!(in = fopen(string, "rb")))
 			{
-				case BC_COMPRESSED:
-					frame->allocate_compressed_data(ostat.st_size);
-					frame->set_compressed_size(ostat.st_size);
-					fread(frame->get_data(), ostat.st_size, 1, in);
-					break;
-				default:
-					data->allocate_compressed_data(ostat.st_size);
-					data->set_compressed_size(ostat.st_size);
-					fread(data->get_data(), ostat.st_size, 1, in);
-					result = read_frame(frame, data);
-					break;
+				fprintf(stderr, "FileList::read_frame %s: %s\n", string, strerror(errno));
 			}
-
-
-			fclose(in);
-		}
-	}
-	else
-	{
-// Allocate and decompress once into temporary
-//printf("FileList::read_frame %d\n", frame->get_color_model());
-		if(!temp || temp->get_color_model() != frame->get_color_model())
-		{
-			if(temp) delete temp;
-			temp = 0;
-		
-			FILE *fd = fopen(asset->path, "rb");
-			if(fd)
+			else
 			{
 				struct stat ostat;
-				stat(asset->path, &ostat);
+				stat(string, &ostat);
+				int temp;
 
 				switch(frame->get_color_model())
 				{
 					case BC_COMPRESSED:
 						frame->allocate_compressed_data(ostat.st_size);
 						frame->set_compressed_size(ostat.st_size);
-						fread(frame->get_data(), ostat.st_size, 1, fd);
+						temp = fread(frame->get_data(), ostat.st_size, 1, in);
 						break;
 					default:
 						data->allocate_compressed_data(ostat.st_size);
 						data->set_compressed_size(ostat.st_size);
-						fread(data->get_data(), ostat.st_size, 1, fd);
-						temp = new VFrame(0, 
-							-1,
-							asset->width, 
-							asset->height, 
-							frame->get_color_model(),
-							-1);
-						read_frame(temp, data);
+						temp = fread(data->get_data(), ostat.st_size, 1, in);
+						result = read_frame(frame, data);
 						break;
 				}
+		
+				fclose(in);
+			}
+		}
+		else
+		{
+//printf("FileList::read_frame %d %s\n", __LINE__, string);
+			result = read_frame(frame, string);
+		}
+	}
+	else
+	{
+// Allocate and decompress single frame into new temporary
+//printf("FileList::read_frame %d\n", frame->get_color_model());
+		if(!temp || temp->get_color_model() != frame->get_color_model())
+		{
+			if(temp) delete temp;
+			temp = 0;
 
-				fclose(fd);
+
+			if(!use_path() || frame->get_color_model() == BC_COMPRESSED)
+			{
+				FILE *fd = fopen(asset->path, "rb");
+				if(fd)
+				{
+					int temp2;
+					struct stat ostat;
+					stat(asset->path, &ostat);
+
+					switch(frame->get_color_model())
+					{
+						case BC_COMPRESSED:
+							frame->allocate_compressed_data(ostat.st_size);
+							frame->set_compressed_size(ostat.st_size);
+							temp2 = fread(frame->get_data(), ostat.st_size, 1, fd);
+							break;
+						default:
+							data->allocate_compressed_data(ostat.st_size);
+							data->set_compressed_size(ostat.st_size);
+							temp2 = fread(data->get_data(), ostat.st_size, 1, fd);
+							temp = new VFrame(0, 
+								-1,
+								asset->width, 
+								asset->height, 
+								frame->get_color_model(),
+								-1);
+							read_frame(temp, data);
+							break;
+					}
+
+					fclose(fd);
+				}
+				else
+				{
+					fprintf(stderr, "FileList::read_frame %s: %s\n", asset->path, strerror(errno));
+					result = 1;
+				}
 			}
 			else
 			{
-				fprintf(stderr, "FileList::read_frame %s: %s\n", asset->path, strerror(errno));
-				result = 1;
+				temp = new VFrame(0, 
+					-1,
+					asset->width, 
+					asset->height, 
+					frame->get_color_model(),
+					-1);
+				read_frame(temp, asset->path);
 			}
 		}
 
@@ -577,6 +607,10 @@ FrameWriterUnit* FileList::get_unit(int number)
 	if(writer) return (FrameWriterUnit*)writer->get_client(number);
 }
 
+int FileList::use_path()
+{
+	return 0;
+}
 
 
 

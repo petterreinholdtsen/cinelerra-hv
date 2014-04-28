@@ -443,6 +443,7 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_bits_t *vstream = video->vstream;
 	mpeg3_demuxer_t *demuxer = track->demuxer;
+	const int debug = 0;
 
 /* a sequence header should be found before returning from get_header the */
 /* first time (this is to set horizontal/vertical size properly) */
@@ -470,6 +471,10 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 	{
 /* look for startcode */
     	code = mpeg3bits_next_startcode(vstream);
+if(debug) printf("mpeg3video_get_header %d %lld %08x\n", 
+__LINE__, 
+mpeg3demux_tell_byte(vstream->demuxer),
+code);
 
 		if(mpeg3bits_eof(vstream)) return 1;
 

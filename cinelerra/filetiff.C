@@ -67,7 +67,7 @@ int FileTIFF::check_sig(Asset *asset)
 	if(stream)
 	{
 		char test[10];
-		fread(test, 10, 1, stream);
+		int temp = fread(test, 10, 1, stream);
 		fclose(stream);
 
 		if(test[0] == 'I' && test[1] == 'I')
@@ -613,6 +613,7 @@ void TIFFConfigVideo::create_objects()
 	menu2->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
+	show_window(1);
 	unlock_window();
 }
 

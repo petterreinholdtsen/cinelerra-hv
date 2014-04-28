@@ -323,7 +323,8 @@ int Edits::optimize()
 	int result = 1;
 	Edit *current;
 
-//return 0;
+
+//printf("Edits::optimize %d\n", __LINE__);
 // Sort edits by starting point
 	while(result)
 	{
@@ -389,19 +390,36 @@ int Edits::optimize()
 				current = current->next;
 		}
 
+//printf("Edits::optimize %d\n", __LINE__);
 // merge same files or transitions
 		for(current = first; 
 			current && current->next && !result; )
 		{
 			Edit *next_edit = current->next;
+
+// printf("Edits::optimize %d %lld %lld %lld %d %d %p %p %p %p\n", 
+// __LINE__,
+// current->startsource,
+// current->length,
+// next_edit->startsource,
+// current->channel,
+// next_edit->channel,
+// current->asset,
+// next_edit->asset,
+// current->nested_edl,
+// next_edit->nested_edl);
 // source positions are consecutive
-    		if(current->startsource + current->length == next_edit->startsource &&
+
+    		if((current->asset == next_edit->asset) &&
+				(current->asset == 0) ||
+				(current->startsource + current->length == next_edit->startsource &&
 // source channels are identical
 	       		current->channel == next_edit->channel &&
 // assets are identical
 				current->asset == next_edit->asset && 
-    		   	current->nested_edl == next_edit->nested_edl)
+    		   	current->nested_edl == next_edit->nested_edl))
 			{
+//printf("Edits::optimize %d\n", __LINE__);
         		current->length += next_edit->length;
         		remove(next_edit);
         		result = 1;

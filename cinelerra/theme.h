@@ -154,20 +154,20 @@ public:
 	int afolders_x, afolders_y, afolders_w, afolders_h;
 	int alist_x, alist_y, alist_w, alist_h;
 	int audio_color;
+	int assetedit_color;
 	int browse_pad;
 	int cauto_x, cauto_y, cauto_w, cauto_h;
 	int ccanvas_x, ccanvas_y, ccanvas_w, ccanvas_h;
 	int ccomposite_x, ccomposite_y, ccomposite_w, ccomposite_h;
 	int cstatus_x, cstatus_y;
-	int cdest_x, cdest_y;
 	int cedit_x, cedit_y;
 	int channel_position_color;
 	int cmeter_x, cmeter_y, cmeter_h;
 	int cslider_x, cslider_y, cslider_w;
-	int ctime_x, ctime_y;
 	int ctimebar_x, ctimebar_y, ctimebar_w, ctimebar_h;
+	int timebar_cursor_color;
 	int ctransport_x, ctransport_y;
-	int czoom_x, czoom_y;
+	int czoom_x, czoom_y, czoom_w;
 	int fade_h;
 	int loadfile_pad;
 	int loadmode_w;
@@ -244,7 +244,7 @@ public:
 	int rmonitor_canvas_x, rmonitor_canvas_y;
 	int rmonitor_channel_x, rmonitor_channel_y;
 	int rmonitor_interlace_x, rmonitor_interlace_y;
-	int rmonitor_meter_h;
+	int rmonitor_meter_w, rmonitor_meter_h;
 	int rmonitor_meter_x, rmonitor_meter_y;
 	int rmonitor_source_x, rmonitor_source_y;
 	int rmonitor_tx_x, rmonitor_tx_y;
@@ -261,14 +261,13 @@ public:
 	int vedit_x, vedit_y;
 	int vmeter_x, vmeter_y, vmeter_h;
 	int vslider_x, vslider_y, vslider_w;
-	int vsource_x, vsource_y;
 	int vtimebar_x, vtimebar_y, vtimebar_w, vtimebar_h;
 	int vtime_x, vtime_y, vtime_w;
+	int vdivision_x;
 	int vtransport_x, vtransport_y;
-	int vzoom_x, vzoom_y;
 	int window_border;
 	int widget_border;
-
+	int clock_bg_color;
 
 // Bitmaps
 	VFrame *about_bg;
@@ -284,7 +283,6 @@ public:
 	VFrame *camerakeyframe_data;
 	VFrame **cancel_data;
 	VFrame **chain_data;
-	VFrame *channel_bg_data;
 	VFrame *channel_position_data;
 	VFrame **delete_all_indexes_data;
 	VFrame **deletebin_data;
@@ -331,7 +329,7 @@ public:
 	VFrame **splice_data;
 	VFrame **start_over_data;
 	VFrame **statusbar_cancel_data;
-	VFrame *timebar_view_data;
+//	VFrame *timebar_view_data;
 	VFrame **transition_data;
 	VFrame **uptriangle_data;
 	VFrame **viewasset_data;

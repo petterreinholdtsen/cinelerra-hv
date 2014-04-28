@@ -28,7 +28,7 @@ class YUVMain;
 class YUVEngine;
 
 #include "bcbase.h"
-#include "../colors/colors.h"
+#include "colors.h"
 #include "yuvwindow.h"
 #include "pluginvclient.h"
 
@@ -49,8 +49,6 @@ public:
 	int show_gui();
 	int hide_gui();
 	int set_string();
-	int load_defaults();
-	int save_defaults();
 	int save_data(char *text);
 	int read_data(char *text);
 

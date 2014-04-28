@@ -256,14 +256,19 @@ void RecordVideo::run()
 				capture_frame = frame_ptr[0][buffer_position];
 				record->vdevice->set_field_order(record->reverse_interlace);
 				read_buffer();
-				record->get_current_batch()->current_frame++;
-				record->get_current_batch()->total_frames = 
-					MAX(record->get_current_batch()->current_frame, record->get_current_batch()->total_frames);
-				record->get_current_batch()->session_frames++;
-				if(!grab_result) buffer_position++;
 
+
+//printf("RecordVideo::run %d grab_result=%d\n", __LINE__, grab_result);
+				if(!grab_result)
+				{
+					record->get_current_batch()->current_frame++;
+					record->get_current_batch()->total_frames = 
+						MAX(record->get_current_batch()->current_frame, record->get_current_batch()->total_frames);
+					record->get_current_batch()->session_frames++;
+					if(!grab_result) buffer_position++;
 // Update the position indicator
-				gui->update_position(record->current_display_position());
+					gui->update_position(record->current_display_position());
+				}
 			}
 			else
 // Grab frame for monitoring
@@ -302,14 +307,16 @@ void RecordVideo::run()
 			dropped_frames > 1)
 		{
 			VFrame *last_frame = capture_frame;
-// Write frame 1
+// Flush buffer if full
 			if(buffer_position >= buffer_size) write_buffer(0);
-// Copy to frame 2
+// Copy previous frame to to frame 2
 			capture_frame = frame_ptr[0][buffer_position];
 			capture_frame->copy_from(last_frame);
+
 			record->get_current_batch()->current_frame++;
 			record->get_current_batch()->total_frames = 
-				MAX(record->get_current_batch()->current_frame, record->get_current_batch()->total_frames);
+				MAX(record->get_current_batch()->current_frame, 
+					record->get_current_batch()->total_frames);
 			record->get_current_batch()->session_frames++;
 			buffer_position++;
 		}
@@ -317,6 +324,7 @@ void RecordVideo::run()
 // Compress a batch of frames or write the second frame if filling
 		if(!record_thread->monitor && buffer_position >= buffer_size)
 		{
+//printf("RecordVideo::run %d\n", __LINE__);
 			write_buffer(0);
 		}
 
@@ -384,6 +392,11 @@ void RecordVideo::read_buffer()
 {
 	grab_result = record->vdevice->read_buffer(capture_frame);
 
+// printf("RecordVideo::read_buffer %d %d %p %d\n", 
+// __LINE__, 
+// grab_result,
+// capture_frame, 
+// capture_frame->get_compressed_size());
 
 // Get field offset for monitor
 	if(!strncmp(record->default_asset->vcodec, QUICKTIME_MJPA, 4) &&

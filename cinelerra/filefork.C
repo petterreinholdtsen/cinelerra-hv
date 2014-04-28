@@ -121,7 +121,7 @@ int FileFork::handle_command()
 			new_asset->Garbage::remove_user();
 			if(debug) printf("FileFork::handle_command %d result=%d\n", 
 				__LINE__, 
-				result);
+				(int)result);
 
 
 
@@ -230,6 +230,7 @@ int FileFork::handle_command()
 			int color_model = *(int*)(command_data + sizeof(int));
 			int ring_buffers = *(int*)(command_data + sizeof(int) * 2);
 			int compressed = *(int*)(command_data + sizeof(int) * 3);
+// allocate buffers here
 			result = file->start_video_thread(buffer_size, 
 				color_model,
 				ring_buffers,
@@ -249,6 +250,7 @@ int FileFork::handle_command()
 				{
 					for(int k = 0; k < buffer_size; k++)
 					{
+//printf("FileFork::handle_command %d j=%d k=%d %p %p\n", __LINE__, j, k, frames[j][k], frames[j][k]->get_shmid()));
 						frames[j][k]->to_filefork(result_buffer +
 							i * file->asset->layers *
 								buffer_size *
@@ -407,10 +409,12 @@ int FileFork::handle_command()
 			{
 				for(int j = 0; j < len; j++)
 				{
-					video_buffer[i][j]->set_number(
-						*(int64_t*)(command_data +
-							sizeof(int64_t) * (i * len + j + 1)));
-//printf("FileFork::handle_command %d %lld\n", __LINE__, video_buffer[i][j]->get_number());
+// Copy memory state
+//printf("FileFork::handle_command %d i=%d j=%d %p %p\n", __LINE__, i, j, video_buffer[i][j], video_buffer[i][j]->get_shmid());
+					video_buffer[i][j]->from_filefork(command_data +
+						sizeof(int64_t) +
+						VFrame::filefork_size() * (len * i + j));
+//printf("FileFork::handle_command %d %p %lld\n", __LINE__, video_buffer[i][j]->get_shmid(), video_buffer[i][j]->get_number());
 
 				}
 			}

@@ -41,9 +41,9 @@
 PhotoScaleWindow::PhotoScaleWindow(PhotoScaleMain *plugin)
  : PluginClientWindow(plugin, 
 	250, 
-	100, 
+	200, 
 	250, 
-	100, 
+	200, 
 	0)
 { 
 	this->plugin = plugin; 
@@ -87,13 +87,25 @@ void PhotoScaleWindow::create_objects()
 	add_subwindow(pulldown = new FrameSizePulldown(plugin->get_theme(), 
 		output_size[0], 
 		output_size[1], 
-		x + title->get_w() + output_size[1]->get_w(), 
+		x + title->get_w() + output_size[1]->get_w() + plugin->get_theme()->widget_border, 
 		y));
 
 	add_subwindow(new PhotoScaleSwapExtents(
 		plugin, 
 		this, 
-		x + title->get_w() + output_size[1]->get_w() + pulldown->get_w(),
+		x + title->get_w() + output_size[1]->get_w() + plugin->get_theme()->widget_border + pulldown->get_w(),
+		y));
+
+	y += pulldown->get_h() + plugin->get_theme()->widget_border;
+	add_subwindow(file = new PhotoScaleFile(plugin, 
+		this, 
+		x, 
+		y));
+
+	y += file->get_h() + plugin->get_theme()->widget_border;
+	add_subwindow(scan = new PhotoScaleScan(plugin, 
+		this, 
+		x, 
 		y));
 
 	show_window();
@@ -129,6 +141,48 @@ int PhotoScaleSizeText::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
+
+
+PhotoScaleFile::PhotoScaleFile(PhotoScaleMain *plugin, 
+	PhotoScaleWindow *gui, 
+	int x, 
+	int y)
+ : BC_Radial(x, y, plugin->config.use_file, _("Override camera"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int PhotoScaleFile::handle_event()
+{
+	plugin->config.use_file = 1;
+	gui->scan->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+PhotoScaleScan::PhotoScaleScan(PhotoScaleMain *plugin, 
+	PhotoScaleWindow *gui, 
+	int x, 
+	int y)
+ : BC_Radial(x, y, !plugin->config.use_file, _("Use alpha/black level"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int PhotoScaleScan::handle_event()
+{
+	plugin->config.use_file = 0;
+	gui->file->update(0);
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
 
 
 
@@ -180,18 +234,21 @@ PhotoScaleConfig::PhotoScaleConfig()
 {
 	width = 640;
 	height = 480;
+	use_file = 1;
 }
 
 int PhotoScaleConfig::equivalent(PhotoScaleConfig &that)
 {
 	return (width == that.width && 
-		height == that.height);
+		height == that.height &&
+		use_file == that.use_file);
 }
 
 void PhotoScaleConfig::copy_from(PhotoScaleConfig &that)
 {
 	width = that.width;
 	height = that.height;
+	use_file = that.use_file;
 }
 
 void PhotoScaleConfig::interpolate(PhotoScaleConfig &prev, 
@@ -220,7 +277,6 @@ REGISTER_PLUGIN(PhotoScaleMain)
 PhotoScaleMain::PhotoScaleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	defaults = 0;
 	need_reconfigure = 1;
 	overlayer = 0;
 	engine = 0;
@@ -251,6 +307,24 @@ int PhotoScaleMain::process_buffer(VFrame *frame,
 {
 	int i, j, k, l;
 	load_configuration();
+
+	if(config.use_file)
+	{
+		frame->get_params()->update("AUTOSCALE", 1);
+		frame->get_params()->update("AUTOSCALE_W", config.width);
+		frame->get_params()->update("AUTOSCALE_H", config.height);
+		read_frame(frame, 
+			0, 
+			start_position, 
+			frame_rate,
+			get_use_opengl());
+		return 0;
+	}
+	else
+	{
+		frame->get_params()->update("AUTOSCALE", 0);
+	}
+	
 
 	read_frame(frame, 
 		0, 
@@ -354,35 +428,13 @@ void PhotoScaleMain::update_gui()
 			window->lock_window("PhotoScaleMain::update_gui");
 			window->output_size[0]->update((int64_t)config.width);
 			window->output_size[1]->update((int64_t)config.height);
+			window->file->update(config.use_file);
+			window->scan->update(!config.use_file);
 			window->unlock_window();
 		}
 	}
 }
 
-
-int PhotoScaleMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sphotoscale.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.width = defaults->get("WIDTH", config.width);
-	config.height = defaults->get("HEIGHT", config.height);
-	return 0;
-}
-
-
-int PhotoScaleMain::save_defaults()
-{
-	defaults->update("WIDTH", config.width);
-	defaults->update("HEIGHT", config.height);
-	defaults->save();
-	return 0;
-}
 
 
 
@@ -395,6 +447,7 @@ void PhotoScaleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("PHOTOSCALE");
 	output.tag.set_property("WIDTH", config.width);
 	output.tag.set_property("HEIGHT", config.height);
+	output.tag.set_property("USE_FILE", config.use_file);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -417,6 +470,7 @@ void PhotoScaleMain::read_data(KeyFrame *keyframe)
 			{
 				config.width = input.tag.get_property("WIDTH", config.width);
 				config.height = input.tag.get_property("HEIGHT", config.height);
+				config.use_file = input.tag.get_property("USE_FILE", config.use_file);
 			}
 		}
 	}

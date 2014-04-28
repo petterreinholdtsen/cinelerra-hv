@@ -172,12 +172,12 @@ void Preferences::copy_from(Preferences *that)
 	renderfarm_enabled.remove_all();
 	renderfarm_rate.remove_all();
 	local_rate = that->local_rate;
-	for(int i = 0; i < that->renderfarm_nodes.total; i++)
+	for(int i = 0; i < that->renderfarm_nodes.size(); i++)
 	{
-		add_node(that->renderfarm_nodes.values[i], 
-			that->renderfarm_ports.values[i],
-			that->renderfarm_enabled.values[i],
-			that->renderfarm_rate.values[i]);
+		add_node(that->renderfarm_nodes.get(i), 
+			that->renderfarm_ports.get(i),
+			that->renderfarm_enabled.get(i),
+			that->renderfarm_rate.get(i));
 	}
 	use_renderfarm = that->use_renderfarm;
 	renderfarm_port = that->renderfarm_port;
@@ -206,6 +206,14 @@ void Preferences::copy_from(Preferences *that)
 // 		fs.add_end_slash(global_plugin_dir);
 // 	}
 // 
+
+// Redo with the proper value of force_uniprocessor
+	if(force_uniprocessor && processors > 1)
+	{
+		processors = calculate_processors(0);
+	}
+
+
 	boundaries();
 }
 
@@ -347,6 +355,9 @@ int Preferences::load_defaults(BC_Hash *defaults)
 		}
 	}
 
+// Redo with the proper value of force_uniprocessor
+	processors = calculate_processors(0);
+
 	boundaries();
 
 	return 0;
@@ -428,7 +439,7 @@ void Preferences::add_node(char *text, int port, int enabled, float rate)
 void Preferences::delete_node(int number)
 {
 	preferences_lock->lock("Preferences::delete_node");
-	if(number < renderfarm_nodes.total)
+	if(number < renderfarm_nodes.total && number >= 0)
 	{
 		delete [] renderfarm_nodes.values[number];
 		renderfarm_nodes.remove_number(number);
@@ -460,6 +471,28 @@ void Preferences::reset_rates()
 	local_rate = 0.0;
 }
 
+float Preferences::get_rate(int node)
+{
+	if(node < 0)
+	{
+		return local_rate;
+	}
+	else
+	{
+		int total = 0;
+		for(int i = 0; i < renderfarm_nodes.size(); i++)
+		{
+			if(renderfarm_enabled.get(i)) total++;
+			if(total == node + 1)
+			{
+				return renderfarm_rate.get(i);
+			}
+		}
+	}
+	
+	return 0;
+}
+
 void Preferences::set_rate(float rate, int node)
 {
 //printf("Preferences::set_rate %f %d\n", rate, node);
@@ -470,12 +503,12 @@ void Preferences::set_rate(float rate, int node)
 	else
 	{
 		int total = 0;
-		for(int i = 0; i < renderfarm_nodes.total; i++)
+		for(int i = 0; i < renderfarm_nodes.size(); i++)
 		{
-			if(renderfarm_enabled.values[i]) total++;
+			if(renderfarm_enabled.get(i)) total++;
 			if(total == node + 1)
 			{
-				renderfarm_rate.values[i] = rate;
+				renderfarm_rate.set(i, rate);
 				return;
 			}
 		}
@@ -619,6 +652,8 @@ int Preferences::calculate_processors(int interactive)
 	int result = 1;
 	FILE *proc;
 
+
+
 	if(force_uniprocessor && !interactive) return 1;
 
 	if(proc = fopen("/proc/cpuinfo", "r"))
@@ -626,7 +661,7 @@ int Preferences::calculate_processors(int interactive)
 		char string[BCTEXTLEN];
 		while(!feof(proc))
 		{
-			fgets(string, BCTEXTLEN, proc);
+			char *temp = fgets(string, BCTEXTLEN, proc);
 			if(!strncasecmp(string, "processor", 9))
 			{
 				char *ptr = strchr(string, ':');

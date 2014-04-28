@@ -265,7 +265,7 @@ int FileSndFile::set_audio_position(int64_t sample)
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
 	{
-		printf("FileSndFile::set_audio_position %lld: failed\n", sample);
+		printf("FileSndFile::set_audio_position %lld: failed\n", (long long)sample);
 		sf_perror(fd);
 		return 1;
 	}
@@ -276,10 +276,10 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 {
 	int result = 0;
 
-//printf("FileSndFile::read_samples %lld %lld\n", file->current_sample, len);
+//printf("FileSndFile::read_samples %d %d %lld %lld\n", __LINE__, file->current_channel, file->current_sample, len);
 // Get temp buffer for interleaved channels
 	if(len <= 0 || len > 1000000)
-		printf("FileSndFile::read_samples len=%d\n", len);
+		printf("FileSndFile::read_samples len=%d\n", (int)len);
 
 	if(!buffer)
 		printf("FileSndFile::read_samples buffer=%p\n", buffer);
@@ -301,7 +301,7 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 
 	if(result)
 		printf("FileSndFile::read_samples fd=%p temp_double=%p len=%d asset=%p asset->channels=%d\n",
-			fd, temp_double, len, asset, asset->channels);
+			fd, temp_double, (int)len, asset, asset->channels);
 
 // Extract single channel
 	for(int i = 0, j = file->current_channel; 
@@ -425,6 +425,7 @@ void SndFileConfig::create_objects()
 		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
 	}
 	add_subwindow(new BC_OKButton(this));
+	show_window(1);
 	unlock_window();
 }
 

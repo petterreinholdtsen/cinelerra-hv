@@ -27,6 +27,7 @@ class BC_Resources;
 
 #define TOTAL_ICONS 5
 #define TOTAL_SUFFIXES 7
+#define TOTAL_7SEGMENT 20
 
 // Icon types for each list item
 #define ICON_FOLDER      0      // Private bitmap

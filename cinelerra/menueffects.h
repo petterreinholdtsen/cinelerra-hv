@@ -22,6 +22,7 @@
 #ifndef MENUEFFECTS_H
 #define MENUEFFECTS_H
 
+#include "arraylist.h"
 #include "asset.inc"
 #include "bitspopup.h"
 #include "browsebutton.h"
@@ -85,6 +86,9 @@ public:
 	char title[BCTEXTLEN];
 	int realtime, load_mode;
 	int strategy;
+// GUI Plugins to delete
+	ArrayList<PluginServer*> *dead_plugins;
+	
 };
 
 

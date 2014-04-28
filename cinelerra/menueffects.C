@@ -95,11 +95,13 @@ MenuEffectThread::MenuEffectThread(MWindow *mwindow, MenuEffects *menu_item)
 {
 	this->mwindow = mwindow;
 	this->menu_item = menu_item;
+	dead_plugins = new ArrayList<PluginServer*>;
 	sprintf(title, "");
 }
 
 MenuEffectThread::~MenuEffectThread()
 {
+	delete dead_plugins;
 }
 
 
@@ -115,6 +117,15 @@ int MenuEffectThread::set_title(const char *title)
 // prompts for an effect if title is blank
 void MenuEffectThread::run()
 {
+	for(int i = 0; i < dead_plugins->size(); i++)
+	{
+		delete dead_plugins->get(i);
+	}
+	dead_plugins->remove_all();
+
+
+
+
 // get stuff from main window
 	ArrayList<PluginServer*> *plugindb = mwindow->plugindb;
 	BC_Hash *defaults = mwindow->defaults;
@@ -328,7 +339,10 @@ void MenuEffectThread::run()
 
 // Close plugin.
 			plugin->save_data(&plugin_data);
-			delete plugin;
+			plugin->hide_gui();
+
+// Can't delete here.
+			dead_plugins->append(plugin);
 			default_asset->sample_rate = mwindow->edl->session->sample_rate;
 			default_asset->frame_rate = mwindow->edl->session->frame_rate;
 			realtime = 1;
@@ -669,7 +683,6 @@ void MenuEffectWindow::create_objects()
 	add_subwindow(new MenuEffectWindowOK(this));
 	add_subwindow(new MenuEffectWindowCancel(this));
 	show_window();
-	flush();
 	unlock_window();
 }
 
@@ -806,6 +819,5 @@ void MenuEffectPrompt::create_objects()
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	raise_window();
-	flush();
 }
 

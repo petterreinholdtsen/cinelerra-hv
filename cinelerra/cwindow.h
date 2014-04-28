@@ -67,6 +67,7 @@ public:
 		int create_z);
 	void show_window();
 	void hide_window();
+	int update_position(double position);
 
 	int destination;
 	MWindow *mwindow;

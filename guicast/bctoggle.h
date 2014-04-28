@@ -75,7 +75,7 @@ public:
 	virtual int button_release_event();
 	virtual int cursor_motion_event();
 	int repeat_event(int64_t repeat_id);
-	int draw_face();
+	virtual int draw_face(int flash, int flush /* = 1 */);
 
 	enum
 	{
@@ -83,12 +83,13 @@ public:
 		TOGGLE_UPHI,
 		TOGGLE_CHECKED,
 		TOGGLE_DOWN,
-		TOGGLE_CHECKEDHI
+		TOGGLE_CHECKEDHI,
+		TOGGLE_IMAGES
 	};
 
 	int has_caption();
 
-	BC_Pixmap *images[5];
+	BC_Pixmap *images[TOGGLE_IMAGES];
 	BC_Pixmap *bg_image;
 	VFrame **data;
 	char caption[BCTEXTLEN];

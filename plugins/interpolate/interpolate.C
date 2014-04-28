@@ -191,28 +191,6 @@ void InterpolatePixelsMain::update_gui()
 	}
 }
 
-int InterpolatePixelsMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sinterpolatepixels.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.x = defaults->get("X", config.x);
-	config.y = defaults->get("Y", config.y);
-
-	return 0;
-}
-
-int InterpolatePixelsMain::save_defaults()
-{
-	defaults->update("X", config.x);
-	defaults->update("Y", config.y);
-	defaults->save();
-	return 0;
-}
 
 LOAD_CONFIGURATION_MACRO(InterpolatePixelsMain, InterpolatePixelsConfig)
 

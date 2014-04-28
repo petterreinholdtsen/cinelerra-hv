@@ -147,7 +147,7 @@ void BRender::run()
 	fd = fopen("/proc/self/cmdline", "r");
 	if(fd)
 	{
-		fread(string, 1, BCTEXTLEN, fd);
+		int temp = fread(string, 1, BCTEXTLEN, fd);
 		fclose(fd);
 	}
 	else
@@ -276,8 +276,8 @@ int BRender::set_video_map(int64_t position, int value)
 // Obsolete EDL
 	{
 		printf(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
-			position,
-			map_size);
+			(int)position,
+			(int)map_size);
 	}
 
 // Maintain last contiguous here to reduce search time
@@ -304,8 +304,7 @@ int BRender::set_video_map(int64_t position, int value)
 	if(update_gui)
 	{
 		mwindow->gui->lock_window("BRender::set_video_map");
-		mwindow->gui->timebar->update(1, 0);
-		mwindow->gui->timebar->flush();
+		mwindow->gui->timebar->update(1);
 		mwindow->gui->unlock_window();
 	}
 	return 0;
@@ -570,11 +569,11 @@ void BRenderThread::start()
 
 
 printf("BRenderThread::start 1 map=%d equivalent=%d brender_start=%d result=%d end=%d\n", 
-last_contiguous, 
-last_good, 
-brender_start, 
-start_frame,
-end_frame);
+(int)last_contiguous, 
+(int)last_good, 
+(int)brender_start, 
+(int)start_frame,
+(int)end_frame);
 
 //sleep(1);
 
@@ -593,7 +592,8 @@ end_frame);
 
 //sleep(1);
 //printf("BRenderThread::start 3 %d\n", result);
-		farm_server = new RenderFarmServer(packages,
+		farm_server = new RenderFarmServer(mwindow,
+			packages,
 			preferences,
 			0,
 			&farm_result,

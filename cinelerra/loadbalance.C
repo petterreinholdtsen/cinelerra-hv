@@ -121,7 +121,12 @@ void LoadClient::run()
 void LoadClient::run_single()
 {
 	if(server->total_packages)
-		process_package(server->packages[0]);
+	{
+		for(int i = 0; i < server->total_packages; i++)
+		{
+			process_package(server->packages[i]);
+		}
+	}
 }
 
 void LoadClient::process_package(LoadPackage *package)
@@ -162,7 +167,9 @@ void LoadServer::delete_clients()
 			delete clients[i];
 		delete [] clients;
 	}
+
 	if(single_client) delete single_client;
+
 	clients = 0;
 	single_client = 0;
 }
@@ -228,7 +235,7 @@ LoadClient* LoadServer::get_client(int number)
 
 int LoadServer::get_total_packages()
 {
-	if(is_single) return 1;
+//	if(is_single) return 1;
 	return total_packages;
 }
 
@@ -240,6 +247,12 @@ int LoadServer::get_total_clients()
 
 void LoadServer::process_packages()
 {
+	if(total_clients == 1)
+	{
+		process_single();
+		return;
+	}
+
 	is_single = 0;
 	create_clients();
 	create_packages();

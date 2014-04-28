@@ -56,33 +56,34 @@ int BC_Title::initialize()
 	if(centered) x -= w / 2;
 
 	BC_SubWindow::initialize();
-	draw();
+	draw(0);
+	show_window(0);
 	return 0;
 }
 
 int BC_Title::set_color(int color)
 {
 	this->color = color;
-	draw();
+	draw(0);
 	return 0;
 }
 
 int BC_Title::resize(int w, int h)
 {
 	resize_window(w, h);
-	draw();
+	draw(0);
 	return 0;
 }
 
 int BC_Title::reposition(int x, int y)
 {
 	reposition_window(x, y, w, h);
-	draw();
+	draw(0);
 	return 0;
 }
 
 
-int BC_Title::update(const char *text)
+int BC_Title::update(const char *text, int flush)
 {
 	int new_w, new_h;
 
@@ -92,7 +93,7 @@ int BC_Title::update(const char *text)
 	{
 		resize_window(new_w, new_h);
 	}
-	draw();
+	draw(flush);
 	return 0;
 }
 
@@ -108,7 +109,7 @@ char* BC_Title::get_text()
 	return text;
 }
 
-int BC_Title::draw()
+int BC_Title::draw(int flush)
 {
 	int i, j, x, y;
 
@@ -117,7 +118,7 @@ int BC_Title::draw()
 
  	if(font == MEDIUM_7SEGMENT)
  	{
- 		BC_WindowBase::set_color(BLACK);
+		BC_WindowBase::set_color(get_bg_color());
  		draw_box(0, 0, w, h);
  	}
 	else
@@ -151,8 +152,7 @@ int BC_Title::draw()
 		}
 	}
 	set_font(MEDIUMFONT);    // reset
-	flash();
-	flush();
+	flash(flush);
 	return 0;
 }
 

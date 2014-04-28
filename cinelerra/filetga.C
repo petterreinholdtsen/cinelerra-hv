@@ -80,7 +80,7 @@ int FileTGA::check_sig(Asset *asset)
 		else
 		{
 			char test[16];
-			fread(test, 16, 1, stream);
+			int temp = fread(test, 16, 1, stream);
 			fclose(stream);
 			if(test[0] == 'T' && test[1] == 'G' && test[2] == 'A' && 
 				test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && 
@@ -220,7 +220,7 @@ int FileTGA::read_frame_header(char *path)
 	}
 
 	unsigned char header[HEADERSIZE];
-	fread(header, HEADERSIZE, 1, stream);
+	int temp = fread(header, HEADERSIZE, 1, stream);
 	fclose(stream);
 
 	asset->width = header[12] | (header[13] << 8);
@@ -935,6 +935,7 @@ void TGAConfigVideo::create_objects()
 		&compression_items);
 	textbox->create_objects();
 	add_subwindow(new BC_OKButton(this));
+	show_window(1);
 	unlock_window();
 }
 

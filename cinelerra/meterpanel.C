@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
  * 
  */
 
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -34,50 +35,117 @@ MeterPanel::MeterPanel(MWindow *mwindow,
 	BC_WindowBase *subwindow, 
 	int x, 
 	int y,
+	int w,
 	int h,
 	int meter_count,
-	int use_meters,
-	int use_recording)
+	int visible,
+	int use_headroom,
+	int use_titles)
 {
 	this->subwindow = subwindow;
 	this->mwindow = mwindow;
 	this->x = x;
 	this->y = y;
+	this->w = w;
 	this->h = h;
 	this->meter_count = meter_count;
-	this->use_meters = use_meters;
-	this->use_recording = use_recording;
+	this->visible = visible;
+	this->use_headroom = use_headroom;
+	this->use_titles = use_titles;
 }
 
 
 MeterPanel::~MeterPanel()
 {
 	meters.remove_all_objects();
+	meter_titles.remove_all_objects();
 }
 
-int MeterPanel::get_meters_width(int meter_count, int use_meters)
+void MeterPanel::create_objects()
 {
-//printf("MeterPanel::get_meters_width %d %d\n", BC_Meter::get_title_w(), BC_Meter::get_meter_w());
-	return use_meters ? 
-		(BC_Meter::get_title_w() + BC_Meter::get_meter_w() * meter_count) : 
-		0;
+	set_meters(meter_count, visible);
 }
 
-void MeterPanel::reposition_window(int x, int y, int h)
+int MeterPanel::set_meters(int meter_count, int visible)
+{
+	if(meter_count != meters.total || visible != this->visible)
+	{
+// Delete old meters
+		meters.remove_all_objects();
+		meter_titles.remove_all_objects();
+		meter_peaks.remove_all();
+
+		this->meter_count = meter_count;
+		this->visible = visible;
+//		if(!visible) this->meter_count = 0;
+
+		if(meter_count)
+		{
+			int x1 = this->x;
+			int y1 = this->y;
+			int h1 = get_meter_h();
+			int border = mwindow->theme->widget_border;
+			for(int i = 0; i < meter_count; i++)
+			{
+//printf("MeterPanel::set_meters %d %d %d %d\n", __LINE__, i, x1, get_meter_w(i));
+				y1 = this->y;
+				
+				if(use_titles)
+				{
+					BC_Title *new_title;
+					subwindow->add_subwindow(new_title = new BC_Title(
+						get_title_x(i, "0"), 
+						y1,
+						"0",
+						SMALLFONT));
+					y1 += new_title->get_h() + border;
+					meter_titles.append(new_title);
+				}
+
+				MeterMeter *new_meter;
+				subwindow->add_subwindow(new_meter = new MeterMeter(mwindow,
+					this,
+					x1, 
+					y1, 
+					this->w > 0 ? get_meter_w(i) : -1,
+					h1, 
+					(i == 0)));
+				meters.append(new_meter);
+        		x1 += get_meter_w(i) + border;
+				
+				meter_peaks.append(0);
+			}
+		}
+	}
+
+	return 0;
+}
+
+void MeterPanel::reposition_window(int x, int y, int w, int h)
 {
 	this->x = x;
 	this->y = y;
+	this->w = w;
 	this->h = h;
-
-//	reset->reposition_window(get_reset_x(), get_reset_y());
 
 //printf("MeterPanel::reposition_window 0 %d\n", meter_count);
 
+	int border = mwindow->theme->widget_border;
+	int x1 = x;
 	for(int i = 0; i < meter_count; i++)
 	{
-//printf("MeterPanel::reposition_window 1 %d\n", x);
-		meters.values[i]->reposition_window(x, y, get_meter_h());
-		x += get_meter_w(i);
+		if(use_titles)
+		{
+			meter_titles.get(i)->reposition_window(
+				get_title_x(i, meter_titles.get(i)->get_text()),
+				meter_titles.get(i)->get_y());
+		}
+//printf("MeterPanel::reposition_window %d %d %d %d\n", __LINE__, i, x1, get_meter_w(i));
+		meters.get(i)->reposition_window(x1, 
+			meters.get(i)->get_y(),
+			get_meter_w(i), 
+			get_meter_h());
+		x1 += get_meter_w(i) + border;
 	}
 }
 
@@ -90,7 +158,7 @@ int MeterPanel::change_status_event()
 int MeterPanel::get_reset_x()
 {
 	return x + 
-		get_meters_width(meter_count, use_meters) - 
+		get_meters_width(mwindow->theme, meter_count, visible) - 
 		mwindow->theme->over_button[0]->get_w();
 }
 
@@ -99,14 +167,81 @@ int MeterPanel::get_reset_y()
 	return y + h - mwindow->theme->over_button[0]->get_h();
 }
 
+int MeterPanel::get_title_x(int number, const char *text)
+{
+	int border = mwindow->theme->widget_border;
+	int x1 = x;
+
+	for(int i = 0; i < meter_count; i++)
+	{
+		if(i == number)
+		{
+			int text_w = subwindow->get_text_width(SMALLFONT, text);
+			int title_x = x1;
+			int meter_w = (i == 0) ? 
+				get_meter_w(i) - BC_Meter::get_title_w() : 
+				get_meter_w(i);
+			title_x += (i == 0) ? BC_Meter::get_title_w() : 0;
+			title_x += meter_w / 2 - 
+				text_w / 2;
+			title_x = MAX(title_x, x1);
+			if(i == 0) title_x = MAX(title_x, x1 + BC_Meter::get_title_w());
+			return title_x;
+		}
+		
+		
+		x1 += get_meter_w(i) + border;
+	}
+}
+
+int MeterPanel::get_meters_width(Theme *theme, int meter_count, int visible)
+{
+//printf("MeterPanel::get_meters_width %d %d\n", BC_Meter::get_title_w(), BC_Meter::get_meter_w());
+	return visible ? 
+		(BC_Meter::get_title_w() + 
+			theme->widget_border + 
+			BC_Meter::get_meter_w() * meter_count +
+			theme->widget_border * (meter_count - 1)) : 
+		0;
+}
+
+
 int MeterPanel::get_meter_w(int number)
 {
-	return (number == 0) ? BC_Meter::get_title_w() + BC_Meter::get_meter_w() : BC_Meter::get_meter_w();
+	int border = mwindow->theme->widget_border;
+	if(w > 0)
+	{
+		int meter_w = (w - BC_Meter::get_title_w() - 
+				(meter_count - 1) * border) / 
+			meter_count;
+		if(number == 0)
+		{
+			return BC_Meter::get_title_w() + meter_w;
+		}
+		else
+		{
+			return meter_w;
+		}
+	}
+	else
+	{
+		return (number == 0) ? 
+			BC_Meter::get_title_w() + BC_Meter::get_meter_w() : 
+			BC_Meter::get_meter_w();
+	}
 }
 
 int MeterPanel::get_meter_h()
 {
-	return /* reset->get_y() - this->y - */ this->h - 5;
+	int border = mwindow->theme->widget_border;
+	if(use_titles)
+	{
+		return h - border - subwindow->get_text_height(SMALLFONT);
+	}
+	else
+	{
+		return h;
+	}
 }
 
 void MeterPanel::update(double *levels)
@@ -118,7 +253,43 @@ void MeterPanel::update(double *levels)
 		i < meter_count; 
 		i++)
 	{
-		meters.values[i]->update(levels[i], levels[i] > 1);
+		meters.values[i]->update(levels[i], levels[i] > 1.0);
+
+		if(use_titles &&
+			levels[i] > meter_peaks.get(i))
+		{
+			update_peak(i, levels[i]);
+		}
+	}
+}
+
+void MeterPanel::update_peak(int number, float value)
+{
+	if(use_titles && number < meter_count)
+	{
+		meter_peaks.set(number, value);
+		
+		float db_value = DB::todb(value);
+		char string[BCTEXTLEN] = { 0 };
+		if(db_value <= mwindow->edl->session->min_meter_db)
+		{
+			sprintf(string, "oo");
+		}
+		else
+		if(db_value > 0)
+		{
+			sprintf(string, "+%.1f", 
+				db_value);
+		}
+		else
+		{
+			sprintf(string, "%.1f", 
+				db_value);
+		}
+
+		meter_titles.get(number)->update(string);
+		meter_titles.get(number)->reposition_window(get_title_x(number, string), 
+			meter_titles.get(number)->get_y());
 	}
 }
 
@@ -129,53 +300,21 @@ void MeterPanel::stop_meters()
 		i++)
 	{
 		meters.values[i]->reset();
+// Reset peak without drawing
+		meter_peaks.set(i, 0);
 	}
 }
 
-
-void MeterPanel::create_objects()
-{
-	set_meters(meter_count, use_meters);
-}
-
-int MeterPanel::set_meters(int meter_count, int use_meters)
-{
-	if(meter_count != meters.total || use_meters != this->use_meters)
-	{
-// Delete old meters
-		meters.remove_all_objects();
-
-		this->meter_count = meter_count;
-		this->use_meters = use_meters;
-//		if(!use_meters) this->meter_count = 0;
-
-		if(meter_count)
-		{
-			int x = this->x;
-			int y = this->y;
-			int h = get_meter_h();
-			for(int i = 0; i < meter_count; i++)
-			{
-				MeterMeter *new_meter;
-				subwindow->add_subwindow(new_meter = new MeterMeter(mwindow,
-						this,
-						x, 
-						y, 
-						h, 
-						(i == 0)));
-				meters.append(new_meter);
-        		x += get_meter_w(i);
-			}
-		}
-	}
-
-	return 0;
-}
 
 void MeterPanel::reset_meters()
 {
-	for(int i = 0; i < meters.total; i++)
+	for(int i = 0; i < meters.size(); i++)
 		meters.values[i]->reset_over();
+
+	for(int i = 0; i < meter_titles.size(); i++)
+	{
+		update_peak(i, 0);
+	}
 }
 
 
@@ -183,7 +322,7 @@ void MeterPanel::change_format(int mode, int min, int max)
 {
 	for(int i = 0; i < meters.total; i++)
 	{
-		if(use_recording)
+		if(use_headroom)
 			meters.values[i]->change_format(mode, min, 0);
 		else
 			meters.values[i]->change_format(mode, min, max);
@@ -224,6 +363,7 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	MeterPanel *panel, 
 	int x, 
 	int y, 
+	int w,
 	int h, 
 	int titles)
  : BC_Meter(x,
@@ -231,14 +371,15 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	METER_VERT,
 	h,
 	mwindow->edl->session->min_meter_db, 
-	panel->use_recording ? 0 : mwindow->edl->session->max_meter_db, 
+	panel->use_headroom ? 0 : mwindow->edl->session->max_meter_db, 
 	mwindow->edl->session->meter_format,
 	titles,
-	TRACKING_RATE * 10,
-	TRACKING_RATE)
+	w)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
+	set_delays(TRACKING_RATE * 10,
+		TRACKING_RATE);
 }
 
 MeterMeter::~MeterMeter()
@@ -266,7 +407,7 @@ MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
  : BC_Toggle(x, 
  		y, 
 		mwindow->theme->get_image_set("meters"), 
-		panel->use_meters)
+		panel->visible)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -281,8 +422,8 @@ MeterShow::~MeterShow()
 
 int MeterShow::handle_event()
 {
-//printf("MeterShow::MeterShow 1 %d\n",panel->use_meters );
-	panel->use_meters = get_value();
+//printf("MeterShow::MeterShow 1 %d\n",panel->visible );
+	panel->visible = get_value();
 	panel->change_status_event();
 	return 1;
 }

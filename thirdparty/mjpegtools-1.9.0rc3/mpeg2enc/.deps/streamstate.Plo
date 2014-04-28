@@ -1,56 +1,64 @@
 streamstate.lo: streamstate.cc streamstate.h ../utils/mjpeg_types.h \
  /usr/include/sys/types.h /usr/include/features.h \
- /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-64.h /usr/include/bits/types.h \
- /usr/include/bits/typesizes.h /usr/include/time.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/time.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
  /usr/include/bits/byteswap.h /usr/include/sys/select.h \
  /usr/include/bits/select.h /usr/include/bits/sigset.h \
  /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
- /usr/include/bits/pthreadtypes.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
- /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h \
- /usr/include/c++/4.5/cassert /usr/include/assert.h \
- /usr/include/c++/4.5/algorithm /usr/include/c++/4.5/utility \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h \
- /usr/include/c++/4.5/bits/stl_relops.h \
- /usr/include/c++/4.5/bits/stl_pair.h /usr/include/c++/4.5/bits/move.h \
- /usr/include/c++/4.5/cstddef /usr/include/c++/4.5/bits/concept_check.h \
- /usr/include/c++/4.5/bits/stl_algobase.h \
- /usr/include/c++/4.5/bits/functexcept.h \
- /usr/include/c++/4.5/exception_defines.h \
- /usr/include/c++/4.5/bits/cpp_type_traits.h \
- /usr/include/c++/4.5/ext/type_traits.h \
- /usr/include/c++/4.5/ext/numeric_traits.h \
- /usr/include/c++/4.5/bits/stl_iterator_base_types.h \
- /usr/include/c++/4.5/bits/stl_iterator_base_funcs.h \
- /usr/include/c++/4.5/bits/stl_iterator.h \
- /usr/include/c++/4.5/debug/debug.h /usr/include/c++/4.5/bits/stl_algo.h \
- /usr/include/c++/4.5/cstdlib /usr/include/stdlib.h \
- /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
- /usr/include/xlocale.h /usr/include/alloca.h /usr/include/bits/stdlib.h \
- /usr/include/c++/4.5/bits/algorithmfwd.h \
- /usr/include/c++/4.5/initializer_list \
- /usr/include/c++/4.5/bits/stl_heap.h \
- /usr/include/c++/4.5/bits/stl_tempbuf.h \
- /usr/include/c++/4.5/bits/stl_construct.h /usr/include/c++/4.5/new \
- /usr/include/c++/4.5/exception \
- /usr/include/c++/4.5/bits/stl_uninitialized.h ../utils/mjpeg_logging.h \
- encoderparams.hh syntaxconsts.h /usr/include/c++/4.5/deque \
- /usr/include/c++/4.5/bits/allocator.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h \
- /usr/include/c++/4.5/ext/new_allocator.h \
- /usr/include/c++/4.5/bits/stl_deque.h \
- /usr/include/c++/4.5/bits/deque.tcc mpeg2syntaxcodes.h picturereader.hh \
- /usr/include/pthread.h /usr/include/sched.h /usr/include/bits/sched.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/stdint.h \
+ /usr/include/bits/wchar.h /usr/include/inttypes.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cassert \
+ /usr/include/assert.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/algorithm \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_algobase.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/os_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/cpu_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cstddef \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/functexcept.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cpp_type_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/type_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/numeric_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_pair.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/move.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/concept_check.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_types.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_funcs.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/debug/debug.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_algo.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cstdlib \
+ /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/xlocale.h \
+ /usr/include/alloca.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/algorithmfwd.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/initializer_list \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_heap.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_tempbuf.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_construct.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/new \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_uninitialized.h \
+ ../utils/mjpeg_logging.h encoderparams.hh syntaxconsts.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/deque \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/allocator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++allocator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/new_allocator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_deque.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/deque.tcc \
+ mpeg2syntaxcodes.h picturereader.hh /usr/include/pthread.h \
+ /usr/include/sched.h /usr/include/bits/sched.h \
  /usr/include/bits/setjmp.h picture.hh synchrolib.h macroblock.hh \
- /usr/include/c++/4.5/vector /usr/include/c++/4.5/bits/stl_vector.h \
- /usr/include/c++/4.5/bits/stl_bvector.h \
- /usr/include/c++/4.5/bits/vector.tcc encodertypes.h
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/vector \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_vector.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_bvector.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/vector.tcc \
+ encodertypes.h
 
 streamstate.h:
 
@@ -59,8 +67,6 @@ streamstate.h:
 /usr/include/sys/types.h:
 
 /usr/include/features.h:
-
-/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -76,7 +82,7 @@ streamstate.h:
 
 /usr/include/time.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/endian.h:
 
@@ -96,61 +102,55 @@ streamstate.h:
 
 /usr/include/bits/pthreadtypes.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
-
 /usr/include/stdint.h:
 
 /usr/include/bits/wchar.h:
 
 /usr/include/inttypes.h:
 
-/usr/include/c++/4.5/cassert:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cassert:
 
 /usr/include/assert.h:
 
-/usr/include/c++/4.5/algorithm:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/algorithm:
 
-/usr/include/c++/4.5/utility:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_algobase.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/os_defines.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/cpu_defines.h:
 
-/usr/include/c++/4.5/bits/stl_relops.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cstddef:
 
-/usr/include/c++/4.5/bits/stl_pair.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/functexcept.h:
 
-/usr/include/c++/4.5/bits/move.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception_defines.h:
 
-/usr/include/c++/4.5/cstddef:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cpp_type_traits.h:
 
-/usr/include/c++/4.5/bits/concept_check.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/type_traits.h:
 
-/usr/include/c++/4.5/bits/stl_algobase.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/numeric_traits.h:
 
-/usr/include/c++/4.5/bits/functexcept.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_pair.h:
 
-/usr/include/c++/4.5/exception_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/move.h:
 
-/usr/include/c++/4.5/bits/cpp_type_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/concept_check.h:
 
-/usr/include/c++/4.5/ext/type_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_types.h:
 
-/usr/include/c++/4.5/ext/numeric_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_funcs.h:
 
-/usr/include/c++/4.5/bits/stl_iterator_base_types.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator.h:
 
-/usr/include/c++/4.5/bits/stl_iterator_base_funcs.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/debug/debug.h:
 
-/usr/include/c++/4.5/bits/stl_iterator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_algo.h:
 
-/usr/include/c++/4.5/debug/debug.h:
-
-/usr/include/c++/4.5/bits/stl_algo.h:
-
-/usr/include/c++/4.5/cstdlib:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cstdlib:
 
 /usr/include/stdlib.h:
 
@@ -162,23 +162,21 @@ streamstate.h:
 
 /usr/include/alloca.h:
 
-/usr/include/bits/stdlib.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/algorithmfwd.h:
 
-/usr/include/c++/4.5/bits/algorithmfwd.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/initializer_list:
 
-/usr/include/c++/4.5/initializer_list:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_heap.h:
 
-/usr/include/c++/4.5/bits/stl_heap.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_tempbuf.h:
 
-/usr/include/c++/4.5/bits/stl_tempbuf.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_construct.h:
 
-/usr/include/c++/4.5/bits/stl_construct.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/new:
 
-/usr/include/c++/4.5/new:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception:
 
-/usr/include/c++/4.5/exception:
-
-/usr/include/c++/4.5/bits/stl_uninitialized.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_uninitialized.h:
 
 ../utils/mjpeg_logging.h:
 
@@ -186,17 +184,17 @@ encoderparams.hh:
 
 syntaxconsts.h:
 
-/usr/include/c++/4.5/deque:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/deque:
 
-/usr/include/c++/4.5/bits/allocator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/allocator.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++allocator.h:
 
-/usr/include/c++/4.5/ext/new_allocator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/new_allocator.h:
 
-/usr/include/c++/4.5/bits/stl_deque.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_deque.h:
 
-/usr/include/c++/4.5/bits/deque.tcc:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/deque.tcc:
 
 mpeg2syntaxcodes.h:
 
@@ -216,12 +214,12 @@ synchrolib.h:
 
 macroblock.hh:
 
-/usr/include/c++/4.5/vector:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/vector:
 
-/usr/include/c++/4.5/bits/stl_vector.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_vector.h:
 
-/usr/include/c++/4.5/bits/stl_bvector.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_bvector.h:
 
-/usr/include/c++/4.5/bits/vector.tcc:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/vector.tcc:
 
 encodertypes.h:

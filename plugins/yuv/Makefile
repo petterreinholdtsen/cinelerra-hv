@@ -1,7 +1,6 @@
 include ../../global_config
 
-OBJS = ../colors/$(OBJDIR)/plugincolors.o \
-	$(OBJDIR)/yuv.o
+OBJS = $(OBJDIR)/yuv.o
 
 OUTPUT = $(PLUGIN_DIR)/yuv.plugin
 

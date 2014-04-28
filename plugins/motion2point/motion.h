@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "affine.inc"
-#include "../motion/motionscan.inc"
+#include "motionscan.inc"
 #include "bchash.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
@@ -69,9 +69,6 @@ class RotateScan;
 // Limits of block count
 #define MIN_BLOCKS 1
 #define MAX_BLOCKS 200
-
-// Precision of rotation
-#define MIN_ANGLE 0.0001
 
 #define MOTION_FILE "/tmp/motion"
 #define ROTATION_FILE "/tmp/rotate"
@@ -123,25 +120,7 @@ public:
 // Recalculate, no calculate, save, or load coordinates from disk
 	int calculation;
 // Track a single frame, previous frame, or previous frame same block
-	int mode3;
-	enum
-	{
-// action
-		TRACK,
-		STABILIZE,
-		TRACK_PIXEL,
-		STABILIZE_PIXEL,
-		NOTHING,
-// calculation
-		RECALCULATE,
-		SAVE,
-		LOAD,
-		NO_CALCULATE,
-// mode3
-		TRACK_SINGLE,
-		TRACK_PREVIOUS,
-		PREVIOUS_SAME_BLOCK
-	};
+	int tracking_object;
 };
 
 
@@ -161,8 +140,6 @@ public:
 	void draw_vectors(VFrame *frame, int point);
 	int is_multichannel();
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();

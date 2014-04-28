@@ -43,10 +43,20 @@ public:
 
 	void generate_node_list();
 	void update_node_list();
+	void update_rates();
 
 	int hot_node;
 
 	CICacheSize *cache_size;
+
+	enum
+	{
+		ENABLED_COLUMN,
+		HOSTNAME_COLUMN,
+		PORT_COLUMN,
+		RATE_COLUMN,
+		TOTAL_COLUMNS
+	};
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;

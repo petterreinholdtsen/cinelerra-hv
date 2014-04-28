@@ -35,6 +35,15 @@
 // The secondary selection is filled by copying
 #define SECONDARY_SELECTION 1
 
+
+// Storage for guicast only
+// The secondary selection has never been reliable either in Cinelerra
+// or anything else.  We just use the guaranteed solution for any data not
+// intended for use outside Cinelerra.
+#define BC_PRIMARY_SELECTION 2
+
+
+
 class BC_Clipboard : public Thread
 {
 public:

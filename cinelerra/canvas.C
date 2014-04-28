@@ -48,8 +48,8 @@ Canvas::Canvas(MWindow *mwindow,
 {
 	reset();
 
-	if(x < 10) x = 10;
-	if(y < 10) y = 10;
+	if(w < 10) w = 10;
+	if(h < 10) h = 10;
 	this->mwindow = mwindow;
 	this->subwindow = subwindow;
 	this->x = x;
@@ -230,12 +230,12 @@ void Canvas::check_boundaries(EDL *edl, int &x, int &y, float &zoom)
 	if(y < 0) y = 0;
 }
 
-void Canvas::update_scrollbars()
+void Canvas::update_scrollbars(int flush)
 {
 	if(use_scrollbars)
 	{
-		if(xscroll) xscroll->update_length(w_needed, get_xscroll(), w_visible);
-		if(yscroll) yscroll->update_length(h_needed, get_yscroll(), h_visible);
+		if(xscroll) xscroll->update_length(w_needed, get_xscroll(), w_visible, flush);
+		if(yscroll) yscroll->update_length(h_needed, get_yscroll(), h_visible, flush);
 	}
 }
 
@@ -554,6 +554,7 @@ void Canvas::get_scrollbars(EDL *edl,
 	if(need_xscroll)
 	{
 		if(!xscroll)
+		{
 			subwindow->add_subwindow(xscroll = new CanvasXScroll(edl, 
 				this, 
                 canvas_x,
@@ -562,12 +563,14 @@ void Canvas::get_scrollbars(EDL *edl,
 				get_xscroll(),
 				w_visible,
 				canvas_w));
+			xscroll->show_window(0);
+		}
 		else
 			xscroll->reposition_window(canvas_x, canvas_y + canvas_h, canvas_w);
 
 		if(xscroll->get_length() != w_needed ||
 			xscroll->get_handlelength() != w_visible)
-			xscroll->update_length(w_needed, get_xscroll(), w_visible);
+			xscroll->update_length(w_needed, get_xscroll(), w_visible, 0);
 	}
 	else
 	{
@@ -579,6 +582,7 @@ void Canvas::get_scrollbars(EDL *edl,
 	if(need_yscroll)
 	{
 		if(!yscroll)
+		{
 			subwindow->add_subwindow(yscroll = new CanvasYScroll(edl, 
 				this,
                 canvas_x + canvas_w,
@@ -587,12 +591,14 @@ void Canvas::get_scrollbars(EDL *edl,
 				get_yscroll(),
 				h_visible,
 				canvas_h));
+			yscroll->show_window(0);
+		}
 		else
 			yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
 		if(yscroll->get_length() != edl->session->output_h ||
 			yscroll->get_handlelength() != h_visible)
-			yscroll->update_length(h_needed, get_yscroll(), h_visible);
+			yscroll->update_length(h_needed, get_yscroll(), h_visible, 0);
 	}
 	else
 	{
@@ -627,18 +633,17 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 				0, 
 				get_canvas()->get_w(), 
 				get_canvas()->get_h());
-			canvas_subwindow->flash();
+			canvas_subwindow->flash(0);
 		}
 	}
 	
 
-	draw_refresh();
-//printf("Canvas::reposition_window 2\n");
+	draw_refresh(0);
 }
 
 void Canvas::set_cursor(int cursor)
 {
-	get_canvas()->set_cursor(cursor);
+	get_canvas()->set_cursor(cursor, 0, 1);
 }
 
 int Canvas::get_cursor_x()

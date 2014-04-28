@@ -24,7 +24,7 @@
 
 #include "histogramengine.inc"
 #include "loadbalance.h"
-#include "../colors/plugincolors.inc"
+#include "cicolors.inc"
 #include "vframe.inc"
 
 #include <stdint.h>

@@ -36,7 +36,6 @@
 
 
 
-#define SQR(x) ((x) * (x))
 #define MAXANGLE 360
 
 
@@ -193,8 +192,6 @@ public:
 		double frame_rate);
 	int is_realtime();
 	void update_gui();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	int handle_opengl();
@@ -522,7 +519,6 @@ void RotateWindow::create_objects()
 	add_subwindow(draw_pivot = new RotateDrawPivot(this, plugin, x, y));
 
 	show_window();
-	flush();
 
 
 
@@ -635,34 +631,6 @@ LOAD_CONFIGURATION_MACRO(RotateEffect, RotateConfig)
 
 
 
-int RotateEffect::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%srotate.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.angle = defaults->get("ANGLE", (float)config.angle);
-	config.pivot_x = defaults->get("PIVOT_X", (float)config.pivot_x);
-	config.pivot_y = defaults->get("PIVOT_Y", (float)config.pivot_y);
-	config.draw_pivot = defaults->get("DRAW_PIVOT", (int)config.draw_pivot);
-//	config.bilinear = defaults->get("INTERPOLATE", (int)config.bilinear);
-	return 0;
-}
-
-int RotateEffect::save_defaults()
-{
-	defaults->update("ANGLE", (float)config.angle);
-	defaults->update("PIVOT_X", (float)config.pivot_x);
-	defaults->update("PIVOT_Y", (float)config.pivot_y);
-	defaults->update("DRAW_PIVOT", (int)config.draw_pivot);
-//	defaults->update("INTERPOLATE", (int)config.bilinear);
-	defaults->save();
-	return 0;
-}
 
 void RotateEffect::save_data(KeyFrame *keyframe)
 {
@@ -714,7 +682,7 @@ int RotateEffect::process_buffer(VFrame *frame,
 	load_configuration();
 	int w = frame->get_w();
 	int h = frame->get_h();
-//printf("RotateEffect::process_realtime 1 %d %f\n", config.bilinear, config.angle);
+//printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 
 	if(config.angle == 0)
@@ -726,6 +694,7 @@ int RotateEffect::process_buffer(VFrame *frame,
 			get_use_opengl());
 		return 1;
 	}
+//printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
 		PluginClient::smp + 1);
@@ -748,6 +717,7 @@ int RotateEffect::process_buffer(VFrame *frame,
 			get_use_opengl());
 		return run_opengl();
 	}
+//printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 
 // engine->set_viewport(50, 
@@ -770,6 +740,7 @@ int RotateEffect::process_buffer(VFrame *frame,
 		temp_frame, 
 		config.angle);
 
+//printf("RotateEffect::process_buffer %d\n", __LINE__);
 
 // Draw center
 #define CENTER_H 20
@@ -809,6 +780,8 @@ int RotateEffect::process_buffer(VFrame *frame,
 	{
 		int center_x = (int)(config.pivot_x * w / 100); \
 		int center_y = (int)(config.pivot_y * h / 100); \
+
+//printf("RotateEffect::process_buffer %d %d %d\n", __LINE__, center_x, center_y);
 		switch(get_output()->get_color_model())
 		{
 			case BC_RGB_FLOAT:

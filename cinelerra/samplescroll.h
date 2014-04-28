@@ -35,7 +35,7 @@ public:
 	int flip_vertical();
 	int in_use();
 	int resize_event();
-	int set_position();
+	int set_position(int flush);
 	int handle_event();
 	double oldposition;
 

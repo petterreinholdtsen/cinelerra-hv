@@ -1099,52 +1099,6 @@ void TimeFrontMain::update_gui()
 }
 
 
-int TimeFrontMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%stimefront.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-// printf("TimeFrontMain::load_defaults %d %d %d %d\n",
-// config.out_r,
-// config.out_g,
-// config.out_b,
-// config.out_a);
-	config.angle = defaults->get("ANGLE", config.angle);
-	config.in_radius = defaults->get("IN_RADIUS", config.in_radius);
-	config.out_radius = defaults->get("OUT_RADIUS", config.out_radius);
-	config.frame_range = defaults->get("FRAME_RANGE", config.frame_range);
-	config.shape = defaults->get("SHAPE", config.shape);
-	config.shape = defaults->get("TRACK_USAGE", config.track_usage);
-	config.rate = defaults->get("RATE", config.rate);
-	config.center_x = defaults->get("CENTER_X", config.center_x);
-	config.center_y = defaults->get("CENTER_Y", config.center_y);
-	config.invert = defaults->get("INVERT", config.invert);
-	config.show_grayscale = defaults->get("SHOW_GRAYSCALE", config.show_grayscale);
-	return 0;
-}
-
-
-int TimeFrontMain::save_defaults()
-{
-	defaults->update("ANGLE", config.angle);
-	defaults->update("IN_RADIUS", config.in_radius);
-	defaults->update("OUT_RADIUS", config.out_radius);
-	defaults->update("FRAME_RANGE", config.frame_range);
-	defaults->update("RATE", config.rate);
-	defaults->update("SHAPE", config.shape);
-	defaults->update("TRACK_USAGE", config.track_usage);
-	defaults->update("CENTER_X", config.center_x);
-	defaults->update("CENTER_Y", config.center_y);
-	defaults->update("INVERT", config.invert);
-	defaults->update("SHOW_GRAYSCALE", config.show_grayscale);
-	defaults->save();
-	return 0;
-}
 
 
 
@@ -1224,7 +1178,6 @@ TimeFrontUnit::TimeFrontUnit(TimeFrontServer *server, TimeFrontMain *plugin)
 }
 
 
-#define SQR(x) ((x) * (x))
 #define LOG_RANGE 1
 
 #define CREATE_GRADIENT \

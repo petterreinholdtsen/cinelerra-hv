@@ -27,19 +27,18 @@
 #include <string.h>
 #include <unistd.h>
 
-// Size of window in milliseconds
-#define WINDOW_TIME 40
 
 
-TimeStretchEngine::TimeStretchEngine(double scale, int sample_rate)
+
+
+TimeStretchEngine::TimeStretchEngine(double scale, int sample_rate, int window_time)
 {
 	output = 0;
 	output_allocation = 0;
 	input = 0;
 	input_allocation = 0;
-	window_time = WINDOW_TIME;
 	reset();
-	update(scale, sample_rate);
+	update(scale, sample_rate, window_time);
 }
 
 TimeStretchEngine::~TimeStretchEngine()
@@ -54,13 +53,14 @@ void TimeStretchEngine::reset()
 	input_sample = 0;
 	output_size = 0;
 	output_sample = 0;
-	
 }
 
-void TimeStretchEngine::update(double scale, int sample_rate)
+void TimeStretchEngine::update(double scale, int sample_rate, int window_time)
 {
 	this->scale = scale;
 	this->sample_rate = sample_rate;
+	this->window_time = window_time;
+	
 	window_size = (int64_t)sample_rate * (int64_t)window_time / (int64_t)1000;
 	window_skirt = window_size / 2;
 //printf("TimeStretchEngine::update %d %d\n", __LINE__, window_size);

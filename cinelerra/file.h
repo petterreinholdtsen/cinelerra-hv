@@ -280,7 +280,7 @@ public:
 
 // Position information normalized to project rates
 	int64_t normalized_sample;
-	int64_t normalized_sample_rate;
+//	int64_t normalized_sample_rate;
 	Preferences *preferences;
 	int wr, rd;
 	int cache_size;

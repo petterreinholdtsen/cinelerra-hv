@@ -79,7 +79,7 @@ public:
 	void update_tool();
 	void drag_motion();
 	int drag_stop();
-	void draw_status();
+	void draw_status(int flush);
 // Zero out pointers to affected auto
 	void reset_affected();
 	void keyboard_zoomin();
@@ -91,7 +91,9 @@ public:
 //	APanel *automation_panel;
 	CPanel *composite_panel;
 	CWindowZoom *zoom_panel;
+#ifdef USE_SLIDER
 	CWindowSlider *slider;
+#endif
 	CWindowReset *reset;
 	CWindowTransport *transport;
 	CWindowCanvas *canvas;
@@ -136,6 +138,9 @@ public:
 // Origin of all 4 crop points during last button press
 	float crop_origin_x1, crop_origin_y1;
 	float crop_origin_x2, crop_origin_y2;
+// Center of last eyedrop drawing
+	int eyedrop_x, eyedrop_y;
+	int eyedrop_visible;
 
 	float ruler_origin_x, ruler_origin_y;
 	int ruler_handle;
@@ -179,7 +184,7 @@ public:
 class CWindowZoom : public ZoomPanel
 {
 public:
-	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y);
+	CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y, int w);
 	~CWindowZoom();
 	int handle_event();
 	MWindow *mwindow;
@@ -248,13 +253,13 @@ public:
 	int get_xscroll();
 	int get_yscroll();
 	float get_zoom();
-	int do_eyedrop(int &rerender, int button_press);
+	int do_eyedrop(int &rerender, int button_press, int draw);
 	int do_mask(int &redraw, 
 		int &rerender, 
 		int button_press, 
 		int cursor_motion,
 		int draw);
-	void draw_refresh();
+	void draw_refresh(int flash = 1);
 	void draw_overlays();
 	void draw_safe_regions();
 // Cursor may have to be drawn

@@ -19,6 +19,7 @@
  * 
  */
 
+#include <errno.h>
 #include <png.h>
 #include <stdio.h>
 #include <string.h>
@@ -87,7 +88,7 @@ VFrame::VFrame(VFrame &frame)
 	reset_parameters(1);
 	params = new BC_Hash;
 	allocate_data(0, 
-		0,
+		-1,
 		0, 
 		0, 
 		0, 
@@ -294,10 +295,12 @@ int VFrame::clear_objects(int do_opengl)
 // printf("VFrame::clear_objects 2 this=%p data=%p\n", this, data);   
 			if(data)
 			{
-				if(shmid > 0) 
+//printf("VFrame::clear_objects %d this=%p shmid=%p data=%p\n", __LINE__, this, shmid, data);   
+				if(shmid >= 0) 
 					shmdt(data);
 				else
 					delete [] data;
+//PRINT_TRACE
 			}
 
 			data = 0;
@@ -431,7 +434,10 @@ int VFrame::allocate_data(unsigned char *data,
 	this->color_model = color_model;
 	this->bytes_per_pixel = calculate_bytes_per_pixel(color_model);
 	this->y_offset = this->u_offset = this->v_offset = 0;
-
+	if(shmid == 0)
+	{
+//		printf("VFrame::allocate_data %d shmid == 0\n", __LINE__, shmid);
+	}
 
 	if(bytes_per_line >= 0)
 	{
@@ -452,11 +458,11 @@ int VFrame::allocate_data(unsigned char *data,
 		this->v_offset = v_offset;
 	}
 	else
-	if(shmid > 0)
+	if(shmid >= 0)
 	{
 		memory_type = VFrame::SHMGET;
+//printf("VFrame::allocate_data %d shmid=%d %p\n", __LINE__, shmid, this->data);
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
-//printf("VFrame::allocate_data %d %d %p\n", __LINE__, shmid, this->data);
 		this->shmid = shmid;
 		this->y_offset = y_offset;
 		this->u_offset = u_offset;
@@ -526,7 +532,7 @@ void VFrame::set_memory(unsigned char *data,
 		this->v_offset = v_offset;
 	}
 	else
-	if(shmid > 0)
+	if(shmid >= 0)
 	{
 		memory_type = VFrame::SHMGET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
@@ -554,7 +560,7 @@ void VFrame::set_compressed_memory(unsigned char *data,
 		this->shmid = -1;
 	}
 	else
-	if(shmid > 0)
+	if(shmid >= 0)
 	{
 		memory_type = VFrame::SHMGET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
@@ -578,6 +584,7 @@ int VFrame::reallocate(
 	int color_model, 
 	long bytes_per_line)
 {
+//	if(shmid == 0) printf("VFrame::reallocate %d shmid=%d\n", __LINE__, shmid);
 	clear_objects(0);
 //	reset_parameters(0);
 	allocate_data(data, 
@@ -619,7 +626,7 @@ UNBUFFER(data);
 
 		if(memory_type == VFrame::PRIVATE)
 		{
-			if(shmid > 0) 
+			if(shmid >= 0) 
 				if(data) shmdt(data);
 			else
 				delete [] data;
@@ -657,7 +664,7 @@ UNBUFFER(data);
 	return 0;
 }
 
-int VFrame::read_png(unsigned char *data)
+int VFrame::read_png(const unsigned char *data)
 {
 
 // Test for RAW format
@@ -699,7 +706,7 @@ int VFrame::read_png(unsigned char *data)
 // Can't use shared data for theme since button constructions overlay the
 // images directly.
 		reallocate(NULL, 
-			0,
+			-1,
 			0, 
 			0, 
 			0, 
@@ -752,7 +759,7 @@ int VFrame::read_png(unsigned char *data)
 
 
 		reallocate(NULL, 
-			0,
+			-1,
 			0, 
 			0, 
 			0, 
@@ -802,6 +809,51 @@ int VFrame::read_png(unsigned char *data)
 	}
 	return 0;
 }
+
+int VFrame::write_png(const char *path)
+{
+	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	FILE *out_fd = fopen(path, "w");
+	if(!out_fd)
+	{
+		printf("VFrame::write_png %d %s %s\n", __LINE__, path, strerror(errno));
+		return 1;
+	}
+
+	int png_cmodel = PNG_COLOR_TYPE_RGB;
+	switch(get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			png_cmodel = PNG_COLOR_TYPE_RGB;
+			break;
+		
+		case BC_A8:
+			png_cmodel = PNG_COLOR_TYPE_GRAY;
+			break;
+	}
+
+	png_init_io(png_ptr, out_fd);
+	png_set_compression_level(png_ptr, 9);
+	png_set_IHDR(png_ptr, 
+		info_ptr, 
+		get_w(), 
+		get_h(),
+    	8, 
+		png_cmodel, 
+		PNG_INTERLACE_NONE, 
+		PNG_COMPRESSION_TYPE_DEFAULT, 
+		PNG_FILTER_TYPE_DEFAULT);
+	png_write_info(png_ptr, info_ptr);
+	png_write_image(png_ptr, get_rows());
+	png_write_end(png_ptr, info_ptr);
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+	fclose(out_fd);
+	return 0;
+}
+
+
 
 int VFrame::get_shmid()
 {
@@ -1332,6 +1384,7 @@ void VFrame::to_filefork(unsigned char *buffer)
 void VFrame::from_filefork(unsigned char *buffer)
 {
 // This frame will always be preallocated shared memory
+//printf("VFrame::from_filefork %d %d\n", __LINE__, *(int*)(buffer + 24));
 	if(*(int*)(buffer + 24) == BC_COMPRESSED)
 	{
 		set_compressed_memory(0,
@@ -1339,6 +1392,8 @@ void VFrame::from_filefork(unsigned char *buffer)
 			*(int*)(buffer + 36), // compressed_size
 			*(int*)(buffer + 32)); // compressed_allocated
 		color_model = BC_COMPRESSED;
+//printf("VFrame::from_filefork %d %d\n", __LINE__, get_compressed_size());
+
 	}
 	else
 	{

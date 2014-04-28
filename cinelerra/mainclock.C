@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ MainClock::MainClock(MWindow *mwindow, int x, int y, int w)
 		w)
 {
 	this->mwindow = mwindow;
+	set_bg_color(mwindow->theme->clock_bg_color);
 }
 
 MainClock::~MainClock()

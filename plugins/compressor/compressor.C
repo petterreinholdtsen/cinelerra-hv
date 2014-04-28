@@ -29,6 +29,7 @@
 #include "language.h"
 #include "picon_png.h"
 #include "samples.h"
+#include "theme.h"
 #include "units.h"
 #include "vframe.h"
 
@@ -182,58 +183,6 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int CompressorEffect::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%scompression.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.trigger = defaults->get("TRIGGER", config.trigger);
-	config.reaction_len = defaults->get("REACTION_LEN", config.reaction_len);
-	config.decay_len = defaults->get("DECAY_LEN", config.decay_len);
-	config.smoothing_only = defaults->get("SMOOTHING_ONLY", config.smoothing_only);
-	config.input = defaults->get("INPUT", config.input);
-
-	config.levels.remove_all();
-	int total_levels = defaults->get("TOTAL_LEVELS", 0);
-	for(int i = 0; i < total_levels; i++)
-	{
-		config.levels.append();
-		sprintf(string, "X_%d", i);
-		config.levels.values[i].x = defaults->get(string, (double)0);
-		sprintf(string, "Y_%d", i);
-		config.levels.values[i].y = defaults->get(string, (double)0);
-	}
-//config.dump();
-	return 0;
-}
-
-int CompressorEffect::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-	defaults->update("TRIGGER", config.trigger);
-	defaults->update("REACTION_LEN", config.reaction_len);
-	defaults->update("DECAY_LEN", config.decay_len);
-	defaults->update("SMOOTHING_ONLY", config.smoothing_only);
-	defaults->update("TOTAL_LEVELS", config.levels.total);
-	defaults->update("INPUT", config.input);
-
-	defaults->update("TOTAL_LEVELS", config.levels.total);
-	for(int i = 0; i < config.levels.total; i++)
-	{
-		sprintf(string, "X_%d", i);
-		defaults->update(string, config.levels.values[i].x);
-		sprintf(string, "Y_%d", i);
-		defaults->update(string, config.levels.values[i].y);
-	}
-
-	defaults->save();
-
-	return 0;
-}
-
 
 void CompressorEffect::update_gui()
 {
@@ -288,7 +237,7 @@ int CompressorEffect::process_buffer(int64_t size,
 	if(labs(decay_samples) < 1) decay_samples = 1;
 
 	int total_buffers = get_total_buffers();
-	if(reaction_samples > 0)
+	if(reaction_samples >= 0)
 	{
 		if(target_current_sample < 0) target_current_sample = reaction_samples;
 		for(int i = 0; i < total_buffers; i++)
@@ -903,7 +852,7 @@ void CompressorWindow::create_objects()
 		y, 
 		get_w() - x - control_margin - 10, 
 		get_h() - y - 70));
-	canvas->set_cursor(CROSS_CURSOR);
+	canvas->set_cursor(CROSS_CURSOR, 0, 0);
 	x = get_w() - control_margin;
 	add_subwindow(new BC_Title(x, y, _("Reaction secs:")));
 	y += 20;
@@ -939,11 +888,20 @@ void CompressorWindow::create_objects()
 
 	update_canvas();
 	show_window();
-	flush();
 }
 
 void CompressorWindow::draw_scales()
 {
+	draw_3d_border(canvas->get_x() - 2, 
+		canvas->get_y() - 2, 
+		canvas->get_w() + 4, 
+		canvas->get_h() + 4, 
+		get_bg_color(),
+		BLACK,
+		MDGREY, 
+		get_bg_color());
+
+
 	set_font(SMALLFONT);
 	set_color(get_resources()->default_text_color);
 
@@ -973,7 +931,6 @@ void CompressorWindow::draw_scales()
 			}
 		}
 	}
-
 
 
 	for(int i = 0; i <= DIVISIONS; i++)
@@ -1045,7 +1002,9 @@ void CompressorWindow::update_canvas()
 
 
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+	canvas->set_line_dashes(1);
 	canvas->set_color(GREEN);
+	
 	for(int i = 1; i < DIVISIONS; i++)
 	{
 		int y = canvas->get_h() * i / DIVISIONS;
@@ -1054,18 +1013,20 @@ void CompressorWindow::update_canvas()
 		int x = canvas->get_w() * i / DIVISIONS;
 		canvas->draw_line(x, 0, x, canvas->get_h());
 	}
+	canvas->set_line_dashes(0);
 
 
 	canvas->set_font(MEDIUMFONT);
-	canvas->draw_text(5, 
-		canvas->get_h() / 2 - 20, 
+	canvas->draw_text(plugin->get_theme()->widget_border, 
+		canvas->get_h() / 2, 
 		_("Output"));
-	canvas->draw_text(canvas->get_w() / 2 - canvas->get_text_width(MEDIUMFONT, _("Input level")) / 2, 
-		canvas->get_h() - canvas->get_text_height(MEDIUMFONT), 
+	canvas->draw_text(canvas->get_w() / 2 - canvas->get_text_width(MEDIUMFONT, _("Input")) / 2, 
+		canvas->get_h() - plugin->get_theme()->widget_border, 
 		_("Input"));
 
 
-	canvas->set_color(BLACK);
+	canvas->set_color(WHITE);
+	canvas->set_line_width(2);
 	for(int i = 0; i < canvas->get_w(); i++)
 	{
 		double x_db = ((double)1 - (double)i / canvas->get_w()) * plugin->config.min_db;
@@ -1079,6 +1040,7 @@ void CompressorWindow::update_canvas()
 
 		y1 = y2;
 	}
+	canvas->set_line_width(1);
 
 	int total = plugin->config.levels.total ? plugin->config.levels.total : 1;
 	for(int i = 0; i < plugin->config.levels.total; i++)
@@ -1093,7 +1055,6 @@ void CompressorWindow::update_canvas()
 	}
 	
 	canvas->flash();
-	canvas->flush();
 }
 
 int CompressorWindow::resize_event(int w, int h)
@@ -1109,9 +1070,10 @@ int CompressorWindow::resize_event(int w, int h)
 
 
 CompressorCanvas::CompressorCanvas(CompressorEffect *plugin, int x, int y, int w, int h) 
- : BC_SubWindow(x, y, w, h, WHITE)
+ : BC_SubWindow(x, y, w, h, BLACK)
 {
 	this->plugin = plugin;
+	current_operation = NONE;
 }
 
 int CompressorCanvas::button_press_event()
@@ -1221,7 +1183,7 @@ int CompressorCanvas::cursor_motion_event()
 
 		if(new_cursor != get_cursor())
 		{
-			set_cursor(new_cursor);
+			set_cursor(new_cursor, 0, 1);
 		}
 	}
 	return 0;

@@ -51,7 +51,9 @@ public:
 
 	BC_Window* new_gui();
 	void handle_close_event(int result);
-
+// update rendering rates
+	void update_rates();
+// update playback rate
 	int update_framerate();
 	int apply_settings();
 	const char* category_to_text(int category);
@@ -91,8 +93,10 @@ public:
 	virtual ~PreferencesDialog();
 	
 	virtual void create_objects() { };
-	virtual int draw_framerate() { return 0; };
-
+// update playback rate
+	virtual int draw_framerate(int flush) { return 0; };
+// update rendering rates
+	virtual void update_rates() {} ;
 
 
 
@@ -117,6 +121,7 @@ public:
 	int delete_current_dialog();
 	int set_current_dialog(int number);
 	int update_framerate();
+	void update_rates();
 
 	MWindow *mwindow;
 	PreferencesThread *thread;

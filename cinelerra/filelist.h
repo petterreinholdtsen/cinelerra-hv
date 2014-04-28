@@ -62,8 +62,10 @@ public:
 
 // subclass returns whether the asset format is a list or single file
 	virtual int read_frame(VFrame *frame, VFrame *data) { return 0; };
+	virtual int read_frame(VFrame *frame, char *path) { return 0; };
 	virtual int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit) { return 0; };
-
+// Return 1 if read frame should use the path instead of the compressed data
+	virtual int use_path();
 
 	int write_list_header();
 	int write_frames(VFrame ***frames, int len);

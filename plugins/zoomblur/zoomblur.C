@@ -132,8 +132,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -608,41 +606,6 @@ void ZoomBlurMain::update_gui()
 }
 
 
-int ZoomBlurMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%szoomblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.x = defaults->get("X", config.x);
-	config.y = defaults->get("Y", config.y);
-	config.radius = defaults->get("RADIUS", config.radius);
-	config.steps = defaults->get("STEPS", config.steps);
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
-	return 0;
-}
-
-
-int ZoomBlurMain::save_defaults()
-{
-	defaults->update("X", config.x);
-	defaults->update("Y", config.y);
-	defaults->update("RADIUS", config.radius);
-	defaults->update("STEPS", config.steps);
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
-	defaults->save();
-	return 0;
-}
 
 
 

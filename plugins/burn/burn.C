@@ -25,7 +25,7 @@
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "burn.h"
 #include "burnwindow.h"
 
@@ -84,15 +84,6 @@ int BurnMain::is_realtime() { return 1; }
 NEW_WINDOW_MACRO(BurnMain, BurnWindow)
 NEW_PICON_MACRO(BurnMain)
 
-int BurnMain::load_defaults()
-{
-	return 0;
-}
-
-int BurnMain::save_defaults()
-{
-	return 0;
-}
 
 int BurnMain::load_configuration()
 {

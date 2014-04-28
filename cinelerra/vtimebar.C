@@ -51,7 +51,7 @@ int VTimeBar::resize_event()
 		mwindow->theme->vtimebar_y,
 		mwindow->theme->vtimebar_w,
 		mwindow->theme->vtimebar_h);
-	update();
+	update(0);
 	return 1;
 }
 
@@ -65,10 +65,10 @@ void VTimeBar::draw_time()
 	draw_range();
 }
 
-void VTimeBar::update_preview()
-{
-	gui->slider->set_position();
-}
+// void VTimeBar::update_preview()
+// {
+// 	gui->slider->set_position();
+// }
 
 
 void VTimeBar::select_label(double position)
@@ -103,13 +103,27 @@ void VTimeBar::select_label(double position)
 		}
 
 // Que the CWindow
-		mwindow->vwindow->update_position(CHANGE_NONE, 
+		gui->vwindow->update_position(CHANGE_NONE, 
 			0, 
 			1,
 			0);
-		update();
+		update(1);
 	}
 }
 
+
+double VTimeBar::pixel_to_position(int pixel)
+{
+	double edl_length = get_edl_length();
+
+	return (double)pixel * edl_length / get_w();
+}
+
+void VTimeBar::update_cursor()
+{
+	double position = pixel_to_position(get_cursor_x());
+	gui->vwindow->update_position(position);
+	update(1);
+}
 
 

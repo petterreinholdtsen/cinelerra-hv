@@ -31,12 +31,12 @@
 
 // BC_Signals must be initialized at the start of every program using
 // debugging.
-#define ENABLE_TRACE
-#define TRACE_LOCKS
+//#define ENABLE_TRACE
+//#define TRACE_LOCKS
 //#ifdef TRACE_LOCKS
 //#undef TRACE_LOCKS
 //#endif
-#define TRACE_MEMORY
+//#define TRACE_MEMORY
 
 
 // Need to use structs to avoid the memory manager.
@@ -74,7 +74,9 @@ public:
 
 #define TRACE(text) ;
 #define UNTRACE ;
-#define PRINT_TRACE ;
+#define PRINT_TRACE { printf("%s: %d\n", __FILE__, __LINE__); fflush(stdout); }
+//#define PRINT_TRACE ;
+#define SET_TRACE ;
 
 #endif
 

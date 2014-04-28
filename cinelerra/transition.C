@@ -227,7 +227,7 @@ const char* Transition::default_title()
 
 void Transition::dump()
 {
-	printf("       title: %s length: %d\n", title, length);
+	printf("       title: %s length: %d\n", title, (int)length);
 }
 
 

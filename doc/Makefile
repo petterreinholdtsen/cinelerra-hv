@@ -27,15 +27,14 @@ IMAGES = \
 	projector.png \
 	protect.png \
 	record.png \
-	recordpatch_up.png \
+	recordpatch.png \
 	rewind.png \
 	singleframe.png \
 	show_meters.png \
 	titlesafe.png \
 	toolwindow.png \
 	top_justify.png \
-	wrench.png \
-	magnify.png
+	wrench.png
 
 $(OUTPUT):
 	cinelerra.html

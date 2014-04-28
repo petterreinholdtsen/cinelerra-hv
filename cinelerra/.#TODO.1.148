@@ -1,0 +1,101 @@
+A
+-------
+Undo doesn't restore project title from previous load.
+File sequence testing.
+Rendering doesn't start sometimes.
+Drag plugin handle should only affect plugins with matching handles.
+Motion compensation.
+Middle mouse button drag of edit doesn't affect plugin.
+Zoomblur transition
+Master node framerate not displaying.
+Independant record options for plugin sets.
+Double click and drag item drags it but doesn't drop it.
+Paste multiple tracks onto single track -> tracks get concatenated.
+If region in VWindow and CWindow is 100% it should follow the timeline length.
+Red bar insert in regions should follow slider.
+Can't increase number of channels in PCM file.
+Autoplacement of new clips in AWindow doesn't work.
+Asset organization in subfolders.
+Asset searches.
+Synthesizer doesn't turn off and on on edit boundaries.
+Use This doesn't work in directory selection unless text is in the textbox.
+Titler doesn't use proper keyframe position
+Drawing cache not cleared after recording.
+a52.h include in libmpeg3 isn't the one included in libmpeg3
+Negative cursor selection isn't frame aligned.
+Document frame-fields
+
+List problems:
+	Click drag doesn't drag selection over sublists.
+	First column text not indented in sublist.
+	Can't unselect by shift-dragging.
+
+
+
+Not reproducible
+----------------------
+Quit freezes when background rendering is on.
+ - No quit during slow effect with background rendering.
+ - Not reproducible.
+Delete track which is being shared causes crash.
+ - not reproducible
+Crash during failure to open output file for rendering.
+Dissolve transition quirks.
+Deadlock when CWindow handles events during load.
+
+
+
+
+
+Redo plugin keyframes.
+Undo Replace project doesn't work.
+Paste from load file after recording doesn't work.
+Changing channel count -> crash
+Close out of RecordGUI before firewire signal starts -> crash
+
+In/Out shifting locks up sometimes.
+ - More reproducable if building index of AC3 file
+Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
+Plugin server locks up in sync_parameters when show plugin keyframes is on.
+Effect tweeking locks up if the time taken to render it is really long.
+
+
+
+
+
+
+B
+-----------
+Advancemame/scale2x filter
+Fourier with window size less than fragment size crashed.
+Moving icons in AWindow should reorder the contents in memory.
+Changes_made not set after tweek.
+Video playback not turned off after rendering.
+Denoise from mjpeg tools.
+Effects from audacity.
+Shift matching surrounding keyframes.
+Popup in CWindow and VWindow to set maximum preview size.
+Shared effect resolution when pasting to different tracks than source EDL.
+Doesn't support window managers with user placement of windows.
+Compressor stops after 30 minutes.
+Compressor non-functional.
+Remember Asset list position.
+More crash recovery in record.
+Lockup during channel change using RecordMonitor and BUZ driver.
+Ignore frames which return errors when monitoring recording.
+Color adjustments in Channel picker are thrown away when using Buz.
+Preferences crash after changing Playback device to Buz.
+Either audio or video plays back in Microsoft Media Player but not both.
+
+
+
+
+
+
+
+
+On hold
+--------------
+Effect editing.
+Paste non realtime plugins leading to a dialog box.
+Elimination of Audio and Video menus.

@@ -193,11 +193,10 @@ OBJS = \
 	$(OBJDIR)/resourcepixmap.o \
 	$(OBJDIR)/samplescroll.o \
 	$(OBJDIR)/savefile.o \
-	$(OBJDIR)/selection.o \
-	$(OBJDIR)/selections.o \
 	$(OBJDIR)/setformat.o \
 	$(OBJDIR)/sharedlocation.o \
 	$(OBJDIR)/shmemory.o \
+	$(OBJDIR)/splashgui.o \
 	$(OBJDIR)/statusbar.o \
 	$(OBJDIR)/theme.o \
 	$(OBJDIR)/threadexec.o \
@@ -291,10 +290,6 @@ LIBS = \
 	-lz \
 	-ldl
 
-# Static libraries for distribution
-ifeq ($(USE_STATIC),y)
-LIBS += -static
-endif
 
 CFLAGS += \
 	-I../guicast \
@@ -380,7 +375,7 @@ $(shell echo $(LDFLAGS1) $(OBJS) $(AVIOBJS) $(CXXREPOSITORY) $(STATICLIBS) $(LIB
 
 
 
-
+# Static linking is not possible because of the way the plugins are loaded
 $(OUTPUT): $(OBJS) $(BOOTSTRAP)
 	$(LINKER) `cat $(OBJDIR)/objs`
 
@@ -615,11 +610,10 @@ $(OBJDIR)/resizetrackthread.o:                    resizetrackthread.C
 $(OBJDIR)/resourcepixmap.o: 			  resourcepixmap.C
 $(OBJDIR)/samplescroll.o: 			  samplescroll.C
 $(OBJDIR)/savefile.o: 				  savefile.C
-$(OBJDIR)/selection.o:  			  selection.C
-$(OBJDIR)/selections.o: 			  selections.C
 $(OBJDIR)/setformat.o:                            setformat.C
 $(OBJDIR)/sharedlocation.o: 			  sharedlocation.C
 $(OBJDIR)/shmemory.o: 				  shmemory.C
+$(OBJDIR)/splashgui.o: 				  splashgui.C
 $(OBJDIR)/statusbar.o:  			  statusbar.C
 $(OBJDIR)/theme.o: 				  theme.C
 $(OBJDIR)/threadexec.o:                           threadexec.C

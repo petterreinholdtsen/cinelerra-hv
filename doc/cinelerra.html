@@ -30,6 +30,8 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 <li><a href="#KEYFRAMES">KEYFRAMES</a>: 
 <li><a href="#CAPTURING%20MEDIA">CAPTURING MEDIA</a>: 
 <li><a href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>: 
+<li><a href="#TROUBLESHOOTING">TROUBLESHOOTING</a>: 
+<li><a href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>: 
 <li><a href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>: 
 <li><a href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>: 
 <li><a href="#RELEASE%20NOTES">RELEASE NOTES</a>: 
@@ -47,6 +49,10 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 </ul>
 <li><a name="toc_INSTALLATION"></a>
     <a href="#INSTALLATION">INSTALLATION</a>
+<ul>
+<li><a href="#INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>
+<li><a href="#COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>
+</ul>
 <li><a name="toc_CONFIGURATION"></a>
     <a href="#CONFIGURATION">CONFIGURATION</a>
 <ul>
@@ -157,6 +163,21 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 <li><a href="#REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>
 <li><a href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>
 <li><a href="#SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>
+<li><a href="#IMPROVING%20ZORAN%20VIDEO">IMPROVING ZORAN VIDEO</a>
+</ul>
+<li><a name="toc_TROUBLESHOOTING"></a>
+    <a href="#TROUBLESHOOTING">TROUBLESHOOTING</a>
+<ul>
+<li><a href="#BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>
+</ul>
+<li><a name="toc_SECRETS%20OF%20CINELERRA"></a>
+    <a href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
+<ul>
+<li><a href="#DOLBY%20PRO%20LOGIC%20ENCODING">DOLBY PRO LOGIC ENCODING</a>
+<li><a href="#ANALOG%20TV%20CLEANING">ANALOG TV CLEANING</a>
+<li><a href="#DEFEATING%20INTERLACING">DEFEATING INTERLACING</a>
+<li><a href="#MAKING%20VIDEO%20LOOK%20LIKE%20FILM">MAKING VIDEO LOOK LIKE FILM</a>
+<li><a href="#CLEARING%20OUT%20HAZE">CLEARING OUT HAZE</a>
 </ul>
 <li><a name="toc_EFFECT%20DESCRIPTIONS"></a>
     <a href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
@@ -165,6 +186,7 @@ Up:<a rel=up accesskey=u href="#dir">(dir)</a>
 <li><a href="#HISTOGRAM">HISTOGRAM</a>
 <li><a href="#TIME%20AVERAGE">TIME AVERAGE</a>
 <li><a href="#VIDEO%20SCOPE">VIDEO SCOPE</a>
+<li><a href="#DEINTERLACE">DEINTERLACE</a>
 </ul>
 <li><a name="toc_PLUGIN%20AUTHORING"></a>
     <a href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
@@ -291,44 +313,33 @@ Up:<a rel=up accesskey=u href="#Top">Top</a>
 
 <h2>INSTALLATION</h2>
 
-<p>The Cinelerra package contains Cinelerra, Mix2000, Mplex, and XMovie,
-along with standalone libraries for various functions.  All these
-programs are useful and in most cases they're the only free programs
-available for dealing with uncompressed, high resolution movies.
-
-<p>All of these programs tie into the same code base.  Updates in one area
-of the code base usually affect everything else so everything would
-have to be downloaded again even if one thing changed.  By including
-everything in one package you can be instantly updated for movie making
-after one download.
-
-<p>The purpose of the various programs is as follows:
+<p>The Cinelerra package contains Cinelerra and most of the libraries
+needed to run it.  We try to include all the dependancies because of
+the difficulty in tracking down the right versions.  Also included are
+some utilities for handling files.
 
 <ul>
 
 <li>
-Cinelerra - capturing, editing and production of material
-
-<li>
-Mix2000 - higher resolution volume controller than the standard Linux
-volume controls.
-
-<li>
 MPlex - Multiplexing of MPEG elementary streams.
-
-<li>
-XMovie - Standalone player for all the formats Cinelerra exports.
 
 <li>
 mpeg3toc - Utility for indexing and reading MPEG files.
 
 </ul>
 
-<p>We try to include all the dependancies because of the difficulty in
-tracking them down.  Furthermore, the versions of some of the
-dependancies Cinelerra requires differ from the versions other
-utilities may require, making it impossible to coexist on the same
-system without static inclusion.
+<ul>
+<li><a accesskey=1 href="#INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>: 
+<li><a accesskey=2 href="#COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>,
+Next:<a rel=next accesskey=n href="#COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>,
+Up:<a rel=up accesskey=u href="#INSTALLATION">INSTALLATION</a>
+<br>
+
+<h3>INSTALLING AN RPM</h3>
 
 <p>Cinelerra is best installed by downloading an RPM and running
 
@@ -343,6 +354,14 @@ directory run
 
 <br><pre>rpm2cpio hvirtual*.rpm | cpio -i --make-directories
 </pre>
+
+<p><hr>
+Node:<a name="COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>,
+Previous:<a rel=previous accesskey=p href="#INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>,
+Up:<a rel=up accesskey=u href="#INSTALLATION">INSTALLATION</a>
+<br>
+
+<h3>COMPILING FROM SCRATCH</h3>
 
 <p>It should be noted that the compiler used in building Cinelerra
 binaries is the free GNU compiler and although it can reorder
@@ -362,14 +381,21 @@ the source code and decompressing.
 <br><pre>cd hvirtual
 </pre>
 
-<p>and set some environment variables.  For Pentium II use:
+<p>and set the CFLAGS environment variable.  The flags for the GCC
+compiler are constantly changing.  These are our most recent flags. 
+For Pentium II use:
 
-<br><pre>export CFLAGS='-O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include'
+<br><pre>export CFLAGS='-O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2'
 </pre>
 
 <p>For Pentium I and old AMD's use:
 
-<br><pre>export CFLAGS='-O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include'
+<br><pre>export CFLAGS='-O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2'
+</pre>
+
+<p>For new AMD's use:
+
+<br><pre>export CFLAGS='-O3 -march=athlon -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2'
 </pre>
 
 <p>Then run
@@ -381,7 +407,7 @@ the source code and decompressing.
 binaries in the <em>i686</em> directories.  When we originally supported
 Alpha it was convenient to compile Alpha and i686 binaries
 simultaneously, in different directories so all the binaries are put in
-i686 directories.
+subdirectories.
 
 <p>Once finished run
 
@@ -391,12 +417,12 @@ i686 directories.
 <p>to install the binaries.  The output is put in the following directories:
 
 <ul>
-<li>Executables -&gt;/usr/bin
-<li>Plugins  -&gt;/usr/lib/cinelerra
+<li>Executables -&gt; /usr/bin
+<li>Plugins  -&gt; /usr/lib/cinelerra
 </ul>
 
-<p>The main binaries are the Cinelerra, XMovie, Mix2000 executables and
-several utilities for reading MPEG transport streams.
+<p>The main binaries are /usr/bin/cinelerra and several utilities for
+reading MPEG transport streams.
 
 <p>Run Cinelerra by running
 
@@ -1240,8 +1266,9 @@ the project attributes.
 <li>MPEG 1, 2 video
 
 <p>You need to run <em>mpeg3toc</em> to generate a table of contents for
-these, then load the table of contents.  If you want to edit a DVD,
-find the corresponding <em>ifo</em> file for the program of interest and run
+these, then load the table of contents.  Mpeg3toc needs the absolute
+path of the MPEG file.  If you want to edit a DVD, find the
+corresponding <em>ifo</em> file for the program of interest and run
 
 <br><pre>mpeg3toc /cdrom/video_ts/vts_01_0.ifo dvd.toc
 </pre>
@@ -3604,9 +3631,9 @@ Up:<a rel=up accesskey=u href="#CAPTURING%20MEDIA">CAPTURING MEDIA</a>
 
 <p>Sometimes in the recording process and the configuration process,
 you'll need to define and select tuner channels to either record or
-play back to.  In the case of the Video4Linux recording driver, tuner
-channels define the source.  In the case of the Buz playback driver,
-tuner channels define the destination.
+play back to.  In the case of the Video4Linux and Buz recording
+drivers, tuner channels define the source.  When the Buz driver is also
+used for playback, tuner channels define the destination.
 
 <p>Defining tuner channels is accomplished by pushing the <img src="channel.png" alt="channel.png">
 channel button.  This brings up the channel editing window.  In this
@@ -3633,9 +3660,14 @@ selecting ability also exists in the record monitor window.  Be aware
 channel selections in the record monitor window and the record window
 are stored in the current batch.
 
+<p>For some drivers an option to <b>swap fields</b> may be visible.  These
+drivers don't get the field order right every time without human
+intervention.  Toggle this to get the odd and even lines to record in
+the right order.
+
 <p><hr>
 Node:<a name="IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>,
-Next:<a rel=next accesskey=n href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>,
+Next:<a rel=next accesskey=n href="#TROUBLESHOOTING">TROUBLESHOOTING</a>,
 Previous:<a rel=previous accesskey=p href="#CAPTURING%20MEDIA">CAPTURING MEDIA</a>,
 Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
@@ -3652,6 +3684,7 @@ Up:<a rel=up accesskey=u href="#Top">Top</a>
 <li><a accesskey=7 href="#REDUCING%20USB%20MOUSE%20SENSITIVITY">REDUCING USB MOUSE SENSITIVITY</a>: 
 <li><a accesskey=8 href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>: 
 <li><a accesskey=9 href="#SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>: 
+<li><a href="#IMPROVING%20ZORAN%20VIDEO">IMPROVING ZORAN VIDEO</a>: 
 </ul>
 
 <p><hr>
@@ -3717,6 +3750,18 @@ sound cards.  Edit <b>linux/drivers/sound/emu10k1/audio.c</b>
 <p>change it to say
 
 <br><pre>if (bufsize &gt; 0x40000)
+</pre>
+
+<p>Where is says
+
+<br><pre>		for (i = 0; i &lt; 8; i++)
+			for (j = 0; j &lt; 4; j++)
+</pre>
+
+<p>change it to say
+
+<br><pre>		for (i = 0; i &lt; 16; i++)
+			for (j = 0; j &lt; 4; j++)
 </pre>
 
 <p>In <b>linux/drivers/sound/emu10k1/hwaccess.h</b>
@@ -3847,7 +3892,8 @@ allowed you to reduce PS/2 mouse sensitivity using commands like
 
 <p>put
 
-<br><pre>#define DOWNSAMPLE 4
+<br><pre>#define DOWNSAMPLE_N 100
+#define DOWNSAMPLE_D 350
 int x_accum, y_accum;
 </pre>
 
@@ -3868,14 +3914,14 @@ int x_accum, y_accum;
 case EV_REL:
 	switch (code) {
 		case REL_X:
-			list-&gt;x_accum += value;
-			list-&gt;dx += list-&gt;x_accum / DOWNSAMPLE;
-			list-&gt;x_accum %= DOWNSAMPLE;
+			list-&gt;x_accum += value * DOWNSAMPLE_N;
+			list-&gt;dx += (int)list-&gt;x_accum / (int)DOWNSAMPLE_D;
+			list-&gt;x_accum -= ((int)list-&gt;x_accum / (int)DOWNSAMPLE_D) * (int)DOWNSAMPLE_D;
 			break;
 		case REL_Y:
-			list-&gt;y_accum += value;
-			list-&gt;dy -= list-&gt;y_accum / DOWNSAMPLE;
-			list-&gt;y_accum %= DOWNSAMPLE;
+			list-&gt;y_accum += value * DOWNSAMPLE_N;
+			list-&gt;dy -= (int)list-&gt;y_accum / (int)DOWNSAMPLE_D;
+			list-&gt;y_accum -= ((int)list-&gt;y_accum / (int)DOWNSAMPLE_D) * (int)DOWNSAMPLE_D;
 			break;
 		case REL_WHEEL:	if (list-&gt;mode) list-&gt;dz -= value; break;
 	}
@@ -3885,7 +3931,7 @@ case EV_REL:
 
 </pre>
 
-<p>Change the value of <b>DOWNSAMPLE</b> to change the mouse sensitivity.
+<p>Change the value of <b>DOWNSAMPLE_N</b> to change the mouse sensitivity.
 
 <p><hr>
 Node:<a name="ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>,
@@ -3934,6 +3980,7 @@ down video with extra event trapping and aren't as efficient in layout.
 
 <p><hr>
 Node:<a name="SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>,
+Next:<a rel=next accesskey=n href="#IMPROVING%20ZORAN%20VIDEO">IMPROVING ZORAN VIDEO</a>,
 Previous:<a rel=previous accesskey=p href="#ASSORTED%20X%20TWEEKS">ASSORTED X TWEEKS</a>,
 Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
 <br>
@@ -3966,9 +4013,360 @@ tune2fs -r0 -c10000 my_device
 power failures.
 
 <p><hr>
+Node:<a name="IMPROVING%20ZORAN%20VIDEO">IMPROVING ZORAN VIDEO</a>,
+Previous:<a rel=previous accesskey=p href="#SPEEDING%20UP%20THE%20FILE%20SYSTEM">SPEEDING UP THE FILE SYSTEM</a>,
+Up:<a rel=up accesskey=u href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>
+<br>
+
+<h3>IMPROVING ZORAN VIDEO</h3>
+
+<p>Video recorded from the ZORAN inputs is normally unaligned or not
+completely encoded on the right.  This can be slightly compensated by
+adjusting parameters in the driver sourcecode.
+
+<p>In <b>/usr/src/linux/drivers/media/video/zr36067.h</b> the structures
+defined near line 623 affect alignment.  At least for NTSC, the 2.4.20
+version of the driver could be improved by changing
+
+<br><pre>static struct tvnorm f60ccir601 = { 858, 720, 57, 788, 525, 480, 16 };
+</pre>
+
+<p>to
+
+<br><pre>static struct tvnorm f60ccir601 = { 858, 720, 57, 788, 525, 480, 17 };
+</pre>
+
+<p>In <b>/usr/src/linux/drivers/media/video/bt819.c</b> more structures near
+line 76 affect alignment and encoding.
+
+<p>For NTSC
+
+<br><pre>{858 - 24, 2, 523, 1, 0x00f8, 0x0000},
+</pre>
+
+<p>could be changed to
+<br><pre>{868 - 24, 2, 523, 1, 0x00f8, 0x0000},
+</pre>
+
+<p>Adjusting these parameters may or may not improve your picture.  More
+of the time, they'll cause the driver to lock up before capturing
+the first frame.
+
+<p><hr>
+Node:<a name="TROUBLESHOOTING">TROUBLESHOOTING</a>,
+Next:<a rel=next accesskey=n href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>,
+Previous:<a rel=previous accesskey=p href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
+<br>
+
+<h2>TROUBLESHOOTING</h2>
+
+<ul>
+<li><a accesskey=1 href="#BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="BUZ%20DRIVER%20CRASHES">BUZ DRIVER CRASHES</a>,
+Up:<a rel=up accesskey=u href="#TROUBLESHOOTING">TROUBLESHOOTING</a>
+<br>
+
+<h3>BUZ DRIVER CRASHES</h3>
+
+<p>First, Zoran capture boards must be accessed using the <b>Buz</b> video
+driver in <b>Preferences-&gt;Recording</b> and <b>Preferences-&gt;Playback</b>. 
+Some performance tweeks are available in another section. 
+See <a href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>.
+
+<p>Once tweeked, the Buz driver seems to crash if the number of recording
+buffers is too high.  Make sure <b>Preferences-&gt;Recording-&gt;Frames to
+buffer in device</b> is below 10.
+
+<p><hr>
+Node:<a name="SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>,
+Next:<a rel=next accesskey=n href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>,
+Previous:<a rel=previous accesskey=p href="#TROUBLESHOOTING">TROUBLESHOOTING</a>,
+Up:<a rel=up accesskey=u href="#Top">Top</a>
+<br>
+
+<h2>SECRETS OF CINELERRA</h2>
+
+<ul>
+<li><a accesskey=1 href="#DOLBY%20PRO%20LOGIC%20ENCODING">DOLBY PRO LOGIC ENCODING</a>: 
+<li><a accesskey=2 href="#ANALOG%20TV%20CLEANING">ANALOG TV CLEANING</a>: 
+<li><a accesskey=3 href="#DEFEATING%20INTERLACING">DEFEATING INTERLACING</a>: 
+<li><a accesskey=4 href="#MAKING%20VIDEO%20LOOK%20LIKE%20FILM">MAKING VIDEO LOOK LIKE FILM</a>: 
+<li><a accesskey=5 href="#CLEARING%20OUT%20HAZE">CLEARING OUT HAZE</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="DOLBY%20PRO%20LOGIC%20ENCODING">DOLBY PRO LOGIC ENCODING</a>,
+Next:<a rel=next accesskey=n href="#ANALOG%20TV%20CLEANING">ANALOG TV CLEANING</a>,
+Up:<a rel=up accesskey=u href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
+<br>
+
+<h3>DOLBY PRO LOGIC ENCODING</h3>
+
+<p>Dolby pro logic is an easy way to output 6 channel audio from a 2
+channel soundcard with degraded but useful results.  Rudimentary Dolby
+pro logic encoding can be achieved with clever usage of the effects.
+
+<p>Create 2 audio tracks with the same audio.  Apply <b>invert audio</b> to
+one track.  The signal comes out of the back speakers.
+
+<p>Create a single audio track with monaural audio of a different source. 
+Center it in the <b>pan</b> control.  The signal comes out of the center
+speaker.
+
+<p>Create other tracks with different signals and pan them left or right
+to put signals in the front left or right speaker.
+
+<p>Finally, if a copy of the signal in the back speakers is desired in any
+single front speaker, the signal in the back speakers must be delayed
+by at least 0.05 seconds and a single new track should be created.  Pan
+the new track to orient the signal in the front speakers.
+
+<p>If the same signal is desired in all the speakers except the center
+speaker, delay the back speakers by 0.5 seconds and delay either the
+front left or front right by 0.2 seconds.
+
+<p>If you want to hear something from the subwoofer, create a new track,
+select a range, drop a synthesizer effect, and set the frequency below
+60 Hz.  The subwoofer merely plays anything below around 60Hz.
+
+<p>Other tricks you can perform to separate the speakers are parametric
+equalization to play only selected ranges of frequencies through
+different speakers and lowpass filtering to play signals through the
+subwoofer.
+
+<p><hr>
+Node:<a name="ANALOG%20TV%20CLEANING">ANALOG TV CLEANING</a>,
+Next:<a rel=next accesskey=n href="#DEFEATING%20INTERLACING">DEFEATING INTERLACING</a>,
+Previous:<a rel=previous accesskey=p href="#DOLBY%20PRO%20LOGIC%20ENCODING">DOLBY PRO LOGIC ENCODING</a>,
+Up:<a rel=up accesskey=u href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
+<br>
+
+<h3>ANALOG TV CLEANING</h3>
+
+<p>Unless you live in a rich nation like China or are a terrorist, you
+probably record analog TV more than you record digital TV.  The picture
+quality on analog TV is horrible but you can do things in Cinelerra to
+make it look more like it did in the studio.
+
+<p>First, when capturing the video, capture it in the highest resolution
+possible.  For Europeans it's 720x576 and for Americans it's 720x480. 
+Don't bother adjusting the brightness or contrast in the recording
+monitor, although maxing out the color is useful.  Capture it using
+MJPEG or uncompressed Component Video if possible.  If those are too
+demanding, then capture it using JPEG.  RGB should be a last resort.
+
+<p>Now on the timeline use <b>Settings-&gt;Format</b> to set a YUV colorspace. 
+Drop a <b>Downsample</b> effect on the footage.  Set it for
+
+<br><pre>Horizontal:        2
+Horizontal offset: 0
+Vertical:          2
+Vertical offset:   0
+
+      red
+  x   green
+  x   blue
+      alpha
+</pre>
+
+<p>Use the camera tool to shift the picture up or down a line to remove
+the most color interference from the image.  This is the difference
+we're looking for:
+
+<br><p>
+<img src="cleaning1.png" alt="cleaning1.png">
+
+<p>If you have vertical blanking information or crawls which constantly
+change in each frame, block them out with the <b>Mask</b> tool.  This
+improves compression ratios.
+
+<p>This is about all you can do without destroying more data than you
+would naturally lose in compression.  The more invasive cleaning
+techniques involve deinterlacing.
+
+<p><hr>
+Node:<a name="DEFEATING%20INTERLACING">DEFEATING INTERLACING</a>,
+Next:<a rel=next accesskey=n href="#MAKING%20VIDEO%20LOOK%20LIKE%20FILM">MAKING VIDEO LOOK LIKE FILM</a>,
+Previous:<a rel=previous accesskey=p href="#ANALOG%20TV%20CLEANING">ANALOG TV CLEANING</a>,
+Up:<a rel=up accesskey=u href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
+<br>
+
+<h3>DEFEATING INTERLACING</h3>
+
+<p>Interlacing is done on most video sources because it costs too much to
+build progressive scanning cameras and progressive scanning CRT's. 
+Many a consumer has been dissapointed to spend 5 paychecks on a
+camcorder and discover what horrible jagged images it produces on a
+computer monitor.
+
+<p>As for progressive scanning camcorders, forget it.  Cost factors are
+probably going to keep progressive scanning cameras from ever equalling
+the spatial resolution of interlaced cameras.  Interlacing is here to
+stay.  That's why they made deinterlacing effects in Cinelerra.
+
+<p>We don't believe there has ever been a perfect deinterlacing effect. 
+They're either irreversible or don't work.  Cinelerra cuts down the
+middle by providing deinterlacing tools that are irreversible sometimes
+and don't work sometimes but are neither one or the other.
+
+<p><b>Line Doubling</b>
+
+<p>This one is done by the <b>Deinterlace</b> effect when set to <b>Odd
+lines</b> or <b>Even lines</b>.  When applied to a track it reduces the
+vertical resolution by 1/2 and gives you progressive frames with
+stairstepping.  This is only useful when followed by a scale effect
+which reduces the image to half its size.
+
+<p><b>Line averaging</b>
+
+<p>The <b>Deinterlace</b> effect when set to <b>Average even lines</b> or
+<b>Average odd lines</b> does exactly what line doubling does except
+instead of making straight copies of the lines it makes averages of the
+lines.  This is actually useful for all scaling.
+
+<p>There's an option for adaptive line averaging which selects which lines
+to line average and which lines to leave interlaced based on the
+difference between the lines.  It doesn't work.
+
+<p><b>Inverse Telecine</b>
+
+<p>This is the most effective deinterlacing tool when the footage is an
+NTSC TV broadcast of a film.  Here the image was converted from 24fps
+to 30fps by interlacing in a predictable pattern, which the <b>Inverse
+Telecine</b> effect can detect.  It shifts fields forwards and backwards
+to get progressive frames of the same resolution as the original, most
+of the time.
+
+<p>The timing is going to be jittery because of this but it's progressive.
+
+<p>There is only one useful setting for <b>Inverse Telecine</b>:
+
+<br><pre>Pattern offset:   0
+    Odd field first
+  x Automatic IVTC
+Pattern:
+  x A B BC CD D
+    AB BC CD DE EF
+</pre>
+
+<p>The other options are only there because one day there may be some
+progressive scan camera which produces pulldown in the same frame of
+reference throughout entire tapes.
+
+<p><b>Time base correction</b>
+
+<p>The first three tools either destroy footage irreversibly or don't work
+sometimes.  <b>Time base correction</b> is last because it's the perfect
+deinterlacing tool.  It leaves the footage intact.  It doesn't reduce
+resolution, perceptually at least.  It doesn't cause jittery timing.
+
+<p>The <b>Frames to Fields</b> effect converts each frame to two frames, so
+it must be used on a timeline whose project frame rate is twice the
+footage's frame rate.  In the first frame it puts a line averaged copy
+of the even lines.  In the second frame it puts a line averaged copy of
+the odd lines.  When played back at full framerates it gives the
+illusion of progressive video with no loss of detail.
+
+<p>Best of all, this effect can be reversed with the <b>Fields to frames</b>
+nonrealtime effect.  That one combines two frames of footage back into
+the one original interlaced frame of half the framerate.
+
+<p>Unfortunately, the output of <b>Frames to Fields</b> can't be compressed
+as efficiently as the original because it introduces vertical twitter
+and a super high framerate.
+
+<p>Interlaced 29.97fps footage can be made to look like film by applying
+<b>Frames to Fields</b> and then reducing the project frame rate of the
+resulting 59.94fps footage to 23.97fps.  This produces no timing jitter
+and the occasional odd field gives the illusion of more detail than
+there would be if you just line averaged the original.
+
+<p><hr>
+Node:<a name="MAKING%20VIDEO%20LOOK%20LIKE%20FILM">MAKING VIDEO LOOK LIKE FILM</a>,
+Next:<a rel=next accesskey=n href="#CLEARING%20OUT%20HAZE">CLEARING OUT HAZE</a>,
+Previous:<a rel=previous accesskey=p href="#DEFEATING%20INTERLACING">DEFEATING INTERLACING</a>,
+Up:<a rel=up accesskey=u href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
+<br>
+
+<h3>MAKING VIDEO LOOK LIKE FILM</h3>
+
+<p>Video sweetening is constantly getting better.  Lately the best thing
+you can do for dirt cheap consumer camcorder video is to turn it into
+progressive 24fps output.  While you can't really do that, you can get
+pretty close for the money.  Mind you, this procedure can degrade high
+quality video just as easily as it improves low quality video.  It
+should only be used for low quality video.
+
+<ul>
+
+<li>
+Step 1 - Set project framerate to twice the video framerate.
+
+<li>
+Step 2 - Apply a <b>Sharpen</b> effect.  Set it to sharpness: 25, no
+interlacing, and horizontal only.
+
+<li>
+Step 3 - Drop a <b>Frame to Fields</b> effect on the same track.  Set
+Average Empty Rows on and play through the video a few times to figure
+out which field is first.  If the wrong field is first, the motion is
+shaky.  Secondly, any editing in the doubled frame rate may now screw
+up the field order.  We're still figuring out the easiest way to
+support warnings for field glitches but for now you need to go back to
+the normal framerate to do editing or play test to make sure the fields
+are right.
+
+<li>
+Step 4 - Render just the video to the highest quality file possible.
+
+<li>
+Step 5 - Import the video back to a new track.  Set the project
+framerate to 24.  The new track should now display more filmish and
+sharper images than the original footage.
+
+</ul>
+
+<p>This entire procedure could be implemented in one nonrealtime effect,
+but the biggest problem with that is you'll most often want to keep the
+field based output and the 24fps output for posterity.  A nonrealtime
+effect would require all that processing just for the 24fps copy. 
+Still debating that one.
+
+<p><hr>
+Node:<a name="CLEARING%20OUT%20HAZE">CLEARING OUT HAZE</a>,
+Previous:<a rel=previous accesskey=p href="#MAKING%20VIDEO%20LOOK%20LIKE%20FILM">MAKING VIDEO LOOK LIKE FILM</a>,
+Up:<a rel=up accesskey=u href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>
+<br>
+
+<h3>CLEARING OUT HAZE</h3>
+
+<p>Let's face it, if you're employed you live in Silicon Valley.  As such
+you probably photograph a lot of haze and never see blue sky ever. 
+Even if you can afford to briefly go somewhere where there is blue sky,
+horizon shots usually can stand for more depth.  This is what the
+<b>gradient effect</b> is for.
+
+<p>Drop the gradient effect on hazy tracks.  Set the following parameters:
+
+<br><pre>Angle: 0
+Inner radius: 0
+Outer radius: 40
+Inner color: blue 100% alpha
+Outer color: blue 0% alpha
+</pre>
+
+<p>It's important to set the 0% alpha color to blue even though it's 0%
+alpha.  This is a generally applicable setting for the gradient.  Some
+scenes may work better with orange or brown for an evening feel.
+
+<p><hr>
 Node:<a name="EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>,
 Next:<a rel=next accesskey=n href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>,
-Previous:<a rel=previous accesskey=p href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMANCE</a>,
+Previous:<a rel=previous accesskey=p href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>,
 Up:<a rel=up accesskey=u href="#Top">Top</a>
 <br>
 
@@ -3983,6 +4381,7 @@ utilize fully by mere experimentation.
 <li><a accesskey=2 href="#HISTOGRAM">HISTOGRAM</a>: 
 <li><a accesskey=3 href="#TIME%20AVERAGE">TIME AVERAGE</a>: 
 <li><a accesskey=4 href="#VIDEO%20SCOPE">VIDEO SCOPE</a>: 
+<li><a accesskey=5 href="#DEINTERLACE">DEINTERLACE</a>: 
 </ul>
 
 <p><hr>
@@ -4045,6 +4444,7 @@ average can increase the dynamic range of lousy cameras.
 
 <p><hr>
 Node:<a name="VIDEO%20SCOPE">VIDEO SCOPE</a>,
+Next:<a rel=next accesskey=n href="#DEINTERLACE">DEINTERLACE</a>,
 Previous:<a rel=previous accesskey=p href="#TIME%20AVERAGE">TIME AVERAGE</a>,
 Up:<a rel=up accesskey=u href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
@@ -4063,6 +4463,26 @@ vectorscope to make sure pixels don't extend past the 100 radius.
 <p>The waveform allows you to make sure image data extends from complete
 black to complete white while adjusting the brightness/contrast.
 
+<p>Some thought is being given to having a video scope for recording. 
+Unfortunately, this would require a lot of variations of the video
+scope for all the different video drivers.
+
+<p><hr>
+Node:<a name="DEINTERLACE">DEINTERLACE</a>,
+Previous:<a rel=previous accesskey=p href="#VIDEO%20SCOPE">VIDEO SCOPE</a>,
+Up:<a rel=up accesskey=u href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+
+<h3>DEINTERLACE</h3>
+
+<p>The deinterlace effect has evolved over the years to deinterlacing and
+a whole lot more.  In fact two of the deinterlacing methods, <b>Inverse
+Telecine</b> and <b>Frames to Fields</b>, are separate effects.  The
+deinterlace effect offers several variations of line replication to
+eliminate comb artifacts in interlaced video.  It also has some line
+swapping tools to fix improperly captured video or make the result of a
+reverse effect display fields in the right order.
+
 <p><hr>
 Node:<a name="PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>,
 Next:<a rel=next accesskey=n href="#RELEASE%20NOTES">RELEASE NOTES</a>,
@@ -4079,10 +4499,10 @@ Unfortunately, the GUI is not abstracted from the programmer.  This
 allows the programmer to use whatever toolkit they want and allows more
 flexibility in appearance but it costs more.
 
-<p>There are several types of plugins, each with a common procedure
-of implementation and specific changes for that particular type.  The
-easiest way to implement a plugin is to take the simplest out of the
-group and rename the symbols.
+<p>There are several types of plugins, each with a common procedure of
+implementation and specific changes for that particular type.  The
+easiest way to implement a plugin is to take the simplest existing one
+out of the group and rename the symbols.
 
 <ul>
 <li><a accesskey=1 href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>: 
@@ -4236,10 +4656,7 @@ NEW_PICON_MACRO(plugin_class)
 
 <p>to implement new_picon.  In addition, the user should create a
 <em>picon_png.h</em> header file from a PNG image using <em>pngtoh</em>. 
-<em>pngtoh</em> is in <em>guicast</em> and compiled using a sequence like
-
-<br><pre>gcc -o pngtoh pngtoh.c
-</pre>
+<em>pngtoh</em> is compiled in the <em>guicast/ARCH</em> directory.
 
 <p>The source PNG image should be called picon.png and can be any format
 supported by PNG.
@@ -4847,133 +5264,88 @@ Up:<a rel=up accesskey=u href="#Top">Top</a>
 
 <p><b>1.0.0</b>
 
-<p>First release since Broadcast 2000 migration.
+<br><pre>
+First release since Broadcast 2000 migration.
+
+</pre>
 
 <p><b>1.1.0</b>
 
-<p>Titler fonts installed by rpm.
-
-<p>XMovie decodes ac3 according to redesigned liba52 channel mappings.
-
-<p>Quicktime MPEG4 parameters debugged.
-
-<p>Background rendering over a renderfarm.
-
-<p>Renderfarm clients automatically reduced to idle priority.
-
-<p>Better MJPA decoding on single processors.
-
-<p>Better title functionality in 16 bit colormodels.
-
-<p>Undo for effect keyframes.
-
-<p>Effect GUI's cleared during undo for effect attachment.
-
-<p>Fewer lockups on startup.
-
-<p>Proper keyframe interpolation in scale effect.
-
-<p>Stamp timecode in titler.
-
-<p>Memory leaks in rendering stages removed.
-
-<p>Removed legacy plugin server code.
-
-<p>Option to generate sequence header in every GOP for MPEG2.
-
-<p>LADSPA support.
-
-<p>Listbox doesn't enter drag_icon state when dragging column division.
-
-<p>Effect rendering bug fixed.
-
-<p>64 bit mpeg transport stream seeking beyond 2 gigs.
-
-<p>More accurate mask drawing when projector is zoomed.
-
-<p>Clear labels updates CWindow
-
-<p>More accurate YUV/RGB conversions.
-
-<p>Import partial tgas
-
-<p>Copy keyframes doesn't copy default keyframe.
-
-<p>Track highlighting offset by vertical scroll.
-
-<p>Multiple video scope, spectrogram, and histogram displays may be opened.
-
-<p>HutSaturation in YUV colorspaces.
-
-<p>Undo for masks.
-
-<p>Shared synthesis effects cause the sharing tracks to
+<br><pre>
+Titler fonts installed by rpm.
+XMovie decodes ac3 according to redesigned liba52 channel mappings.
+Quicktime MPEG4 parameters debugged.
+Background rendering over a renderfarm.
+Renderfarm clients automatically reduced to idle priority.
+Better MJPA decoding on single processors.
+Better title functionality in 16 bit colormodels.
+Undo for effect keyframes.
+Effect GUI's cleared during undo for effect attachment.
+Fewer lockups on startup.
+Proper keyframe interpolation in scale effect.
+Stamp timecode in titler.
+Memory leaks in rendering stages removed.
+Removed legacy plugin server code.
+Option to generate sequence header in every GOP for MPEG2.
+LADSPA support.
+Listbox doesn't enter drag_icon state when dragging column division.
+Effect rendering bug fixed.
+64 bit mpeg transport stream seeking beyond 2 gigs.
+More accurate mask drawing when projector is zoomed.
+Clear labels updates CWindow
+More accurate YUV/RGB conversions.
+Import partial tgas
+Copy keyframes doesn't copy default keyframe.
+Track highlighting offset by vertical scroll.
+Multiple video scope, spectrogram, and histogram displays may be opened.
+HutSaturation in YUV colorspaces.
+Undo for masks.
+Shared synthesis effects cause the sharing tracks to
 play back instead of just the owning track.
-
-<p>Quicktime recovery utility improved.
-
-<p>Single frame recording with multiple batches doesn't crash.
-
-<p>DV encoding.
-
-<p>New video effects:
+Quicktime recovery utility improved.
+Single frame recording with multiple batches doesn't crash.
+DV encoding.
+New video effects:
 gradient, downsample video, radial blur, linear blur, zoom blur,
 histogram, perspective.
 
-<p>New audio effect:
+New audio effect:
 Sound level
+
+
+
+</pre>
 
 <p><b>1.1.5</b>
 
-<p>More options for the ffmpeg/MPEG-4 codecs.
+<br><pre>
+More options for the ffmpeg/MPEG-4 codecs.
+Histogram works on SMP.
+Better 16 bit alpha blending.
+BRender path updates from preferences.
+Separate preroll for background rendering and rendering.
+Deinterlace by averaging lines 0 and 2 or 1 and 3 to get intervening lines.
+Adaptive deinterlace.
+Frame per second statistics in renderfarm are more reliable.
+Select and slide in the patchbay.
+Video scope can be resized.
+Effect keyframes pasted in right positions more often.
+Selective denoising of video based on color channel.
+More mouse wheel bindings in MainWindow and ListBox.
+Ctrl-w closes effect windows.
+Perspective doesn't crash when switching from stretch to sheer.
+Better text list searching and keyboard navigation.
+Better Vorbis decoding after a pause.
+Close recording without recording anything doesn't crash.
+Save backup now option.
+OpenGL not required anymore.
+Time format changes update the selection textboxes more often.
+MPEG-4 deblocking option in XMovie and Cinelerra.
+Resize in Record GUI doesn't screw it up.
+Better export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
+Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
 
-<p>Histogram works on SMP.
-
-<p>Better 16 bit alpha blending.
-
-<p>BRender path updates from preferences.
-
-<p>Separate preroll for background rendering and rendering.
-
-<p>Deinterlace by averaging lines 0 and 2 or 1 and 3 to get intervening lines.
-
-<p>Adaptive deinterlace.
-
-<p>Frame per second statistics in renderfarm are more reliable.
-
-<p>Select and slide in the patchbay.
-
-<p>Video scope can be resized.
-
-<p>Effect keyframes pasted in right positions more often.
-
-<p>Selective denoising of video based on color channel.
-
-<p>More mouse wheel bindings in MainWindow and ListBox.
-
-<p>Ctrl-w closes effect windows.
-
-<p>Perspective doesn't crash when switching from stretch to sheer.
-
-<p>Better text list searching and keyboard navigation.
-
-<p>Better Vorbis decoding after a pause.
-
-<p>Close recording without recording anything doesn't crash.
-
-<p>Save backup now option.
-
-<p>OpenGL not required anymore.
-
-<p>Time format changes update the selection textboxes more often.
-
-<p>MPEG-4 deblocking option in XMovie and Cinelerra.
-
-<p>Resize in Record GUI doesn't screw it up.
-
-<p>Better export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
-
-<p>Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
+</pre>
 
 </ul>
 

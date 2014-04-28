@@ -5,7 +5,6 @@
 /chromakey_mask.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /creditroll_rotate.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /drag.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
-/effect_bounce.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /hologram_key.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /hologram_mask.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /pan_photo.xml/1.1.1.1/Fri Jun 21 12:35:25 2002//
@@ -20,4 +19,10 @@
 /tracking.xml/1.1/Thu Jul 11 16:07:35 2002//
 /tracking2.xml/1.1/Thu Jul 11 16:07:35 2002//
 /transition.xml/1.1/Thu Jul 11 16:07:35 2002//
+/alpha.xml/1.1/Tue Sep  3 02:11:21 2002//
+/denoise.xml/1.1/Tue May  6 20:18:34 2003//
+/effect_bounce.xml/1.2/Wed May  7 04:44:47 2003//
+/gradient.xml/1.1/Tue May  6 20:18:34 2003//
+/mask.xml/1.1/Tue May  6 20:18:34 2003//
+/shift_keyframes.xml/1.1/Tue May  6 20:18:34 2003//
 D

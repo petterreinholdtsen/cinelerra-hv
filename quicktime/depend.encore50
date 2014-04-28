@@ -44,6 +44,7 @@ $(OBJDIR)/$(ENCORE_DIR)/text_dct.o: 	   $(ENCORE_DIR)/text_dct.c
 $(OBJDIR)/$(ENCORE_DIR)/vop_code.o:	   $(ENCORE_DIR)/vop_code.c
 
 
+$(OBJDIR)/$(DECORE_DIR)/mmxidct.o:               $(DECORE_DIR)/mmxidct.S
 
 $(OBJDIR)/$(DECORE_DIR)/intel_mmx/IDCT_MMX.o:			   $(DECORE_DIR)/intel_mmx/IDCT_MMX.C
 $(OBJDIR)/$(DECORE_DIR)/intel_mmx/basic_prediction_mmx.o:	   $(DECORE_DIR)/intel_mmx/basic_prediction_mmx.c

@@ -5,6 +5,7 @@ DV_OBJS := \
 	$(OBJDIR)/$(DV_DIR)/libdv/bitstream.o \
 	$(OBJDIR)/$(DV_DIR)/libdv/dct.o \
 	$(OBJDIR)/$(DV_DIR)/libdv/dv.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/dv_workaround.o \
 	$(OBJDIR)/$(DV_DIR)/libdv/enc_input.o \
 	$(OBJDIR)/$(DV_DIR)/libdv/enc_output.o \
 	$(OBJDIR)/$(DV_DIR)/libdv/encode.o \

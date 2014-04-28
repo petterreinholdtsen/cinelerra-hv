@@ -127,13 +127,20 @@ OBJS += \
 	$(OBJDIR)/v410.o \
 	$(OBJDIR)/vmhd.o \
 	$(OBJDIR)/vorbis.o \
+	$(OBJDIR)/wmx2.o \
 	$(OBJDIR)/workarounds.o \
 	$(OBJDIR)/yuv2.o \
 	$(OBJDIR)/yuv4.o \
 	$(OBJDIR)/yv12.o
 
-
-
+UTILS := \
+	$(OBJDIR)/qtdump \
+	$(OBJDIR)/make_streamable \
+	$(OBJDIR)/qtinfo \
+	$(OBJDIR)/dechunk \
+	$(OBJDIR)/yuv4toyuv \
+	$(OBJDIR)/recover \
+	$(OBJDIR)/rechunk
 
 
 
@@ -204,14 +211,14 @@ LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -lglib -
 
 $(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo  $(LIBRAW_CFLAGS) > $(OBJDIR)/libraw_cflags)
-$(shell echo  $(OBJS) $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
+$(shell echo  $(OBJS) $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(JPEG_FAIL) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) > $(OBJDIR)/objs)
 
 all: $(DIRS) $(OUTPUT)
 
 $(DIRS):
 	if ! test -d $@ ; then mkdir -p $@ ; fi
 
-$(OUTPUT): $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
+$(OUTPUT): $(LIBRAW_OBJS) $(DV_OBJS) $(DVMMXOBJ) $(OBJS) $(DVMMXOBJS) $(DECOREMMX_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(FFMPEG_OBJS) $(FFMPEGIA32_OBJS) $(LAME_OBJS) $(JPEG_FAIL) 
 	ar rcs $(OUTPUT) `cat $(OBJDIR)/objs`
 
 $(OBJDIR)/qtdump: $(OBJDIR)/dump.o $(OUTPUT)
@@ -235,7 +242,7 @@ $(OBJDIR)/yuv4toyuv: $(OBJDIR)/yuv4toyuv.o $(OUTPUT)
 $(OBJDIR)/qtinfo: $(OBJDIR)/qtinfo.o
 	$(CC) -o $(OBJDIR)/qtinfo $(OBJDIR)/qtinfo.o $(LIBS)
 
-util:  $(OBJDIR)/qtdump $(OBJDIR)/make_streamable $(OBJDIR)/qtinfo $(OBJDIR)/dechunk $(OBJDIR)/yuv4toyuv $(OBJDIR)/recover $(OBJDIR)/rechunk
+util:  $(UTILS)
 	
 
 clean:
@@ -250,7 +257,7 @@ backup: clean
 	tar zcvf quicktime.tar.gz quicktime
 
 install:
-	
+	cp $(UTILS) /usr/bin
 
 $(OBJDIR)/dump.o \
 $(OBJDIR)/make_streamable.o \
@@ -285,7 +292,7 @@ $(ENCOREMMX_OBJS):
 	nasm -f elf $(subst $(OBJDIR)/,, $*.asm) -o $*.o
 
 $(DECOREMMX_OBJS):
-	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o
+	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.S) -o $*.o
 
 
 $(FFMPEG_OBJS):
@@ -366,6 +373,7 @@ $(OBJDIR)/v408.o:                         v408.c
 $(OBJDIR)/v410.o:                         v410.c
 $(OBJDIR)/vmhd.o:			  vmhd.c
 $(OBJDIR)/vorbis.o:                       vorbis.c
+$(OBJDIR)/wmx2.o:		          wmx2.c
 $(OBJDIR)/workarounds.o:		  workarounds.c
 $(OBJDIR)/yuv2.o:			  yuv2.c
 $(OBJDIR)/yuv4.o:			  yuv4.c

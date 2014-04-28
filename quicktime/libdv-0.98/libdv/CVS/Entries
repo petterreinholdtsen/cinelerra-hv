@@ -12,7 +12,6 @@
 /dct.h/1.1/Fri Nov  8 13:44:37 2002//
 /dct_block_mmx.S/1.1/Fri Nov  8 13:44:37 2002//
 /dovlc.c/1.1/Fri Nov  8 13:44:37 2002//
-/dv.c/1.1/Fri Nov  8 13:44:37 2002//
 /dv.h/1.1/Fri Nov  8 13:44:37 2002//
 /dv1394.h/1.1/Fri Nov  8 13:44:37 2002//
 /dv_types.h/1.1/Fri Nov  8 13:44:37 2002//
@@ -54,5 +53,7 @@
 /vlc_x86.S/1.1/Fri Nov  8 13:44:37 2002//
 /weighting.c/1.1/Fri Nov  8 13:44:37 2002//
 /weighting.h/1.1/Fri Nov  8 13:44:37 2002//
-/asmoff.h/1.6/Thu Feb  6 06:06:36 2003//
+/dv.c/1.2/Fri Apr  4 08:40:19 2003//
+/dv_workaround.c/1.1/Fri Apr  4 08:40:16 2003//
+/asmoff.h/1.9/Thu May  8 05:10:50 2003//
 D

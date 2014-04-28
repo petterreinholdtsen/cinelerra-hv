@@ -53,13 +53,17 @@ void MainUndo::update_undo_after()
 	if(undo_before_updated)
 	{
 		FileXML file;
+//printf("MainUndo::update_undo_after 1\n");
 		mwindow->edl->save_xml(mwindow->plugindb, 
 			&file, 
 			"",
 			0,
 			0);
+//printf("MainUndo::update_undo_after 1\n");
 		file.terminate_string();
+//printf("MainUndo::update_undo_after 1\n");
 		current_entry->set_data_after(file.string);
+//printf("MainUndo::update_undo_after 10\n");
 		undo_before_updated = 0;
 	}
 }

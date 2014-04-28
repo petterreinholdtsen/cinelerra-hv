@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "confirmsave.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 
@@ -42,9 +43,23 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 	if(list.total)
 	{
-		ConfirmSaveWindow window(mwindow, &list);
-		window.create_objects();
-		result = window.run_window();
+		if(mwindow)
+		{
+			ConfirmSaveWindow window(mwindow, &list);
+			window.create_objects();
+			result = window.run_window();
+		}
+		else
+		{
+			printf("The following files exist.\n");
+			for(int i = 0; i < list.total; i++)
+			{
+				printf("    %s\n", list.values[i]->get_text());
+			}
+			printf("It's so hard to configure non-interactive rendering that\n"
+				"we'll assume you didn't want to overwrite them and crash here.\n");
+			result = 1;
+		}
 		list.remove_all_objects();
 		return result;
 	}
@@ -86,7 +101,7 @@ int ConfirmSaveWindow::create_objects()
 	int x = 10, y = 10;
 	add_subwindow(title = new BC_Title(5, 
 		5, 
-		"The following files exist.  Overwrite them?"));
+		_("The following files exist.  Overwrite them?")));
 	y += 30;
 	add_subwindow(listbox = new BC_ListBox(x, 
 		y, 

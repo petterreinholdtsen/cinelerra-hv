@@ -34,6 +34,9 @@ public:
 
 	friend class PngReadFunction;
 
+// Return 1 if the colormodel and dimensions are the same
+	int equivalent(VFrame *src);
+
 // Reallocate a frame without deleting the class
 	int reallocate(unsigned char *data, 
 		long y_offset,

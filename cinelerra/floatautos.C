@@ -108,7 +108,6 @@ int FloatAutos::automation_is_constant(int64_t start,
 		start -= length;
 	}
 
-//printf("FloatAutos::automation_is_constant 1 %d %d\n", start, end);
 
 // No keyframes on track
 	if(total_autos == 0)

@@ -2,6 +2,7 @@
 #define RECORDMONITOR_H
 
 #include "canvas.h"
+#include "condition.inc"
 #include "guicast.h"
 #include "channelpicker.inc"
 #include "libmjpeg.h"
@@ -141,13 +142,13 @@ public:
 // Best color model given by device
 	int output_colormodel;
 // Block until new input data
-	Mutex output_lock;
+	Condition *output_lock;
+	Condition *input_lock;
 	Record *record;
 	RecordMonitor *record_monitor;
 	MWindow *mwindow;
 // If the input frame is the same data that the file handle uses
 	int shared_data;
-	Mutex input_lock;
 
 
 private:

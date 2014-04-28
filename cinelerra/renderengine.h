@@ -69,6 +69,8 @@ public:
 	int close_output();
 // return position to synchronize video against
 	int64_t sync_position();
+// Called by VRender to reset the timers once the first frame is done.
+	void reset_sync_position();
 // return samples since start of playback
 	int64_t session_position();
 
@@ -95,6 +97,8 @@ public:
 // Lock out interrupts until started
 	Condition *start_lock;
 	Condition *output_lock;
+// Lock out audio and synchronization timers until first frame is done
+	Condition *first_frame_lock;
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 
@@ -117,7 +121,9 @@ public:
 // Channels for the BUZ output
 	ArrayList<Channel*> *channeldb;
 
-// length to send to audio device after speed adjustment
+// Samples in audio buffer to process
+	int64_t fragment_len;
+// Samples to send to audio device after speed adjustment
 	int64_t adjusted_fragment_len;              
 // CICaches for use if no playbackengine exists
 	CICache *audio_cache, *video_cache;

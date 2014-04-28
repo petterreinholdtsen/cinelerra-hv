@@ -91,7 +91,6 @@ int FileMPEG::open_file(int rd, int wr)
 	int result = 0;
 	this->rd = rd;
 	this->wr = wr;
-//printf("FileMPEG::open_file: 1 %d %d %d\n", rd, wr, asset->format);
 
 	if(rd)
 	{
@@ -116,7 +115,6 @@ int FileMPEG::open_file(int rd, int wr)
 				if(!asset->sample_rate)
 					asset->sample_rate = mpeg3_sample_rate(fd, 0);
 				asset->audio_length = mpeg3_audio_samples(fd, 0); 
-	//printf("FileMPEG::open_file 1 %d\n", asset->audio_length);
 			}
 
 			asset->video_data = mpeg3_has_video(fd);
@@ -129,12 +127,10 @@ int FileMPEG::open_file(int rd, int wr)
 				asset->vmpeg_cmodel = (mpeg3_colormodel(fd, 0) == MPEG3_YUV422P) ? 1 : 0;
 				if(!asset->frame_rate)
 					asset->frame_rate = mpeg3_frame_rate(fd, 0);
-//printf("FileMPEG::open_file 2 %d\n", asset->video_length);
 			}
 		}
 	}
 	
-//printf("FileMPEG::open_file 2 %d\n", asset->video_length);
 	
 	
 	if(wr && asset->format == FILE_VMPEG)
@@ -151,6 +147,21 @@ int FileMPEG::open_file(int rd, int wr)
 		if(!result)
 		{
 			append_vcommand_line("mpeg2enc");
+
+
+			if(asset->aspect_ratio > 0)
+			{
+				append_vcommand_line("-a");
+				if(EQUIV(asset->aspect_ratio, 1.333))
+					append_vcommand_line("2");
+				else
+				if(EQUIV(asset->aspect_ratio, 1.777))
+					append_vcommand_line("3");
+				else
+				if(EQUIV(asset->aspect_ratio, 2.11))
+					append_vcommand_line("4");
+			}
+
 			append_vcommand_line(asset->vmpeg_derivative == 1 ? "-1" : "");
 			append_vcommand_line(asset->vmpeg_cmodel == 1 ? "-422" : "");
 			if(asset->vmpeg_fix_bitrate)
@@ -751,6 +762,10 @@ FileMPEGVideo::~FileMPEGVideo()
 
 void FileMPEGVideo::run()
 {
+printf("FileMPEGVideo::run ");
+for(int i = 0; i < file->vcommand_line.total; i++)
+	printf("%s ", file->vcommand_line.values[i]);
+printf("\n");
 	mpeg2enc(file->vcommand_line.total, file->vcommand_line.values);
 }
 

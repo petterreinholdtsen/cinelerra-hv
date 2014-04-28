@@ -20,6 +20,7 @@ DIRS = \
 	colorbalance \
 	compressor \
 	crossfade \
+	decimate \
 	defaulttheme \
 	deinterlace \
 	delayaudio \
@@ -49,8 +50,11 @@ DIRS = \
 	ivtc \
 	level \
 	linearblur \
+	loopaudio \
+	loopvideo \
 	normalize \
 	oilpainting \
+	overlay \
 	perspective \
 	pitch \
 	polar \

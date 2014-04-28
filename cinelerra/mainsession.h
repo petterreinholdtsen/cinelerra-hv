@@ -73,6 +73,9 @@ public:
 // Records for redrawing brender position in timebar
 	double brender_end;
 
+// Show controls in CWindow
+	int cwindow_controls;
+
 // Clip number for automatic title generation
 	int clip_number;
 

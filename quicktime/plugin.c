@@ -67,6 +67,7 @@ static void register_acodecs()
 #include "jpeg.h"
 #include "mpeg4.h"
 #include "qtpng.h"
+#include "rle.h"
 #include "v308.h"
 #include "v408.h"
 #include "v410.h"
@@ -91,6 +92,7 @@ static void register_vcodecs()
 	register_vcodec(quicktime_init_codec_jpeg);
 	register_vcodec(quicktime_init_codec_mjpa);
 	register_vcodec(quicktime_init_codec_png);
+	register_vcodec(quicktime_init_codec_rle);
 
 	register_vcodec(quicktime_init_codec_yuv2);
 	register_vcodec(quicktime_init_codec_yuv4);

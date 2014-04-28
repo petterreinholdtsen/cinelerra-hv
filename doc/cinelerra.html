@@ -31,6 +31,7 @@ Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <ul>
 <li><a href="#INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>
 <li><a href="#COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>
+<li><a href="#RUNNING%20CINELERRA">RUNNING CINELERRA</a>
 </li></ul>
 <li><a name="toc_CONFIGURATION" href="#CONFIGURATION">CONFIGURATION</a>
 <ul>
@@ -69,6 +70,7 @@ Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <li><a href="#SINGLE%20FILE%20RENDERING">SINGLE FILE RENDERING</a>
 <li><a href="#BATCH%20RENDERING">BATCH RENDERING</a>
 <li><a href="#THE%20RENDER%20FARM">THE RENDER FARM</a>
+<li><a href="#COMMAND%20LINE%20RENDERING">COMMAND LINE RENDERING</a>
 </li></ul>
 </li></ul>
 <li><a name="toc_NAVIGATING%20THE%20PROJECT" href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>
@@ -157,9 +159,13 @@ Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <li><a name="toc_EFFECT%20DESCRIPTIONS" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <ul>
 <li><a href="#CHROMA%20KEY">CHROMA KEY</a>
+<li><a href="#DECIMATE">DECIMATE</a>
 <li><a href="#DEINTERLACE">DEINTERLACE</a>
+<li><a href="#FREEZE%20FRAME">FREEZE FRAME</a>
 <li><a href="#HISTOGRAM">HISTOGRAM</a>
 <li><a href="#INVERSE%20TELECINE">INVERSE TELECINE</a>
+<li><a href="#LOOP">LOOP</a>
+<li><a href="#REVERSE%20VIDEO%2fAUDIO">REVERSE VIDEO/AUDIO</a>
 <li><a href="#TIME%20AVERAGE">TIME AVERAGE</a>
 <li><a href="#TITLER">TITLER</a>
 <ul>
@@ -170,7 +176,8 @@ Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
 </li></ul>
 <li><a name="toc_PLUGIN%20AUTHORING" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 <ul>
-<li><a href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>
+<li><a href="#INTRODUCING%20THE%20PULL%20METHOD">INTRODUCING THE PULL METHOD</a>
+<li><a href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>
 <ul>
 <li><a href="#THE%20PROCESSING%20OBJECT">THE PROCESSING OBJECT</a>
 <li><a href="#THE%20CONFIGURATION%20OBJECT">THE CONFIGURATION OBJECT</a>
@@ -183,8 +190,27 @@ Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <li><a href="#TRANSITION%20PLUGINS">TRANSITION PLUGINS</a>
 <li><a href="#PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>
 <li><a href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>
+<ul>
+<li><a href="#SYSTEM%20QUERIES">SYSTEM QUERIES</a>
+<li><a href="#TIMING%20QUERIES">TIMING QUERIES</a>
 </li></ul>
-<li><a name="toc_RELEASE%20NOTES" href="#RELEASE%20NOTES">RELEASE NOTES</a>
+</li></ul>
+<li><a name="toc_KEYBOARD%20SHORTCUTS" href="#KEYBOARD%20SHORTCUTS">KEYBOARD SHORTCUTS</a>
+<ul>
+<li><a href="#KEYBOARD%20SHORTCUTS">PROGRAM WINDOW</a>
+<ul>
+<li><a href="#KEYBOARD%20SHORTCUTS">Editing Media</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">Editing Labels &amp; In/Out Points</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">Navigation</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">File operations</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">Key Frame Editing</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">Track Manipulation</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">What's drawn on the timeline</a>
+</li></ul>
+<li><a href="#KEYBOARD%20SHORTCUTS">VIEWER &amp; COMPOSITOR WINDOWS</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">PLAYBACK TRANSPORT</a>
+<li><a href="#KEYBOARD%20SHORTCUTS">RECORD WINDOW</a>
+</li></ul>
 </li></ul>
 </div>
 
@@ -206,7 +232,7 @@ Up:<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <li><a href="#SECRETS%20OF%20CINELERRA">SECRETS OF CINELERRA</a>:      Unusual applications of Cinelerra to common problems. 
 <li><a href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>:       How to use the more complicated effects. 
 <li><a href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>:          How to write new effects. 
-<li><a href="#RELEASE%20NOTES">RELEASE NOTES</a>:             Changes in the most recent versions of Cinelerra. 
+<li><a href="#KEYBOARD%20SHORTCUTS">KEYBOARD SHORTCUTS</a>:        How to accelerate most commands with the keyboard. 
 </ul>
 
 <div class="node">
@@ -296,11 +322,22 @@ Up:<a rel="up" accesskey="u" href="#ABOUT%20CINELERRA">ABOUT CINELERRA</a>
 
 <h3 class="section">ABOUT THIS MANUAL</h3>
 
+   <p>In a way we feel sorry for users who are trying to figure out how to
+use Cinelerra from this document.  Organizing information in the
+easiest manner for users to find out what they need to know is sort of
+like cataloging the internet.  They've been trying to get it right for
+30 years and will probably keep trying until the end of time.
+
+   <p>There a lot of fragments of documentation scattered throughout the
+internet about Cinelerra.  This document attempts to combine all the
+pieces of information in one piece.
+
    <p>Like the operating system and compiler for a piece of software, the
 document writing format is the most important thing in choosing our
-document format.  A piece of software which compiles on GCC and Linux
-will be usable as long as there are C compilers.  Documents written in
-Texinfo will be readable as long as there's a C compiler.
+document format.  We wanted a format which would be readable regardless
+of corporate whims and fads.  A piece of software which compiles on GCC
+and Linux will be usable as long as there are C compilers.  Documents
+written in Texinfo will be readable as long as there's a C compiler.
 
    <p>After many years of searching for the perfect documentation format
 we've arrived at TexInfo.  This format can be converted to HTML,
@@ -367,6 +404,7 @@ conformance but more efficiently.
 <ul class="menu">
 <li><a accesskey="1" href="#INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>: 
 <li><a accesskey="2" href="#COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>: 
+<li><a accesskey="3" href="#RUNNING%20CINELERRA">RUNNING CINELERRA</a>: 
 </ul>
 
 <div class="node">
@@ -396,6 +434,7 @@ directory run
 <div class="node">
 <p><hr>
 Node:<a name="COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>,
+Next:<a rel="next" accesskey="n" href="#RUNNING%20CINELERRA">RUNNING CINELERRA</a>,
 Previous:<a rel="previous" accesskey="p" href="#INSTALLING%20AN%20RPM">INSTALLING AN RPM</a>,
 Up:<a rel="up" accesskey="u" href="#INSTALLATION">INSTALLATION</a>
 <br>
@@ -473,10 +512,26 @@ subdirectories.
    <p>The main binaries are /usr/bin/cinelerra and several utilities for
 reading MPEG transport streams.
 
-   <p>Run Cinelerra by running
+<div class="node">
+<p><hr>
+Node:<a name="RUNNING%20CINELERRA">RUNNING CINELERRA</a>,
+Previous:<a rel="previous" accesskey="p" href="#COMPILING%20FROM%20SCRATCH">COMPILING FROM SCRATCH</a>,
+Up:<a rel="up" accesskey="u" href="#INSTALLATION">INSTALLATION</a>
+<br>
+</div>
+
+<h3 class="section">RUNNING CINELERRA</h3>
+
+   <p>The simplest way to run Cinelerra is by running
 
 <pre class="example">     /usr/bin/cinelerra
      </pre>
+
+   <p>This command hides a much more capable command line interface.  Run
+<b>cinelerra -h</b> to get a listing of command line options.  The use of
+these options is described in several sections.
+
+   <p>For rendering from the command line See <a href="#RENDERING%20FILES">RENDERING FILES</a>.
 
 <div class="node">
 <p><hr>
@@ -566,21 +621,19 @@ Up:<a rel="up" accesskey="u" href="#PLAYBACK">PLAYBACK</a>
 
      <ul>
 
-     <li>SAMPLES TO READ FROM DISK
+     <li>SAMPLES TO SEND TO CONSOLE:
 
-     <p>Cinelerra uses a pipeline for rendering audio. The first stage is
-reading large chunks of audio from disk, the samples to read from
-disk.  This is followed by processing small fragments in a virtual
-console.
-
-     </p><li>SAMPLES TO SEND TO CONSOLE:
-
-     <p>The second stage is rendering small fragments through the virtual
-console to the sound driver. A larger value here causes more latency
-when you change mixing parameters but gives more reliable playback.
+     <p>For playing audio, small fragments of sound are read from disk and
+processed in a virtual console sequentially.  A larger value here
+causes more latency when you change mixing parameters but gives more
+reliable playback.
 
      <p>Some sound drivers don't allow changing of the console fragment so
 latency is unchanged no matter what this value is.
+
+     <p>Unfortunately, since different stages of the rendering pipeline can
+change the rate of the data, there was no way to disconnect size of the
+console fragments from the size of the fragments read from disk.
 
      </p><li>
 VIEW FOLLOWS PLAYBACK
@@ -1592,7 +1645,7 @@ however, so keep the original assets and XML file around several days
 after you render it.
 
    <p>All rendering operations are based on a region of the timeling to be
-rendered.  You need to define this region of the timeline.  The
+rendered.  You need to define this region on the timeline.  The
 navigation section describes methods of defining regions. 
 See <a href="#NAVIGATING%20THE%20PROJECT">NAVIGATING THE PROJECT</a>.  The rendering functions define the
 region based on a set of rules.  When a region is highlighted or in/out
@@ -1605,6 +1658,7 @@ unsetting all in/out points, the entire track is rendered.
 <li><a accesskey="1" href="#SINGLE%20FILE%20RENDERING">SINGLE FILE RENDERING</a>:       Rendering a single file
 <li><a accesskey="2" href="#BATCH%20RENDERING">BATCH RENDERING</a>:             Rendering several files unattended
 <li><a accesskey="3" href="#THE%20RENDER%20FARM">THE RENDER FARM</a>:             Rendering using many computers
+<li><a accesskey="4" href="#COMMAND%20LINE%20RENDERING">COMMAND LINE RENDERING</a>:      Rendering from the command line without a GUI
 </ul>
 
 <div class="node">
@@ -1763,6 +1817,7 @@ rendered, hit <b>Cancel</b>.
 <div class="node">
 <p><hr>
 Node:<a name="THE%20RENDER%20FARM">THE RENDER FARM</a>,
+Next:<a rel="next" accesskey="n" href="#COMMAND%20LINE%20RENDERING">COMMAND LINE RENDERING</a>,
 Previous:<a rel="previous" accesskey="p" href="#BATCH%20RENDERING">BATCH RENDERING</a>,
 Up:<a rel="up" accesskey="u" href="#RENDERING%20FILES">RENDERING FILES</a>
 <br>
@@ -1790,7 +1845,12 @@ one job will be created.
    <p>A Cinelerra renderfarm is organized into a master node and any number
 of slave nodes.  The master node is the computer which is running the
 GUI.  The slave nodes are anywhere else on the network and are run from
-the command line.
+the command line.  Run a slave node from the command line with
+
+   <p><b>cinelerra -d</b>
+
+   <p>The default port number may be overridden by passing a port number
+after the -d.
 
    <p>Cinelerra divides the selected region of the timeline into a certain
 number of jobs which are then dispatched to the different nodes
@@ -1818,6 +1878,42 @@ Cinelerra load balances on a first come first serve basis.  If the last
 segment is dispatched to the slowest node, all the fastest nodes may
 end up waiting for the slowest node to finish while they themselves
 could have rendered it faster.
+
+<div class="node">
+<p><hr>
+Node:<a name="COMMAND%20LINE%20RENDERING">COMMAND LINE RENDERING</a>,
+Previous:<a rel="previous" accesskey="p" href="#THE%20RENDER%20FARM">THE RENDER FARM</a>,
+Up:<a rel="up" accesskey="u" href="#RENDERING%20FILES">RENDERING FILES</a>
+<br>
+</div>
+
+<h4 class="subsection">COMMAND LINE RENDERING</h4>
+
+   <p>The command line rendering facility consists of a way to load the
+current set of batch rendering jobs and process them without a GUI. 
+This is useful if you're planning on crashing X repeatedly or want to
+do rendering on the other side of a low bandwidth network.  You might
+have access to a supercomputer in India but still be stuck in America,
+exhiled you might say.  A command line interface is ideal for this.
+
+   <p>To perform rendering from the command line, first run Cinelerra in
+graphical mode.  Go to <b>file-&gt;batch render</b>.  Create the batches you
+intend to render in the batch window and close the window.  This saves
+the batches in a file.  Set up the desired renderfarm attributes in
+<b>settings-&gt;preferences</b> and exit Cinelerra.  These settings are used
+the next time command line rendering is used.
+
+   <p>On the command line run
+
+   <p><b>cinelerra -r</b>
+
+   <p>to processes the current batch jobs without a GUI.  Setting up all the
+parameters for this operation is hard.  That's why the command line
+aborts if any output files already exist.
+
+   <p>Other parameters exist for specifying alternative files for the
+preferences and the batches.  Attempting to use anything but the
+defaults is very involved so it hasn't been tested.
 
 <div class="node">
 <p><hr>
@@ -4472,7 +4568,7 @@ Up:<a rel="up" accesskey="u" href="#IMPROVING%20PERFORMANCE">IMPROVING PERFORMAN
 completely encoded on the right.  This can be slightly compensated by
 adjusting parameters in the driver sourcecode.
 
-   <p>In <b>/usr/src/linux/drivers/media/video/zr36067.h</b> the structures
+   <p>In <b>/usr/src/linux/drivers/media/video/zr36067.c</b> the structures
 defined near line 623 affect alignment.  At least for NTSC, the 2.4.20
 version of the driver could be improved by changing
 
@@ -4859,18 +4955,22 @@ utilize fully by mere experimentation.
 
 <ul class="menu">
 <li><a accesskey="1" href="#CHROMA%20KEY">CHROMA KEY</a>:         How to make areas transparent based on color. 
-<li><a accesskey="2" href="#DEINTERLACE">DEINTERLACE</a>:        How to convert interlaced video to progressive video. 
-<li><a accesskey="3" href="#HISTOGRAM">HISTOGRAM</a>:          How to change the mapping of different brightness values. 
-<li><a accesskey="4" href="#INVERSE%20TELECINE">INVERSE TELECINE</a>:   How to convert pulled down frames to progressive frames. 
-<li><a accesskey="5" href="#TIME%20AVERAGE">TIME AVERAGE</a>:       How to add trail patterns or increase still image quality. 
-<li><a accesskey="6" href="#TITLER">TITLER</a>:             How to add text to a track from inside Cinelerra. 
-<li><a accesskey="7" href="#VIDEO%20SCOPE">VIDEO SCOPE</a>:        How to view the dynamic range of intensity and hue. 
+<li><a accesskey="2" href="#DECIMATE">DECIMATE</a>:           How to reduce frame rates by eliminating similar frames. 
+<li><a accesskey="3" href="#DEINTERLACE">DEINTERLACE</a>:        How to convert interlaced video to progressive video. 
+<li><a accesskey="4" href="#FREEZE%20FRAME">FREEZE FRAME</a>:       How to stop action in the timeline. 
+<li><a accesskey="5" href="#HISTOGRAM">HISTOGRAM</a>:          How to change the mapping of different brightness values. 
+<li><a accesskey="6" href="#INVERSE%20TELECINE">INVERSE TELECINE</a>:   How to convert pulled down frames to progressive frames. 
+<li><a accesskey="7" href="#LOOP">LOOP</a>:               How to loop regions of the timeline. 
+<li><a accesskey="8" href="#REVERSE%20VIDEO%2fAUDIO">REVERSE VIDEO/AUDIO</a>:  How to play regions in reverse. 
+<li><a accesskey="9" href="#TIME%20AVERAGE">TIME AVERAGE</a>:       How to add trail patterns or increase still image quality. 
+<li><a href="#TITLER">TITLER</a>:             How to add text to a track from inside Cinelerra. 
+<li><a href="#VIDEO%20SCOPE">VIDEO SCOPE</a>:        How to view the dynamic range of intensity and hue. 
 </ul>
 
 <div class="node">
 <p><hr>
 Node:<a name="CHROMA%20KEY">CHROMA KEY</a>,
-Next:<a rel="next" accesskey="n" href="#DEINTERLACE">DEINTERLACE</a>,
+Next:<a rel="next" accesskey="n" href="#DECIMATE">DECIMATE</a>,
 Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
 </div>
@@ -4894,9 +4994,40 @@ to blur just the alpha.
 
 <div class="node">
 <p><hr>
-Node:<a name="DEINTERLACE">DEINTERLACE</a>,
-Next:<a rel="next" accesskey="n" href="#HISTOGRAM">HISTOGRAM</a>,
+Node:<a name="DECIMATE">DECIMATE</a>,
+Next:<a rel="next" accesskey="n" href="#DEINTERLACE">DEINTERLACE</a>,
 Previous:<a rel="previous" accesskey="p" href="#CHROMA%20KEY">CHROMA KEY</a>,
+Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+</div>
+
+<h3 class="section">DECIMATE</h3>
+
+   <p>This effect drops frames from a track which are most similar in order
+to reduce the frame rate.  This is usually applied to a DVD to convert
+the 29.97 fps video to the 23.97 fps film rate but this decimate effect
+can take any input rate and convert it to any lower output rate.
+
+   <p>The output rate of <b>decimate</b> is the project frame rate.  The input
+rate is set in the <b>decimate</b> user interface.  To convert 29.97fps
+progressive video to 23.97fps film, apply a decimate effect to the
+track.  Set the decimate input rate to 29.97 and the project rate to
+23.97.
+
+   <p>Be aware every effect layered before decimate processes video at the
+decimate input rate and every effect layered after decimate processes
+video at the project frame rate.  Computationally intensive effects
+should come below decimate.
+
+   <p>Decimate is not to be confused with <b>frames to fields</b>.  Frames to
+fields does not have a different input rate than output rate.  It
+merely replicates each frame.
+
+<div class="node">
+<p><hr>
+Node:<a name="DEINTERLACE">DEINTERLACE</a>,
+Next:<a rel="next" accesskey="n" href="#FREEZE%20FRAME">FREEZE FRAME</a>,
+Previous:<a rel="previous" accesskey="p" href="#DECIMATE">DECIMATE</a>,
 Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
 </div>
@@ -4913,9 +5044,41 @@ reverse effect display fields in the right order.
 
 <div class="node">
 <p><hr>
+Node:<a name="FREEZE%20FRAME">FREEZE FRAME</a>,
+Next:<a rel="next" accesskey="n" href="#HISTOGRAM">HISTOGRAM</a>,
+Previous:<a rel="previous" accesskey="p" href="#DEINTERLACE">DEINTERLACE</a>,
+Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+</div>
+
+<h3 class="section">FREEZE FRAME</h3>
+
+   <p>In its simplest form, highlight a region of the track to freeze, drop
+the freeze frame effect on the highlighted region, and the lowest
+numbered frame in the affected area will play throughout the entire
+region.
+
+   <p>Freezeframe has an <b>enabled</b> option which can be keyframed.  Regions
+of a freeze frame effect which are enabled repeat the lowest numbered
+frame since the last keyframe.  This has unique possibilities.
+
+   <p>If a freeze frame effect has a keyframe in the middle of it set to
+<b>enabled</b>, the frame in the middle is repeated in the entire effect.
+
+   <p>If a freeze frame effect has several keyframes, each set to
+<b>enabled</b>, every time a keyframe is encountered the frame under it
+becomes the frozen one.
+
+   <p>If a freeze frame effect alternates between <b>enabled</b> and
+<b>disabled</b>, each time an <b>enabled</b> keyframe is encountered the
+frame under it is replicated until the next <b>disabled</b> keyframe.  The
+disabled regions play through.
+
+<div class="node">
+<p><hr>
 Node:<a name="HISTOGRAM">HISTOGRAM</a>,
 Next:<a rel="next" accesskey="n" href="#INVERSE%20TELECINE">INVERSE TELECINE</a>,
-Previous:<a rel="previous" accesskey="p" href="#DEINTERLACE">DEINTERLACE</a>,
+Previous:<a rel="previous" accesskey="p" href="#FREEZE%20FRAME">FREEZE FRAME</a>,
 Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
 </div>
@@ -4935,7 +5098,7 @@ boundaries of the histogram the automatic gain should be.
 <div class="node">
 <p><hr>
 Node:<a name="INVERSE%20TELECINE">INVERSE TELECINE</a>,
-Next:<a rel="next" accesskey="n" href="#TIME%20AVERAGE">TIME AVERAGE</a>,
+Next:<a rel="next" accesskey="n" href="#LOOP">LOOP</a>,
 Previous:<a rel="previous" accesskey="p" href="#HISTOGRAM">HISTOGRAM</a>,
 Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
@@ -4966,9 +5129,69 @@ lack of a frame rate reduction.
 
 <div class="node">
 <p><hr>
+Node:<a name="LOOP">LOOP</a>,
+Next:<a rel="next" accesskey="n" href="#REVERSE%20VIDEO%2fAUDIO">REVERSE VIDEO/AUDIO</a>,
+Previous:<a rel="previous" accesskey="p" href="#INVERSE%20TELECINE">INVERSE TELECINE</a>,
+Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+</div>
+
+<h3 class="section">LOOP</h3>
+
+   <p>Sections of audio or video can be looped by dropping a <b>loop</b> effect
+on them.  Contrary to the the <b>settings-&gt;loop playback</b> option, the
+loop effects can be rendered where the <b>settings-&gt;loop playback</b>
+option can not be.  The loop effects are also convenient for short
+regions.
+
+   <p>The loop effects have one option: the number of <b>frames</b> or
+<b>samples</b> to loop.  This specifies the length of the region to loop
+starting from either the beginning of the effect or the latest
+keyframe.  The region is replicated for the entire effect.
+
+   <p>Every time a keyframe is set in a loop effect, the keyframe becomes the
+beginning of the region to loop.  Setting several keyframes in
+succession causes several regions to loop.  Setting a single keyframe
+causes the region after the keyframe to be looped throughout the
+effect, no matter where the keyframe is.  The end of an effect can be
+looped from the beginning by setting the keyframe near the end.
+
+<div class="node">
+<p><hr>
+Node:<a name="REVERSE%20VIDEO%2fAUDIO">REVERSE VIDEO/AUDIO</a>,
+Next:<a rel="next" accesskey="n" href="#TIME%20AVERAGE">TIME AVERAGE</a>,
+Previous:<a rel="previous" accesskey="p" href="#LOOP">LOOP</a>,
+Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
+<br>
+</div>
+
+<h3 class="section">REVERSE VIDEO/AUDIO</h3>
+
+   <p>Media can be reversed on the timeline in realtime.  This isn't to be
+confused with using the reverse playback on the transport.  The reverse
+effects reverse the region covered by the effect regardless of the
+transport direction.  Apply <b>reverse audio</b> to an audio track and
+play it backwards.  The sound plays forward.
+
+   <p>The region to be reversed is first determined by what part of the track
+the effect is under and second by the locations of keyframes in the
+effect.  The reverse effects have an <b>enabled</b> option which allows
+you to set keyframes.  This allows may possibilities.
+
+   <p>Every <b>enabled</b> keyframe is treated as the start of a new reversed
+region and the end of a previous reversed region.  Several <b>enabled</b>
+keyframes in succession yield several regions reversed independant of
+each other.  An <b>enabled</b> keyframe followed by a <b>disabled</b>
+keyframe yields one reversed region followed by a forward region.
+
+   <p>Finally, be aware when reversing audio that the waveform on the
+timeline doesn't reflect the actual reversed output.
+
+<div class="node">
+<p><hr>
 Node:<a name="TIME%20AVERAGE">TIME AVERAGE</a>,
 Next:<a rel="next" accesskey="n" href="#TITLER">TITLER</a>,
-Previous:<a rel="previous" accesskey="p" href="#INVERSE%20TELECINE">INVERSE TELECINE</a>,
+Previous:<a rel="previous" accesskey="p" href="#REVERSE%20VIDEO%2fAUDIO">REVERSE VIDEO/AUDIO</a>,
 Up:<a rel="up" accesskey="u" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>
 <br>
 </div>
@@ -5070,7 +5293,7 @@ Up:<a rel="up" accesskey="u" href="#TITLER">TITLER</a>
 
    <p>If the video is displayed on a consumer TV, the outer border is going
 to be cropped by 5% on each side.  Moreover, text which is too close to
-the edge looks sloppy.  Make sure when added titles to have the
+the edge looks sloppy.  Make sure when adding titles to have the
 <b>title-safe</b> <img src="titlesafe.png" alt="titlesafe.png"> tool active in the <b>compositor</b> window. 
 The text shouldn't cross the inner rectangle.
 
@@ -5103,7 +5326,7 @@ scope for all the different video drivers.
 <div class="node">
 <p><hr>
 Node:<a name="PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>,
-Next:<a rel="next" accesskey="n" href="#RELEASE%20NOTES">RELEASE NOTES</a>,
+Next:<a rel="next" accesskey="n" href="#KEYBOARD%20SHORTCUTS">KEYBOARD SHORTCUTS</a>,
 Previous:<a rel="previous" accesskey="p" href="#EFFECT%20DESCRIPTIONS">EFFECT DESCRIPTIONS</a>,
 Up:<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
@@ -5124,67 +5347,129 @@ easiest way to implement a plugin is to take the simplest existing one
 out of the group and rename the symbols.
 
 <ul class="menu">
-<li><a accesskey="1" href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>: 
-<li><a accesskey="2" href="#REALTIME%20PLUGINS">REALTIME PLUGINS</a>: 
-<li><a accesskey="3" href="#NONREALTIME%20PLUGINS">NONREALTIME PLUGINS</a>: 
-<li><a accesskey="4" href="#AUDIO%20PLUGINS">AUDIO PLUGINS</a>: 
-<li><a accesskey="5" href="#VIDEO%20PLUGINS">VIDEO PLUGINS</a>: 
-<li><a accesskey="6" href="#TRANSITION%20PLUGINS">TRANSITION PLUGINS</a>: 
-<li><a accesskey="7" href="#PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>: 
-<li><a accesskey="8" href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>: 
+<li><a accesskey="1" href="#INTRODUCING%20THE%20PULL%20METHOD">INTRODUCING THE PULL METHOD</a>:  The current paradigm for plugin writing
+<li><a accesskey="2" href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>:  What all effects have to do. 
+<li><a accesskey="3" href="#REALTIME%20PLUGINS">REALTIME PLUGINS</a>:  What realtime effects have to do. 
+<li><a accesskey="4" href="#NONREALTIME%20PLUGINS">NONREALTIME PLUGINS</a>:  What rendered effects have to do. 
+<li><a accesskey="5" href="#AUDIO%20PLUGINS">AUDIO PLUGINS</a>:  What audio effects have to do. 
+<li><a accesskey="6" href="#VIDEO%20PLUGINS">VIDEO PLUGINS</a>:  What video effects have to do. 
+<li><a accesskey="7" href="#TRANSITION%20PLUGINS">TRANSITION PLUGINS</a>:  What transitions have to do. 
+<li><a accesskey="8" href="#PLUGIN%20GUI'S%20WHICH%20UPDATE%20DURING%20PLAYBACK">PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK</a>:  How to use currently playing data to draw the GUI. 
+<li><a accesskey="9" href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>:  How plugins get information about the data to be processed. 
 </ul>
 
 <div class="node">
 <p><hr>
-Node:<a name="COMMON%20PROCEDURES">COMMON PROCEDURES</a>,
-Next:<a rel="next" accesskey="n" href="#REALTIME%20PLUGINS">REALTIME PLUGINS</a>,
+Node:<a name="INTRODUCING%20THE%20PULL%20METHOD">INTRODUCING THE PULL METHOD</a>,
+Next:<a rel="next" accesskey="n" href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>,
 Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 <br>
 </div>
 
-<h3 class="section">COMMON PROCEDURES</h3>
+<h3 class="section">INTRODUCING THE PULL METHOD</h3>
 
-   <p>All plugins inherit from a derivative of PluginClient.  This derivative
-implements most of the required methods in PluginClient, but users must
-still define methods for PluginClient.  The most commonly used methods
-are already implemented in macros.
+   <p>The simplest way to design plugins is with the push method.  The push
+method is intuitive.  A source pushes data to a plugin, the plugin does
+math operations on it, and the plugin pushes it to a destination.  For
+6 years this was the way all realtime plugins were driven internally
+but it didn't allow you to reduce the rate of data in realtime.  While
+plugins can still be written as if they're being pushed data, this is
+not the way they're processed internally anymore.
+
+   <p>The latest evolution in Cinelerra's plugin design is the pull method. 
+The rendering pipeline starts at the end and the final steps in the
+rendering pipeline request data from the steps before them.  When the
+rendering pipleline eventually requests data from a plugin chain, each
+plugin requests data from the plugin before it.
+
+   <p>This is less intuitive than the push method but is much more powerful. 
+Realtime plugins written using the pull method can change the rate data
+is presented to the viewer and the direction of playback.  The pull
+method allows plugins to take in data at a higher rate than they send
+it out.
+
+   <p>To get the power of rate independance, the pull method requires plugins
+to know more about the data than they needed to under the push method. 
+Plugins need to know what rate the project is at and what rate their
+individual requested output is at.  These two data rates have to be
+interchanged for a plugin to configure itself properly.
+
+   <p>Keyframes for a plugin are stored relative to the project frame rate. 
+Queries for the current playback position are given relative to the
+project frame rate.  This is useless if the plugin was requested data
+at twice the project frame rate since the keyframes wouldn't match up
+to the right data positions.  Two classes of data rates were created to
+handle this problem.
+
+   <p>Rate conversions are done in terms of the <b>project rate</b> and the
+<b>requested rate</b>.  The project rate is identical for all plugins.  It
+is determined by the <b>settings-&gt;format</b> window.  The requested rate
+is determined by the downstream plugin requesting data from the current
+plugin.  It is arbitrary.  Exactly how to use these rates is described
+below.
+
+<div class="node">
+<p><hr>
+Node:<a name="COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>,
+Next:<a rel="next" accesskey="n" href="#REALTIME%20PLUGINS">REALTIME PLUGINS</a>,
+Previous:<a rel="previous" accesskey="p" href="#INTRODUCING%20THE%20PULL%20METHOD">INTRODUCING THE PULL METHOD</a>,
+Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
+<br>
+</div>
+
+<h3 class="section">COMMON PLUGIN FUNCTIONS</h3>
+
+   <p>All plugins inherit from a derivative of PluginClient.  This
+PluginClient derivative implements most of the required methods in
+PluginClient, but users must still define methods for PluginClient. 
+The most commonly used methods are predefined in macros to reduce the
+typing yet still allow flexibility.
 
    <p>The files they include depend on the plugin type.  Audio plugins
 include <b>pluginaclient.h</b> and video plugins include
 <b>pluginvclient.h</b>.  They inherit <b>PluginAClient</b> and
 <b>PluginVClient</b> respectively.
 
-   <p>Another thing all plugins do is define at least three objects:
+   <p>Cinelerra instantiates all plugins at least twice when they are used in
+a movie.  Once instance is the GUI.  The other instance is the signal
+processor.  User input, through a complicated sequence, is propogated
+from the GUI instance to the signal processor instance.  If the signal
+processor wants to alter the GUI, it propogates data back to the GUI
+instance.  There are utility functions for doing all this.
+
+   <p>All plugins define at least three objects:
 
      <ul>
 
      <li>
-Processing object - Contains pointers to all the other objects and
+<b>Processing object</b> - Contains pointers to all the other objects and
 performs the signal processing.  This object contains a number of
 queries to identify itself and is the object you register to register
 the plugin.
 
      <li>
-User interface object - This is defined according to the programmer's
+<b>User interface object</b> - This is defined according to the programmer's
 discretion.  It can either use Cinelerra's toolkit or another toolkit. 
 It shows data on the screen and collects parameters from the user.
 
      <p>Using Cinelerra's toolkit, the only user interface object a developer
 needs to worry about is the Window.  The window has pointers to a
 number of widgets, a few initialization methods, and a back pointer to
-the plugin's processing object.  The documentation refers to usage of
-Cinelerra's toolkit.
+the plugin's processing object.  The documentation refers to the usage
+of Cinelerra's toolkit.
 
      <p>Depending on the user interface toolkit, a user interface thread may be
 created to run the user interface asynchronous of everything else. 
-Synchronizing the user interface to changes in keyframes is the most
-complicated aspect of the plugin, so the user interface thread and
-object are heavily supported by macros if you use Cinelerra's toolkit.
+Synchronizing the user interface to changes in the plugin's
+configuration is the most complicated aspect of the plugin, so the user
+interface thread and object are heavily supported by macros if you use
+Cinelerra's toolkit.
 
      </p><li>
-Configuration object - This stores the user parameters and always needs
-interpolation, copying, and comparison functions.  The plugin client
-automatically calls configuration methods to interpolate keyframes.
+<b>Configuration object</b> - This stores the user parameters and always
+needs interpolation, copying, and comparison functions.  Macros for the
+plugin client automatically call configuration methods to interpolate
+keyframes.
 
    </ul>
 
@@ -5198,13 +5483,14 @@ automatically calls configuration methods to interpolate keyframes.
 <p><hr>
 Node:<a name="THE%20PROCESSING%20OBJECT">THE PROCESSING OBJECT</a>,
 Next:<a rel="next" accesskey="n" href="#THE%20CONFIGURATION%20OBJECT">THE CONFIGURATION OBJECT</a>,
-Up:<a rel="up" accesskey="u" href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>
+Up:<a rel="up" accesskey="u" href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>
 <br>
 </div>
 
 <h4 class="subsection">THE PROCESSING OBJECT</h4>
 
-   <p>The processing object should inherit from the intended PluginClient
+   <p>Load up a simple plugin like gain to see what this object looks like. 
+The processing object should inherit from the intended PluginClient
 derivative.  Its constructor should take a PluginServer argument.
 
 <pre class="example">     MyPlugin(PluginServer *server);
@@ -5236,38 +5522,42 @@ the name of the processing object like
      </pre>
 
    <p>It should return 1 if one instance of the plugin handles multiple
-channels simultaneously or 0 if one instance of the plugin only handles
-one channel.  The default is 0 if it is omitted.  Multichannel plugins
-should refer to the value of <b>PluginClient::total_in_buffers</b> to
-determine the number of channels.
+tracks simultaneously or 0 if one instance of the plugin only handles
+one track.  The default is 0 if it is omitted.
+
+   <p>Multichannel plugins in their processing function should refer to a
+function called <b>PluginClient::get_total_buffers()</b> to determine the
+number of channels.
 
    <p>To simplify the implementation of realtime plugins, a macro for
-commonly used members should be put in the class header, taking the
+commonly used members has been created for the class header, taking the
 configuration object and user interface thread object as arguments. 
-This is only useful for realtime plugins.  Fortunately, nonrealtime
-plugins are simpler.
+The macro definitions apply mainly to realtime plugins and are not
+useful in nonrealtime plugins.  Fortunately, nonrealtime plugins are
+simpler.
 
 <pre class="example">     PLUGIN_CLASS_MEMBERS(config_name, thread_name)
      </pre>
 
-   <p>Many other members may be defined in the processing object, depending
-on the plugin type.  The commonly used members in PLUGIN_CLASS_MEMBERS
-are described below.  Not all these members are used in nonrealtime
-plugins.
+   <p>The commonly used members in PLUGIN_CLASS_MEMBERS are described below.
 
      <ul>
 
      <li>int load_configuration();
 
      <p>Loads the configuration based on surrounding keyframes and current
-position.  The class definition should contain
+position.  The class definition for load_configuration should contain
 
      <pre class="example">          LOAD_CONFIGURATION_MACRO(plugin_class, config_class)
           </pre>
 
-     <p>to implement load_configuration.  This stores whatever the current
-configuration is inside the plugin's configuration object.  The
-plugin's configuration object is always called <b>config</b> when using
+     <p>to implement the default behavior for load_configuration.  This stores
+whatever the current configuration is inside the plugin's configuration
+object and returns 1 if the new configuration differs from the previous
+configuration.  The return value of load_configuration is used by
+another commonly used function, update_gui to determine if the GUI really needs to be updated.
+
+     <p>The plugin's configuration object is always called <b>config</b> inside
 PLUGIN_CLASS_MEMBERS.
 
      </p><li>VFrame* new_picon();
@@ -5292,17 +5582,20 @@ The string has to be unique.
 
      </p><li>void update_gui();
 
-     <p>Should first load the configuration and then redraw the GUI with the
-new parameters.  All the plugins using GuiCast have a format like
+     <p>Should first load the configuration, test for a return of 1, and then
+redraw the GUI with the new parameters.  All the plugins using GuiCast
+have a format like
 
      <pre class="example">          void MyPlugin::update_gui()
           {
           	if(thread)
           	{
-          		load_configuration();
-          		thread-&gt;window-&gt;lock_window();
+          		if(load_configuration())
+          		{
+          			thread-&gt;window-&gt;lock_window();
           // update widgets here
-          		thread-&gt;window-&gt;unlock_window();
+          			thread-&gt;window-&gt;unlock_window();
+          		}
           	}
           }
           </pre>
@@ -5332,12 +5625,48 @@ new parameters.  All the plugins using GuiCast have a format like
 
    </ul>
 
+   <p>Iimportant functions the processing object must define are the
+functions which load and save configuration data from keyframes.  These
+functions are called by the macros so all you need to worry about is
+accessing the keyframe data.
+
+<pre class="example">     void save_data(KeyFrame *keyframe);
+     void read_data(KeyFrame *keyframe);
+     </pre>
+
+   <p>The read data functions are only used in realtime plugins.  The read
+data functions translate the plugin configuration between the KeyFrame
+argument and the configuration object for the plugin.  The keyframes
+are stored on the timeline and can change for every project.
+
+   <p>Use an object called <b>FileXML</b> to do the translation and some
+specific commands to get the data out of the KeyFrame argument.  See
+any existing plugin to see the usage of KeyFrame and FileXML.
+
+<pre class="example">     int load_defaults();
+     int save_defaults();
+     </pre>
+
+   <p>The load defaults functions are used in realtime and non-realtime
+plugins.  The load defaults functions translate the plugin
+configuration between a Defaults object and the plugin's
+configuration.  The Defaults object stores configurations in a discrete
+file on disk for each plugin but doesn't isolate different
+configurations for different projects.
+
+   <p>The function overriding <b>load_defaults</b> also needs to create the
+Defaults object.  See any existing plugin to see the usage of
+Defaults.
+
+   <p>Other standard members may be defined in the processing object,
+depending on the plugin type.
+
 <div class="node">
 <p><hr>
 Node:<a name="THE%20CONFIGURATION%20OBJECT">THE CONFIGURATION OBJECT</a>,
 Next:<a rel="next" accesskey="n" href="#THE%20USER%20INTERFACE%20OBJECT">THE USER INTERFACE OBJECT</a>,
 Previous:<a rel="previous" accesskey="p" href="#THE%20PROCESSING%20OBJECT">THE PROCESSING OBJECT</a>,
-Up:<a rel="up" accesskey="u" href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>
+Up:<a rel="up" accesskey="u" href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>
 <br>
 </div>
 
@@ -5358,7 +5687,7 @@ followed by Config.
      	MyPluginConfig();
      </pre>
 
-   <p>Following the name of the configuration class, we put the three
+   <p>Following the name of the configuration class, we put in three
 required functions and the configuration variables.
 
 <pre class="example">     	int equivalent(MyPluginConfig &amp;that);
@@ -5379,10 +5708,9 @@ required functions and the configuration variables.
      </pre>
 
    <p>Now you must define the three functions.  <b>Equivalent</b> is called by
-LOAD_CONFIGURATION_MACRO to get the return value.  That is all it's
-used for and if you don't care about load_configuration's return value,
-you can leave this function empty.  It normally returns 1 if the
-argument's variables have the same values as the local variables.
+LOAD_CONFIGURATION_MACRO to get the return value.  If equivalent
+returns 0, the load configuration function causes the GUI to redraw. 
+If equivalent returns 1, the GUI doesn't redraw.
 
    <p>Then there's <b>copy_from</b> which transfers the configuration values
 from the argument to the local variables.  This is once again used in
@@ -5444,16 +5772,17 @@ fragments of 1 sample.
 <p><hr>
 Node:<a name="THE%20USER%20INTERFACE%20OBJECT">THE USER INTERFACE OBJECT</a>,
 Previous:<a rel="previous" accesskey="p" href="#THE%20CONFIGURATION%20OBJECT">THE CONFIGURATION OBJECT</a>,
-Up:<a rel="up" accesskey="u" href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>
+Up:<a rel="up" accesskey="u" href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>
 <br>
 </div>
 
 <h4 class="subsection">THE USER INTERFACE OBJECT</h4>
 
    <p>The user interface object at the very least consists of a pointer to a
-window and pointers to a set of widgets.  Using Cinelerra's toolkit, it
-consists of a <b>BCWindow</b> derivative and a <b>Thread</b> derivative.  The
-Thread derivative is declared in the plugin header using
+window and pointers to all the widgets in the window.  Using
+Cinelerra's toolkit, it consists of a <b>BCWindow</b> derivative and a
+<b>Thread</b> derivative.  The Thread derivative is declared in the plugin
+header using
 
 <pre class="example">     PLUGIN_THREAD_HEADER(plugin_class, thread_class, window_class)
      </pre>
@@ -5463,10 +5792,11 @@ Thread derivative is declared in the plugin header using
 <pre class="example">     PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class)
      </pre>
 
-   <p>This in combination with the SHOW_GUI macro does all the work in
-instantiating the Window class.  This is used in realtime plugins but
-not in nonrealtime plugins.  Nonrealtime plugins create and destroy
-their GUI in <b>get_parameters</b> and there's no thread.
+   <p>This, in combination with the SHOW_GUI macro does all the work in
+instantiating the Window.  This two class system is used in realtime
+plugins but not in nonrealtime plugins.  Nonrealtime plugins create and
+destroy their GUI in their <b>get_parameters</b> function and there's no
+need for a Thread.
 
    <p>Now the window class must be declared in the plugin header.  It's
 easiest to implement the window by copying an existing plugin and
@@ -5500,11 +5830,11 @@ appropriate arguments.
    <p>The constructor's definition should contain extents and flags causing
 the window to be hidden when first created.  The create_objects member
 puts widgets in the window according to GuiCast's syntax.  A pointer to
-each widget which is to be synchronized to a keyframe is stored in the
-window class.  These are updated in the <b>update_gui</b> function you
-earlier defined for the plugin.  The widgets are usually derivatives of
-a GuiCast widget and they override functions in GuiCast to handle
-events.  Finally create_objects calls
+each widget which you want to synchronize to a configuration parameter
+is stored in the window class.  These are updated in the <b>update_gui</b>
+function you earlier defined for the plugin.  The widgets are usually
+derivatives of a GuiCast widget and they override functions in GuiCast
+to handle events.  Finally create_objects calls
 
 <pre class="example">     	show_window();
      	flush();
@@ -5520,13 +5850,14 @@ events.  Finally create_objects calls
    <p>Every widget in the GUI needs to detect when its value changes.  In
 GuiCast the <b>handle_event</b> method is called whenever the value
 changes.  In <b>handle_event</b>, the widget then needs to call
-<b>plugin-&gt;send_configure_change()</b> to propogate the change to rendering.
+<b>plugin-&gt;send_configure_change()</b> to propogate the change to any
+copies of the plugin which are processing data.
 
 <div class="node">
 <p><hr>
 Node:<a name="REALTIME%20PLUGINS">REALTIME PLUGINS</a>,
 Next:<a rel="next" accesskey="n" href="#NONREALTIME%20PLUGINS">NONREALTIME PLUGINS</a>,
-Previous:<a rel="previous" accesskey="p" href="#COMMON%20PROCEDURES">COMMON PROCEDURES</a>,
+Previous:<a rel="previous" accesskey="p" href="#COMMON%20PLUGIN%20FUNCTIONS">COMMON PLUGIN FUNCTIONS</a>,
 Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 <br>
 </div>
@@ -5539,20 +5870,69 @@ set of members in their headers.  All realtime plugins must define an
 <pre class="example">     int is_realtime()
      </pre>
 
-   <p>member returning 1.  This causes a number of realtime methods to be
-called during playback and the plugin to be droppable on the timeline.
+   <p>member returning 1.  This causes a number of methods to be called
+during live playback and the plugin to be usable on the timeline.
 
-   <p>Realtime plugins must define a member called
+   <p>Realtime plugins must override a member called
 
-<pre class="example">     process_realtime
+<pre class="example">     process_buffer
      </pre>
 
-   <p>to be called during every audio fragment and video frame.  It has an
-input and an output argument and for audio, a size argument.  The
-process_realtime function should start by calling
+   <p>This function takes different arguments depending on if the plugin
+handles video or audio.  See an existing plugin to find out which usage
+applies.
+
+   <p>The main features of the process_buffer function are a buffer to store
+the output, the starting position of the output, and the requested
+output rate.  For audio, there's also a size argument for the number of
+samples.
+
+   <p>The starting position of the output buffer is the lowest numbered
+sample on the timeline if playback is forward and the highest numbered
+sample on the timeline if playback is reverse.  The direction of
+playback is determined by one of the plugin queries described below.
+
+   <p>The position and size arguments are all relative to the frame rate and
+sample rate passed to process_buffer.  This is the requested data rate
+and may not be the same as the project data rate.
+
+   <p>The process_realtime function should start by calling
 <b>load_configuration</b>.  The LOAD_CONFIGURATION_MACRO returns 1 if the
-configuration changed.  Then process_realtime should move the data from
-the input to the output with processing.
+configuration changed.
+
+   <p>After determining the plugin's configuration, input media has to be
+loaded for processing.  Call
+
+<pre class="example">     read_frame(VFrame *buffer,
+     		int channel,
+     		int64_t start_position,
+     		double frame_rate)
+     </pre>
+
+   <p>or
+
+<pre class="example">     read_samples(double *buffer,
+     		int channel,
+     		int sample_rate,
+     		int64_t start_position,
+     		int64_t len)
+     </pre>
+
+   <p>to request input data from the object which comes before this plugin. 
+The read function needs a buffer to store the input data in.  This can
+either be a temporary you create in the plugin or the output buffer
+supplied to process_buffer if you don't need a temporary.
+
+   <p>It also needs a set of position arguments to determine when you want to
+read the data from.  The start position, rate, and len passed to a read
+function need not be the same as the values recieved by the
+process_buffer function.  This way plugins can read data at a different
+rate than they output data.
+
+   <p>The channel argument is only meaningful if this is a multichannel
+plugin.  They need to read data for each track in the
+get_total_buffers() value and process all the tracks.  Single channel
+plugins should pass 0 for channel.
 
    <p>Additional members are implemented to maintain configuration in
 realtime plugins.  Some of these are also needed in nonrealtime
@@ -5567,7 +5947,8 @@ keyframe is an XML string.  It's most easily parsed by creating a
 function is implemented.
 
      <p>Read data loads data out of the XML object and stores values in the
-plugin's configuration object.
+plugin's configuration object.  Since configuration objects vary from
+plugin to plugin, these functions can't be automated.
 
      </p><li>void save_data(KeyFrame *keyframe);
 
@@ -5603,6 +5984,9 @@ Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 </div>
 
 <h3 class="section">NONREALTIME PLUGINS</h3>
+
+   <p>Some references for non-realtime plugins are <b>Normalize</b> for audio
+and <b>Reframe</b> for video.
 
    <p>Like realtime plugins, <b>load_defaults</b> and <b>save_defaults</b> must be
 implemented.  In nonrealtime plugins, these are not just used for
@@ -5676,7 +6060,7 @@ instantiate the progress object with a line like
 
      <pre class="example">          
           progress = start_progress("MyPlugin progress...",
-          	PluginClient::end - PluginClient::start);
+          	PluginClient::get_total_len());
           
           </pre>
 
@@ -5688,21 +6072,26 @@ the progress bar has already started in another instance of the plugin.
      <p>If <b>PluginClient::interactive</b> is 1, you need to start the progress
 bar.  If it's 0, the progress bar has already been started.
 
-     <p>The PluginClient defines <b>end</b> and <b>start</b> for the timeline range
-to be processed.  The units are either samples or frames.
+     <p>The PluginClient defines <b>get_total_len()</b> and <b>get_source_start()</b>
+to describe the timeline range to be processed.  The units are either
+samples or frames and in the project rate.
 
      </p><li>int process_loop
 
      <p>This is called repeatedly until the timeline range is processed.  It
-takes either a samples or frames buffer and a reference to
-write_length.  The arguments are a location and length for the output
-if it's audio.
+has either a samples or frames buffer for output and a reference to
+write_length to store the number of samples processed.  If this is an
+audio plugin, the user needs to call <b>get_buffer_size()</b> to know how
+many samples the output buffer can hold.
 
      <p>The plugin must use <b>read_samples</b> or <b>read_frame</b> to read the
-input.  These functions take a buffer and a position relative to the
-start of the timeline.  Then it must process it and put the output in
-the arguments to process_loop.  write_length should contain the number
-of samples generated if it's audio.
+input.  These functions are a bit different for a non realtime plugin
+than they are for a realtime plugin.
+
+     <p>They take a buffer and a position relative to the start of the
+timeline, in the timeline's rate.  Then you must process it and put the
+output in the buffer argument to process_loop.  write_length should
+contain the number of samples generated if it's audio.
 
      <p>Finally, process_loop must test <b>PluginClient::interactive</b> and
 update the progress bar if it's 1.
@@ -5741,21 +6130,34 @@ Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 include <b>pluginaclient.h</b> and inherit from <b>PluginAClient</b>.  Realtime audio plugins need to
 define
 
-<pre class="example">     int process_realtime(int64_t size,
-     		double **input_ptr,
-     		double **output_ptr);
+<pre class="example">     int process_buffer(int64_t size,
+     		double **buffer,
+     		int64_t start_position,
+     		int sample_rate);
      </pre>
 
    <p>if it's multichannel or
 
-<pre class="example">     int process_realtime(int64_t size,
-     		double *input_ptr,
-     		double *output_ptr);
+<pre class="example">     int process_buffer(int64_t size,
+     		double *buffer,
+     		int64_t start_position,
+     		int sample_rate);
      </pre>
 
-   <p>if it's single channel.  These should return the number of samples
-generated.  In the future, the number of samples return value will
-synchronize plugins which delay audio.
+   <p>if it's single channel.  These should return 0 on success and 1 on
+failure.  In the future, the return value may abort failed rendering.
+
+   <p>The processing function needs to request input samples with
+
+<pre class="example">     int read_samples(double *buffer,
+     		int channel,
+     		int sample_rate,
+     		int64_t start_position,
+     		int64_t len);
+     </pre>
+
+   <p>It always returns 0.  The user may specify any desired sample rate and
+start position.
 
    <p>Nonrealtime audio plugins need to define
 
@@ -5767,7 +6169,9 @@ synchronize plugins which delay audio.
 <pre class="example">     int process_loop(double **buffers, int64_t &amp;write_length);
      </pre>
 
-   <p>for multi channel.
+   <p>for multi channel.  Non realtime plugins use a different set of
+read_samples functions to request input data.  These are fixed to the
+project sample rate.
 
 <div class="node">
 <p><hr>
@@ -5784,20 +6188,19 @@ Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 include <b>pluginvclient.h</b> and inherit from <b>PluginVClient</b>. 
 Realtime video plugins need to define
 
-<pre class="example">     int process_realtime(VFrame **input,
-     		VFrame **output);
+<pre class="example">     int process_buffer(VFrame **frame,
+     	int64_t start_position,
+     	double frame_rate);
      </pre>
 
    <p>if it's multichannel or
 
-<pre class="example">     int process_realtime(VFrame *input,
-     		VFrame *output);
+<pre class="example">     int process_buffer(VFrame *frame,
+     	int64_t start_position,
+     	double frame_rate);
      </pre>
 
-   <p>if it's single channel.  They only get one frame per call but should
-return the number of frames generated anyway.  In the future, the
-number of frames return value will synchronize plugins which delay
-video.
+   <p>if it's single channel.
 
    <p>The nonrealtime video plugins need to define
 
@@ -5809,8 +6212,13 @@ video.
 <pre class="example">     int process_loop(VFrame **buffers);
      </pre>
 
-   <p>for multi channel.  They're always assumed to have a write length of 1
-when they return 0.
+   <p>for multi channel.  The amount of frames generated in a single
+process_loop is always assumed to be 1, hence the lack of a
+write_length argument.  Returning 0 causes the rendering to continue. 
+Returning 1 causes the rendering to abort.
+
+   <p>A set of read_frame functions exist for requesting input frames in
+non-realtime video plugins.  These are fixed to the project frame rate.
 
 <div class="node">
 <p><hr>
@@ -5823,36 +6231,80 @@ Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
 
 <h3 class="section">TRANSITION PLUGINS</h3>
 
-   <p>The simplest video transition is <b>dissolve</b> and the simplest audio
-transition is <b>crossfade</b>.   These work identical to the single
-channel, realtime audio and video plugins.  The only difference is the
-addition of an <b>is_transition</b> method to the processing object. 
-<b>is_transition</b> should return 1.
+   <p>The simplest video transition is <b>wipe</b> and the simplest audio
+transition is <b>crossfade</b>.  These use a subset of the default class
+members of realtime plugins, but so far no analogue to
+PLUGIN_CLASS_MEMBERS has been done for transitions.
+
+   <p>The processing object for audio transitions still inherits from
+PluginAClient and for video transitions it still inherits from
+PluginVClient.
+
+   <p>Transitions may or may not have a GUI.  If they have a GUI, they must
+also manage a thread like realtime plugins.  Do this with the same
+PLUGIN_THREAD_OBJECT and PLUGIN_THREAD_HEADER macros as realtime
+plugins.  Since there is only one keyframe in a transition, you don't
+need to worry about updating the GUI from the processing object like
+you do in a realtime plugin.
+
+   <p>If the transition has a GUI, you can use PLUGIN_CONSTRUCTOR_MACRO and
+PLUGIN_DESTRUCTOR_MACRO to initialize the processing object.  You'll
+also need a Defaults object and a Thread object for these macros.
+
+   <p>Since the GUI is optional, overwrite a function called <b>uses_gui()</b>
+to signifiy whether or not the transition has a GUI.  Return 1 if it
+does and 0 if it doesn't.
+
+   <p>Transitions need a <b>load_defaults</b> and <b>save_defaults</b> function so
+the first time they're dropped on the timeline they'll have useful
+settings.
+
+   <p>A <b>read_data</b> and <b>save_data</b> function takes over after insertion
+to access data specific to each instance of the transition.
+
+   <p>The most important difference between transitions and realtime plugins
+is the addition of an <b>is_transition</b> method to the processing
+object.  <b>is_transition</b> should return 1 to signify the plugin is a
+transition.
+
+   <p>Transitions process data in a <b>process_realtime</b> function.
+
+<pre class="example">     int process_realtime(VFrame *input,
+     		VFrame *output);
+     </pre>
+
+<pre class="example">     int process_realtime(int64_t size,
+     		double *input_ptr,
+     		double *output_ptr);
+     </pre>
+
+   <p>The input argument to process_realtime is the data for the next edit. 
+The output argument to process_realtime is the data for the previous
+edit.
 
    <p>Routines exist for determining where you are relative to the
 transition's start and end.
 
      <ul>
 
-     <li><b>PluginClient::get_source_position()</b> - returns an integer
-position since the start of the transition
+     <li><b>PluginClient::get_source_position()</b> - returns the current
+position since the start of the transition of the lowest sample in the
+buffers.
 
      <li><b>PluginClient::get_total_len()</b> - returns the integer length of
-the transition.  The units are either samples or frames.
+the transition.  The units are either samples or frames, in the data
+rate requested by the first plugin.
 
    </ul>
 
-   <p>Users should divide source position by total length to get the fraction
-of the transition the current <b>process_realtime</b> function starts
+   <p>Users should divide the source position by total length to get the
+fraction of the transition the current <b>process_realtime</b> function is
 at.
 
-   <p>Secondly, the meaning of the input and output arguments to
-<b>process_realtime</b> is different for transitions than for realtime
-plugins.
-
-   <p>The first argument to process_realtime is the data for the next edit. 
-The second argument to process_realtime is the data for the previous
-edit.  Eventually the second argument becomes the output.
+   <p>Transitions run in the data rate requested by the first plugin in the
+track.  This may be different than the project data rate.  Since
+process_realtime lacks a rate argument, use <b>get_framerate()</b> or
+<b>get_samplerate</b> to get the requested rate.
 
 <div class="node">
 <p><hr>
@@ -5868,9 +6320,9 @@ Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
    <p>Effects like <b>Histogram</b> and <b>VideoScope</b> need to update the GUI
 during playback to display information about the signal.  This is
 achieved with the <b>send_render_gui</b> and <b>render_gui</b> methods. 
-Normally in process_realtime, when the processing object wants to
-update the GUI it should call <b>send_render_gui</b>.  This should only be
-called in process_realtime.  Send_render_gui goes through a search and
+Normally in process_buffer, when the processing object wants to update
+the GUI it should call <b>send_render_gui</b>.  This should only be called
+in process_buffer.  Send_render_gui goes through a search and
 eventually calls <b>render_gui</b> in the GUI instance of the plugin.
 
    <p>Render_gui should have a sequence like
@@ -5889,9 +6341,9 @@ eventually calls <b>render_gui</b> in the GUI instance of the plugin.
      
      </pre>
 
-   <p>The sequence uses one argument, a void pointer to transfer information
-from the renderer to the GUI.  The user should typecast this pointer
-into something useful.
+   <p>Send_render_gui and render_gui use one argument, a void pointer to
+transfer information from the processing object to the GUI.  The user
+should typecast this pointer into something useful.
 
 <div class="node">
 <p><hr>
@@ -5906,171 +6358,292 @@ Up:<a rel="up" accesskey="u" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>
    <p>There are several useful queries in PluginClient which can be accessed
 from the processing object.  Some of them have different meaning in
 realtime and non-realtime mode.  They all give information about the
-operating system or the project.
+operating system or the project which can be used to improve the
+quality of the processing.
+
+<ul class="menu">
+<li><a accesskey="1" href="#SYSTEM%20QUERIES">SYSTEM QUERIES</a>:  Utilities for determining the system resources. 
+<li><a accesskey="2" href="#TIMING%20QUERIES">TIMING QUERIES</a>:  Utilities for performing time-dependant processing. 
+</ul>
+
+<div class="node">
+<p><hr>
+Node:<a name="SYSTEM%20QUERIES">SYSTEM QUERIES</a>,
+Next:<a rel="next" accesskey="n" href="#TIMING%20QUERIES">TIMING QUERIES</a>,
+Up:<a rel="up" accesskey="u" href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>
+<br>
+</div>
+
+<h4 class="subsection">SYSTEM QUERIES</h4>
 
      <ul>
 
      <li>
-<b>int PluginClient::get_project_smp()</b> Gives the number of CPU's on
-the system minus 1.  If it's a uniprocessor it's 0.  If it's a dual
-processor, it's 1.  This number should be used to gain any parallelism.
+<b>get_interpolation_type()</b> returns the type of interpolation the user
+wants for all scaling operations.  This is a macro from
+overlayframe.inc.  It can be applied to any call to the
+<b>OverlayFrame</b> object.
 
      <li>
-<b>double PluginClient::get_project_framerate()</b> Gives the frames per
-second of the video.
+<b>get_project_smp()</b> Gives the number of CPU's on the system minus 1. 
+If it's a uniprocessor it's 0.  If it's a dual processor, it's 1.  This
+number should be used to gain parallelism.
 
      <li>
-<b>int PluginClient::get_project_samplerate()</b> Gives the samples per
-second of the audio.
+<b>get_total_buffers()</b> Gives the number of tracks a multichannel
+plugin needs to process.
 
    </ul>
 
 <div class="node">
 <p><hr>
-Node:<a name="RELEASE%20NOTES">RELEASE NOTES</a>,
+Node:<a name="TIMING%20QUERIES">TIMING QUERIES</a>,
+Previous:<a rel="previous" accesskey="p" href="#SYSTEM%20QUERIES">SYSTEM QUERIES</a>,
+Up:<a rel="up" accesskey="u" href="#PLUGIN%20QUERIES">PLUGIN QUERIES</a>
+<br>
+</div>
+
+<h4 class="subsection">TIMING QUERIES</h4>
+
+   <p>There are two rates for media a realtime plugin has to be aware of: the
+project rate and the requested rate.  Functions are provided for
+getting the project and requested rate.  In addition, doing time
+dependant effects requires using several functions which tell where you
+are in the effect.
+
+     <ul>
+<li>
+<b>get_project_framerate()</b> Gives the frames per second of the video as
+defined by the project settings.
+
+     <li>
+<b>get_project_samplerate()</b> Gives the samples per second of the audio as
+defined by the project settings.
+
+     <li>
+<b>get_framerate()</b> Gives the frames per second requested by the plugin
+after this one.  This is the requested frame rate and is the same as
+the frame_rate argument to process_buffer.
+
+     <li>
+<b>get_samplerate()</b> Gives the samples per second requested by the plugin
+after this one.  This is the requested sample rate and is the same as
+the sample_rate argument to process_buffer.
+
+     <li>
+<b>get_total_len()</b> Gives the number of samples or frames in the
+range covered by the effect, relative to the requested data rate.
+
+     <li>
+<b>get_source_start()</b> For realtime plugins it gives the lowest sample
+or frame in the effect range in the requested data rate.  For
+nonrealtime plugins it's the start of the range of the timeline to
+process.
+
+     <li>
+<b>get_source_position()</b> For realtime plugins it's the lowest numbered
+sample in the requested region to process if playing forward and the
+highest numbered sample in the region if playing backward.  For video
+it's the start of the frame if playing forward and the end of the frame
+if playing in reverse.  The position is relative to the start of the
+EDL and in the requested data rate.
+
+     <p>For transitions this is always the lowest numbered sample of the region
+to process relative to the start of the transition.
+
+     </p><li>
+<b>get_direction()</b> Gives the direction of the current playback
+operation.  This is a macro defined in transportque.inc.  This is
+useful for calling read functions since the read functions position
+themselves at the start or end of the region to read, depending on the
+playback operation.
+
+     <li>
+<b>local_to_edl()</b>
+
+     <li>
+<b>edl_to_local()</b>
+
+     <p>These convert between the requested data rate and the project data
+rate.  They are used to convert keyframe positions into numbers which
+can be interpolated at the requested data rate.  The conversion is
+automatically based on frame rate or sample rate depending on the type
+of plugin.
+
+     </p><li><b>get_prev_keyframe(int64_t position, int is_local)</b>
+
+     <li><b>get_next_keyframe(int64_t position, int is_local)</b>
+
+     <p>These give the nearest keyframe before or after the position given. 
+The macro defined version of load_configuration automatically retrieves
+the right keyframes but you may want to do this on your own.
+
+     <p>The position argument can be either in the project rate or the
+requested rate.  Set is_local to 1 if it's in the requested rate and 0
+if it's in the project rate.
+
+     <p>In each keyframe, another position value tells the keyframe's position
+relative to the start of the timeline and in the project rate.
+
+     <p>The only way to get smooth interpolation between keyframes is to
+convert the positions in the keyframe objects to the requested rate. 
+Do this by using edl_to_local on the keyframe positions.
+
+   </ul>
+
+<div class="node">
+<p><hr>
+Node:<a name="KEYBOARD%20SHORTCUTS">KEYBOARD SHORTCUTS</a>,
 Previous:<a rel="previous" accesskey="p" href="#PLUGIN%20AUTHORING">PLUGIN AUTHORING</a>,
 Up:<a rel="up" accesskey="u" href="#Top">Top</a>
 <br>
 </div>
 
-<h2 class="chapter">RELEASE NOTES</h2>
+<h2 class="chapter">KEYBOARD SHORTCUTS</h2>
 
-     <ul>
+   <p>Alex Ferrer started summarizing most of the keyboard shortcuts.  Most
+of the keys work without any modifier like shift or ctrl.  Most windows
+can be closed with a <b>Ctrl-w</b>.  Most operations can be cancelled with
+<b>ESC</b> and accepted with <b>Enter</b>.
 
-     <p><b>1.0.0</b>
+<h3 class="section">PROGRAM WINDOW</h3>
 
-     <pre class="example">          
-          First release since Broadcast 2000 migration.
-          
-          </pre>
+<h4 class="subsection">Editing Media</h4>
 
-     <p><b>1.1.0</b>
+<pre class="example">     z         Undo
+     Z         Re-Do
+     x         Cut
+     c         Copy
+     v         Paste
+     Del       Clear
+     Shift Spc Paste Silence
+     m         Mute region
+     a         Select all
+     </pre>
 
-     <pre class="example">          
-          Titler fonts installed by rpm.
-          XMovie decodes ac3 according to redesigned liba52 channel mappings.
-          Quicktime MPEG4 parameters debugged.
-          Background rendering over a renderfarm.
-          Renderfarm clients automatically reduced to idle priority.
-          Better MJPA decoding on single processors.
-          Better title functionality in 16 bit colormodels.
-          Undo for effect keyframes.
-          Effect GUI's cleared during undo for effect attachment.
-          Fewer lockups on startup.
-          Proper keyframe interpolation in scale effect.
-          Stamp timecode in titler.
-          Memory leaks in rendering stages removed.
-          Removed legacy plugin server code.
-          Option to generate sequence header in every GOP for MPEG2.
-          LADSPA support.
-          Listbox doesn't enter drag_icon state when dragging column division.
-          Effect rendering bug fixed.
-          64 bit mpeg transport stream seeking beyond 2 gigs.
-          More accurate mask drawing when projector is zoomed.
-          Clear labels updates CWindow
-          More accurate YUV/RGB conversions.
-          Import partial tgas
-          Copy keyframes doesn't copy default keyframe.
-          Track highlighting offset by vertical scroll.
-          Multiple video scope, spectrogram, and histogram displays may be opened.
-          HutSaturation in YUV colorspaces.
-          Undo for masks.
-          Shared synthesis effects cause the sharing tracks to
-          play back instead of just the owning track.
-          Quicktime recovery utility improved.
-          Single frame recording with multiple batches doesn't crash.
-          DV encoding.
-          New video effects:
-          gradient, downsample video, radial blur, linear blur, zoom blur,
-          histogram, perspective.
-          
-          New audio effect:
-          Sound level
-          
-          
-          
-          </pre>
+<h4 class="subsection">Editing Labels &amp; In/Out Points</h4>
 
-     <p><b>1.1.5</b>
+<pre class="example">     [             Toggle In point
+     ]             Toggle Out point
+     l             Toggle label at current position
+     Ctrl &lt;-       Go to Previous Label
+     Ctrl -&gt;       Go to Next Label
+     f             Fit display to selection
+     </pre>
 
-     <pre class="example">          
-          More options for the ffmpeg/MPEG-4 codecs.
-          Histogram works on SMP.
-          Better 16 bit alpha blending.
-          BRender path updates from preferences.
-          Separate preroll for background rendering and rendering.
-          Deinterlace by averaging lines 0 and 2 or 1 and 3 to get intervening lines.
-          Adaptive deinterlace.
-          Frame per second statistics in renderfarm are more reliable.
-          Select and slide in the patchbay.
-          Video scope can be resized.
-          Effect keyframes pasted in right positions more often.
-          Selective denoising of video based on color channel.
-          More mouse wheel bindings in MainWindow and ListBox.
-          Ctrl-w closes effect windows.
-          Perspective doesn't crash when switching from stretch to sheer.
-          Better text list searching and keyboard navigation.
-          Better Vorbis decoding after a pause.
-          Close recording without recording anything doesn't crash.
-          Save backup now option.
-          OpenGL not required anymore.
-          Time format changes update the selection textboxes more often.
-          MPEG-4 deblocking option in XMovie and Cinelerra.
-          Resize in Record GUI doesn't screw it up.
-          Better export of YUVA16161616 to Component Y'CbCr 10-bit 4:4:4.
-          Better import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
-          
-          </pre>
+<h4 class="subsection">Navigation</h4>
 
-     <p><b>1.1.6</b>
+<pre class="example">     Right arrow      Move right*
+     Left arrow       Move left*
+     Up arrow         Zoom out*
+     Down arrow       Zoom in*
+     Ctrl Up          Expand waveform amplitude
+     Ctrl Dn          Shrink waveform amplitude
+     Page Up          Move up*
+     Page Dn          Move down*
+     Ctrl Page Up     Expand track height
+     Ctrl Page Dn     Shrink track height
+     Home             Go to beginning of timeline*
+     End              Go to end of timeline*
+     
+     </pre>
 
-     <pre class="example">          
-          Create fade keyframe inadverdently drags bezier handle less often.
-          Float autos don't draw on right edge of timeline when keyframes are beyond right edge.
-          Better float auto creation.
-          Add track anywhere in timeline through track popup.
-          Shared track references are automatically reconfigured after deleting or adding tracks.
-          Libmpeg3: Better decoding of field-based MPEG video.
-          Channels can be moved up or down in the Channel picker properly.
-          Better handling of the long delay in deleting files without overflowing the recording buffers.
-          Deinterlace really swaps fields instead of just saying it.
-          Two line swapping combinations in deinterlace.
-          Better listbox row sizing.
-          Downsample offset.
-          Faster window creation.
-          Splash screen while you wait for it to start up.
-          File deletion occurs before opening the driver instead of
-          	after opening the driver for recording.
-          Changing sample rate of WAV file in Asset window works.
-          JPEG stills get saved with proper dimensions.
-          Migrated to RedHat 8.0.
-           - e2fsprogs-devel is needed to compile the background render object.
-          Fewer crashes due to OpenDivx global variables getting overwritten.
-          Paste silence and clipboards also shifts effect keyframes properly.
-          More checks for circular references in shared effects and shared tracks.
-          Tracking during audio playback without video doesn't run past edge of loop boundaries.
-          Better keyframing in Titler.
-          Multiple language encodings in Titler.
-          Undo of replace project after an effect works.
-          Frame -&gt; field conversion does line averaging and pixel shifting.
-          Field -&gt; frame conversion uses pixel shifting.
-          Negative cursor selection is frame aligned.
-          Documentation on video cleaning and deinterlacing tools.
-          Buttons repositioned properly when filebox is resized vertically.
-          Fade automation is more accurate.
-          CWindow and VWindow slider position is less erratic after the window is resized.
-          Timebars with regions track the playback position.
-          More workarounds for buz driver lockups.
-          Dragging the cursor on the timebar off the edges scrolls the timeline.
-          IVTC uses luminance only in YUV colorspaces to improve accuracy.
-          Quicktime: Tighter audio synchronization when encoding Quicktime with Vorbis audio.
-          Start of audio effects is more accurate.
-          Better IEEE1394 playback of video only.
-          More IEEE1394 playback options.
-          
-          </pre>
+   <p>* You may have to click on the timeline to deactivate any text boxes or
+tumblers before these work.
 
-   </ul>
+<h4 class="subsection">File operations</h4>
+
+<pre class="example">     n         New project
+     o         Load Files
+     s         Save Project
+     r         Record
+     R         Render
+     q         Quit
+     P         Preferences
+     </pre>
+
+<h4 class="subsection">Key Frame Editing</h4>
+
+<pre class="example">     
+     Shift X    Cut keyframes
+     Shift C    Copy keyframes
+     Shift V    Paste keyframes
+     Shift Del  Clear keyframes
+     Alt c      Copy default keyframe
+     Alt v      Paste default keyframe
+     
+     </pre>
+
+<h4 class="subsection">Track Manipulation</h4>
+
+<pre class="example">     
+     t         Add Audio Track
+     u         Insert default Audio Transition
+     T         Add Video Track
+     U         Insert Default Video Transition
+     d         Delete last Track
+     Shft L    Loop playback
+     
+     </pre>
+
+<h4 class="subsection">What's drawn on the timeline</h4>
+
+<pre class="example">     
+     1         Show titles
+     2         Show transitions
+     3         Fade keyframes
+     4         Mute keyframes
+     5         Mode keyframes
+     6         Pan keyframes
+     7         Camera keyframes
+     8         Projector keyframes
+     9         Plugin keyframes
+     0         Mask keyframes
+     -         Camera Zoom
+     =         Projector Zoom
+     
+     </pre>
+
+<h3 class="section">VIEWER &amp; COMPOSITOR WINDOWS</h3>
+
+<pre class="example">     
+     x         Cut
+     c         Copy
+     v         Paste
+     v         Splice
+     b         Overwrite
+     [         Toggle In point
+     ]         Toggle Out point
+     l         Toggle label at current position
+     Ctrl &lt;-   Go to Previous Label
+     Ctrl -&gt;   Go to Next Label
+     Home      Go to beginning
+     End       Go to end
+     z         Undo
+     Z         Re-Do
+     
+     </pre>
+
+<h3 class="section">PLAYBACK TRANSPORT</h3>
+
+   <p>Transport controls work in any window which has a playback transport.  They are
+accessed through the number pad.
+
+<pre class="example">     4 Frame back         5 Reverse Slow     6 Reverse      + Reverse Fast
+     1 Frame Forward      2 Forward Slow     3 Play     Enter Fast Forward
+     0 Stop
+     
+     </pre>
+
+   <p>[ Space bar ] is normal Play, Hitting any key twice is Pause.
+
+<h3 class="section">RECORD WINDOW</h3>
+
+<pre class="example">     
+     Space              Start and pause recording of the current batch
+     l                  Toggle label at current position.
+     
+     </pre>
 
    </body></html>
 

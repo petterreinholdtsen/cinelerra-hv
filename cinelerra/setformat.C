@@ -5,6 +5,7 @@
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "mainundo.h"
@@ -20,10 +21,7 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
 
 SetFormat::SetFormat(MWindow *mwindow)
  : BC_MenuItem(_("Format..."))

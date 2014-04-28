@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "byteorder.h"
 #include "edit.h"
 #include "errorbox.h"
@@ -16,16 +17,13 @@
 #include "filetiff.h"
 #include "filevorbis.h"
 #include "formatwindow.h"
+#include "language.h"
 #include "pluginserver.h"
 #include "resample.h"
 #include "stringfile.h"
 #include "vframe.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 File::File()

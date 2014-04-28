@@ -594,11 +594,11 @@ TRACE("TrackCanvas::draw 10")
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
-//printf("TrackCanvas::draw 3\n");
+TRACE("TrackCanvas::draw 20")
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
-//printf("TrackCanvas::draw 4\n");
+TRACE("TrackCanvas::draw 30")
 	draw_resources(force);
-//printf("TrackCanvas::draw 5\n");
+TRACE("TrackCanvas::draw 40")
 	draw_overlays();
 UNTRACE
 }

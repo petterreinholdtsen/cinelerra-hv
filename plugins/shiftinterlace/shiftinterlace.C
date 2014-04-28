@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -12,11 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -271,7 +267,7 @@ int ShiftInterlaceMain::is_realtime()
 
 char* ShiftInterlaceMain::plugin_title() 
 {
-	return _("ShiftInterlace channels");
+	return _("ShiftInterlace");
 }
 
 

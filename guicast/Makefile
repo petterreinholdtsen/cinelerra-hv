@@ -12,6 +12,8 @@ ifeq ($(HAVE_XFT), y)
 CFLAGS += -DHAVE_XFT
 endif
 
+DEST := /usr/bin
+
 #CFLAGS += -g
 
 $(shell sh -c 'if ! test -d $(OBJDIR)\; then mkdir $(OBJDIR)\; fi' )
@@ -83,7 +85,7 @@ TESTLIBS := \
 		-lXv \
 		-lpthread \
 		-lm \
-		$(XXF86VM) \
+		-lXxf86vm \
 		-lpng
 
 ifeq ($(HAVE_XFT), y)
@@ -145,6 +147,9 @@ wc:
 backup: clean
 	cd .. && \
 	tar Icvf ~/guicast.tar.bz2 guicast
+
+install:
+	cp $(OBJDIR)/pngtoh $(OBJDIR)/bootstrap $(DEST)
 
 $(OBJS) $(OBJDIR)/test.o $(OBJDIR)/test2.o $(OBJDIR)/test3.o $(OBJDIR)/replace.o:
 	$(CC) -c `cat $(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.C) -o $*.o

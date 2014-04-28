@@ -69,15 +69,21 @@ void Edits::equivalent_output(Edits *edits, int64_t *result)
 	}
 }
 
-
-Edits& Edits::operator=(Edits& edits)
+void Edits::copy_from(Edits *edits)
 {
 	while(last) delete last;
-	for(Edit *current = edits.first; current; current = NEXT)
+	for(Edit *current = edits->first; current; current = NEXT)
 	{
 		Edit *new_edit = append(create_edit());
 		new_edit->copy_from(current);
 	}
+}
+
+
+Edits& Edits::operator=(Edits& edits)
+{
+printf("Edits::operator= 1\n");
+	copy_from(&edits);
 	return *this;
 }
 

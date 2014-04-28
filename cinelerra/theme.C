@@ -562,7 +562,7 @@ void Theme::get_vwindow_sizes(VWindowGUI *gui)
 {
 }
 
-void Theme::get_cwindow_sizes(CWindowGUI *gui)
+void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 }
 

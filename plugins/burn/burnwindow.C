@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "burnwindow.h"
-
+#include "language.h"
 
 
 
@@ -35,8 +35,8 @@ int BurnWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		"BurningTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou"
+		_("BurningTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
 	));
 
 	show_window();

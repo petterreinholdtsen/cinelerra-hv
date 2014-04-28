@@ -472,7 +472,8 @@ int WhirlEffect::process_realtime(VFrame *input, VFrame *output)
 	this->input = input;
 	this->output = output;
 
-	if(EQUIV(config.angle, 0) || EQUIV(config.radius, 0))
+	if(EQUIV(config.angle, 0) || 
+		(EQUIV(config.radius, 0) && EQUIV(config.pinch, 0)))
 	{
 		if(input->get_rows()[0] != output->get_rows()[0])
 			output->copy_from(input);

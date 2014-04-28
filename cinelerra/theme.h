@@ -45,7 +45,7 @@ public:
 		int w, 
 		int h);
 	virtual void get_vwindow_sizes(VWindowGUI *gui);
-	virtual void get_cwindow_sizes(CWindowGUI *gui);
+	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls);
 	virtual void get_awindow_sizes(AWindowGUI *gui);
 	virtual void get_rmonitor_sizes(int do_audio, 
 		int do_video,

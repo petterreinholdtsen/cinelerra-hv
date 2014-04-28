@@ -57,6 +57,7 @@ int Automation::create_objects()
 
 Automation& Automation::operator=(Automation& automation)
 {
+printf("Automation::operator= 1\n");
 	copy_from(&automation);
 	return *this;
 }

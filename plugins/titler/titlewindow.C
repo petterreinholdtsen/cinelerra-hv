@@ -753,29 +753,6 @@ int TitleY::handle_event()
 	return 1;
 }
 
-TitleStrokeW::TitleStrokeW(TitleMain *client, 
-	TitleWindow *window, 
-	int x, 
-	int y)
- : BC_TumbleTextBox(window,
- 	(float)client->config.stroke_width,
-	(float)-2048,
-	(float)2048,
-	x, 
-	y, 
-	60)
-{
-	this->client = client;
-	this->window = window;
-}
-int TitleStrokeW::handle_event()
-{
-	client->config.stroke_width = atof(get_text());
-	client->send_configure_change();
-	return 1;
-}
-
-
 TitleSpeed::TitleSpeed(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
  	(float)client->config.pixels_per_second, 
@@ -900,21 +877,6 @@ TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window)
 int TitleColorThread::handle_event(int output)
 {
 	client->config.color = output;
-	window->update_color();
-	window->flush();
-	client->send_configure_change();
-	return 1;
-}
-TitleColorStrokeThread::TitleColorStrokeThread(TitleMain *client, TitleWindow *window)
- : ColorThread()
-{
-	this->client = client;
-	this->window = window;
-}
-
-int TitleColorStrokeThread::handle_event(int output)
-{
-	client->config.color_stroke = output;
 	window->update_color();
 	window->flush();
 	client->send_configure_change();

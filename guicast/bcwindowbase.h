@@ -2,6 +2,8 @@
 #define BCWINDOWBASE_H
 
 // Window types
+
+#define HAVE_LIBXXF86VM
 #define MAIN_WINDOW 0
 #define SUB_WINDOW 1
 #define POPUP_WINDOW 2

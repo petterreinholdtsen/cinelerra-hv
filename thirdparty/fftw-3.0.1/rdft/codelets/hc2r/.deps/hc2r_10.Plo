@@ -1,18 +1,21 @@
-hc2r_10.lo hc2r_10.o: hc2r_10.c ../../../rdft/codelet-rdft.h \
-  ../../../kernel/ifftw.h ../../../config.h /usr/include/stdlib.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h \
-  /usr/include/sys/types.h /usr/include/bits/types.h \
-  /usr/include/bits/typesizes.h /usr/include/time.h /usr/include/endian.h \
-  /usr/include/bits/endian.h /usr/include/sys/select.h \
-  /usr/include/bits/select.h /usr/include/bits/sigset.h \
-  /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
-  /usr/include/bits/pthreadtypes.h /usr/include/alloca.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h \
-  /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h \
-  ../../../rdft/codelets/hc2r.h
+hc2r_10.lo: hc2r_10.c ../../../rdft/codelet-rdft.h \
+ ../../../kernel/ifftw.h ../../../config.h /usr/include/stdlib.h \
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/sys/types.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/time.h /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/time.h \
+ /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/alloca.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h \
+ ../../../rdft/codelets/hc2r.h
 
 ../../../rdft/codelet-rdft.h:
 
@@ -24,6 +27,8 @@ hc2r_10.lo hc2r_10.o: hc2r_10.c ../../../rdft/codelet-rdft.h \
 
 /usr/include/features.h:
 
+/usr/include/bits/predefs.h:
+
 /usr/include/sys/cdefs.h:
 
 /usr/include/bits/wordsize.h:
@@ -32,7 +37,17 @@ hc2r_10.lo hc2r_10.o: hc2r_10.c ../../../rdft/codelet-rdft.h \
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stddef.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+
+/usr/include/bits/waitflags.h:
+
+/usr/include/bits/waitstatus.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
 
 /usr/include/sys/types.h:
 
@@ -41,10 +56,6 @@ hc2r_10.lo hc2r_10.o: hc2r_10.c ../../../rdft/codelet-rdft.h \
 /usr/include/bits/typesizes.h:
 
 /usr/include/time.h:
-
-/usr/include/endian.h:
-
-/usr/include/bits/endian.h:
 
 /usr/include/sys/select.h:
 
@@ -60,7 +71,9 @@ hc2r_10.lo hc2r_10.o: hc2r_10.c ../../../rdft/codelet-rdft.h \
 
 /usr/include/alloca.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include/stdarg.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
+
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 

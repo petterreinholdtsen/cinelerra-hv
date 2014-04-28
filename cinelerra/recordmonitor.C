@@ -665,8 +665,8 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 	this->window = window;
 	this->mwindow = mwindow;
 	this->record = record;
-printf("RecordMonitorCanvas::RecordMonitorCanvas 1 %d %d %d %d\n", 
-x, y, w, h);
+// printf("RecordMonitorCanvas::RecordMonitorCanvas 1 %d %d %d %d\n", 
+// x, y, w, h);
 //printf("RecordMonitorCanvas::RecordMonitorCanvas 2\n");
 }
 
@@ -961,7 +961,12 @@ int RecordMonitorThread::render_dv()
 
 void RecordMonitorThread::render_uncompressed()
 {
+printf("RecordMonitorThread::render_uncompressed %d %p %p\n", 
+__LINE__, 
+output_frame, 
+input_frame);
 	output_frame->copy_from(input_frame);
+PRINT_TRACE
 }
 
 void RecordMonitorThread::show_output_frame()
@@ -1017,13 +1022,16 @@ void RecordMonitorThread::run()
 			return;
 		}
 
-//SET_TRACE
+//PRINT_TRACE
 		new_output_frame();
-//SET_TRACE
+
+//PRINT_TRACE
 		render_frame();
-//SET_TRACE
+
+//PRINT_TRACE
 		show_output_frame();
-//SET_TRACE
+
+//PRINT_TRACE
 		unlock_input();
 // Get next frame
 		ready = 1;

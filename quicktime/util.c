@@ -715,6 +715,24 @@ int quicktime_match_24(char *input, char *output)
 		return 0;
 }
 
+int quicktime_quantize2(int number)
+{
+	if(number && (number % 2))
+	{
+		number += 2 - (number % 2);
+	}
+	return number;
+}
+
+int quicktime_quantize8(int number)
+{
+	if(number && (number % 8))
+	{
+		number += 8 - (number % 8);
+	}
+	return number;
+}
+
 int quicktime_quantize16(int number)
 {
 	if(number && (number % 16))

@@ -437,7 +437,7 @@ void SetFormatWindow::create_objects()
 
 	x = mwindow->theme->setformat_x4 + dimension[0]->get_w();
 	FrameSizePulldown *pulldown;
-	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow->theme, 
 		dimension[0], 
 		dimension[1], 
 		x, 

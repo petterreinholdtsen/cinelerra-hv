@@ -73,6 +73,12 @@ void ADevicePrefs::reset()
 	alsa_bits = 0;
 	alsa_workaround = 0;
 
+	oss_bits = 0;
+
+
+	for(int i = 0; i < MAXDEVICES; i++)
+		oss_path[i] = 0;
+
 	cine_bits = 0;
 	cine_path = 0;
 }
@@ -95,6 +101,7 @@ int ADevicePrefs::initialize(int creation)
 			break;
 	}
 	this->driver = *driver;
+
 
 	if(!menu)
 	{
@@ -170,12 +177,16 @@ int ADevicePrefs::delete_objects()
 int ADevicePrefs::delete_oss_objs()
 {
 	delete path_title;
-	delete bits_title;
-	delete oss_bits;
-	for(int i = 0; i < MAXDEVICES; i++)
+ 	delete bits_title;
+ 	delete oss_bits;
+
+	if(oss_path)
 	{
-		delete oss_path[i];
-break;
+		for(int i = 0; i < MAXDEVICES; i++)
+		{
+			delete oss_path[i];
+			break;
+		}
 	}
 	return 0;
 }
@@ -213,7 +224,7 @@ int ADevicePrefs::delete_firewire_objs()
 int ADevicePrefs::delete_alsa_objs()
 {
 #ifdef HAVE_ALSA
-	alsa_drivers->remove_all_objects();
+	if(alsa_drivers) alsa_drivers->remove_all_objects();
 	delete alsa_drivers;
 	delete path_title;
 	delete bits_title;
@@ -319,6 +330,7 @@ int ADevicePrefs::create_alsa_objs()
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
 	AudioALSA::list_devices(alsa_titles, 0, mode);
 
+
 	alsa_drivers = new ArrayList<BC_ListBoxItem*>;
 	for(int i = 0; i < alsa_titles->total; i++)
 		alsa_drivers->append(new BC_ListBoxItem(alsa_titles->values[i]));
@@ -337,6 +349,7 @@ int ADevicePrefs::create_alsa_objs()
 			output_char = out_config->alsa_out_device;
 			break;
 	}
+
 	dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device:"), MEDIUMFONT, resources->text_default));
 	alsa_device = new ALSADevice(dialog,
 		x1, 
@@ -382,7 +395,6 @@ int ADevicePrefs::create_alsa_objs()
 				&out_config->interrupt_workaround,
 				_("Stop playback locks up.")));
 	}
-
 
 #endif
 

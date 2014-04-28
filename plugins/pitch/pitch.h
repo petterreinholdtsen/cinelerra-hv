@@ -84,13 +84,6 @@ public:
 		int samples, 
 		Samples *buffer);
 	PitchEffect *plugin;
-	
-	double *last_phase;
-	double *new_freq;
-	double *new_magn;
-	double *sum_phase;
-	double *anal_freq;
-	double *anal_magn;
 };
 
 class PitchEffect : public PluginAClient

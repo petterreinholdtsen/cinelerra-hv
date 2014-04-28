@@ -90,8 +90,14 @@ void MainUndo::update_undo_before(const char *description, void *creator)
 //printf("MainUndo::update_undo_before %d\n", __LINE__);
 	if(undo_stack->current && !(undo_stack->number_of(undo_stack->current) % 2))
 	{
-		printf("MainUndo::update_undo_before \"%s\": must be on an after entry to do this.\n",
-			description);
+		printf("MainUndo::update_undo_before %d \"%s\": must be on an after entry to do this. size=%d\n",
+			__LINE__,
+			description,
+			undo_stack->total());
+
+// dump stack
+		undo_stack->dump();
+
 // Move up an entry to get back in sync
 //		return;
 	}
@@ -133,9 +139,15 @@ void MainUndo::update_undo_after(const char *description,
 //printf("MainUndo::update_undo_after %d\n", __LINE__);
 	if(undo_stack->number_of(undo_stack->current) % 2)
 	{
-		printf("MainUndo::update_undo_after \"%s\": must be on a before entry to do this.\n",
-			description);
-		return;
+		printf("MainUndo::update_undo_after %d \"%s\": must be on a before entry to do this. size=%d\n",
+			__LINE__,
+			description,
+			undo_stack->total());
+
+// dump stack
+		undo_stack->dump();
+// Not getting any update_undo_before to get back in sync, so just append 1 here
+//		return;
 	}
 
 	update_undo_entry(description, load_flags, 0, changes_made);

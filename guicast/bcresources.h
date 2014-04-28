@@ -179,6 +179,7 @@ public:
 	VFrame **filebox_icons_images;
 	VFrame **filebox_updir_images;
 	VFrame **filebox_newfolder_images;
+	VFrame **filebox_rename_images;
 	VFrame **filebox_descend_images;
 	VFrame **filebox_delete_images;
 	VFrame **filebox_reload_images;

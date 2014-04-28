@@ -1,76 +1,78 @@
 stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
-  ../../include/FLAC++/export.h /usr/include/c++/4.3/string \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/c++config.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/os_defines.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/cpu_defines.h \
-  /usr/include/c++/4.3/bits/stringfwd.h \
-  /usr/include/c++/4.3/bits/char_traits.h \
-  /usr/include/c++/4.3/bits/stl_algobase.h /usr/include/c++/4.3/cstddef \
-  /usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stddef.h \
-  /usr/include/c++/4.3/bits/functexcept.h \
-  /usr/include/c++/4.3/exception_defines.h \
-  /usr/include/c++/4.3/bits/cpp_type_traits.h \
-  /usr/include/c++/4.3/ext/type_traits.h \
-  /usr/include/c++/4.3/ext/numeric_traits.h \
-  /usr/include/c++/4.3/bits/stl_pair.h \
-  /usr/include/c++/4.3/bits/stl_move.h \
-  /usr/include/c++/4.3/bits/concept_check.h \
-  /usr/include/c++/4.3/bits/stl_iterator_base_types.h \
-  /usr/include/c++/4.3/bits/stl_iterator_base_funcs.h \
-  /usr/include/c++/4.3/bits/stl_iterator.h \
-  /usr/include/c++/4.3/debug/debug.h /usr/include/c++/4.3/bits/postypes.h \
-  /usr/include/c++/4.3/cwchar /usr/include/wchar.h /usr/include/stdio.h \
-  /usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stdarg.h \
-  /usr/include/bits/wchar.h /usr/include/xlocale.h \
-  /usr/include/bits/wchar2.h /usr/include/stdint.h \
-  /usr/include/c++/4.3/cstdio /usr/include/bits/types.h \
-  /usr/include/bits/typesizes.h /usr/include/libio.h \
-  /usr/include/_G_config.h /usr/include/bits/stdio_lim.h \
-  /usr/include/bits/sys_errlist.h /usr/include/bits/stdio.h \
-  /usr/include/bits/stdio2.h /usr/include/c++/4.3/bits/allocator.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/c++allocator.h \
-  /usr/include/c++/4.3/ext/new_allocator.h /usr/include/c++/4.3/new \
-  /usr/include/c++/4.3/exception /usr/include/c++/4.3/bits/localefwd.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/c++locale.h \
-  /usr/include/c++/4.3/clocale /usr/include/locale.h \
-  /usr/include/bits/locale.h /usr/include/c++/4.3/iosfwd \
-  /usr/include/c++/4.3/cctype /usr/include/ctype.h /usr/include/endian.h \
-  /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
-  /usr/include/c++/4.3/bits/ostream_insert.h \
-  /usr/include/c++/4.3/cxxabi-forced.h \
-  /usr/include/c++/4.3/bits/stl_function.h \
-  /usr/include/c++/4.3/backward/binders.h \
-  /usr/include/c++/4.3/bits/basic_string.h \
-  /usr/include/c++/4.3/ext/atomicity.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/gthr.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/gthr-default.h \
-  /usr/include/pthread.h /usr/include/sched.h /usr/include/time.h \
-  /usr/include/bits/sched.h /usr/include/bits/time.h \
-  /usr/include/signal.h /usr/include/bits/sigset.h \
-  /usr/include/bits/pthreadtypes.h /usr/include/bits/setjmp.h \
-  /usr/include/unistd.h /usr/include/bits/posix_opt.h \
-  /usr/include/bits/environments.h /usr/include/bits/confname.h \
-  /usr/include/getopt.h /usr/include/bits/unistd.h \
-  /usr/include/c++/4.3/x86_64-linux-gnu/bits/atomic_word.h \
-  /usr/include/c++/4.3/bits/basic_string.tcc \
-  ../../include/FLAC/stream_decoder.h ../../include/FLAC/export.h \
-  ../../include/FLAC/format.h ../../include/FLAC/ordinals.h \
-  /usr/include/inttypes.h ../../include/FLAC/assert.h
+ ../../include/FLAC++/export.h /usr/include/c++/4.5/string \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h \
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h \
+ /usr/include/c++/4.5/bits/stringfwd.h \
+ /usr/include/c++/4.5/bits/char_traits.h \
+ /usr/include/c++/4.5/bits/stl_algobase.h /usr/include/c++/4.5/cstddef \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/c++/4.5/bits/functexcept.h \
+ /usr/include/c++/4.5/exception_defines.h \
+ /usr/include/c++/4.5/bits/cpp_type_traits.h \
+ /usr/include/c++/4.5/ext/type_traits.h \
+ /usr/include/c++/4.5/ext/numeric_traits.h \
+ /usr/include/c++/4.5/bits/stl_pair.h /usr/include/c++/4.5/bits/move.h \
+ /usr/include/c++/4.5/bits/concept_check.h \
+ /usr/include/c++/4.5/bits/stl_iterator_base_types.h \
+ /usr/include/c++/4.5/bits/stl_iterator_base_funcs.h \
+ /usr/include/c++/4.5/bits/stl_iterator.h \
+ /usr/include/c++/4.5/debug/debug.h /usr/include/c++/4.5/bits/postypes.h \
+ /usr/include/c++/4.5/cwchar /usr/include/wchar.h /usr/include/stdio.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/include/bits/wchar.h /usr/include/xlocale.h \
+ /usr/include/bits/wchar2.h /usr/include/c++/4.5/bits/allocator.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h \
+ /usr/include/c++/4.5/ext/new_allocator.h /usr/include/c++/4.5/new \
+ /usr/include/c++/4.5/exception /usr/include/c++/4.5/bits/localefwd.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++locale.h \
+ /usr/include/c++/4.5/clocale /usr/include/locale.h \
+ /usr/include/bits/locale.h /usr/include/c++/4.5/iosfwd \
+ /usr/include/c++/4.5/cctype /usr/include/ctype.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/c++/4.5/bits/ostream_insert.h \
+ /usr/include/c++/4.5/cxxabi-forced.h \
+ /usr/include/c++/4.5/bits/stl_function.h \
+ /usr/include/c++/4.5/backward/binders.h \
+ /usr/include/c++/4.5/bits/basic_string.h \
+ /usr/include/c++/4.5/ext/atomicity.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/gthr.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/gthr-default.h \
+ /usr/include/pthread.h /usr/include/sched.h /usr/include/time.h \
+ /usr/include/bits/sched.h /usr/include/bits/time.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/bits/setjmp.h \
+ /usr/include/unistd.h /usr/include/bits/posix_opt.h \
+ /usr/include/bits/environments.h /usr/include/bits/confname.h \
+ /usr/include/getopt.h /usr/include/bits/unistd.h \
+ /usr/include/c++/4.5/x86_64-linux-gnu/bits/atomic_word.h \
+ /usr/include/c++/4.5/initializer_list \
+ /usr/include/c++/4.5/bits/basic_string.tcc \
+ ../../include/FLAC/stream_decoder.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/bits/stdio_lim.h \
+ /usr/include/bits/sys_errlist.h /usr/include/bits/stdio.h \
+ /usr/include/bits/stdio2.h ../../include/FLAC/export.h \
+ ../../include/FLAC/format.h ../../include/FLAC/ordinals.h \
+ /usr/include/inttypes.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
+ /usr/include/stdint.h ../../include/FLAC/assert.h
 
 ../../include/FLAC++/decoder.h:
 
 ../../include/FLAC++/export.h:
 
-/usr/include/c++/4.3/string:
+/usr/include/c++/4.5/string:
 
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/c++config.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h:
 
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/os_defines.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h:
 
 /usr/include/features.h:
+
+/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -80,51 +82,51 @@ stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/cpu_defines.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h:
 
-/usr/include/c++/4.3/bits/stringfwd.h:
+/usr/include/c++/4.5/bits/stringfwd.h:
 
-/usr/include/c++/4.3/bits/char_traits.h:
+/usr/include/c++/4.5/bits/char_traits.h:
 
-/usr/include/c++/4.3/bits/stl_algobase.h:
+/usr/include/c++/4.5/bits/stl_algobase.h:
 
-/usr/include/c++/4.3/cstddef:
+/usr/include/c++/4.5/cstddef:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stddef.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
 
-/usr/include/c++/4.3/bits/functexcept.h:
+/usr/include/c++/4.5/bits/functexcept.h:
 
-/usr/include/c++/4.3/exception_defines.h:
+/usr/include/c++/4.5/exception_defines.h:
 
-/usr/include/c++/4.3/bits/cpp_type_traits.h:
+/usr/include/c++/4.5/bits/cpp_type_traits.h:
 
-/usr/include/c++/4.3/ext/type_traits.h:
+/usr/include/c++/4.5/ext/type_traits.h:
 
-/usr/include/c++/4.3/ext/numeric_traits.h:
+/usr/include/c++/4.5/ext/numeric_traits.h:
 
-/usr/include/c++/4.3/bits/stl_pair.h:
+/usr/include/c++/4.5/bits/stl_pair.h:
 
-/usr/include/c++/4.3/bits/stl_move.h:
+/usr/include/c++/4.5/bits/move.h:
 
-/usr/include/c++/4.3/bits/concept_check.h:
+/usr/include/c++/4.5/bits/concept_check.h:
 
-/usr/include/c++/4.3/bits/stl_iterator_base_types.h:
+/usr/include/c++/4.5/bits/stl_iterator_base_types.h:
 
-/usr/include/c++/4.3/bits/stl_iterator_base_funcs.h:
+/usr/include/c++/4.5/bits/stl_iterator_base_funcs.h:
 
-/usr/include/c++/4.3/bits/stl_iterator.h:
+/usr/include/c++/4.5/bits/stl_iterator.h:
 
-/usr/include/c++/4.3/debug/debug.h:
+/usr/include/c++/4.5/debug/debug.h:
 
-/usr/include/c++/4.3/bits/postypes.h:
+/usr/include/c++/4.5/bits/postypes.h:
 
-/usr/include/c++/4.3/cwchar:
+/usr/include/c++/4.5/cwchar:
 
 /usr/include/wchar.h:
 
 /usr/include/stdio.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.3.3/include/stdarg.h:
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
 
 /usr/include/bits/wchar.h:
 
@@ -132,51 +134,35 @@ stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
 
 /usr/include/bits/wchar2.h:
 
-/usr/include/stdint.h:
+/usr/include/c++/4.5/bits/allocator.h:
 
-/usr/include/c++/4.3/cstdio:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h:
 
-/usr/include/bits/types.h:
+/usr/include/c++/4.5/ext/new_allocator.h:
 
-/usr/include/bits/typesizes.h:
+/usr/include/c++/4.5/new:
 
-/usr/include/libio.h:
+/usr/include/c++/4.5/exception:
 
-/usr/include/_G_config.h:
+/usr/include/c++/4.5/bits/localefwd.h:
 
-/usr/include/bits/stdio_lim.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++locale.h:
 
-/usr/include/bits/sys_errlist.h:
-
-/usr/include/bits/stdio.h:
-
-/usr/include/bits/stdio2.h:
-
-/usr/include/c++/4.3/bits/allocator.h:
-
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/c++allocator.h:
-
-/usr/include/c++/4.3/ext/new_allocator.h:
-
-/usr/include/c++/4.3/new:
-
-/usr/include/c++/4.3/exception:
-
-/usr/include/c++/4.3/bits/localefwd.h:
-
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/c++locale.h:
-
-/usr/include/c++/4.3/clocale:
+/usr/include/c++/4.5/clocale:
 
 /usr/include/locale.h:
 
 /usr/include/bits/locale.h:
 
-/usr/include/c++/4.3/iosfwd:
+/usr/include/c++/4.5/iosfwd:
 
-/usr/include/c++/4.3/cctype:
+/usr/include/c++/4.5/cctype:
 
 /usr/include/ctype.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
 
 /usr/include/endian.h:
 
@@ -184,21 +170,21 @@ stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
 
 /usr/include/bits/byteswap.h:
 
-/usr/include/c++/4.3/bits/ostream_insert.h:
+/usr/include/c++/4.5/bits/ostream_insert.h:
 
-/usr/include/c++/4.3/cxxabi-forced.h:
+/usr/include/c++/4.5/cxxabi-forced.h:
 
-/usr/include/c++/4.3/bits/stl_function.h:
+/usr/include/c++/4.5/bits/stl_function.h:
 
-/usr/include/c++/4.3/backward/binders.h:
+/usr/include/c++/4.5/backward/binders.h:
 
-/usr/include/c++/4.3/bits/basic_string.h:
+/usr/include/c++/4.5/bits/basic_string.h:
 
-/usr/include/c++/4.3/ext/atomicity.h:
+/usr/include/c++/4.5/ext/atomicity.h:
 
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/gthr.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/gthr.h:
 
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/gthr-default.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/gthr-default.h:
 
 /usr/include/pthread.h:
 
@@ -209,10 +195,6 @@ stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
 /usr/include/bits/sched.h:
 
 /usr/include/bits/time.h:
-
-/usr/include/signal.h:
-
-/usr/include/bits/sigset.h:
 
 /usr/include/bits/pthreadtypes.h:
 
@@ -230,11 +212,25 @@ stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
 
 /usr/include/bits/unistd.h:
 
-/usr/include/c++/4.3/x86_64-linux-gnu/bits/atomic_word.h:
+/usr/include/c++/4.5/x86_64-linux-gnu/bits/atomic_word.h:
 
-/usr/include/c++/4.3/bits/basic_string.tcc:
+/usr/include/c++/4.5/initializer_list:
+
+/usr/include/c++/4.5/bits/basic_string.tcc:
 
 ../../include/FLAC/stream_decoder.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
 
 ../../include/FLAC/export.h:
 
@@ -243,5 +239,9 @@ stream_decoder.lo: stream_decoder.cpp ../../include/FLAC++/decoder.h \
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
+
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
+
+/usr/include/stdint.h:
 
 ../../include/FLAC/assert.h:

@@ -1196,6 +1196,34 @@ int CompressorCanvas::cursor_motion_event()
 		return 1;
 //plugin->config.dump();
 	}
+	else
+// Change cursor over points
+	if(is_event_win() && cursor_inside())
+	{
+		int new_cursor = CROSS_CURSOR;
+
+		for(int i = 0; i < plugin->config.levels.total; i++)
+		{
+			double x_db = plugin->config.get_x(i);
+			double y_db = plugin->config.get_y(i);
+
+			int x = (int)(((double)1 - x_db / plugin->config.min_db) * get_w());
+			int y = (int)(y_db / plugin->config.min_db * get_h());
+
+			if(get_cursor_x() < x + POINT_W / 2 && get_cursor_x() >= x - POINT_W / 2 &&
+				get_cursor_y() < y + POINT_W / 2 && get_cursor_y() >= y - POINT_W / 2)
+			{
+				new_cursor = UPRIGHT_ARROW_CURSOR;
+				break;
+			}
+		}
+
+
+		if(new_cursor != get_cursor())
+		{
+			set_cursor(new_cursor);
+		}
+	}
 	return 0;
 }
 

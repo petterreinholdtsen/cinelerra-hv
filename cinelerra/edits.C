@@ -503,7 +503,7 @@ int Edits::load_edit(FileXML *file, int64_t &startproject, int track_offset)
 				}
 // printf("Edits::load_edit %d nested_edl->path=%s\n", 
 // __LINE__, 
-// current->nested_edl->project_path);
+// current->nested_edl->path);
 			}
 			else
 			if(file->tag.title_is("FILE"))

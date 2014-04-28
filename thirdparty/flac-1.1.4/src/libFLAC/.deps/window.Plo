@@ -1,20 +1,25 @@
 window.lo: window.c ../../config.h /usr/include/math.h \
-  /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
-  /usr/include/gnu/stubs-64.h /usr/include/bits/huge_val.h \
-  /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h \
-  /usr/include/bits/mathinline.h ../../include/FLAC/assert.h \
-  ../../include/FLAC/format.h ../../include/FLAC/export.h \
-  ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
-  /usr/include/stdint.h /usr/include/bits/wchar.h \
-  include/private/window.h include/private/float.h \
-  ../../include/FLAC/ordinals.h
+ /usr/include/features.h /usr/include/bits/predefs.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
+ /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
+ /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
+ /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
+ ../../include/FLAC/assert.h ../../include/FLAC/format.h \
+ ../../include/FLAC/export.h ../../include/FLAC/ordinals.h \
+ /usr/include/inttypes.h \
+ /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/wchar.h include/private/window.h \
+ include/private/float.h ../../include/FLAC/ordinals.h
 
 ../../config.h:
 
 /usr/include/math.h:
 
 /usr/include/features.h:
+
+/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -25,6 +30,14 @@ window.lo: window.c ../../config.h /usr/include/math.h \
 /usr/include/gnu/stubs-64.h:
 
 /usr/include/bits/huge_val.h:
+
+/usr/include/bits/huge_valf.h:
+
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
 
 /usr/include/bits/mathdef.h:
 
@@ -41,6 +54,8 @@ window.lo: window.c ../../config.h /usr/include/math.h \
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
+
+/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 

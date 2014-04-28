@@ -22,6 +22,9 @@
 #ifndef VDEVICEBUZ_H
 #define VDEVICEBUZ_H
 
+#ifdef HAVE_VIDEO4LINUX
+
+
 #include "buz.h"
 #include "channel.inc"
 #include "condition.inc"
@@ -126,5 +129,9 @@ private:
 	int contrast;
 	int whiteness;
 };
+
+
+#endif // HAVE_VIDEO4LINUX
+
 
 #endif

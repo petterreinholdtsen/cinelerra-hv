@@ -19,7 +19,7 @@
  * 
  */
 
-#include "../motion/affine.h"
+#include "affine.h"
 #include "cursors.h"
 #include "language.h"
 #include "perspective.h"
@@ -495,7 +495,7 @@ PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
 	int y,
 	float value,
 	int is_x)
- : BC_TumbleTextBox(gui, value, (float)0, (float)100, x, y, 100)
+ : BC_TumbleTextBox(gui, value, (float)-100, (float)200, x, y, 100)
 {
 	this->plugin = plugin;
 	this->is_x = is_x;

@@ -531,18 +531,23 @@ int HistogramCanvas::cursor_motion_event()
 				&y2,
 				&x,
 				&y);
-			int new_cursor = ARROW_CURSOR;
+//			int new_cursor = ARROW_CURSOR;
+			int new_cursor = CROSS_CURSOR;
 			if(get_cursor_x() >= x1 && 
 				get_cursor_y() >= y1 &&
 				get_cursor_x() < x2 &&
 				get_cursor_y() < y2)
 			{
+//printf("HistogramCanvas::cursor_motion_event %d\n", __LINE__);
 				new_cursor = UPRIGHT_ARROW_CURSOR;
 				done = 1;
 			}
 
 			if(new_cursor != get_cursor())
+			{
+//printf("HistogramCanvas::cursor_motion_event %d\n", __LINE__);
 				set_cursor(new_cursor);
+			}
 
 
 			current = NEXT;

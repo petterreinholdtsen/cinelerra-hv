@@ -36,6 +36,8 @@ public:
 
 // Can't start in the constructor because it'll erase the subclass constructor.
 	void start();
+// Called by subclass to send a command to exit the loop
+	void stop();
 // Use the fd of another fork already in progress.
 // Used to transfer a parent ForkWrapper from 1 process to another.
 	void start_dummy(int parent_fd, int pid);

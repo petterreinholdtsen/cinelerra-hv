@@ -241,7 +241,8 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		input->get_data()[0] != 0xff ||
 		input->get_data()[1] != 0xd8)
 		return 1;
-	
+
+//printf("FileJPEG::read_frame %d\n", __LINE__);
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
@@ -256,6 +257,7 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		output->get_color_model(),
 		1);
 
+//printf("FileJPEG::read_frame %d\n", __LINE__);
 	return 0;
 }
 

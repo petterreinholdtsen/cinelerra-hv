@@ -125,6 +125,10 @@ public:
 	void set_separators(const char *separators);
 
 
+// Compute suggestions for a path
+	int calculate_suggestions(ArrayList<BC_ListBoxItem*> *entries);
+
+
 // User computes suggestions after handle_event.
 // The array is copied to a local variable.
 // A highlighted extension is added if 1 suggestion or a popup appears

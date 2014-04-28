@@ -158,8 +158,9 @@ if(debug) printf("VEdit::read_frame %d\n", __LINE__);
 		edl);
 	int result = 0;
 
-if(debug) printf("VEdit::read_frame %d source_position=%lld\n", 
+if(debug) printf("VEdit::read_frame %d path=%s source_position=%lld\n", 
 __LINE__, 
+asset->path, 
 source_position);
 
 	if(file)

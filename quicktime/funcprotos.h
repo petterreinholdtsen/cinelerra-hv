@@ -58,6 +58,7 @@ void quicktime_write_pascal(quicktime_t *file, char *data);
 int quicktime_read_data(quicktime_t *file, char *data, int64_t size);
 /* Quantize the number to the nearest multiple of 16 */
 /* Used by ffmpeg codecs */
+int quicktime_quantize8(int number);
 int quicktime_quantize16(int number);
 int quicktime_quantize32(int number);
 

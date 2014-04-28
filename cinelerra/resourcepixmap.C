@@ -542,7 +542,7 @@ SET_TRACE
 				}
 				else
 				{
-SET_TRACE
+//printf("ResourcePixmap::draw_audio_resource %d\n", __LINE__);
 					indexfile.draw_index(this, edit, x, w);
 SET_TRACE
 				}
@@ -672,10 +672,18 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			{
 				oldsample = newsample;
 				newsample = buffer->get_data()[(int)(i * asset_over_session)];
+				int y1 = (int)(center_pixel - oldsample * mwindow->edl->local_session->zoom_y / 2);
+				int y2 = (int)(center_pixel - newsample * mwindow->edl->local_session->zoom_y / 2);
+				if(y1 < 0) y1 = 0;
+				if(y1 > canvas->get_h()) y1 = canvas->get_h();
+				if(y2 < 0) y2 = 0;
+				if(y2 > canvas->get_h()) y2 = canvas->get_h();
+//printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
+				
 				canvas->draw_line(x1 - 1, 
-					(int)(center_pixel - oldsample * mwindow->edl->local_session->zoom_y / 2),
+					y1,
 					x1,
-					(int)(center_pixel - newsample * mwindow->edl->local_session->zoom_y / 2),
+					y2,
 					this);
 			}
 		}
@@ -731,6 +739,10 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 						x,
 						MAX(y2, prev_y1),
 						this);
+
+
+//printf("ResourcePixmap::draw_audio_source %d %d %d\n", __LINE__, y1, y2);
+
 				prev_y1 = y1;
 				prev_y2 = y2;
 				first_pixel = 0;

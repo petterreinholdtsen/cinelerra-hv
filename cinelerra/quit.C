@@ -62,13 +62,7 @@ int Quit::handle_event()
 	}
 	else 
 	{        // quit
-//printf("Quit::handle_event %d\n", __LINE__);
-		mwindow->gui->unlock_window();
-		mwindow->interrupt_indexes();
-		mwindow->save_defaults();
-// This is the last thread to exit
-		mwindow->playback_3d->quit();
-		mwindow->gui->lock_window();
+		mwindow->quit(1);
 	}
 	return 0;
 }
@@ -117,12 +111,7 @@ void Quit::run()
 		case 0:          // quit
 			if(mwindow->gui)
 			{
-				mwindow->interrupt_indexes();
-// Last command in program
-//				mwindow->gui->set_done(0);
-//				BC_WindowBase::get_resources()->synchronous->quit();
-				mwindow->save_defaults();
-				mwindow->playback_3d->quit();
+				mwindow->quit(0);
 			}
 			break;
 

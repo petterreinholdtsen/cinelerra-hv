@@ -57,6 +57,10 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 	char string[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 	int error;
+
+	devices->set_array_delete();
+
+
 	switch(mode)
 	{
 		case MODERECORD:
@@ -66,6 +70,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 			stream = SND_PCM_STREAM_PLAYBACK;
 			break;
 	}
+
 
 	snd_ctl_card_info_alloca(&info);
 	snd_pcm_info_alloca(&pcminfo);
@@ -132,6 +137,8 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 			char *result = devices->append(new char[strlen(string) + 1]);
 			strcpy(result, string);
 		}
+
+
 
 		snd_ctl_close(handle);
 	}
@@ -357,7 +364,7 @@ int AudioALSA::close_output()
 
 int AudioALSA::close_input()
 {
-	if(device->r)
+	if(device->r && dsp_in)
 	{
 //		snd_pcm_reset(dsp_in);
 		snd_pcm_drop(dsp_in);
@@ -491,7 +498,8 @@ int AudioALSA::interrupt_playback()
 		interrupted = 1;
 // Interrupts the playback but may not have caused snd_pcm_writei to exit.
 // With some soundcards it causes snd_pcm_writei to freeze for a few seconds.
-		if(!device->out_config->interrupt_workaround)
+		if(!device->out_config->interrupt_workaround &&
+			get_output())
 			snd_pcm_drop(get_output());
 
 // Makes sure the current buffer finishes before stopping.

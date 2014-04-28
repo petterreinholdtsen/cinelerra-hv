@@ -247,13 +247,13 @@ public:
 class FrameSizePulldown : public BC_ListBox
 {
 public:
-	FrameSizePulldown(MWindow *mwindow, 
+	FrameSizePulldown(Theme *theme, 
 		BC_TextBox *output_w, 
 		BC_TextBox *output_h, 
 		int x, 
 		int y);
 	int handle_event();
-	MWindow *mwindow;
+	Theme *theme;
 	BC_TextBox *output_w;
 	BC_TextBox *output_h;
 };

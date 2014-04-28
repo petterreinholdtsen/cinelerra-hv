@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 // Size of window in milliseconds
 #define WINDOW_TIME 40
@@ -34,17 +35,11 @@ TimeStretchEngine::TimeStretchEngine(double scale, int sample_rate)
 {
 	output = 0;
 	output_allocation = 0;
-	output_size = 0;
 	input = 0;
 	input_allocation = 0;
-	input_size = 0;
-	input_sample = 0;
-	output_sample = 0;
-	this->scale = scale;
-	this->sample_rate = sample_rate;
 	window_time = WINDOW_TIME;
-	window_size = (int64_t)sample_rate * (int64_t)window_time / (int64_t)1000;
-	window_skirt = window_size / 2;
+	reset();
+	update(scale, sample_rate);
 }
 
 TimeStretchEngine::~TimeStretchEngine()
@@ -52,6 +47,33 @@ TimeStretchEngine::~TimeStretchEngine()
 	if(output) delete [] output;
 	if(input) delete [] input;
 }
+
+void TimeStretchEngine::reset()
+{
+	input_size = 0;
+	input_sample = 0;
+	output_size = 0;
+	output_sample = 0;
+	
+}
+
+void TimeStretchEngine::update(double scale, int sample_rate)
+{
+	this->scale = scale;
+	this->sample_rate = sample_rate;
+	window_size = (int64_t)sample_rate * (int64_t)window_time / (int64_t)1000;
+	window_skirt = window_size / 2;
+//printf("TimeStretchEngine::update %d %d\n", __LINE__, window_size);
+	if(output) delete [] output;
+	if(input) delete [] input;
+//printf("TimeStretchEngine::update %d %d\n", __LINE__, window_size);
+
+	output = 0;
+	output_allocation = 0;
+	input = 0;
+	input_allocation = 0;
+}
+
 
 void TimeStretchEngine::overlay(double *out, double *in, int size, int skirt)
 {
@@ -78,9 +100,12 @@ void TimeStretchEngine::overlay(double *out, double *in, int size, int skirt)
 
 int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 {
-//printf("TimeStretchEngine::process 1\n");
+// printf("TimeStretchEngine::process %d in_buffer=%p in_size=%d\n", 
+// __LINE__,
+// in_buffer,
+// in_size);
 // Stack on input buffer
-	if(input_size + in_size > input_allocation)
+	if(!input || input_size + in_size > input_allocation)
 	{
 		int new_input_allocation = input_size + in_size;
 		double *new_input = new double[new_input_allocation];
@@ -93,12 +118,16 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 		input_allocation = new_input_allocation;
 	}
 
-//printf("TimeStretchEngine::process 10\n");
+// printf("TimeStretchEngine::process %d input=%p input_size=%d input_allocation=%d\n", 
+// __LINE__,
+// input,
+// input_size,
+// input_allocation);
 
 	memcpy(input + input_size, in_buffer->get_data(), in_size * sizeof(double));
 	input_size += in_size;
 
-//printf("TimeStretchEngine::process 20\n");
+//printf("TimeStretchEngine::process %d\n", __LINE__);
 // Overlay windows from input buffer into output buffer
 	int done = 0;
 	do
@@ -110,21 +139,28 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 		{
 // Shift input buffer so the fragment that would have been copied now will be
 // in the next iteration.
-// printf("TimeStretchEngine::process 1 %lld %d\n", 
+
+
+// printf("TimeStretchEngine::process %d %lld %d\n", 
+// __LINE__,
 // current_in_sample - input_sample, 
 // input_size);
+
 			if(current_in_sample - input_sample < input_size)
+			{
 				memcpy(input,
 					input + current_in_sample - input_sample,
 					(input_size - (current_in_sample - input_sample)) * sizeof(double));
-			input_size -= current_in_sample - input_sample;
-			input_sample = current_in_sample;
+				input_size -= current_in_sample - input_sample;
+				input_sample = current_in_sample;
+			}
+
 			done = 1;
-//printf("TimeStretchEngine::process 10\n");
+//printf("TimeStretchEngine::process %d input_size=%d\n", __LINE__, input_size);
 		}
 		else
 		{
-//printf("TimeStretchEngine::process 20\n");
+//printf("TimeStretchEngine::process %d\n", __LINE__);
 // Allocate output buffer
 			if(output_size + window_size + window_skirt > output_allocation)
 			{
@@ -136,7 +172,13 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 					memcpy(new_output, 
 						output, 
 						(output_size + window_skirt) * sizeof(double));
+// printf("TimeStretchEngine::process %d this=%p output=%p new_allocation=%d\n", 
+// __LINE__, 
+// this,
+// output, 
+// new_allocation);
 					delete [] output;
+//printf("TimeStretchEngine::process %d\n", __LINE__);
 				}
 				output = new_output;
 				output_allocation = new_allocation;
@@ -152,7 +194,7 @@ int TimeStretchEngine::process(Samples *in_buffer, int in_size)
 		}
 	}while(!done);
 
-//printf("TimeStretchEngine::process 100 %d\n", output_size);
+//printf("TimeStretchEngine::process %d %d\n", __LINE__, output_size);
 	return output_size;
 }
 
@@ -162,6 +204,11 @@ void TimeStretchEngine::read_output(Samples *buffer, int size)
 	memcpy(output, output + size, (output_size + window_skirt - size) * sizeof(double));
 	output_size -= size;
 	output_sample += size;
+}
+
+int TimeStretchEngine::get_output_size()
+{
+	return output_size;
 }
 
 double* TimeStretchEngine::get_samples()

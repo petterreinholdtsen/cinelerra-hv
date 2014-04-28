@@ -205,6 +205,7 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	rendering_job = -1;
 	is_rendering = 0;
 	default_job = 0;
+	file_entries = 0;
 }
 
 BatchRenderThread::BatchRenderThread()
@@ -215,6 +216,7 @@ BatchRenderThread::BatchRenderThread()
 	rendering_job = -1;
 	is_rendering = 0;
 	default_job = 0;
+	file_entries = 0;
 }
 
 void BatchRenderThread::handle_close_event(int result)
@@ -228,6 +230,12 @@ void BatchRenderThread::handle_close_event(int result)
 	delete default_job;
 	default_job = 0;
 	jobs.remove_all_objects();
+	if(file_entries)
+	{
+		file_entries->remove_all_objects();
+		delete file_entries;
+		file_entries = 0;
+	}
 }
 
 BC_Window* BatchRenderThread::new_gui()
@@ -235,6 +243,22 @@ BC_Window* BatchRenderThread::new_gui()
 	current_start = 0.0;
 	current_end = 0.0;
 	default_job = new BatchRenderJob(mwindow->preferences);
+	
+	
+	if(!file_entries)
+	{
+		file_entries = new ArrayList<BC_ListBoxItem*>;
+		FileSystem fs;
+		char string[BCTEXTLEN];
+	// Load current directory
+		fs.update(getcwd(string, BCTEXTLEN));
+		for(int i = 0; i < fs.total_files(); i++)
+		{
+			file_entries->append(
+				new BC_ListBoxItem(
+					fs.get_entry(i)->get_name()));
+		}
+	}
 
 	char path[BCTEXTLEN];
 	path[0] = 0;
@@ -977,6 +1001,9 @@ BatchRenderEDLPath::BatchRenderEDLPath(BatchRenderThread *thread,
 
 int BatchRenderEDLPath::handle_event()
 {
+// Suggestions
+	calculate_suggestions(thread->file_entries);
+
 	strcpy(thread->get_current_edl(), get_text());
 	thread->gui->create_list(1);
 	return 1;

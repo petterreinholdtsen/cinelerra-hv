@@ -50,6 +50,8 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
     1)
 {
 	this->mwindow = mwindow;
+	drag_operation = 0;
+	new_status = 0;
 }
 
 static const char *other_text[OTHER_TOGGLES] =
@@ -219,6 +221,46 @@ int GWindowGUI::keypress_event()
 	return 0;
 }
 
+int GWindowGUI::cursor_motion_event()
+{
+	int cursor_x = get_relative_cursor_x();
+	int cursor_y = get_relative_cursor_y();
+	int update_gui = 0;
+
+	if(drag_operation)
+	{
+		if(cursor_y >= 0 &&
+			cursor_y < get_h())
+		{
+			for(int i = 0; i < MAX(OTHER_TOGGLES, AUTOMATION_TOTAL); i++)
+			{
+				if(i < OTHER_TOGGLES)
+				{
+					if(cursor_y >= other[i]->get_y() &&
+						cursor_y < other[i]->get_y() + other[i]->get_h())
+					{
+						other[i]->BC_Toggle::update(new_status);
+						update_gui = 1;
+					}
+				}
+				
+				if(i < AUTOMATION_TOTAL)
+				{
+					if(cursor_y >= auto_toggle[i]->get_y() &&
+						cursor_y < auto_toggle[i]->get_y() + auto_toggle[i]->get_h())
+					{
+						auto_toggle[i]->BC_Toggle::update(new_status);
+						update_gui = 1;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
 
 
 
@@ -240,7 +282,36 @@ GWindowToggle::GWindowToggle(MWindow *mwindow,
 	this->gui = gui;
 	this->subscript = subscript;
 	this->other = other;
+	set_select_drag(1);
 }
+
+
+int GWindowToggle::button_press_event()
+{
+	if(is_event_win() && get_buttonpress() == 1)
+	{
+//printf("GWindowToggle::button_press_event %d %d\n", __LINE__, get_value());
+		set_status(BC_Toggle::TOGGLE_DOWN);
+
+		BC_Toggle::update(!get_value());
+		gui->drag_operation = 1;
+		gui->new_status = get_value();
+//printf("GWindowToggle::button_press_event %d %d\n", __LINE__, get_value());
+
+		return 1;
+	}
+	return 0;
+}
+
+int GWindowToggle::button_release_event()
+{
+	int result = BC_Toggle::button_release_event();
+	gui->drag_operation = 0;
+	handle_event();
+	return result;
+}
+
+
 
 int GWindowToggle::handle_event()
 {

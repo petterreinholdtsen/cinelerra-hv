@@ -35,6 +35,7 @@ OBJS = \
 	$(OBJDIR)/adeviceprefs.o \
 	$(OBJDIR)/aedit.o \
 	$(OBJDIR)/aedits.o \
+	$(OBJDIR)/affine.o \
 	$(OBJDIR)/amodule.o \
 	$(OBJDIR)/apatchgui.o \
 	$(OBJDIR)/aplugin.o \
@@ -124,6 +125,7 @@ OBJS = \
 	$(OBJDIR)/filempeg.o \
 	$(OBJDIR)/fileogg.o \
 	$(OBJDIR)/filepng.o \
+	$(OBJDIR)/filescene.o \
 	$(OBJDIR)/fileserver.o \
 	$(OBJDIR)/filesndfile.o \
 	$(OBJDIR)/filetga.o \
@@ -253,6 +255,7 @@ OBJS = \
 	$(OBJDIR)/samples.o \
 	$(OBJDIR)/samplescroll.o \
 	$(OBJDIR)/savefile.o \
+	$(OBJDIR)/scenegraph.o \
 	$(OBJDIR)/setformat.o \
 	$(OBJDIR)/sharedlocation.o \
 	$(OBJDIR)/shmemory.o \
@@ -545,6 +548,7 @@ $(OBJDIR)/aboutprefs.o:                           aboutprefs.C
 $(OBJDIR)/adeviceprefs.o: 			  adeviceprefs.C
 $(OBJDIR)/aedit.o: 				  aedit.C
 $(OBJDIR)/aedits.o: 				  aedits.C
+$(OBJDIR)/affine.o:                               affine.C
 $(OBJDIR)/amodule.o: 				  amodule.C
 $(OBJDIR)/apanel.o: 				  apanel.C
 $(OBJDIR)/apatchgui.o:  			  apatchgui.C
@@ -639,6 +643,7 @@ $(OBJDIR)/filebasevideo.o: 			  filebasevideo.C
 $(OBJDIR)/filecr2.o:                              filecr2.C
 $(OBJDIR)/fileffmpeg.o:                           fileffmpeg.C
 $(OBJDIR)/filefork.o:	 			  filefork.C
+$(OBJDIR)/filescene.o:                            filescene.C
 $(OBJDIR)/fileserver.o:                           fileserver.C
 $(OBJDIR)/fileformat.o: 			  fileformat.C
 $(OBJDIR)/filejpeg.o: 				  filejpeg.C
@@ -783,6 +788,7 @@ $(OBJDIR)/resourcethread.o:                       resourcethread.C
 $(OBJDIR)/samples.o: 			          samples.C
 $(OBJDIR)/samplescroll.o: 			  samplescroll.C
 $(OBJDIR)/savefile.o: 				  savefile.C
+$(OBJDIR)/scenegraph.o:                           scenegraph.C
 $(OBJDIR)/setformat.o:                            setformat.C
 $(OBJDIR)/sharedlocation.o: 			  sharedlocation.C
 $(OBJDIR)/shmemory.o: 				  shmemory.C

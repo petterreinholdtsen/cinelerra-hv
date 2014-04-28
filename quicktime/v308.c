@@ -28,6 +28,8 @@ static int reads_colormodel(quicktime_t *file,
 		int track)
 {
 	return (colormodel == BC_RGB888 ||
+		colormodel == BC_RGB_FLOAT ||
+		colormodel == BC_RGBA_FLOAT ||
 		colormodel == BC_RGBA8888 ||
 		colormodel == BC_RGB161616 ||
 		colormodel == BC_RGBA16161616 ||
@@ -46,6 +48,8 @@ static int writes_colormodel(quicktime_t *file,
 		int track)
 {
 	return (colormodel == BC_RGB888 ||
+		colormodel == BC_RGB_FLOAT ||
+		colormodel == BC_RGBA_FLOAT ||
 		colormodel == BC_RGBA8888 ||
 		colormodel == BC_RGB161616 ||
 		colormodel == BC_RGBA16161616 ||
@@ -118,6 +122,7 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		file->out_w);
 
 	free(input_rows);
+//for(i = 0; i < 100 * 1000; i++) ((float*)row_pointers[0])[i] = 1.0;
 
 	return result;
 }

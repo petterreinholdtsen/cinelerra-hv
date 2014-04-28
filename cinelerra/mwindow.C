@@ -21,6 +21,7 @@
 
 #include "asset.h"
 #include "assets.h"
+#include "audioalsa.h"
 #include "awindowgui.h"
 #include "awindow.h"
 #include "batchrender.h"
@@ -168,12 +169,17 @@ MWindow::MWindow()
 	splash_window = 0;
 }
 
+
+// Need to delete brender temporary here.
 MWindow::~MWindow()
 {
-	brender_lock->lock("MWindow::~MWindow");
+//printf("MWindow::~MWindow %d\n", __LINE__);
+
+	brender_lock->lock("MWindow::quit");
 	if(brender) delete brender;
 	brender = 0;
 	brender_lock->unlock();
+
 	delete brender_lock;
 
 	delete mainindexes;
@@ -209,6 +215,27 @@ MWindow::~MWindow()
 	plugin_guis->remove_all_objects();
 	delete plugin_guis;
 	delete plugin_gui_lock;
+}
+
+
+void MWindow::quit(int unlock)
+{
+	if(unlock) gui->unlock_window();
+
+
+
+
+	brender_lock->lock("MWindow::quit");
+	if(brender) delete brender;
+	brender = 0;
+	brender_lock->unlock();
+
+	interrupt_indexes();
+	clean_indexes();
+	save_defaults();
+// This is the last thread to exit
+	playback_3d->quit();
+	if(unlock) gui->lock_window("MWindow::quit");
 }
 
 void MWindow::init_error()
@@ -254,8 +281,11 @@ void MWindow::init_plugin_path(Preferences *preferences,
 	SplashGUI *splash_window,
 	int *counter)
 {
+	const int debug = 0;
 	int result = 0;
 	PluginServer *newplugin;
+
+	if(debug) PRINT_TRACE
 
 	if(!result)
 	{
@@ -273,7 +303,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 			{
 // Try to query the plugin
 				fs->complete_path(path);
-//printf("MWindow::init_plugin_path %s\n", path);
+				if(debug) printf("MWindow::init_plugin_path %d %s\n", __LINE__, path);
 				PluginServer *new_plugin = new PluginServer(path);
 				int result = new_plugin->open_plugin(1, preferences, 0, 0, -1);
 
@@ -326,6 +356,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 void MWindow::init_plugins(Preferences *preferences, 
 	SplashGUI *splash_window)
 {
+	const int debug = 0;
 	if(!plugindb) plugindb = new ArrayList<PluginServer*>;
 
 
@@ -334,9 +365,13 @@ void MWindow::init_plugins(Preferences *preferences,
 	ArrayList<FileSystem*> lad_fs;
 	int result = 0;
 
+	if(debug) PRINT_TRACE
+
 // Get directories
 	cinelerra_fs.set_filter("[*.plugin][*.so]");
 	result = cinelerra_fs.update(preferences->plugin_dir);
+
+	if(debug) PRINT_TRACE
 
 	if(result)
 	{
@@ -344,6 +379,8 @@ void MWindow::init_plugins(Preferences *preferences,
 			_("MWindow::init_plugins: couldn't open %s directory\n"),
 			preferences->plugin_dir);
 	}
+
+	if(debug) PRINT_TRACE
 
 // Parse LAD environment variable
 	char *env = getenv("LADSPA_PATH");
@@ -391,11 +428,15 @@ void MWindow::init_plugins(Preferences *preferences,
 		};
 	}
 
+	if(debug) PRINT_TRACE
+
 	int total = cinelerra_fs.total_files();
 	int counter = 0;
 	for(int i = 0; i < lad_fs.total; i++)
 		total += lad_fs.values[i]->total_files();
 	if(splash_window) splash_window->progress->update_length(total);
+
+	if(debug) PRINT_TRACE
 
 
 // Cinelerra
@@ -415,7 +456,11 @@ void MWindow::init_plugins(Preferences *preferences,
 			splash_window,
 			&counter);
 
+	if(debug) PRINT_TRACE
+
 	lad_fs.remove_all_objects();
+	if(debug) PRINT_TRACE
+
 }
 
 void MWindow::delete_plugins()
@@ -804,6 +849,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
 	ArrayList<File*> new_files;
+	const int debug = 0;
 
 //	save_defaults();
 	gui->start_hourglass();
@@ -825,6 +871,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 	undo->update_undo_before();
 
 
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Define new_edls and new_assets to load
 	int result = 0;
@@ -1040,6 +1087,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 		new_files.append(new_file);
 	}
 
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 
 	if(!result) gui->statusbar->default_message();
@@ -1050,6 +1098,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 
 
 
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Paste them.
 // Don't back up here.
@@ -1079,6 +1128,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 
 
 
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Add new assets to EDL and schedule assets for index building.
 	int got_indexes = 0;
@@ -1094,11 +1144,13 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 		}
 	}
 
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	if(new_assets.total)
 	{
 		for(int i = 0; i < new_assets.total; i++)
 		{
 			Asset *new_asset = new_assets.values[i];
+
 			File *new_file = 0;
 			File *index_file = 0;
 			int got_it = 0;
@@ -1122,17 +1174,21 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 
 
 	}
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 // Start examining next batch of index files
 	if(got_indexes) mainindexes->start_build();
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 	update_project(load_mode);
 
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 	for(int i = 0; i < new_edls.size(); i++)
 	{
 		new_edls.get(i)->remove_user();
 	}
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 
 	new_edls.remove_all();
 
@@ -1154,6 +1210,8 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 
 	gui->stop_hourglass();
 
+
+if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 	return 0;
 }
 
@@ -1277,18 +1335,34 @@ void MWindow::create_objects(int want_gui,
 {
 	char string[BCTEXTLEN];
 	FileSystem fs;
+	const int debug = 0;
 	edl = 0;
 
 
+	if(debug) PRINT_TRACE
 
 // For some reason, init_signals must come after show_splash or the signals won't
 // get trapped.
 	init_signals();
 
+	if(debug) PRINT_TRACE
 
 
 	init_3d();
 
+	if(debug) PRINT_TRACE
+
+
+// This is required in the top thread for Alsa to work
+
+#ifdef HAVE_ALSA
+	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
+	AudioALSA::list_devices(alsa_titles, 0, MODEPLAY);
+	alsa_titles->remove_all_objects();
+	delete alsa_titles;
+#endif
+
+	if(debug) PRINT_TRACE
 
 
 	remove_thread = new RemoveThread;
@@ -1298,36 +1372,49 @@ void MWindow::create_objects(int want_gui,
 
 
 	init_error();
+	if(debug) PRINT_TRACE
 
 	init_defaults(defaults, config_path);
 	init_preferences();
+	if(debug) PRINT_TRACE
 
 	init_plugins(preferences, splash_window);
+	if(debug) PRINT_TRACE
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
+	if(debug) PRINT_TRACE
 	init_theme();
+	if(debug) PRINT_TRACE
 
 
 // Initialize before too much else is running
-// Preferences & theme are required for MPEG
+// Preferences & theme are required for building MPEG table of contents
 	init_fileserver(preferences);
 
 // Default project created here
 	init_edl();
+	if(debug) PRINT_TRACE
 
 
 	init_awindow();
+	if(debug) PRINT_TRACE
 
 	init_compositor();
+	if(debug) PRINT_TRACE
 
 	init_levelwindow();
+	if(debug) PRINT_TRACE
 
 	init_viewer();
+	if(debug) PRINT_TRACE
 
 	init_cache();
+	if(debug) PRINT_TRACE
 
 	init_indexes();
+	if(debug) PRINT_TRACE
 
 	init_channeldb();
+	if(debug) PRINT_TRACE
 
 
 	init_gui();
@@ -1336,11 +1423,13 @@ void MWindow::create_objects(int want_gui,
 	init_brender();
 	mainprogress = new MainProgress(this, gui);
 	undo = new MainUndo(this);
+	if(debug) PRINT_TRACE
 
 
 	plugin_guis = new ArrayList<PluginServer*>;
 	dead_plugins = new ArrayList<PluginServer*>;
 	keyframe_threads = new ArrayList<KeyFrameThread*>;
+	if(debug) PRINT_TRACE
 
 	if(session->show_vwindow) vwindow->gui->show_window();
 	if(session->show_cwindow) 
@@ -1368,6 +1457,7 @@ void MWindow::create_objects(int want_gui,
 		gwindow->gui->unlock_window();
 	}
 
+	if(debug) PRINT_TRACE
 
 	gui->lock_window("MWindow::create_objects 1");
 	gui->mainmenu->load_defaults(defaults);
@@ -1379,12 +1469,18 @@ void MWindow::create_objects(int want_gui,
 	gui->raise_window();
 	gui->unlock_window();
 
+	if(debug) PRINT_TRACE
+
+
+
 	if(preferences->use_tipwindow)
 		init_tipwindow();
+	if(debug) PRINT_TRACE
 
 
 	hide_splash();
 	init_shm();
+	if(debug) PRINT_TRACE
 
 	BC_WindowBase::get_resources()->vframe_shm = 1;
 
@@ -1585,18 +1681,20 @@ void MWindow::sync_parameters(int change_type)
 
 void MWindow::age_caches()
 {
-	int64_t prev_memory_usage;
-	int64_t memory_usage;
+	int64_t prev_memory_usage = 0;
+	int64_t memory_usage = 0;
 	int result = 0;
 
 	do
 	{
-		memory_usage = audio_cache->get_memory_usage(1) +
-			video_cache->get_memory_usage(1) +
-			frame_cache->get_memory_usage() +
-			wave_cache->get_memory_usage();
-
 //printf("MWindow::age_caches %d %lld %lld\n", __LINE__, memory_usage, preferences->cache_size);
+		memory_usage = audio_cache->get_memory_usage(1);
+//printf("MWindow::age_caches %d %lld %lld\n", __LINE__, memory_usage, preferences->cache_size);
+		memory_usage += video_cache->get_memory_usage(1);
+//printf("MWindow::age_caches %d %lld %lld\n", __LINE__, memory_usage, preferences->cache_size);
+		memory_usage += frame_cache->get_memory_usage();
+		memory_usage += wave_cache->get_memory_usage();
+
 		if(memory_usage > preferences->cache_size)
 		{
 			int target = 1;
@@ -1695,6 +1793,7 @@ SET_TRACE
 			break;
 		}
 	}
+SET_TRACE
 
 //printf("MWindow::show_plugin 1\n");
 	if(!done)
@@ -2038,17 +2137,22 @@ int MWindow::edl_to_nested(EDL *new_edl,
 // Reset everything after a load.
 void MWindow::update_project(int load_mode)
 {
+	const int debug = 0;
+	
+	if(debug) PRINT_TRACE
 	restart_brender();
 	edl->tracks->update_y_pixels(theme);
 
+	if(debug) PRINT_TRACE
 	gui->update(1, 1, 1, 1, 1, 1, 1);
+	if(debug) PRINT_TRACE
 	gui->unlock_window();
 
 	cwindow->gui->lock_window("MWindow::update_project 1");
 	cwindow->update(0, 0, 1, 1, 1);
 	cwindow->gui->unlock_window();
 
-
+	if(debug) PRINT_TRACE
 
 	if(load_mode == LOADMODE_REPLACE ||
 		load_mode == LOADMODE_REPLACE_CONCATENATE)
@@ -2072,15 +2176,18 @@ void MWindow::update_project(int load_mode)
 		edl,
 		1);
 
+	if(debug) PRINT_TRACE
 
 	awindow->gui->lock_window("MWindow::update_project");
 	awindow->gui->update_assets();
 	awindow->gui->flush();
 	awindow->gui->unlock_window();
 
+	if(debug) PRINT_TRACE
 
 	gui->lock_window("MWindow::update_project");
 	gui->flush();
+	if(debug) PRINT_TRACE
 }
 
 

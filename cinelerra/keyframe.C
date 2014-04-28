@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -145,11 +145,25 @@ void KeyFrame::update_parameter(BC_Hash *params,
 	FileXML input;
 	input.set_shared_string(get_data(), strlen(get_data()));
 	int result = 0;
-	BC_Hash this_parameters;
+	BC_Hash this_params;
 	char *this_text = 0;
 	char *this_extra = 0;
+	int got_it = 0;
 
-	get_contents(&this_parameters, &this_text, &this_extra);
+// printf("KeyFrame::update_parameter %d %p %p %p \n", 
+// __LINE__,
+// params,
+// text,
+// extra);
+
+
+	get_contents(&this_params, &this_text, &this_extra);
+
+
+// printf("KeyFrame::update_parameter %d params=%p\n", __LINE__, params);
+// if(params) params->dump();
+// printf("KeyFrame::update_parameter %d\n", __LINE__);
+// this_params.dump();
 
 // Get first tag
 	while(!result)
@@ -159,26 +173,64 @@ void KeyFrame::update_parameter(BC_Hash *params,
 		{
 // Replicate first tag
 			output.tag.set_title(input.tag.get_title());
-			for(int i = 0; i < this_parameters.size(); i++)
-			{
-				const char *key = this_parameters.get_key(i);
-				const char *value = this_parameters.get_value(i);
 
-// Write new value
+// Get each parameter from this keyframe
+			for(int i = 0; i < this_params.size(); i++)
+			{
+				const char *key = this_params.get_key(i);
+				const char *value = this_params.get_value(i);
+
+// Get new value from the params argument
+				got_it = 1;
 				if(params)
 				{
+					got_it = 0;
 					for(int j = 0; j < params->size(); j++)
 					{
 						if(!strcmp(params->get_key(j), key))
 						{
+							got_it = 1;
 							value = params->get_value(j);
 							break;
 						}
 					}
 				}
-				
+
+// Set parameter in output.
 				output.tag.set_property(key, value);
 			}
+
+// Get each parameter from params argument
+			if(params)
+			{
+				for(int i = 0; i < params->size(); i++)
+				{
+					const char *key = params->get_key(i);
+//printf("KeyFrame::update_parameter %d %s\n", __LINE__, key);
+					
+					got_it = 0;
+					for(int j = 0; j < this_params.size(); j++)
+					{
+						if(!strcmp(this_params.get_key(j), key))
+						{
+							got_it = 1;
+							break;
+						}
+					}
+//printf("KeyFrame::update_parameter %d %s\n", __LINE__, key);
+
+// If it wasn't found in output, set new parameter in output.
+					if(!got_it)
+					{
+						output.tag.set_property(key, params->get_value(i));
+//printf("KeyFrame::update_parameter %d %s\n", __LINE__, key);
+					}
+				}
+			}
+
+
+
+// Append parameters to output
 			output.append_tag();
 
 // Write anonymous text & duplicate the rest
@@ -222,29 +274,29 @@ void KeyFrame::get_diff(KeyFrame *src,
 	FileXML input;
 	input.set_shared_string(data, strlen(data));
 	int result = 0;
-	BC_Hash this_parameters;
+	BC_Hash this_params;
 	char *this_text = 0;
 	char *this_extra = 0;
 	BC_Hash src_parameters;
 	char *src_text = 0;
 	char *src_extra = 0;
 
-	get_contents(&this_parameters, &this_text, &this_extra);
+	get_contents(&this_params, &this_text, &this_extra);
 	src->get_contents(&src_parameters, &src_text, &src_extra);
 
 if(debug) printf("KeyFrame::get_diff %d %d %d\n", 
 __LINE__, 
-this_parameters.size(), 
+this_params.size(), 
 src_parameters.size());
 
 // Capture changed parameters
 	char this_value[BCTEXTLEN];
-	for(int i = 0; i < MIN(this_parameters.size(), src_parameters.size()); i++)
+	for(int i = 0; i < MIN(this_params.size(), src_parameters.size()); i++)
 	{
 		const char *src_key = src_parameters.get_key(i);
 		const char *src_value = src_parameters.get_value(i);
 		this_value[0] = 0;
-		this_parameters.get(src_key, this_value);
+		this_params.get(src_key, this_value);
 if(debug) printf("KeyFrame::get_diff %d %s %s %s\n", 
 __LINE__, 
 src_key,

@@ -49,6 +49,7 @@ DIRS = \
 	histogram \
 	holo \
 	huesaturation \
+	interpolate \
 	interpolateaudio \
 	interpolatevideo \
 	invertaudio \
@@ -70,12 +71,14 @@ DIRS = \
 	overlay \
 	overlayaudio \
 	perspective \
+	photoscale \
 	pitch \
 	polar \
 	radialblur \
 	reframe \
 	reframert \
 	resample \
+	resamplert \
 	reverb \
 	reverseaudio \
 	reversevideo \
@@ -95,10 +98,12 @@ DIRS = \
 	timeavg \
 	timefront \
 	timestretch \
+	timestretchrt \
 	titler \
 	translate \
 	unsharp \
 	videoscope \
+	vocoder \
 	wave \
 	whirl \
 	wipe \

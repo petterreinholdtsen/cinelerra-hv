@@ -201,7 +201,9 @@ int GraphicCanvas::cursor_motion_event()
 	process(0, 1, 0);
 
 	if(state == GraphicCanvas::DRAG_POINT)
+	{
 		return 1;
+	}
 	else
 		return 0;
 }
@@ -325,7 +327,7 @@ void GraphicCanvas::process(int buttonpress, int motion, int draw)
 	if(draw) set_color(BLACK);
 
 // Control points, cursor change and control point selection
-	int new_cursor = ARROW_CURSOR;
+	int new_cursor = CROSS_CURSOR;
 	for(int i = 0; i < plugin->config.points.total; i++)
 	{
 		GraphicPoint *point = plugin->config.points.values[i];

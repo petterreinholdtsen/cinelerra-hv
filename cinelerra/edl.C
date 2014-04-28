@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1077,6 +1077,7 @@ void EDL::insert_asset(Asset *asset,
 
 	if(new_asset)
 	{
+// Insert 1 frame for undefined length
 		if(new_asset->video_length < 0) 
 			length = 1.0 / session->frame_rate; 
 		else
@@ -1108,8 +1109,18 @@ void EDL::insert_asset(Asset *asset,
 	int atrack = 0;
 	if(new_asset)
 	{
-		length = (double)new_asset->audio_length / 
-				new_asset->sample_rate;
+		if(new_asset->audio_length < 0)
+		{
+// Insert 1 frame for undefined length & video
+			if(new_asset->video_data)
+				length = (double)1.0 / new_asset->frame_rate;
+			else
+// Insert 1 second for undefined length & no video
+				length = 1.0;
+		}
+		else
+			length = (double)new_asset->audio_length / 
+					new_asset->sample_rate;
 	}
 
 	for(current = tracks->first;

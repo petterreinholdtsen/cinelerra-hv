@@ -475,7 +475,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 SET_TRACE
 				int w = MIN(session->vconfig_in->w, frame->get_w());
 				int h = MIN(session->vconfig_in->h, frame->get_h());
-				cmodel_transfer(frame->get_rows(), /* Leave NULL if non existent */
+				BC_CModels::transfer(frame->get_rows(), /* Leave NULL if non existent */
 					input->get_rows(),
 					frame->get_y(), /* Leave NULL if non existent */
 					frame->get_u(),

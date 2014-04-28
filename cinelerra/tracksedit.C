@@ -154,6 +154,87 @@ void Tracks::set_edit_length(double start, double end, double length)
 	{
 		if(current_track->record)
 		{
+#define USE_FLOATING_LENGTHS
+
+#ifdef USE_FLOATING_LENGTHS
+
+
+// The first edit anchors the length offsets.
+// Round edits up & down so they end where they would if they all had floating point lengths.
+			int first_edit = 1;
+			int64_t start_units = current_track->to_units(start, 0);
+			int64_t end_units = current_track->to_units(end, 0);
+			int64_t length_units = current_track->to_units(length, 1);
+// Total time of edits accumulated, in track units
+			int64_t total_units = 0;
+// Number of length offsets added so far
+			int total_lengths = 0;
+
+			for(Edit *current_edit = current_track->edits->last;
+				current_edit;
+				current_edit = current_edit->previous)
+			{
+				if(current_edit->startproject >= start_units &&
+					current_edit->startproject + current_edit->length <= end_units)
+				{
+// Calculate true length based on number of length offsets & total time
+					double end_time = (1 + total_lengths) * length;
+					int64_t length_units = current_track->to_units(end_time, 0) -
+						total_units;
+					if(length_units < 1) length_units = 1;
+printf("Tracks::set_edit_length %d %f %f\n", __LINE__, end_time, current_track->from_units(total_units));
+					total_units += length_units;
+
+// Go in using the edit handle interface
+					int64_t starting_length = current_edit->length;
+
+					if(length_units < current_edit->length)
+					{
+						current_edit->shift_end_in(MOVE_ALL_EDITS,
+							current_edit->startproject + length_units,
+							current_edit->startproject + current_edit->length,
+							1,
+							edl->session->labels_follow_edits,
+							edl->session->plugins_follow_edits,
+							0);
+					}
+					else
+					{
+						current_edit->shift_end_out(MOVE_ALL_EDITS,
+							current_edit->startproject + length_units,
+							current_edit->startproject + current_edit->length,
+							1,
+							edl->session->labels_follow_edits,
+							edl->session->plugins_follow_edits,
+							0);
+					}
+
+					int64_t ending_length = current_edit->length;
+
+					if(edl->session->labels_follow_edits && first_track)
+					{
+// printf("Tracks::set_edit_length %d %f %f\n", 
+// __LINE__, 
+// current_track->from_units(current_edit->startproject + starting_length),
+// current_track->from_units(current_edit->startproject + ending_length));
+						 edl->labels->modify_handles(
+							current_track->from_units(current_edit->startproject + starting_length),
+							current_track->from_units(current_edit->startproject + ending_length),
+							1,
+							MOVE_ALL_EDITS,
+							1);
+					}
+					
+					
+					first_edit = 0;
+					total_lengths++;
+				}
+			}
+
+
+
+#else // USE_FLOATING_LENGTHS
+
 // The first edit anchors the length offsets.
 // The idea was to round edits up & down so they end where they should
 // if they all had floating point lengths.  It's easier just to make sure the framerate
@@ -231,6 +312,7 @@ void Tracks::set_edit_length(double start, double end, double length)
 //					total_lengths++;
 				}
 			}
+#endif // !USE_FLOATING_LENGTHS
 
 			first_track = 0;
 		}

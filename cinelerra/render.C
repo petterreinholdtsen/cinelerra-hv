@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "arender.h"
 #include "asset.h"
 #include "auto.h"
+#include "awindow.h"
+#include "awindowgui.h"
 #include "batchrender.h"
 #include "bcprogressbox.h"
 #include "bcsignals.h"
@@ -347,12 +349,12 @@ void Render::handle_close_event(int result)
 
 	if(!result)
 	{
-		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 // Check the asset format for errors.
 		FormatCheck format_check(asset);
-		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 		format_error = format_check.check_format();
-		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 	}
 
 	save_defaults(asset);
@@ -360,10 +362,10 @@ void Render::handle_close_event(int result)
 
 	if(!format_error && !result)
 	{
-		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 
 		if(!result) start_render();
-		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
+		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 
 	}
 }
@@ -957,6 +959,13 @@ if(debug) printf("Render::render %d\n", __LINE__);
 		mwindow->sync_parameters(CHANGE_ALL);
 if(debug) printf("Render::render %d\n", __LINE__);
 		mwindow->gui->unlock_window();
+		
+		
+		mwindow->awindow->gui->lock_window("Render::render");
+		mwindow->awindow->gui->update_assets();
+		mwindow->awindow->gui->flush();
+		mwindow->awindow->gui->unlock_window();
+		
 if(debug) printf("Render::render %d\n", __LINE__);
 	}
 

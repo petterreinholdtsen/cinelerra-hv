@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
  */
 
 #include "asset.h" 
+
 extern "C" 
 {
 #include "avcodec.h"
@@ -35,7 +36,173 @@ extern "C"
 
 #include <string.h>
 
+// Different ffmpeg versions
+#define FFMPEG_2010
+
 Mutex* FileFFMPEG::ffmpeg_lock = new Mutex("FileFFMPEG::ffmpeg_lock");
+
+
+
+
+
+
+FileFFMPEGStream::FileFFMPEGStream()
+{
+	ffmpeg_file_context = 0;
+
+	first_frame = 1;
+	current_frame = 0;
+	decoded_frame = 0;
+
+// Interleaved samples
+	pcm_history = 0;
+	history_allocated = 0;
+	history_size = 0;
+	history_start = 0;
+	decode_start = 0;
+	decode_len = 0;
+	decode_end = 0;
+	channels = 0;
+	index = 0;
+	current_sample = 0;
+	decoded_sample = 0;
+}
+
+FileFFMPEGStream::~FileFFMPEGStream()
+{
+	if(pcm_history)
+	{
+		for(int i = 0; i < channels; i++)
+			delete [] pcm_history[i];
+	}
+	delete [] pcm_history;
+
+	if(ffmpeg_file_context)
+		av_close_input_file((AVFormatContext*)ffmpeg_file_context);
+	ffmpeg_file_context = 0;
+}
+
+void FileFFMPEGStream::update_pcm_history(int64_t current_sample, int64_t len)
+{
+	decode_start = 0;
+	decode_len = 0;
+
+	if(!pcm_history)
+	{
+		pcm_history = new double*[channels];
+		for(int i = 0; i < channels; i++)
+			pcm_history[i] = new double[HISTORY_MAX];
+		history_start = 0;
+		history_size = 0;
+		history_allocated = HISTORY_MAX;
+	}
+	
+
+//printf("FileBase::update_pcm_history current_sample=%lld history_start=%lld history_size=%lld\n",
+//file->current_sample,
+//history_start,
+//history_size);
+// Restart history.  Don't bother shifting history back.
+	if(current_sample < history_start ||
+		current_sample > history_start + history_size)
+	{
+		history_size = 0;
+		history_start = current_sample;
+		decode_start = current_sample;
+		decode_len = len;
+	}
+	else
+// Shift history forward to make room for new samples
+	if(current_sample > history_start + HISTORY_MAX)
+	{
+		int diff = current_sample - (history_start + HISTORY_MAX);
+		for(int i = 0; i < channels; i++)
+		{
+			double *temp = pcm_history[i];
+			memcpy(temp, temp + diff, (history_size - diff) * sizeof(double));
+		}
+
+		history_start += diff;
+		history_size -= diff;
+
+// Decode more data
+		decode_start = history_start + history_size;
+		decode_len = current_sample + len - (history_start + history_size);
+	}
+	else
+// Starting somewhere in the buffer
+	{
+		decode_start = history_start + history_size;
+		decode_len = current_sample + len - (history_start + history_size);
+	}
+}
+
+
+void FileFFMPEGStream::allocate_history(int len)
+{
+	if(history_size + len > history_allocated)
+	{
+		double **temp = new double*[channels];
+
+		for(int i = 0; i < channels; i++)
+		{
+			temp[i] = new double[history_size + len];
+			memcpy(temp[i], pcm_history[i], history_size * sizeof(double));
+			delete [] pcm_history[i];
+		}
+
+		delete [] pcm_history;
+		pcm_history = temp;
+		history_allocated = history_size + len;
+	}
+}
+
+void FileFFMPEGStream::append_history(short *new_data, int len)
+{
+	allocate_history(len);
+
+	for(int i = 0; i < channels; i++)
+	{
+		double *output = pcm_history[i] + history_size;
+		short *input = new_data + i;
+		for(int j = 0; j < len; j++)
+		{
+			*output++ = (double)*input / 32768;
+			input += channels;
+		}
+	}
+
+	history_size += len;
+	decode_end += len;
+}
+
+
+void FileFFMPEGStream::read_history(double *dst,
+	int64_t start_sample, 
+	int channel,
+	int64_t len)
+{
+	if(start_sample - history_start + len > history_size)
+		len = history_size - (start_sample - history_start);
+// printf("FileBase::read_history %d start_sample=%lld history_start=%lld history_size=%lld len=%lld\n", 
+// __LINE__, 
+// start_sample, 
+// history_start, 
+// history_size, 
+// len);
+	double *input = pcm_history[channel] + start_sample - history_start;
+	for(int i = 0; i < len; i++)
+	{
+		*dst++ = *input++;
+	}
+// printf("FileBase::read_history %d\n", 
+// __LINE__);
+}
+
+
+
+
+
 
 FileFFMPEG::FileFFMPEG(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -52,17 +219,9 @@ FileFFMPEG::~FileFFMPEG()
 
 void FileFFMPEG::reset()
 {
-	ffmpeg_file_context = 0;
 	ffmpeg_format = 0;
 	ffmpeg_frame = 0;
 	ffmpeg_samples = 0;
-	audio_index = -1;
-	video_index = -1;
-	current_frame = 0;
-	current_sample = 0;
-	decoded_frame = 0;
-	decoded_sample = 0;
-	first_frame = 1;
 }
 
 char* FileFFMPEG::get_format_string(Asset *asset)
@@ -181,107 +340,128 @@ int FileFFMPEG::open_file(int rd, int wr)
 
 	if(rd)
 	{
-// 		char *format_string = get_format_string(asset);
-// if(debug) printf("FileFFMPEG::open_file format_string=%s\n", format_string);
-// 		if(format_string)
-// 		{
-// 			ffmpeg_format = av_find_input_format(format_string);
-// 		}
-// 		else
-// 		{
-// 			ffmpeg_lock->unlock();
-// 			return 1;
-// 		}
-
+		void *ffmpeg_file_context;
 
 // if(debug) printf("FileFFMPEG::open_file ffmpeg_format=%p\n", ffmpeg_format);
-// 		if(ffmpeg_format)
-// 		{
-// 			ffmpeg_format = 0;
-			result = av_open_input_file(
-				(AVFormatContext**)&ffmpeg_file_context, 
-				asset->path, 
-//				(AVInputFormat*)ffmpeg_format, 
-				0,
-				0, 
-				&params);
-// 		}
-// 		else
-// 		{
-// 			ffmpeg_lock->unlock();
-// 			return 1;
-// 		}
+		result = av_open_input_file(
+			(AVFormatContext**)&ffmpeg_file_context, 
+			asset->path, 
+			0,
+			0, 
+			&params);
 
-if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
+		if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
 
 		if(result >= 0)
 		{
+			if(debug) printf("FileFFMPEG::open_file %d this=%p result=%d ffmpeg_file_context=%p\n", __LINE__, this, result, ffmpeg_file_context);
 			result = av_find_stream_info((AVFormatContext*)ffmpeg_file_context);
+			if(debug) printf("FileFFMPEG::open_file %d this=%p result=%d\n", __LINE__, this, result);
 		}
 		else
 		{
 			ffmpeg_lock->unlock();
-if(debug) printf("FileFFMPEG::open_file %d\n", __LINE__);
+			if(debug) printf("FileFFMPEG::open_file %d\n", __LINE__);
 			return 1;
 		}
-if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
+		if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
 
 // Convert format to asset
 		if(result >= 0)
 		{
 			result = 0;
 			asset->format = FILE_FFMPEG;
+			asset->channels = 0;
+			asset->audio_data = 0;
+
+if(debug) printf("FileFFMPEG::open_file %d streams=%d\n", __LINE__, ((AVFormatContext*)ffmpeg_file_context)->nb_streams);
 			for(int i = 0; i < ((AVFormatContext*)ffmpeg_file_context)->nb_streams; i++)
 			{
-				AVStream *stream = ((AVFormatContext*)ffmpeg_file_context)->streams[i];
-       			AVCodecContext *decoder_context = stream->codec;
+				AVStream *ffmpeg_stream = ((AVFormatContext*)ffmpeg_file_context)->streams[i];
+       			AVCodecContext *decoder_context = ffmpeg_stream->codec;
         		switch(decoder_context->codec_type) 
 				{
         			case CODEC_TYPE_AUDIO:
-if(debug) printf("FileFFMPEG::open_file %d i=%d audio_index=%d\n", __LINE__, i, audio_index);
-            			if(audio_index < 0)
+					{
+if(debug) printf("FileFFMPEG::open_file %d i=%d CODEC_TYPE_AUDIO\n", __LINE__, i);
+if(debug) printf("FileFFMPEG::open_file %d decoder_context->codec_id=%d\n", __LINE__, decoder_context->codec_id);
+						AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
+						if(!codec)
 						{
-							audio_index = i;
+							printf("FileFFMPEG::open_file: audio codec 0x%x not found.\n", 
+								decoder_context->codec_id);
+						}
+						else
+						{
+							FileFFMPEGStream *new_stream = new FileFFMPEGStream;
+							audio_streams.append(new_stream);
+							new_stream->index = i;
+							new_stream->channels = decoder_context->channels;
+
+
+// Open a new FFMPEG file for the stream
+							result = av_open_input_file(
+								(AVFormatContext**)&new_stream->ffmpeg_file_context, 
+								asset->path, 
+								0,
+								0, 
+								&params);
+							av_find_stream_info((AVFormatContext*)new_stream->ffmpeg_file_context);
+							ffmpeg_stream = ((AVFormatContext*)new_stream->ffmpeg_file_context)->streams[i];
+							decoder_context = ffmpeg_stream->codec;
+							codec = avcodec_find_decoder(decoder_context->codec_id);
+
+							avcodec_thread_init(decoder_context, file->cpus);
+							avcodec_open(decoder_context, codec);
+
+							asset->channels += new_stream->channels;
+							asset->bits = 16;
 							asset->audio_data = 1;
-							asset->channels = decoder_context->channels;
 							asset->sample_rate = decoder_context->sample_rate;
-							asset->audio_length = (int64_t)(((AVFormatContext*)ffmpeg_file_context)->duration * 
+							int64_t audio_length = (int64_t)(((AVFormatContext*)new_stream->ffmpeg_file_context)->duration * 
 								asset->sample_rate / 
 								AV_TIME_BASE);
-							asset->bits = 16;
-if(debug) printf("FileFFMPEG::open_file %d decoder_context->codec_id=%d\n", __LINE__, decoder_context->codec_id);
-							AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
-							if(!codec)
-							{
-								printf("FileFFMPEG::open_file: audio codec 0x%x not found.\n", 
-									decoder_context->codec_id);
-								asset->audio_data = 0;
-								audio_index = -1;
-							}
-							else
-							{
-								avcodec_thread_init(decoder_context, file->cpus);
-								avcodec_open(decoder_context, codec);
-							}
+if(debug) printf("FileFFMPEG::open_file %d audio_length=%lld\n", __LINE__, audio_length);
+							asset->audio_length = MAX(asset->audio_length, audio_length);
 						}
             			break;
+					}
 
         			case CODEC_TYPE_VIDEO:
-if(debug) printf("FileFFMPEG::open_file %d i=%d video_index=%d\n", __LINE__, i, video_index);
-            			if(video_index < 0)
+if(debug) printf("FileFFMPEG::open_file %d i=%d CODEC_TYPE_VIDEO\n", __LINE__, i);
+            			if(video_streams.size() == 0)
 						{
-							video_index = i;
+							FileFFMPEGStream *new_stream = new FileFFMPEGStream;
+							video_streams.append(new_stream);
+							new_stream->index = i;
+
+					
 							asset->video_data = 1;
 							asset->layers = 1;
+
+// Open a new FFMPEG file for the stream
+							result = av_open_input_file(
+								(AVFormatContext**)&new_stream->ffmpeg_file_context, 
+								asset->path, 
+								0,
+								0, 
+								&params);
+							av_find_stream_info((AVFormatContext*)new_stream->ffmpeg_file_context);
+							ffmpeg_stream = ((AVFormatContext*)new_stream->ffmpeg_file_context)->streams[i];
+							decoder_context = ffmpeg_stream->codec;
+							AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
+							avcodec_thread_init(decoder_context, file->cpus);
+							avcodec_open(decoder_context, codec);
+
 							asset->width = decoder_context->width;
 							asset->height = decoder_context->height;
 							if(EQUIV(asset->frame_rate, 0))
 								asset->frame_rate = 
-									(double)stream->r_frame_rate.num /
-									stream->r_frame_rate.den;
+									(double)ffmpeg_stream->r_frame_rate.num /
+									(double)ffmpeg_stream->r_frame_rate.den;
 // 								(double)decoder_context->time_base.den / 
 // 								decoder_context->time_base.num;
-							asset->video_length = (int64_t)(((AVFormatContext*)ffmpeg_file_context)->duration *
+							asset->video_length = (int64_t)(((AVFormatContext*)new_stream->ffmpeg_file_context)->duration *
 								asset->frame_rate / 
 								AV_TIME_BASE);
 							asset->aspect_ratio = 
@@ -290,9 +470,7 @@ if(debug) printf("FileFFMPEG::open_file %d i=%d video_index=%d\n", __LINE__, i, 
 if(debug) printf("FileFFMPEG::open_file %d decoder_context->codec_id=%d\n", 
 __LINE__, 
 decoder_context->codec_id);
-							AVCodec *codec = avcodec_find_decoder(decoder_context->codec_id);
-							avcodec_thread_init(decoder_context, file->cpus);
-							avcodec_open(decoder_context, codec);
+
 						}
             			break;
 
@@ -303,35 +481,51 @@ decoder_context->codec_id);
 
 			if(debug) 
 			{
-				printf("FileFFMPEG::open_file %d audio_index=%d video_index=%d\n",
+				printf("FileFFMPEG::open_file %d audio_streams=%d video_streams=%d\n",
 					__LINE__,
-					audio_index,
-					video_index);
+					audio_streams.size(),
+					audio_streams.size());
 				asset->dump();
 			}
 		}
 		else
 		{
 			ffmpeg_lock->unlock();
+			if(ffmpeg_file_context)
+				av_close_input_file((AVFormatContext*)ffmpeg_file_context);
 if(debug) printf("FileFFMPEG::open_file %d\n", __LINE__);
 			return 1;
 		}
+
+
+		if(ffmpeg_file_context)
+			av_close_input_file((AVFormatContext*)ffmpeg_file_context);
+
+
 	}
 
-if(debug) printf("FileFFMPEG::open_file result=%d\n", result);
+if(debug) printf("FileFFMPEG::open_file %d result=%d\n", __LINE__, result);
 	ffmpeg_lock->unlock();
 	return result;
 }
 
 int FileFFMPEG::close_file()
 {
+	const int debug = 0;
+	if(debug) printf("FileFFMPEG::close_file %d\n", __LINE__);
 	ffmpeg_lock->lock("FileFFMPEG::close_file");
-	if(ffmpeg_file_context)
-		av_close_input_file((AVFormatContext*)ffmpeg_file_context);
 	if(ffmpeg_frame) av_free(ffmpeg_frame);
+	if(debug) printf("FileFFMPEG::close_file %d\n", __LINE__);
 	if(ffmpeg_samples) free(ffmpeg_samples);
-	ffmpeg_file_context = 0;
+	if(debug) printf("FileFFMPEG::close_file %d\n", __LINE__);
+	audio_streams.remove_all_objects();
+	if(debug) printf("FileFFMPEG::close_file %d\n", __LINE__);
+	video_streams.remove_all_objects();
+
+	if(debug) printf("FileFFMPEG::close_file %d\n", __LINE__);
+
 	reset();
+	if(debug) printf("FileFFMPEG::close_file %d\n", __LINE__);
 	ffmpeg_lock->unlock();
 }
 
@@ -427,12 +621,22 @@ void FileFFMPEG::dump_context(void *ptr)
 int FileFFMPEG::read_frame(VFrame *frame)
 {
 	int error = 0;
+	const int debug = 0;
+
 	ffmpeg_lock->lock("FileFFMPEG::read_frame");
-	AVStream *stream = ((AVFormatContext*)ffmpeg_file_context)->streams[video_index];
-	AVCodecContext *decoder_context = stream->codec;
+	
+	
+	FileFFMPEGStream *stream = video_streams.get(0);
+	if(debug) printf("FileFFMPEG::read_frame %d stream=%p stream->ffmpeg_file_contex=%p\n", 
+		__LINE__, 
+		stream,
+		stream->ffmpeg_file_context);
+	AVStream *ffmpeg_stream = ((AVFormatContext*)stream->ffmpeg_file_context)->streams[stream->index];
+	AVCodecContext *decoder_context = ffmpeg_stream->codec;
 
+	if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 
-// if(file->current_frame == 100) 
+// if(file->current_frame == 100)
 // {
 // printf("FileFFMPEG::read_frame %d fake crash\n", __LINE__);
 // 	exit(1);
@@ -440,40 +644,54 @@ int FileFFMPEG::read_frame(VFrame *frame)
 
 
 //dump_context(stream->codec);
-	if(first_frame)
+	if(stream->first_frame)
 	{
-		first_frame = 0;
+		stream->first_frame = 0;
 		int got_it = 0;
 
 		while(!got_it && !error)
 		{
 			AVPacket packet;
-			error = av_read_frame((AVFormatContext*)ffmpeg_file_context, 
+			if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
+			error = av_read_frame((AVFormatContext*)stream->ffmpeg_file_context, 
 				&packet);
+			if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
+
 			if(!error && packet.size > 0)
 			{
-				if(packet.stream_index == video_index)
+				if(packet.stream_index == stream->index)
 				{
 
 					if(!ffmpeg_frame)
 						ffmpeg_frame = avcodec_alloc_frame();
 					int got_picture = 0;
 
+					if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 
                 	avcodec_get_frame_defaults((AVFrame*)ffmpeg_frame);
+					if(debug) printf("FileFFMPEG::read_frame %d decoder_context=%p ffmpeg_frame=%p\n", 
+						__LINE__,
+						decoder_context,
+						ffmpeg_frame);
+
 		        	int result = avcodec_decode_video(
 						decoder_context,
                     	(AVFrame*)ffmpeg_frame, 
 						&got_picture,
                     	packet.data, 
 						packet.size);
+					if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 					if(((AVFrame*)ffmpeg_frame)->data[0] && got_picture) got_it = 1;
+					if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 				}
 			}
+
+			av_free_packet(&packet);
 		}
 
 		error = 0;
 	}
+	if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 
 #define SEEK_THRESHOLD 16
 
@@ -481,28 +699,29 @@ int FileFFMPEG::read_frame(VFrame *frame)
 // __LINE__, 
 // current_frame,
 // file->current_frame);
-	if(current_frame != file->current_frame &&
-		(file->current_frame < current_frame ||
-		file->current_frame > current_frame + SEEK_THRESHOLD))
+	if(stream->current_frame != file->current_frame &&
+		(file->current_frame < stream->current_frame ||
+		file->current_frame > stream->current_frame + SEEK_THRESHOLD))
 	{
-// printf("FileFFMPEG::read_frame %d current_frame=%lld file->current_frame=%lld\n", 
-// __LINE__, 
-// current_frame, 
-// file->current_frame);
+		if(debug) printf("FileFFMPEG::read_frame %d stream->current_frame=%lld file->current_frame=%lld\n", 
+		__LINE__, 
+		stream->current_frame, 
+		file->current_frame);
 
 		int64_t timestamp = (int64_t)((double)file->current_frame * 
-			stream->time_base.den /
-			stream->time_base.num /
+			ffmpeg_stream->time_base.den /
+			ffmpeg_stream->time_base.num /
 			asset->frame_rate);
 // Want to seek to the nearest keyframe and read up to the current frame
 // but ffmpeg doesn't support that kind of precision.
-// Unfortunately this crashes.
-		av_seek_frame((AVFormatContext*)ffmpeg_file_context, 
-			video_index, 
+// Also, basing all the seeking on the same stream seems to be required for synchronization.
+		av_seek_frame((AVFormatContext*)stream->ffmpeg_file_context, 
+			/* stream->index */ 0, 
 			timestamp, 
 			AVSEEK_FLAG_ANY);
-		current_frame = file->current_frame - 1;
+		stream->current_frame = file->current_frame - 1;
 	}
+	if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 
 	int got_it = 0;
 // Read frames until we catch up to the current position.
@@ -515,19 +734,26 @@ int FileFFMPEG::read_frame(VFrame *frame)
 // 			file->current_frame);
 // 	}
 
-	while(current_frame < file->current_frame && !error)
+
+
+	while(stream->current_frame < file->current_frame && !error)
 	{
 		got_it = 0;
+		if(debug) printf("FileFFMPEG::read_frame %d stream->current_frame=%lld file->current_frame=%lld\n", 
+			__LINE__,
+			stream->current_frame,
+			file->current_frame);
+
 		while(!got_it && !error)
 		{
 			AVPacket packet;
 
-			error = av_read_frame((AVFormatContext*)ffmpeg_file_context, 
+			error = av_read_frame((AVFormatContext*)stream->ffmpeg_file_context, 
 				&packet);
 
 			if(!error && packet.size > 0)
 			{
-				if(packet.stream_index == video_index)
+				if(packet.stream_index == stream->index)
 				{
 
 					if(!ffmpeg_frame)
@@ -562,25 +788,32 @@ int FileFFMPEG::read_frame(VFrame *frame)
 						&got_picture,
                     	packet.data, 
 						packet.size);
+
+
 //printf("FileFFMPEG::read_frame %d result=%d\n", __LINE__, result);
 					if(((AVFrame*)ffmpeg_frame)->data[0] && got_picture) got_it = 1;
 //printf("FileFFMPEG::read_frame %d result=%d got_it=%d\n", __LINE__, result, got_it);
 				}
 			}
+			
+			
+			av_free_packet(&packet);
 		}
 
-		if(got_it) current_frame++;
+		if(got_it) stream->current_frame++;
 	}
+
 //PRINT_TRACE
 // printf("FileFFMPEG::read_frame %d current_frame=%lld file->current_frame=%lld got_it=%d\n", 
 // __LINE__, 
 // current_frame,
 // file->current_frame,
 // got_it);
+	if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 
 // Convert colormodel
 	if(got_it)
-	{	
+	{
 		int input_cmodel;
 		AVFrame *input_frame = (AVFrame*)ffmpeg_frame;
 
@@ -589,9 +822,12 @@ int FileFFMPEG::read_frame(VFrame *frame)
 			case PIX_FMT_YUV420P:
 				input_cmodel = BC_YUV420P;
 				break;
+#ifndef FFMPEG_2010
 			case PIX_FMT_YUV422:
 				input_cmodel = BC_YUV422;
 				break;
+#endif
+
 			case PIX_FMT_YUV422P:
 				input_cmodel = BC_YUV422P;
 				break;
@@ -647,60 +883,92 @@ int FileFFMPEG::read_frame(VFrame *frame)
 
 
 	ffmpeg_lock->unlock();
+	if(debug) printf("FileFFMPEG::read_frame %d\n", __LINE__);
 	return error;
 }
 
 int FileFFMPEG::read_samples(double *buffer, int64_t len)
 {
+	const int debug = 0;
 	int error = 0;
 	ffmpeg_lock->lock("FileFFMPEG::read_samples");
-	AVStream *stream = ((AVFormatContext*)ffmpeg_file_context)->streams[audio_index];
-	AVCodecContext *decoder_context = stream->codec;
-	const int debug = 0;
 
-	update_pcm_history(len);
+	if(debug) printf("FileFFMPEG::read_samples %d\n", __LINE__);
+// Compute stream & stream channel from global channel
+	int audio_channel = file->current_channel;
+	int audio_index = -1;
+	FileFFMPEGStream *stream = 0;
+	for(int i = 0; i < audio_streams.size(); i++)
+	{
+		if(audio_channel < audio_streams.get(i)->channels)
+		{
+			stream = audio_streams.get(i);
+			audio_index = stream->index;
+			break;
+		}
+		audio_channel -= audio_streams.get(i)->channels;
+	}
+	if(debug) printf("FileFFMPEG::read_samples %d\n", __LINE__);
 
-// printf("FileFFMPEG::read_samples %d decode_start=%lld decode_end=%lld\n",
-// __LINE__,
-// decode_start,
-// decode_end);
+	AVStream *ffmpeg_stream = ((AVFormatContext*)stream->ffmpeg_file_context)->streams[stream->index];
+	AVCodecContext *decoder_context = ffmpeg_stream->codec;
 
-if(debug) PRINT_TRACE
+	stream->update_pcm_history(file->current_sample, len);
+	if(debug) printf("FileFFMPEG::read_samples %d len=%d\n", __LINE__, len);
+
+
+
+	if(debug) printf("FileFFMPEG::read_samples %d decode_start=%lld decode_end=%lld\n",
+		__LINE__,
+		stream->decode_start,
+		stream->decode_end);
+
 // Seek occurred
-	if(decode_start != decode_end)
+	if(stream->decode_start != stream->decode_end)
 	{
 		int64_t timestamp = (int64_t)((double)file->current_sample * 
-			stream->time_base.den /
-			stream->time_base.num /
+			ffmpeg_stream->time_base.den /
+			ffmpeg_stream->time_base.num /
 			asset->sample_rate);
 // Want to seek to the nearest keyframe and read up to the current frame
 // but ffmpeg doesn't support that kind of precision.
-		av_seek_frame((AVFormatContext*)ffmpeg_file_context, 
-			video_index, 
+// Also, basing all the seeking on the same stream seems to be required for synchronization.
+		if(debug) printf("FileFFMPEG::read_samples %d\n",
+			__LINE__);
+		av_seek_frame((AVFormatContext*)stream->ffmpeg_file_context, 
+			/* stream->index */ 0, 
 			timestamp, 
 			AVSEEK_FLAG_ANY);
-		current_sample = file->current_sample;
-		decode_end = decode_start;
+		if(debug) printf("FileFFMPEG::read_samples %d\n",
+			__LINE__);
+		stream->current_sample = file->current_sample;
+		stream->decode_end = stream->decode_start;
 	}
 
-if(debug) PRINT_TRACE
+	if(debug) printf("FileFFMPEG::read_samples %d stream->decode_len=%d\n", 
+		__LINE__,
+		stream->decode_len);
+
+
+
+
 	int got_it = 0;
 	int accumulation = 0;
 // Read frames until the requested range is decoded.
-	while(accumulation < decode_len && !error)
+	while(accumulation < stream->decode_len && !error)
 	{
 //printf("FileFFMPEG::read_samples %d accumulation=%d\n", __LINE__, accumulation);
 		AVPacket packet;
-		error = av_read_frame((AVFormatContext*)ffmpeg_file_context, 
+		error = av_read_frame((AVFormatContext*)stream->ffmpeg_file_context, 
 			&packet);
 		unsigned char *packet_ptr = packet.data;
 		int packet_len = packet.size;
-if(debug) printf("FileFFMPEG::read_samples %d error=%d packet_len=%d\n", 
-__LINE__, 
-error, 
-packet_len);
+		if(debug) printf("FileFFMPEG::read_samples %d error=%d packet_len=%d\n", 
+		__LINE__, 
+		error, 
+		packet_len);
 
-		if(packet.stream_index == audio_index)
+		if(packet.stream_index == stream->index)
 		{
 			while(packet_len > 0 && !error)
 			{
@@ -715,6 +983,8 @@ packet_len,
 packet_ptr,
 decoder_context->codec_id);
 //av_log_set_level(AV_LOG_DEBUG);
+
+
 #if 1
 				int bytes_decoded = avcodec_decode_audio2(decoder_context, 
 					ffmpeg_samples, 
@@ -728,8 +998,11 @@ decoder_context->codec_id);
                     packet_ptr, 
 					packet_len);
 #endif
+
+
 if(debug) PRINT_TRACE
 //				if(bytes_decoded < 0) error = 1;
+				if(bytes_decoded == -1) error = 1;
 				packet_ptr += bytes_decoded;
 				packet_len -= bytes_decoded;
 if(debug) printf("FileFFMPEG::read_samples %d bytes_decoded=%d data_size=%d\n", 
@@ -739,27 +1012,30 @@ data_size);
 //				if(data_size <= 0)
 //					break;
 				int samples_decoded = data_size / 
-					asset->channels / 
+					stream->channels / 
 					sizeof(short);
 // Transfer decoded samples to ring buffer
-				append_history(ffmpeg_samples, samples_decoded);
+				stream->append_history(ffmpeg_samples, samples_decoded);
 // static FILE *fd = 0;
 // if(!fd) fd = fopen("/tmp/test.pcm", "w");
 // fwrite(ffmpeg_samples, data_size, 1, fd);
 				accumulation += samples_decoded;
 			}
 		}
-if(debug) PRINT_TRACE
+		if(debug) PRINT_TRACE
+		
+		av_free_packet(&packet);
 	}
+	if(debug) printf("FileFFMPEG::read_samples %d\n", __LINE__);
 
-if(debug) PRINT_TRACE
-	read_history(buffer, 
+	stream->read_history(buffer, 
 		file->current_sample, 
-		file->current_channel,
+		audio_channel,
 		len);
+	if(debug) printf("FileFFMPEG::read_samples %d\n", __LINE__);
 
-if(debug) printf("FileFFMPEG::read_samples %d %d\n", __LINE__, error);
-	current_sample += len;
+	if(debug) printf("FileFFMPEG::read_samples %d %d\n", __LINE__, error);
+	stream->current_sample += len;
 	ffmpeg_lock->unlock();
 	return error;
 }

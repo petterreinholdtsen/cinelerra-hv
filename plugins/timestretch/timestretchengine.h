@@ -33,9 +33,12 @@ public:
 	TimeStretchEngine(double scale, int sample_rate);
 	~TimeStretchEngine();
 
+	void reset();
+	void update(double scale, int sample_rate);
 	void overlay(double *out, double *in, int size, int skirt);
 // Returns the number of samples in the output buffer
 	int process(Samples *in_buffer, int in_size);
+	int get_output_size();
 // Return the output buffer
 	double* get_samples();
 // Increment output buffer counters and shift output

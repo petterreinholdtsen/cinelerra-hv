@@ -10,7 +10,8 @@
 
 
 
-
+// Different ffmpeg versions
+#define FFMPEG_2010
 
 
 
@@ -140,11 +141,13 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 //		context->height = h;
 		context->extradata = fake_data;
 		context->extradata_size = 0;
+
 		if(esds->mpeg4_header && esds->mpeg4_header_size) 
 		{
 			context->extradata = esds->mpeg4_header;
 			context->extradata_size = esds->mpeg4_header_size;
 		}
+
 		if(avcc->data && avcc->data_size)
 		{
 			context->extradata = avcc->data;
@@ -161,9 +164,27 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 		if(avcodec_open(context, 
 			ptr->decoder[i]) < 0)
 		{
-			printf("quicktime_new_ffmpeg: avcodec_open failed.\n");
-			quicktime_delete_ffmpeg(ptr);
+			int error = 1;
+// Try again with 1 thread
+			if(cpus > 1)
+			{
+				avcodec_thread_init(context, 1);
+				if(avcodec_open(context, 
+					ptr->decoder[i]) >= 0)
+				{
+					error = 0;
+				}
+			}
+
+			if(error)
+			{
+				printf("quicktime_new_ffmpeg: avcodec_open failed.\n");
+				quicktime_delete_ffmpeg(ptr);
+			}
 		}
+		
+		
+		
 		ptr->last_frame[i] = -1;
 	}
 	pthread_mutex_unlock(&ffmpeg_lock);
@@ -340,9 +361,13 @@ static int get_chroma_factor(quicktime_ffmpeg_t *ffmpeg, int current_field)
 		case PIX_FMT_YUVJ420P:
 			return 4;
 			break;
-//		case PIX_FMT_YUV422:
-//			return 2;
-//			break;
+
+#ifndef FFMPEG_2010
+		case PIX_FMT_YUV422:
+			return 2;
+			break;
+#endif
+
 		case PIX_FMT_YUV422P:
 			return 2;
 			break;
@@ -551,9 +576,13 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 		case PIX_FMT_YUVJ420P:
 			input_cmodel = BC_YUV420P;
 			break;
-//		case PIX_FMT_YUV422:
-//			input_cmodel = BC_YUV422;
-//			break;
+
+#ifndef FFMPEG_2010
+		case PIX_FMT_YUV422:
+			input_cmodel = BC_YUV422;
+			break;
+#endif
+
 		case PIX_FMT_YUV422P:
 			input_cmodel = BC_YUV422P;
 			break;

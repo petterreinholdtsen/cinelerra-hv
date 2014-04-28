@@ -196,7 +196,7 @@ int ResampleRT::process_buffer(int64_t size,
 {
 	if(!resample) resample = new ResampleRTResample(this);
 
-	load_configuration();
+	need_reconfigure = load_configuration();
 	
 	
 	if(start_position != dest_start) need_reconfigure = 1;
@@ -206,7 +206,6 @@ int ResampleRT::process_buffer(int64_t size,
 // Sample 0 is the keyframe position
 	if(need_reconfigure)
 	{
-		load_configuration();
 		int64_t prev_position = edl_to_local(
 			get_prev_keyframe(
 				get_source_position())->position);

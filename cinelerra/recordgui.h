@@ -344,7 +344,12 @@ class RecordPath : public BC_TextBox
 {
 public:
 	RecordPath(MWindow *mwindow, Record *record, int x, int y);
+	virtual ~RecordPath();
 	int handle_event();
+
+// Suggestions for the textbox
+	ArrayList<BC_ListBoxItem*> *file_entries;
+
 	MWindow *mwindow;
 	Record *record;
 };

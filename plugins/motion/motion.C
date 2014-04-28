@@ -566,6 +566,10 @@ void MotionMain::process_global()
 		total_dx = engine->dx_result;
 		total_dy = engine->dy_result;
 		total_angle = engine->dangle_result;
+printf("MotionMain::process_global %d engine->dx_result=%d engine->dy_result=%d\n", 
+__LINE__,
+engine->dx_result,
+engine->dy_result);
 	}
 
 // Clamp accumulation vector
@@ -603,11 +607,10 @@ void MotionMain::process_global()
 		CLAMP(total_dy, min_block_y, max_block_y);
 	}
 
-#ifdef DEBUG
-printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n", 
-(float)total_dx / OVERSAMPLE,
-(float)total_dy / OVERSAMPLE);
-#endif
+printf("MotionMain::process_global %d total_dx=%d total_dy=%d\n", 
+__LINE__,
+total_dx,
+total_dy);
 
 	if(config.mode3 != MotionConfig::TRACK_SINGLE && !config.rotate)
 	{
@@ -1215,7 +1218,14 @@ void MotionMain::draw_vectors(VFrame *frame)
 				100);
 			global_x2 = global_x1 + total_dx / OVERSAMPLE;
 			global_y2 = global_y1 + total_dy / OVERSAMPLE;
-//printf("MotionMain::draw_vectors %d %d %d %d %d %d\n", total_dx, total_dy, global_x1, global_y1, global_x2, global_y2);
+printf("MotionMain::draw_vectors %d %d %d %d %d %d %d\n", 
+__LINE__, 
+total_dx, 
+total_dy, 
+global_x1, 
+global_y1, 
+global_x2, 
+global_y2);
 		}
 		else
 // Start of vector is center of previous block.
@@ -1557,7 +1567,7 @@ void RotateScanUnit::process_package(LoadPackage *package)
 	{
 //printf("RotateScanUnit::process_package %d\n", __LINE__);
 		int color_model = server->previous_frame->get_color_model();
-		int pixel_size = cmodel_calculate_pixelsize(color_model);
+		int pixel_size = BC_CModels::calculate_pixelsize(color_model);
 		int row_bytes = server->previous_frame->get_bytes_per_line();
 
 		if(!rotater)

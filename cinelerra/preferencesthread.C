@@ -188,6 +188,10 @@ int PreferencesThread::apply_settings()
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
 
+//edl->session->recording_format->dump();
+//mwindow->edl->session->recording_format->dump();
+
+
 	if(((mwindow->edl->session->output_w % 4) || 
 		(mwindow->edl->session->output_h % 4)) && 
 		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
@@ -462,7 +466,6 @@ int PreferencesWindow::set_current_dialog(int number)
 	if(dialog)
 	{
 		dialog->draw_top_background(this, 0, 0, dialog->get_w(), dialog->get_h());
-		dialog->flash();
 		dialog->create_objects();
 	}
 

@@ -224,7 +224,7 @@ void PackageRenderer::create_engine()
 	video_position = package->video_start - video_preroll;
 
 
-
+//	PRINT_TRACE
 
 // Create output buffers
 	if(asset->audio_data)
@@ -233,6 +233,7 @@ void PackageRenderer::create_engine()
 			preferences->processors > 1 ? 2 : 1);
 	}
 
+//	PRINT_TRACE
 
 	if(asset->video_data)
 	{
@@ -279,6 +280,7 @@ void PackageRenderer::create_engine()
 
 void PackageRenderer::do_audio()
 {
+//printf("PackageRenderer::do_audio %d\n", __LINE__);
 // Do audio data
 	if(asset->audio_data)
 	{
@@ -332,7 +334,7 @@ void PackageRenderer::do_audio()
 	}
 
 	audio_position += audio_read_length;
-//printf("PackageRenderer::do_audio 5\n");
+//printf("PackageRenderer::do_audio %d\n", __LINE__);
 }
 
 
@@ -516,6 +518,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 	int audio_done = 0;
 	int video_done = 0;
 	int samples_rendered = 0;
+	const int debug = 0;
 
 
 	result = 0;
@@ -528,10 +531,10 @@ int PackageRenderer::render_package(RenderPackage *package)
 // 	package->video_start, 
 // 	package->video_end - package->video_start);
 
-//PRINT_TRACE
+	if(debug) PRINT_TRACE
 
 	create_output();
-//PRINT_TRACE
+	if(debug) PRINT_TRACE
 
 	if(!asset->video_data) video_done = 1;
 	if(!asset->audio_data) audio_done = 1;
@@ -539,7 +542,9 @@ int PackageRenderer::render_package(RenderPackage *package)
 // Create render engine
 	if(!result)
 	{
+	if(debug) PRINT_TRACE
 		create_engine();
+	if(debug) PRINT_TRACE
 
 
 // Main loop
@@ -600,6 +605,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 
 				need_video = 1;
 			}
+			if(debug) PRINT_TRACE
 
 //printf("PackageRenderer::render_package 1 %d %lld %lld\n", result, audio_read_length, video_read_length);
 			if(need_video && !result) do_video();
@@ -607,16 +613,16 @@ int PackageRenderer::render_package(RenderPackage *package)
 			if(need_audio && !result) do_audio();
 
 
-//PRINT_TRACE
+			if(debug) PRINT_TRACE
 			if(!result) set_progress(samples_rendered);
-//PRINT_TRACE
+			if(debug) PRINT_TRACE
 
 
 
 
 
 			if(!result && progress_cancelled()) result = 1;
-//PRINT_TRACE
+			if(debug) PRINT_TRACE
 
 // printf("PackageRenderer::render_package 10 %d %d %d %d\n", 
 // audio_read_length, video_read_length, samples_rendered, result);

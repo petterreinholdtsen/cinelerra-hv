@@ -182,6 +182,9 @@ void FrameCache::put_frame(VFrame *frame,
 	FrameCacheItem *item = 0;
 	int source_id = -1;
 	if(indexable) source_id = indexable->id;
+
+//printf("FrameCache::put_frame %d position=%lld\n", __LINE__, position);
+
 	if(frame_exists(frame,
 		position, 
 		layer,
@@ -216,6 +219,7 @@ void FrameCache::put_frame(VFrame *frame,
 
 	item->age = get_age();
 
+//printf("FrameCache::put_frame %d position=%lld\n", __LINE__, position);
 	put_item(item);
 	lock->unlock();
 }
@@ -231,6 +235,12 @@ int FrameCache::frame_exists(VFrame *format,
 	int source_id)
 {
 	FrameCacheItem *item = (FrameCacheItem*)get_item(position);
+// printf("FrameCache::frame_exists %d item=%p item->position=%lld position=%lld\n",
+// __LINE__,
+// item,
+// item ? item->position : 0,
+// position);
+
 	while(item && item->position == position)
 	{
 // printf("FrameCache::frame_exists %d %f,%f %d,%d %d,%d format match=%d item->data=%p\n",

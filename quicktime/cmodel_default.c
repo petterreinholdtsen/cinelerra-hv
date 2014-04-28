@@ -436,9 +436,12 @@ static inline void transfer_VYU888_to_RGB_FLOAT(float *(*output), unsigned char 
 	u = *input;
 	YUV_TO_FLOAT(y, u, v, r, g, b);
 
-	*(*output)++ = r;
-	*(*output)++ = g;
-	*(*output)++ = b;
+//printf("transfer_VYU888_to_RGB_FLOAT %d (*output)=%p\n", __LINE__, *output);
+
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output) += 3;
 }
 
 static inline void transfer_VYU888_to_RGBA_FLOAT(float *(*output), unsigned char *input)
@@ -452,10 +455,11 @@ static inline void transfer_VYU888_to_RGBA_FLOAT(float *(*output), unsigned char
 	u = *input;
 	YUV_TO_FLOAT(y, u, v, r, g, b);
 
-	*(*output)++ = r;
-	*(*output)++ = g;
-	*(*output)++ = b;
-	*(*output)++ = 1.0;
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output)[3] = 1.0;
+	(*output) += 4;
 }
 
 
@@ -1375,18 +1379,19 @@ static inline void transfer_UYVA8888_to_YUVA16161616(uint16_t *(*output), unsign
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_RGB_FLOAT: \
+/* printf("%s %d %d %d\n", __FUNCTION__, __LINE__, out_w, out_pixelsize); */ \
 					TRANSFER_FRAME_HEAD \
-					transfer_VYU888_to_RGB_FLOAT((float**)(output), (input));   \
+					transfer_VYU888_to_RGB_FLOAT((float**)(output), (input)); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_RGBA_FLOAT: \
 					TRANSFER_FRAME_HEAD \
-					transfer_VYU888_to_RGBA_FLOAT((float**)(output), (input));   \
+					transfer_VYU888_to_RGBA_FLOAT((float**)(output), (input)); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV161616: \
 					TRANSFER_FRAME_HEAD \
-					transfer_VYU888_to_YUV161616((uint16_t**)(output), (input));   \
+					transfer_VYU888_to_YUV161616((uint16_t**)(output), (input)); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUVA16161616: \

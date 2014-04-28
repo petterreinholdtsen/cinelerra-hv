@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,6 +107,7 @@ float keyboard_freqs[] =
 	2093.00
 };
 
+#define MAX_FREQS 16
 #define TOTALOSCILLATORS 1
 #define OSCILLATORHEIGHT 40
 #define TOTALNOTES (sizeof(keyboard_freqs) / sizeof(float))
@@ -167,6 +168,7 @@ public:
 	ArrayList<SynthOscGUI*> oscillators;
 	SynthNote *notes[TOTALNOTES];
 	BC_Title *note_titles[TOTALNOTES];
+	BC_Title *note_instructions;
 	SynthMomentary *momentary;
 	VFrame *white_key[5];
 	VFrame *black_key[5];
@@ -177,6 +179,8 @@ public:
 	int text_black_margin;
 // Button press currently happening if > -1
 	int current_note;
+// If we are stopping or starting notes in a drag
+	int starting_notes;
 };
 
 class SynthMomentary : public BC_CheckBox
@@ -388,6 +392,9 @@ public:
 	SynthWindow *window;
 };
 
+
+
+
 // ======================= level calculations
 class SynthLevelZero : public BC_MenuItem
 {
@@ -589,8 +596,10 @@ public:
 		int64_t current_frame);
 	void reset();
 	
-	float wetness;
-	int64_t base_freq;         // base frequency for oscillators
+	double wetness;
+// base frequency for oscillators
+// Freqs of 0 are unused.
+	double base_freq[MAX_FREQS];
 	int wavefunction;        // SINE, SAWTOOTH, etc
 	ArrayList<SynthOscillatorConfig*> oscillator_config;
 };
@@ -615,8 +624,12 @@ public:
 
 
 
-
-
+// Frequency is in the table of base_freqs
+	int freq_exists(double freq);
+// Manage frequency table
+	void new_freq(double freq);
+	void delete_freq(double freq);
+	void delete_freqs();
 
 	void add_oscillator();
 	void delete_oscillator();
@@ -625,8 +638,8 @@ public:
 		double normalize_constant, 
 		int oscillator);
 	double solve_eqn(double *output, 
-		double x1, 
-		double x2, 
+		int length,
+		double freq, 
 		double normalize_constant,
 		int oscillator);
 	double get_point(float x, double normalize_constant);
@@ -636,20 +649,20 @@ public:
 	double function_sawtooth(double x);
 	double function_triangle(double x);
 	void reconfigure();
-	int overlay_synth(int64_t start, int64_t length, double *input, double *output);
+	int overlay_synth(double freq,
+		int64_t length, 
+		double *input, 
+		double *output);
 	void update_gui();
 	void reset();
 
 
 
-	double *dsp_buffer;
 	int need_reconfigure;
 	int w, h;
 	DB db;
-	int64_t waveform_length;           // length of loop buffer
-	int64_t waveform_sample;           // current sample in waveform of loop
-	int64_t samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
-	float period;            // number of samples in a period for this frequency
+// Samples since last reconfiguration
+	int64_t waveform_sample;
 	int momentary_notes;
 };
 

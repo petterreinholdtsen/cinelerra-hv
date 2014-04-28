@@ -529,7 +529,7 @@ int SwapMain::handle_opengl()
 	glUseProgram(shader_id);
 	glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
 	glUniform1f(glGetUniformLocation(shader_id, "chroma_offset"), 
-		cmodel_is_yuv(get_output()->get_color_model()) ? 0.5 : 0.0);
+		BC_CModels::is_yuv(get_output()->get_color_model()) ? 0.5 : 0.0);
 
 	get_output()->draw_texture();
 	glUseProgram(0);

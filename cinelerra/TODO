@@ -20,11 +20,8 @@ Private plugin data storage in the track.
  - the problem is the playback thread doesn't have access to the timeline EDL
  - would need a call to send data back to the timeline EDL
 Double click -> select edit -> drag to expand selection by edit
-Embedded sequences
 Remove unused files from project and disk.
 clear button in error dialog
-WMV 9 & 3
-AVI with AC3 audio has audio ID 0x2000
 Option to display full path for assets
 custom button bar
  - preferences window with possible buttons and current buttons for the 3 main windows
@@ -47,29 +44,6 @@ undo menu showing previous 20 steps to undo
 Page in resources window for overlays
 Common service for audio and video drivers.
 
-Editing nested sequences:
- - use clips as sequences
- - need audio & video tracks for each sequence channel
- - use tabs or asset window to bring up sequences in main window
- - use multiple main windows & VWindows to edit clips
- - need clip icon for top sequence
- - pulldown menu of sequences
- - tabs & separate instances for sequences
- - sequence naming
- - want to synchronize sequences automatically
- - edit popup menu with edit sequence as an option
- - widgets to go up or down a sequence
-
-Rendering nested sequences:
- - A RenderEngine must be created for every embedded sequence
- - The nested edls must be shared by multiple tracks for audio.
- - The Module has the pointer to the RenderEngine when the edit is a 
-    nested sequence.
- - VModule::import_frame or AModule::import_samples renders the embedded 
-    RenderEngine.
- - If the embedded output is the same size as the track &
-    there is no translation, the output goes into import_frame's PBuffer.  
-	Otherwise it needs a new PBuffer & an overlay operation.
 
 time stretch rubber band
  - before or after effects
@@ -84,17 +58,6 @@ Image synthesis
  - track motion of every pixel, determine Z for every pixel
  - track motion for successively smaller macroblocks
  - synthesize picture using cubes and compare
-
-Digital TV
- - dump network tuner
- - combined tuner driver for audio and video
- - channel scan only detects physical number and pids default to 0
- - user adds channels based on physical number
- - dialog adds new subchannels as they're detected
- - user selects PID's for audio and video in the channel edit dialog
- - filters PID's because of image format differences
- - software preview of video and audio.  
- - Maybe audio decoded in the record driver with playback on the playback device.
 
 
 

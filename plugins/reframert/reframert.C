@@ -356,6 +356,13 @@ int ReframeRT::process_buffer(VFrame *frame,
 	if (!config.stretch)
 		input_rate *= config.scale;
 
+// printf("ReframeRT::process_buffer %d %lld %f %lld %f\n", 
+// __LINE__, 
+// start_position, 
+// frame_rate,
+// input_frame,
+// input_rate);
+
 	read_frame(frame,
 		0,
 		input_frame,

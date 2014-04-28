@@ -110,8 +110,9 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	quicktime_trak_t *trak = vtrack->track;
 	int width = quicktime_video_width(file, track);
 	int height = quicktime_video_height(file, track);
-	int w_16 = quicktime_quantize16(width);
-	int h_16 = quicktime_quantize16(height);
+	int w_2 = quicktime_quantize2(width);
+// ffmpeg interprets the codec height as the presentation height
+	int h_2 = quicktime_quantize2(height);
 	int i;
 	int result = 0;
 	int bytes = 0;
@@ -134,8 +135,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	if(!codec->encode_initialized[current_field])
 	{
 		codec->encode_initialized[current_field] = 1;
-		codec->param.i_width = w_16;
-		codec->param.i_height = h_16;
+		codec->param.i_width = w_2;
+		codec->param.i_height = h_2;
 		codec->param.i_fps_num = quicktime_frame_rate_n(file, track);
 		codec->param.i_fps_den = quicktime_frame_rate_d(file, track);
 
@@ -183,16 +184,16 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 	if(codec->header_only)
 	{
-		bzero(codec->pic[current_field]->img.plane[0], w_16 * h_16);
-		bzero(codec->pic[current_field]->img.plane[1], w_16 * h_16 / 4);
-		bzero(codec->pic[current_field]->img.plane[2], w_16 * h_16 / 4);
+		bzero(codec->pic[current_field]->img.plane[0], w_2 * h_2);
+		bzero(codec->pic[current_field]->img.plane[1], w_2 * h_2 / 4);
+		bzero(codec->pic[current_field]->img.plane[2], w_2 * h_2 / 4);
 	}
 	else
 	if(file->color_model == BC_YUV420P)
 	{
-		memcpy(codec->pic[current_field]->img.plane[0], row_pointers[0], w_16 * h_16);
-		memcpy(codec->pic[current_field]->img.plane[1], row_pointers[1], w_16 * h_16 / 4);
-		memcpy(codec->pic[current_field]->img.plane[2], row_pointers[2], w_16 * h_16 / 4);
+		memcpy(codec->pic[current_field]->img.plane[0], row_pointers[0], w_2 * h_2);
+		memcpy(codec->pic[current_field]->img.plane[1], row_pointers[1], w_2 * h_2 / 4);
+		memcpy(codec->pic[current_field]->img.plane[2], row_pointers[2], w_2 * h_2 / 4);
 	}
 	else
 	{
@@ -244,7 +245,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			&pic_out);
 //printf("encode %d nnal=%d\n", __LINE__, nnal);
 	} while(codec->header_only && !nnal);
-	int allocation = w_16 * h_16 * 3;
+	int allocation = w_2 * h_2 * 3;
 	if(!codec->work_buffer)
 	{
 		codec->work_buffer = calloc(1, allocation);
@@ -318,6 +319,13 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 // Write header
 				if(got_sps && got_pps)
 				{
+printf("encode %d\n", __LINE__);
+int j;
+for(j = 0; j < header_size; j++)
+{
+printf("%02x ", header[j]);
+}
+printf("\n");
 					quicktime_set_avcc_header(avcc,
 		  				header, 
 		  				header_size);
@@ -444,6 +452,17 @@ static void flush(quicktime_t *file, int track)
 #else
 		unsigned char temp[1024];
 		int size = write_avcc_header(temp);
+
+// unsigned char temp[1024] = 
+// 0x64, 0x00, 0x29, 0xac, 0x1b, 0x1a, 0x50, 0x1e, 
+// 0x00, 0x89, 0xf9, 0x70, 0x16, 0xa0, 0x20, 0x20, 
+// 0x28, 0x00, 0x00, 0x1f, 0x48, 0x00, 0x05, 0xdc, 
+// 0x07, 0x13, 0x00, 0x00, 0x76, 0x41, 0x40, 0x00, 
+// 0x0e, 0x4e, 0x1d, 0x18, 0x9c, 0x07, 0xc7, 0x0c, 
+// 0x29, 0x60;
+// int size = 42;
+
+
 		if(size)
 			quicktime_set_avcc_header(avcc,
 				temp, 
@@ -558,4 +577,7 @@ void quicktime_init_codec_hv64(quicktime_video_map_t *vtrack)
 		"H.264 with two streams alternating every other frame.  (Not standardized)");
 	result->total_fields = 2;
 }
+
+
+
 

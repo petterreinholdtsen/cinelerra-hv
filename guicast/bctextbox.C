@@ -27,12 +27,14 @@
 #include "colors.h"
 #include <ctype.h>
 #include "cursors.h"
+#include "filesystem.h"
 #include "keys.h"
 #include <math.h>
 #include "bctimer.h"
 #include "vframe.h"
 
 #include <string.h>
+#include <unistd.h>
 
 #define VERTICAL_MARGIN 2
 #define VERTICAL_MARGIN_NOBORDER 0
@@ -195,6 +197,107 @@ void BC_TextBox::set_precision(int precision)
 	this->precision = precision;
 }
 
+// Compute suggestions for a path
+int BC_TextBox::calculate_suggestions(ArrayList<BC_ListBoxItem*> *entries)
+{
+// Let user delete suggestion
+	if(get_last_keypress() != BACKSPACE)
+	{
+
+// Compute suggestions
+		FileSystem fs;
+		ArrayList<char*> suggestions;
+		char *current_text = get_text();
+
+// If directory, tabulate it
+		if(current_text[0] == '/' ||
+			current_text[0] == '~')
+		{
+//printf("BC_TextBox::calculate_suggestions %d\n", __LINE__);
+			char string[BCTEXTLEN];
+			char string2[BCTEXTLEN];
+			strcpy(string, current_text);
+			char *ptr = strrchr(string, '/');
+			if(!ptr) ptr = strrchr(string, '~');
+
+//printf("BC_TextBox::calculate_suggestions %d\n", __LINE__);
+			*(ptr + 1) = 0;
+			int suggestion_column = ptr + 1 - string;
+
+			fs.set_filter(get_resources()->filebox_filter);
+//			fs.set_sort_order(filebox->sort_order);
+//			fs.set_sort_field(filebox->column_type[filebox->sort_column]);
+
+
+//printf("BC_TextBox::calculate_suggestions %d %c %s\n", __LINE__, *ptr, string);
+			if(current_text[0] == '~' && *ptr != '/')
+			{
+				fs.update("/home");
+			}
+			else
+			{
+				fs.parse_tildas(string);
+				fs.update(string);
+			}
+//printf("BC_TextBox::calculate_suggestions %d %d\n", __LINE__, fs.total_files());
+
+
+// Accept only entries with matching trailing characters
+			ptr = strrchr(current_text, '/');
+			if(!ptr) ptr = strrchr(current_text, '~');
+			if(ptr) ptr++;
+//printf("BC_TextBox::calculate_suggestions %d %s %p\n", __LINE__, current_text, ptr);
+
+
+			if(ptr && strlen(ptr))
+			{
+				for(int i = 0; i < fs.total_files(); i++)
+				{
+					char *current_name = fs.get_entry(i)->name;
+					if(!strncmp(ptr, current_name, strlen(ptr)))
+					{
+						suggestions.append(current_name);
+	//printf("BC_TextBox::calculate_suggestions %d %s\n", __LINE__, current_name);
+					}
+				}
+			}
+			else
+	// Accept all entries
+			for(int i = 0; i < fs.total_files(); i++)
+			{
+	//printf("BC_TextBox::calculate_suggestions %d %s\n", __LINE__, fs.get_entry(i)->name);
+				suggestions.append(fs.get_entry(i)->name);
+			}
+//printf("BC_TextBox::calculate_suggestions %d\n", __LINE__);
+
+// Add 1 to column to keep /
+			set_suggestions(&suggestions, suggestion_column);
+//printf("BC_TextBox::calculate_suggestions %d\n", __LINE__);
+		}
+		else
+// Get entries from current listbox with matching trailing characters
+		{
+// printf("BC_TextBox::calculate_suggestions %d %d\n", 
+// __LINE__, 
+// entries->size());
+			for(int i = 0; i < entries->size(); i++)
+			{
+				char *current_name = entries->get(i)->get_text();
+
+//printf("BC_TextBox::calculate_suggestions %d %s %s\n", __LINE__, current_text, current_name);
+				if(!strncmp(current_text, current_name, strlen(current_text)))
+				{
+					suggestions.append(current_name);
+				}
+			}
+
+			set_suggestions(&suggestions, 0);
+		}
+	}
+
+	return 1;
+}
+
 void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
 {
 // Copy the array
@@ -208,7 +311,7 @@ void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
 			this->suggestions->append(new BC_ListBoxItem(suggestions->get(i)));
 		}
 
-// Show the popup
+// Show the popup without taking focus
 		if(suggestions->size() > 1)
 		{
 			if(!suggestions_popup)
@@ -216,6 +319,7 @@ void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
 				
 				get_parent()->add_subwindow(suggestions_popup = 
 					new BC_TextBoxSuggestions(this, x, y));
+				suggestions_popup->set_is_suggestions(1);
 				suggestions_popup->activate(0);
 			}
 			else
@@ -583,7 +687,10 @@ int BC_TextBox::cursor_leave_event()
 
 int BC_TextBox::button_press_event()
 {
+	const int debug = 0;
 	if(get_buttonpress() > 2) return 0;
+
+	if(debug) printf("BC_TextBox::button_press_event %d\n", __LINE__);
 
 	int cursor_letter = 0;
 	int text_len = strlen(text);
@@ -644,7 +751,23 @@ int BC_TextBox::button_press_event()
 	else
 	if(active)
 	{
-		top_level->deactivate();
+//printf("BC_TextBox::button_press_event %d\n", __LINE__);
+// Suggestion popup is not active but must be deactivated.
+		if(suggestions_popup)
+		{
+			return 0;
+// printf("BC_TextBox::button_press_event %d\n", __LINE__);
+// // Pass event to suggestions popup
+// 			if(!suggestions_popup->button_press_event())
+// 			{
+// printf("BC_TextBox::button_press_event %d\n", __LINE__);
+// 				top_level->deactivate();
+// 			}
+		}
+		else
+		{
+			top_level->deactivate();
+		}
 	}
 
 	return 0;
@@ -724,13 +847,18 @@ int BC_TextBox::activate()
 
 int BC_TextBox::deactivate()
 {
+//printf("BC_TextBox::deactivate %d suggestions_popup=%p\n", __LINE__, suggestions_popup);
 	active = 0;
 	top_level->unset_repeat(top_level->get_resources()->blink_rate);
 	if(suggestions_popup)
 	{
+// Must deactivate instead of delete since this is called from BC_ListBox::button_press_event
+//		suggestions_popup->deactivate();
+
 		delete suggestions_popup;
 		suggestions_popup = 0;
 	}
+
 	draw();
 	return 0;
 }
@@ -958,6 +1086,7 @@ int BC_TextBox::keypress_event()
 			if(suggestions && suggestions_popup)
 			{
 // Pass to suggestions popup
+//printf("BC_TextBox::keypress_event %d\n", __LINE__);
 				suggestions_popup->activate(1);
 				suggestions_popup->keypress_event();
 				result = 1;
@@ -1055,6 +1184,10 @@ int BC_TextBox::keypress_event()
 			break;
 
 		case DOWN:
+// printf("BC_TextBox::keypress_event %d %p %p\n", 
+// __LINE__,
+// suggestions,
+// suggestions_popup);
 			if(suggestions && suggestions_popup)
 			{
 // Pass to suggestions popup
@@ -1715,23 +1848,54 @@ BC_TextBoxSuggestions::~BC_TextBoxSuggestions()
 
 int BC_TextBoxSuggestions::selection_changed()
 {
+return 0;
+
+
 //printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
 	BC_ListBoxItem *item = get_selection(0, 0);
-	char *current_suggestion = item->get_text();
-	int text_box_len = strlen(text_box->text);
-	strcpy(text_box->text + text_box->suggestion_column, current_suggestion);
-	*(text_box->text + text_box->suggestion_column + strlen(current_suggestion)) = 0;
+//printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
 
-	text_box->draw();
+	if(item)
+	{
+		char *current_suggestion = item->get_text();
+//printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
+		int text_box_len = strlen(text_box->text);
+//printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
+		strcpy(text_box->text + text_box->suggestion_column, current_suggestion);
+//printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
+		*(text_box->text + text_box->suggestion_column + strlen(current_suggestion)) = 0;
+
+//printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
+		text_box->draw();
+		text_box->handle_event();
+	}
+
 	return 1;
 }
 
 int BC_TextBoxSuggestions::handle_event()
 {
+	BC_ListBoxItem *item = get_selection(0, 0);
+//printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
+	if(item)
+	{
+		char *current_suggestion = item->get_text();
+//printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
+		int text_box_len = strlen(text_box->text);
+//printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
+		strcpy(text_box->text + text_box->suggestion_column, current_suggestion);
+//printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
+		*(text_box->text + text_box->suggestion_column + strlen(current_suggestion)) = 0;
+	}
+
+
+//printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
 	text_box->highlight_letter1 = 
 		text_box->highlight_letter2 = 
 		text_box->ibeam_letter = strlen(text_box->text);
 	text_box->draw();
+	text_box->handle_event();
+//printf("BC_TextBoxSuggestions::handle_event %d\n", __LINE__);
 	return 1;
 }
 

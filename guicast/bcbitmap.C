@@ -24,7 +24,7 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcwindow.h"
-#include "colormodels.h"
+#include "bccmodels.h"
 #include "vframe.h"
 
 #include <string.h>
@@ -106,7 +106,7 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 // Set ring buffers based on total memory used.
 // The program icon must use multiple buffers but larger bitmaps may not fit
 // in memory.
-	int pixelsize = cmodel_calculate_pixelsize(color_model);
+	int pixelsize = BC_WindowBase::get_cmodels()->calculate_pixelsize(color_model);
 	int buffer_size = w * h * pixelsize;
 
 	if(buffer_size < 0x40000)
@@ -166,7 +166,7 @@ int BC_Bitmap::allocate_data()
 // Create the X Image
 				xv_image[0] = XvShmCreateImage(top_level->display, 
 							xv_portid, 
-							cmodel_bc_to_x(color_model),
+							BC_WindowBase::get_cmodels()->bc_to_x(color_model),
 							0, 
 							w,
 							h,
@@ -203,7 +203,7 @@ int BC_Bitmap::allocate_data()
 
 					xv_image[i] = XvShmCreateImage(top_level->display, 
 								xv_portid, 
-								cmodel_bc_to_x(color_model),
+								BC_WindowBase::get_cmodels()->bc_to_x(color_model),
 								(char*)data[i], 
 								w,
 								h,
@@ -646,7 +646,7 @@ int BC_Bitmap::read_frame(VFrame *frame,
 // 				out_h);
 //if(color_model == 6 && frame->get_color_model() == 19)
 //printf("BC_Bitmap::read_frame 1 %d %d %d %d\n", frame->get_w(), frame->get_h(), get_w(), get_h());
-			cmodel_transfer(row_data[current_ringbuffer], 
+			BC_WindowBase::get_cmodels()->transfer(row_data[current_ringbuffer], 
 				frame->get_rows(),
 				get_y_plane(),
 				get_u_plane(),

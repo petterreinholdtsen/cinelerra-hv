@@ -453,7 +453,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			return;
 		}
 
-		source->set_layer(item->layer);
+ 		source->set_layer(item->layer);
 		int64_t normalized_position = (int64_t)(item->position *
 			asset->frame_rate /
 			item->frame_rate);
@@ -476,7 +476,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 			item->picon_h, 
 			BC_RGB888,
 			-1);
-		cmodel_transfer(picon_frame->get_rows(),
+		BC_CModels::transfer(picon_frame->get_rows(),
 			temp_picon->get_rows(),
 			0,
 			0,

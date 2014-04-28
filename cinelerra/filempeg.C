@@ -932,6 +932,7 @@ int64_t FileMPEG::get_memory_usage()
 	if(file->rd && fd)
 	{
 		int64_t result = mpeg3_memory_usage(fd);
+//printf("FileMPEG::get_memory_usage %d  %lld\n", __LINE__, result);
 		return result;
 	}
 	return 0;

@@ -71,6 +71,7 @@ void* Thread::entrypoint(void *parameters)
 	thread->thread_running = 0;
 
 	if(thread->autodelete && !thread->synchronous) delete thread;
+
 	return NULL;
 }
 

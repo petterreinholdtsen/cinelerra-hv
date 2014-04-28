@@ -48,6 +48,7 @@ public:
 	int uses_text();
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
+	void set_precision(int precision);
 
 private:
 	int reset_parameters(int rows, int has_border, int font);
@@ -86,6 +87,7 @@ private:
 	char text[BCTEXTLEN], text_row[BCTEXTLEN], temp_string[2];
 	int active;
 	int enabled;
+	int precision;
 };
 
 
@@ -240,6 +242,7 @@ public:
 	void reposition_window(int x, int y);
 	void set_boundaries(long min, long max);
 	void set_boundaries(float min, float max);
+	void set_precision(int precision);
 
 	friend class BC_TumbleTextBoxText;
 	friend class BC_TumbleTextBoxTumble;
@@ -249,6 +252,7 @@ private:
 	long default_value, min, max;
 	float default_value_f, min_f, max_f;
 	int use_float;
+	int precision;
 	BC_TumbleTextBoxText *textbox;
 	BC_Tumbler *tumbler;
 	BC_WindowBase *parent_window;

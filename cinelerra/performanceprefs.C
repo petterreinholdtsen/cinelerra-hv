@@ -1,6 +1,6 @@
 #include "edl.h"
 #include "edlsession.h"
-#include "deleteallindexes.h"
+#include "formattools.h"
 #include "mwindow.h"
 #include "performanceprefs.h"
 #include "preferences.h"
@@ -14,19 +14,18 @@ PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 
 PerformancePrefs::~PerformancePrefs()
 {
-	delete ipath;
-	delete ipathtext;
-	delete isize;
-	delete csize;
-	delete deleteall;
-//	delete smp;
-	delete icount;
+	delete brender_tools;
+	nodes[0].remove_all_objects();
+	nodes[1].remove_all_objects();
+	nodes[2].remove_all_objects();
+	nodes[3].remove_all_objects();
 }
 
 int PerformancePrefs::create_objects()
 {
 	int x = 5, y = 5;
-	char string[1024];
+	int xmargin1 = 5;
+	char string[BCTEXTLEN];
 
 	node_list = 0;
 	generate_node_list();
@@ -39,30 +38,8 @@ int PerformancePrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, "Performance", LARGEFONT, BLACK));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Index files go here:", MEDIUMFONT, BLACK));
-	add_subwindow(ipathtext = new IndexPathText(x + 230, y, pwindow, pwindow->thread->preferences->index_directory));
-	add_subwindow(ipath = new BrowseButton(mwindow,
-		this,
-		ipathtext, 
-		x + 230 + ipathtext->get_w(), 
-		y, 
-		pwindow->thread->preferences->index_directory,
-		"Index Path", 
-		"Select the directory for index files",
-		1));
-
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, "Size of index file:", MEDIUMFONT, BLACK));
-	sprintf(string, "%ld", pwindow->thread->preferences->index_size);
-	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, "Number of index files to keep:", MEDIUMFONT, BLACK));
-	sprintf(string, "%ld", pwindow->thread->preferences->index_count);
-	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
-	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
-	y += 30;
 	add_subwindow(new BC_Title(x, y + 5, "Cache items:", MEDIUMFONT, BLACK));
-	sprintf(string, "%ld", pwindow->thread->edl->session->cache_size);
+	sprintf(string, "%ld", pwindow->thread->preferences->cache_size);
 	add_subwindow(csize = new CICacheSize(x + 230, y, pwindow, string));
 	y += 30;
 	add_subwindow(new BC_Title(x, y + 5, "Seconds to preroll renders:"));
@@ -73,59 +50,115 @@ int PerformancePrefs::create_objects()
 	preroll->create_objects();
 	y += 30;
 	add_subwindow(new PrefsForceUniprocessor(pwindow, x, y));
-	
-	
-	
-	y += 40;
+
+	y += 35;
 
 
-
-
-	int xmargin2 = 310;
-	int xmargin3 = 560;
-	add_subwindow(new BC_Title(x, y, "Render Farm", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, "Background Rendering", LARGEFONT, BLACK));
 	y += 30;
+
+	add_subwindow(new PrefsUseBRender(pwindow, 
+		x,
+		y));
+
+
+	add_subwindow(new BC_Title(x, y + 40, "Frames per background rendering job:"));
+	PrefsBRenderFragment *brender_fragment = new PrefsBRenderFragment(pwindow, 
+		this, 
+		x, 
+		y + 60);
+	brender_fragment->create_objects();
+
+	int xmargin2 = 170;
+	int xmargin3 = 250;
+	int xmargin4 = 380;
+	x += xmargin4;
+	add_subwindow(new BC_Title(x, y, "Output for background rendering:"));
+	y += 20;
+	brender_tools = 
+		new FormatTools(mwindow,
+			this, 
+			pwindow->thread->preferences->brender_asset);
+	brender_tools->create_objects(x, 
+		y, 
+		0,    // Include tools for audio
+		1,   // Include tools for video
+		0,  // Include checkbox for audio
+		0,  // Include checkbox for video
+		0,
+		1,
+		0,  // Select compressors to be offered
+		0, // Change captions for recording
+		0, // If nonzero, prompt for insertion strategy
+		1); // Supply file formats for background rendering
+	x = xmargin1;
+
+	add_subwindow(new BC_Title(x, y, "Render Farm", LARGEFONT, BLACK));
+	y += 25;
 
 	add_subwindow(new PrefsRenderFarm(pwindow, x, y));
+	add_subwindow(new BC_Title(x + xmargin4, y, "Nodes:"));
 	y += 30;
-
-	y += 30;
-	add_subwindow(new BC_Title(x, y, "Nodes:"));
-	add_subwindow(new BC_Title(x + xmargin2, y, "Hostname:"));
+	add_subwindow(new BC_Title(x, y, "Hostname:"));
 	add_subwindow(new BC_Title(x + xmargin3, y, "Port:"));
-	y += 25;
-	add_subwindow(node_list = new PrefsRenderFarmNodes(pwindow, this, x, y));
+	add_subwindow(node_list = new PrefsRenderFarmNodes(pwindow, 
+		this, 
+		x + xmargin4, 
+		y - 5));
+	sprintf(string, "Master node framerate: %0.3f", pwindow->thread->preferences->local_rate);
+	add_subwindow(new BC_Title(x + xmargin4, y + node_list->get_h(), string));
 
-	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, this, x + xmargin2, y));
-	PrefsRenderFarmPort *port = new PrefsRenderFarmPort(pwindow, this, x + xmargin3, y);
+	y += 25;
+	add_subwindow(edit_node = new PrefsRenderFarmEditNode(pwindow, 
+		this, 
+		x, 
+		y));
+	PrefsRenderFarmPort *port = new PrefsRenderFarmPort(pwindow, 
+		this, 
+		x + xmargin3, 
+		y);
 	port->create_objects();
 
 	y += 30;
 
 
-	add_subwindow(new PrefsRenderFarmReplaceNode(pwindow, this, x + xmargin2, y));
-	y += 30;
-	add_subwindow(new PrefsRenderFarmNewNode(pwindow, this, x + xmargin2, y));
-	y += 30;
-	add_subwindow(new PrefsRenderFarmDelNode(pwindow, this, x + xmargin2, y));
-	y += 30;
-	add_subwindow(new PrefsRenderFarmSortNodes(pwindow, 
+	add_subwindow(new PrefsRenderFarmReplaceNode(pwindow, 
+		this, 
+		x, 
+		y));
+	add_subwindow(new PrefsRenderFarmNewNode(pwindow, 
 		this, 
 		x + xmargin2, 
 		y));
+	y += 30;
+	add_subwindow(new PrefsRenderFarmDelNode(pwindow, 
+		this, 
+		x + xmargin2, 
+		y));
+	add_subwindow(new PrefsRenderFarmSortNodes(pwindow, 
+		this, 
+		x, 
+		y));
+	y += 30;
+	add_subwindow(new PrefsRenderFarmReset(pwindow, 
+		this, 
+		x, 
+		y));
 	y += 35;
-//	add_subwindow(new PrefsRenderFarmConsolidate(pwindow, 
-//		x + xmargin2, 
-//		y));
-//	y += 30;
-	add_subwindow(new BC_Title(x + xmargin2, y, "Filesystem prefix on remote nodes:"));
+	add_subwindow(new BC_Title(x, 
+		y, 
+		"Filesystem prefix on remote nodes:"));
 	add_subwindow(new PrefsRenderFarmMountpoint(pwindow, 
 		this, 
 		x + xmargin3, 
 		y));
 	y += 30;
-	add_subwindow(new BC_Title(x + xmargin2, y, "Total jobs to create:"));
-	add_subwindow(new BC_Title(x + xmargin2, y + 30, "(overridden if new file at each label is checked)"));
+	add_subwindow(new BC_Title(x, 
+		y, 
+		"Total jobs to create:"));
+	add_subwindow(new BC_Title(x, 
+		y + 30, 
+		"(overridden if new file at each label is checked)"));
 	PrefsRenderFarmJobs *jobs = new PrefsRenderFarmJobs(pwindow, 
 		this, 
 		x + xmargin3, 
@@ -141,6 +174,7 @@ void PerformancePrefs::generate_node_list()
 	nodes[0].remove_all_objects();
 	nodes[1].remove_all_objects();
 	nodes[2].remove_all_objects();
+	nodes[3].remove_all_objects();
 	for(int i = 0; 
 		i < pwindow->thread->preferences->renderfarm_nodes.total; 
 		i++)
@@ -158,6 +192,10 @@ void PerformancePrefs::generate_node_list()
 		sprintf(string, "%d", pwindow->thread->preferences->renderfarm_ports.values[i]);
 		nodes[2].append(item = new BC_ListBoxItem(string));
 		if(i == selected_row) item->set_selected(1);
+
+		sprintf(string, "%0.3f", pwindow->thread->preferences->renderfarm_rate.values[i]);
+		nodes[3].append(item = new BC_ListBoxItem(string));
+		if(i == selected_row) item->set_selected(1);
 	}
 }
 
@@ -165,13 +203,15 @@ static char *titles[] =
 {
 	"On",
 	"Hostname",
-	"Port"
+	"Port",
+	"Framerate"
 };
 
 static int widths[] = 
 {
 	30,
-	200,
+	150,
+	50,
 	50
 };
 
@@ -181,7 +221,7 @@ void PerformancePrefs::update_node_list()
 	node_list->update(nodes,
 						titles,
 						widths,
-						3,
+						4,
 						node_list->get_xposition(),
 						node_list->get_yposition(),
 						node_list->get_selection_number(0, 0));
@@ -189,64 +229,63 @@ void PerformancePrefs::update_node_list()
 
 
 
-
-IndexPathText::IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 240, 1, text)
+PrefsUseBRender::PrefsUseBRender(PreferencesWindow *pwindow, 
+	int x,
+	int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->preferences->use_brender, 
+	"Use background rendering")
 {
-	this->pwindow = pwindow; 
+	this->pwindow = pwindow;
 }
 
-IndexPathText::~IndexPathText() {}
-
-int IndexPathText::handle_event()
+int PrefsUseBRender::handle_event()
 {
-	strcpy(pwindow->thread->preferences->index_directory, get_text());
+	pwindow->thread->redraw_overlays = 1;
+	pwindow->thread->redraw_times = 1;
+	pwindow->thread->preferences->use_brender = get_value();
+	return 1;
 }
 
 
 
 
-IndexSize::IndexSize(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-}
 
-int IndexSize::handle_event()
+
+PrefsBRenderFragment::PrefsBRenderFragment(PreferencesWindow *pwindow, 
+	PerformancePrefs *subwindow, 
+	int x, 
+	int y)
+ : BC_TumbleTextBox(subwindow, 
+ 	(long)pwindow->thread->preferences->brender_fragment,
+	(long)1, 
+	(long)65535,
+	x,
+	y,
+	100)
 {
-	long result;
-
-	result = atol(get_text());
-	if(result < 64000) result = 64000;
-	//if(result < 500000) result = 500000;
-	pwindow->thread->preferences->index_size = result;
-	return 0;
+	this->pwindow = pwindow;
 }
-
-
-
-IndexCount::IndexCount(int x, int y, PreferencesWindow *pwindow, char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-}
-
-int IndexCount::handle_event()
+int PrefsBRenderFragment::handle_event()
 {
-	long result;
-
-	result = atol(get_text());
-	if(result < 1) result = 1;
-	pwindow->thread->preferences->index_count = result;
-	return 0;
+	pwindow->thread->preferences->brender_fragment = atol(get_text());
+	return 1;
 }
+
+
+
+
+
+
+
 
 
 
 PrefsSMP::PrefsSMP(int x, int y, PreferencesWindow *pwindow)
  : BC_TextBox(x, y, 100, 1, pwindow->thread->edl->session->smp + 1)
-{ 
-	this->pwindow = pwindow; 
+{
+	this->pwindow = pwindow;
 }
 
 PrefsSMP::~PrefsSMP()
@@ -272,7 +311,7 @@ int CICacheSize::handle_event()
 	long result;
 
 	result = atol(get_text());
-	pwindow->thread->edl->session->cache_size = result;
+	pwindow->thread->preferences->cache_size = result;
 	return 0;
 }
 
@@ -314,7 +353,7 @@ PrefsRenderFarm::PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->preferences->use_renderfarm,
-	"Use render farm for rendering")
+	"Use render farm")
 {
 	this->pwindow = pwindow;
 }
@@ -405,13 +444,13 @@ PrefsRenderFarmNodes::PrefsRenderFarmNodes(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, int x, int y)
  : BC_ListBox(x, 
 		y, 
-		300, 
-		250,
+		340, 
+		230,
 		LISTBOX_TEXT,                         // Display text list or icons
 		subwindow->nodes,
 		titles,
 		widths,
-		3)
+		4)
 {
 	this->subwindow = subwindow;
 	this->pwindow = pwindow;
@@ -461,7 +500,7 @@ int PrefsRenderFarmNodes::selection_changed()
 
 
 PrefsRenderFarmEditNode::PrefsRenderFarmEditNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_TextBox(x, y, 200, 1, "")
+ : BC_TextBox(x, y, 240, 1, "")
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -494,7 +533,9 @@ int PrefsRenderFarmNewNode::handle_event()
 {
 	pwindow->thread->preferences->add_node(subwindow->edit_node->get_text(),
 		pwindow->thread->preferences->renderfarm_port,
-		1);
+		1,
+		0.0);
+	pwindow->thread->preferences->reset_rates();
 	subwindow->generate_node_list();
 	subwindow->update_node_list();
 	subwindow->hot_node = -1;
@@ -576,6 +617,29 @@ PrefsRenderFarmSortNodes::~PrefsRenderFarmSortNodes()
 int PrefsRenderFarmSortNodes::handle_event()
 {
 	pwindow->thread->preferences->sort_nodes();
+	subwindow->generate_node_list();
+	subwindow->update_node_list();
+	subwindow->hot_node = -1;
+	return 1;
+}
+
+
+
+
+
+PrefsRenderFarmReset::PrefsRenderFarmReset(PreferencesWindow *pwindow, 
+	PerformancePrefs *subwindow, 
+	int x, 
+	int y)
+ : BC_GenericButton(x, y, "Reset rates")
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+}
+
+int PrefsRenderFarmReset::handle_event()
+{
+	pwindow->thread->preferences->reset_rates();
 	subwindow->generate_node_list();
 	subwindow->update_node_list();
 	subwindow->hot_node = -1;

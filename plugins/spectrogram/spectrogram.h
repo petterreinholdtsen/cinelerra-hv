@@ -48,19 +48,7 @@ public:
 
 
 
-
-class SpectrogramThread : public Thread
-{
-public:
-	SpectrogramThread(Spectrogram *plugin);
-	~SpectrogramThread();
-
-	void run();
-
-	Mutex completion;
-	SpectrogramWindow *window;
-	Spectrogram *plugin;
-};
+PLUGIN_THREAD_HEADER(Spectrogram, SpectrogramThread, SpectrogramWindow)
 
 
 
@@ -103,12 +91,10 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void update_gui();
-	
+	void render_gui(void *data, int size);	
 	
 	void reset();
 
-	static BC_SubWindow *window;
-	static Mutex graph_lock;
 	int done;
 
 	int need_reconfigure;

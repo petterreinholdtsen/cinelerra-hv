@@ -19,7 +19,6 @@ class ATrack : public Track
 public:
 	ATrack(EDL *edl, Tracks *tracks);
 	ATrack() { };
-	ATrack(MWindow *mwindow, Tracks *tracks);
 	~ATrack();
 
 	int create_objects();

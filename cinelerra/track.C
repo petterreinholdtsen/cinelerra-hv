@@ -42,6 +42,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	gang = 1;
 	title[0] = 0;
 	record = 1;
+	play = 1;
 	track_w = edl->session->output_w;
 	track_h = edl->session->output_h;
 	id = EDL::next_id();
@@ -62,12 +63,14 @@ int Track::create_objects()
 	return 0;
 }
 
+
 int Track::copy_settings(Track *track)
 {
 	this->expand_view = track->expand_view;
 	this->draw = track->draw;
 	this->gang = track->gang;
 	this->record = track->record;
+	this->play = track->play;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
 	strcpy(this->title, track->title);
@@ -77,6 +80,72 @@ int Track::copy_settings(Track *track)
 int Track::load_defaults(Defaults *defaults)
 {
 	return 0;
+}
+
+void Track::equivalent_output(Track *track, double *result)
+{
+	if(data_type != track->data_type ||
+		track_w != track->track_w ||
+		track_h != track->track_h ||
+		play != track->play)
+		*result = 0;
+
+// Convert result to track units
+	long result2 = -1;
+	automation->equivalent_output(track->automation, &result2);
+//printf("Track::equivalent_output 3 %d\n", result2);
+	edits->equivalent_output(track->edits, &result2);
+//printf("Track::equivalent_output 4 %d\n", result2);
+
+	int plugin_sets = MIN(plugin_set.total, track->plugin_set.total);
+// Test existing plugin sets
+	for(int i = 0; i < plugin_sets; i++)
+	{
+		plugin_set.values[i]->equivalent_output(
+			track->plugin_set.values[i], 
+			&result2);
+	}
+//printf("Track::equivalent_output 5 %d\n", result2);
+
+// New EDL has more plugin sets.  Get starting plugin in new plugin sets
+	for(int i = plugin_sets; i < plugin_set.total; i++)
+	{
+		Plugin *current = plugin_set.values[i]->get_first_plugin();
+		if(current)
+		{
+			if(result2 < 0 || current->startproject < result2)
+				result2 = current->startproject;
+		}
+	}
+
+//printf("Track::equivalent_output 6 %f %d\n", *result, result2);
+	if(result2 >= 0 && 
+		(*result < 0 || from_units(result2) < *result))
+		*result = from_units(result2);
+//printf("Track::equivalent_output 7 %f\n", *result);
+}
+
+
+int Track::is_synthesis(RenderEngine *renderengine, 
+	long position, 
+	int direction)
+{
+	int is_synthesis = 0;
+	for(int i = 0; i < plugin_set.total; i++)
+	{
+		Plugin *plugin = get_current_plugin(position,
+			i,
+			direction,
+			0);
+		if(plugin)
+		{
+			is_synthesis = plugin->is_synthesis(renderengine, 
+				position, 
+				direction);
+			if(is_synthesis) break;
+		}
+	}
+	return is_synthesis;
 }
 
 Track& Track::operator=(Track& track)
@@ -187,10 +256,10 @@ int Track::load(FileXML *file, int track_offset, unsigned long load_flags)
 	int result = 0;
 	int current_channel = 0;
 	int current_plugin = 0;
-//printf("Track::load 1 %d\n", edits->total());
 
 
 	record = file->tag.get_property("RECORD", record);
+	play = file->tag.get_property("PLAY", play);
 	gang = file->tag.get_property("GANG", gang);
 	draw = file->tag.get_property("DRAW", draw);
 	expand_view = file->tag.get_property("EXPAND", expand_view);
@@ -201,7 +270,6 @@ int Track::load(FileXML *file, int track_offset, unsigned long load_flags)
 
 	do{
 		result = file->read_tag();
-//printf("Track::load 1 %s\n", file->tag.get_title());
 
 		if(!result)
 		{
@@ -219,7 +287,7 @@ int Track::load(FileXML *file, int track_offset, unsigned long load_flags)
 			{
 				if(load_flags)
 				{
-					automation->load(file, current_plugin, current_channel);
+					automation->load(file);
 				}
 			}
 			else
@@ -233,13 +301,19 @@ int Track::load(FileXML *file, int track_offset, unsigned long load_flags)
 			{
 				if(load_flags & LOAD_EDITS)
 				{
-//printf("Track::load 1 %s\n", file->tag.get_title());
 					PluginSet *plugin_set = new PluginSet(edl, this);
-//printf("Track::load 2 %s\n", file->tag.get_title());
 					this->plugin_set.append(plugin_set);
-//printf("Track::load 3 %s\n", file->tag.get_title());
 					plugin_set->load(file, load_flags);
-//printf("Track::load 4 %s\n", file->tag.get_title());
+				}
+				else
+				if(load_flags & LOAD_AUTOMATION)
+				{
+					if(current_plugin < this->plugin_set.total)
+					{
+						PluginSet *plugin_set = this->plugin_set.values[current_plugin];
+						plugin_set->load(file, load_flags);
+						current_plugin++;
+					}
 				}
 			}
 			else
@@ -249,9 +323,6 @@ int Track::load(FileXML *file, int track_offset, unsigned long load_flags)
 
 
 
-//printf("Track::load 2 %s\n", title);
-//edl->dump();
-//printf("\n\n\n\n");
 	return 0;
 }
 
@@ -700,16 +771,13 @@ Track::Track() : ListItem<Track>()
 	module_view = 0;
 }
 
-Track::Track(MWindow *mwindow, Tracks *tracks) : ListItem<Track>()
-{
-	this->mwindow = mwindow;
-	this->tracks = tracks;
-	transition = 0;
-}
-
 // ======================================== accounting
 
-int Track::number_of() { return tracks->number_of(this); }
+int Track::number_of() 
+{ 
+	return tracks->number_of(this); 
+}
+
 
 Patch* Track::get_patch_of()
 {
@@ -758,7 +826,8 @@ int Track::release_auto()
 int Track::copy_automation(double selectionstart, 
 	double selectionend, 
 	FileXML *file,
-	int default_only)
+	int default_only,
+	int autos_only)
 {
 	long start = to_units(selectionstart, 0);
 	long end = to_units(selectionend, 0);
@@ -769,7 +838,7 @@ int Track::copy_automation(double selectionstart,
 	file->append_tag();
 	file->append_newline();
 
-	automation->copy(start, end, file, default_only);
+	automation->copy(start, end, file, default_only, autos_only);
 
 	if(edl->session->auto_conf->plugins)
 	{
@@ -778,7 +847,8 @@ int Track::copy_automation(double selectionstart,
 			plugin_set.values[i]->copy_keyframes(start, 
 				end, 
 				file, 
-				default_only);
+				default_only,
+				autos_only);
 		}
 	}
 
@@ -857,7 +927,7 @@ int Track::paste_automation(double selectionstart,
 	return 0;
 }
 
-int Track::clear_automation(double selectionstart, 
+void Track::clear_automation(double selectionstart, 
 	double selectionend, 
 	int shift_autos,
 	int default_only)
@@ -870,8 +940,11 @@ int Track::clear_automation(double selectionstart,
 	if(edl->session->auto_conf->plugins)
 	{
 		for(int i = 0; i < plugin_set.total; i++)
+		{
 			plugin_set.values[i]->clear_keyframes(start, end);
+		}
 	}
+
 }
 
 
@@ -892,6 +965,7 @@ int Track::copy(double start,
 	file->tag.set_title("TRACK");
 //	file->tag.set_property("PLAY", play);
 	file->tag.set_property("RECORD", record);
+	file->tag.set_property("PLAY", play);
 	file->tag.set_property("GANG", gang);
 //	file->tag.set_property("MUTE", mute);
 	file->tag.set_property("DRAW", draw);
@@ -926,7 +1000,7 @@ int Track::copy(double start,
 //printf("Track::copy 1\n");
 	AutoConf auto_conf;
 	auto_conf.set_all();
-	automation->copy(start_unit, end_unit, file, 0);
+	automation->copy(start_unit, end_unit, file, 0, 0);
 
 
 	for(int i = 0; i < plugin_set.total; i++)

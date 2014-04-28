@@ -91,6 +91,7 @@ int VModule::import_frame(VFrame *output,
 	{
 //printf("VModule::import_frame 1\n");
 		File *source = get_cache()->check_out(current_edit->asset);
+
 		if(source)
 		{
 //printf("VModule::import_frame 1\n");
@@ -219,7 +220,6 @@ int VModule::import_frame(VFrame *output,
 //printf("VModule::import_frame 6\n");
 
 			get_cache()->check_in(current_edit->asset);
-			get_cache()->age_video();
 		}
 		else
 		{
@@ -230,9 +230,9 @@ int VModule::import_frame(VFrame *output,
 	else
 // Silence
 	{
-//printf("VModule::import_frame 7\n");
 		output->clear_frame();
 	}
+//printf("VModule::import_frame 7\n");
 
 	return result;
 }
@@ -245,7 +245,7 @@ int VModule::render(VFrame *output,
 {
 	int result = 0;
 
-//printf("VModule::render 1\n");
+//printf("VModule::render 1 %d\n", input_position);
 	update_transition(input_position, direction);
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(input_position, 

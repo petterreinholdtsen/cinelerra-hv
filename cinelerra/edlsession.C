@@ -15,7 +15,6 @@ int EDLSession::current_id = 0;
 
 EDLSession::EDLSession(EDL *edl)
 {
-	cache_size = 5;
 	highlighted_track = 0;
 	playback_cursor_visible = 0;
 	aconfig_in = new AudioInConfig;
@@ -26,6 +25,7 @@ EDLSession::EDLSession(EDL *edl)
 	force_uniprocessor = 0;
 	test_playback_edits = 1;
 	smp = force_uniprocessor ? 0 : calculate_smp();
+	brender_start = 0.0;
 
 	for(int i = 0; i < PLAYBACK_STRATEGIES; i++)
 	{
@@ -93,6 +93,21 @@ int EDLSession::calculate_smp()
 
 
 
+void EDLSession::equivalent_output(EDLSession *session, double *result)
+{
+	if(session->output_w != output_w ||
+		session->output_h != output_h ||
+		session->frame_rate != frame_rate ||
+		session->color_model != color_model ||
+		session->interpolation_type != interpolation_type)
+		*result = 0;
+
+// If it's before the current brender_start, render extra data.
+// If it's after brender_start, check brender map.
+	if(brender_start != session->brender_start &&
+		(*result < 0 || *result > brender_start))
+		*result = brender_start;
+}
 
 
 int EDLSession::load_defaults(Defaults *defaults)
@@ -132,7 +147,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	audio_tracks = defaults->get("ATRACKS", 2);
 	auto_conf->load_defaults(defaults);
 	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
-	cache_size = defaults->get("CACHE_SIZE", cache_size);
+	brender_start = defaults->get("BRENDER_START", brender_start);
 	cmodel_to_text(string, BC_RGBA8888);
 	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
 	crop_x1 = defaults->get("CROP_X1", 0);
@@ -253,7 +268,7 @@ int EDLSession::save_defaults(Defaults *defaults)
     defaults->update("PLAYBACK_READ_LENGTH", audio_read_length);
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
-	defaults->update("CACHE_SIZE", cache_size);
+	defaults->update("BRENDER_START", brender_start);
 	cmodel_to_text(string, color_model);
 	defaults->update("COLOR_MODEL", string);
 	defaults->update("CROP_X1", crop_x1);
@@ -356,7 +371,6 @@ void EDLSession::boundaries()
 	Workarounds::clamp(output_h, 16, (int)BC_INFINITY);
 	Workarounds::clamp(video_write_length, 1, 1000);
 //printf("EDLSession::boundaries 1\n");
-	Workarounds::clamp(cache_size, 1, 100);
 	output_w /= 2;
 	output_w *= 2;
 	output_h /= 2;
@@ -366,6 +380,7 @@ void EDLSession::boundaries()
 	Workarounds::clamp(crop_x2, 0, output_w);
 	Workarounds::clamp(crop_y1, 0, output_h);
 	Workarounds::clamp(crop_y2, 0, output_h);
+	if(brender_start < 0) brender_start = 0.0;
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
 //printf("EDLSession::boundaries 1 %p %p\n", edl->assets, edl->tracks);
@@ -443,7 +458,7 @@ int EDLSession::load_xml(FileXML *file,
 		auto_conf->load_xml(file);
 		auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
 		autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
-		cache_size = file->tag.get_property("CACHE_SIZE", cache_size);
+		brender_start = file->tag.get_property("BRENDER_START", brender_start);
 		crop_x1 = file->tag.get_property("CROP_X1", crop_x1);
 		crop_y1 = file->tag.get_property("CROP_Y1", crop_y1);
 		crop_x2 = file->tag.get_property("CROP_X2", crop_x2);
@@ -499,7 +514,7 @@ int EDLSession::save_xml(FileXML *file)
 	auto_conf->save_xml(file);
 	file->tag.set_property("AUTO_KEYFRAMES", auto_keyframes);
 	file->tag.set_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
-	file->tag.set_property("CACHE_SIZE", cache_size);
+	file->tag.set_property("BRENDER_START", brender_start);
 	file->tag.set_property("CROP_X1", crop_x1);
 	file->tag.set_property("CROP_Y1", crop_y1);
 	file->tag.set_property("CROP_X2", crop_x2);
@@ -610,7 +625,7 @@ int EDLSession::copy(EDLSession *session)
 	audio_read_length = session->audio_read_length;
 	audio_tracks = session->audio_tracks;
 	autos_follow_edits = session->autos_follow_edits;
-	cache_size = session->cache_size;
+	brender_start = session->brender_start;
 	color_model = session->color_model;
 	crop_x1 = session->crop_x1;
 	crop_y1 = session->crop_y1;

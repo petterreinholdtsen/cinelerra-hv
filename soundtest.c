@@ -69,18 +69,19 @@ int main(int argc, char *argv[]){
 	printf("Playback: %9d %10d %8d %7d %12d\n", playinfo.fragments, 
   		playinfo.fragstotal, playinfo.fragsize, playinfo.bytes, playinfo.bytes);
 
-	if(duplexenable){
-  	if(ioctl(dsp, SNDCTL_DSP_SETFMT, &format) < 0)
-    	 printf("record file format failed\n");
-  	if(ioctl(dsp, SNDCTL_DSP_CHANNELS, &channels) < 0)
-    	 printf("record channel allocation failed\n");
-  	if(ioctl(dsp, SNDCTL_DSP_SPEED, &samplerate) < 0)
-    	 printf("record sample rate set failed\n");
+	if(duplexenable)
+	{
+  		if(ioctl(dsp, SNDCTL_DSP_SETFMT, &format) < 0)
+    		 printf("record file format failed\n");
+  		if(ioctl(dsp, SNDCTL_DSP_CHANNELS, &channels) < 0)
+    		 printf("record channel allocation failed\n");
+  		if(ioctl(dsp, SNDCTL_DSP_SPEED, &samplerate) < 0)
+    		 printf("record sample rate set failed\n");
 
-  	ioctl(dsp, SNDCTL_DSP_GETISPACE, &recinfo);
+  		ioctl(dsp, SNDCTL_DSP_GETISPACE, &recinfo);
 
-  	printf("Record:   %9d %10d %8d %7d %12d\n", recinfo.fragments, 
-  		recinfo.fragstotal, recinfo.fragsize, recinfo.bytes, recinfo.fragstotal * recinfo.fragsize);
+  		printf("Record:   %9d %10d %8d %7d %12d\n", recinfo.fragments, 
+  			recinfo.fragstotal, recinfo.fragsize, recinfo.bytes, recinfo.fragstotal * recinfo.fragsize);
 	}
 	close(dsp);
 

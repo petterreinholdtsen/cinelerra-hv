@@ -1,5 +1,6 @@
 #include "amodule.h"
 #include "arender.h"
+#include "assets.h"
 #include "audiodevice.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -51,6 +52,10 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	*this->edl = *command->get_edl();
 	audio_cache = 0;
 	video_cache = 0;
+	if(playback_engine && playback_engine->mwindow)
+		mwindow = playback_engine->mwindow;
+	else
+		mwindow = 0;
 }
 
 RenderEngine::~RenderEngine()
@@ -78,12 +83,23 @@ int RenderEngine::arm_command(TransportCommand *command,
 // be locked here as well as in the calling routine.
 
 
-//printf("RenderEngine::arm_command 1\n");
 	input_lock.lock();
-//printf("RenderEngine::arm_command 2\n");
+//printf("RenderEngine::arm_command 1\n");
 	*this->command = *command;
+//this->command->get_edl()->dump();
+//printf("RenderEngine::arm_command 2\n");
 	int playback_strategy = command->get_edl()->session->playback_strategy;
 	this->config = command->get_edl()->session->playback_config[playback_strategy].values[head_number];
+
+// Fix background rendering asset to use current dimensions and ignore
+// headers.
+	preferences->brender_asset->frame_rate = command->get_edl()->session->frame_rate;
+	preferences->brender_asset->width = command->get_edl()->session->output_w;
+	preferences->brender_asset->height = command->get_edl()->session->output_h;
+	preferences->brender_asset->use_header = 0;
+	preferences->brender_asset->layers = 1;
+	preferences->brender_asset->video_data = 1;
+
 //printf("RenderEngine::arm_command 3 %p %p\n", this->edl, command->get_edl());
 	done = 0;
 	interrupted = 0;
@@ -184,6 +200,7 @@ void RenderEngine::get_duty()
 {
 	do_audio = 0;
 	do_video = 0;
+
 //edl->dump();
 //printf("RenderEngine::get_duty 1 %d %d\n", edl->tracks->playable_audio_tracks(), config->vconfig->total_playable_channels());
 	if(!command->single_frame() &&
@@ -223,6 +240,19 @@ int RenderEngine::get_output_w()
 int RenderEngine::get_output_h()
 {
 	return edl->calculate_output_h(config->playback_strategy != PLAYBACK_LOCALHOST);
+}
+
+int RenderEngine::brender_available(int position, int direction)
+{
+	if(playback_engine)
+	{
+		long corrected_position = position;
+		if(direction == PLAY_REVERSE)
+			corrected_position--;
+		return playback_engine->brender_available(corrected_position);
+	}
+	else
+		return 0;
 }
 
 Channel* RenderEngine::get_current_channel()
@@ -421,7 +451,6 @@ void RenderEngine::start_render_threads()
 void RenderEngine::update_framerate(float framerate)
 {
 	playback_engine->mwindow->edl->session->actual_frame_rate = framerate;
-
 	playback_engine->mwindow->preferences_thread->update_framerate();
 }
 

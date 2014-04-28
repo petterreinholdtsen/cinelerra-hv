@@ -191,6 +191,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 		if(load_flags & LOAD_TIMEBAR)
 		{
 			while(labels->last) delete labels->last;
+			local_session->in_point = -1;
+			local_session->out_point = -1;
 		}
 
 		do{
@@ -252,8 +254,9 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				else
 				if(file->tag.title_is("LOCALSESSION"))
 				{
-					if(load_flags & LOAD_SESSION)
-						local_session->load_xml(file);
+					if((load_flags & LOAD_SESSION) ||
+						(load_flags & LOAD_TIMEBAR))
+						local_session->load_xml(file, load_flags);
 				}
 				else
 				if(file->tag.title_is("SESSION"))
@@ -644,6 +647,17 @@ int EDL::equivalent(double position1, double position2)
         return 0;
 }
 
+double EDL::equivalent_output(EDL *edl)
+{
+	double result = -1;
+//printf("EDL::equivalent_output 1 %f\n", result);
+	session->equivalent_output(edl->session, &result);
+//printf("EDL::equivalent_output 2 %f\n", result);
+	tracks->equivalent_output(edl->tracks, &result);
+//printf("EDL::equivalent_output 3 %f\n", result);
+	return result;
+}
+
 
 void EDL::set_inpoint(double position)
 {
@@ -1020,7 +1034,7 @@ void EDL::insert_asset(Asset *asset,
 	{
 		for(RecordLabel *label = labels->first; label; label = label->next)
 		{
-printf("EDL::insert_asset 1 %f\n", label->position);
+//printf("EDL::insert_asset 1 %f\n", label->position);
 			this->labels->toggle_label(label->position, label->position);
 		}
 	}

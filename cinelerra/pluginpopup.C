@@ -103,6 +103,7 @@ int PluginPopupDetach::handle_event()
 		0, 
 		0,
 		0);
+	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;
 }
@@ -191,6 +192,7 @@ PluginPopupOn::~PluginPopupOn()
 int PluginPopupOn::handle_event()
 {
 	popup->plugin->on = !get_checked();
+	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;
 }

@@ -67,10 +67,13 @@ void BezierAuto::copy_from(BezierAuto *that)
 	control_out_z = that->control_out_z;
 }
 
-void BezierAuto::copy(long start, long end, FileXML *file)
+void BezierAuto::copy(long start, long end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("POSITION", position - start);
+	if(default_auto)
+		file->tag.set_property("POSITION", 0);
+	else
+		file->tag.set_property("POSITION", position - start);
 	file->tag.set_property("CENTER_X", center_x);
 	file->tag.set_property("CENTER_Y", center_y);
 	file->tag.set_property("CENTER_Z", center_z);

@@ -13,6 +13,7 @@ public:
 	PlayableTracks(RenderEngine *renderengine, 
 		long current_position,  // Position in native units of tracks
 		int data_type);
+	~PlayableTracks();
 
 // return 1 if the track is playable at the position
 	int is_playable(Track *current_track, long position);

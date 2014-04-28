@@ -419,11 +419,6 @@ public:
 		float alpha, 
 		int mode,
 		int interpolation_type);
-
-	int overlay(VFrame *output, unsigned char *input,
-		float in_x1, float in_y1, float in_x2, float in_y2,
-		float out_x1, float out_y1, float out_x2, float out_y2, 
-		int alpha, int in_w, int in_h);
 	int use_alpha, use_float, mode, interpolate;
 	int color_model;
 

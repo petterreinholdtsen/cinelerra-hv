@@ -263,12 +263,19 @@ void CWindowGUI::update_tool()
 
 int CWindowGUI::close_event()
 {
+//printf("CWindowGUI::close_event 1\n");
 	hide_window();
+//printf("CWindowGUI::close_event 1\n");
 	mwindow->session->show_cwindow = 0;
+//printf("CWindowGUI::close_event 1\n");
 	mwindow->gui->lock_window();
+//printf("CWindowGUI::close_event 1\n");
 	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
+//printf("CWindowGUI::close_event 1\n");
 	mwindow->gui->unlock_window();
+//printf("CWindowGUI::close_event 1\n");
 	mwindow->save_defaults();
+//printf("CWindowGUI::close_event 2\n");
 	return 1;
 }
 
@@ -341,6 +348,8 @@ int CWindowGUI::drag_stop()
 		if(mwindow->session->drag_assets->total)
 		{
 			mwindow->gui->lock_window();
+			mwindow->undo->update_undo_before("insert assets", 
+				LOAD_ALL);
 			mwindow->load_assets(mwindow->session->drag_assets, 
 				mwindow->edl->local_session->selectionstart, 
 				LOAD_PASTE,
@@ -348,19 +357,30 @@ int CWindowGUI::drag_stop()
 				0,
 				mwindow->edl->session->labels_follow_edits, 
 				mwindow->edl->session->plugins_follow_edits);
-			mwindow->gui->unlock_window();
 		}
 
 		if(mwindow->session->drag_clips->total)
 		{
 			mwindow->gui->lock_window();
+			mwindow->undo->update_undo_before("insert assets", 
+				LOAD_ALL);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
 				LOAD_PASTE, 
 				mwindow->session->track_highlighted,
 				mwindow->edl->local_session->get_selectionstart(),
 				mwindow->edl->session->labels_follow_edits, 
 				mwindow->edl->session->plugins_follow_edits);
+		}
+
+		if(mwindow->session->drag_assets->total ||
+			mwindow->session->drag_clips->total)
+		{
+			mwindow->save_backup();
+			mwindow->restart_brender();
+			mwindow->gui->update(1, 1, 1, 1, 0, 1, 0);
+			mwindow->undo->update_undo_after();
 			mwindow->gui->unlock_window();
+			mwindow->sync_parameters(LOAD_ALL);
 		}
 	}
 
@@ -370,56 +390,19 @@ int CWindowGUI::drag_stop()
 		Track *affected_track = cwindow->calculate_affected_track();
 //printf("CWindowGUI::drag_stop 2\n");
 
-		if(affected_track)
-		{
-			for(int i = 0; i < mwindow->session->drag_pluginservers->total; i++)
-			{
-				PluginServer *plugin = mwindow->session->drag_pluginservers->values[i];
-//printf("CWindowGUI::drag_stop 3\n");
-				double start = 0;
-				double length = affected_track->get_length();
-
-				if(mwindow->edl->local_session->get_selectionend() > 
-					mwindow->edl->local_session->get_selectionstart())
-				{
-					start = mwindow->edl->local_session->get_selectionstart();
-					length = mwindow->edl->local_session->get_selectionend() - 
-						mwindow->edl->local_session->get_selectionstart();
-				}
-				mwindow->insert_effect(plugin->title,
-					0,
-					affected_track,
-					0,
-					start,
-					length,
-					PLUGIN_STANDALONE);
-//printf("CWindowGUI::drag_stop 4\n");
-			}
-		
-//printf("CWindowGUI::drag_stop 5\n");
-//mwindow->edl->dump();
-// unlock_window();
-// sleep(10);
-// lock_window();
-// Must cancel operation to draw overlays
-			mwindow->session->current_operation = NO_OPERATION;
-
-			mwindow->gui->lock_window();
-//printf("CWindowGUI::drag_stop 6\n");
-			mwindow->gui->update(1,
-				1,
-				0,
-				0,
-				1,
-				0,
-				0);
-//printf("CWindowGUI::drag_stop 7\n");
-			mwindow->gui->unlock_window();
-		}
+		mwindow->gui->lock_window();
+		mwindow->insert_effects_cwindow(affected_track);
+		mwindow->session->current_operation = NO_OPERATION;
+		mwindow->gui->unlock_window();
 	}
 
 	if(mwindow->session->current_operation == DRAG_VTRANSITION)
 	{
+		Track *affected_track = cwindow->calculate_affected_track();
+		mwindow->gui->lock_window();
+		mwindow->paste_transition_cwindow(affected_track);
+		mwindow->session->current_operation = NO_OPERATION;
+		mwindow->gui->unlock_window();
 	}
 
 	return result;
@@ -818,8 +801,13 @@ int CWindowCanvas::do_mask(int &redraw,
 
 // Translate mask to projection
 	BezierAutos *projector_autos = track->automation->projector_autos;
+	FloatAutos *projector_zooms = track->automation->pzoom_autos;
 	BezierAuto *before = 0, *after = 0;
+	FloatAuto *zoom_before = 0, *zoom_after = 0;
 	float projector_x, projector_y, projector_z;
+// Projector zooms relative to the center of the track output.
+	float half_track_w = (float)track->track_w / 2;
+	float half_track_h = (float)track->track_h / 2;
 	projector_autos->get_center(projector_x, 
 			projector_y, 
 			projector_z, 
@@ -827,6 +815,10 @@ int CWindowCanvas::do_mask(int &redraw,
 			PLAY_FORWARD, 
 			&before, 
 			&after);
+	projector_z = projector_zooms->get_value(position,
+		PLAY_FORWARD,
+		zoom_before,
+		zoom_after);
 // printf("CWindowCanvas::do_mask 1 %f %f %f\n", projector_x, 
 // 			projector_y, 
 // 			projector_z);
@@ -839,9 +831,15 @@ int CWindowCanvas::do_mask(int &redraw,
 
 	mask_cursor_x -= projector_x;
 	mask_cursor_y -= projector_y;
-	mask_cursor_x /= projector_z;
-	mask_cursor_y /= projector_z;
+	mask_cursor_x = half_track_w + (mask_cursor_x - half_track_w) / projector_z;
+	mask_cursor_y = half_track_h + (mask_cursor_y - half_track_h) / projector_z;
 
+// Fix cursor origin
+	if(button_press)
+	{
+		gui->x_origin = mask_cursor_x;
+		gui->y_origin = mask_cursor_y;
+	}
 
 	int result = 0;
 // Points of closest line
@@ -881,8 +879,8 @@ int CWindowCanvas::do_mask(int &redraw,
 			float old_x, old_y, x, y;
 			int segments = (int)(sqrt(SQR(point1->x - point2->x) + SQR(point1->y - point2->y)));
 
-// printf("CWindowCanvas::do_mask 1 %f, %f -> %f, %f\n",
-// 	point1->x, point1->y, point2->x, point2->y);
+//printf("CWindowCanvas::do_mask 1 %f, %f -> %f, %f projectorz=%f\n",
+//point1->x, point1->y, point2->x, point2->y, projector_z);
 			for(int j = 0; j <= segments && !result; j++)
 			{
 //printf("CWindowCanvas::do_mask 1 %f, %f -> %f, %f\n", x0, y0, x3, y3);
@@ -911,8 +909,8 @@ int CWindowCanvas::do_mask(int &redraw,
 					+ 3 * tpow2 * invt     * y2 
 					+     tpow3            * y3);
 
-				x = x * projector_z + projector_x;
-				y = y * projector_z + projector_y;
+				x = half_track_w + (x - half_track_w) * projector_z + projector_x;
+				y = half_track_h + (y - half_track_h) * projector_z + projector_y;
 
 
 // Test new point addition
@@ -965,16 +963,16 @@ int CWindowCanvas::do_mask(int &redraw,
 // Test existing point selection
 				if(button_press)
 				{
-					float canvas_x = x0 * projector_z + projector_x;
-					float canvas_y = y0 * projector_z + projector_y;
+					float canvas_x = half_track_w + (x0 - half_track_w) * projector_z + projector_x;
+					float canvas_y = half_track_h + (y0 - half_track_h) * projector_z + projector_y;
 					int cursor_x = get_cursor_x();
 					int cursor_y = get_cursor_y();
 
 // Test first point
 					if(gui->shift_down())
 					{
-						float control_x = x1 * projector_z + projector_x;
-						float control_y = y1 * projector_z + projector_y;
+						float control_x = half_track_w + (x1 - half_track_w) * projector_z + projector_x;
+						float control_y = half_track_h + (y1 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, control_x, control_y);
 
 						float distance = 
@@ -1004,12 +1002,12 @@ int CWindowCanvas::do_mask(int &redraw,
 					}
 
 // Test second point
-					canvas_x = x3 * projector_z + projector_x;
-					canvas_y = y3 * projector_z + projector_y;
+					canvas_x = half_track_w + (x3 - half_track_w) * projector_z + projector_x;
+					canvas_y = half_track_h + (y3 - half_track_h) * projector_z + projector_y;
 					if(gui->shift_down())
 					{
-						float control_x = x2 * projector_z + projector_x;
-						float control_y = y2 * projector_z + projector_y;
+						float control_x = half_track_w + (x2 - half_track_w) * projector_z + projector_x;
+						float control_y = half_track_h + (y2 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, control_x, control_y);
 
 						float distance = 
@@ -1079,8 +1077,8 @@ int CWindowCanvas::do_mask(int &redraw,
 							}
 
 // Draw second control point.  Discard x2 and y2 after this.
-							x2 = x2 * projector_z + projector_x;
-							y2 = y2 * projector_z + projector_y;
+							x2 = half_track_w + (x2 - half_track_w) * projector_z + projector_x;
+							y2 = half_track_h + (y2 - half_track_h) * projector_z + projector_y;
 							output_to_canvas(mwindow->edl, 0, x2, y2);
 							canvas->draw_line((int)x, (int)y, (int)x2, (int)y2);
 							canvas->draw_rectangle((int)x2 - CONTROL_W / 2,
@@ -1106,8 +1104,8 @@ int CWindowCanvas::do_mask(int &redraw,
 // Draw first control point.  Discard x1 and y1 after this.
 					if(draw)
 					{
-						x1 = x1 * projector_z + projector_x;
-						y1 = y1 * projector_z + projector_y;
+						x1 = half_track_w + (x1 - half_track_w) * projector_z + projector_x;
+						y1 = half_track_h + (y1 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, x1, y1);
 						canvas->draw_line((int)x, (int)y, (int)x1, (int)y1);
 						canvas->draw_rectangle((int)x1 - CONTROL_W / 2,
@@ -1188,6 +1186,7 @@ int CWindowCanvas::do_mask(int &redraw,
 			point->control_x2 = 0;
 			point->control_y2 = 0;
 
+			mwindow->undo->update_undo_before("mask point", LOAD_AUTOMATION);
 
 			if(shortest_point2 < shortest_point1)
 			{
@@ -1303,6 +1302,7 @@ int CWindowCanvas::do_mask(int &redraw,
 			gui->current_operation = mwindow->edl->session->cwindow_operation;
 // Delete the template
 			delete point;
+			mwindow->undo->update_undo_after();
 //printf("CWindowCanvas::do_mask 4\n");
 		}
 
@@ -1331,14 +1331,16 @@ int CWindowCanvas::do_mask(int &redraw,
 //printf("CWindowCanvas::do_mask 8\n");
 	if(cursor_motion)
 	{
-		float cursor_x = get_cursor_x();
-		float cursor_y = get_cursor_y();
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_auto;
 		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 		if(gui->affected_point < mask->points.total)
 		{
 			MaskPoint *point = mask->points.values[gui->affected_point];
-			canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
+// 			float cursor_x = get_cursor_x();
+// 			float cursor_y = get_cursor_y();
+// 			canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
+			float cursor_x = mask_cursor_x;
+			float cursor_y = mask_cursor_y;
 //printf("CWindowCanvas::do_mask 9 %d %d\n", mask->points.total, gui->affected_point);
 
 			float last_x = point->x;
@@ -1385,6 +1387,7 @@ int CWindowCanvas::do_mask(int &redraw,
 				!EQUIV(last_control_x2, point->control_x2) ||
 				!EQUIV(last_control_y2, point->control_y2))
 			{
+				mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION);
 				rerender = 1;
 				redraw = 1;
 			}
@@ -2003,7 +2006,8 @@ void CWindowCanvas::draw_bezier_joining(BezierAuto *first,
 		center_y -= projector_y;
 	}
 
-	int segments = 10;
+//	int segments = 10;
+	int segments = MAX(canvas->get_w(), canvas->get_h());
 	int step = (last->position - first->position) / segments;
 	float old_x, old_y;
 	if(step < 1) step = 1;
@@ -2652,6 +2656,7 @@ int CWindowCanvas::cursor_motion_event()
 
 	if(rerender)
 	{
+		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,
@@ -2709,7 +2714,8 @@ int CWindowCanvas::button_press_event()
 				break;
 
 			case CWINDOW_MASK:
-				result = do_mask(redraw, rerender, 1, 0, 0);
+				if(get_buttonpress() == 1)
+					result = do_mask(redraw, rerender, 1, 0, 0);
 				break;
 		}
 	}

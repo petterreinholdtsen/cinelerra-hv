@@ -16,7 +16,6 @@
 /configure/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /cpu_accel.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /cpu_accel.h/1.1.1.1/Fri Jun 21 12:35:23 2002//
-/debug/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /djpeg.1/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /djpeg.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /example.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
@@ -150,4 +149,5 @@
 /wrppm.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /wrrle.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
 /wrtarga.c/1.1.1.1/Fri Jun 21 12:35:23 2002//
+/debug/1.1.1.1/Mon Jul 22 12:20:45 2002//
 D

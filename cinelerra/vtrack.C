@@ -12,7 +12,6 @@
 #include "filexml.h"
 #include "floatautos.h"
 #include "localsession.h"
-#include "mwindow.h"
 #include "patch.h"
 #include "selections.h"
 #include "mainsession.h"
@@ -201,11 +200,6 @@ int VTrack::direct_copy_possible(long start, int direction)
 
 
 
-
-VTrack::VTrack(MWindow *mwindow, Tracks *tracks) : Track(mwindow, tracks)
-{
-	data_type = TRACK_VIDEO;
-}
 
 int VTrack::create_derived_objs(int flash)
 {

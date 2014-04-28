@@ -226,10 +226,12 @@ void RecordThread::run()
 		if(!engine_done)
 		{
 			rewinding_loop = 0;
+//printf("RecordThread::run 6\n");
 
 // Devices are already opened for interactive recording to allow duplex
 			if(context == CONTEXT_BATCH)
 				record->open_input_devices(0, context);
+printf("RecordThread::run 7 %d\n", monitor);
 
 // Switch interactive recording to batch recording
 // to get delay before next batch
@@ -265,6 +267,7 @@ void RecordThread::run()
 						RING_BUFFERS,
 						record->vdevice->is_compressed());
 			}
+printf("RecordThread::run 8\n");
 
 // Reset synchronization  counters
 			record->get_current_batch()->session_samples = 0;
@@ -276,6 +279,7 @@ void RecordThread::run()
 				record_audio->arm_recording();
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
+//printf("RecordThread::run 9\n");
 
 // Trigger loops
 
@@ -284,13 +288,13 @@ void RecordThread::run()
 			if(record->default_asset->video_data)
 				record_video->start_recording();
 
-//printf("RecordThread::run 8\n");
+//printf("RecordThread::run 10\n");
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->join();
 			if(record->default_asset->video_data)
 				record_video->join();
-//printf("RecordThread::run 9\n");
+//printf("RecordThread::run 11\n");
 
 // Stop file threads here to keep loop synchronized
 			if(!monitor)
@@ -320,8 +324,8 @@ void RecordThread::run()
 						rewinding_loop = 1;
 					}
 					else
-// Advance batch if not terminated by user and continue loop
-					if(record->get_next_batch() >= 0)
+// Advance batch if not terminated by user and not single frame and continue loop
+					if(record->get_next_batch() >= 0 && context != CONTEXT_SINGLEFRAME)
 					{
 						record->activate_batch(record->get_next_batch(), 0);
 						record->close_input_devices();
@@ -335,6 +339,7 @@ void RecordThread::run()
 
 				if(drivesync) delete drivesync;
 			}
+//printf("RecordThread::run 12\n");
 		}
 
 // Wait for thread to stop before closing devices
@@ -347,7 +352,7 @@ void RecordThread::run()
 		}
 	}while(!engine_done);
 
-//printf("RecordThread::run 10\n");
+//printf("RecordThread::run 13\n");
 	record->close_input_devices();
 
 // Resume monitoring only if not a monitor ourselves

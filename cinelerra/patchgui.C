@@ -159,7 +159,7 @@ int PatchGUI::update(int x, int y)
 		}
 		else
 		{
-			play->update(play->get_keyframe(mwindow, this)->value);
+			play->update(track->play);
 			record->update(track->record);
 			gang->update(track->gang);
 			draw->update(track->draw);
@@ -281,6 +281,7 @@ void PatchGUI::toggle_behavior(int play,
 	if(play)
 	{
 		mwindow->gui->unlock_window();
+		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_EDL);
 		mwindow->gui->lock_window();
 	}
@@ -288,6 +289,7 @@ void PatchGUI::toggle_behavior(int play,
 	if(mute)
 	{
 		mwindow->gui->unlock_window();
+		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->gui->lock_window();
 	}
@@ -300,7 +302,7 @@ void PatchGUI::toggle_behavior(int play,
 PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
  : BC_Toggle(x, y, 
 		mwindow->theme->playpatch_data,
-		get_keyframe(mwindow, patch)->value, 
+		patch->track->play, 
 		"",
 		0,
 		0,
@@ -313,14 +315,6 @@ PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 
 int PlayPatch::handle_event()
 {
-	IntAuto *current;
-	double position = mwindow->edl->local_session->selectionstart;
-	Autos *play_autos = patch->track->automation->play_autos;
-
-	mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
-
-	current = (IntAuto*)play_autos->get_auto_for_editing(position);
-
 	patch->toggle_behavior(1, 
 		0, 
 		0, 
@@ -330,33 +324,8 @@ int PlayPatch::handle_event()
 		0,
 		get_value(),
 		this,
-		&current->value);
-
-	current->value = get_value();
-
-	mwindow->undo->update_undo_after();
-
-	if(mwindow->edl->session->auto_conf->play)
-	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
-
-//	mwindow->sync_parameters(CHANGE_EDL);
+		&patch->track->play);
 	return 1;
-}
-
-IntAuto* PlayPatch::get_keyframe(MWindow *mwindow, PatchGUI *patch)
-{
-	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->selectionstart;
-	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-	unit_position = patch->track->to_units(unit_position, 0);
-
-	return (IntAuto*)patch->track->automation->play_autos->get_prev_auto(
-		(long)unit_position, 
-		PLAY_FORWARD,
-		current);
 }
 
 

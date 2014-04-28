@@ -158,7 +158,6 @@ public:
 	CompressorEffect(PluginServer *server);
 	~CompressorEffect();
 
-	char* plugin_title();
 	int is_multichannel();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);

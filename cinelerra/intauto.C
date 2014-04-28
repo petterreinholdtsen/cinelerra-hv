@@ -35,10 +35,13 @@ void IntAuto::load(FileXML *file)
 //printf("IntAuto::load 1 %d\n", value);
 }
 
-void IntAuto::copy(long start, long end, FileXML *file)
+void IntAuto::copy(long start, long end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("POSITION", position - start);
+	if(default_auto)
+		file->tag.set_property("POSITION", 0);
+	else
+		file->tag.set_property("POSITION", position - start);
 	file->tag.set_property("VALUE", value);
 	file->append_tag();
 	file->append_newline();

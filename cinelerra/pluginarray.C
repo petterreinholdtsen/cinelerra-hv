@@ -48,7 +48,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 	this->end = end;
 	this->file = file;
 
-	cache = new CICache(this->edl, mwindow->plugindb);
+	cache = new CICache(this->edl, mwindow->preferences, mwindow->plugindb);
 //printf("PluginArray::start_plugins 1\n");	
 	buffer_size = get_bufsize();
 	get_recordable_tracks();

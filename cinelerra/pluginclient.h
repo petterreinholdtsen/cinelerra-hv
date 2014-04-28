@@ -17,7 +17,7 @@ class PluginClient;
 #include "pluginserver.inc"
 #include "sema.h"
 #include "theme.inc"
-#include "vframe.inc"
+#include "vframe.h"
 
 
 extern "C"
@@ -105,9 +105,12 @@ void thread_class::run() \
 }
 
 
+
+
 #define PLUGIN_CLASS_MEMBERS(config_name, thread_name) \
 	int load_configuration(); \
 	VFrame* new_picon(); \
+	char* plugin_title(); \
 	int show_gui(); \
 	int set_string(); \
 	void raise_window(); \
@@ -146,6 +149,7 @@ int plugin_class::show_gui() \
 	thread_class *new_thread = new thread_class(this); \
 /* printf("plugin_class::show_gui 1\n"); */ \
 	new_thread->start(); \
+/* sleep(10); */ \
 /* printf("plugin_class::show_gui 2\n"); */ \
 	return 0; \
 }
@@ -281,6 +285,7 @@ public:
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
 	int send_hide_gui();                                    // should be sent when the GUI recieves a close event from the user
 	int send_configure_change();                            // when this plugin is adjusted, propogate parameters to virtual plugins
+
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 	virtual void plugin_process_realtime(double **input, 
 		double **output, 
@@ -291,6 +296,9 @@ public:
 		VFrame **output, 
 		long current_position,
 		long total_len) {};
+// Called by plugin server to update GUI with rendered data.
+	virtual void plugin_render_gui(void *data) {};
+	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers, long &write_length) { return 1; };
 	virtual int plugin_process_loop(double **buffers, long &write_length) { return 1; };
 	virtual int init_realtime_parameters();     // get parameters depending on video or audio

@@ -23,6 +23,7 @@ public:
 	void resample(double old_rate, double new_rate);
 
 	int create_objects();
+	void equivalent_output(Autos *autos, long startproject, long *result);
 	void copy_from(Autos *autos);
 	virtual Auto* new_auto();
 	virtual float value_to_percentage();
@@ -54,7 +55,9 @@ public:
 	Track *track;
 // Default settings if no autos.
 // Having a persistent keyframe created problems when files were loaded and
-// we wanted to keep only 1 auto
+// we wanted to keep only 1 auto.
+// Default auto has position 0 except in effects, where multiple default autos
+// exist.
 	Auto *default_auto;
 
 
@@ -64,23 +67,18 @@ public:
 	int clear_all();
 	int insert(long start, long end);
 	int paste_silence(long start, long end);
-	int copy(long start, long end, FileXML *xml, int default_only);
-	int clear(long start, 
+	int copy(long start, 
+		long end, 
+		FileXML *xml, 
+		int default_only,
+		int autos_only);
+// Stores the background rendering position in result
+	void clear(long start, 
 		long end, 
 		int shift_autos);
 	int clear_auto(long position);
 	int save(FileXML *xml);
-	int draw(BC_SubWindow *canvas, int pixel, int zoom_track, float units_per_pixel, float view_start, int vertical);
-	virtual int swap_out_selected();        // don't draw new auto position
-	virtual int swap_in_selected();     
 	virtual int slope_adjustment(long ax, double slope);
-	virtual int get_track_pixels(int zoom_track, int pixel, int &center_pixel, float &yscale) {};
-	virtual int draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2) {};
-	int draw_floating_autos(BC_SubWindow *canvas, int pixel, int zoom_track, float units_per_pixel, float view_start, int vertical, int flash);
-	int draw_floating(BC_SubWindow *canvas, int pixel, int zoom_track, float units_per_pixel, float view_start, int vertical, int flash);
-	int select_auto(BC_SubWindow *canvas, int pixel, int zoom_track, float units_per_pixel, float view_start, int cursor_x, int cursor_y, int vertical);
-	virtual int get_testy(float slope, int cursor_x, int ax, int ay) {};
-	int move_auto(BC_SubWindow *canvas, int pixel, int zoom_track, float units_per_pixel, float view_start, int cursor_x, int cursor_y, int shift_down, int vertical);
 	virtual float fix_value(float value) {};
 	int release_auto();
 	virtual int release_auto_derived() {};

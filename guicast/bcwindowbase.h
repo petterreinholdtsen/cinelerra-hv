@@ -133,8 +133,8 @@ public:
 	virtual int repeat_event(long duration) { return 0; };
 	virtual int button_press_event() { return 0; };
 	virtual int button_release_event() { return 0; };
-	virtual int cursor_leave_event() { return 0; };
-	virtual int cursor_enter_event() { return 0; };
+	virtual int cursor_leave_event();
+	virtual int cursor_enter_event();
 	virtual int keypress_event() { return 0; };
 	virtual int translation_event() { return 0; };
 	virtual int drag_start_event() { return 0; };

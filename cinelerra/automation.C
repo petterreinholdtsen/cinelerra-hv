@@ -25,7 +25,6 @@ Automation::Automation(EDL *edl, Track *track)
 	camera_autos = 0;
 	projector_autos = 0;
 	pan_autos = 0;
-	play_autos = 0;
 	mute_autos = 0;
 	fade_autos = 0;
 	mode_autos = 0;
@@ -36,7 +35,6 @@ Automation::Automation(EDL *edl, Track *track)
 
 Automation::~Automation()
 {
-	if(play_autos) delete play_autos;
 	if(mute_autos) delete mute_autos;
 
 	if(mode_autos) delete mode_autos;
@@ -51,9 +49,6 @@ Automation::~Automation()
 
 int Automation::create_objects()
 {
-	play_autos = new IntAutos(edl, track);
-	play_autos->create_objects();
-	((IntAuto*)play_autos->default_auto)->value = 1;
 	mute_autos = new IntAutos(edl, track);
 	mute_autos->create_objects();
 	((IntAuto*)mute_autos->default_auto)->value = 0;
@@ -66,9 +61,21 @@ Automation& Automation::operator=(Automation& automation)
 	return *this;
 }
 
+void Automation::equivalent_output(Automation *automation, long *result)
+{
+	mute_autos->equivalent_output(automation->mute_autos, 0, result);
+	if(camera_autos) camera_autos->equivalent_output(automation->camera_autos, 0, result);
+	if(projector_autos) projector_autos->equivalent_output(automation->projector_autos, 0, result);
+	if(fade_autos) fade_autos->equivalent_output(automation->fade_autos, 0, result);
+	if(pan_autos) pan_autos->equivalent_output(automation->pan_autos, 0, result);
+	if(mode_autos) mode_autos->equivalent_output(automation->mode_autos, 0, result);
+	if(mask_autos) mask_autos->equivalent_output(automation->mask_autos, 0, result);
+	if(czoom_autos) czoom_autos->equivalent_output(automation->czoom_autos, 0, result);
+	if(pzoom_autos) pzoom_autos->equivalent_output(automation->pzoom_autos, 0, result);
+}
+
 void Automation::copy_from(Automation *automation)
 {
-	play_autos->copy_from(automation->play_autos);
 	mute_autos->copy_from(automation->mute_autos);
 	if(camera_autos) camera_autos->copy_from(automation->camera_autos);
 	if(projector_autos) projector_autos->copy_from(automation->projector_autos);
@@ -80,15 +87,8 @@ void Automation::copy_from(Automation *automation)
 	if(pzoom_autos) pzoom_autos->copy_from(automation->pzoom_autos);
 }
 
-
-
-int Automation::load(FileXML *file, int &current_plugin, int &current_channel)
+int Automation::load(FileXML *file)
 {
-	if(file->tag.title_is("PLAYAUTOS") && play_autos)
-	{
-		play_autos->load(file);
-	}
-	else
 	if(file->tag.title_is("MUTEAUTOS") && mute_autos)
 	{
 		mute_autos->load(file);
@@ -145,11 +145,6 @@ void Automation::paste(long start,
 {
 //printf("Automation::paste 1\n");
 	if(!autoconf) autoconf = edl->session->auto_conf;
-	if(file->tag.title_is("PLAYAUTOS") && play_autos && autoconf->play)
-	{
-		play_autos->paste(start, length, scale, file, default_only);
-	}
-	else
 	if(file->tag.title_is("MUTEAUTOS") && mute_autos && autoconf->mute)
 	{
 		mute_autos->paste(start, length, scale, file, default_only);
@@ -199,23 +194,10 @@ void Automation::paste(long start,
 int Automation::copy(long start, 
 	long end, 
 	FileXML *file, 
-	int default_only)
+	int default_only,
+	int autos_only)
 {
 // Always save these to save default
-	if(play_autos /* && play_autos->total() */)
-	{
-		file->tag.set_title("PLAYAUTOS");
-		file->append_tag();
-		file->append_newline();
-		play_autos->copy(start, 
-						end, 
-						file, 
-						default_only);
-		file->tag.set_title("/PLAYAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
 	if(mute_autos /* && mute_autos->total() */)
 	{
 		file->tag.set_title("MUTEAUTOS");
@@ -224,7 +206,8 @@ int Automation::copy(long start,
 		mute_autos->copy(start, 
 						end, 
 						file, 
-						default_only);
+						default_only,
+						autos_only);
 		file->tag.set_title("/MUTEAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -238,7 +221,8 @@ int Automation::copy(long start,
 		fade_autos->copy(start, 
 						end, 
 						file, 
-						default_only);
+						default_only,
+						autos_only);
 		file->tag.set_title("/FADEAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -252,7 +236,8 @@ int Automation::copy(long start,
 		camera_autos->copy(start, 
 						end, 
 						file, 
-						default_only);
+						default_only,
+						autos_only);
 		file->tag.set_title("/CAMERAAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -266,7 +251,8 @@ int Automation::copy(long start,
 		projector_autos->copy(start, 
 						end, 
 						file, 
-						default_only);
+						default_only,
+						autos_only);
 		file->tag.set_title("/PROJECTORAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -280,7 +266,8 @@ int Automation::copy(long start,
 		pan_autos->copy(start, 
 				end, 
 				file, 
-				default_only);
+				default_only,
+				autos_only);
 		file->append_newline();
 		file->tag.set_title("/PANAUTOS");
 		file->append_tag();
@@ -295,7 +282,8 @@ int Automation::copy(long start,
 		mode_autos->copy(start, 
 				end, 
 				file, 
-				default_only);
+				default_only,
+				autos_only);
 		file->tag.set_title("/MODEAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -309,7 +297,8 @@ int Automation::copy(long start,
 		mask_autos->copy(start, 
 				end, 
 				file, 
-				default_only);
+				default_only,
+				autos_only);
 		file->tag.set_title("/MASKAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -323,7 +312,8 @@ int Automation::copy(long start,
 		czoom_autos->copy(start, 
 				end, 
 				file, 
-				default_only);
+				default_only,
+				autos_only);
 		file->tag.set_title("/CZOOMAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -337,7 +327,8 @@ int Automation::copy(long start,
 		pzoom_autos->copy(start, 
 				end, 
 				file, 
-				default_only);
+				default_only,
+				autos_only);
 		file->tag.set_title("/PZOOMAUTOS");
 		file->append_tag();
 		file->append_newline();
@@ -353,6 +344,7 @@ void Automation::clear(long start,
 	int shift_autos)
 {
 	AutoConf *temp_autoconf = 0;
+
 	if(!autoconf)
 	{
 		temp_autoconf = new AutoConf;
@@ -360,12 +352,9 @@ void Automation::clear(long start,
 		autoconf = temp_autoconf;
 	}
 
-	if(autoconf->play)
-		play_autos->clear(start, end, shift_autos);
-	
 	if(autoconf->mute)
 		mute_autos->clear(start, end, shift_autos);
-	
+
 	if(autoconf->fade)
 		fade_autos->clear(start, end, shift_autos);
 
@@ -396,7 +385,6 @@ void Automation::clear(long start,
 void Automation::paste_silence(long start, long end)
 {
 // Unit conversion done in calling routine
-	play_autos->paste_silence(start, end);
 	mute_autos->paste_silence(start, end);
 	fade_autos->paste_silence(start, end);
 
@@ -424,10 +412,6 @@ void Automation::insert_track(Automation *automation,
 	long length_units,
 	int replace_default)
 {
-	play_autos->insert_track(automation->play_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
 	mute_autos->insert_track(automation->mute_autos, 
 		start_unit, 
 		length_units, 
@@ -469,7 +453,6 @@ void Automation::insert_track(Automation *automation,
 void Automation::resample(double old_rate, double new_rate)
 {
 // Run resample for all the autos structures and all the keyframes
-	play_autos->resample(old_rate, new_rate);
 	mute_autos->resample(old_rate, new_rate);
 	if(camera_autos) camera_autos->resample(old_rate, new_rate);
 	if(projector_autos) projector_autos->resample(old_rate, new_rate);
@@ -495,7 +478,6 @@ long Automation::get_length()
 	long length = 0;
 	long total_length = 0;
 
-	if(play_autos) length = play_autos->get_length();
 	if(length > total_length) total_length = length;
 
 	if(mute_autos) length = mute_autos->get_length();
@@ -533,8 +515,6 @@ long Automation::get_length()
 void Automation::dump()
 {
 	printf("   Automation: %p\n", this);
-	printf("    play_autos %p\n", play_autos);
-	play_autos->dump();
 	printf("    mute_autos %p\n", mute_autos);
 	mute_autos->dump();
 

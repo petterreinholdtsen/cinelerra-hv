@@ -261,7 +261,9 @@ int Asset::init_values()
 {
 	path[0] = 0;
 	strcpy(folder, MEDIA_FOLDER);
-	format = 0;
+//	format = FILE_MOV;
+// Has to be unknown for file probing to succeed
+	format = FILE_UNKNOWN;
 	channels = 0;
 	sample_rate = 0;
 	bits = 0;
@@ -308,6 +310,7 @@ int Asset::init_values()
 	vmpeg_quantization = 15;
 	vmpeg_cmodel = 0;
 	vmpeg_fix_bitrate = 0;
+	vmpeg_seq_codes = 0;
 
 // Divx parameters.  Defaults from encore2
 	divx_bitrate = 2000000;
@@ -329,6 +332,7 @@ int Asset::init_values()
 
 	png_use_alpha = 0;
 
+	use_header = 1;
 
 
 	reset_index();
@@ -363,7 +367,7 @@ void Asset::copy_format(Asset *asset)
 	header = asset->header;
 	dither = asset->dither;
 	mp3_bitrate = asset->mp3_bitrate;
-
+	use_header = asset->use_header;
 
 
 	video_data = asset->video_data;
@@ -401,7 +405,7 @@ void Asset::copy_format(Asset *asset)
 	vmpeg_quantization = asset->vmpeg_quantization;
 	vmpeg_cmodel = asset->vmpeg_cmodel;
 	vmpeg_fix_bitrate = asset->vmpeg_fix_bitrate;
-
+	vmpeg_seq_codes = asset->vmpeg_seq_codes;
 
 
 	divx_bitrate = asset->divx_bitrate;
@@ -555,6 +559,8 @@ int Asset::read(ArrayList<PluginServer*> *plugindb, FileXML *file)
 			{
 				char *string = file->tag.get_property("TYPE");
 				format = File::strtoformat(plugindb, string);
+				use_header = 
+					file->tag.get_property("USE_HEADER", use_header);
 			}
 			else
 			if(file->tag.title_is("FOLDER"))
@@ -641,6 +647,7 @@ int Asset::read_video(FileXML *file)
 	vmpeg_quantization = file->tag.get_property("VMPEG_QUANTIZATION", vmpeg_quantization);
 	vmpeg_cmodel = file->tag.get_property("VMPEG_CMODEL", vmpeg_cmodel);
 	vmpeg_fix_bitrate = file->tag.get_property("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
+	vmpeg_seq_codes = file->tag.get_property("VMPEG_SEQ_CODES", vmpeg_seq_codes);
 
 
 	divx_bitrate = file->tag.get_property("DIVX_BITRATE", divx_bitrate);
@@ -751,6 +758,7 @@ int Asset::write(ArrayList<PluginServer*> *plugindb,
 	{
 		file->tag.set_property("TYPE", 
 			File::formattostr(plugindb, format));
+		file->tag.set_property("USE_HEADER", use_header);
 	}
 
 	file->append_tag();
@@ -827,6 +835,7 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("VMPEG_QUANTIZATION", vmpeg_quantization);
 	file->tag.set_property("VMPEG_CMODEL", vmpeg_cmodel);
 	file->tag.set_property("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
+	file->tag.set_property("VMPEG_SEQ_CODES", vmpeg_seq_codes);
 
 
 	file->tag.set_property("DIVX_BITRATE", divx_bitrate);
@@ -887,120 +896,138 @@ int Asset::write_index(FileXML *file)
 
 
 
-
-
-void Asset::load_defaults(Defaults *defaults)
+char* Asset::construct_param(char *param, char *prefix, char *return_value)
 {
-
-// Can't save codec here because it's specific to render, record, and effect
-//	defaults->get("AUDIO_CODEC", acodec);
-	ampeg_bitrate = defaults->get("AMPEG_BITRATE", ampeg_bitrate);
-	ampeg_derivative = defaults->get("AMPEG_DERIVATIVE", ampeg_derivative);
-
-	vorbis_vbr = defaults->get("VORBIS_VBR", vorbis_vbr);
-	vorbis_min_bitrate = defaults->get("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	vorbis_bitrate = defaults->get("VORBIS_BITRATE", vorbis_bitrate);
-	vorbis_max_bitrate = defaults->get("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
-	mp3_bitrate = defaults->get("MP3_BITRATE", mp3_bitrate);
-
-
-
-
-
-
-
-
-//	defaults->get("VIDEO_CODEC", vcodec);
-
-
-	jpeg_quality = defaults->get("JPEG_QUALITY", jpeg_quality);
-
-// MPEG format information
-	vmpeg_iframe_distance = defaults->get("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	vmpeg_bframe_distance = defaults->get("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
-	vmpeg_progressive = defaults->get("VMPEG_PROGRESSIVE", vmpeg_progressive);
-	vmpeg_denoise = defaults->get("VMPEG_DENOISE", vmpeg_denoise);
-	vmpeg_bitrate = defaults->get("VMPEG_BITRATE", vmpeg_bitrate);
-	vmpeg_derivative = defaults->get("VMPEG_DERIVATIVE", vmpeg_derivative);
-	vmpeg_quantization = defaults->get("VMPEG_QUANTIZATION", vmpeg_quantization);
-	vmpeg_cmodel = defaults->get("VMPEG_CMODEL", vmpeg_cmodel);
-	vmpeg_fix_bitrate = defaults->get("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
-
-
-	divx_bitrate = defaults->get("DIVX_BITRATE", divx_bitrate);
-	divx_rc_period = defaults->get("DIVX_RC_PERIOD", divx_rc_period);
-	divx_rc_reaction_ratio = defaults->get("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-	divx_rc_reaction_period = defaults->get("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-	divx_max_key_interval = defaults->get("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-	divx_max_quantizer = defaults->get("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-	divx_min_quantizer = defaults->get("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-	divx_quantizer = defaults->get("DIVX_QUANTIZER", divx_quantizer);
-	divx_quality = defaults->get("DIVX_QUALITY", divx_quality);
-	divx_fix_bitrate = defaults->get("DIVX_FIX_BITRATE", divx_fix_bitrate);
-
-	ms_bitrate = defaults->get("MS_BITRATE", ms_bitrate);
-	ms_quantization = defaults->get("MS_QUANTIZATION", ms_quantization);
-	ms_gop_size = defaults->get("MS_GOP_SIZE", ms_gop_size);
-	ms_fix_bitrate = defaults->get("MS_FIX_BITRATE", ms_fix_bitrate);
-
-
-	png_use_alpha = defaults->get("PNG_USE_ALPHA", png_use_alpha);
+	if(prefix)
+		sprintf(return_value, "%s%s", prefix, param);
+	else
+		strcpy(return_value, param);
+	return return_value;
 }
 
-void Asset::save_defaults(Defaults *defaults)
+#define UPDATE_DEFAULT(x, y) defaults->update(construct_param(x, prefix, string), y);
+#define GET_DEFAULT(x, y) defaults->get(construct_param(x, prefix, string), y);
+
+void Asset::load_defaults(Defaults *defaults, 
+	char *prefix, 
+	int do_codecs)
 {
+	char string[BCTEXTLEN];
+
+// Can't save codec here because it's specific to render, record, and effect.
+// The codec has to be UNKNOWN for file probing to work.
+
+	if(do_codecs)
+	{
+		GET_DEFAULT("PATH", path);
+		format = GET_DEFAULT("FORMAT", format);
+		GET_DEFAULT("AUDIO_CODEC", acodec);
+	}
+	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
+	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
+
+	vorbis_vbr = GET_DEFAULT("VORBIS_VBR", vorbis_vbr);
+	vorbis_min_bitrate = GET_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+	vorbis_bitrate = GET_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
+	vorbis_max_bitrate = GET_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+
+	mp3_bitrate = GET_DEFAULT("MP3_BITRATE", mp3_bitrate);
+
 
 // Can't save codec here because it's specific to render, record, and effect
-//	defaults->update("AUDIO_CODEC", acodec);
-	defaults->update("AMPEG_BITRATE", ampeg_bitrate);
-	defaults->update("AMPEG_DERIVATIVE", ampeg_derivative);
+	if(do_codecs) GET_DEFAULT("VIDEO_CODEC", vcodec);
 
-	defaults->update("VORBIS_VBR", vorbis_vbr);
-	defaults->update("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	defaults->update("VORBIS_BITRATE", vorbis_bitrate);
-	defaults->update("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-	
-	defaults->update("MP3_BITRATE", mp3_bitrate);
-
-
-
-
-//	defaults->update("VIDEO_CODEC", vcodec);
-
-	defaults->update("JPEG_QUALITY", jpeg_quality);
+	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
 
 // MPEG format information
-	defaults->update("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	defaults->update("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
-	defaults->update("VMPEG_PROGRESSIVE", vmpeg_progressive);
-	defaults->update("VMPEG_DENOISE", vmpeg_denoise);
-	defaults->update("VMPEG_BITRATE", vmpeg_bitrate);
-	defaults->update("VMPEG_DERIVATIVE", vmpeg_derivative);
-	defaults->update("VMPEG_QUANTIZATION", vmpeg_quantization);
-	defaults->update("VMPEG_CMODEL", vmpeg_cmodel);
-	defaults->update("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
+	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
+	vmpeg_bframe_distance = GET_DEFAULT("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
+	vmpeg_progressive = GET_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
+	vmpeg_denoise = GET_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
+	vmpeg_bitrate = GET_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
+	vmpeg_derivative = GET_DEFAULT("VMPEG_DERIVATIVE", vmpeg_derivative);
+	vmpeg_quantization = GET_DEFAULT("VMPEG_QUANTIZATION", vmpeg_quantization);
+	vmpeg_cmodel = GET_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
+	vmpeg_fix_bitrate = GET_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
+	vmpeg_seq_codes = GET_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
+
+
+	divx_bitrate = GET_DEFAULT("DIVX_BITRATE", divx_bitrate);
+	divx_rc_period = GET_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
+	divx_rc_reaction_ratio = GET_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
+	divx_rc_reaction_period = GET_DEFAULT("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
+	divx_max_key_interval = GET_DEFAULT("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
+	divx_max_quantizer = GET_DEFAULT("DIVX_MAX_QUANTIZER", divx_max_quantizer);
+	divx_min_quantizer = GET_DEFAULT("DIVX_MIN_QUANTIZER", divx_min_quantizer);
+	divx_quantizer = GET_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
+	divx_quality = GET_DEFAULT("DIVX_QUALITY", divx_quality);
+	divx_fix_bitrate = GET_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
+
+	ms_bitrate = GET_DEFAULT("MS_BITRATE", ms_bitrate);
+	ms_quantization = GET_DEFAULT("MS_QUANTIZATION", ms_quantization);
+	ms_gop_size = GET_DEFAULT("MS_GOP_SIZE", ms_gop_size);
+	ms_fix_bitrate = GET_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
+
+
+	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+}
+
+void Asset::save_defaults(Defaults *defaults, char *prefix)
+{
+	char string[BCTEXTLEN];
+
+	UPDATE_DEFAULT("PATH", path);
+	UPDATE_DEFAULT("FORMAT", format);
+	UPDATE_DEFAULT("AUDIO_CODEC", acodec);
+	UPDATE_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
+	UPDATE_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
+
+	UPDATE_DEFAULT("VORBIS_VBR", vorbis_vbr);
+	UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+	UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
+	UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+	
+	UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
 
 
 
-	defaults->update("DIVX_BITRATE", divx_bitrate);
-	defaults->update("DIVX_RC_PERIOD", divx_rc_period);
-	defaults->update("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-	defaults->update("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-	defaults->update("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-	defaults->update("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-	defaults->update("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-	defaults->update("DIVX_QUANTIZER", divx_quantizer);
-	defaults->update("DIVX_QUALITY", divx_quality);
-	defaults->update("DIVX_FIX_BITRATE", divx_fix_bitrate);
+
+	UPDATE_DEFAULT("VIDEO_CODEC", vcodec);
+
+	UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
+
+// MPEG format information
+	UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
+	UPDATE_DEFAULT("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
+	UPDATE_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
+	UPDATE_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
+	UPDATE_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
+	UPDATE_DEFAULT("VMPEG_DERIVATIVE", vmpeg_derivative);
+	UPDATE_DEFAULT("VMPEG_QUANTIZATION", vmpeg_quantization);
+	UPDATE_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
+	UPDATE_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
+	UPDATE_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
 
 
-	defaults->update("MS_BITRATE", ms_bitrate);
-	defaults->update("MS_QUANTIZATION", ms_quantization);
-	defaults->update("MS_GOP_SIZE", ms_gop_size);
-	defaults->update("MS_FIX_BITRATE", ms_fix_bitrate);
 
-	defaults->update("PNG_USE_ALPHA", png_use_alpha);
+	UPDATE_DEFAULT("DIVX_BITRATE", divx_bitrate);
+	UPDATE_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
+	UPDATE_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
+	UPDATE_DEFAULT("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
+	UPDATE_DEFAULT("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
+	UPDATE_DEFAULT("DIVX_MAX_QUANTIZER", divx_max_quantizer);
+	UPDATE_DEFAULT("DIVX_MIN_QUANTIZER", divx_min_quantizer);
+	UPDATE_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
+	UPDATE_DEFAULT("DIVX_QUALITY", divx_quality);
+	UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
+
+
+	UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
+	UPDATE_DEFAULT("MS_QUANTIZATION", ms_quantization);
+	UPDATE_DEFAULT("MS_GOP_SIZE", ms_gop_size);
+	UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
+
+	UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 }
 
 
@@ -1019,7 +1046,7 @@ int Asset::update_path(char *new_path)
 
 void Asset::update_index(Asset *asset)
 {
-//printf("Asset::update_index 1\n");
+//printf("Asset::update_index 1 %d\n", index_status);
 	index_status = asset->index_status;     // 0 ready  1 not tested  2 being built  3 small source
 	index_zoom = asset->index_zoom; 	 // zoom factor of index data
 	index_start = asset->index_start;	 // byte start of index data in the index file

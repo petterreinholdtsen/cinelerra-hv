@@ -28,10 +28,10 @@
 #include "module.h"
 #include "mutex.h"
 #include "neworappend.h"
+#include "packagedispatcher.h"
 #include "packagerenderer.h"
 #include "patchbay.h"
 #include "playabletracks.h"
-#include "playbackengine.h"
 #include "preferences.h"
 #include "statusbar.h"
 #include "timebar.h"
@@ -40,12 +40,10 @@
 #include "quicktime.h"
 #include "vrender.h"
 #include "render.h"
-#include "renderengine.h"
 #include "renderfarm.h"
 #include "vedit.h"
 #include "vframe.h"
 #include "videoconfig.h"
-#include "videodevice.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -253,8 +251,6 @@ void Render::run()
 // Total length in seconds
 	double total_length;
 	int last_audio_buffer;
-	VideoDevice *video_device = 0;
-	RenderEngine *render_engine = 0;
 	RenderFarmServer *farm_server = 0;
 	FileSystem fs;
 	int total_digits;       // Total number of digits including padding the user specified.
@@ -314,8 +310,8 @@ void Render::run()
 	}
 
 // Create caches
-	audio_cache = new CICache(command->get_edl(), mwindow->plugindb);
-	video_cache = new CICache(command->get_edl(), mwindow->plugindb);
+	audio_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
+	video_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
 
 	load_defaults(default_asset);
 
@@ -388,6 +384,9 @@ void Render::run()
 // Generate packages
 	if(!result)
 	{
+// Stop background rendering
+		mwindow->stop_brender();
+
 		fs.complete_path(default_asset->path);
 		if(preferences->use_renderfarm)
 		{
@@ -437,7 +436,16 @@ void Render::run()
 		mwindow->gui->unlock_window();
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
-			farm_server = new RenderFarmServer(mwindow, this);
+			farm_server = new RenderFarmServer(mwindow, 
+				packages,
+				preferences, 
+				1,
+				&result,
+				&total_rendered,
+				counter_lock,
+				default_asset,
+				command->get_edl(),
+				0);
 			result = farm_server->start_clients();
 			
 			if(result)
@@ -483,14 +491,16 @@ void Render::run()
 		{
 // Get unfinished job
 			RenderPackage *package;
-			
+
 			if(strategy == SINGLE_PASS_FARM)
 			{
-				package = packages->get_package(frames_per_second, farm_server->calculate_avg_fps());
+//printf("Render 9\n");
+				package = packages->get_package(frames_per_second, -1, 1);
+//printf("Render 10\n");
 			}
 			else
 			{
-				package = packages->get_package(0, 0);
+				package = packages->get_package(0, -1, 1);
 			}
 
 // Exit point
@@ -501,6 +511,7 @@ void Render::run()
 			}
 
 
+//printf("Render 11\n");
 
 			Timer timer;
 			timer.update();
@@ -508,14 +519,16 @@ void Render::run()
 			if(package_renderer.render_package(package))
 				result = 1;
 // Result is also set directly by the RenderFarm.
+//printf("Render 12\n");
 
 			frames_per_second = (double)(package->video_end - package->video_start) / 
 				(double)(timer.get_difference() / 1000);
 
+//printf("Render 13\n");
 
 		} // file_number
 
-printf("Render::run: Session finished.\n");
+//printf("Render::run: Session finished.\n");
 
 
 
@@ -575,22 +588,28 @@ printf("Render::run: Session finished.\n");
 
 		mwindow->save_backup();
 		mwindow->undo->update_undo_after();
-
-
-
-
-
+		mwindow->update_plugin_guis();
+		mwindow->gui->update(1, 
+			2,
+			1,
+			1,
+			0,
+			1,
+			0);
+		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 	}
 
-
-	delete packages;
+// Need to restart because brender always stops before render.
+	mwindow->restart_brender();
+	if(farm_server) delete farm_server;
 	delete preferences;
 	delete command;
 	delete playback_config;
 	delete audio_cache;
 	delete video_cache;
-	if(farm_server) delete farm_server;
+// Must delete packages after server
+	delete packages;
 	delete default_asset;
 	in_progress = 0;
 }
@@ -656,7 +675,8 @@ void Render::create_filename(char *path,
 void Render::get_starting_number(char *path, 
 	int &current_number,
 	int &number_start, 
-	int &total_digits)
+	int &total_digits,
+	int min_digits)
 {
 	int i, j;
 	int len = strlen(path);
@@ -681,173 +701,16 @@ void Render::get_starting_number(char *path,
 		current_number = atol(number_text);
 		total_digits = strlen(number_text);
 	}
-	else
-// No number found
+
+
+// No number found or number not long enough
+	if(total_digits < min_digits)
 	{
 		current_number = 1;
 		number_start = len;
-		total_digits = 3;
+		total_digits = min_digits;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
-// Try to copy the compressed frame directly from the input to output files
-// Return 1 on failure and 0 on success
-int Render::direct_frame_copy(EDL *edl, long &video_position, File *file)
-{
-	Track *playable_track;
-	Edit *playable_edit;
-	long frame_size;
-	int result = 0;
-
-//printf("Render::direct_frame_copy 1\n");
-	if(direct_copy_possible(edl, 
-		video_position, 
-		playable_track, 
-		playable_edit, 
-		file))
-	{
-// Switch to direct copying
-		if(!direct_frame_copying)
-		{
-			file->stop_video_thread();
-			direct_frame_copying = 1;
-		}
-//printf("Render::direct_frame_copy 2\n");
-
-		result = ((VEdit*)playable_edit)->read_frame(compressed_output, 
-			video_position,
-			PLAY_FORWARD,
-			video_cache);
-
-//printf("Render::direct_frame_copy 3 %d\n", compressed_output->get_compressed_size());
-		if(!result)
-		{
-			VFrame ***temp_output = new VFrame**[1];
-			temp_output[0] = new VFrame*[1];
-			temp_output[0][0] = compressed_output;
-			result = file->write_frames(temp_output, 1);
-			delete temp_output[0];
-			delete temp_output;
-		}
-//printf("Render::direct_frame_copy 4\n");
-		return result;
-	}
-	else
-		return 1;
-}
-
-
-int Render::direct_copy_possible(EDL *edl,
-				long current_position, 
-				Track* playable_track,  // The one track which is playable
-				Edit* &playable_edit, // The edit which is playing
-				File *file)   // Output file
-{
-	int result = 1;
-	int total_playable_tracks = 0;
-	Track* current_track;
-	Patch* current_patch;
-	Auto* current_auto;
-	int temp;
-
-// Number of playable tracks must equal 1
-	for(current_track = edl->tracks->first;
-		current_track && result; 
-		current_track = current_track->next)
-	{
-		if(current_track->data_type == TRACK_VIDEO)
-		{
-			if(playable_tracks->is_playable(current_track, current_position))
-			{
-				playable_track = current_track;
-				total_playable_tracks++;
-			}
-		}
-	}
-
-//printf("Render::direct_copy_possible 1 %d\n", result);
-	if(total_playable_tracks != 1) result = 0;
-//printf("Render::direct_copy_possible 2 %d\n", result);
-
-// Edit must have a source file
-	if(result)
-	{
-//printf("Render::direct_copy_possible 3 %d\n", result);
-		playable_edit = playable_track->edits->get_playable_edit(current_position);
-//printf("Render::direct_copy_possible 4 %d %p\n", result, playable_edit);
-		if(!playable_edit)
-			result = 0;
-	}
-
-// Source file must be able to copy to destination file.
-// Source file must be same size as project output.
-	if(result)
-	{
-//printf("Render::direct_copy_possible 5 %d\n", result);
-		if(!file->can_copy_from(playable_edit->asset, 
-			edl->session->output_w, 
-			edl->session->output_h))
-			result = 0;
-	}
-//printf("Render::direct_copy_possible 6 %d\n", result);
-
-// Test conditions mutual between vrender.C and this.
-	if(result && !playable_track->direct_copy_possible(current_position, PLAY_FORWARD))
-		result = 0;
-//printf("Render::direct_copy_possible 7 %d\n", result);
-
-	return result;
-}
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -971,7 +834,8 @@ int RenderWindow::create_objects()
 		1,
 		0,
 		0,
-		&render->strategy);
+		&render->strategy,
+		0);
 
 	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
 	loadmode->create_objects();
@@ -981,23 +845,3 @@ int RenderWindow::create_objects()
 	show_window();
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

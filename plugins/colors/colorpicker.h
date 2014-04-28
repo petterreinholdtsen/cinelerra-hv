@@ -15,27 +15,31 @@ class PaletteValue;
 class PaletteRed;
 class PaletteGreen;
 class PaletteBlue;
+class PaletteAlpha;
 
 class ColorThread : public Thread
 {
 public:
-	ColorThread();
+	ColorThread(int do_alpha = 0, char *title = 0);
 	~ColorThread();
 
 	void run();
-	void start_window(int output);
+	void start_window(int output, int alpha);
 	virtual int handle_event(int output) { return 0; };
 
 	ColorWindow *window;
 	Mutex completion;
 // Starting color
 	int output;
+	int alpha;
+	int do_alpha;
+	char *title;
 };
 
 class ColorWindow : public BC_Window
 {
 public:
-	ColorWindow(ColorThread *thread, int x, int y);
+	ColorWindow(ColorThread *thread, int x, int y, char *title);
 
 	void create_objects();
 	int close_event();
@@ -54,8 +58,9 @@ public:
 	PaletteRed *red;
 	PaletteGreen *green;
 	PaletteBlue *blue;
+	PaletteAlpha *alpha;
 	VFrame *value_bitmap;
-	float h, s, v, r, g, b;
+	float h, s, v, r, g, b, a;
 };
 
 
@@ -155,6 +160,15 @@ class PaletteBlue : public BC_FSlider
 public:
 	PaletteBlue(ColorWindow *window, int x, int y);
 	~PaletteBlue();
+	int handle_event();
+	ColorWindow *window;
+};
+
+class PaletteAlpha : public BC_FSlider
+{
+public:
+	PaletteAlpha(ColorWindow *window, int x, int y);
+	~PaletteAlpha();
 	int handle_event();
 	ColorWindow *window;
 };

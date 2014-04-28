@@ -13,7 +13,6 @@
 #include "transportque.h"
 
 
-
 PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
 	long current_position, 
 	int data_type)
@@ -36,6 +35,10 @@ PlayableTracks::PlayableTracks(RenderEngine *renderengine,
 //printf("PlayableTracks::PlayableTracks %d %d\n", data_type, total);
 }
 
+PlayableTracks::~PlayableTracks()
+{
+}
+
 
 int PlayableTracks::is_playable(Track *current_track, long position)
 {
@@ -43,11 +46,6 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 	int direction = renderengine->command->get_direction();
 
 	Auto *current = 0;
-	IntAuto *play_auto = 
-		(IntAuto*)current_track->automation->play_autos->get_prev_auto(
-			position, 
-			direction,
-			current);
 	int *do_channel;
 	switch(data_type)
 	{
@@ -76,8 +74,8 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 	}
 //printf("PlayableTracks::is_playable 2 %d\n", result);
 
-// Play patch is off
-	if(!play_auto->value)
+// Test play patch
+	if(!current_track->play)
 	{
 		result = 0;
 	}
@@ -85,36 +83,18 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 //printf("PlayableTracks::is_playable 3 %d %d\n", position, result);
 	if(result)
 	{
-		int plugin_synthesis = 0;
-
-// Test if synthesizing plugin exists
-		for(int i = 0; i < current_track->plugin_set.total; i++)
+// Test for playable edit
+		if(!current_track->playable_edit(position, direction))
 		{
-			PluginSet *plugin_set = current_track->plugin_set.values[i];
-			Plugin *plugin = current_track->get_current_plugin(position, 
-				i, 
-				direction,
-				0);
-			if(plugin)
+// Test for playable effect
+			if(!current_track->is_synthesis(renderengine,
+						position,
+						direction))
 			{
-				PluginServer *plugin_server = renderengine->scan_plugindb(plugin->title);
-				if(plugin_server)
-				{
-					plugin_synthesis |= plugin_server->synthesis;
-				}
+				result = 0;
 			}
 		}
-
-// Test if edit exists under the current position.
-		if(renderengine->edl->session->test_playback_edits)
-		{
-//printf("PlayableTracks::is_playable 3 %p\n", plugin_server);
-			if(!current_track->playable_edit(position, direction) &&
-				!plugin_synthesis)
-				result = 0;
-		}
 	}
-//printf("PlayableTracks::is_playable 4 %d\n", result);
 
 	return result;
 }

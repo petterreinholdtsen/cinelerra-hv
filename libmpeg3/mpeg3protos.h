@@ -226,7 +226,7 @@ unsigned char mpeg3demux_read_prev_char_packet(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_read_program(mpeg3_demuxer_t *demuxer);
 double mpeg3demux_audio_pts(mpeg3_demuxer_t *demuxer);
 double mpeg3demux_video_pts(mpeg3_demuxer_t *demuxer);
-
+void mpeg3demux_reset_pts(mpeg3_demuxer_t *demuxer);
 
 
 
@@ -456,7 +456,7 @@ static unsigned int mpeg3bits_showbits_reverse(mpeg3_bits_t* stream, int bits)
 
 
 
-
+void mpeg3io_read_buffer(mpeg3_fs_t *fs);
 
 #define mpeg3io_tell(fs) (((mpeg3_fs_t *)(fs))->current_byte)
 
@@ -482,28 +482,7 @@ static int mpeg3io_sync_buffer(mpeg3_fs_t *fs)
 	if(fs->current_byte < fs->buffer_position ||
 		fs->current_byte >= fs->buffer_position + fs->buffer_size)
 	{
-// Sequential reverse buffer
-		if(fs->current_byte == fs->buffer_position - 1)
-		{
-//printf("mpeg3io_sync_buffer 1 %x %x\n", fs->current_byte, fs->buffer_position);
-			fs->buffer_position = fs->current_byte - MPEG3_IO_SIZE + 1;
-			if(fs->buffer_position < 0) fs->buffer_position = 0;
-
-			fs->buffer_size = fs->current_byte - fs->buffer_position + 1;
-			fs->buffer_offset = fs->buffer_size - 1;
-
-			fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
-			fs->buffer_size = fread(fs->buffer, 1, fs->buffer_size, fs->fd);
-		}
-		else
-// Sequential forward buffer or random seek
-		{
-//printf("mpeg3io_sync_buffer 2 %x %x\n", fs->current_byte, fs->buffer_position);
-			fs->buffer_position = fs->current_byte;
-			fs->buffer_offset = 0;
-			fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
-			fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
-		}
+		mpeg3io_read_buffer(fs);
 	}
 	
 	return !fs->buffer_size;

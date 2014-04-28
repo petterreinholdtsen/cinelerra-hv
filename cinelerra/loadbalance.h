@@ -58,7 +58,9 @@ public:
 
 	void process_packages();
 	int get_total_packages();
+	int get_total_clients();
 	LoadPackage* get_package(int number);
+	LoadClient* get_client(int number);
 	void set_package_count(int total_packages);
 
 

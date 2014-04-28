@@ -111,7 +111,7 @@ void CommonRender::create_modules()
 	else
 // Update changes in plugins for existing modules
 	{
-//printf("CommonRender::create_modules 3\n");
+//printf("CommonRender::create_modules 3 %d\n", total_modules);
 		for(module = 0; module < total_modules; module++)
 		{
 			modules[module]->create_objects();

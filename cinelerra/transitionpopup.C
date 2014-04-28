@@ -97,6 +97,7 @@ int TransitionLengthText::handle_event()
 	if(!EQUIV(result, gui->transition->length))
 	{
 		gui->transition->length = gui->transition->track->to_units(result, 1);
+		if(gui->transition->edit->track->data_type == TRACK_VIDEO) mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->edl->session->default_transition_length = result;
 	}

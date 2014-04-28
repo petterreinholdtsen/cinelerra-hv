@@ -1,0 +1,87 @@
+#ifndef BRENDER_H
+#define BRENDER_H
+
+
+
+// The master node of the background renderer needs a separate memory space 
+// because few of the codecs are reentrant.
+
+// To solve the problem, the master node forks itself and treats the forked 
+// master node as the first node of a renderfarm.  There is no real master node
+// of the renderfarm.
+
+// If renderfarm is enabled, the extra renderfarm nodes are treated normally.
+// Unfortunately because of the codec problem, only one copy of Cinelerra
+// can be running on a single renderfarm.  Furthermore, either background 
+// rendering or render rendering can be happening but not both.
+
+// A BRenderThread client runs in the background and a BRender object 
+// interfaces the main window.  The BRender client recieves commands to
+// restart, start, and stop background rendering on its own time to avoid 
+// interrupting the main window.
+
+// Whenever a change happens to the timeline, we calculate the last position
+// which hasn't changed and the end of the contiguous renderfarm output.  
+// Then we restart the background renderfarm at the
+// lesser of the positions.  Theoretically, we could conditionally restart only 
+// if one of the current jobs was behind the position and just copy the EDL
+// in all cases but how do you synchronize the EDL down the chain of users?
+
+// The two problems to emerge are which job is the last job in the contiguous
+// set of finished jobs and if position of change is before the last job, 
+// how to truncate and restart the output file.
+
+// It's easy to use image sequences as the output file to solve the 
+// file truncation problem.
+// Figuring out the end of the contiguous output means recording the
+// state of every output file and constructing another EDL for the 
+// background output as certain output files cluster together.
+// This is needed anyway for playback.
+
+#include "brender.inc"
+#include "mutex.inc"
+
+
+class BRender
+{
+public:
+	BRender(MWindow *mwindow);
+	~BRender();
+
+// Give the last position of the EDL which hasn't changed.
+// We copy the EDL and restart rendering at the lesser of position and
+// our position.
+	void update(EDL *edl, double position);
+
+	MWindow *mwindow;
+};
+
+class BRenderCommand
+{
+public:
+	BRenderCommand();
+	~BRenderCommand();
+
+	EDL *edl;
+	int command;
+	double position;
+};
+
+class BRenderThread : public Thread
+{
+public:
+	BRenderThread();
+	~BRenderThread();
+
+	void send_command(BRenderCommand);
+	void run();
+
+	ArrayList<BRenderCommand*> commands;
+	Mutex *input_lock;
+	Mutex *output_lock;
+	RenderFarmServer *farm_server;
+};
+
+
+
+#endif

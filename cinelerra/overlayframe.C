@@ -143,8 +143,8 @@ OverlayFrame::~OverlayFrame()
 	int64_t pixel_opacity, pixel_transparency; \
 	const int64_t chroma_offset = (do_yuv ? (max + 1) / 2 : 0); \
  \
-	pixel_opacity = opacity * input4 / max; \
-	pixel_transparency = (max - pixel_opacity) /* * output[3] / max */; \
+	pixel_opacity = opacity * input4; \
+	pixel_transparency = max * max - pixel_opacity; \
  \
 	switch(mode) \
 	{ \
@@ -160,9 +160,9 @@ OverlayFrame::~OverlayFrame()
 				g = output[1] ? (int64_t)input2 * max / (int64_t)output[1] : max; \
 				b = output[2] ? (int64_t)input3 * max / (int64_t)output[2] : max; \
 			} \
-			r = (r * pixel_opacity + (int64_t)output[0] * pixel_transparency) / max; \
-			g = (g * pixel_opacity + (int64_t)output[1] * pixel_transparency) / max; \
-			b = (b * pixel_opacity + (int64_t)output[2] * pixel_transparency) / max; \
+			r = (r * pixel_opacity + (int64_t)output[0] * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + (int64_t)output[1] * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + (int64_t)output[2] * pixel_transparency) / max / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 		case TRANSFER_MULTIPLY: \
@@ -177,27 +177,27 @@ OverlayFrame::~OverlayFrame()
 				g = (int64_t)input2 * (int64_t)output[1] / max; \
 				b = (int64_t)input3 * (int64_t)output[2] / max; \
 			} \
-			r = (r * pixel_opacity + (int64_t)output[0] * pixel_transparency) / max; \
-			g = (g * pixel_opacity + (int64_t)output[1] * pixel_transparency) / max; \
-			b = (b * pixel_opacity + (int64_t)output[2] * pixel_transparency) / max; \
+			r = (r * pixel_opacity + (int64_t)output[0] * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + (int64_t)output[1] * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + (int64_t)output[2] * pixel_transparency) / max / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 		case TRANSFER_SUBTRACT: \
 			r = (int64_t)input1 - output[0]; \
 			g = (int64_t)input2 - ((int64_t)output[1] - chroma_offset); \
 			b = (int64_t)input3 - ((int64_t)output[2] - chroma_offset); \
-			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
-			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
-			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
+			r = (r * pixel_opacity + output[0] * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + output[1] * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + output[2] * pixel_transparency) / max / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 		case TRANSFER_ADDITION: \
 			r = (int64_t)input1 + output[0]; \
 			g = (int64_t)input2 - chroma_offset + output[1]; \
 			b = (int64_t)input3 - chroma_offset + output[2]; \
-			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
-			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
-			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
+			r = (r * pixel_opacity + output[0] * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + output[1] * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + output[2] * pixel_transparency) / max / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 		case TRANSFER_REPLACE: \
@@ -207,9 +207,9 @@ OverlayFrame::~OverlayFrame()
 			a = input4; \
 			break; \
 		case TRANSFER_NORMAL: \
-			r = ((int64_t)input1 * pixel_opacity + output[0] * pixel_transparency) / max; \
-			g = ((int64_t)input2 * pixel_opacity + output[1] * pixel_transparency) / max; \
-			b = ((int64_t)input3 * pixel_opacity + output[2] * pixel_transparency) / max; \
+			r = ((int64_t)input1 * pixel_opacity + output[0] * pixel_transparency) / max / max; \
+			g = ((int64_t)input2 * pixel_opacity + output[1] * pixel_transparency) / max / max; \
+			b = ((int64_t)input3 * pixel_opacity + output[2] * pixel_transparency) / max / max; \
 			a = input4 > output[3] ? input4 : output[3]; \
 			break; \
 	} \

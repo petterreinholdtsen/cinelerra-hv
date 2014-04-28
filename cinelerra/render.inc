@@ -13,7 +13,7 @@ class RenderJob;
 #define FILE_PER_LABEL          1
 #define SINGLE_PASS_FARM        2
 #define FILE_PER_LABEL_FARM     3
-
+#define BRENDER_FARM            4
 
 
 

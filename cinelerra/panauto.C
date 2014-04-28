@@ -49,10 +49,13 @@ void PanAuto::load(FileXML *file)
 	}
 }
 
-void PanAuto::copy(long start, long end, FileXML *file)
+void PanAuto::copy(long start, long end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("POSITION", position - start);
+	if(default_auto)
+		file->tag.set_property("POSITION", 0);
+	else
+		file->tag.set_property("POSITION", position - start);
 	file->tag.set_property("HANDLE_X", (long)handle_x);
 	file->tag.set_property("HANDLE_Y", (long)handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)

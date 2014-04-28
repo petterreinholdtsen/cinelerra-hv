@@ -217,7 +217,13 @@ void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap
 
 void BC_WindowBase::draw_rectangle(int x, int y, int w, int h)
 {
-	XDrawRectangle(top_level->display, pixmap, top_level->gc, x, y, w - 1, h - 1);
+	XDrawRectangle(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		x, 
+		y, 
+		w - 1, 
+		h - 1);
 }
 
 void BC_WindowBase::draw_3d_border(int x, int y, int w, int h, 

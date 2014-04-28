@@ -384,27 +384,12 @@ void TimeBar::update_presentations()
 
 void TimeBar::update(int do_range, int do_others)
 {
-	if(do_others)
-		draw_time();
-
-	if(do_range)
-	{
-		draw_range();
-	}
-
-	if(do_others)
-		update_labels();
-
-	if(do_others)
-		update_points();
-
-	if(do_others)
-		update_presentations();
-
-	if(do_range)
-	{
-		flash();
-	}
+	draw_time();
+// Need to redo these when range is drawn to get the background updated.
+	update_labels();
+	update_points();
+	update_presentations();
+	flash();
 }
 
 

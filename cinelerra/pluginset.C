@@ -42,6 +42,20 @@ PluginSet& PluginSet::operator=(PluginSet& plugins)
 	return *this;
 }
 
+Plugin* PluginSet::get_first_plugin()
+{
+// Called when a new pluginset is added.
+// Get first non-silence plugin in the plugin set.
+	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)
+	{
+		if(current && current->plugin_type != PLUGIN_NONE)
+		{
+			return current;
+		}
+	}
+	return 0;
+}
+
 void PluginSet::synchronize_params(PluginSet *plugin_set)
 {
 	for(Plugin *this_plugin = (Plugin*)first, *that_plugin = (Plugin*)plugin_set->first;
@@ -72,6 +86,7 @@ Plugin* PluginSet::insert_plugin(char *title,
 
 	if(default_keyframe) 
 		*plugin->keyframes->default_auto = *default_keyframe;
+	plugin->keyframes->default_auto->position = unit_position;
 
 // May delete the plugin we just added so not desirable while loading.
 	if(do_optimize) optimize();
@@ -97,7 +112,7 @@ int PluginSet::get_number()
 	return track->plugin_set.number_of(this);
 }
 
-int PluginSet::clear(long start, long end)
+void PluginSet::clear(long start, long end)
 {
 // Clear keyframes
 	for(Plugin *current = (Plugin*)first;
@@ -109,7 +124,6 @@ int PluginSet::clear(long start, long end)
 
 // Clear edits
 	Edits::clear(start, end);
-	return 0;
 }
 
 void PluginSet::clear_recursive(long start, long end)
@@ -141,7 +155,8 @@ void PluginSet::clear_keyframes(long start, long end)
 void PluginSet::copy_keyframes(long start, 
 	long end, 
 	FileXML *file, 
-	int default_only)
+	int default_only,
+	int autos_only)
 {
 	file->tag.set_title("PLUGINSET");	
 	file->append_tag();
@@ -151,7 +166,7 @@ void PluginSet::copy_keyframes(long start,
 		current; 
 		current = (Plugin*)NEXT)
 	{
-		current->copy_keyframes(start, end, file, default_only);
+		current->copy_keyframes(start, end, file, default_only, autos_only);
 	}
 
 	file->tag.set_title("/PLUGINSET");	
@@ -192,8 +207,16 @@ void PluginSet::paste_keyframes(long start,
 					if(position >= current->startproject)
 					{
 //printf("PluginSet::paste_keyframes 1 %d %d\n", position, current->startproject);
-						KeyFrame *keyframe = 
-							(KeyFrame*)current->keyframes->insert_auto(position);
+						KeyFrame *keyframe;
+						if(file->tag.get_property("DEFAULT", 0) || default_only)
+						{
+							keyframe = (KeyFrame*)current->keyframes->default_auto;
+						}
+						else
+						{
+							keyframe = 
+								(KeyFrame*)current->keyframes->insert_auto(position);
+						}
 						keyframe->load(file);
 						keyframe->position = position;
 						break;
@@ -215,6 +238,8 @@ void PluginSet::shift_effects(long start, long length)
 		if(current->startproject >= start)
 		{
 			current->startproject += length;
+			if(current->keyframes->default_auto->position >= start)
+				current->keyframes->default_auto->position += length;
 			current->keyframes->paste_silence(start, start + length);
 		}
 		else
@@ -250,14 +275,12 @@ void PluginSet::load(FileXML *file, unsigned long load_flags)
 {
 	int result = 0;
 // Current plugin being amended
-	Plugin *plugin = 0;
-//printf("PluginSet::load 1\n");
+	Plugin *plugin = (Plugin*)first;
 	long startproject = 0;
 
 	do{
 		result = file->read_tag();
 
-//printf("PluginSet::load 1 %s\n", file->tag.get_title());
 
 		if(!result)
 		{
@@ -276,22 +299,28 @@ void PluginSet::load(FileXML *file, unsigned long load_flags)
 				SharedLocation shared_location;
 				shared_location.load(file);
 
-//printf("PluginSet::load 2 %s\n", title);
 
-				plugin = insert_plugin(title, 
-					startproject, 
-					length,
-					plugin_type,
-					&shared_location,
-					0,
-					0);
-//printf("PluginSet::load 2 %s\n", title);
-				plugin->load(file);
-				startproject += length;
-//printf("PluginSet::load 3 %s\n", title);
-//edl->dump();
-//printf("PluginSet::load 4 %s\n", title);
-
+				if(load_flags & LOAD_EDITS)
+				{
+					plugin = insert_plugin(title, 
+						startproject, 
+						length,
+						plugin_type,
+						&shared_location,
+						0,
+						0);
+					plugin->load(file);
+					startproject += length;
+				}
+				else
+				if(load_flags & LOAD_AUTOMATION)
+				{
+					if(plugin)
+					{
+						plugin->load(file);
+						plugin = (Plugin*)plugin->next;
+					}
+				}
 			}
 		}
 	}while(!result);

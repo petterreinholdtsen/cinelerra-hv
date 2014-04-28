@@ -36,8 +36,8 @@ void ScaleConfig::interpolate(ScaleConfig &prev,
 	long next_frame, 
 	long current_frame)
 {
-	double prev_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-	double next_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
 	this->w = prev.w * prev_scale + next.w * next_scale;
 	this->h = prev.h * prev_scale + next.h * next_scale;

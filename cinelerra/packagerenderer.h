@@ -14,6 +14,7 @@
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "renderengine.inc"
+#include "track.inc"
 #include "transportque.inc"
 #include "videodevice.inc"
 
@@ -33,12 +34,13 @@ public:
 	long video_start;
 	long video_end;
 	int done;
+	int use_brender;
 };
 
 
 
 
-// Used by RenderFarm and in the future, Render, to do packages.
+// Used by Render and BRender to do packages.
 class PackageRenderer
 {
 public:
@@ -68,7 +70,9 @@ public:
 // Get result status from server
 	virtual int get_result();
 	virtual void set_result(int value);
-	virtual void set_progress(long value);
+	virtual void set_progress(long total_samples);
+// Used by background rendering
+	virtual void set_video_map(long position, int value);
 	virtual int progress_cancelled();
 
 	void create_output();
@@ -115,52 +119,6 @@ public:
 	long video_read_length;
 	long video_write_length;
 	long video_write_position;
-};
-
-
-
-// Allocates fragments given a total start and total end.
-// Checks the existence of every file.
-// Adjusts package size for load.
-class PackageDispatcher
-{
-public:
-	PackageDispatcher();
-	~PackageDispatcher();
-
-	int create_packages(MWindow *mwindow,
-		EDL *edl,
-		Preferences *preferences,
-		int strategy, 
-		Asset *default_asset, 
-		double total_start, 
-		double total_end);
-	RenderPackage* get_package(double frames_per_second, 
-		double avg_frames_per_second);
-	ArrayList<Asset*>* get_asset_list();
-
-	EDL *edl;
-	long audio_position;
-	long video_position;
-	long audio_end;
-	long video_end;
-	double total_start;
-	double total_end;
-	double total_len;
-	int strategy;
-	Asset *default_asset;
-	Preferences *preferences;
-	int current_number;    // The number being injected into the filename.
-	int number_start;      // Character in the filename path at which the number begins
-	int total_digits;      // Total number of digits including padding the user specified.
-	double package_len;    // Target length of a single package
-	long total_packages;   // Total packages to base calculations on
-	long total_allocated;  // Total packages to test the existence of
-	int nodes;
-	MWindow *mwindow;
-	RenderPackage *packages;
-	int current_package;
-	Mutex *package_lock;
 };
 
 

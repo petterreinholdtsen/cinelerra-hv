@@ -84,7 +84,6 @@ public:
 	DenoiseEffect(PluginServer *server);
 	~DenoiseEffect();
 
-	char* plugin_title();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);

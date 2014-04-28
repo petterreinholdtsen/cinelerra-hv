@@ -145,6 +145,7 @@ int MainMenu::create_objects()
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
+	settingsmenu->add_item(new SetBRenderStart(mwindow));
 // set scrubbing speed
 //	ScrubSpeed *scrub_speed;
 //	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
@@ -160,16 +161,16 @@ int MainMenu::create_objects()
 	viewmenu->add_item(show_titles = new ShowTitles(mwindow, "1"));
 	viewmenu->add_item(show_transitions = new ShowTransitions(mwindow, "2"));
 	viewmenu->add_item(fade_automation = new FadeAutomation(mwindow, "3"));
-	viewmenu->add_item(play_automation = new PlayAutomation(mwindow, "4"));
-	viewmenu->add_item(mute_automation = new MuteAutomation(mwindow, "5"));
-	viewmenu->add_item(mode_automation = new ModeAutomation(mwindow, "6"));
-	viewmenu->add_item(pan_automation = new PanAutomation(mwindow, "7"));
-	viewmenu->add_item(camera_automation = new CameraAutomation(mwindow, "8"));
-	viewmenu->add_item(project_automation = new ProjectAutomation(mwindow, "9"));
-	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "0"));
-	viewmenu->add_item(mask_automation = new MaskAutomation(mwindow, "-"));
-	viewmenu->add_item(czoom_automation = new CZoomAutomation(mwindow, "="));
-	viewmenu->add_item(pzoom_automation = new PZoomAutomation(mwindow, "+"));
+//	viewmenu->add_item(play_automation = new PlayAutomation(mwindow, "4"));
+	viewmenu->add_item(mute_automation = new MuteAutomation(mwindow, "4"));
+	viewmenu->add_item(mode_automation = new ModeAutomation(mwindow, "5"));
+	viewmenu->add_item(pan_automation = new PanAutomation(mwindow, "6"));
+	viewmenu->add_item(camera_automation = new CameraAutomation(mwindow, "7"));
+	viewmenu->add_item(project_automation = new ProjectAutomation(mwindow, "8"));
+	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "9"));
+	viewmenu->add_item(mask_automation = new MaskAutomation(mwindow, "0"));
+	viewmenu->add_item(czoom_automation = new CZoomAutomation(mwindow, "-"));
+	viewmenu->add_item(pzoom_automation = new PZoomAutomation(mwindow, "="));
 
 
 	add_menu(windowmenu = new BC_Menu("Window"));
@@ -199,7 +200,7 @@ void MainMenu::update_toggles()
 	show_titles->set_checked(mwindow->edl->session->show_titles);
 	show_transitions->set_checked(mwindow->edl->session->auto_conf->transitions);
 	fade_automation->set_checked(mwindow->edl->session->auto_conf->fade);
-	play_automation->set_checked(mwindow->edl->session->auto_conf->play);
+//	play_automation->set_checked(mwindow->edl->session->auto_conf->play);
 	mute_automation->set_checked(mwindow->edl->session->auto_conf->mute);
 	pan_automation->set_checked(mwindow->edl->session->auto_conf->pan);
 	camera_automation->set_checked(mwindow->edl->session->auto_conf->camera);
@@ -990,6 +991,26 @@ int LoopPlayback::handle_event()
 
 
 
+
+
+SetBRenderStart::SetBRenderStart(MWindow *mwindow)
+ : BC_MenuItem("Set background render")
+{
+	this->mwindow = mwindow;
+}
+
+int SetBRenderStart::handle_event()
+{
+	mwindow->set_brender_start();
+	return 1;
+}
+
+
+
+
+
+
+
 LabelsFollowEdits::LabelsFollowEdits(MWindow *mwindow)
  : BC_MenuItem("Edit labels") 
 { 
@@ -1077,6 +1098,7 @@ SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem("Save settings 
 int SaveSettingsNow::handle_event()
 {
 	mwindow->save_defaults();
+	mwindow->save_backup();
 	return 1;
 }
 

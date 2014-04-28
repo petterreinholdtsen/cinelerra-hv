@@ -20,7 +20,7 @@ public:
 
 	int identical(IntAuto *that);
 	void load(FileXML *file);
-	void copy(long start, long end, FileXML *file);
+	void copy(long start, long end, FileXML *file, int default_only);
 	float value_to_percentage();
 	int percentage_to_value(float percentage);
 

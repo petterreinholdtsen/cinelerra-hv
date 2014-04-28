@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "jpeg.h"
@@ -45,12 +46,12 @@ static int decode(quicktime_t *file,
 	quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	quicktime_trak_t *trak = vtrack->track;
 	mjpeg_t *mjpeg = codec->mjpeg;
-	long size, field2_offset;
+	long size, field2_offset = 0;
 	int track_height = trak->tkhd.track_height;
 	int track_width = trak->tkhd.track_width;
 	int result = 0;
-//printf("decode 1\n");
 
+//printf(__FUNCTION__ " 1\n");
 	mjpeg_set_cpus(codec->mjpeg, file->cpus);
 	if(file->row_span) 
 		mjpeg_set_rowspan(codec->mjpeg, file->row_span);
@@ -60,7 +61,6 @@ static int decode(quicktime_t *file,
 	quicktime_set_video_position(file, vtrack->current_position, track);
 	size = quicktime_frame_size(file, vtrack->current_position, track);
 	codec->buffer_size = size;
-//printf("decode 1 %x\n", size);
 
 	if(size > codec->buffer_allocated)
 	{
@@ -68,28 +68,32 @@ static int decode(quicktime_t *file,
 		codec->buffer = realloc(codec->buffer, codec->buffer_allocated);
 	}
 
-//printf("decode 2 %llx %02x %02x\n", 
-//	quicktime_chunk_to_offset(trak, vtrack->current_position), codec->buffer[0], codec->buffer[1]);
 	result = !quicktime_read_data(file, codec->buffer, size);
-//printf("decode 3 %x\n", size);
 
 	if(!result)
 	{
+//printf(__FUNCTION__ " 2\n");
 		if(mjpeg_get_fields(mjpeg) == 2)
 		{
-//printf("decode 4\n");
 			field2_offset = mjpeg_get_quicktime_field2(codec->buffer, size);
-//printf("decode 5\n");
+//printf("decode %02x %02x %02x %02x\n", codec->buffer[0], codec->buffer[1], codec->buffer[field2_offset + 0], codec->buffer[field2_offset + 1]);
 		}
 		else
 			field2_offset = 0;
 
+//printf(__FUNCTION__ " 3\n");
+
 /*
- * printf("decode 6 %02x%02x %02x%02x\n", codec->buffer[0], codec->buffer[1],
- * 	codec->buffer[field2_offset], codec->buffer[field2_offset + 1]);
+ * printf("decode result=%d field1=%llx field2=%llx size=%d %02x %02x %02x %02x\n", 
+ * result, 
+ * quicktime_position(file) - size,
+ * quicktime_position(file) - size + field2_offset,
+ * size,
+ * codec->buffer[0], 
+ * codec->buffer[1], 
+ * codec->buffer[field2_offset + 0], 
+ * codec->buffer[field2_offset + 1]);
  */
-//printf("decode 6 %d %d %d %d %d %d\n",
-//	file->in_x, file->in_y, file->in_w, file->in_h, file->out_w, file->out_h);
 
  		if(file->in_x == 0 && 
 			file->in_y == 0 && 
@@ -99,7 +103,6 @@ static int decode(quicktime_t *file,
 			file->out_h == track_height)
 		{
 			int i;
-//printf("decode 6\n");
 			mjpeg_decompress(codec->mjpeg, 
 				codec->buffer, 
 				size,
@@ -110,7 +113,6 @@ static int decode(quicktime_t *file,
 				row_pointers[2],
 				file->color_model,
 				file->cpus);
-//printf("decode 7\n");
 		}
 		else
 		{
@@ -119,7 +121,6 @@ static int decode(quicktime_t *file,
 			int temp_cmodel = BC_YUV888;
 			int temp_rowsize = cmodel_calculate_pixelsize(temp_cmodel) * track_width;
 
-//printf("decode 8\n");
 			if(!codec->temp_video)
 				codec->temp_video = malloc(temp_rowsize * track_height);
 			temp_rows = malloc(sizeof(unsigned char*) * track_height);
@@ -160,10 +161,9 @@ static int decode(quicktime_t *file,
 				file->out_w);
 
 			free(temp_rows);
-//printf("decode 9\n");
 		}
 	}
-//printf("decode 8\n");
+//printf("decode 2 %d\n", result);
 
 	return result;
 }

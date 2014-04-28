@@ -41,12 +41,15 @@ public:
 		double position, 
 		Track *start_track);
 
+	void equivalent_output(Tracks *tracks, double *result);
+
 	int move_track_up(Track *track);        // move recordable tracks up
 	int move_track_down(Track *track);      // move recordable tracks down
 	int move_tracks_up();                   // move recordable tracks up
 	int move_tracks_down();                 // move recordable tracks down
 	void paste_audio_transition(PluginServer *server);
-	void paste_video_transition(PluginServer *server);
+	void paste_video_transition(PluginServer *server, int first_track = 0);
+
 	void paste_transition(PluginServer *server, Edit *dest_edit);
 // Return the numbers of tracks with the play patch enabled
 	int playable_audio_tracks();
@@ -58,6 +61,7 @@ public:
 	int total_video_tracks();
 // return the longest track in all the tracks in seconds
  	double total_length();
+ 	double total_video_length();
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 // Total number of tracks where the following toggles are selected
@@ -200,7 +204,10 @@ public:
 		double end, 
 		int all);
 	int clear(double start, double end, int clear_plugins);
-	int clear_automation(double selectionstart, double selectionend);
+// Returns the point to restart background rendering at.
+// -1 means nothing changed.
+	void clear_automation(double selectionstart, 
+		double selectionend);
 	int clear_default_keyframe();
 	int clear_handle(double start, 
 		double end,
@@ -210,7 +217,8 @@ public:
 	int copy_automation(double selectionstart, 
 		double selectionend, 
 		FileXML *file,
-		int default_only);
+		int default_only,
+		int autos_only);
 	int copy_default_keyframe(FileXML *file);
 	void paste_automation(double selectionstart, 
 		FileXML *xml,
@@ -234,8 +242,6 @@ public:
 	int update_translation(int cursor_x, int cursor_y, int shift_down);
 // Transition popup
 	int popup_transition(int cursor_x, int cursor_y);
-// 1 if left handle selected 2 if right handle selected 3 if the track wasn't recordable
-	int select_handle(int cursor_x, int cursor_y, long &handle_oldposition, long &handle_position, int &handle_pixel);
 	int select_auto(int cursor_x, int cursor_y);
 	int move_auto(int cursor_x, int cursor_y, int shift_down);
 	int modify_edithandles(double &oldposition, 
@@ -270,6 +276,8 @@ public:
 	int vertical_pixels();       // return the view height in pixels
 	long view_samples();      // return the view width in samples from the canvas
 	double total_playable_length();     // Longest track.
+// Used by equivalent_output
+	int total_playable_vtracks();
 	double total_recordable_length();   // Longest track with recording on
 	int totalpixels();       // height of all tracks in pixels
 	int number_of(Track *track);        // track number of pointer

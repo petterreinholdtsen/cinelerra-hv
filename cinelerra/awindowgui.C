@@ -111,32 +111,26 @@ void AssetPicon::create_objects()
 	{
 		fs.extract_name(name, asset->path);
 		set_text(name);
-//printf("AssetPicon::create_objects 1\n");
 		if(asset->video_data)
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
+//printf("AssetPicon::create_objects 1\n");
 				File *file = mwindow->video_cache->check_out(asset);
+//printf("AssetPicon::create_objects 2\n");
 
 				if(file)
 				{
 					pixmap_w = pixmap_h * asset->width / asset->height;
 
-					if(!file->open_file(mwindow->plugindb, 
-						asset,
-						1,
-						0,
-						mwindow->edl->session->sample_rate,
-						mwindow->edl->session->frame_rate))
-					{
-						file->set_layer(0);
-						file->set_video_position(0, mwindow->edl->session->frame_rate);
-						frame = file->read_frame(BC_RGB888);
-					}
+//printf("AssetPicon::create_objects 3\n");
+					file->set_layer(0);
+					file->set_video_position(0, mwindow->edl->session->frame_rate);
+					frame = file->read_frame(BC_RGB888);
+//printf("AssetPicon::create_objects 4\n");
 
 					if(frame)
 					{
-	//printf("AssetPicon::create_objects 1 %d %d\n", pixmap_w, pixmap_h);
 						icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
 						icon->draw_vframe(frame,
 							0, 
@@ -146,10 +140,10 @@ void AssetPicon::create_objects()
 							0,
 							0);
 					}
-	//printf("AssetPicon::create_objects 3\n");
+//printf("AssetPicon::create_objects 5\n");
 
 					mwindow->video_cache->check_in(asset);
-					mwindow->video_cache->age_video();
+//printf("AssetPicon::create_objects 6\n");
 				}
 				else
 				{
@@ -621,13 +615,13 @@ void AWindowGUI::update_asset_list()
 // Create new listitem
 		if(!exists)
 		{
-//printf("AWindowGUI::update_asset_list 4.1%s\n", current->path);
+//printf("AWindowGUI::update_asset_list 4.1 %s\n", current->path);
 			AssetPicon *picon = new AssetPicon(mwindow, this, current);
-//printf("AWindowGUI::update_asset_list 4.2%s\n", current->path);
+//printf("AWindowGUI::update_asset_list 4.2 %s\n", current->path);
 			picon->create_objects();
-//printf("AWindowGUI::update_asset_list 4.3%s\n", current->path);
+//printf("AWindowGUI::update_asset_list 4.3 %s\n", current->path);
 			assets.append(picon);
-//printf("AWindowGUI::update_asset_list 4.4%s\n", current->path);
+//printf("AWindowGUI::update_asset_list 4.4 %s\n", current->path);
 		}
 	}
 

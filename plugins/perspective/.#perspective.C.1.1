@@ -1,0 +1,870 @@
+#include "perspective.h"
+
+
+
+
+
+
+REGISTER_PLUGIN(PerspectiveMain)
+
+
+
+PerspectiveConfig::PerspectiveConfig()
+{
+	x1 = 0;
+	y1 = 0;
+	x2 = 100;
+	y2 = 0;
+	x3 = 100;
+	y3 = 100;
+	x4 = 0;
+	y4 = 100;
+	mode = PERSPECTIVE;
+	window_w = 400;
+	window_h = 400;
+	current_point = 0;
+}
+
+int PerspectiveConfig::equivalent(PerspectiveConfig &that)
+{
+	return 
+		EQUIV(x1, that.x1) &&
+		EQUIV(y1, that.y1) &&
+		EQUIV(x2, that.x2) &&
+		EQUIV(y2, that.y2) &&
+		EQUIV(x3, that.x3) &&
+		EQUIV(y3, that.y3) &&
+		EQUIV(x4, that.x4) &&
+		EQUIV(y4, that.y4) &&
+		mode == that.mode;
+}
+
+void PerspectiveConfig::copy_from(PerspectiveConfig &that)
+{
+	x1 = that.x1;
+	y1 = that.y1;
+	x2 = that.x2;
+	y2 = that.y2;
+	x3 = that.x3;
+	y3 = that.y3;
+	x4 = that.x4;
+	y4 = that.y4;
+	mode = that.mode;
+	window_w = that.window_w;
+	window_h = that.window_h;
+	current_point = that.current_point;
+}
+
+void PerspectiveConfig::interpolate(PerspectiveConfig &prev, 
+	PerspectiveConfig &next, 
+	long prev_frame, 
+	long next_frame, 
+	long current_frame)
+{
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	this->x1 = prev.x1 * prev_scale + next.x1 * next_scale;
+	this->y1 = prev.y1 * prev_scale + next.y1 * next_scale;
+	this->x2 = prev.x2 * prev_scale + next.x2 * next_scale;
+	this->y2 = prev.y2 * prev_scale + next.y2 * next_scale;
+	this->x3 = prev.x3 * prev_scale + next.x3 * next_scale;
+	this->y3 = prev.y3 * prev_scale + next.y3 * next_scale;
+	this->x4 = prev.x4 * prev_scale + next.x4 * next_scale;
+	this->y5 = prev.y4 * prev_scale + next.y4 * next_scale;
+	mode = prev.mode;
+	window_w = that.window_w;
+	window_h = that.window_h;
+	current_point = that.current_point;
+}
+
+
+
+
+
+
+
+
+
+PLUGIN_THREAD_OBJECT(PerspectiveMain, PerspectiveThread, PerspectiveWindow)
+
+
+
+PerspectiveWindow::PerspectiveWindow(PerspectiveMain *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
+ 	x,
+	y,
+	plugin->config.window_w, 
+	20, 
+	plugin->config.window_h, 
+	20, 
+	0, 
+	1)
+{
+	this->plugin = plugin; 
+}
+
+PerspectiveWindow::~PerspectiveWindow()
+{
+}
+
+int PerspectiveWindow::create_objects()
+{
+	int x = 10, y = 10;
+
+	add_subwindow(canvas = new PerspectiveCanvas(plugin, x, y, get_w() - 10, get_h() - 100));
+	y += 30;
+	add_subwindow(new BC_Title(x, y, "Current X:"));
+	x += 150;
+	add_subwindow(this->x = new PerspectiveCoord(this, 
+		plugin, 
+		x, 
+		y, 
+		plugin->get_current_x(),
+		1));
+	x += 150;
+	add_subwindow(new BC_Title(x, y, "Y:"));
+	x += 50;
+	add_subwindow(this->y = new PerspectiveCoord(this, 
+		plugin, 
+		x, 
+		y, 
+		plugin->get_current_y(),
+		0));
+	y += 30;
+	x = 10;
+	add_subwindow(new PerspectiveReset(plugin, x, y));
+	x += 100;
+	add_subwindow(mode_perspective = new PerspectiveMode(plugin, 
+		x, 
+		y, 
+		PerspectiveConfig::PERSPECTIVE,
+		"Perspective"));
+	x += 100;
+	add_subwindow(mode_sheer = new PerspectiveMode(plugin, 
+		x, 
+		y, 
+		PerspectiveConfig::SHEER,
+		"Sheer"));
+	update_canvas();
+
+	show_window();
+	flush();
+	return 0;
+}
+
+int PerspectiveWindow::close_event()
+{
+// Set result to 1 to indicate a plugin side close
+	set_done(1);
+	return 1;
+}
+
+int PerspectiveWindow::resize_event(int w, int h)
+{
+	return 1;
+}
+
+void PerspectiveWindow::update_canvas()
+{
+	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+	int x1, y1, x2, y2, x3, y3, x4, y4;
+	if(plugin->config.mode == PerspectiveConfig::PERSPECTIVE)
+	{
+		x1 = (int)(plugin->config.x1 * canvas->get_w());
+		y1 = (int)(plugin->config.y1 * canvas->get_h());
+		x2 = (int)(plugin->config.x2 * canvas->get_w());
+		y2 = (int)(plugin->config.y2 * canvas->get_h());
+		x3 = (int)(plugin->config.x3 * canvas->get_w());
+		y3 = (int)(plugin->config.y3 * canvas->get_h());
+		x4 = (int)(plugin->config.x4 * canvas->get_w());
+		y4 = (int)(plugin->config.y4 * canvas->get_h());
+	}
+	else
+	{
+		x1 = (int)(plugin->config.x1 * canvas->get_w());
+		y1 = 0;
+		x2 = x1 + canvas->get_w();
+		y2 = 0;
+		x3 = (int)(plugin->config.x4 * canvas->get_w() + canvas->get_w());
+		y3 = canvas->get_h();
+		x4 = x3 - canvas->get_w();
+		y4 = canvas->get_h();
+	}
+
+	set_color(BLACK);
+
+// latitude lines
+	for(int i = 0; i <= 10; i++)
+	{
+		int x1_line = x1 + (x4 - x1) * i / 10;
+		int y1_line = y1 + (y4 - y1) * i / 10;
+		int x2_line = x2 + (x3 - x2) * i / 10;
+		int y2_line = y2 + (y3 - y2) * i / 10;
+		draw_line(x1_line, y1_line, x2_line, y2_line);
+	}
+
+// longitude lines
+	for(int i = 0; i <= 10; i++)
+	{
+		int x1_line = x1 + (x2 - x1) * i / 10;
+		int y1_line = y1 + (y2 - y1) * i / 10;
+		int x2_line = x4 + (x3 - x4) * i / 10;
+		int y2_line = y4 + (y3 - y4) * i / 10;
+		draw_line(x1_line, y1_line, x2_line, y2_line);
+	}
+
+	for(int i = 0; i < 4; i++)
+	{
+		int fill = 0;
+		if(i == plugin->config.current_point) fill = 1;
+
+		switch(i)
+		{
+			case 0:
+				break;
+			case 1:
+				break;
+			case 2:
+				break;
+			case 3:
+				break;
+		}
+	}
+}
+
+void PerspectiveWindow::update_mode()
+{
+	mode_perspective->update(plugin->config.mode == PerspectiveConfig::PERSPECTIVE);
+	mode_perspective->update(plugin->config.mode == PerspectiveConfig::SHEER);
+}
+
+
+
+
+PerspectiveCanvas::PerspectiveCanvas(PerspectiveMain *plugin, 
+	int x, 
+	int y, 
+	int w,
+	int w)
+ : BC_SubWindow(x, y, w, h, 0xffffff)
+{
+	this->plugin = plugin;
+}
+
+int PerspectiveCanvas::button_press_event()
+{
+	return 0;
+}
+
+int PerspectiveCanvas::button_release_event()
+{
+	return 0;
+}
+
+int PerspectiveCanvas::cursor_motion_event()
+{
+	return 0;
+}
+
+
+
+
+
+
+PerspectiveCoord::PerspectiveCoord(PerspectiveWindow *gui,
+	PerspectiveMain *plugin, 
+	int x, 
+	int y,
+	float *value)
+ : BC_TumbleTextBox(gui, *value, (float)0, (float)100, x, y, 100)
+{
+	this->plugin = plugin;
+	this->value = value;
+}
+
+int PerspectiveCoord::handle_event()
+{
+	*value = atof(get_text());
+	plugin->thread->window->update_canvas();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+
+PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin, 
+	int x, 
+	int y)
+ : BC_GenericButton(x, y, "Reset")
+{
+	this->plugin = plugin;
+}
+int PerspectiveReset::handle_event()
+{
+	plugin->config.x1 = 0;
+	plugin->config.y1 = 0;
+	plugin->config.x2 = 100;
+	plugin->config.y2 = 100;
+	plugin->thread->window->update_canvas();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+PerspectiveMode::PerspectiveMode(PerspectiveMain *plugin, 
+	int x, 
+	int y,
+	int value,
+	char *text)
+ : BC_Radial(x, y, plugin->config.mode == value, text)
+{
+	this->plugin = plugin;
+	this->value = value;
+}
+int PerspectiveMode::handle_event()
+{
+	plugin->config.mode = value;
+	plugin->thread->window->update_mode();
+	plugin->thread->window->update_canvas();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+PerspectiveMain::PerspectiveMain(PluginServer *server)
+ : PluginVClient(server)
+{
+	PLUGIN_CONSTRUCTOR_MACRO
+	engine = 0;
+	scale_x_table = 0;
+	scale_y_table = 0;
+	table_entries = 0;
+	accum = 0;
+	need_reconfigure = 1;
+	temp = 0;
+}
+
+PerspectiveMain::~PerspectiveMain()
+{
+	PLUGIN_DESTRUCTOR_MACRO
+	if(engine) delete engine;
+	delete_tables();
+	if(accum) delete [] accum;
+	if(temp) delete temp;
+}
+
+char* PerspectiveMain::plugin_title() { return "Zoom Blur"; }
+int PerspectiveMain::is_realtime() { return 1; }
+
+
+NEW_PICON_MACRO(PerspectiveMain)
+
+SHOW_GUI_MACRO(PerspectiveMain, PerspectiveThread)
+
+SET_STRING_MACRO(PerspectiveMain)
+
+RAISE_WINDOW_MACRO(PerspectiveMain)
+
+LOAD_CONFIGURATION_MACRO(PerspectiveMain, PerspectiveConfig)
+
+void PerspectiveMain::delete_tables()
+{
+	if(scale_x_table)
+	{
+		for(int i = 0; i < table_entries; i++)
+			delete [] scale_x_table[i];
+		delete [] scale_x_table;
+	}
+
+	if(scale_y_table)
+	{
+		for(int i = 0; i < table_entries; i++)
+			delete [] scale_y_table[i];
+		delete [] scale_y_table;
+	}
+	scale_x_table = 0;
+	scale_y_table = 0;
+	table_entries = 0;
+}
+
+int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+{
+	need_reconfigure |= load_configuration();
+
+	if(!engine) engine = new PerspectiveEngine(this,
+		get_project_smp() + 1,
+		get_project_smp() + 1);
+	if(!accum) accum = new int[input_ptr->get_w() * 
+		input_ptr->get_h() *
+		cmodel_components(input_ptr->get_color_model())];
+
+	this->input = input_ptr;
+	this->output = output_ptr;
+
+
+	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
+	{
+		if(!temp) temp = new VFrame(0,
+			input_ptr->get_w(),
+			input_ptr->get_h(),
+			input_ptr->get_color_model());
+		temp->copy_from(input_ptr);
+		this->input = temp;
+	}
+
+// Generate tables here.  The same table is used by many packages to render
+// each horizontal stripe.  Need to cover the entire output range in  each
+// table to avoid green borders
+	if(need_reconfigure)
+	{
+		int w = input->get_w();
+		int h = input->get_h();
+		float center_x = (100 - config.x) * w / 100;
+		float center_y = (100 - config.y) * h / 100;
+		int inv_radius = 100 + config.radius;
+
+// Dimensions of the innermost rectangle
+		float min_x1 = center_x - w * inv_radius / 100 / 2;
+		float min_x2 = center_x + w * inv_radius / 100 / 2;
+		float min_y1 = center_y - h * inv_radius / 100 / 2;
+		float min_y2 = center_y + h * inv_radius / 100 / 2;
+
+		delete_tables();
+		scale_x_table = new int*[config.steps];
+		scale_y_table = new int*[config.steps];
+		table_entries = config.steps;
+
+
+		for(int i = 0; i < config.steps; i++)
+		{
+			float fraction = (float)i / config.steps;
+			int out_x1 = (int)(min_x1 * fraction);
+			int out_x2 = (int)(w - (w - min_x2) * fraction);
+			int out_y1 = (int)(min_y1 * fraction);
+			int out_y2 = (int)(h - (h - min_y2) * fraction);
+			int out_w = out_x2 - out_x1;
+			int out_h = out_y2 - out_y1;
+			if(out_w < 0) out_w = 0;
+			if(out_h < 0) out_h = 0;
+			float scale_x = (float)w / out_w;
+			float scale_y = (float)h / out_h;
+
+			int *x_table;
+			int *y_table;
+			scale_y_table[i] = y_table = new int[h];
+			scale_x_table[i] = x_table = new int[w];
+
+			for(int j = 0; j < h; j++)
+			{
+				y_table[j] = (int)((j - out_y1) * scale_y);
+			}
+			for(int j = 0; j < w; j++)
+			{
+				x_table[j] = (int)((j - out_x1) * scale_x);
+//printf("PerspectiveMain::process_realtime %d %d\n", j, x_table[j]);
+			}
+		}
+		need_reconfigure = 0;
+	}
+
+	bzero(accum, input_ptr->get_w() * 
+		input_ptr->get_h() *
+		cmodel_components(input_ptr->get_color_model()) *
+		sizeof(int));
+	engine->process_packages();
+	return 0;
+}
+
+
+void PerspectiveMain::update_gui()
+{
+	if(thread)
+	{
+		load_configuration();
+		thread->window->lock_window();
+		thread->window->x->update(config.x);
+		thread->window->y->update(config.y);
+		thread->window->radius->update(config.radius);
+		thread->window->steps->update(config.steps);
+		thread->window->r->update(config.r);
+		thread->window->g->update(config.g);
+		thread->window->b->update(config.b);
+		thread->window->a->update(config.a);
+		thread->window->unlock_window();
+	}
+}
+
+
+int PerspectiveMain::load_defaults()
+{
+	char directory[1024], string[1024];
+// set the default directory
+	sprintf(directory, "%sperspective.rc", BCASTDIR);
+
+// load the defaults
+	defaults = new Defaults(directory);
+	defaults->load();
+
+	config.x = defaults->get("X", config.x);
+	config.y = defaults->get("Y", config.y);
+	config.radius = defaults->get("RADIUS", config.radius);
+	config.steps = defaults->get("STEPS", config.steps);
+	config.r = defaults->get("R", config.r);
+	config.g = defaults->get("G", config.g);
+	config.b = defaults->get("B", config.b);
+	config.a = defaults->get("A", config.a);
+	return 0;
+}
+
+
+int PerspectiveMain::save_defaults()
+{
+	defaults->update("X", config.x);
+	defaults->update("Y", config.y);
+	defaults->update("RADIUS", config.radius);
+	defaults->update("STEPS", config.steps);
+	defaults->update("R", config.r);
+	defaults->update("G", config.g);
+	defaults->update("B", config.b);
+	defaults->update("A", config.a);
+	defaults->save();
+	return 0;
+}
+
+
+
+void PerspectiveMain::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+
+// cause data to be stored directly in text
+	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.tag.set_title("PERSPECTIVE");
+
+	output.tag.set_property("X", config.x);
+	output.tag.set_property("Y", config.y);
+	output.tag.set_property("RADIUS", config.radius);
+	output.tag.set_property("STEPS", config.steps);
+	output.tag.set_property("R", config.r);
+	output.tag.set_property("G", config.g);
+	output.tag.set_property("B", config.b);
+	output.tag.set_property("A", config.a);
+	output.append_tag();
+	output.terminate_string();
+}
+
+void PerspectiveMain::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+
+	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	int result = 0;
+
+	while(!result)
+	{
+		result = input.read_tag();
+
+		if(!result)
+		{
+			if(input.tag.title_is("ZOOMBLUR"))
+			{
+				config.x = input.tag.get_property("X", config.x);
+				config.y = input.tag.get_property("Y", config.y);
+				config.radius = input.tag.get_property("RADIUS", config.radius);
+				config.steps = input.tag.get_property("STEPS", config.steps);
+				config.r = input.tag.get_property("R", config.r);
+				config.g = input.tag.get_property("G", config.g);
+				config.b = input.tag.get_property("B", config.b);
+				config.a = input.tag.get_property("A", config.a);
+			}
+		}
+	}
+}
+
+
+
+
+
+
+PerspectivePackage::PerspectivePackage()
+ : LoadPackage()
+{
+}
+
+
+
+
+PerspectiveUnit::PerspectiveUnit(PerspectiveEngine *server, 
+	PerspectiveMain *plugin)
+ : LoadClient(server)
+{
+	this->plugin = plugin;
+	this->server = server;
+}
+
+
+#define BLEND_LAYER(COMPONENTS, TYPE, MAX, DO_YUV) \
+{ \
+	const int chroma_offset = (DO_YUV ? ((MAX + 1) / 2) : 0); \
+	for(int j = pkg->y1; j < pkg->y2; j++) \
+	{ \
+		int *out_row = plugin->accum + COMPONENTS * w * j; \
+		int in_y = y_table[j]; \
+ \
+/* Blend image */ \
+		if(in_y >= 0 && in_y < h) \
+		{ \
+			TYPE *in_row = (TYPE*)plugin->input->get_rows()[in_y]; \
+			for(int k = 0; k < w; k++) \
+			{ \
+				int in_x = x_table[k]; \
+/* Blend pixel */ \
+				if(in_x >= 0 && in_x < w) \
+				{ \
+					int in_offset = in_x * COMPONENTS; \
+					*out_row++ += in_row[in_offset]; \
+					if(DO_YUV) \
+					{ \
+						*out_row++ += in_row[in_offset + 1]; \
+						*out_row++ += in_row[in_offset + 2]; \
+					} \
+					else \
+					{ \
+						*out_row++ += (int)in_row[in_offset + 1]; \
+						*out_row++ += (int)in_row[in_offset + 2]; \
+					} \
+					if(COMPONENTS == 4) \
+						*out_row++ += in_row[in_offset + 3]; \
+				} \
+/* Blend nothing */ \
+				else \
+				{ \
+					out_row++; \
+					if(DO_YUV) \
+					{ \
+						*out_row++ += chroma_offset; \
+						*out_row++ += chroma_offset; \
+					} \
+					else \
+					{ \
+						out_row += 2; \
+					} \
+					if(COMPONENTS == 4) out_row++; \
+				} \
+			} \
+		} \
+		else \
+		if(DO_YUV) \
+		{ \
+			for(int k = 0; k < w; k++) \
+			{ \
+				out_row++; \
+				*out_row++ += chroma_offset; \
+				*out_row++ += chroma_offset; \
+				if(COMPONENTS == 4) out_row++; \
+			} \
+		} \
+	} \
+ \
+/* Copy to output */ \
+	if(i == plugin->config.steps - 1) \
+	{ \
+		for(int j = pkg->y1; j < pkg->y2; j++) \
+		{ \
+			int *in_row = plugin->accum + COMPONENTS * w * j; \
+			TYPE *in_backup = (TYPE*)plugin->input->get_rows()[j]; \
+			TYPE *out_row = (TYPE*)plugin->output->get_rows()[j]; \
+			for(int k = 0; k < w; k++) \
+			{ \
+				if(do_r) \
+				{ \
+					*out_row++ = (*in_row++ * fraction) >> 16; \
+					in_backup++; \
+				} \
+				else \
+				{ \
+					*out_row++ = *in_backup++; \
+					in_row++; \
+				} \
+ \
+				if(DO_YUV) \
+				{ \
+					if(do_g) \
+					{ \
+						*out_row++ = ((*in_row++ * fraction) >> 16); \
+						in_backup++; \
+					} \
+					else \
+					{ \
+						*out_row++ = *in_backup++; \
+						in_row++; \
+					} \
+ \
+					if(do_b) \
+					{ \
+						*out_row++ = ((*in_row++ * fraction) >> 16); \
+						in_backup++; \
+					} \
+					else \
+					{ \
+						*out_row++ = *in_backup++; \
+						in_row++; \
+					} \
+				} \
+				else \
+				{ \
+					if(do_g) \
+					{ \
+						*out_row++ = (*in_row++ * fraction) >> 16; \
+						in_backup++; \
+					} \
+					else \
+					{ \
+						*out_row++ = *in_backup++; \
+						in_row++; \
+					} \
+ \
+					if(do_b) \
+					{ \
+						*out_row++ = (*in_row++ * fraction) >> 16; \
+						in_backup++; \
+					} \
+					else \
+					{ \
+						*out_row++ = *in_backup++; \
+						in_row++; \
+					} \
+				} \
+ \
+				if(COMPONENTS == 4) \
+				{ \
+					if(do_a) \
+					{ \
+						*out_row++ = (*in_row++ * fraction) >> 16; \
+						in_backup++; \
+					} \
+					else \
+					{ \
+						*out_row++ = *in_backup++; \
+						in_row++; \
+					} \
+				} \
+			} \
+		} \
+	} \
+}
+
+void PerspectiveUnit::process_package(LoadPackage *package)
+{
+	PerspectivePackage *pkg = (PerspectivePackage*)package;
+	int h = plugin->output->get_h();
+	int w = plugin->output->get_w();
+	int do_r = plugin->config.r;
+	int do_g = plugin->config.g;
+	int do_b = plugin->config.b;
+	int do_a = plugin->config.a;
+
+	int fraction = 0x10000 / plugin->config.steps;
+	for(int i = 0; i < plugin->config.steps; i++)
+	{
+		int *x_table = plugin->scale_x_table[i];
+		int *y_table = plugin->scale_y_table[i];
+
+		switch(plugin->input->get_color_model())
+		{
+			case BC_RGB888:
+				BLEND_LAYER(3, uint8_t, 0xff, 0)
+				break;
+			case BC_RGBA8888:
+				BLEND_LAYER(4, uint8_t, 0xff, 0)
+				break;
+			case BC_RGB161616:
+				BLEND_LAYER(3, uint16_t, 0xffff, 0)
+				break;
+			case BC_RGBA16161616:
+				BLEND_LAYER(4, uint16_t, 0xffff, 0)
+				break;
+			case BC_YUV888:
+				BLEND_LAYER(3, uint8_t, 0xff, 1)
+				break;
+			case BC_YUVA8888:
+				BLEND_LAYER(4, uint8_t, 0xff, 1)
+				break;
+			case BC_YUV161616:
+				BLEND_LAYER(3, uint16_t, 0xffff, 1)
+				break;
+			case BC_YUVA16161616:
+				BLEND_LAYER(4, uint16_t, 0xffff, 1)
+				break;
+		}
+	}
+}
+
+
+
+
+
+
+PerspectiveEngine::PerspectiveEngine(PerspectiveMain *plugin, 
+	int total_clients, 
+	int total_packages)
+ : LoadServer(total_clients, total_packages)
+{
+	this->plugin = plugin;
+}
+
+void PerspectiveEngine::init_packages()
+{
+	int package_h = (int)((float)plugin->output->get_h() / 
+			total_packages + 1);
+	int y1 = 0;
+	for(int i = 0; i < total_packages; i++)
+	{
+		PerspectivePackage *package = (PerspectivePackage*)packages[i];
+		package->y1 = y1;
+		package->y2 = y1 + package_h;
+		package->y1 = MIN(plugin->output->get_h(), package->y1);
+		package->y2 = MIN(plugin->output->get_h(), package->y2);
+		y1 = package->y2;
+	}
+}
+
+LoadClient* PerspectiveEngine::new_client()
+{
+	return new PerspectiveUnit(this, plugin);
+}
+
+LoadPackage* PerspectiveEngine::new_package()
+{
+	return new PerspectivePackage;
+}
+
+
+
+
+

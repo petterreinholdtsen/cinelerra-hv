@@ -87,6 +87,7 @@ int FadeAutomation::handle_event()
 	return 1;
 }
 
+#if 0
 PlayAutomation::PlayAutomation(MWindow *mwindow, char *hotkey)
  : BC_MenuItem("Play keyframes", hotkey, hotkey[0])
 { 
@@ -102,6 +103,7 @@ int PlayAutomation::handle_event()
 	mwindow->gui->mainmenu->draw_items();
 	return 1;
 }
+#endif
 
 
 CameraAutomation::CameraAutomation(MWindow *mwindow, char *hotkey)

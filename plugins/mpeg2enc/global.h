@@ -481,7 +481,7 @@ EXTERN_ int use_denoise_quant;
 /* Number of processors */
 EXTERN_ int processors;
 EXTERN_ long start_frame, end_frame;    /* Range to encode in source framerate units */
-
+EXTERN_ int seq_header_every_gop;
 
 /* coding model parameters */
 

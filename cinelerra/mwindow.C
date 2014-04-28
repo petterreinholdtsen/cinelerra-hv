@@ -1,6 +1,7 @@
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "brender.h"
 #include "cache.h"
 #include "channel.h"
 #include "colormodels.h"
@@ -107,33 +108,33 @@ int atexit(void (*function)(void))
 MWindow::MWindow()
 {
 	plugin_gui_lock = new Mutex;
+	brender_lock = new Mutex;
+	brender = 0;
 }
 
 MWindow::~MWindow()
 {
 //printf("MWindow::~MWindow 1\n");
+	brender_lock->lock();
+	if(brender) delete brender;
+	brender = 0;
+	brender_lock->unlock();
+	delete brender_lock;
+//printf("MWindow::~MWindow 2\n");
 	clean_indexes();
 //printf("MWindow::~MWindow 1\n");
 	delete mainprogress;
 //printf("MWindow::~MWindow 1\n");
-	delete tracks;
-//	delete console;
-//	delete level_window;
-//	delete video_window;
-//	delete assets;
-//printf("MWindow::~MWindow 1\n");
 	delete audio_cache;             // delete the cache after the assets
 //printf("MWindow::~MWindow 1\n");
 	delete video_cache;             // delete the cache after the assets
-//printf("MWindow::~MWindow 2\n");
-//	delete threadloader;
+//printf("MWindow::~MWindow 1\n");
 	if(gui) delete gui;
 //printf("MWindow::~MWindow 1\n");
 	delete undo;
 //printf("MWindow::~MWindow 1\n");
 	delete preferences;
 //printf("MWindow::~MWindow 1\n");
-//	delete_plugins();
 	delete defaults;
 //printf("MWindow::~MWindow 1\n");
 	delete render;
@@ -150,8 +151,9 @@ MWindow::~MWindow()
 	plugin_guis->remove_all_objects();
 //printf("MWindow::~MWindow 2\n");
 	delete plugin_guis;
-//printf("MWindow::~MWindow 2\n");
+//printf("MWindow::~MWindow 3\n");
 	delete plugin_gui_lock;
+//printf("MWindow::~MWindow 5\n");
 }
 
 void MWindow::init_defaults(Defaults* &defaults)
@@ -174,99 +176,149 @@ void MWindow::init_defaults(Defaults* &defaults)
 	defaults->load();
 }
 
-void MWindow::init_plugins(Preferences *preferences, ArrayList<PluginServer*>* &plugindb)
+void MWindow::init_plugin_path(Preferences *preferences, 
+	ArrayList<PluginServer*>* &plugindb,
+	char *directory,
+	char *suffix)
 {
 	FileSystem fs;
-	int result, pass; 
-	char path[1024], *directory;
+	int result = 1;
 	PluginServer *newplugin;
-	plugindb = new ArrayList<PluginServer*>;
-//printf("MWindow::init_plugins 1\n");
+//printf("MWindow::init_plugin_path 1\n");
+	fs.set_filter(suffix);
+//printf("MWindow::init_plugin_path 2\n");
+	result = fs.update(directory);
+//printf("MWindow::init_plugin_path 3\n");
 
-	fs.set_filter("*.plugin");
-
-	for(pass = 0; pass < 2; pass++)
+	if(!result)
 	{
-		result = 1;          // default is abort
-
-		switch(pass)
-		{
-// on first pass use global dir	
-			case 0: 
-				directory = preferences->global_plugin_dir;
-				break;
-// on second pass use local dir
-			case 1: 
-				directory = preferences->local_plugin_dir;
-				break;
-		}
-
-		if(!strlen(directory)) 
-			result = 1;
-		else
-			result = fs.update(directory);
-
-//printf("MWindow::init_plugins 1 %s\n", directory);
-		if(!result)
-		{
 //printf("MWindow::init_plugins 1 %d\n", fs.dir_list.total);
-			for(int i = 0; i < fs.dir_list.total; i++)
-			{
-				char path[BCTEXTLEN];
+		for(int i = 0; i < fs.dir_list.total; i++)
+		{
+			char path[BCTEXTLEN];
 //printf("MWindow::init_plugins 2\n");
-				strcpy(path, fs.dir_list.values[i]->path);
-//printf("                                                                            \r");
-//printf("MWindow::init_plugins 2 %s\r", path);
-//fflush(stdout);
+			strcpy(path, fs.dir_list.values[i]->path);
+// printf("                                                                            \r");
+// printf("MWindow::init_plugins 2 %s\r", path);
+// fflush(stdout);
 
 // File is a directory
-				if(!fs.is_dir(path))
+			if(!fs.is_dir(path))
+			{
+				continue;
+			}
+			else
+			{
+// Try to query the plugin
+//printf("MWindow::init_plugins 3 %s\n", path);
+				fs.complete_path(path);
+//printf("MWindow::init_plugins 4 %s\n", path);
+				PluginServer *new_plugin = new PluginServer(path);
+//printf("MWindow::init_plugins 5\n", path);
+				int result = new_plugin->open_plugin(1, 0, 0);
+
+				if(!result)
 				{
-					continue;
+//printf("MWindow::init_plugins 4 %s\n", path);
+					plugindb->append(new_plugin);
+//printf("MWindow::init_plugins 5 %s\n", path);
+					new_plugin->close_plugin();
+//printf("MWindow::init_plugins 6 %s\n", path);
+				}
+				else
+				if(result == PLUGINSERVER_IS_LAD)
+				{
+					delete new_plugin;
+// Open LAD subplugins
+					int id = 0;
+					do
+					{
+						new_plugin = new PluginServer(path);
+						result = new_plugin->open_plugin(1,
+							0,
+							0,
+							id);
+						id++;
+						if(!result)
+						{
+							plugindb->append(new_plugin);
+							new_plugin->close_plugin();
+						}
+					}while(!result);
+//printf("MWindow::init_plugins 7\n");
 				}
 				else
 				{
-// Try to query the plugin
-//printf("MWindow::init_plugins 3\n", path);
-					fs.complete_path(path);
-//printf("MWindow::init_plugins 4 %s\n", path);
-					PluginServer *new_plugin = new PluginServer(path);
-//printf("MWindow::init_plugins 5\n", path);
-					if(!new_plugin->open_plugin(1, 0, 0))
-					{
-//printf("MWindow::init_plugins 4 %s\n", path);
-						plugindb->append(new_plugin);
-//printf("MWindow::init_plugins 5 %s\n", path);
-						new_plugin->close_plugin();
-//printf("MWindow::init_plugins 6 %s\n", path);
-					}
-					else
 // Plugin failed to open
-					{
-						delete new_plugin;
-					}
+					delete new_plugin;
 				}
 			}
 		}
-		else
-// notify user of failed directory search
-		{
-			switch(pass)
-			{
-// on first pass use global dir	
-				case 0: 
-					if(strlen(preferences->global_plugin_dir)) 
-						printf("MWindow::init_plugins: Couldn't open global plugin directory.\n");  
-					break;
-// on second pass use local dir
-				case 1: 
-					if(strlen(preferences->local_plugin_dir)) 
-						printf("MWindow::init_plugins: Couldn't open local plugin directory.\n");    
-					break;
-			}
-		}
 	}
-//printf("MWindow::init_plugins 2 \n");
+	else
+// notify user of failed directory search
+	{
+		printf("MWindow::init_plugins: Couldn't open %s plugin directory.\n",
+			directory);  
+	}
+//printf("\n");
+}
+
+void MWindow::init_plugins(Preferences *preferences, 
+	ArrayList<PluginServer*>* &plugindb)
+{
+	plugindb = new ArrayList<PluginServer*>;
+
+	init_plugin_path(preferences,
+		plugindb,
+		preferences->global_plugin_dir,
+		"*.plugin");
+// LAD
+	init_plugin_path(preferences,
+		plugindb,
+		preferences->global_plugin_dir,
+		"*.so");
+
+// Parse LAD environment variable
+	char *env = getenv("LADSPA_PATH");
+//printf("MWindow::init_plugins 1 %p\n", env);
+	if(env)
+	{
+//printf("MWindow::init_plugins 2 %s\n", env);
+		char string[BCTEXTLEN];
+		char *ptr1 = env;
+		while(ptr1)
+		{
+			char *ptr = strchr(ptr1, ':');
+			char *end;
+			if(ptr)
+			{
+				end = ptr;
+			}
+			else
+			{
+				end = env + strlen(env);
+			}
+
+			if(end > ptr1)
+			{
+				int len = end - ptr1;
+				memcpy(string, ptr1, len);
+				string[len] = 0;
+//printf("MWindow::init_plugins 2 %s\n", string);
+				init_plugin_path(preferences,
+					plugindb,
+					string,
+					"*.so");
+//printf("MWindow::init_plugins 3\n");
+			}
+
+			if(ptr)
+				ptr1 = ptr + 1;
+			else
+				ptr1 = ptr;
+		};
+	}
 }
 
 void MWindow::delete_plugins()
@@ -482,8 +534,8 @@ void MWindow::init_viewer()
 
 void MWindow::init_cache()
 {
-	audio_cache = new CICache(edl, plugindb);
-	video_cache = new CICache(edl, plugindb);
+	audio_cache = new CICache(edl, preferences, plugindb);
+	video_cache = new CICache(edl, preferences, plugindb);
 }
 
 void MWindow::init_tuner(ArrayList<Channel*> &channeldb, char *path)
@@ -573,6 +625,72 @@ void MWindow::init_render()
 	render = new Render(this);
 	renderlist = new Render(this);
 }
+
+void MWindow::init_brender()
+{
+	if(preferences->use_brender && !brender)
+	{
+		brender_lock->lock();
+		brender = new BRender(this);
+		brender->initialize();
+		session->brender_end = 0;
+		brender_lock->unlock();
+	}
+	else
+	if(!preferences->use_brender && brender)
+	{
+		brender_lock->lock();
+		delete brender;
+		brender = 0;
+		session->brender_end = 0;
+		brender_lock->unlock();
+	}
+	if(brender) brender->restart(edl);
+}
+
+void MWindow::restart_brender()
+{
+//printf("MWindow::restart_brender 1\n");
+	if(brender) brender->restart(edl);
+}
+
+void MWindow::stop_brender()
+{
+	if(brender) brender->stop();
+}
+
+int MWindow::brender_available(int position)
+{
+	int result = 0;
+	brender_lock->lock();
+	if(brender)
+	{
+		if(brender->map_valid)
+		{
+			brender->map_lock->lock();
+			if(position < brender->map_size &&
+				position >= 0)
+			{
+//printf("MWindow::brender_available 1 %d %d\n", position, brender->map[position]);
+				if(brender->map[position] == BRender::RENDERED)
+					result = 1;
+			}
+			brender->map_lock->unlock();
+		}
+	}
+	brender_lock->unlock();
+	return result;
+}
+
+void MWindow::set_brender_start()
+{
+	edl->session->brender_start = edl->local_session->get_selectionstart();
+	restart_brender();
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+}
+
+
 
 int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 {
@@ -801,7 +919,6 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 //printf("MWindow::load_filenames 8 %d\n", new_edls.total);
 //sleep(10);
 
-// Should only happen in LOAD_RESOURCESONLY
 	if(new_assets.total)
 	{
 		for(int i = 0; i < new_assets.total; i++)
@@ -811,10 +928,11 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 		}
 
 
-		update_project(load_mode);
 // Start examining next batch of index files
 		mainindexes->start_build();
 	}
+
+	update_project(load_mode);
 
 //printf("MWindow::load_filenames 9\n");
 //sleep(10);
@@ -873,6 +991,7 @@ void MWindow::create_objects(int want_gui, int want_new)
 	init_gui();
 //printf("MWindow::create_objects 1\n");
 	init_render();
+	init_brender();
 	mainprogress = new MainProgress(this, gui);
 	undo = new MainUndo(this);
 
@@ -885,10 +1004,10 @@ void MWindow::create_objects(int want_gui, int want_new)
 	if(session->show_lwindow) lwindow->gui->show_window();
 //printf("MWindow::create_objects 1\n");
 
-	vwindow->start();
-	awindow->start();
-	cwindow->start();
-	lwindow->start();
+// 	vwindow->start();
+// 	awindow->start();
+// 	cwindow->start();
+// 	lwindow->start();
 //printf("MWindow::create_objects 1\n");
 
 	gui->mainmenu->load_defaults(defaults);
@@ -907,6 +1026,15 @@ void MWindow::create_objects(int want_gui, int want_new)
 //printf("MWindow::create_objects 1\n");
 	gui->flush();
 //printf("MWindow::create_objects 2\n");
+}
+
+void MWindow::start()
+{
+	vwindow->start();
+	awindow->start();
+	cwindow->start();
+	lwindow->start();
+	gui->run_window();
 }
 
 void MWindow::show_vwindow()
@@ -1064,6 +1192,7 @@ void MWindow::show_plugin(Plugin *plugin)
 	plugin_gui_lock->lock();
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
+// Pointer comparison
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
 			plugin_guis->values[i]->raise_window();
@@ -1088,8 +1217,8 @@ void MWindow::show_plugin(Plugin *plugin)
 			plugin->show = 1;
 		}
 	}
-//printf("MWindow::show_plugin 2\n");
 	plugin_gui_lock->unlock();
+//printf("MWindow::show_plugin 2\n");
 }
 
 void MWindow::hide_plugin(Plugin *plugin, int lock)
@@ -1132,6 +1261,39 @@ void MWindow::update_plugin_guis()
 	}
 	plugin_gui_lock->unlock();
 }
+
+void MWindow::render_plugin_gui(void *data, Plugin *plugin)
+{
+//printf("MWindow::render_plugin_gui 1\n");
+	plugin_gui_lock->lock();
+	for(int i = 0; i < plugin_guis->total; i++)
+	{
+		if(plugin_guis->values[i]->plugin->identical_location(plugin))
+		{
+//printf("MWindow::render_plugin_gui 2\n");
+			plugin_guis->values[i]->render_gui(data);
+			break;
+		}
+	}
+	plugin_gui_lock->unlock();
+}
+
+void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
+{
+//printf("MWindow::render_plugin_gui 1\n");
+	plugin_gui_lock->lock();
+	for(int i = 0; i < plugin_guis->total; i++)
+	{
+		if(plugin_guis->values[i]->plugin->identical_location(plugin))
+		{
+//printf("MWindow::render_plugin_gui 2\n");
+			plugin_guis->values[i]->render_gui(data, size);
+			break;
+		}
+	}
+	plugin_gui_lock->unlock();
+}
+
 
 void MWindow::update_plugin_states()
 {
@@ -1255,6 +1417,7 @@ int MWindow::asset_to_edl(EDL *new_edl,
 // Reset everything after a load.
 void MWindow::update_project(int load_mode)
 {
+	restart_brender();
 //printf("MWindow::update_project 1\n");
 	edl->tracks->update_y_pixels(theme);
 
@@ -1270,29 +1433,15 @@ void MWindow::update_project(int load_mode)
 
 //printf("MWindow::update_project 1\n");
 
-
-
-
-
-
-// Since VWindow splices using paste_edls this won't work for VWindow.
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
 	{
-// 		vwindow->change_source(edl->session->vwindow_folder, 
-// 			edl->session->vwindow_source);
 		vwindow->change_source();
 	}
 	else
 	{
 		vwindow->update(1);
 	}
-
-
-
-//printf("MWindow::update_project 1\n");
-
-
 
 
 	cwindow->gui->slider->set_position();
@@ -1314,6 +1463,7 @@ void MWindow::update_project(int load_mode)
 	gui->flush();
 //printf("MWindow::update_project 13\n");
 }
+
 
 void MWindow::rebuild_indices()
 {
@@ -1384,6 +1534,75 @@ void MWindow::render_list()
 {
 	if(!renderlist->running())
 		renderlist->start();
+}
+
+
+void MWindow::remove_assets_from_project(int push_undo)
+{
+    if(push_undo) undo->update_undo_before("remove assets", LOAD_ALL);
+
+// Remove from caches
+	for(int i = 0; i < session->drag_assets->total; i++)
+	{
+		audio_cache->delete_entry(session->drag_assets->values[i]);
+		video_cache->delete_entry(session->drag_assets->values[i]);
+	}
+
+// Remove from VWindow.
+	for(int i = 0; i < session->drag_clips->total; i++)
+	{
+		if(session->drag_clips->values[i] == vwindow->get_edl())
+		{
+			vwindow->gui->lock_window();
+			vwindow->remove_source();
+			vwindow->gui->unlock_window();
+		}
+	}
+	
+	for(int i = 0; i < session->drag_assets->total; i++)
+	{
+		if(session->drag_assets->values[i] == vwindow->get_asset())
+		{
+			vwindow->gui->lock_window();
+			vwindow->remove_source();
+			vwindow->gui->unlock_window();
+		}
+	}
+	
+	edl->remove_from_project(session->drag_assets);
+	edl->remove_from_project(session->drag_clips);
+	save_backup();
+	if(push_undo) undo->update_undo_after();
+	restart_brender();
+
+	gui->lock_window();
+	gui->update(1,
+		1,
+		1,
+		1,
+		0, 
+		1,
+		0);
+	gui->unlock_window();
+
+	awindow->gui->lock_window();
+	awindow->gui->update_assets();
+	awindow->gui->flush();
+	awindow->gui->unlock_window();
+
+// Removes from playback here
+	sync_parameters(CHANGE_ALL);
+}
+
+void MWindow::remove_assets_from_disk()
+{
+// Remove from disk
+	for(int i = 0; i < session->drag_assets->total; i++)
+	{
+		remove(session->drag_assets->values[i]->path);
+	}
+
+	remove_assets_from_project(1);
 }
 
 void MWindow::dump_plugins()
@@ -1497,8 +1716,10 @@ void MWindow::next_time_format()
 	}
 
 	gui->lock_window();
-	gui->update(0, 0, 1, 1, 0, 1, 0);
 	gui->redraw_time_dependancies();
+
+
+
 	char string[BCTEXTLEN], string2[BCTEXTLEN];
 	sprintf(string, "Using %s.", Units::print_time_format(edl->session->time_format, string2));
 	gui->show_message(string, BLACK);

@@ -1,6 +1,9 @@
-/Makefile/1.1/Mon Jul 22 12:33:53 2002//
-/Makefile.am/1.1/Mon Jul 22 12:33:53 2002//
-/Makefile.in/1.1/Mon Jul 22 12:33:53 2002//
+D/modes////
+D/books////
+D/CVS////
+/Makefile/1.1/Mon Jul 22 12:32:53 2002//
+/Makefile.am/1.1/Fri Jun 28 22:19:34 2002//
+/Makefile.in/1.1/Fri Jul 19 14:12:26 2002//
 /analysis.c/1.1/Mon Jul 22 12:33:53 2002//
 /backends.h/1.1/Mon Jul 22 12:33:53 2002//
 /barkmel.c/1.1/Mon Jul 22 12:33:53 2002//
@@ -41,10 +44,8 @@
 /smallft.c/1.1/Mon Jul 22 12:33:53 2002//
 /smallft.h/1.1/Mon Jul 22 12:33:53 2002//
 /synthesis.c/1.1/Mon Jul 22 12:33:53 2002//
-/tone.c/1.1/Mon Jul 22 12:33:53 2002//
+/tone.c/1.1/Tue Oct  2 00:14:32 2001//
 /vorbisenc.c/1.1/Mon Jul 22 12:33:53 2002//
 /vorbisfile.c/1.1/Mon Jul 22 12:33:53 2002//
 /window.c/1.1/Mon Jul 22 12:33:53 2002//
 /window.h/1.1/Mon Jul 22 12:33:53 2002//
-D/books////
-D/modes////

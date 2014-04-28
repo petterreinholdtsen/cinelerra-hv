@@ -188,7 +188,10 @@ int VFadePatch::handle_event()
 	patch->change_source = 0;
 
 
+	mwindow->gui->unlock_window();
+	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
+	mwindow->gui->lock_window();
 	if(mwindow->edl->session->auto_conf->fade)
 	{
 		mwindow->gui->canvas->draw_overlays();

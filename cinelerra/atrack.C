@@ -17,7 +17,6 @@
 #include "floatautos.h"
 #include "localsession.h"
 #include "mainsession.h"
-#include "mwindow.h"
 #include "panautos.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -163,11 +162,6 @@ int ATrack::identical(long sample1, long sample2)
 
 
 
-
-ATrack::ATrack(MWindow *mwindow, Tracks *tracks) : Track(mwindow, tracks)
-{
-	data_type = TRACK_AUDIO;
-}
 
 
 

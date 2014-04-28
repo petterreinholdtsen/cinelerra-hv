@@ -4,41 +4,42 @@
 #include "assets.inc"
 #include "audiodevice.inc"
 #include "awindow.inc"
-#include "edit.inc"
-#include "guicast.h"
+#include "brender.inc"
 #include "cache.inc"
 #include "channel.inc"
 #include "cwindow.inc"
 #include "defaults.inc"
+#include "edit.inc"
 #include "edl.inc"
 #include "filexml.inc"
+#include "guicast.h"
 #include "levelwindow.inc"
 #include "loadmode.inc"
 #include "mainindexes.inc"
 #include "mainprogress.inc"
+#include "mainsession.inc"
 #include "mainundo.inc"
-#include "mwindow.inc"
-#include "mwindowgui.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
+#include "mwindowgui.inc"
+#include "mwindow.inc"
 #include "new.inc"
 #include "patchbay.inc"
-#include "tracking.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
-#include "pluginset.inc"
 #include "pluginserver.inc"
+#include "pluginset.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
 #include "recordlabel.inc"
 #include "render.inc"
-#include "mainsession.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "threadloader.inc"
 #include "timebar.inc"
 #include "timebomb.h"
 #include "track.inc"
+#include "tracking.inc"
 #include "tracks.inc"
 #include "transition.inc"
 #include "transportque.inc"
@@ -57,6 +58,7 @@ public:
 
 // ======================================== initialization commands
 	void create_objects(int want_gui, int want_new);
+	void start();
 	static void init_tuner(ArrayList<Channel*> &channeldb, char *path);
 
 	int run_script(FileXML *script);
@@ -79,13 +81,15 @@ public:
 	void set_titles(int value);
 	int asset_to_edl(EDL *new_edl, Asset *new_asset, RecordLabels *labels = 0);
 
-// Entry point to insert assets and insert edls.
+// Entry point to insert assets and insert edls.  Called by TrackCanvas 
+// and AssetPopup when assets are dragged in from AWindow.
 // Takes the drag vectors from MainSession and
 // pastes either assets or clips depending on which is full.
 // Returns 1 if the vectors were full
 	int paste_assets(double position, Track *dest_track);
 	
-// Insert the assets at a point in the EDL
+// Insert the assets at a point in the EDL.  Called by effect rendering,
+// rendering, and CWindow drops but recording calls paste_edls directly.
 	void load_assets(ArrayList<Asset*> *new_assets, 
 		double position, 
 		int load_mode,
@@ -162,6 +166,10 @@ public:
 	void update_plugin_guis();
 	void update_plugin_states();
 	void update_plugin_titles();
+// Called by Attachmentpoint during playback.
+// Searches for matching plugin and renders data in it.
+	void render_plugin_gui(void *data, Plugin *plugin);
+	void render_plugin_gui(void *data, int size, Plugin *plugin);
 
 
 // ============================= editing commands ========================
@@ -198,6 +206,18 @@ public:
 		int edit_labels,
 		int edit_plugins,
 		EDL *parent_edl = 0);
+
+// TrackCanvas calls this to insert multiple effects from the drag_pluginservers
+// into pluginset_highlighted.
+	void insert_effects_canvas(double start,
+		double length);
+
+// CWindow calls this to insert multiple effects from 
+// the drag_pluginservers array.
+	void insert_effects_cwindow(Track *dest_track);
+
+// This is called multiple times by the above functions.
+// It can't sync parameters.
 	void insert_effect(char *title, 
 		SharedLocation *shared_location, 
 		Track *track,
@@ -244,6 +264,7 @@ public:
 	void paste_silence();
 
 	void paste_transition();
+	void paste_transition_cwindow(Track *dest_track);
 	void paste_audio_transition();
 	void paste_video_transition();
 	void rebuild_indices();
@@ -272,7 +293,7 @@ public:
 	int cut_automation();
 	int copy_automation();
 	int paste_automation();
-	int clear_automation();
+	void clear_automation();
 	int cut_default_keyframe();
 	int copy_default_keyframe();
 // Use paste_automation to paste the default keyframe in other position.
@@ -297,28 +318,11 @@ public:
 
 // ================================= cursor selection ======================
 
-// start a cursor selection
-	int init_selection(long cursor_position, 
-					int cursor_x, 
-					int cursor_y, 
-					int &current_end, 
-					long &selection_midpoint1,
-					long &selection_midpoint2,
-					int &selection_type);
-	int update_selection(long cursor_position,
-					int cursor_x, 
-					int cursor_y, 
-					int &current_end, 
-					long selection_midpoint1,
-					long selection_midpoint2,
-					int selection_type);
-	int end_selection();
 	void select_point(double position);
 	int set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
 // ================================ handle selection =======================
 
-	int init_handle_selection(long cursor_position, int handle_pixel, int which_handle);     // handle selection
 
 
 	LevelWindow *level_window;
@@ -338,6 +342,7 @@ public:
 	Theme *theme;
 	MainIndexes *mainindexes;
 	MainProgress *mainprogress;
+	BRender *brender;
 
 // Menu items
 	ArrayList<ColormodelItem*> colormodels;
@@ -378,13 +383,32 @@ public:
 	LevelWindow *lwindow;
 // Lock during creation and destruction of GUI
 	Mutex *plugin_gui_lock;
+// Lock during creation and destruction of brender so playback doesn't use it.
+	Mutex *brender_lock;
 
 	void init_render();
+// These three happen synchronously with each other
+// Make sure this is called after synchronizing EDL's.
+	void init_brender();
+// Restart brender after testing its existence
+	void restart_brender();
+// Stops brender after testing its existence
+	void stop_brender();
+// This one happens asynchronously of the others.  Used by playback to
+// see what frame is background rendered.
+	int brender_available(int position);
+	void set_brender_start();
+
 	static void init_defaults(Defaults* &defaults);
 	void init_edl();
 	void init_awindow();
 // Used by MWindow and RenderFarmClient
-	static void init_plugins(Preferences *preferences, ArrayList<PluginServer*>* &plugindb);
+	static void init_plugins(Preferences *preferences, 
+		ArrayList<PluginServer*>* &plugindb);
+	static void init_plugin_path(Preferences *preferences, 
+		ArrayList<PluginServer*>* &plugindb,
+		char *directory,
+		char *suffix);
 	void init_preferences();
 	void init_theme();
 	void init_compositor();

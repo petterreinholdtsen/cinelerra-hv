@@ -286,13 +286,16 @@ void MaskAuto::load(FileXML *file)
 //	dump();
 }
 
-void MaskAuto::copy(long start, long end, FileXML *file)
+void MaskAuto::copy(long start, long end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	file->tag.set_property("MODE", mode);
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("FEATHER", feather);
-	file->tag.set_property("POSITION", position - start);
+	if(default_auto)
+		file->tag.set_property("POSITION", 0);
+	else
+		file->tag.set_property("POSITION", position - start);
 	file->append_tag();
 	file->append_newline();
 

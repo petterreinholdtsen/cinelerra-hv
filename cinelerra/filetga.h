@@ -48,7 +48,8 @@ private:
 		int bytes,
 		int width,
 		int fliphoriz,
-		int alphabits);
+		int alphabits,
+		int data_size);
 	static void flip_line(unsigned char *row, int bytes, int width);
 	static void rle_read(unsigned char *row,
 		unsigned char *data,

@@ -24,12 +24,10 @@ public:
 	virtual Auto& operator=(Auto &that);
 	virtual int operator==(Auto &that);
 	virtual void copy_from(Auto *that);
-	virtual void copy(long start, long end, FileXML *file);
+	virtual void copy(long start, long end, FileXML *file, int default_only);
 
 	virtual void load(FileXML *file);
 
-	virtual int draw(BC_SubWindow *canvas, int x, int y, int center_pixel, int zoom_track, int vertical, int show_value);
-	int selected(int ax, int ay, int cursor_x, int cursor_y, int center_pixel, int zoom_track);
 	virtual void get_caption(char *string) {};
 	virtual float value_to_percentage();
 	virtual float invalue_to_percentage();
@@ -40,6 +38,7 @@ public:
 	Autos *autos;
 	int WIDTH, HEIGHT;
 // Units native to the track
+	int is_default;
 	long position;
 
 private:

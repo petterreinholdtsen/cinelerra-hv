@@ -71,7 +71,6 @@ class PlayPatch : public BC_Toggle
 public:
 	PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y);
 	int handle_event();
-	static IntAuto* get_keyframe(MWindow *mwindow, PatchGUI *patch);
 	MWindow *mwindow;
 	PatchGUI *patch;
 };

@@ -1,3 +1,4 @@
+#include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mwindow.h"
@@ -25,25 +26,100 @@ int InterfacePrefs::create_objects()
 // 		get_resources()->get_bg_light2(),
 // 		get_resources()->get_bg_light1());
 	add_subwindow(new BC_Title(x, y, "Interface", LARGEFONT, BLACK));
+
+
 	y += 35;
-	add_subwindow(hms = new TimeFormatHMS(pwindow, this, pwindow->thread->edl->session->time_format == 0, x, y));
+	add_subwindow(hms = new TimeFormatHMS(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == 0, 
+		x, 
+		y));
 	y += 20;
-	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, this, pwindow->thread->edl->session->time_format == 1, x, y));
+	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == 1, 
+		x, 
+		y));
 	y += 20;
-	add_subwindow(samples = new TimeFormatSamples(pwindow, this, pwindow->thread->edl->session->time_format == 2, x, y));
+	add_subwindow(samples = new TimeFormatSamples(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == 2, 
+		x, 
+		y));
 	y += 20;
-	add_subwindow(hex = new TimeFormatHex(pwindow, this, pwindow->thread->edl->session->time_format == 3, x, y));
+	add_subwindow(hex = new TimeFormatHex(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == 3, 
+		x, 
+		y));
 	y += 20;
-	add_subwindow(frames = new TimeFormatFrames(pwindow, this, pwindow->thread->edl->session->time_format == 4, x, y));
+	add_subwindow(frames = new TimeFormatFrames(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == 4, 
+		x, 
+		y));
 	y += 20;
-	add_subwindow(feet = new TimeFormatFeet(pwindow, this, pwindow->thread->edl->session->time_format == 5, x, y));
+	add_subwindow(feet = new TimeFormatFeet(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == 5, 
+		x, 
+		y));
 	add_subwindow(new BC_Title(260, y, "frames per foot"));
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
-	add_subwindow(new TimeFormatFeetSetting(pwindow, x + 155, y - 5, string));
+	add_subwindow(new TimeFormatFeetSetting(pwindow, 
+		x + 155, 
+		y - 5, 
+		string));
+
+
+	y += 35;
+
+	add_subwindow(new BC_Title(x, y, "Index files", LARGEFONT, BLACK));
+
+
+	y += 35;
+	add_subwindow(new BC_Title(x, 
+		y + 5, 
+		"Index files go here:", MEDIUMFONT, BLACK));
+	add_subwindow(ipathtext = new IndexPathText(x + 230, 
+		y, 
+		pwindow, 
+		pwindow->thread->preferences->index_directory));
+	add_subwindow(ipath = new BrowseButton(mwindow,
+		this,
+		ipathtext, 
+		x + 230 + ipathtext->get_w(), 
+		y, 
+		pwindow->thread->preferences->index_directory,
+		"Index Path", 
+		"Select the directory for index files",
+		1));
+
+	y += 30;
+	add_subwindow(new BC_Title(x, 
+		y + 5, 
+		"Size of index file:", 
+		MEDIUMFONT, 
+		BLACK));
+	sprintf(string, "%ld", pwindow->thread->preferences->index_size);
+	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
+	y += 30;
+	add_subwindow(new BC_Title(x, y + 5, "Number of index files to keep:", MEDIUMFONT, BLACK));
+	sprintf(string, "%ld", pwindow->thread->preferences->index_count);
+	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
+	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
+
+
+
+
+
+	y += 35;
+
+	add_subwindow(new BC_Title(x, y, "Editing", LARGEFONT, BLACK));
+
 
 	y += 35;
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
-
 
 	y += 35;
 	add_subwindow(new BC_Title(x, y, "Clicking on in/out points does what:"));
@@ -141,6 +217,95 @@ InterfacePrefs::~InterfacePrefs()
 	delete vu_int;
 	delete thumbnails;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IndexPathText::IndexPathText(int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	char *text)
+ : BC_TextBox(x, y, 240, 1, text)
+{
+	this->pwindow = pwindow; 
+}
+
+IndexPathText::~IndexPathText() {}
+
+int IndexPathText::handle_event()
+{
+	strcpy(pwindow->thread->preferences->index_directory, get_text());
+}
+
+
+
+
+IndexSize::IndexSize(int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	char *text)
+ : BC_TextBox(x, y, 100, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
+
+int IndexSize::handle_event()
+{
+	long result;
+
+	result = atol(get_text());
+	if(result < 64000) result = 64000;
+	//if(result < 500000) result = 500000;
+	pwindow->thread->preferences->index_size = result;
+	return 0;
+}
+
+
+
+IndexCount::IndexCount(int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	char *text)
+ : BC_TextBox(x, y, 100, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
+
+int IndexCount::handle_event()
+{
+	long result;
+
+	result = atol(get_text());
+	if(result < 1) result = 1;
+	pwindow->thread->preferences->index_count = result;
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 TimeFormatHMS::TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
  : BC_Radial(x, y, value, "Use Hours:Minutes:Seconds.xxx")
@@ -358,7 +523,9 @@ int ViewThemeItem::handle_event()
 ViewThumbnails::ViewThumbnails(int x, 
 	int y, 
 	PreferencesWindow *pwindow)
- : BC_CheckBox(x, y, pwindow->thread->preferences->use_thumbnails, "Use thumbnails")
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->preferences->use_thumbnails, "Use thumbnails in resource window")
 {
 	this->pwindow = pwindow;
 }

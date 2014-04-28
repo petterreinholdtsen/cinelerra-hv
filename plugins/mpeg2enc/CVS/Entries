@@ -14,7 +14,6 @@
 /fdct_mmx.s/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /fdctdata.c/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /fdctref.c/1.1.1.1/Fri Jun 21 12:35:25 2002//
-/global.h/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /idct.c/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /idct_mmx.s/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /idctdata.c/1.1.1.1/Fri Jun 21 12:35:25 2002//
@@ -27,7 +26,6 @@
 /motion.c/1.1.1.1/Fri Jun 21 12:35:25 2002//
 /motion.c.table/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /motion.c.unroll/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/mpeg2enc.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /mpeg2enc.h/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /mtable.h/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /predcomp_mmx.s/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -39,7 +37,6 @@
 /puthdr.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /putmpg.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /putpic.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/putseq.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /putvlc.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /quant_mmx.s/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /quantize.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -53,5 +50,8 @@
 /vlc.h/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /worksheet.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /writepic.c/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/Makefile/1.2/Fri Aug  2 16:03:17 2002//
+/Makefile/1.2/Fri Aug  2 15:34:59 2002//
+/global.h/1.2/Thu Sep 19 15:30:31 2002//
+/mpeg2enc.c/1.2/Thu Sep 19 15:31:28 2002//
+/putseq.c/1.2/Thu Sep 19 15:29:19 2002//
 D

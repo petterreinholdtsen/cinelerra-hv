@@ -631,10 +631,20 @@ void Record::run()
 			mwindow->edl->session->labels_follow_edits,
 			mwindow->edl->session->plugins_follow_edits);
 
-		mwindow->undo->update_undo_after();
-		mwindow->save_backup();
-
 		new_edls.remove_all_objects();
+
+		mwindow->save_backup();
+		mwindow->undo->update_undo_after();
+		mwindow->restart_brender();
+		mwindow->update_plugin_guis();
+		mwindow->gui->update(1, 
+			2,
+			1,
+			1,
+			0,
+			1,
+			0);
+		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 	}
 

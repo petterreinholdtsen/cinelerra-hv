@@ -2,6 +2,7 @@
 #include "filexml.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "mwindow.h"
 #include "plugin.h"
 #include "pluginserver.h"
 #include "renderengine.h"
@@ -22,6 +23,7 @@ AttachmentPoint::AttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
 AttachmentPoint::~AttachmentPoint()
 {
 	delete_buffer_vectors();
+	plugin_servers.remove_all_objects();
 }
 
 
@@ -55,7 +57,9 @@ int AttachmentPoint::render_init()
 				if(i == 0 || !plugin_server->multichannel)
 				{
 //printf("AttachmentPoint::render_init 5.1\n");
-					plugin_servers.append(new PluginServer(*plugin_server));
+					PluginServer *new_server;
+					plugin_servers.append(new_server = new PluginServer(*plugin_server));
+					new_server->set_attachmentpoint(this);
 //printf("AttachmentPoint::render_init 5.2 %p %p\n", plugin_servers.values[i], plugin);
 					plugin_servers.values[i]->open_plugin(0, renderengine->edl, plugin);
 //printf("AttachmentPoint::render_init 5.3\n");
@@ -104,6 +108,7 @@ int AttachmentPoint::render_stop(int duplicate)
 				plugin_servers.values[i]->close_plugin();
 			}
 		}
+//printf("AttachmentPoint::render_stop 3\n");
 		plugin_servers.remove_all_objects();
 	}
 	return 0;
@@ -181,6 +186,19 @@ void AttachmentPoint::render(long current_position, long fragment_size)
 	if(current_buffer >= total_input_buffers) current_buffer = 0;
 }
 
+
+void AttachmentPoint::render_gui(void *data)
+{
+//printf("AttachmentPoint::render_gui 1 %p %p\n", renderengine, renderengine->mwindow);
+	if(renderengine && renderengine->mwindow)
+		renderengine->mwindow->render_plugin_gui(data, plugin);
+}
+
+void AttachmentPoint::render_gui(void *data, int size)
+{
+	if(renderengine && renderengine->mwindow)
+		renderengine->mwindow->render_plugin_gui(data, size, plugin);
+}
 
 
 

@@ -84,7 +84,7 @@ int NormalizeMain::start_loop()
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "%s...", plugin_title());
-	progress = start_progress(string, (end - start) * 2);
+	progress = start_progress(string, (PluginClient::end - PluginClient::start) * 2);
 
 	writing = 0;
 	current_position = PluginClient::start;
@@ -127,7 +127,9 @@ int NormalizeMain::process_loop(double **buffer, long &write_length)
 	{
 // Get peak
 //printf("NormalizeMain::process_loop 4\n");
-		for(int i = PluginClient::start; i < PluginClient::end; i += fragment_len)
+		for(int i = PluginClient::start; 
+			i < PluginClient::end && !result; 
+			i += fragment_len)
 		{
 			fragment_len = PluginClient::in_buffer_size;
 			if(i + fragment_len > PluginClient::end) fragment_len = PluginClient::end - i;

@@ -15,11 +15,11 @@
 #include "guicast.h"
 #include "keyframe.inc"
 #include "linklist.h"
-#include "mwindow.inc"
 #include "module.inc"
 #include "patch.inc"
 #include "plugin.inc"
 #include "pluginset.inc"
+#include "renderengine.inc"
 #include "selections.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
@@ -44,6 +44,12 @@ public:
 	virtual int save_derived(FileXML *file) { return 0; };
 	virtual int load_header(FileXML *file, unsigned long load_flags) { return 0; };
 	virtual int load_derived(FileXML *file, unsigned long load_flags) { return 0; };
+	void equivalent_output(Track *track, double *result);
+// Called by playable tracks to test for playable server.
+// Descends the plugin tree without creating a virtual console.
+	int is_synthesis(RenderEngine *renderengine, 
+		long position, 
+		int direction);
 	Track& operator=(Track& track);
 	virtual PluginSet* new_plugins() { return 0; };
 // Synchronize playback numbers
@@ -103,7 +109,9 @@ public:
 		int plugin_set, 
 		int direction, 
 		int convert_units);
-	Plugin* get_current_transition(double position, int direction, int convert_units);
+	Plugin* get_current_transition(double position, 
+		int direction, 
+		int convert_units);
 	virtual int channel_is_playable(long position, int direction, int *do_channel);
 // Test direct copy conditions common to all the rendering routines
 	virtual int direct_copy_possible(long start, int direction);
@@ -138,6 +146,7 @@ public:
 // simultaneously.
 	int gang;
 	char title[BCTEXTLEN];
+	int play;
 	int record;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;     
@@ -163,9 +172,6 @@ public:
 // If module is visible
 	int module_view;
 
-	Track(MWindow *mwindow, Tracks *tracks);
-
-	virtual int set_index_files(int flash, Asset *asset) { return 0; };
 
 	int load_automation(FileXML *file);
 	int load_edits(FileXML *file);
@@ -192,10 +198,12 @@ public:
 		int edit_labels,
 		int clear_plugins, 
 		int convert_units /* = 1 */);
-	int clear_automation(double selectionstart, 
+// Returns the point to restart background rendering at.
+// -1 means nothing changed.
+	void clear_automation(double selectionstart, 
 		double selectionend, 
-		int shift_autos = 1,
-		int default_only = 0);
+		int shift_autos   /* = 1 */,
+		int default_only  /* = 0 */);
 	virtual int clear_automation_derived(AutoConf *auto_conf, 
 		double selectionstart, 
 		double selectionend, 
@@ -206,7 +214,8 @@ public:
 	int copy_automation(double selectionstart, 
 		double selectionend, 
 		FileXML *file,
-		int default_only);
+		int default_only,
+		int autos_only);
 	virtual int copy_automation_derived(AutoConf *auto_conf, 
 		double selectionstart, 
 		double selectionend, 
@@ -272,10 +281,9 @@ public:
 	long get_feather(long selectionstart, long selectionend);
 	int shift_module_pointers(int deleted_track);
 
-// ===================================== automation
 
-// ===================================== accounting
-	int number_of();           // number of this track
+// Absolute number of this track
+	int number_of();           
 	Patch* get_patch_of();
 	Module* get_module_of();
 
@@ -300,7 +308,6 @@ public:
 	IntAutos *play_autos;
 	IntAutos *mute_autos;
 	FloatAutos *fade_autos;
-	MWindow *mwindow;
 // Transition currently being rendered
 	Transition *transition;
 // Dimensions of this track if video

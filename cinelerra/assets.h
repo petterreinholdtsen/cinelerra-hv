@@ -90,8 +90,9 @@ public:
 
 
 // Load and save just compression parameters for a render dialog
-	void load_defaults(Defaults *defaults);
-	void save_defaults(Defaults *defaults);
+	void load_defaults(Defaults *defaults, char *prefix = 0, int do_codecs = 0);
+	void save_defaults(Defaults *defaults, char *prefix = 0);
+	char* construct_param(char *param, char *prefix, char *return_value);
 
 
 
@@ -201,6 +202,7 @@ public:
 	int vmpeg_bframe_distance;
 	int vmpeg_progressive;
 	int vmpeg_denoise;
+	int vmpeg_seq_codes;
 	int vmpeg_bitrate;
 // 1 - 2
 	int vmpeg_derivative;
@@ -229,7 +231,12 @@ public:
 	int ms_gop_size;
 	int ms_fix_bitrate;
 
-
+// Image file sequences.  Background rendering doesn't want to write a 
+// sequence header but instead wants to start the sequence numbering at a certain
+// number.  This ensures deletion of all the frames which aren't being used.
+// We still want sequence headers sometimes because loading a directory full of images
+// for editing would create new assets for every image.
+	int use_header;
 
 
 

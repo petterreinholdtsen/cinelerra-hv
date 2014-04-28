@@ -464,23 +464,6 @@ for(i = 0; i < max; i++) \
 	return 0;
 }
 
-int ColorBalanceMain::test_clip(int &r, int &g, int &b)
-{
-	if(r > VMAX) r = VMAX;
-	else
-	if(r < 0) r = 0;
-
-	if(g > VMAX) g = VMAX;
-	else
-	if(g < 0) g = 0;
-
-	if(b > VMAX) b = VMAX;
-	else
-	if(b < 0) b = 0;
-
-	return 0;
-}
-
 
 
 int ColorBalanceMain::load_defaults()

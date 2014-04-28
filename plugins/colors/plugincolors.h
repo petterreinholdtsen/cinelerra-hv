@@ -30,7 +30,7 @@ public:
 
 	inline void yuv_to_rgb_8(int &r, int &g, int &b, int y, int u, int v)
 	{
-		y <<= 8;
+		y = (y << 8) | y;
 		r = (y + vtor_tab_8[v]) >> 8;
 		g = (y + utog_tab_8[u] + vtog_tab_8[v]) >> 8;
 		b = (y + utob_tab_8[u]) >> 8;
@@ -56,7 +56,7 @@ public:
 
 	inline void yuv_to_rgb_16(int &r, int &g, int &b, int y, int u, int v)
 	{
-		y <<= 8;
+		y = (y << 8) | y;
 		r = (y + vtor_tab_16[v]) >> 8;
 		g = (y + utog_tab_16[u] + vtog_tab_16[v]) >> 8;
 		b = (y + utob_tab_16[u]) >> 8;

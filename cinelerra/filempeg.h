@@ -203,6 +203,14 @@ public:
 	MPEGConfigVideo *gui;
 };
 
+class MPEGSeqCodes : public BC_CheckBox
+{
+public:
+	MPEGSeqCodes(int x, int y, MPEGConfigVideo *gui);
+	int handle_event();
+	MPEGConfigVideo *gui;
+};
+
 
 
 #endif

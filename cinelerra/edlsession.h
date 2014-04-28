@@ -30,6 +30,8 @@ public:
 	int save_defaults(Defaults *defaults);
 	void boundaries();
 
+	void equivalent_output(EDLSession *session, double *result);
+
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;
@@ -53,8 +55,8 @@ public:
  	int autos_follow_edits;
 // Generate keyframes for every tweek
 	int auto_keyframes;
-// Number of items to store in cache
-	long cache_size;                  
+// Where to start background rendering
+	double brender_start;
 // Length of clipboard if pasting
 	double clipboard_length;
 // Colormodel for intermediate frames

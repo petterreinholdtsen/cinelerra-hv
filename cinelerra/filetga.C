@@ -268,6 +268,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 	int alphabits = header[17] & 0x0f;
 	int fliphoriz = (header[17] & 0x10) ? 1 : 0;
 	int flipvert = (header[17] & 0x20) ? 0 : 1;
+	int data_size = data->get_compressed_size();
 
 	if(idlength) file_offset += idlength;
 
@@ -340,7 +341,8 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 				bytes,
 				width,
 				fliphoriz,
-				alphabits);
+				alphabits,
+				data_size);
 		}
 	}
 	else
@@ -356,7 +358,8 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 				bytes,
 				width,
 				fliphoriz,
-				alphabits);
+				alphabits,
+				data_size);
 		}
 	}
 
@@ -384,7 +387,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 			width,
 			frame->get_w());
 	}
-// printf("FileTGA::read_tga 2\n");
+//printf("FileTGA::read_tga 2 %d %d\n", frame->get_color_model(), output_frame->get_color_model());
 }
 
 void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
@@ -561,8 +564,10 @@ void FileTGA::read_line(unsigned char *row,
 	int bytes,
 	int width,
 	int fliphoriz,
-	int alphabits)
+	int alphabits,
+	int data_size)
 {
+	if(file_offset >= data_size) return;
 	if(image_compression == TGA_COMP_RLE)
 	{
 		rle_read(row,
@@ -573,7 +578,8 @@ void FileTGA::read_line(unsigned char *row,
 	}
 	else
 	{
-		bcopy(data + file_offset, row, bytes * width);
+		if(file_offset + bytes * width <= data_size)
+			bcopy(data + file_offset, row, bytes * width);
 		file_offset += bytes * width;
 	}
 	

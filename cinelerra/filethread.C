@@ -149,9 +149,14 @@ int FileThread::stop_writing()
 		}
 	}
 
+// printf("FileThread::stop_writing %d %d %d %d\n", 
+// do_video,
+// ring_buffers,
+// file->asset->layers,
+// buffer_size);
 	if(do_video)
 	{
-		for(buffer = 0; buffer > ring_buffers; buffer++)
+		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
 			for(layer = 0; layer < file->asset->layers; layer++)
 			{

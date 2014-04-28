@@ -228,7 +228,6 @@ int MWindow::goto_start()
 	if(edl->local_session->view_start != old_view_start) 
 		samplemovement(edl->local_session->view_start);
 
-//printf("MWindow::goto_start 1\n");
 	update_plugin_guis();
 	gui->patchbay->update();
 	gui->cursor->update();

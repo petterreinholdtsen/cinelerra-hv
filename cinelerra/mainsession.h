@@ -70,6 +70,8 @@ public:
 // Value of keyframe when button was pressed
 	float drag_start_percentage;
 	long drag_start_position;
+// Records for redrawing brender position in timebar
+	double brender_end;
 
 // Clip number for automatic title generation
 	int clip_number;

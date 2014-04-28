@@ -121,7 +121,12 @@ int HSV::yuv_to_hsv(int y, int u, int v, float &h, float &s, float &va, int max)
 	r = (float)r_i / max;
 	g = (float)g_i / max;
 	b = (float)b_i / max;
-	HSV::rgb_to_hsv(r, g, b, h, s, va);
+
+	float h2, s2, v2;
+	HSV::rgb_to_hsv(r, g, b, h2, s2, v2);
+	h = h2;
+	s = s2;
+	va = v2;
 
 	return 0;
 }
@@ -138,10 +143,14 @@ int HSV::hsv_to_yuv(int &y, int &u, int &v, float h, float s, float va, int max)
 	g_i = (int)CLIP(g, 0, max);
 	b_i = (int)CLIP(b, 0, max);
 
+	int y2, u2, v2;
 	if(max == 0xffff)
-		yuv_static.rgb_to_yuv_16(r_i, g_i, b_i, y, u, v);
+		yuv_static.rgb_to_yuv_16(r_i, g_i, b_i, y2, u2, v2);
 	else
-		yuv_static.rgb_to_yuv_8(r_i, g_i, b_i, y, u, v);
+		yuv_static.rgb_to_yuv_8(r_i, g_i, b_i, y2, u2, v2);
+	y = y2;
+	u = u2;
+	v = v2;
 
 	return 0;
 }

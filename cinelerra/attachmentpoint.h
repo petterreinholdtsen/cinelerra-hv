@@ -37,6 +37,9 @@ public:
 	int render_init();
 	void render(long current_position, 
 		long fragment_size);
+// Called by plugin server to render GUI with data.
+	void render_gui(void *data);
+	void render_gui(void *data, int size);
 	virtual void dispatch_plugin_server(int buffer_number, 
 		long current_position, 
 		long fragment_size) {};

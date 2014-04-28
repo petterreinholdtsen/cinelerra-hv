@@ -1,7 +1,8 @@
-/Makefile/1.1/Mon Jul 22 12:33:54 2002//
-/Makefile.am/1.1/Mon Jul 22 12:33:54 2002//
-/Makefile.in/1.1/Mon Jul 22 12:33:54 2002//
-/auxpartition.pl/1.1/Mon Jul 22 12:33:54 2002//
+D/CVS////
+/Makefile/1.1/Mon Jul 22 12:32:54 2002//
+/Makefile.am/1.1/Fri Jun 28 22:19:56 2002//
+/Makefile.in/1.1/Fri Jul 19 14:12:39 2002//
+/auxpartition.pl/1.1/Mon Aug 13 01:37:16 2001//
 /bookutil.c/1.1/Mon Jul 22 12:33:54 2002//
 /bookutil.h/1.1/Mon Jul 22 12:33:54 2002//
 /distribution.c/1.1/Mon Jul 22 12:33:54 2002//
@@ -10,8 +11,7 @@
 /latticehint.c/1.1/Mon Jul 22 12:33:54 2002//
 /latticepare.c/1.1/Mon Jul 22 12:33:54 2002//
 /latticetune.c/1.1/Mon Jul 22 12:33:54 2002//
-/residue_entropy/1.1/Mon Jul 22 12:33:54 2002//
+/residue_entropy/1.1/Wed Jun 14 01:38:32 2000//
 /vqgen.c/1.1/Mon Jul 22 12:33:54 2002//
 /vqgen.h/1.1/Mon Jul 22 12:33:54 2002//
 /vqsplit.c/1.1/Mon Jul 22 12:33:54 2002//
-D

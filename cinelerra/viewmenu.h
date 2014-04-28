@@ -38,13 +38,15 @@ public:
 	MWindow *mwindow;
 };
 
-class PlayAutomation : public BC_MenuItem
-{
-public:
-	PlayAutomation(MWindow *mwindow, char *hotkey);
-	int handle_event();
-	MWindow *mwindow;
-};
+/*
+ * class PlayAutomation : public BC_MenuItem
+ * {
+ * public:
+ * 	PlayAutomation(MWindow *mwindow, char *hotkey);
+ * 	int handle_event();
+ * 	MWindow *mwindow;
+ * };
+ */
 
 class ProjectAutomation : public BC_MenuItem
 {

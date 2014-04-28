@@ -42,6 +42,52 @@ Tracks::~Tracks()
 	delete_all_tracks();
 }
 
+
+
+
+
+
+void Tracks::equivalent_output(Tracks *tracks, double *result)
+{
+	if(total_playable_vtracks() != tracks->total_playable_vtracks())
+	{
+		*result = 0;
+	}
+	else
+	{
+		Track *current = first;
+		Track *that_current = tracks->first;
+		while(current || that_current)
+		{
+// Get next video track
+			while(current && current->data_type != TRACK_VIDEO)
+				current = NEXT;
+
+			while(that_current && that_current->data_type != TRACK_VIDEO)
+				that_current = that_current->next;
+
+// One doesn't exist but the other does
+			if((!current && that_current) ||
+				(current && !that_current))
+			{
+				*result = 0;
+				break;
+			}
+			else
+// Both exist
+			if(current && that_current)
+			{
+				current->equivalent_output(that_current, result);
+				current = NEXT;
+				that_current = that_current->next;
+			}
+		}
+	}
+}
+
+
+
+
 void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, Track *start_track)
 {
 	drag_edits->remove_all();
@@ -67,6 +113,8 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 	}
 
 }
+
+
 
 Tracks& Tracks::operator=(Tracks &tracks)
 {
@@ -222,23 +270,18 @@ int Tracks::total_of(int play,
 		int expand)
 {
 	int result = 0;
-	IntAuto *play_keyframe = 0;
 	IntAuto *mute_keyframe = 0;
 	
 	for(Track *current = first; current; current = NEXT)
 	{
 		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
-		play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
-			unit_start, 
-			PLAY_FORWARD,
-			(Auto*)play_keyframe);
 		mute_keyframe = (IntAuto*)current->automation->mute_autos->get_prev_auto(
 			unit_start, 
 			PLAY_FORWARD,
 			(Auto*)mute_keyframe);
 
 		result += 
-			(play_keyframe->value && play) ||
+			(current->play && play) ||
 			(current->record && record) ||
 			(current->gang && gang) ||
 			(current->draw && draw) ||
@@ -273,17 +316,9 @@ int Tracks::playable_audio_tracks()
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_AUDIO)
+		if(current->data_type == TRACK_AUDIO && current->play)
 		{
-			IntAuto *play_keyframe = 0;
-			long unit_start = current->to_units(edl->local_session->selectionstart, 0);
-			play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
-					unit_start, 
-					PLAY_FORWARD,
-					(Auto*)play_keyframe);
-
-//printf("Tracks::playable_audio_tracks 1 %p %d %d\n", play_keyframe, unit_start, play_keyframe->value);
-			if(play_keyframe->value) result++;
+			result++;
 		}
 	}
 
@@ -296,18 +331,9 @@ int Tracks::playable_video_tracks()
 
 	for(Track *current = first; current; current = NEXT)
 	{
-		if(current->data_type == TRACK_VIDEO)
+		if(current->data_type == TRACK_VIDEO && current->play)
 		{
-			IntAuto *play_keyframe = 0;
-			long unit_start = current->to_units(edl->local_session->selectionstart, 0);
-			play_keyframe = (IntAuto*)current->automation->play_autos->get_prev_auto(
-				unit_start, 
-				PLAY_FORWARD,
-				(Auto*)play_keyframe);
-			if(((IntAuto*)current->automation->play_autos->get_prev_auto(
-				unit_start, 
-				PLAY_FORWARD,
-				(Auto*)play_keyframe))->value) result++;
+			result++;
 		}
 	}
 	return result;
@@ -360,6 +386,17 @@ double Tracks::total_length()
 	for(Track *current = first; current; current = NEXT)
 	{
 		if(current->get_length() > total) total = current->get_length();
+	}
+	return total; 
+}
+
+double Tracks::total_video_length() 
+{
+	double total = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_VIDEO &&
+			current->get_length() > total) total = current->get_length();
 	}
 	return total; 
 }
@@ -431,11 +468,7 @@ void Tracks::select_all(int play,
 	{
 		double position = edl->local_session->selectionstart;
 
-		if(play)
-		{
-			((IntAuto*)current->automation->play_autos->get_auto_for_editing(position))->value = value;
-		}
-
+		if(play) current->play = value;
 		if(record) current->record = value;
 		if(gang) current->gang = value;
 		if(draw) current->draw = value;
@@ -622,4 +655,14 @@ Track* Tracks::number(int number)
 int Tracks::copy_length(long start, long end)
 {
 	return mwindow->patches->copy_length();
+}
+
+int Tracks::total_playable_vtracks()
+{
+	int result = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_VIDEO && current->play) result++;
+	}
+	return result;
 }

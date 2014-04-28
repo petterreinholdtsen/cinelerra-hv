@@ -1,6 +1,7 @@
 #include "arender.h"
 #include "assets.h"
 #include "auto.h"
+#include "brender.h"
 #include "cache.h"
 #include "clip.h"
 #include "cwindow.h"
@@ -43,6 +44,7 @@ RenderPackage::RenderPackage()
 	video_end = 0;
 	path[0] = 0;
 	done = 0;
+	use_brender = 0;
 }
 
 RenderPackage::~RenderPackage()
@@ -98,8 +100,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 //printf("PackageRenderer::initialize 1 interpolation_type=%d\n",
 //	command->get_edl()->session->interpolation_type);
 
-	audio_cache = new CICache(command->get_edl(), plugindb);
-	video_cache = new CICache(command->get_edl(), plugindb);
+	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
+	video_cache = new CICache(command->get_edl(), preferences, plugindb);
 //printf("PackageRenderer::initialize 1\n");
 
 	vconfig = new VideoOutConfig(PLAYBACK_LOCALHOST, 0);
@@ -136,7 +138,7 @@ void PackageRenderer::create_output()
 
 //printf("PackageRenderer::create_output 3\n");
 	file->set_processors(command->get_edl()->session->smp + 1);
-//printf("PackageRenderer::create_output 4\n");
+//printf("PackageRenderer::create_output 4 %s\n", asset->path);
 
 	result = file->open_file(plugindb, 
 					asset, 
@@ -310,6 +312,7 @@ void PackageRenderer::do_audio()
 
 void PackageRenderer::do_video()
 {
+//printf("PackageRenderer::do_video 1\n");
 // Do video data
 	if(asset->video_data)
 	{
@@ -320,7 +323,6 @@ void PackageRenderer::do_video()
 			video_end = package->video_end;
 
 //printf("PackageRenderer::do_video 1\n");
-//	video_position, audio_position, video_end);
 		while(video_position < video_end && !result)
 		{
 // Try to copy the compressed frame directly from the input to output files
@@ -363,18 +365,19 @@ void PackageRenderer::do_video()
 							video_output[i][video_write_position] : 
 							0;
 //printf("PackageRenderer::do_video 6\n");
- 				result |= render_engine->vrender->process_buffer(video_output_ptr, 
+ 				result |= render_engine->vrender->process_buffer(
+					video_output_ptr, 
 					video_position, 
 					0);
 
 
+//printf("PackageRenderer::do_video 7\n");
 
  				if(mwindow && video_device->output_visible())
 				{
 // Vector for video device
 					VFrame *preview_output[MAX_CHANNELS];
 
-//printf("PackageRenderer::do_video 7\n");
 					video_device->new_output_buffers(preview_output,
 						command->get_edl()->session->color_model);
 //printf("PackageRenderer::do_video 8\n");
@@ -389,7 +392,6 @@ void PackageRenderer::do_video()
 				}
 
 
-//printf("PackageRenderer::do_video 11 %d %d\n", video_write_position, video_preroll);
 
 // Write to file
 				if(video_preroll)
@@ -401,26 +403,42 @@ void PackageRenderer::do_video()
 				}
 				else
 	 			{
+// Set background rendering parameters
+					if(package->use_brender)
+					{
+// Allow us to skip sections of the output file by setting the frame number.
+						video_output_ptr[0]->set_number(video_position);
+					}
 					video_write_position++;
+
 					if(video_write_position >= video_write_length)
 					{
 						result |= file->write_video_buffer(video_write_position);
+// Update the brender map after writing the files.
+//printf("PackageRenderer::do_video 12 %d %d\n", package->use_brender, video_write_position);
+						if(package->use_brender)
+							for(int i = 0; i < video_write_position; i++)
+								set_video_map(video_position + 1 - video_write_position + i, 
+									BRender::RENDERED);
 						video_write_position = 0;
 					}
 				}
 
 
-//printf("PackageRenderer::do_video 12\n");
 			}
 
-//printf("PackageRenderer::do_video 13 %d\n", result);
 			video_position++;
+//printf("PackageRenderer::do_video 12\n");
 			if(get_result()) result = 1;
-			if(progress_cancelled()) result = 1;
+//printf("PackageRenderer::do_video 13 %d %d\n", video_position, result);
+			if(!result && progress_cancelled()) result = 1;
+//printf("PackageRenderer::do_video 14 %d %d\n", video_position, result);
 		}
 	}
 	else
+	{
 		video_position += video_read_length;
+	}
 }
 
 
@@ -444,6 +462,10 @@ void PackageRenderer::stop_output()
 		delete compressed_output;
 		if(video_write_position)
 			file->write_video_buffer(video_write_position);
+		if(package->use_brender)
+			for(int i = 0; i < video_write_position; i++)
+				set_video_map(video_position - video_write_position + i, 
+					BRender::RENDERED);
 		video_write_position = 0;	
 		file->stop_video_thread();
 		if(mwindow)
@@ -458,9 +480,13 @@ void PackageRenderer::stop_output()
 
 void PackageRenderer::close_output()
 {
+//printf("PackageRenderer::close_output 1\n");
 	file->close_file();
+//printf("PackageRenderer::close_output 1\n");
 	delete file;
+//printf("PackageRenderer::close_output 1\n");
 	delete asset;
+//printf("PackageRenderer::close_output 2\n");
 }
 
 // Aborts and returns 1 if an error is encountered.
@@ -473,20 +499,17 @@ int PackageRenderer::render_package(RenderPackage *package)
 	result = 0;
 	this->package = package;
 
-printf("PackageRenderer::render_package: \n"
-	"audio start=%d\n"
-	"audio length=%d\n"
-	"video start=%d\n"
-	"video length=%d\n",
-	package->audio_start, 
-	package->audio_end - package->audio_start, 
-	package->video_start, 
-	package->video_end - package->video_start);
-	
+// printf(
+// "PackageRenderer::render_package: audio s=%d l=%d video s=%d l=%d\n",
+// 	package->audio_start, 
+// 	package->audio_end - package->audio_start, 
+// 	package->video_start, 
+// 	package->video_end - package->video_start);
+
 //printf("PackageRenderer::render_package 1\n");
 
 	create_output();
-//printf("PackageRenderer::render_package 1 %s\n", preferences->renderfarm_mountpoint);
+//printf("PackageRenderer::render_package 2\n");
 
 
 // Create render engine
@@ -494,10 +517,10 @@ printf("PackageRenderer::render_package: \n"
 	{
 		create_engine();
 
+//printf("PackageRenderer::render_package 5\n");
 // Main loop
 		while((!audio_done || !video_done) && !result)
 		{
-//printf("PackageRenderer::render_package 5\n");
 			int need_audio = 0, need_video = 0;
 
 
@@ -553,41 +576,42 @@ printf("PackageRenderer::render_package: \n"
 //printf("PackageRenderer::render_package 9\n");
 
 
-			set_progress(samples_rendered);
+			if(!result) set_progress(samples_rendered);
 
 //printf("PackageRenderer::render_package 10 %d %d %d\n", audio_read_length, video_read_length, samples_rendered);
 
 
 
 
-			if(progress_cancelled()) result = 1;
+			if(!result && progress_cancelled()) result = 1;
 
 			if(result) 
 				set_result(result);
 			else
 				result = get_result();
-//printf("PackageRenderer::render_package 11 %d %d %d\n", audio_read_length, video_read_length, samples_rendered);
+//printf("PackageRenderer::render_package 11 %d %d %d %d\n", audio_read_length, video_read_length, samples_rendered, result);
 		}
-//printf("PackageRenderer::render_package 12\n");
 
 		stop_engine();
 
-
+//printf("PackageRenderer::render_package 12\n");
 		stop_output();
 
+//printf("PackageRenderer::render_package 13\n");
 
 
-//printf("PackageRenderer::render_package 13 %d\n", result);
 	}
 
 
 
+//printf("PackageRenderer::render_package 12\n");
 	close_output();
 
+//printf("PackageRenderer::render_package 14 %d\n", result);
 
 	set_result(result);
 
-printf("PackageRenderer::render_package: done\n");
+//printf("PackageRenderer::render_package: done\n");
 
 
 	return result;
@@ -632,27 +656,35 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 		}
 //printf("Render::direct_frame_copy 2\n");
 
-		error |= ((VEdit*)playable_edit)->read_frame(compressed_output, 
-			video_position,
-			PLAY_FORWARD,
-			video_cache);
+		if(!package->use_brender)
+			error |= ((VEdit*)playable_edit)->read_frame(compressed_output, 
+				video_position,
+				PLAY_FORWARD,
+				video_cache);
 
-//printf("Render::direct_frame_copy 3 %d\n", compressed_output->get_compressed_size());
 
 		if(!error && video_preroll > 0)
+		{
 			video_preroll--;
+		}
 		else
 		if(!error)
 		{
-			VFrame ***temp_output = new VFrame**[1];
-			temp_output[0] = new VFrame*[1];
-			temp_output[0][0] = compressed_output;
-//printf("Render::direct_frame_copy 4\n");
-			error |= file->write_frames(temp_output, 1);
-			delete temp_output[0];
-			delete temp_output;
+//printf("Render::direct_frame_copy 3\n");
+// Don't background render this one
+			if(package->use_brender)
+				set_video_map(video_position, BRender::SCANNED);
+
+			if(!package->use_brender)
+			{
+				VFrame ***temp_output = new VFrame**[1];
+				temp_output[0] = new VFrame*[1];
+				temp_output[0][0] = compressed_output;
+				error |= file->write_frames(temp_output, 1);
+				delete temp_output[0];
+				delete temp_output;
+			}
 		}
-//printf("Render::direct_frame_copy 4\n");
 		return 0;
 	}
 	else
@@ -746,7 +778,11 @@ void PackageRenderer::set_result(int value)
 void PackageRenderer::set_progress(long value)
 {
 }	
-	
+
+void PackageRenderer::set_video_map(long position, int value)
+{
+}
+
 int PackageRenderer::progress_cancelled()
 {
 	return 0;
@@ -760,307 +796,4 @@ int PackageRenderer::progress_cancelled()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-PackageDispatcher::PackageDispatcher()
-{
-	packages = 0;
-	package_lock = new Mutex;
-}
-
-PackageDispatcher::~PackageDispatcher()
-{
-	if(packages) delete [] packages;
-	delete package_lock;
-}
-
-int PackageDispatcher::create_packages(MWindow *mwindow,
-	EDL *edl,
-	Preferences *preferences,
-	int strategy, 
-	Asset *default_asset, 
-	double total_start, 
-	double total_end)
-{
-	int result = 0;
-
-	this->mwindow = mwindow;
-	this->edl = edl;
-	this->preferences = preferences;
-	this->strategy = strategy;
-	this->default_asset = default_asset;
-	this->total_start = total_start;
-	this->total_end = total_end;
-
-	nodes = preferences->get_enabled_nodes();
-	audio_position = Units::to_long(total_start * default_asset->sample_rate);
-	video_position = Units::to_long(total_start * default_asset->frame_rate);
-	audio_end = Units::to_long(total_end * default_asset->sample_rate);
-	video_end = Units::to_long(total_end * default_asset->frame_rate);
-	current_package = 0;
-
-	if(strategy == SINGLE_PASS)
-	{
-		total_len = this->total_end - this->total_start;
-		package_len = total_len;
-		total_packages = 1;
-		total_allocated = 1;
-		packages = new RenderPackage[total_allocated];
-		packages[0].audio_start = audio_position;
-		packages[0].audio_end = audio_end;
-		packages[0].video_start = video_position;
-		packages[0].video_end = video_end;
-		strcpy(packages[0].path, default_asset->path);
-	}
-	else
-	if(strategy == SINGLE_PASS_FARM)
-	{
-		total_len = this->total_end - this->total_start;
-		total_packages = preferences->renderfarm_job_count;
-		total_allocated = total_packages + nodes;
-		packages = new RenderPackage[total_allocated];
-		package_len = total_len / total_packages;
-
-
-//printf("PackageDispatcher::create_packages: %f / %d = %f\n", total_len, total_packages, package_len);
-		Render::get_starting_number(default_asset->path, 
-			current_number,
-			number_start, 
-			total_digits);
-
-		for(int i = 0; i < total_allocated; i++)
-		{
-			RenderPackage *package = &packages[i];
-
-			Render::create_filename(package->path, 
-				default_asset->path, 
-				current_number,
-				total_digits,
-				number_start);
-			current_number++;
-		}
-	}
-	else
-	if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
-	{
-		Label *label = edl->labels->first;
-		total_packages = 0;
-		packages = new RenderPackage[edl->labels->total() + 2];
-
-		Render::get_starting_number(default_asset->path, 
-			current_number,
-			number_start, 
-			total_digits);
-
-		while(audio_position < audio_end)
-		{
-			RenderPackage *package = &packages[total_packages];
-			package->audio_start = audio_position;
-			package->video_start = video_position;
-
-
-			while(label && 
-				(label->position < (double)audio_position / default_asset->sample_rate ||
-				EQUIV(label->position, (double)audio_position / default_asset->sample_rate)))
-			{
-				label = label->next;
-			}
-
-			if(!label)
-			{
-				package->audio_end = Units::to_long(total_end * default_asset->sample_rate);
-				package->video_end = Units::to_long(total_end * default_asset->frame_rate);
-			}
-			else
-			{
-				package->audio_end = Units::to_long(label->position * default_asset->sample_rate);
-				package->video_end = Units::to_long(label->position * default_asset->frame_rate);
-			}
-
-			if(package->audio_end > audio_end)
-			{
-				package->audio_end = audio_end;
-			}
-
-			if(package->video_end > video_end)
-			{
-				package->video_end = video_end;
-			}
-
-			audio_position = package->audio_end;
-			video_position = package->video_end;
-			Render::create_filename(package->path, 
-				default_asset->path, 
-				current_number,
-				total_digits,
-				number_start);
-			current_number++;
-
-			total_packages++;
-		}
-		
-		total_allocated = total_packages;
-	}
-
-// Test existence of every output file
-	for(int i = 0; i < total_allocated && !result; i++)
-	{
-		Asset temp_asset(packages[i].path);
-//printf("Render::run 1 %s\n", packages[i].path);
-		result = Render::test_existence(mwindow, &temp_asset);
-	}
-	
-	return result;
-}
-
-RenderPackage* PackageDispatcher::get_package(double frames_per_second, 
-	double avg_frames_per_second)
-{
-	package_lock->lock();
-
-	RenderPackage *result = 0;
-	if(strategy == SINGLE_PASS ||
-		strategy == FILE_PER_LABEL ||
-		strategy == FILE_PER_LABEL_FARM)
-	{
-		if(current_package < total_packages)
-		{
-			result = &packages[current_package];
-			current_package++;
-		}
-	}
-	else
-	if(strategy == SINGLE_PASS_FARM)
-	{
-		if(audio_position < audio_end ||
-			video_position < video_end)
-		{
-// Last package
-			if(current_package >= total_allocated - 1)
-			{
-				result = &packages[current_package];
-				result->audio_start = audio_position;
-				result->video_start = video_position;
-				result->audio_end = audio_end;
-				result->video_end = video_end;
-				audio_position = result->audio_end;
-				video_position = result->video_end;
-				current_package++;
-			}
-			else
-// No useful speed data
-			if(EQUIV(frames_per_second, 0) || 
-				EQUIV(avg_frames_per_second, 0))
-			{
-				result = &packages[current_package];
-
-				result->audio_start = audio_position;
-				result->video_start = video_position;
-				result->audio_end = audio_position + 
-					Units::round(package_len * default_asset->sample_rate);
-				result->video_end = video_position + 
-					Units::round(package_len * default_asset->frame_rate);
-
-// printf("Dispatcher::get_package 1 %f %d = %f\n", 
-// 	package_len, default_asset->sample_rate, package_len * default_asset->sample_rate);
-
-// If we get here without any useful speed data render the whole thing.
-				if(current_package >= total_packages - 1)
-				{
-					result->audio_end = audio_end;
-					result->video_end = video_end;
-				}
-				else
-				{
-					result->audio_end = MIN(audio_end, result->audio_end);
-					result->video_end = MIN(video_end, result->video_end);
-				}
-
-				audio_position = result->audio_end;
-				video_position = result->video_end;
-				current_package++;
-			}
-			else
-// Useful speed data and future packages exist.  Scale the 
-// package size to fit the requestor.
-			{
-				result = &packages[current_package];
-
-				result->audio_start = audio_position;
-				result->video_start = video_position;
-
-
-				double scaled_len = package_len * 
-					frames_per_second / 
-					avg_frames_per_second;
-				result->audio_end = result->audio_start + 
-					Units::to_long(scaled_len * default_asset->sample_rate);
-				result->video_end = result->video_start +
-					Units::to_long(scaled_len * default_asset->frame_rate);
-
-				result->audio_end = MIN(audio_end, result->audio_end);
-				result->video_end = MIN(video_end, result->video_end);
-
-				audio_position = result->audio_end;
-				video_position = result->video_end;
-
-// printf("Dispatcher::get_package 2 %f * %f / %f = %f\n", 
-// 	package_len, 
-// 	frames_per_second, 
-// 	avg_frames_per_second,
-// 	scaled_len);
-
-// Package size is no longer touched between total_packages and total_allocated
-				if(current_package < total_packages - 1)
-				{
-					package_len = (double)(audio_end - audio_position) / 
-						(double)default_asset->sample_rate /
-						(double)(total_packages - current_package);
-				}
-
-				current_package++;
-			}
-//printf("Dispatcher::get_package 2 %d %d %d %d\n", 
-//	result->audio_start, result->video_start, result->audio_end, result->video_end);
-		}
-	}
-	
-	package_lock->unlock();
-	
-	return result;
-}
-
-
-ArrayList<Asset*>* PackageDispatcher::get_asset_list()
-{
-	ArrayList<Asset*> *assets = new ArrayList<Asset*>;
-	
-	for(int i = 0; i < current_package; i++)
-	{
-		Asset *asset = new Asset;
-		*asset = *default_asset;
-		strcpy(asset->path, packages[i].path);
-		asset->video_length = packages[i].video_end - packages[i].video_start;
-		asset->audio_length = packages[i].audio_end - packages[i].audio_start;
-		assets->append(asset);
-	}
-
-	return assets;
-}
 

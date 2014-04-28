@@ -9,6 +9,7 @@ OBJS = \
 	$(OBJDIR)/bcbitmap.o \
 	$(OBJDIR)/bcbutton.o \
 	$(OBJDIR)/bccapture.o \
+	$(OBJDIR)/bccounter.o \
 	$(OBJDIR)/bcclipboard.o \
 	$(OBJDIR)/bcdisplayinfo.o \
 	$(OBJDIR)/bcdragwindow.o \
@@ -120,6 +121,7 @@ $(OBJS) $(OBJDIR)/test.o $(OBJDIR)/test2.o $(OBJDIR)/replace.o:
 $(OBJDIR)/bcbitmap.o: 	   				      bcbitmap.C
 $(OBJDIR)/bcbutton.o: 	   				      bcbutton.C
 $(OBJDIR)/bccapture.o:     				      bccapture.C
+$(OBJDIR)/bccounter.o:                                        bccounter.C
 $(OBJDIR)/bcclipboard.o:   				      bcclipboard.C
 $(OBJDIR)/bcdisplayinfo.o: 				      bcdisplayinfo.C
 $(OBJDIR)/bcdragwindow.o:  				      bcdragwindow.C

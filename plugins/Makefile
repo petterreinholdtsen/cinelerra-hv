@@ -28,12 +28,16 @@ DIRS = \
 	despike \
 	dissolve \
 	dot \
+	downsample \
 	fieldframe \
+	flash \
 	flip \
 	framefield \
 	freeverb \
 	freezeframe \
 	gain \
+	gradient \
+	histogram \
 	holo \
 	huesaturation \
 	interpolateall \
@@ -42,11 +46,15 @@ DIRS = \
 	irissquare \
 	ivtc \
 	lame \
+	level \
+	linearblur \
 	mpeg2enc \
 	normalize \
 	oilpainting \
+	perspective \
 	pitch \
 	polar \
+	radialblur \
 	reframe \
 	resample \
 	reverb \
@@ -70,7 +78,8 @@ DIRS = \
 	wave \
 	whirl \
 	wipe \
-	yuv
+	yuv \
+	zoomblur
 
 all: $(DIRS) $(OBJS)
 	@ for i in $(DIRS) ; \

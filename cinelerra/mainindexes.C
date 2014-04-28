@@ -42,7 +42,7 @@ void MainIndexes::add_next_asset(Asset *asset)
 		indexfile.close_index();
 	}
 	else
-// Put copy of asset in stack
+// Put copy of asset in stack, not the real thing.
 	{
 //printf("MainIndexes::add_next_asset 3\n");
 		Asset *new_asset = new Asset;
@@ -150,7 +150,9 @@ void MainIndexes::run()
 //printf("MainIndexes::run 5 %p %s %p %p\n", current_asset, current_asset->path, mwindow, mwindow->mainprogress);
 					if(!progress)
 					{
+						if(mwindow->gui) mwindow->gui->lock_window();
 						progress = mwindow->mainprogress->start_progress("Building Indexes...", 1);
+						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 
 //printf("MainIndexes::run 5 %p %s\n", current_asset, current_asset->path);
@@ -161,11 +163,16 @@ void MainIndexes::run()
 //printf("MainIndexes::run 7 %p %s\n", current_asset, current_asset->path);
 				}
 				else
-// Exists
+// Exists.  Update real thing.
 				{
 //printf("MainIndexes::run 8\n");
-					if(current_asset->index_status == INDEX_NOTTESTED) 
+					if(current_asset->index_status == INDEX_NOTTESTED)
+					{
 						current_asset->index_status = INDEX_READY;
+						if(mwindow->gui) mwindow->gui->lock_window();
+						mwindow->edl->set_index_file(current_asset);
+						if(mwindow->gui) mwindow->gui->unlock_window();
+					}
 					indexfile->close_index();
 				}
 
@@ -178,8 +185,10 @@ void MainIndexes::run()
 
 		if(progress)     // progress box is only created when an index is built
 		{
+			if(mwindow->gui) mwindow->gui->lock_window();
 			progress->stop_progress();
 			delete progress;
+			if(mwindow->gui) mwindow->gui->unlock_window();
 			progress = 0;
 		}
 

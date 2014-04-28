@@ -175,6 +175,7 @@ public:
 		double &zoom_sample,
 		double &zoom_units);
 
+	void draw_brender_start();
 	void draw_loop_points();
 	void draw_transitions();
 	void draw_drag_handle();

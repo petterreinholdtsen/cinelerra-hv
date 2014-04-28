@@ -513,20 +513,7 @@ int TrackCanvas::drag_stop()
 // 						mwindow->session->edit_highlighted->length);
 // 				}
 
-
-				for(int i = 0; 
-					i < mwindow->session->drag_pluginservers->total; 
-					i++)
-				{
-					PluginServer *server = mwindow->session->drag_pluginservers->values[i];
-					mwindow->insert_effect(server->title, 
-						0,
-						mwindow->session->track_highlighted,
-						i == 0 ? plugin_set : 0,
-						start,
-						length,
-						PLUGIN_STANDALONE);
-				}
+				mwindow->insert_effects_canvas(start, length);
 				result = 1;
 				redraw = 1;
 			}
@@ -575,6 +562,8 @@ int TrackCanvas::drag_stop()
 		mwindow->session->current_operation = NO_OPERATION;
 	}
 
+
+//printf("TrackCanvas::drag_stop %d %d\n", redraw, mwindow->session->current_operation);
 	if(redraw)
 	{
 		mwindow->edl->tracks->update_y_pixels(mwindow->theme);
@@ -1091,7 +1080,11 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 		w += x - -10;
 		x = -10;
 	}
-	y = MAX(y, -10);
+	if(y < -10)
+	{
+		h += y - -10;
+		y = -10;
+	}
 	w = MIN(w, get_w() + 20);
 	h = MIN(h, get_h() + 20);
 	set_color(WHITE);
@@ -1249,6 +1242,7 @@ void TrackCanvas::draw_highlighting()
 						w, 
 						h);
 
+//printf("TrackCanvas::draw_highlighting 1 %d %d %d %d\n", x, y, w, h);
 // Put it in a new plugin set determined by the selected range
 					if(mwindow->edl->local_session->get_selectionend() > 
 						mwindow->edl->local_session->get_selectionstart())
@@ -1279,6 +1273,7 @@ void TrackCanvas::draw_highlighting()
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 					MWindowGUI::visible(y, y + h, 0, get_h()))
 				{
+//printf("TrackCanvas::draw_highlighting 1\n");
 					draw_box = 1;
 				}
 			}
@@ -1553,6 +1548,23 @@ void TrackCanvas::draw_loop_points()
 //printf("TrackCanvas::draw_loop_points 7\n");
 }
 
+void TrackCanvas::draw_brender_start()
+{
+	if(mwindow->preferences->use_brender)
+	{
+		long x = Units::round(mwindow->edl->session->brender_start *
+			mwindow->edl->session->sample_rate /
+			mwindow->edl->local_session->zoom_sample - 
+			mwindow->edl->local_session->view_start);
+
+		if(MWindowGUI::visible(x, x + 1, 0, get_w()))
+		{
+			set_color(RED);
+			draw_line(x, 0, x, get_h());
+		}
+	}
+}
+
 int TrackCanvas::do_keyframes(int cursor_x, 
 	int cursor_y, 
 	int draw, 
@@ -1631,27 +1643,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			if(result && buttonpress)
 			{
 				mwindow->session->current_operation = DRAG_PZOOM;
-				update_drag_caption();
-			}
-		}
-
-//printf("TrackCanvas::draw_keyframes 3 %d\n", result);
-		if(!result && session->auto_conf->play)
-		{
-			result = do_toggle_autos(track, 
-				automation->play_autos,
-				cursor_x, 
-				cursor_y, 
-				draw, 
-				buttonpress,
-				RED);
-			if(result && mwindow->session->current_operation == DRAG_PLAY)
-			{
-				rerender = 1;
-			}
-			if(result && buttonpress)
-			{
-				mwindow->session->current_operation = DRAG_PLAY;
 				update_drag_caption();
 			}
 		}
@@ -2925,7 +2916,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
-//printf("TrackCanvas::draw_overlays 1\n");
+//printf("TrackCanvas::draw_overlays 1 %d %p\n", get_window_lock(), background_pixmap);
 // Move background pixmap to foreground pixmap
 	draw_pixmap(background_pixmap, 
 		0, 
@@ -2935,10 +2926,6 @@ void TrackCanvas::draw_overlays()
 		0,
 		0);
 
-//printf("TrackCanvas::draw_overlays 2\n");
-// Loop points
-	draw_loop_points();
-
 //printf("TrackCanvas::draw_overlays 4\n");
 // In/Out points
 	draw_inout_points();
@@ -2946,11 +2933,15 @@ void TrackCanvas::draw_overlays()
 //printf("TrackCanvas::draw_overlays 5\n");
 // Transitions
 	if(mwindow->edl->session->auto_conf->transitions) draw_transitions();
-//	transition_handles->update();
 
 //printf("TrackCanvas::draw_overlays 6\n");
 // Plugins
 	draw_plugins();
+
+//printf("TrackCanvas::draw_overlays 2\n");
+// Loop points
+	draw_loop_points();
+	draw_brender_start();
 
 //printf("TrackCanvas::draw_overlays 7\n");
 // Highlighted areas
@@ -3368,10 +3359,7 @@ int TrackCanvas::cursor_motion_event()
 		{
 			cursor_x = get_cursor_x();
 			cursor_y = get_cursor_y();
-			position = (double)cursor_x * 
-				mwindow->edl->local_session->zoom_sample /
-				mwindow->edl->session->sample_rate + 
-				(double)mwindow->edl->local_session->view_start * 
+			position = (double)(cursor_x + mwindow->edl->local_session->view_start) * 
 				mwindow->edl->local_session->zoom_sample /
 				mwindow->edl->session->sample_rate;
 
@@ -3486,6 +3474,7 @@ int TrackCanvas::cursor_motion_event()
 //printf("TrackCanvas::cursor_motion_event 1 %d\n", rerender);
 	if(rerender)
 	{
+		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->update_plugin_guis();
 		mwindow->cwindow->update(1, 0, 0);
@@ -3508,10 +3497,11 @@ int TrackCanvas::cursor_motion_event()
 	if(update_scroll)
 	{
 		if(!drag_scroll && 
-			(cursor_x > get_w() || cursor_x < 0 || cursor_y > get_h() || cursor_y < 0))
+			(cursor_x >= get_w() || cursor_x < 0 || cursor_y >= get_h() || cursor_y < 0))
 			start_dragscroll();
 		else
-		if(drag_scroll)
+		if(drag_scroll &&
+			(cursor_x < get_w() && cursor_x >= 0 && cursor_y < get_h() && cursor_y >= 0))
 			stop_dragscroll();
 	}
 
@@ -3533,6 +3523,7 @@ void TrackCanvas::start_dragscroll()
 	{
 		drag_scroll = 1;
 		set_repeat(BC_WindowBase::get_resources()->scroll_repeat);
+//printf("TrackCanvas::start_dragscroll 1\n");
 	}
 }
 
@@ -3542,6 +3533,7 @@ void TrackCanvas::stop_dragscroll()
 	{
 		drag_scroll = 0;
 		unset_repeat(BC_WindowBase::get_resources()->scroll_repeat);
+//printf("TrackCanvas::stop_dragscroll 1\n");
 	}
 }
 
@@ -3550,35 +3542,78 @@ int TrackCanvas::repeat_event(long duration)
 	if(!drag_scroll) return 0;
 	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
 
+	int sample_movement = 0;
+	int track_movement = 0;
+	long x_distance = 0;
+	long y_distance = 0;
+	double position = 0;
 	switch(mwindow->session->current_operation)
 	{
 		case SELECT_REGION:
+//printf("TrackCanvas::repeat_event 1 %d\n", mwindow->edl->local_session->view_start);
 			if(get_cursor_x() > get_w())
 			{
-				long distance = get_cursor_x() - get_w();
-				mwindow->samplemovement(mwindow->edl->local_session->view_start + 
-					distance);
+				x_distance = get_cursor_x() - get_w();
+				sample_movement = 1;
 			}
 			else
 			if(get_cursor_x() < 0)
 			{
-				long distance = -get_cursor_x();
-				mwindow->samplemovement(mwindow->edl->local_session->view_start - 
-					distance);
+				x_distance = get_cursor_x();
+				sample_movement = 1;
 			}
-			else
+
 			if(get_cursor_y() > get_h())
 			{
-				long distance = get_cursor_y() - get_h();
-				mwindow->trackmovement(mwindow->edl->local_session->track_start + distance);
+				y_distance = get_cursor_y() - get_h();
+				track_movement = 1;
 			}
 			else
 			if(get_cursor_y() < 0)
 			{
-				long distance = -get_cursor_y();
-				mwindow->trackmovement(mwindow->edl->local_session->track_start - distance);
+				y_distance = get_cursor_y();
+				track_movement = 1;
 			}
 			break;
+	}
+
+
+	if(sample_movement)
+	{
+		position = (double)(get_cursor_x() + 
+			mwindow->edl->local_session->view_start + 
+			x_distance) * 
+			mwindow->edl->local_session->zoom_sample /
+			mwindow->edl->session->sample_rate;
+		switch(mwindow->session->current_operation)
+		{
+			case SELECT_REGION:
+				if(position < selection_midpoint1)
+				{
+					mwindow->edl->local_session->selectionend = selection_midpoint1;
+					mwindow->edl->local_session->selectionstart = position;
+// Que the CWindow
+					mwindow->cwindow->update(1, 0, 0);
+// Update the faders
+					mwindow->update_plugin_guis();
+					gui->patchbay->update();
+				}
+				else
+				{
+					mwindow->edl->local_session->selectionstart = selection_midpoint1;
+					mwindow->edl->local_session->selectionend = position;
+// Don't que the CWindow
+				}
+				break;
+		}
+
+		mwindow->samplemovement(mwindow->edl->local_session->view_start + 
+			x_distance);
+	}
+	if(track_movement)
+	{
+		mwindow->trackmovement(mwindow->edl->local_session->track_start + 
+			y_distance);
 	}
 	return 0;
 }

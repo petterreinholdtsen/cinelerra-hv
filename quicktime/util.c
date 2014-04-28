@@ -51,13 +51,19 @@ int quicktime_file_open(quicktime_t *file, char *path, int rd, int wr)
 	{
 		file->total_length = quicktime_get_file_length(file);		
 	}
+//printf("quicktime_file_open 1\n");
 	
 	return 0;
 }
 
 int quicktime_file_close(quicktime_t *file)
 {
-	if(file->stream) fclose(file->stream);
+//printf("quicktime_file_close 1\n");
+	if(file->stream)
+	{
+//printf("quicktime_file_close 2\n");
+		fclose(file->stream);
+	}
 	file->stream = 0;
 	return 0;
 }
@@ -73,9 +79,10 @@ int quicktime_fseek(quicktime_t *file, longest offset)
 {
 	file->ftell_position = offset;
 	if(offset > file->total_length || offset < 0) return 1;
+//printf("quicktime_fseek %llx\n", offset);
 	if(FSEEK(file->stream, file->ftell_position, SEEK_SET))
 	{
-//		perror("quicktime_read_data FSEEK");
+//		perror("quicktime_fseek FSEEK");
 		return 1;
 	}
 	return 0;

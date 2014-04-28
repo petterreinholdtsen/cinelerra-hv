@@ -13,6 +13,8 @@ public:
 	TYPE append(TYPE value);
 	TYPE append();
 
+// allocate
+	void allocate(int total);
 // remove last pointer from end
 	void remove();          
 // remove last pointer and object from end
@@ -55,6 +57,18 @@ ArrayList<TYPE>::~ArrayList()
 	delete [] values;
 }
 
+template<class TYPE>
+void ArrayList<TYPE>::allocate(int total)
+{
+	if(total > available)
+	{
+		available = total;
+		TYPE* newvalues = new TYPE[available];
+		for(int i = 0; i < total; i++) newvalues[i] = values[i];
+		delete [] values;
+		values = newvalues;
+	}
+}
 
 template<class TYPE>
 TYPE ArrayList<TYPE>::append(TYPE value)            // add to end of list
@@ -152,6 +166,7 @@ void ArrayList<TYPE>::remove_number(int number)                   // remove valu
 template<class TYPE>
 void ArrayList<TYPE>::remove_all_objects()
 {
+//printf("ArrayList<TYPE>::remove_all_objects 1 %d\n", total);
 	for(int i = 0; i < total; i++) delete values[i];
 	total = 0;
 }

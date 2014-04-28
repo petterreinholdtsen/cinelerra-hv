@@ -609,9 +609,11 @@ static void decompress_field(mjpeg_compressor *engine)
 		delete_jpeg_objects(engine);
 		new_jpeg_objects(engine);
 		mjpeg->error = 1;
+//printf("decompress_field 1\n");
 		goto finish;
 	}
 
+//printf("decompress_field 2\n");
 	jpeg_buffer_src(&engine->jpeg_decompress, 
 		buffer, 
 		buffer_size);
@@ -638,6 +640,7 @@ static void decompress_field(mjpeg_compressor *engine)
 	pthread_mutex_unlock(&(mjpeg->decompress_init));
 	get_rows(mjpeg, engine);
 
+//printf("decompress_field 3 %d\n", engine->jpeg_decompress.output_scanline);
 
 	while(engine->jpeg_decompress.output_scanline < engine->jpeg_decompress.output_height)
 	{
@@ -977,6 +980,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 	int cpus)
 {
 	int i, result = 0;
+	int got_first_thread = 0;
 
 //printf("mjpeg_decompress 1 %ld %ld\n", buffer_len, input_field2);
 	if(buffer_len == 0) return 1;
@@ -1004,16 +1008,19 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 	mjpeg->color_model = color_model;
 	mjpeg->cpus = cpus;
 
-//printf("mjpeg_decompress 4\n");
+//printf("mjpeg_decompress 4 %02x %02x %d %02x %02x\n", buffer[0], buffer[1], input_field2, buffer[input_field2], buffer[input_field2 + 1]);
 /* Start decompressors */
 	for(i = 0; i < mjpeg->fields && !result; i++)
 	{
 		unlock_compress_loop(mjpeg->decompressors[i]);
 
-// Don't want second thread to start until temp data is allocated by the first		
-		if(mjpeg->cpus < 2 && i < mjpeg->fields - 1 && !mjpeg->temp_data)
+// For dual CPUs, don't want second thread to start until temp data is allocated by the first.
+// For single CPUs, don't want two threads running simultaneously
+		if(mjpeg->cpus < 2 || !mjpeg->temp_data
+			/* && i < mjpeg->fields - 1 && !mjpeg->temp_data */)
 		{
 			lock_compress_loop(mjpeg->decompressors[i]);
+			if(i == 0) got_first_thread = 1;
 		}
 	}
 
@@ -1021,13 +1028,14 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 /* Wait for decompressors */
 	for(i = 0; i < mjpeg->fields && !result; i++)
 	{
-		if(mjpeg->cpus > 1 || i == mjpeg->fields - 1)
+		if(mjpeg->cpus > 1)
 		{
-			lock_compress_loop(mjpeg->decompressors[i]);
+			if(i > 0 || !got_first_thread)
+				lock_compress_loop(mjpeg->decompressors[i]);
 		}
 	}
-
 //printf("mjpeg_decompress 6\n");
+
 /* Convert colormodel */
 // User colormodel didn't match decompressor
 /*
@@ -1275,37 +1283,6 @@ static int next_marker(unsigned char *buffer, long *offset, long buffer_size)
 
 	return 0;
 
-#if 0
-	while(!done && *offset < buffer_size)
-	{
-		c = nextbyte(buffer, offset, buffer_size);
-/* look for FF */
-		while(*offset < buffer_size && !done && c != 0xFF)
-		{
-			if(!*buffer) done = 2;
-			c = nextbyte(buffer, offset, buffer_size);
-		}
-
-/* now we've got 1 0xFF, keep reading until not 0xFF */
-		do
-		{
-			if(*offset >= buffer_size) done = 2;
-			c = nextbyte(buffer, offset, buffer_size);
-		}while(*offset < buffer_size && !done && c == 0xFF);
-
-/* not a 00 or FF */
-		if (c != 0 && c != 0xff) done = 1; 
-	}
-
-
-
-	if(done == 1) 
-		return c;
-	else
-		return 0;
-
-#endif
-
 }
 
 /* Find the next marker after offset and return 0 on success */
@@ -1317,9 +1294,11 @@ static int find_marker(unsigned char *buffer,
 	long result = 0;
 	long marker_len;
 
-	while(!result && *offset < buffer_size)
+	while(!result && *offset < buffer_size - 1)
 	{
+//printf("find_marker 1 %d %d\n", *offset, buffer_size);
 		int marker = next_marker(buffer, offset, buffer_size);
+//printf("find_marker 2\n");
 		if(marker == (marker_type & 0xff)) result = 1;
 	}
 
@@ -1571,10 +1550,12 @@ static void read_quicktime_markers(unsigned char *buffer,
 
 	while(marker_count < 2 && offset < buffer_size && !result)
 	{
+//printf(__FUNCTION__ " 1\n");
 		result = find_marker(buffer, 
 			&offset, 
 			buffer_size,
 			M_APP1);
+//printf(__FUNCTION__ " 2\n");
 
 		if(!result)
 		{
@@ -1596,6 +1577,7 @@ static void read_quicktime_markers(unsigned char *buffer,
 			marker_count++;
 		}
 	}
+//printf("read_quicktime_markers 1 %d\n", marker_count);
 }
 
 long mjpeg_get_quicktime_field2(unsigned char *buffer, long buffer_size)
@@ -1626,27 +1608,6 @@ long mjpeg_get_field2(unsigned char *buffer, long buffer_size)
 	}
 	
 
-/*
- * 	while(total_fields < 2)
- * 	{
- * 		int result = find_marker(buffer, 
- * 			&offset, 
- * 			buffer_size,
- * 			M_SOI);
- * 
- * 		if(!result) 
- * 		{
- * 			total_fields++;
- * 			field2_offset = offset - 2;
- * 		}
- * 		else
- * 		{
- * 			field2_offset = 0;
- * 			break;
- * 		}
- * 	}
- * 
- */
 	return field2_offset;
 }
 

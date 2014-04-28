@@ -11,11 +11,7 @@
 
 
 
-
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new Spectrogram(server);
-}
+REGISTER_PLUGIN(Spectrogram)
 
 
 
@@ -72,9 +68,6 @@ SpectrogramWindow::SpectrogramWindow(Spectrogram *plugin, int x, int y)
 
 SpectrogramWindow::~SpectrogramWindow()
 {
-	Spectrogram::graph_lock.lock();
-	Spectrogram::window = 0;
-	Spectrogram::graph_lock.unlock();
 }
 
 void SpectrogramWindow::create_objects()
@@ -108,13 +101,8 @@ void SpectrogramWindow::create_objects()
 	flush();
 }
 
+WINDOW_CLOSE_EVENT(SpectrogramWindow)
 
-int SpectrogramWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
 
 void SpectrogramWindow::update_gui()
 {
@@ -130,37 +118,7 @@ void SpectrogramWindow::update_gui()
 
 
 
-
-SpectrogramThread::SpectrogramThread(Spectrogram *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-SpectrogramThread::~SpectrogramThread()
-{
-	delete window;
-}
-
-void SpectrogramThread::run()
-{
-	BC_DisplayInfo info;
-	window = new SpectrogramWindow(plugin,
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-	window->create_objects();
-
-	Spectrogram::graph_lock.lock();
-	Spectrogram::window = window->canvas;
-	Spectrogram::graph_lock.unlock();
-
-	int result = window->run_window();
-	completion.unlock();
-// Last command in thread
-	if(result) plugin->client_side_close();
-}
+PLUGIN_THREAD_OBJECT(Spectrogram, SpectrogramThread, SpectrogramWindow)
 
 
 
@@ -183,72 +141,66 @@ SpectrogramFFT::~SpectrogramFFT()
 
 int SpectrogramFFT::signal_process()
 {
-	Spectrogram::graph_lock.lock();
 
 //printf("SpectrogramFFT::signal_process %d\n", window_size);
-	if(Spectrogram::window)
+	BC_SubWindow *window = plugin->thread->window->canvas;
+
+	int h = window->get_h();
+	double *temp = new double[h];
+	int niquist = plugin->PluginAClient::project_sample_rate / 2;
+	int input1 = window_size / 2;
+	double level = DB::fromdb(plugin->config.level);
+
+	for(int i = 0; i < h; i++)
 	{
-		Spectrogram::window->lock_window();
-		int h = Spectrogram::window->get_h();
-		double *temp = new double[h];
-		int niquist = plugin->PluginAClient::project_sample_rate / 2;
-		int input1 = window_size / 2;
-		double level = DB::fromdb(plugin->config.level);
+		int input2 = (int)((float)(h - 1 - i) / h * TOTALFREQS);
+		input2 = (int)((float)Freq::tofreq(input2) / 
+			niquist * 
+			window_size / 
+			2);
+		if(input2 > window_size / 2 - 1) input2 = window_size / 2 - 1;
 
-		for(int i = 0; i < h; i++)
+		double sum = 0;
+		if(input1 > input2)
 		{
-			int input2 = (int)((float)(h - 1 - i) / h * TOTALFREQS);
-			input2 = (int)((float)Freq::tofreq(input2) / 
-				niquist * 
-				window_size / 
-				2);
-			if(input2 > window_size / 2 - 1) input2 = window_size / 2 - 1;
+			for(int j = input1 - 1; j >= input2; j--)
+				sum += sqrt(freq_real[j] * freq_real[j] + 
+					freq_imag[j] * freq_imag[j]);
 
-			double sum = 0;
-			if(input1 > input2)
-			{
-				for(int j = input1 - 1; j >= input2; j--)
-					sum += sqrt(freq_real[j] * freq_real[j] + 
-						freq_imag[j] * freq_imag[j]);
-
-				sum /= (double)(input1 - input2);
-			}
-			else
-				sum = sqrt(freq_real[input2] * freq_real[input2] + 
-						freq_imag[input2] * freq_imag[input2]);
-
-
-			temp[i] = sum * level;
-			input1 = input2;
+			sum /= (double)(input1 - input2);
 		}
+		else
+			sum = sqrt(freq_real[input2] * freq_real[input2] + 
+					freq_imag[input2] * freq_imag[input2]);
 
-		Spectrogram::window->copy_area(1, 
-			0, 
-			0, 
-			0, 
-			Spectrogram::window->get_w() - 1,
-			Spectrogram::window->get_h());
-		int x = Spectrogram::window->get_w() - 1;
 
-		double scale = (double)0xffffff;
-		for(int i = 0; i < h; i++)
-		{
-			int64_t color;
-			color = (int)(scale * temp[i]);
-
-			if(color < 0) color = 0;
-			if(color > 0xffffff) color = 0xffffff;
-			Spectrogram::window->set_color(color);
-			Spectrogram::window->draw_pixel(x, i);
-		}
-
-		Spectrogram::window->flash();
-		Spectrogram::window->flush();
-		Spectrogram::window->unlock_window();
-		delete [] temp;
+		temp[i] = sum * level;
+		input1 = input2;
 	}
 
-	Spectrogram::graph_lock.unlock();
+	window->copy_area(1, 
+		0, 
+		0, 
+		0, 
+		window->get_w() - 1,
+		window->get_h());
+	int x = window->get_w() - 1;
+
+	double scale = (double)0xffffff;
+	for(int i = 0; i < h; i++)
+	{
+		int64_t color;
+		color = (int)(scale * temp[i]);
+
+		if(color < 0) color = 0;
+		if(color > 0xffffff) color = 0xffffff;
+		window->set_color(color);
+		window->draw_pixel(x, i);
+	}
+
+	window->flash();
+	window->flush();
+	delete [] temp;
 
 	return 0;
 }
@@ -258,8 +210,6 @@ int SpectrogramFFT::signal_process()
 
 
 
-BC_SubWindow* Spectrogram::window = 0;
-Mutex Spectrogram::graph_lock;
 
 
 
@@ -268,20 +218,12 @@ Spectrogram::Spectrogram(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 Spectrogram::~Spectrogram()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(fft) delete fft;
 }
@@ -307,19 +249,10 @@ int Spectrogram::is_realtime()
 
 int Spectrogram::process_realtime(long size, double *input_ptr, double *output_ptr)
 {
-	load_configuration();
-
-	if(!fft) 
-	{
-		fft = new SpectrogramFFT(this);
-		fft->initialize(WINDOW_SIZE);
-	}
-
-	double *temp = new double[size];
-	fft->process_fifo(size, input_ptr, temp);
-
+//printf("Spectrogram::process_realtime 1\n");
+	send_render_gui(input_ptr, size);
 	memcpy(output_ptr, input_ptr, sizeof(double) * size);
-	delete [] temp;
+
 	return 0;
 }
 
@@ -338,6 +271,27 @@ void Spectrogram::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->update_gui();
+		thread->window->unlock_window();
+	}
+}
+
+void Spectrogram::render_gui(void *data, int size)
+{
+//printf("Spectrogram::render_gui 1\n");
+	if(thread)
+	{
+		thread->window->lock_window();
+		load_configuration();
+
+		if(!fft) 
+		{
+			fft = new SpectrogramFFT(this);
+			fft->initialize(WINDOW_SIZE);
+		}
+		double *temp = new double[size];
+		fft->process_fifo(size, (double*)data, temp);
+
+		delete [] temp;
 		thread->window->unlock_window();
 	}
 }

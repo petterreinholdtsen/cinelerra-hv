@@ -2033,7 +2033,8 @@ int BC_ListBox::drag_start_event()
 {
 	if(gui && 
 		top_level->event_win == gui->win && 
-		allow_drag)
+		allow_drag && 
+		current_operation != BCLISTBOX_DRAG_DIVISION)
 	{
 		selection = cursor_item(top_level->cursor_x, top_level->cursor_y);
 

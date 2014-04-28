@@ -494,19 +494,23 @@ int BC_WindowBase::run_window()
 	done = 0;
 	return_value = 0;
 
+//printf("BC_WindowBase::run_window 1\n");
 // Start tooltips
 	if(window_type == MAIN_WINDOW)
 	{
 //		tooltip_id = get_repeat_id();
 		set_repeat(get_resources()->tooltip_delay);
 	}
+//printf("BC_WindowBase::run_window 2\n");
 
 	while(!done)
 	{
 		dispatch_event();
 	}
+//printf("BC_WindowBase::run_window 3\n");
 
 	unset_all_repeaters();
+//printf("BC_WindowBase::run_window 4\n");
 	hide_tooltip();
 
 	return return_value;
@@ -543,8 +547,9 @@ int BC_WindowBase::dispatch_event()
 
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
-//printf("BC_WindowBase::dispatch_event 1 %p\n", this);
-	if(XPending(display) || (!motion_events && !resize_events && !translation_events))
+//printf("BC_WindowBase::dispatch_event 1 %p %s\n", this, title);
+	if(XPending(display) || 
+		(!motion_events && !resize_events && !translation_events))
 	{
 		XNextEvent(display, &event);
 // Lock out window deletions
@@ -568,7 +573,7 @@ int BC_WindowBase::dispatch_event()
 		return 0;
 	}
 
-//printf("BC_WindowBase::dispatch_event 2 %d\n", event.type);
+//printf("BC_WindowBase::dispatch_event 2 %s %d\n", title, event.type);
 	switch(event.type)
 	{
 		case ClientMessage:
@@ -794,7 +799,7 @@ int BC_WindowBase::dispatch_event()
 			break;
 	}
 
-//printf("BC_WindowBase::dispatch_event 3 %p\n", this);
+//printf("BC_WindowBase::dispatch_event 3 %s\n", title);
 	unlock_window();
 	return 0;
 }
@@ -1079,17 +1084,33 @@ int BC_WindowBase::dispatch_cursor_enter()
 {
 	int result = 0;
 
+//printf("BC_WindowBase::dispatch_cursor_enter 1 %s %p\n", title, this);
 	if(active_menubar) result = active_menubar->dispatch_cursor_enter();
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_cursor_enter();
 	if(!result && active_subwindow) result = active_subwindow->dispatch_cursor_enter();
+//printf("BC_WindowBase::dispatch_cursor_enter 1 %s %p\n", title, this);
 
 	for(int i = 0; !result && i < subwindows->total; i++)
 	{
 		result = subwindows->values[i]->dispatch_cursor_enter();
 	}
+//printf("BC_WindowBase::dispatch_cursor_enter 1 %s %p\n", title, this);
 
 	if(!result) result = cursor_enter_event();
+//printf("BC_WindowBase::dispatch_cursor_enter 2 %s %p\n", title, this);
 	return result;
+}
+
+int BC_WindowBase::cursor_enter_event()
+{
+//printf("BC_WindowBase::cursor_enter_event 1 %s %p\n", title, this);
+	return 0;
+}
+
+int BC_WindowBase::cursor_leave_event()
+{
+//printf("BC_WindowBase::cursor_leave_event 1 %s %p\n", title, this);
+	return 0;
 }
 
 int BC_WindowBase::dispatch_drag_start()
@@ -2237,13 +2258,13 @@ int BC_WindowBase::get_window_lock()
 
 int BC_WindowBase::lock_window() 
 {
-	top_level->window_lock = 1;
 	XLockDisplay(top_level->display); 
+	top_level->window_lock = 1;
 	return 0;
 }
 
 int BC_WindowBase::unlock_window() 
-{ 
+{
 	top_level->window_lock = 0;
 	XUnlockDisplay(top_level->display); 
 	return 0;

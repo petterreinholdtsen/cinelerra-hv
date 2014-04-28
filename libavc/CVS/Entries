@@ -19,7 +19,6 @@
 /config.sub/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /configure/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /configure.in/1.1.1.1/Fri Jun 21 12:35:26 2002//
-/debug/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /install-sh/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /libtool/1.1.1.1/Fri Jun 21 12:35:26 2002//
 /ltconfig/1.1.1.1/Fri Jun 21 12:35:26 2002//
@@ -32,3 +31,4 @@ D/common////
 D/libavc1394////
 D/librom1394////
 D/test////
+/debug/1.1.1.1/Mon Jul 22 12:18:50 2002//

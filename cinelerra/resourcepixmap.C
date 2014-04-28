@@ -431,6 +431,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 			IndexFile indexfile(mwindow);
 			if(!indexfile.open_index(edit->asset))
 			{
+//printf("ResourcePixmap::draw_audio_resource 2\n");
 				if(edit->asset->index_zoom > 
 					mwindow->edl->local_session->zoom_sample * 
 					asset_over_session)
@@ -439,7 +440,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 					indexfile.draw_index(this, edit, x, w);
 				indexfile.close_index();
 			}
-//printf("ResourcePixmap::draw_audio_resource 2 %d\n", edit->asset->index_status);
+//printf("ResourcePixmap::draw_audio_resource 3 %d\n", edit->asset->index_status);
 			break;
 		}
 	}
@@ -635,7 +636,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	}
 
 	mwindow->audio_cache->check_in(edit->asset);
-	mwindow->audio_cache->age_audio();
 //printf("ResourcePixmap::draw_audio_source 3 %s\n", edit->asset->path);
 }
 
@@ -671,19 +671,19 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	long picon_w = Units::round(edit->picon_w());
 	long picon_h = edit->picon_h();
 
-// printf("ResourcePixmap::draw_video_resource 1\n");
+//printf("ResourcePixmap::draw_video_resource 1\n");
 // Don't draw video if picon is bigger than edit
 	if(picon_w > edit_w) return;
 
-// printf("ResourcePixmap::draw_video_resource 1\n");
+//printf("ResourcePixmap::draw_video_resource 1\n");
 // pixels spanned by a frame
 	double frame_w = edit->frame_w();
 
-// printf("ResourcePixmap::draw_video_resource 1\n");
+//printf("ResourcePixmap::draw_video_resource 1\n");
 // Frames spanned by a picon
 	double frames_per_picon = edit->frames_per_picon();
 
-// printf("ResourcePixmap::draw_video_resource 1\n");
+//printf("ResourcePixmap::draw_video_resource 1\n");
 // Current pixel relative to pixmap
 	int x = 0;
 	int y = 0;
@@ -692,7 +692,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Frame in project touched by current pixel
 	long project_frame;
 
-// printf("ResourcePixmap::draw_video_resource 1\n");
+//printf("ResourcePixmap::draw_video_resource 1\n");
 // Get first frame touched by x and fix x to start of frame
 	if(frames_per_picon > 1)
 	{
@@ -707,14 +707,14 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
 	}
 
-// printf("ResourcePixmap::draw_video_resource 1 %s\n", edit->asset->path);
+//printf("ResourcePixmap::draw_video_resource 1 %s\n", edit->asset->path);
 	File *source = mwindow->video_cache->check_out(edit->asset);
-// printf("ResourcePixmap::draw_video_resource 2\n");
+//printf("ResourcePixmap::draw_video_resource 2\n");
 	if(!source) return;
 
 
-// printf("ResourcePixmap::draw_video_resource 2 project_frame=%d frame_w=%f refresh_x=%d refresh_w=%d x=%d\n",
-// project_frame, frame_w, refresh_x, refresh_w, x);
+//printf("ResourcePixmap::draw_video_resource 2 project_frame=%d frame_w=%f refresh_x=%d refresh_w=%d x=%d\n",
+//project_frame, frame_w, refresh_x, refresh_w, x);
 	while(x < refresh_x + refresh_w)
 	{
 		long source_frame = project_frame + edit->startsource;
@@ -751,7 +751,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	if(source)
 	{
 		mwindow->video_cache->check_in(edit->asset);
-		mwindow->video_cache->age_video();
 	}
 //printf("ResourcePixmap::draw_video_resource 5\n");
 }

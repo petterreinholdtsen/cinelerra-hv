@@ -96,6 +96,7 @@ public:
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
+	int is_synthesis();
 	char* plugin_title();
 	VFrame* new_picon();
 	int show_gui();

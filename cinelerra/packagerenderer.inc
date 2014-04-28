@@ -4,7 +4,6 @@
 
 
 class PackageRenderer;
-class PackageDispatcher;
 class RenderPackage;
 
 

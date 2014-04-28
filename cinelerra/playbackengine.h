@@ -44,6 +44,7 @@ public:
 // For pausing only the cursor is run
 	virtual void init_cursor();
 	virtual void stop_cursor();
+	virtual int brender_available(long position);
 // For normal playback tracking and the cursor are started
 	virtual void init_tracking();
 	virtual void stop_tracking();

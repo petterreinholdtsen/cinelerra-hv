@@ -83,7 +83,16 @@ public:
 	void copy_clips(EDL *edl);
 // Copy pan and fade settings from edl
 	void synchronize_params(EDL *edl);
+// Determine if the positions are equivalent if they're within half a frame
+// of each other.
 	int equivalent(double position1, double position2);
+// Determine if the EDL's produce equivalent video output to the old EDL.
+// The new EDL is this and the old EDL is the argument.
+// Return the number of seconds from the beginning of this which are 
+// equivalent to the argument.
+// If they're completely equivalent, -1 is returned;
+// This is used by BRender.
+	double equivalent_output(EDL *edl);
 // Set points and labels
 	void set_inpoint(double position);
 	void set_outpoint(double position);

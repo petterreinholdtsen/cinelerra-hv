@@ -1,6 +1,9 @@
 #ifndef INTERFACEPREFS_H
 #define INTERFACEPREFS_H
 
+class IndexSize;
+class IndexCount;
+class IndexPathText;
 class TimeFormatHMS;
 class TimeFormatHMSF;
 class TimeFormatSamples;
@@ -13,6 +16,8 @@ class MeterVUInt;
 class ViewBehaviourText;
 class ViewThumbnails;
 
+#include "browsebutton.h"
+#include "deleteallindexes.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
 
@@ -22,18 +27,25 @@ class InterfacePrefs : public PreferencesDialog
 public:
 	InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow);
 	~InterfacePrefs();
-	
+
 	int create_objects();
 // must delete each derived class
 	int update(int new_value);
 	char* behavior_to_text(int mode);
-	
+
+	BrowseButton *ipath;
+	IndexSize *isize;
+	IndexCount *icount;
+	IndexPathText *ipathtext;
+	DeleteAllIndexes *deleteall;
+
 	TimeFormatHMS *hms;
 	TimeFormatHMSF *hmsf;
 	TimeFormatSamples *samples;
 	TimeFormatHex *hex;
 	TimeFormatFrames *frames;
 	TimeFormatFeet *feet;
+
 	MeterMinDB *min_db;
 	MeterVUDB *vu_db;
 	MeterVUInt *vu_int;
@@ -41,6 +53,32 @@ public:
 	ViewThumbnails *thumbnails;
 };
 
+
+class IndexPathText : public BC_TextBox
+{
+public:
+	IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text);
+	~IndexPathText();
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class IndexSize : public BC_TextBox
+{
+public:
+	IndexSize(int x, int y, PreferencesWindow *pwindow, char *text);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+
+class IndexCount : public BC_TextBox
+{
+public:
+	IndexCount(int x, int y, PreferencesWindow *pwindow, char *text);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
 
 class TimeFormatHMS : public BC_Radial
 {

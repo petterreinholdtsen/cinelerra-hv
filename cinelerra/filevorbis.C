@@ -48,12 +48,19 @@ int FileVorbis::check_sig(Asset *asset)
 	if(ov_open(fd, &vf, NULL, 0) < 0)
 	{
 //printf("FileVorbis::check_sig 2\n");
+		ov_clear(&vf);
+//printf("FileVorbis::check_sig 3\n");
+//		if(fd) fclose(fd);
+//printf("FileVorbis::check_sig 4\n");
 		return 0;
 	}
 	else
 	{
-//printf("FileVorbis::check_sig 3\n");
+//printf("FileVorbis::check_sig 5\n");
 		ov_clear(&vf);
+//printf("FileVorbis::check_sig 6\n");
+//		if(fd) fclose(fd);
+//printf("FileVorbis::check_sig 7\n");
 		return 1;
 	}
 }
@@ -61,6 +68,7 @@ int FileVorbis::check_sig(Asset *asset)
 int FileVorbis::reset_parameters_derived()
 {
 	fd = 0;
+	bzero(&vf, sizeof(vf));
 	pcm_history = 0;
 }
 
@@ -73,6 +81,7 @@ int FileVorbis::open_file(int rd, int wr)
 	this->rd = rd;
 	this->wr = wr;
 
+//printf("FileVorbis::open_file 1\n");
 	if(rd)
 	{
 		if(!(fd = fopen(asset->path, "rb")))
@@ -82,6 +91,7 @@ int FileVorbis::open_file(int rd, int wr)
 		}
 		else
 		{
+//printf("FileVorbis::open_file 1 %p %p\n", fd, vf);
 			if(ov_open(fd, &vf, NULL, 0) < 0)
 			{
 				printf("FileVorbis::open_file %s: invalid bitstream.\n", asset->path);
@@ -89,11 +99,14 @@ int FileVorbis::open_file(int rd, int wr)
 			}
 			else
 			{
+//printf("FileVorbis::open_file 1\n");
 				vorbis_info *vi = ov_info(&vf, -1);
 				asset->channels = vi->channels;
 				if(!asset->sample_rate)
 					asset->sample_rate = vi->rate;
+//printf("FileVorbis::open_file 1\n");
 				asset->audio_length = ov_pcm_total(&vf,-1);
+//printf("FileVorbis::open_file 1\n");
 				asset->audio_data = 1;
 // printf("FileVorbis::open_file 1 %d %d %d\n", 
 // asset->channels, 
@@ -166,6 +179,7 @@ int FileVorbis::open_file(int rd, int wr)
 		}
 	}
 
+//printf("FileVorbis::open_file 2\n");
 	return result;
 }
 

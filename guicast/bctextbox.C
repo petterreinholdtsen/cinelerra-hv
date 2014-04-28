@@ -56,6 +56,7 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	text_x = 0;
 	enabled = 1;
 	highlighted = 0;
+	precision = 4;
 	return 0;
 }
 
@@ -100,8 +101,14 @@ int BC_TextBox::initialize()
 	return 0;
 }
 
+void BC_TextBox::set_precision(int precision)
+{
+	this->precision = precision;
+}
+
 int BC_TextBox::update(char *text)
 {
+//printf("BC_TextBox::update 1 %d %s %s\n", strcmp(text, this->text), text, this->text);
 	int text_len = strlen(text);
 // Don't update if contents are the same
 	if(!strcmp(text, this->text)) return 0;
@@ -116,23 +123,24 @@ int BC_TextBox::update(char *text)
 
 int BC_TextBox::update(long value)
 {
-	sprintf(this->text, "%ld", value);
-	int text_len = strlen(text);
-	if(highlight_letter1 > text_len) highlight_letter1 = text_len;
-	if(highlight_letter2 > text_len) highlight_letter2 = text_len;
-	ibeam_letter = text_len;
-	draw();
+	char string[BCTEXTLEN];
+	sprintf(string, "%ld", value);
+
+
+	update(string);
 	return 0;
 }
 
 int BC_TextBox::update(float value)
 {
-	sprintf(this->text, "%0.4f", value);
-	int text_len = strlen(text);
-	if(highlight_letter1 > text_len) highlight_letter1 = text_len;
-	if(highlight_letter2 > text_len) highlight_letter2 = text_len;
-	ibeam_letter = text_len;
-	draw();
+	char string[BCTEXTLEN];
+	sprintf(string, "%f", value);
+	char *ptr = strchr(string, '.');
+
+//printf("BC_TextBox::update 1 %d\n", precision);
+	if(ptr) ptr[precision + 1] = 0;
+
+	update(string);
 	return 0;
 }
 
@@ -1489,6 +1497,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->text_w = text_w;
 	this->parent_window = parent_window;
 	use_float = 0;
+	precision = 4;
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -1507,6 +1516,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	this->text_w = text_w;
 	this->parent_window = parent_window;
 	use_float = 1;
+	precision = 4;
 }
 
 BC_TumbleTextBox::~BC_TumbleTextBox()
@@ -1522,17 +1532,25 @@ BC_TumbleTextBox::~BC_TumbleTextBox()
 	}
 }
 
+void BC_TumbleTextBox::set_precision(int precision)
+{
+	this->precision = precision;
+}
+
 int BC_TumbleTextBox::create_objects()
 {
 	int x = this->x, y = this->y;
 
 	if(use_float)
+	{
 		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this, 
 			default_value_f,
 			min_f, 
 			max_f, 
 			x, 
 			y));
+		textbox->set_precision(precision);
+	}
 	else
 		parent_window->add_subwindow(textbox = new BC_TumbleTextBoxText(this, 
 			default_value,
@@ -1631,4 +1649,3 @@ void BC_TumbleTextBox::set_boundaries(float min, float max)
 {
 	tumbler->set_boundaries(min, max);
 }
-

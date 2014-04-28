@@ -28,6 +28,8 @@ public:
 	virtual void copy_from(Edit *edit);
 	virtual int identical(Edit &edit);
 	virtual Edit& operator=(Edit& edit);
+// Called by Edits and PluginSet
+	virtual void equivalent_output(Edit *edit, long *result);
 	virtual int operator==(Edit& edit);
 // When inherited by a plugin need to resample keyframes
 	virtual void synchronize_params(Edit *edit);
@@ -96,7 +98,8 @@ public:
 	Edits *edits;
 
 	Track *track;
-// Asset is 0 if silence
+
+// Asset is 0 if silence, otherwise points an object in edl->assets
 	Asset *asset;
 
 

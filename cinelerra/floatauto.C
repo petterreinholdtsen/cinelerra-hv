@@ -124,10 +124,13 @@ int FloatAuto::value_to_str(char *string, float value)
 	return 0;
 }
 
-void FloatAuto::copy(long start, long end, FileXML *file)
+void FloatAuto::copy(long start, long end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
-	file->tag.set_property("POSITION", position - start);
+	if(default_auto)
+		file->tag.set_property("POSITION", 0);
+	else
+		file->tag.set_property("POSITION", position - start);
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("CONTROL_IN_VALUE", control_in_value);
 	file->tag.set_property("CONTROL_OUT_VALUE", control_out_value);

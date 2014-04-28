@@ -77,31 +77,6 @@ LOAD_CONFIGURATION_MACRO(Piano, PianoConfig)
 
 
 
-int Piano::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-
-	sprintf(directory, "%ssynthesizer.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	w = defaults->get("WIDTH", 380);
-	h = defaults->get("HEIGHT", 400);
-
-	config.wetness = defaults->get("WETNESS", 0);
-	config.base_freq = defaults->get("BASEFREQ", 440);
-	config.wavefunction = defaults->get("WAVEFUNCTION", 0);
-
-	int total_oscillators = defaults->get("OSCILLATORS", TOTALOSCILLATORS);
-	config.oscillator_config.remove_all_objects();
-	for(int i = 0; i < total_oscillators; i++)
-	{
-		config.oscillator_config.append(new PianoOscillatorConfig(i));
-		config.oscillator_config.values[i]->load_defaults(defaults);
-	}
-
-	return 0;
-}
-
 
 void Piano::read_data(KeyFrame *keyframe)
 {
@@ -161,26 +136,6 @@ void Piano::save_data(KeyFrame *keyframe)
 
 	output.terminate_string();
 // data is now in *text
-}
-
-int Piano::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-	defaults->update("WIDTH", w);
-	defaults->update("HEIGHT", h);
-	defaults->update("WETNESS", config.wetness);
-	defaults->update("BASEFREQ", config.base_freq);
-	defaults->update("WAVEFUNCTION", config.wavefunction);
-	defaults->update("OSCILLATORS", config.oscillator_config.total);
-
-	for(int i = 0; i < config.oscillator_config.total; i++)
-	{
-		config.oscillator_config.values[i]->save_defaults(defaults);
-	}
-	defaults->save();
-
-	return 0;
 }
 
 int Piano::show_gui()
@@ -1560,30 +1515,6 @@ void PianoOscillatorConfig::reset()
 	level = 0;
 	phase = 0;
 	freq_factor = 1;
-}
-
-void PianoOscillatorConfig::load_defaults(BC_Hash *defaults)
-{
-	char string[BCTEXTLEN];
-
-	sprintf(string, "LEVEL%d", number);
-	level = defaults->get(string, (float)0);
-	sprintf(string, "PHASE%d", number);
-	phase = defaults->get(string, (float)0);
-	sprintf(string, "FREQFACTOR%d", number);
-	freq_factor = defaults->get(string, (float)1);
-}
-
-void PianoOscillatorConfig::save_defaults(BC_Hash *defaults)
-{
-	char string[BCTEXTLEN];
-
-	sprintf(string, "LEVEL%d", number);
-	defaults->update(string, (float)level);
-	sprintf(string, "PHASE%d", number);
-	defaults->update(string, (float)phase);
-	sprintf(string, "FREQFACTOR%d", number);
-	defaults->update(string, (float)freq_factor);
 }
 
 void PianoOscillatorConfig::read_data(FileXML *file)

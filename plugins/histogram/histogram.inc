@@ -44,6 +44,9 @@
 #define HISTOGRAM_MAX 110
 #define MAX_INPUT 1.1
 
+#define MIN_GAMMA 0.1
+#define MAX_GAMMA 10.0
+
 #define PRECISION 0.001
 #define DIGITS 3
 #define THRESHOLD_SCALE 1000

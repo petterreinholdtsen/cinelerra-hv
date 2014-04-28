@@ -57,7 +57,8 @@ public:
 
 // creation - set if this is the first initialize of the object
 //            to prevent file format from being overwritten
-	int initialize(int creation = 0);
+//            & window from being flushed
+	int initialize(int creation /* = 0 */);
 	int delete_objects();
 	void reset_objects();
 

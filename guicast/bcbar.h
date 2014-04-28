@@ -34,7 +34,7 @@ public:
 	
 	int initialize();
 	void set_image(VFrame *data);
-	void draw();
+	void draw(int flush);
 	int reposition_window(int x, int y, int w);
 	int resize_event(int w, int h);
 

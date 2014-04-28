@@ -137,8 +137,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -764,31 +762,6 @@ int Decimate::load_configuration()
 	return !old_config.equivalent(&config);
 }
 
-int Decimate::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdecimate.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
-//	config.averaged_frames = defaults->get("AVERAGED_FRAMES", config.averaged_frames);
-//	config.least_difference = defaults->get("LEAST_DIFFERENCE", config.least_difference);
-	config.input_rate = Units::fix_framerate(config.input_rate);
-	return 0;
-}
-
-int Decimate::save_defaults()
-{
-	defaults->update("INPUT_RATE", config.input_rate);
-//	defaults->update("AVERAGED_FRAMES", config.averaged_frames);
-//	defaults->update("LEAST_DIFFERENCE", config.least_difference);
-	defaults->save();
-	return 0;
-}
 
 void Decimate::save_data(KeyFrame *keyframe)
 {

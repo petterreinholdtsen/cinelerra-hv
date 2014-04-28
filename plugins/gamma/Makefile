@@ -1,8 +1,7 @@
 include ../../global_config
 
 OBJS = $(OBJDIR)/gamma.o  \
-	$(OBJDIR)/gammawindow.o \
-	../colors/$(OBJDIR)/plugincolors.o
+	$(OBJDIR)/gammawindow.o
 
 OUTPUT = $(PLUGIN_DIR)/gamma.plugin
 

@@ -20,12 +20,13 @@
  */
 
 #include "bcsignals.h"
+#include "clip.h"
 #include "filexml.h"
 #include "gamma.h"
 #include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include "cicolors.h"
 #include "../interpolate/aggregated.h"
 #include "playback3d.h"
 #include "workarounds.h"
@@ -36,7 +37,6 @@
 
 #include "aggregated.h"
 
-#define SQR(a) ((a) * (a))
 
 REGISTER_PLUGIN(GammaMain)
 
@@ -518,33 +518,6 @@ void GammaMain::render_gui(void *data)
 	}
 
 
-}
-
-int GammaMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sgamma.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.max = defaults->get("MAX", config.max);
-	config.gamma = defaults->get("GAMMA", config.gamma);
-	config.automatic = defaults->get("AUTOMATIC", config.automatic);
-	config.plot = defaults->get("PLOT", config.plot);
-	return 0;
-}
-
-int GammaMain::save_defaults()
-{
-	defaults->update("MAX", config.max);
-	defaults->update("GAMMA", config.gamma);
-	defaults->update("AUTOMATIC", config.automatic);
-	defaults->update("PLOT", config.plot);
-	defaults->save();
-	return 0;
 }
 
 void GammaMain::save_data(KeyFrame *keyframe)

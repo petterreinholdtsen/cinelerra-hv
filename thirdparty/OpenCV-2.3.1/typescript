@@ -1,0 +1,1053 @@
+Script started on Sat 11 Feb 2012 06:15:05 PM PST
+]0;root@heroine:~/hvirtual/thirdparty/OpenCV-2.3.1[?1034hheroine:/root/hvirtual/thirdparty/OpenCV-2.3.1% make
+make[1]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[  1%] [  1%] [  1%] [  1%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[34m[1mGenerating opencv_imgproc_pch_dephelp.cxx
+[0m[  1%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[34m[1mGenerating opencv_calib3d_pch_dephelp.cxx
+[0m[34m[1mGenerating opencv_features2d_pch_dephelp.cxx
+[0m[34m[1mGenerating opencv_core_pch_dephelp.cxx
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[34m[1mGenerating opencv_flann_pch_dephelp.cxx
+[0m[  2%] [34m[1mGenerating opencv_highgui_pch_dephelp.cxx
+[0m[35m[1mScanning dependencies of target libtiff
+[35m[1mScanning dependencies of target libjasper
+[35m[1mScanning dependencies of target opencv_core_pch_dephelp
+[35m[1mScanning dependencies of target opencv_imgproc_pch_dephelp
+[35m[1mScanning dependencies of target opencv_features2d_pch_dephelp
+[0m[35m[1mScanning dependencies of target opencv_highgui_pch_dephelp
+[35m[1mScanning dependencies of target opencv_flann_pch_dephelp
+[0m[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[  2%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[  2%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_calib3d_pch_dephelp
+[  2%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui_pch_dephelp.dir/opencv_highgui_pch_dephelp.o
+[0m[  3%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d_pch_dephelp.dir/opencv_features2d_pch_dephelp.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc_pch_dephelp.dir/opencv_imgproc_pch_dephelp.o
+[0m[  4%] [32mBuilding CXX object modules/flann/CMakeFiles/opencv_flann_pch_dephelp.dir/opencv_flann_pch_dephelp.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[  4%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d_pch_dephelp.dir/opencv_calib3d_pch_dephelp.o
+[0m[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[32mBuilding CXX object modules/core/CMakeFiles/opencv_core_pch_dephelp.dir/opencv_core_pch_dephelp.o
+[0m[  4%] [  4%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_close.o
+[0m[  4%] [  5%] [  5%] [  5%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_codec.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_aux.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_tagtree.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_color.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_bs.o
+[0m[  5%] [  5%] [  5%] [  5%] [  5%] [  5%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_compress.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_cs.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_version.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_dir.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_image.o
+[0m[  5%] [  6%] [  6%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_dirinfo.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_tmr.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_t2dec.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_dirread.o
+[0m[  6%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_string.o
+[0m[  6%] [  6%] [  6%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_mqenc.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_dec.o
+[0m[  7%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_dirwrite.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_dumpmode.o
+[0m[  7%] [  8%] [  8%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_cm.o
+[0m[  8%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_stream.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_error.o
+[0m[  8%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_extension.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_getopt.o
+[0m[  8%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_fax3.o
+[0m[  8%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_util.o
+[0m[  8%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_fax3sm.o
+[0m[  9%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_flush.o
+[0m[  9%] [  9%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_getimage.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_t2cod.o
+[0m[  9%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_jbig.o
+[0m[  9%] [  9%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_jpeg.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_init.o
+[0m[  9%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_luv.o
+[0m[ 10%] [ 10%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_lzw.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_malloc.o
+[0m[ 11%] [ 11%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_next.o
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_t2enc.o
+[0m[ 11%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_t1enc.o
+[0m[ 11%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_tvp.o
+[0m[ 11%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_ojpeg.o
+[0m[ 11%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_open.o
+[0m[ 11%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_mqcod.o
+[0m[ 11%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_packbits.o
+[0m[ 11%] [ 11%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_tsfb.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_pixarlog.o
+[0m[ 12%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_t1dec.o
+[0m[ 12%] [31m[1mLinking CXX static library ../../lib/libopencv_core_pch_dephelp.a
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_qmfb.o
+[0m[ 12%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_predict.o
+[0m[ 12%] /root/hvirtual/thirdparty/OpenCV-2.3.1/3rdparty/libjasper/jpc_qmfb.c:288: warning: initialization from incompatible pointer type
+/root/hvirtual/thirdparty/OpenCV-2.3.1/3rdparty/libjasper/jpc_qmfb.c:295: warning: initialization from incompatible pointer type
+/root/hvirtual/thirdparty/OpenCV-2.3.1/3rdparty/libjasper/jpc_qmfb.c:296: warning: initialization from incompatible pointer type
+[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jp2_cod.o
+[0m/root/hvirtual/thirdparty/OpenCV-2.3.1/3rdparty/libjasper/jpc_qmfb.c: In function ‘jpc_ft_synthesize’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/3rdparty/libjasper/jpc_qmfb.c:1607: warning: assignment from incompatible pointer type
+/root/hvirtual/thirdparty/OpenCV-2.3.1/3rdparty/libjasper/jpc_qmfb.c:1615: warning: assignment from incompatible pointer type
+[ 12%] Built target opencv_core_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 12%] [34m[1mGenerating opencv_test_calib3d_pch_dephelp.cxx
+[0m[ 13%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_print.o
+[0m[ 13%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_mct.o
+[0m[ 13%] [35m[1mScanning dependencies of target opencv_test_calib3d_pch_dephelp
+[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_enc.o
+[0m[ 13%] [ 13%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_read.o
+[0m[0m[32mBuilding CXX object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_stream.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 13%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d_pch_dephelp.dir/opencv_test_calib3d_pch_dephelp.o
+[0m[ 13%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_strip.o
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_imgproc_pch_dephelp.a
+[0m[ 13%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_swab.o
+[0m[ 13%] Built target opencv_imgproc_pch_dephelp
+[ 13%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 13%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_iccdata.o
+[0m[ 14%] [34m[1mGenerating opencv_ts_pch_dephelp.cxx
+[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_mqdec.o
+[0m[ 15%] [ 15%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_thunder.o
+[0m[32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_tile.o
+[0m[35m[1mScanning dependencies of target opencv_ts_pch_dephelp
+[ 15%] [31m[1mLinking CXX static library ../../lib/libopencv_highgui_pch_dephelp.a
+[0m[0m[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_math.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 15%] [32mBuilding CXX object modules/ts/CMakeFiles/opencv_ts_pch_dephelp.dir/opencv_ts_pch_dephelp.o
+[0m[ 15%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jp2_dec.o
+[0m[ 15%] [ 15%] Built target opencv_highgui_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_icc.o
+[0m[ 15%] [34m[1mGenerating opencv_test_core_pch_dephelp.cxx
+[0m[ 15%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_version.o
+[0m[ 15%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_warning.o
+[0m[35m[1mScanning dependencies of target opencv_test_core_pch_dephelp
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_flann_pch_dephelp.a
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 15%] [ 15%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_write.o
+[0m[ 15%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_zip.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core_pch_dephelp.dir/opencv_test_core_pch_dephelp.o
+[0m[ 16%] [ 16%] [32mBuilding C object 3rdparty/libtiff/CMakeFiles/libtiff.dir/tif_unix.o
+[0mBuilt target opencv_flann_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 16%] [34m[1mGenerating opencv_test_features2d_pch_dephelp.cxx
+[0m[ 16%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_debug.o
+[0m[35m[1mScanning dependencies of target opencv_test_features2d_pch_dephelp
+[31m[1mLinking CXX static library ../../lib/libopencv_features2d_pch_dephelp.a
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 16%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d_pch_dephelp.dir/opencv_test_features2d_pch_dephelp.o
+[0m[ 17%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jpc_t1cod.o
+[0m[ 17%] Built target opencv_features2d_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 17%] [34m[1mGenerating opencv_test_highgui_pch_dephelp.cxx
+[0m[35m[1mScanning dependencies of target opencv_test_highgui_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 18%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui_pch_dephelp.dir/opencv_test_highgui_pch_dephelp.o
+[0m[ 18%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jp2_enc.o
+[0m[ 18%] [32mBuilding C object 3rdparty/libjasper/CMakeFiles/libjasper.dir/jas_seq.o
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_calib3d_pch_dephelp.a
+[0m[ 18%] Built target opencv_calib3d_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[31m[1mLinking CXX static library ../../lib/libopencv_test_core_pch_dephelp.a
+[0m[ 18%] [34m[1mGenerating opencv_test_imgproc_pch_dephelp.cxx
+[0m[ 18%] Built target opencv_test_core_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 18%] [34m[1mGenerating opencv_video_pch_dephelp.cxx
+[0m[35m[1mScanning dependencies of target opencv_test_imgproc_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 19%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc_pch_dephelp.dir/opencv_test_imgproc_pch_dephelp.o
+[0m[35m[1mScanning dependencies of target opencv_video_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 20%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video_pch_dephelp.dir/opencv_video_pch_dephelp.o
+[0m[31m[1mLinking CXX static library ../lib/liblibtiff.a
+[0m[ 20%] Built target libtiff
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 20%] [34m[1mGenerating opencv_legacy_pch_dephelp.cxx
+[0m[35m[1mScanning dependencies of target opencv_legacy_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 20%] [31m[1mLinking CXX static library ../../lib/libopencv_ts_pch_dephelp.a
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy_pch_dephelp.dir/opencv_legacy_pch_dephelp.o
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_test_highgui_pch_dephelp.a
+[0m[ 20%] Built target opencv_ts_pch_dephelp
+[ 20%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 20%] Built target opencv_test_highgui_pch_dephelp
+[34m[1mGenerating opencv_contrib_pch_dephelp.cxx
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 20%] [34m[1mGenerating opencv_ml_pch_dephelp.cxx
+[0m[35m[1mScanning dependencies of target opencv_ml_pch_dephelp
+[31m[1mLinking CXX static library ../../lib/libopencv_test_calib3d_pch_dephelp.a
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_video_pch_dephelp.a
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_contrib_pch_dephelp
+[ 20%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml_pch_dephelp.dir/opencv_ml_pch_dephelp.o
+[0m[31m[1mLinking C static library ../lib/liblibjasper.a
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 20%] [ 21%] [ 21%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib_pch_dephelp.dir/opencv_contrib_pch_dephelp.o
+[0mBuilt target opencv_test_calib3d_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+Built target opencv_video_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [ 22%] [ 22%] [34m[1mGenerating opencv_objdetect_pch_dephelp.cxx
+[0m[34m[1mGenerating opencv_test_ml_pch_dephelp.cxx
+[0mBuilt target libjasper
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating opencv_test_objdetect_pch_dephelp.cxx
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_test_imgproc_pch_dephelp.a
+[0m[35m[1mScanning dependencies of target opencv_test_ml_pch_dephelp
+[35m[1mScanning dependencies of target opencv_objdetect_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [ 22%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml_pch_dephelp.dir/opencv_test_ml_pch_dephelp.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect_pch_dephelp.dir/opencv_objdetect_pch_dephelp.o
+[0m[35m[1mScanning dependencies of target opencv_test_objdetect_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] Built target opencv_test_imgproc_pch_dephelp
+[ 22%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_test_objdetect_pch_dephelp.dir/opencv_test_objdetect_pch_dephelp.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating opencv_test_video_pch_dephelp.cxx
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_test_features2d_pch_dephelp.a
+[0m[ 22%] Built target opencv_test_features2d_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [35m[1mScanning dependencies of target opencv_test_video_pch_dephelp
+[34m[1mGenerating opencv_gpu_pch_dephelp.cxx
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video_pch_dephelp.dir/opencv_test_video_pch_dephelp.o
+[0m[35m[1mScanning dependencies of target opencv_gpu_pch_dephelp
+[31m[1mLinking CXX static library ../../lib/libopencv_legacy_pch_dephelp.a
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[31m[1mLinking CXX static library ../../lib/libopencv_ml_pch_dephelp.a
+[0m[ 22%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu_pch_dephelp.dir/opencv_gpu_pch_dephelp.o
+[0m[ 22%] Built target opencv_legacy_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [ 22%] [34m[1mGenerating opencv_test_gpu_pch_dephelp.cxx
+[0mBuilt target opencv_ml_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_imgproc
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating precomp.hpp
+[0m[ 22%] [34m[1mGenerating precomp.hpp.gch/opencv_imgproc_Release.gch
+[0m[35m[1mScanning dependencies of target opencv_test_gpu_pch_dephelp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu_pch_dephelp.dir/opencv_test_gpu_pch_dephelp.o
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_objdetect_pch_dephelp.a
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_contrib_pch_dephelp.a
+[0m[ 22%] Built target opencv_objdetect_pch_dephelp
+[ 22%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+Built target opencv_contrib_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_core
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [35m[1mScanning dependencies of target pch_Generate_opencv_calib3d
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[34m[1mGenerating precomp.hpp
+[0m[ 22%] [34m[1mGenerating precomp.hpp
+[0m[ 22%] [31m[1mLinking CXX static library ../../lib/libopencv_test_ml_pch_dephelp.a
+[0m[34m[1mGenerating precomp.hpp.gch/opencv_core_Release.gch
+[0m[ 22%] Built target opencv_test_ml_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating precomp.hpp.gch/opencv_calib3d_Release.gch
+[0m[35m[1mScanning dependencies of target pch_Generate_opencv_features2d
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating precomp.hpp
+[0m[ 22%] [34m[1mGenerating precomp.hpp.gch/opencv_features2d_Release.gch
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_test_objdetect_pch_dephelp.a
+[0m[ 22%] Built target opencv_test_objdetect_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_flann
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating precomp.hpp
+[0m[ 22%] [34m[1mGenerating precomp.hpp.gch/opencv_flann_Release.gch
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_test_video_pch_dephelp.a
+[0m[ 22%] Built target opencv_test_video_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_highgui
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[31m[1mLinking CXX static library ../../lib/libopencv_gpu_pch_dephelp.a
+[0m[ 22%] [34m[1mGenerating precomp.hpp
+[0m[ 22%] [34m[1mGenerating precomp.hpp.gch/opencv_highgui_Release.gch
+[0m[ 22%] Built target opencv_gpu_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_calib3d
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating test_precomp.hpp
+[0m[ 22%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_calib3d_Release.gch
+[0m[31m[1mLinking CXX static library ../../lib/libopencv_test_gpu_pch_dephelp.a
+[0m[ 22%] Built target opencv_test_gpu_pch_dephelp
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_ts
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 22%] [34m[1mGenerating precomp.hpp
+[0m[ 22%] [34m[1mGenerating precomp.hpp.gch/opencv_ts_Release.gch
+[0m[ 23%] Built target pch_Generate_opencv_core
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_core
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 23%] [34m[1mGenerating test_precomp.hpp
+[0m[ 23%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_core_Release.gch
+[0m[ 24%] Built target pch_Generate_opencv_imgproc
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_features2d
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 24%] [34m[1mGenerating test_precomp.hpp
+[0m[ 24%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_features2d_Release.gch
+[0m[ 24%] Built target pch_Generate_opencv_features2d
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_highgui
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 24%] [34m[1mGenerating test_precomp.hpp
+[0m[ 24%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_highgui_Release.gch
+[0m[ 24%] Built target pch_Generate_opencv_calib3d
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_imgproc
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 24%] [ 24%] Built target pch_Generate_opencv_highgui
+[34m[1mGenerating test_precomp.hpp
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_video
+[0m[ 24%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 24%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_imgproc_Release.gch
+[0m[34m[1mGenerating precomp.hpp
+[0m[ 24%] [34m[1mGenerating precomp.hpp.gch/opencv_video_Release.gch
+[0m[ 24%] Built target pch_Generate_opencv_flann
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_legacy
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 24%] [34m[1mGenerating precomp.hpp
+[0m[ 24%] [34m[1mGenerating precomp.hpp.gch/opencv_legacy_Release.gch
+[0m[ 24%] Built target pch_Generate_opencv_ts
+[ 24%] Built target pch_Generate_opencv_test_calib3d
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_ml
+[0m[35m[1mScanning dependencies of target pch_Generate_opencv_contrib
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 24%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[34m[1mGenerating precomp.hpp
+[0m[ 24%] [34m[1mGenerating precomp.hpp
+[0m[ 24%] [ 24%] [34m[1mGenerating precomp.hpp.gch/opencv_ml_Release.gch
+[0m[34m[1mGenerating precomp.hpp.gch/opencv_contrib_Release.gch
+[0m[ 25%] Built target pch_Generate_opencv_video
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_objdetect
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 25%] [34m[1mGenerating precomp.hpp
+[0m[ 25%] [34m[1mGenerating precomp.hpp.gch/opencv_objdetect_Release.gch
+[0m[ 25%] Built target pch_Generate_opencv_legacy
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_ml
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 25%] [34m[1mGenerating test_precomp.hpp
+[0m[ 25%] [ 25%] Built target pch_Generate_opencv_test_highgui
+[34m[1mGenerating test_precomp.hpp.gch/opencv_test_ml_Release.gch
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_objdetect
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 25%] [34m[1mGenerating test_precomp.hpp
+[0m[ 25%] Built target pch_Generate_opencv_contrib
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_video
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 25%] [34m[1mGenerating test_precomp.hpp
+[0m[ 25%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_video_Release.gch
+[0m[ 25%] Built target pch_Generate_opencv_test_core
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target pch_Generate_opencv_gpu
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 25%] [34m[1mGenerating precomp.hpp
+[0m[ 25%] [34m[1mGenerating precomp.hpp.gch/opencv_gpu_Release.gch
+[0m[ 27%] [ 27%] [ 27%] [ 28%] Built target pch_Generate_opencv_test_video
+Built target pch_Generate_opencv_gpu
+Built target pch_Generate_opencv_objdetect
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 28%] Built target pch_Generate_opencv_test_ml
+[34m[1mGenerating test_precomp.hpp.gch/opencv_test_objdetect_Release.gch
+[0m[35m[1mScanning dependencies of target opencv_core
+[35m[1mScanning dependencies of target pch_Generate_opencv_test_gpu
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 28%] [34m[1mGenerating test_precomp.hpp
+[0m[ 29%] Built target pch_Generate_opencv_test_features2d
+[ 29%] [34m[1mGenerating test_precomp.hpp.gch/opencv_test_gpu_Release.gch
+[0m[ 30%] Built target pch_Generate_opencv_test_imgproc
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 30%] Built target pch_Generate_opencv_ml
+[ 30%] [ 30%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/copy.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/rand.o
+[0m[ 30%] [ 30%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/matop.o
+[0m[ 31%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/system.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/persistence.o
+[0m[ 31%] [ 31%] [ 31%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/datastructs.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/tables.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/cmdparser.o
+[0m[ 31%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/alloc.o
+[0m[ 32%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/mathfuncs.o
+[0m[ 32%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/array.o
+[0m[ 32%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/lapack.o
+[0m[ 32%] [ 32%] [ 32%] [ 32%] [ 32%] Built target pch_Generate_opencv_test_gpu
+Built target pch_Generate_opencv_test_objdetect
+[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/precomp.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/out.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/drawing.o
+[0m[ 33%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/stat.o
+[0m[ 33%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/matrix.o
+[0m[ 33%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/matmul.o
+[0m[ 33%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/dxt.o
+[0m[ 33%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/convert.o
+[0m[ 33%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_core.dir/src/arithm.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_core.so
+[0m[ 33%] Built target opencv_core
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_flann
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 33%] [ 33%] [ 33%] [32mBuilding CXX object modules/flann/CMakeFiles/opencv_flann.dir/src/flann.o
+[0m[32mBuilding CXX object modules/flann/CMakeFiles/opencv_flann.dir/src/precomp.o
+[0m[32mBuilding CXX object modules/flann/CMakeFiles/opencv_flann.dir/src/miniflann.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_ts
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_ml
+[ 33%] [ 33%] [ 33%] [ 33%] [ 34%] [32mBuilding CXX object modules/ts/CMakeFiles/opencv_ts.dir/src/ts_arrtest.o
+[0m[32mBuilding CXX object modules/ts/CMakeFiles/opencv_ts.dir/src/ts.o
+[0m[32mBuilding CXX object modules/ts/CMakeFiles/opencv_ts.dir/src/ts_gtest.o
+[0m[32mBuilding CXX object modules/ts/CMakeFiles/opencv_ts.dir/src/precomp.o
+[0m[32mBuilding CXX object modules/ts/CMakeFiles/opencv_ts.dir/src/ts_func.o
+[0m[35m[1mScanning dependencies of target opencv_imgproc
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 35%] [ 35%] [ 35%] [ 35%] [ 35%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/testset.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/boost.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/cnn.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/ertrees.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/tree.o
+[0m[ 35%] [ 35%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/em.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/gbt.o
+[0m[ 36%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/data.o
+[0m[ 36%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/ann_mlp.o
+[0m[ 36%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/knearest.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 36%] [ 36%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/contours.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/color.o
+[0m[ 36%] [ 36%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/samplers.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/filter.o
+[0m[ 36%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/rtrees.o
+[0m[ 37%] [ 37%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/sumpixels.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/segmentation.o
+[0m[ 37%] [ 37%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/approx.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/kdtree.o
+[0m[ 37%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/precomp.o
+[0m[ 37%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/nbayes.o
+[0m[ 38%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/estimate.o
+[0m[ 38%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/inner_functions.o
+[0m[ 38%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_ml.dir/src/svm.o
+[0m[ 38%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/spilltree.o
+[0m[ 38%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/floodfill.o
+[0m[ 39%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/imgwarp.o
+[0m[ 39%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/hough.o
+[0m[ 39%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/pyramids.o
+[0m[ 39%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/tables.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_ml.so
+[0m[ 39%] Built target opencv_ml
+[ 39%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/lsh.o
+[0m[ 39%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/utils.o
+[0m[ 40%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/featureselect.o
+[0m[ 40%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/accum.o
+[0m[ 40%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/cornersubpix.o
+[0m[ 40%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/shapedescr.o
+[0m[ 40%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/featuretree.o
+[0m[ 41%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/distransform.o
+[0m[ 41%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/morph.o
+[0m[ 41%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/rotcalipers.o
+[0m[ 41%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/grabcut.o
+[0m[ 41%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/templmatch.o
+[0m[ 41%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/inpaint.o
+[0m[ 42%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/deriv.o
+[0m[ 42%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/histogram.o
+[0m[ 42%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/undistort.o
+[0m[ 42%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/moments.o
+[0m[ 42%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/emd.o
+[0m[ 42%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/precomp.o
+[0m[ 43%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/subdivision2d.o
+[0m[ 43%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/matchcontours.o
+[0m[ 43%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/canny.o
+[0m[ 43%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/linefit.o
+[0m[ 43%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/smooth.o
+[0m[ 44%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/geometry.o
+[0m[ 44%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/corner.o
+[0m[ 44%] [ 44%] [31m[1mLinking CXX shared library ../../lib/libopencv_ts.so
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/pyrsegmentation.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/convhull.o
+[0m[ 44%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_imgproc.dir/src/thresh.o
+[0m[ 44%] Built target opencv_ts
+[31m[1mLinking CXX shared library ../../lib/libopencv_flann.so
+[0m[ 44%] Built target opencv_flann
+[31m[1mLinking CXX shared library ../../lib/libopencv_imgproc.so
+[0m[ 44%] Built target opencv_imgproc
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_highgui
+[35m[1mScanning dependencies of target opencv_video
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 44%] [ 44%] [ 44%] [ 45%] [ 45%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/bgfg_gaussmix2.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/bgfg_gaussmix.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/bgfg_acmmm2003.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/motempl.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/camshift.o
+[ 45%] [0m[ 45%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/bgfg_codebook.o
+[0m[ 45%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/kalman.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/optflowgf.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 45%] [ 45%] [ 45%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/optflowlk.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap_images.o
+[0m[ 46%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/bgfg_common.o
+[0m[ 46%] [ 47%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap_ffmpeg.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/loadsave.o
+[0m[ 47%] [ 47%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/precomp.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/utils.o
+[0m[ 47%] [ 47%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/window.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap_v4l.o
+[0m[ 47%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/optflowhs.o
+[0m[ 47%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/lkpyramid.o
+[0m[ 47%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/optflowbm.o
+[0m[ 47%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_video.dir/src/precomp.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_video.so
+[0m[ 48%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/bitstrm.o
+[0m[ 48%] [ 48%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_jpeg2000.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_jpeg.o
+[0m[ 48%] [ 48%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_bmp.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_sunras.o
+[0m[ 48%] [ 48%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_png.o
+[0mBuilt target opencv_video
+[ 49%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_base.o
+[0m[ 49%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_tiff.o
+[0m[ 49%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_imageio.o
+[0m[ 49%] [ 49%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_exr.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_pxm.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_highgui.so
+[0m[ 49%] Built target opencv_highgui
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_features2d
+[35m[1mScanning dependencies of target opencv_test_video
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_test_core
+[35m[1mScanning dependencies of target opencv_test_imgproc
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_test_highgui
+[35m[1mScanning dependencies of target opencv_test_ml
+[0m[0m[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 49%] [ 50%] [ 50%] [ 50%] [ 50%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_main.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_mat.o
+[0m[ 50%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_operations.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_dxt.o
+[0m[32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_ds.o
+[0m[ 51%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_arithm.o
+[0m[ 51%] [ 51%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_accum.o
+[0m[ 51%] [ 51%] [ 52%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_io.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_main.o
+[0m[ 52%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_precomp.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_templmatch.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_thresh.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_main.o
+[0m[ 52%] [ 52%] [ 52%] [ 53%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/surf.o
+[0m[ 53%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_kalman.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/detectors.o
+[0m[ 53%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/fast.o
+[0m[ 53%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/evaluation.o
+[0m[ 53%] [ 54%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_optflow.o
+[0m[ 54%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_approxpoly.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_emd.o
+[0m[ 55%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_optflowpyrlk.o
+[0m[ 55%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_histograms.o
+[0m[ 55%] [ 55%] [ 55%] [ 55%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/descriptors.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_estimaterigid.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/matchers.o
+[0m[32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_camshift.o
+[0m[ 55%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_inpaint.o
+[0m[32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_floodfill.o
+[0m[ 55%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/draw.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/sift.o
+[0m[ 55%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_precomp.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 55%] [ 56%] [ 56%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui.dir/test/test_main.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui.dir/test/test_drawing.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui.dir/test/test_ffmpeg.o
+[0m[ 56%] [ 56%] [ 56%] [32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui.dir/test/test_gui.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui.dir/test/test_video_io.o
+[0m[32mBuilding CXX object modules/highgui/CMakeFiles/opencv_test_highgui.dir/test/test_precomp.o
+[0m[ 56%] [32mBuilding CXX object modules/video/CMakeFiles/opencv_test_video.dir/test/test_motiontemplates.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 56%] [ 56%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_save_load.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_main.o
+[0m[ 56%] [ 57%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_mltests2.o
+[0m[32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_emknearestkmeans.o
+[0m[ 57%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_gbttest.o
+[0m[ 57%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_mltests.o
+[0m[ 57%] [32mBuilding CXX object modules/ml/CMakeFiles/opencv_test_ml.dir/test/test_precomp.o
+[0m[31m[1mLinking CXX executable ../../bin/opencv_test_video
+[0m[31m[1mLinking CXX executable ../../bin/opencv_test_ml
+[0m[ 57%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_rand.o
+[0m[ 57%] [32mBuilding CXX object modules/core/CMakeFiles/opencv_test_core.dir/test/test_math.o
+[0m[ 57%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_moments.o
+[0m[ 57%] Built target opencv_test_ml
+[ 57%] Built target opencv_test_video
+[ 58%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_imgwarp.o
+[0m[ 58%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_filter.o
+[0m[ 58%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_pyrsegmentation.o
+[0m[ 58%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_canny.o
+[0m[ 58%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_distancetransform.o
+[0m[ 58%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_color.o
+[0m[ 59%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_convhull.o
+[0m[ 59%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_watershed.o
+[0m[ 59%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_grabcut.o
+[0m[31m[1mLinking CXX executable ../../bin/opencv_test_highgui
+[0m[ 59%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_subdivisions.o
+[0m[ 59%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_contours.o
+[0m[ 59%] [32mBuilding CXX object modules/imgproc/CMakeFiles/opencv_test_imgproc.dir/test/test_precomp.o
+[0m[ 59%] Built target opencv_test_highgui
+[31m[1mLinking CXX executable ../../bin/opencv_test_imgproc
+[0m/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp: In function ‘void cvtest::inRangeS(const cv::Mat&, const cv::Scalar&, const cv::Scalar&, cv::Mat&)’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘lbuf.368’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:625: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘rbuf.367’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:625: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘lbuf.368’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:628: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘rbuf.367’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:628: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘lbuf.368’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:631: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘rbuf.367’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:631: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘lbuf.368’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:634: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘rbuf.367’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:634: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘lbuf.368’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:637: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘rbuf.367’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:637: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘lbuf.374’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:640: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:520: warning: dereferencing pointer ‘rbuf.373’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/core/test/test_arithm.cpp:640: note: initialized from here
+[ 59%] Built target opencv_test_imgproc
+[ 60%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/dynamic.o
+[0m[ 60%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/keypoint.o
+[0m[ 60%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/oneway.o
+[0m[ 60%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/mser.o
+[0m[ 60%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/bagofwords.o
+[0m[ 60%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/blobdetector.o
+[0m[ 61%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/planardetect.o
+[0m[ 61%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/precomp.o
+[0m[ 61%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/orb.o
+[0m[ 61%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/stardetector.o
+[0m[ 61%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/brief.o
+[0m[ 62%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_features2d.dir/src/calonder.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_features2d.so
+[0m[ 62%] Built target opencv_features2d
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_test_features2d
+[35m[1mScanning dependencies of target opencv_calib3d
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 62%] [ 62%] [ 63%] [ 63%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_main.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_detectors.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_nearestneighbors.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_fast.o
+[0m[ 63%] [ 63%] [ 63%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_features2d.o
+[0m[ 64%] [32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_mser.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_bruteforcematcher.o
+[0m[32mBuilding CXX object modules/features2d/CMakeFiles/opencv_test_features2d.dir/test/test_precomp.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 64%] [ 64%] [ 64%] [ 64%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/triangulate.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/stereosgbm.o
+[ 64%] [0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/calibration.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/fundam.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/stereobm.o
+[0m[ 65%] [ 65%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/stereogc.o
+[0m[ 65%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/solvepnp.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/modelest.o
+[0m[31m[1mLinking CXX executable ../../bin/opencv_test_core
+[0m[ 65%] Built target opencv_test_core
+[31m[1mLinking CXX executable ../../bin/opencv_test_features2d
+[0m[ 65%] Built target opencv_test_features2d
+[ 65%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/calibinit.o
+[0m[ 65%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/checkchessboard.o
+[0m[ 66%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/precomp.o
+[0m[ 66%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/posit.o
+[0m[ 66%] [ 66%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/quadsubpix.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_calib3d.dir/src/circlesgrid.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_calib3d.so
+[0m[ 66%] Built target opencv_calib3d
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_test_calib3d
+[35m[1mScanning dependencies of target opencv_legacy
+[35m[1mScanning dependencies of target opencv_objdetect
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[0m[ 67%] [ 67%] [ 67%] [ 67%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 67%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_chesscorners_timing.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_cameracalibration_artificial.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_main.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_compose_rt.o
+[0m[ 68%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_cornerssubpix.o
+[0m[ 68%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/lsvmtbbversion.o
+[0m[ 68%] [ 69%] [ 69%] [ 69%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_chessboardgenerator.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_posit.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/cascadedetect.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/lsvmparser.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_chesscorners.o
+[0m[ 69%] [ 69%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/distancetransform.o
+[0m[ 69%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/featurepyramid.o
+[0m[ 70%] [ 70%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/resizeimg.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/matching.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/fft.o
+[0m[ 70%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/latentsvmdetector.o
+[0m[ 70%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/hog.o
+[0m[ 70%] [ 70%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/planardetect.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/haar.o
+[0m[ 71%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/latentsvm.o
+[0m[ 71%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/precomp.o
+[0m[ 71%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/datamatrix.o
+[0m[ 71%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_objdetect.dir/src/routine.o
+[0mIn file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/objdetect/../core/include/opencv2/core/core.hpp:4341,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/objdetect/include/opencv2/objdetect/objdetect.hpp:46,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/objdetect/precomp.hpp:54:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/objdetect/../core/include/opencv2/core/operations.hpp: In static member function ‘static int cv::RTTIImpl<_ClsName>::isInstance(const void*) [with _ClsName = cv::HOGDescriptor]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/objdetect/../core/include/opencv2/core/operations.hpp:3437: warning: dereferencing pointer ‘<anonymous>’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/objdetect/../core/include/opencv2/core/operations.hpp:3437: note: initialized from here
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 71%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/enmin.o
+[0m[ 71%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/hmm1d.o
+[0m[ 71%] [ 71%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/pgh.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_solvepnp_ransac.o
+[0m[ 71%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/enteringblobdetectionreal.o
+[0m[ 71%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/extendededges.o
+[0m[ 72%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackingccwithcr.o
+[0m[ 72%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/contourtree.o
+[0m[ 72%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/trifocal.o
+[0m[ 72%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_cameracalibration_badarg.o
+[0m[ 72%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/testseq.o
+[0m[ 72%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/calibfilter.o
+[0m[ 73%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/3dtracker.o
+[0m[ 73%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_fundam.o
+[0m[ 73%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackgenyml.o
+[0m/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/contourtree.cpp: In function ‘CvContourTree* cvCreateContourTree(const CvSeq*, CvMemStorage*, double)’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/contourtree.cpp:589: warning: dereferencing pointer ‘tree.368’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/contourtree.cpp:589: note: initialized from here
+[ 73%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackanalysishist.o
+[0m[ 73%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/dominants.o
+[0m[ 74%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_affine3d_estimator.o
+[0m[ 74%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/facetemplate.o
+[0m[ 74%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_reproject_image_to_3d.o
+[0m[ 74%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrack.o
+[0m[ 75%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/segment.o
+[0m[ 75%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/corrimages.o
+[0m[ 75%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/epilines.o
+[0m[ 75%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/levmartrif.o
+[0m[ 75%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_precomp.o
+[0m[ 75%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/camshift.o
+[0m[ 76%] [ 76%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_undistort.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/levmarprojbandle.o
+[0m[ 76%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_cameracalibration.o
+[0m[ 76%] [ 77%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_chesscorners_badarg.o
+[0m[32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_stereomatching.o
+[0m[ 77%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/compat.o
+[0m[ 77%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/lee.o
+[0m[ 77%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/findface.o
+[0m[ 77%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/enteringblobdetection.o
+[0m[ 77%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackingmsfgs.o
+[0m[ 78%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackpostprockalman.o
+[0m[ 78%] [32mBuilding CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_undistort_badarg.o
+[0m[ 78%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/video.o
+[0m[ 78%] [ 78%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/texture.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/condens.o
+[0m[ 78%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackanalysisior.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_objdetect.so
+[0m[ 78%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/vecfacetracking.o
+[0m[ 79%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/calcimagehomography.o
+[0m[ 79%] Built target opencv_objdetect
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp: In function ‘int icvComCoeffForLine(CvPoint2D64d, CvPoint2D64d, CvPoint2D64d, CvPoint2D64d, double*, double*, double*, double*, double*, double*, CvStereoLineCoeff*, int*)’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:397: warning: dereferencing pointer ‘directS3.329’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:397: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:398: warning: dereferencing pointer ‘directS4.330’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:398: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:399: warning: dereferencing pointer ‘zeroVect.334’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:399: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: warning: dereferencing pointer ‘camPoint1.336’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: warning: dereferencing pointer ‘direct2.328’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: warning: dereferencing pointer ‘camPoint2.333’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: warning: dereferencing pointer ‘direct3.331’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:409: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: warning: dereferencing pointer ‘camPoint1.336’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: warning: dereferencing pointer ‘direct1.327’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: warning: dereferencing pointer ‘camPoint2.333’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: warning: dereferencing pointer ‘direct4.332’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:416: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:430: warning: dereferencing pointer ‘camPoint1.336’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:430: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:430: warning: dereferencing pointer ‘direct1.327’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:430: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:430: warning: dereferencing pointer ‘pointB.335’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:430: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:435: warning: dereferencing pointer ‘camPoint2.333’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:435: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:435: warning: dereferencing pointer ‘direct4.332’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:435: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:435: warning: dereferencing pointer ‘pointB.335’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:435: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:443: warning: dereferencing pointer ‘camPoint2.333’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:443: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:443: warning: dereferencing pointer ‘direct3.331’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:443: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:443: warning: dereferencing pointer ‘pointB.335’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:443: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:448: warning: dereferencing pointer ‘camPoint1.336’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:448: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:448: warning: dereferencing pointer ‘direct2.328’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:448: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:448: warning: dereferencing pointer ‘pointB.335’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:448: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:485: warning: dereferencing pointer ‘pointB.335’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:485: note: initialized from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:485: warning: dereferencing pointer ‘camPoint1.336’ does break strict-aliasing rules
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/legacy/src/epilines.cpp:485: note: initialized from here
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 79%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/hmmobs.o
+[0m[35m[1mScanning dependencies of target opencv_contrib
+[ 79%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/createhandmask.o
+[0m[ 79%] [35m[1mScanning dependencies of target opencv_haartraining_engine
+[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/lines.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_test_objdetect
+[35m[1mScanning dependencies of target opencv_gpu
+[ 79%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackgen1.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 80%] [ 80%] [0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_test_objdetect.dir/test/test_main.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_test_objdetect.dir/test/test_latentsvmdetector.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 80%] [ 80%] [ 81%] [ 81%] [ 81%] [ 81%] [32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_test_objdetect.dir/test/test_cascadeandhog.o
+[0m[32mBuilding CXX object modules/objdetect/CMakeFiles/opencv_test_objdetect.dir/test/test_precomp.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/levmar.o
+[0m[32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_haartraining_engine.dir/cvboost.o
+[0m[32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_haartraining_engine.dir/cvcommon.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackingauto.o
+[0m[ 82%] [0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 83%] [ 83%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/selfsimilarity.o
+[0m[ 83%] [32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_haartraining_engine.dir/cvhaarclassifier.o
+[0m[32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_haartraining_engine.dir/cvhaartraining.o
+[0m[ 83%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/polyfit.o
+[0m[32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_haartraining_engine.dir/cvsamples.o
+[0m[ 83%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/chamfermatching.o
+[0m[ 83%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/retina.o
+[0m[ 83%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/octree.o
+[0m[ 83%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/magnoretinafilter.o
+[0m[ 84%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/parvoretinafilter.o
+[0m[ 84%] [ 84%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/scanlines.o
+[0m[32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/retinafilter.o
+[0mIn file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/retinafilter.hpp:101,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/retina.cpp:72:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 84%] [ 84%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/surf.o
+[0mIn file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/parvoretinafilter.hpp:99,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/parvoretinafilter.cpp:67:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+[ 84%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/cudastream.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/morphing.o
+[0m[ 84%] [ 84%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/error.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/color.o
+[0m[ 85%] [ 85%] In file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/magnoretinafilter.hpp:96,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/magnoretinafilter.cpp:69:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/split_merge.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/element_operations.o
+[0m[ 85%] [ 85%] [ 85%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/matrix_reductions.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/image.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/bilateral_filter.o
+[0m[ 85%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/morphcontours.o
+[0m[ 85%] [ 85%] [ 86%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/imgproc.o
+[0m[32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/ba.o
+[0m[ 87%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackingmsfg.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/stereobp.o
+[0mIn file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/retinafilter.hpp:101,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/retinafilter.cpp:67:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+[ 87%] [ 87%] [ 87%] [ 87%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/stereobm.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackingcc.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/gpumat.o
+[0m[32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/stereovar.o
+[0m[ 87%] [ 87%] [ 87%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/decomppoly.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackpostproclinear.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/speckle_filtering.o
+[0m[ 87%] [ 87%] [ 87%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/correspond.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/initialization.o
+[0m[ 87%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/retinacolor.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/calib3d.o
+[0m[ 88%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/hog.o
+[0m[ 88%] [ 88%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/cascadeclassifier.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/lcm.o
+[0m[ 88%] [ 89%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/brute_force_matcher.o
+[0m[32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/adaptiveskindetector.o
+[0m[ 89%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/precomp.o
+[0m[ 89%] [ 89%] [ 90%] [ 90%] [ 90%] [ 90%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/precomp.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/matrix_operations.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/hmm.o
+[0m[32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/spinimages.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/filtering.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/precomp.o
+[0m[ 91%] [ 91%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/stereocsbp.o
+[0m[32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/basicretinafilter.o
+[0m[ 91%] [ 91%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/blend.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/mssegmentation.o
+[0m[31m[1mLinking CXX executable ../../bin/opencv_test_objdetect
+[0m[ 91%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/imagelogpolprojection.o
+[0m[ 91%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/match_template.o
+[0m[ 91%] [32mBuilding CXX object modules/contrib/CMakeFiles/opencv_contrib.dir/src/fuzzymeanshifttracker.o
+[0m[ 91%] Built target opencv_test_objdetect
+[31m[1mLinking CXX executable ../../bin/opencv_test_calib3d
+[0m[ 91%] Built target opencv_test_calib3d
+[31m[1mLinking CXX static library ../../lib/libopencv_haartraining_engine.a
+[0m[ 91%] Built target opencv_haartraining_engine
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_haartraining
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 91%] [32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_haartraining.dir/haartraining.o
+[0m[31m[1mLinking CXX executable ../../bin/opencv_haartraining
+[0m[35m[1mScanning dependencies of target opencv_traincascade
+make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_performance
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 91%] [32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_performance.dir/performance.o
+[0m[35m[1mScanning dependencies of target opencv_createsamples
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 91%] [32mBuilding CXX object modules/haartraining/CMakeFiles/opencv_createsamples.dir/createsamples.o
+[0m[ 91%] Built target opencv_haartraining
+[31m[1mLinking CXX executable ../../bin/opencv_createsamples
+[0m[31m[1mLinking CXX executable ../../bin/opencv_performance
+[0m[ 91%] Built target opencv_createsamples
+[ 91%] Built target opencv_performance
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 92%] [ 92%] [ 92%] [ 92%] [32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/traincascade.o
+[0m[32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/boost.o
+[0m[32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/cascadeclassifier.o
+[0m[ 92%] [32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/features.o
+[0m[ 92%] [32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/haarfeatures.o
+[0m[ 93%] [32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/lbpfeatures.o
+[0m[32mBuilding CXX object modules/traincascade/CMakeFiles/opencv_traincascade.dir/imagestorage.o
+[0m[ 93%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/graphcuts.o
+[0m[31m[1mLinking CXX executable ../../bin/opencv_traincascade
+[0m[ 93%] Built target opencv_traincascade
+In file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.cpp:69:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+In file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/imagelogpolprojection.hpp:101,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/imagelogpolprojection.cpp:66:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+In file included from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:107,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/retinacolor.hpp:82,
+                 from /root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/retinacolor.cpp:67:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp: In member function ‘void cv::TemplateBuffer<type>::normalizeGrayOutputCentredSigmoide(type, type, type) [with type = double]’:
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/basicretinafilter.hpp:331:   instantiated from here
+/root/hvirtual/thirdparty/OpenCV-2.3.1/modules/contrib/src/templatebuffer.hpp:263: warning: right-hand operand of comma has no effect
+[ 94%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_gpu.dir/src/arithm.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_gpu.so
+[0m[ 94%] Built target opencv_gpu
+[ 94%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/bgfg_estimation.o
+[0m[ 94%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/dpstereo.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[ 94%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/auxutils.o
+[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_test_gpu
+[ 95%] [ 95%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackingkalman.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/clique.o
+[0m[ 95%] [ 95%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/lmeds.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackanalysis.o
+[0m[ 95%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/snakes.o
+[0m[0mmake[2]: warning: -jN forced in submake: disabling jobserver mode.
+[35m[1mScanning dependencies of target opencv_stitching
+[ 95%] [ 95%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_gpu_base.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_main.o
+[0m[ 96%] [ 96%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_matop.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_imgproc.o
+[0m[ 96%] [ 96%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/findhandregion.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_features2d.o
+[0m[ 96%] [ 96%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_calib3d.o
+[0m[ 96%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_filters.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_arithm.o
+[0m[ 97%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackinglist.o
+[0m[ 97%] [ 97%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/eigenobjects.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackanalysistrackdist.o
+[0m[ 97%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/prewarp.o
+[0m[ 97%] [32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/face.o
+[0m[ 97%] [0m[ 98%] make[2]: warning: -jN forced in submake: disabling jobserver mode.
+[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/facedetection.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/blobtrackpostproclist.o
+[0m[ 98%] [ 98%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/blenders.o
+[0m[ 98%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/seam_finders.o
+[0m[32mBuilding CXX object modules/legacy/CMakeFiles/opencv_legacy.dir/src/subdiv2.o
+[0m[ 98%] [ 98%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/motion_estimators.o
+[0m[32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/exposure_compensate.o
+[0m[ 99%] [ 99%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/matchers.o
+[0m[32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/warpers.o
+[0m[ 99%] [ 99%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/autocalib.o
+[0m[32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/util.o
+[0m[100%] [100%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_nvidia.o
+[0m[32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_precomp.o
+[0m[100%] [32mBuilding CXX object modules/gpu/CMakeFiles/opencv_test_gpu.dir/test/test_hog.o
+[0m[31m[1mLinking CXX shared library ../../lib/libopencv_legacy.so
+[0m[100%] Built target opencv_legacy
+[31m[1mLinking CXX executable ../../bin/opencv_test_gpu
+[0m[100%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/precomp.o
+[0m[100%] Built target opencv_test_gpu
+[31m[1mLinking CXX shared library ../../lib/libopencv_contrib.so
+[0m[100%] [32mBuilding CXX object modules/stitching/CMakeFiles/opencv_stitching.dir/main.o
+[0m[100%] Built target opencv_contrib
+[31m[1mLinking CXX executable ../../bin/opencv_stitching
+[0m[100%] Built target opencv_stitching
+]0;root@heroine:~/hvirtual/thirdparty/OpenCV-2.3.1heroine:/root/hvirtual/thirdparty/OpenCV-2.3.1% .
+exit
+
+Script done on Sat 11 Feb 2012 06:17:50 PM PST

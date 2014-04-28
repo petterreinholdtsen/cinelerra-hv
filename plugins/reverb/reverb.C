@@ -97,7 +97,7 @@ Reverb::~Reverb()
 	}
 }
 
-const char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); }
+const char* Reverb::plugin_title() { return N_("Reverb"); }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }
@@ -282,49 +282,6 @@ NEW_PICON_MACRO(Reverb)
 
 NEW_WINDOW_MACRO(Reverb, ReverbWindow)
 
-int Reverb::load_defaults()
-{
-	char directory[1024];
-
-// set the default directory
-	sprintf(directory, "%sreverb.rc", get_defaultdir());
-
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
-
-	config.level_init = defaults->get("LEVEL_INIT", (double)0);
-	config.delay_init = defaults->get("DELAY_INIT", 100);
-	config.ref_level1 = defaults->get("REF_LEVEL1", (double)-6);
-	config.ref_level2 = defaults->get("REF_LEVEL2", (double)INFINITYGAIN);
-	config.ref_total = defaults->get("REF_TOTAL", 12);
-	config.ref_length = defaults->get("REF_LENGTH", 1000);
-	config.lowpass1 = defaults->get("LOWPASS1", 20000);
-	config.lowpass2 = defaults->get("LOWPASS2", 20000);
-
-	sprintf(config_directory, "~");
-	defaults->get("CONFIG_DIRECTORY", config_directory);
-
-//printf("Reverb::load_defaults config.ref_level2 %f\n", config.ref_level2);
-	return 0;
-}
-
-int Reverb::save_defaults()
-{
-	defaults->update("LEVEL_INIT", config.level_init);
-	defaults->update("DELAY_INIT", config.delay_init);
-	defaults->update("REF_LEVEL1", config.ref_level1);
-	defaults->update("REF_LEVEL2", config.ref_level2);
-	defaults->update("REF_TOTAL", config.ref_total);
-	defaults->update("REF_LENGTH", config.ref_length);
-	defaults->update("LOWPASS1", config.lowpass1);
-	defaults->update("LOWPASS2", config.lowpass2);
-	defaults->update("CONFIG_DIRECTORY", config_directory);
-	defaults->save();
-	return 0;
-}
 
 LOAD_CONFIGURATION_MACRO(Reverb, ReverbConfig)
 
@@ -417,7 +374,7 @@ int Reverb::load_from_file(char *path)
 		fseek(in, 0, SEEK_END);
 		length = ftell(in);
 		fseek(in, 0, SEEK_SET);
-		fread(string, length, 1, in);
+		int temp = fread(string, length, 1, in);
 		fclose(in);
 //		read_data(string);
 	}
@@ -609,14 +566,14 @@ void ReverbConfig::interpolate(ReverbConfig &prev,
 void ReverbConfig::dump()
 {
 	printf("ReverbConfig::dump %f %d %f %f %d %d %d %d\n", 
-	level_init,
-	delay_init, 
-	ref_level1, 
-	ref_level2, 
-	ref_total, 
-	ref_length, 
-	lowpass1, 
-	lowpass2);
+		level_init,
+		(int)delay_init, 
+		ref_level1, 
+		ref_level2, 
+		(int)ref_total, 
+		(int)ref_length, 
+		(int)lowpass1, 
+		(int)lowpass2);
 }
 
 

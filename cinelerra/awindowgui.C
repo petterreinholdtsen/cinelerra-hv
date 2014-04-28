@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,7 +108,11 @@ AssetPicon::~AssetPicon()
 			icon != gui->audio_icon &&
 			icon != gui->folder_icon &&
 			icon != gui->clip_icon &&
-			icon != gui->video_icon) 
+			icon != gui->video_icon &&
+			icon != gui->veffect_icon &&
+			icon != gui->vtransition_icon &&
+			icon != gui->aeffect_icon &&
+			icon != gui->atransition_icon) 
 		{
 			delete icon;
 			delete icon_vframe;
@@ -300,13 +304,44 @@ void AssetPicon::create_objects()
 					plugin->picon, 
 					PIXMAP_ALPHA);
 			}
-			icon_vframe = new VFrame (*plugin->picon);
+			icon_vframe = new VFrame(*plugin->picon);
 		}
 		else
+		if(plugin->audio)
 		{
+			if(plugin->transition)
+			{
+				icon = gui->atransition_icon;
+				icon_vframe = mwindow->theme->get_image("atransition_icon");
+			}
+			else
+			{
+				icon = gui->aeffect_icon;
+				icon_vframe = mwindow->theme->get_image("aeffect_icon");
+			}
+		}
+		else
+		if(plugin->video)
+		{
+			if(plugin->transition)
+			{
+				icon = gui->vtransition_icon;
+				icon_vframe = mwindow->theme->get_image("vtransition_icon");
+			}
+			else
+			{
+				icon = gui->veffect_icon;
+				icon_vframe = mwindow->theme->get_image("veffect_icon");
+			}
+		}
+
+
+		if(!icon)
+		{		
 			icon = gui->file_icon;
 			icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN];
 		}
+
 		set_icon(icon);
 		set_icon_vframe(icon_vframe);
 	}
@@ -396,6 +431,18 @@ SET_TRACE
 	clip_icon = new BC_Pixmap(this, 
 		mwindow->theme->get_image("clip_icon"),
 		PIXMAP_ALPHA);
+	atransition_icon = new BC_Pixmap(this, 
+		mwindow->theme->get_image("atransition_icon"),
+		PIXMAP_ALPHA);
+	vtransition_icon = new BC_Pixmap(this, 
+		mwindow->theme->get_image("vtransition_icon"),
+		PIXMAP_ALPHA);
+	aeffect_icon = new BC_Pixmap(this, 
+		mwindow->theme->get_image("aeffect_icon"),
+		PIXMAP_ALPHA);
+	veffect_icon = new BC_Pixmap(this, 
+		mwindow->theme->get_image("veffect_icon"),
+		PIXMAP_ALPHA);
 
 SET_TRACE
 
@@ -445,7 +492,7 @@ SET_TRACE
 		mwindow->theme->adivider_h));
 
 SET_TRACE
-	divider->set_cursor(HSEPARATE_CURSOR);
+	divider->set_cursor(HSEPARATE_CURSOR, 0, 0);
 
 SET_TRACE
 	add_subwindow(folder_list = new AWindowFolders(mwindow,
@@ -1236,17 +1283,18 @@ int AWindowAssets::handle_event()
 		{
 		}
 		else
+		if(mwindow->vwindows.size())
 		{
 //printf("AWindowAssets::handle_event 2 %d %d\n", get_buttonpress(), get_selection(0, 0));
-			mwindow->vwindow->gui->lock_window("AWindowAssets::handle_event");
+			mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->lock_window("AWindowAssets::handle_event");
 			
 			if(((AssetPicon*)get_selection(0, 0))->indexable)
-				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->indexable);
+				mwindow->vwindows.get(DEFAULT_VWINDOW)->change_source(((AssetPicon*)get_selection(0, 0))->indexable);
 			else
 			if(((AssetPicon*)get_selection(0, 0))->edl)
-				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->edl);
+				mwindow->vwindows.get(DEFAULT_VWINDOW)->change_source(((AssetPicon*)get_selection(0, 0))->edl);
 
-			mwindow->vwindow->gui->unlock_window();
+			mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->unlock_window();
 		}
 		return 1;
 	}
@@ -1368,9 +1416,13 @@ int AWindowAssets::drag_motion_event()
 	mwindow->gui->drag_motion();
 	mwindow->gui->unlock_window();
 
-	mwindow->vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
-	mwindow->vwindow->gui->drag_motion();
-	mwindow->vwindow->gui->unlock_window();
+	for(int i = 0; i < mwindow->vwindows.size(); i++)
+	{
+		VWindow *vwindow = mwindow->vwindows.get(i);
+		vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
+		vwindow->gui->drag_motion();
+		vwindow->gui->unlock_window();
+	}
 
 	mwindow->cwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->cwindow->gui->drag_motion();
@@ -1397,9 +1449,13 @@ int AWindowAssets::drag_stop_event()
 
 	if(!result) 
 	{
-		mwindow->vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
-		result = mwindow->vwindow->gui->drag_stop();
-		mwindow->vwindow->gui->unlock_window();
+		for(int i = 0; i < mwindow->vwindows.size(); i++)
+		{
+			VWindow *vwindow = mwindow->vwindows.get(i);
+			vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
+			result = vwindow->gui->drag_stop();
+			vwindow->gui->unlock_window();
+		}
 	}
 
 	if(!result) 

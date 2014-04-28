@@ -192,8 +192,6 @@ public:
 // This avoids rounding errors and complies with the use of samples for
 // timing.
 	int64_t total_rendered;
-// Speed for the master node
-	double frames_per_second;
 // Time used in last render
 	double elapsed_time;
 

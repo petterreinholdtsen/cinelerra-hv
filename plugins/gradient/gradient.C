@@ -32,6 +32,7 @@
 #include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
+#include "theme.h"
 #include "vframe.h"
 
 
@@ -178,37 +179,62 @@ GradientWindow::~GradientWindow()
 
 void GradientWindow::create_objects()
 {
+	int margin = plugin->get_theme()->widget_border;
 	int x = 10, y = 10;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
 	add_subwindow(shape = new GradientShape(plugin, 
 		this, 
-		x + title->get_w() + 10, 
+		x + title->get_w() + margin, 
 		y));
 	shape->create_objects();
-	y += 40;
+	y += shape->get_h() + margin;
 	shape_x = x;
 	shape_y = y;
-	y += 40;
+	y += BC_Pot::calculate_h() + margin;
+
 	add_subwindow(title = new BC_Title(x, y, _("Rate:")));
 	add_subwindow(rate = new GradientRate(plugin,
-		x + title->get_w() + 10,
+		x + title->get_w() + margin,
 		y));
 	rate->create_objects();
-	y += 40;
-	add_subwindow(title = new BC_Title(x, y, _("Inner radius:")));
-	add_subwindow(in_radius = new GradientInRadius(plugin, x + title->get_w() + 10, y));
-	y += 30;
-	add_subwindow(title = new BC_Title(x, y, _("Outer radius:")));
-	add_subwindow(out_radius = new GradientOutRadius(plugin, x + title->get_w() + 10, y));
-	y += 35;
+	y += rate->get_h() + margin;
+
+	int x1 = x;
+	int y1 = y;
+
+	BC_Title *title1;
+	add_subwindow(title1 = new BC_Title(x, y, _("Inner radius:")));
+
+	y += BC_Slider::get_span(0) + margin;
+
+	BC_Title *title2;
+	add_subwindow(title2 = new BC_Title(x, y, _("Outer radius:")));
+
+	y = y1;
+	x += MAX(title1->get_w(), title2->get_w()) + margin;
+	
+	add_subwindow(in_radius = new GradientInRadius(plugin, x, y));
+	y += in_radius->get_h() + margin;
+
+	add_subwindow(out_radius = new GradientOutRadius(plugin, x, y));
+	y += out_radius->get_h() + margin;
+
+	x = x1;
+	y1 = y;
 	add_subwindow(in_color = new GradientInColorButton(plugin, this, x, y));
-	in_color_x = x + in_color->get_w() + 10;
-	in_color_y = y;
-	y += 35;
+	y += COLOR_H + margin;
+
+
 	add_subwindow(out_color = new GradientOutColorButton(plugin, this, x, y));
-	out_color_x = x + out_color->get_w() + 10;
+	x += MAX(in_color->get_w(), out_color->get_w()) + margin;
+	y = y1;
+
+	in_color_x = x;
+	in_color_y = y;
+	y += COLOR_H + margin;
+	out_color_x = x;
 	out_color_y = y;
 	in_color_thread = new GradientInColorThread(plugin, this);
 	out_color_thread = new GradientOutColorThread(plugin, this);
@@ -216,8 +242,19 @@ void GradientWindow::create_objects()
 	update_out_color();
 	update_shape();
 
+	draw_3d_border(in_color_x - 2, 
+		in_color_y - 2, 
+		COLOR_W + 4, 
+		COLOR_H + 4, 
+		1);
+
+	draw_3d_border(out_color_x - 2, 
+		out_color_y - 2, 
+		COLOR_W + 4, 
+		COLOR_H + 4, 
+		1);
+
 	show_window();
-	flush();
 }
 
 void GradientWindow::update_shape()
@@ -710,60 +747,6 @@ void GradientMain::update_gui()
 }
 
 
-int GradientMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sgradient.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-// printf("GradientMain::load_defaults %d %d %d %d\n",
-// config.out_r,
-// config.out_g,
-// config.out_b,
-// config.out_a);
-	config.angle = defaults->get("ANGLE", config.angle);
-	config.in_radius = defaults->get("IN_RADIUS", config.in_radius);
-	config.out_radius = defaults->get("OUT_RADIUS", config.out_radius);
-	config.in_r = defaults->get("IN_R", config.in_r);
-	config.in_g = defaults->get("IN_G", config.in_g);
-	config.in_b = defaults->get("IN_B", config.in_b);
-	config.in_a = defaults->get("IN_A", config.in_a);
-	config.out_r = defaults->get("OUT_R", config.out_r);
-	config.out_g = defaults->get("OUT_G", config.out_g);
-	config.out_b = defaults->get("OUT_B", config.out_b);
-	config.out_a = defaults->get("OUT_A", config.out_a);
-	config.shape = defaults->get("SHAPE", config.shape);
-	config.rate = defaults->get("RATE", config.rate);
-	config.center_x = defaults->get("CENTER_X", config.center_x);
-	config.center_y = defaults->get("CENTER_Y", config.center_y);
-	return 0;
-}
-
-
-int GradientMain::save_defaults()
-{
-	defaults->update("ANGLE", config.angle);
-	defaults->update("IN_RADIUS", config.in_radius);
-	defaults->update("OUT_RADIUS", config.out_radius);
-	defaults->update("IN_R", config.in_r);
-	defaults->update("IN_G", config.in_g);
-	defaults->update("IN_B", config.in_b);
-	defaults->update("IN_A", config.in_a);
-	defaults->update("OUT_R", config.out_r);
-	defaults->update("OUT_G", config.out_g);
-	defaults->update("OUT_B", config.out_b);
-	defaults->update("OUT_A", config.out_a);
-	defaults->update("RATE", config.rate);
-	defaults->update("SHAPE", config.shape);
-	defaults->update("CENTER_X", config.center_x);
-	defaults->update("CENTER_Y", config.center_y);
-	defaults->save();
-	return 0;
-}
 
 
 
@@ -833,7 +816,7 @@ void GradientMain::read_data(KeyFrame *keyframe)
 int GradientMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	char *head_frag =
+	const char *head_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float half_w;\n"
 		"uniform float half_h;\n"
@@ -852,32 +835,32 @@ int GradientMain::handle_opengl()
 		"{\n"
 		"	vec2 out_coord = gl_TexCoord[0].st;\n";
 
-	char *linear_shape = 
+	const char *linear_shape = 
 		"	vec2 in_coord = vec2(out_coord.x - half_w, half_h - out_coord.y);\n"
 		"	float mag = half_gradient_size - \n"
 		"		(in_coord.x * sin_angle + in_coord.y * cos_angle);\n";
 
-	char *radial_shape =
+	const char *radial_shape =
 		"	vec2 in_coord = vec2(out_coord.x - center_x, out_coord.y - center_y);\n"
 		"	float mag = length(vec2(in_coord.x, in_coord.y));\n";
 
 // No clamp function in NVidia
-	char *linear_rate = 
+	const char *linear_rate = 
 		"	mag = min(max(mag, in_radius), out_radius);\n"
 		"	float opacity = (mag - in_radius) / radius_diff;\n";
 
 // NVidia warns about exp, but exp is in the GLSL spec.
-	char *log_rate = 
+	const char *log_rate = 
 		"	mag = max(mag, in_radius);\n"
 		"	float opacity = 1.0 - \n"
 		"		exp(1.0 * -(mag - in_radius) / radius_diff);\n";
 
-	char *square_rate = 
+	const char *square_rate = 
 		"	mag = min(max(mag, in_radius), out_radius);\n"
 		"	float opacity = pow((mag - in_radius) / radius_diff, 2.0);\n"
 		"	opacity = min(opacity, 1.0);\n";
 
-	char *tail_frag = 
+	const char *tail_frag = 
 		"	vec4 color = mix(in_color, out_color, opacity);\n"
 		"	vec4 bg_color = texture2D(tex, out_coord);\n"
 		"	gl_FragColor.rgb = mix(bg_color.rgb, color.rgb, color.a);\n"
@@ -885,7 +868,7 @@ int GradientMain::handle_opengl()
 		"}\n";
 
 
-	char *shader_stack[5] = { 0, 0, 0, 0, 0 };
+	const char *shader_stack[5] = { 0, 0, 0, 0, 0 };
 	shader_stack[0] = head_frag;
 
 	switch(config.shape)
@@ -1047,7 +1030,6 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 }
 
 
-#define SQR(x) ((x) * (x))
 
 
 static float calculate_opacity(float mag, 

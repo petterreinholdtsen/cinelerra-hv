@@ -63,8 +63,6 @@ public:
 
 // For user configuration
 	int load_configuration();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	PluginClientWindow* new_window();

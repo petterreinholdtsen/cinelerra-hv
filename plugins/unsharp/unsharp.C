@@ -128,32 +128,6 @@ void UnsharpMain::update_gui()
 }
 
 
-int UnsharpMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sunsharp.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.radius = defaults->get("RADIUS", config.radius);
-	config.amount = defaults->get("AMOUNT", config.amount);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	return 0;
-}
-
-
-int UnsharpMain::save_defaults()
-{
-	defaults->update("RADIUS", config.radius);
-	defaults->update("AMOUNT", config.amount);
-	defaults->update("THRESHOLD", config.threshold);
-	defaults->save();
-	return 0;
-}
-
 
 
 void UnsharpMain::save_data(KeyFrame *keyframe)

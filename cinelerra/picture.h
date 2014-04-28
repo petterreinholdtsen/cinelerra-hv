@@ -52,13 +52,14 @@ public:
 class PictureConfig
 {
 public:
-	PictureConfig(BC_Hash *defaults);
+	PictureConfig();
 	~PictureConfig();
 	void copy_settings(PictureConfig *picture);
 	void copy_usage(PictureConfig *picture);
 	void load_defaults();
 	void save_defaults();
-	void set_item(int device_id, int value);
+// return 1 if it changed
+	int set_item(int device_id, int value);
 	void dump();
 
 	int brightness;

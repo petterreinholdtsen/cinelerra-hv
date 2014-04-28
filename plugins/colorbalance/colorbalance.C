@@ -20,6 +20,7 @@
  */
 
 #include "filexml.h"
+#include "clip.h"
 #include "colorbalance.h"
 #include "bchash.h"
 #include "language.h"
@@ -35,7 +36,6 @@
 
 // 1000 corresponds to (1.0 + MAX_COLOR) * input
 #define MAX_COLOR 1.0
-#define SQR(a) ((a) * (a))
 
 REGISTER_PLUGIN(ColorBalanceMain)
 
@@ -221,6 +221,7 @@ void ColorBalanceEngine::run()
 	magenta_f = plugin->calculate_transfer(plugin->config.magenta); \
 	yellow_f = plugin->calculate_transfer(plugin->config.yellow); \
  \
+printf("PROCESS_F %f\n", cyan_f); \
 	for(j = row_start; j < row_end; j++) \
 	{ \
 		for(k = 0; k < input->get_w() * components; k += components) \
@@ -491,7 +492,7 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 
 		if(!engine)
 		{
-			total_engines = PluginClient::smp > 1 ? 2 : 1;
+			total_engines = PluginClient::smp + 1;
 			engine = new ColorBalanceEngine*[total_engines];
 			for(int i = 0; i < total_engines; i++)
 			{
@@ -572,34 +573,6 @@ void ColorBalanceMain::update_gui()
 
 
 
-int ColorBalanceMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%scolorbalance.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.cyan = defaults->get("CYAN", config.cyan);
-	config.magenta = defaults->get("MAGENTA", config.magenta);
-	config.yellow = defaults->get("YELLOW", config.yellow);
-	config.preserve = defaults->get("PRESERVELUMINOSITY", config.preserve);
-	config.lock_params = defaults->get("LOCKPARAMS", config.lock_params);
-	return 0;
-}
-
-int ColorBalanceMain::save_defaults()
-{
-	defaults->update("CYAN", config.cyan);
-	defaults->update("MAGENTA", config.magenta);
-	defaults->update("YELLOW", config.yellow);
-	defaults->update("PRESERVELUMINOSITY", config.preserve);
-	defaults->update("LOCKPARAMS", config.lock_params);
-	defaults->save();
-	return 0;
-}
 
 void ColorBalanceMain::save_data(KeyFrame *keyframe)
 {

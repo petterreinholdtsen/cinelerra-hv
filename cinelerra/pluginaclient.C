@@ -212,15 +212,7 @@ int PluginAClient::read_samples(Samples *buffer,
 }
 
 
-void PluginAClient::send_render_gui(void *data, int size)
-{
-	server->send_render_gui(data, size);
-}
 
-void PluginAClient::plugin_render_gui(void *data, int size)
-{
-	render_gui(data, size);
-}
 
 int PluginAClient::get_project_samplerate()
 {

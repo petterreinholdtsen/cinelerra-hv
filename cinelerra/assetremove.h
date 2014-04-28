@@ -31,9 +31,14 @@ class AssetRemoveWindow : public BC_Window
 {
 public:
 	AssetRemoveWindow(MWindow *mwindow);
+	~AssetRemoveWindow();
 	void create_objects();
+	
+	ArrayList<BC_ListBoxItem*> *data;
 	MWindow *mwindow;
 };
+
+
 class AssetRemoveThread : public Thread
 {
 public:

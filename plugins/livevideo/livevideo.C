@@ -132,8 +132,6 @@ public:
 	int is_realtime();
 	int is_multichannel();
 	int is_synthesis();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -148,7 +146,6 @@ public:
 // What configuration parameters the device supports
 	Channel master_channel;
 	PictureConfig *picture;
-	BC_Hash *picture_defaults;
 	int prev_channel;
 	int w, h;
 // Decompressors for different video drivers
@@ -215,6 +212,9 @@ void LiveVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
+	EDLSession *session = plugin->PluginClient::get_edlsession();
+	if(session)
+		VideoDevice::load_channeldb(plugin->channeldb, session->vconfig_in);
 	for(int i = 0; i < plugin->channeldb->size(); i++)
 	{
 		BC_ListBoxItem *current;
@@ -237,7 +237,6 @@ void LiveVideoWindow::create_objects()
 		x, 
 		y));
 	show_window();
-	flush();
 }
 
 
@@ -351,7 +350,6 @@ LiveVideo::LiveVideo(PluginServer *server)
 	dv = 0;
 	mjpeg = 0;
 	picture = 0;
-	picture_defaults = 0;
 	
 }
 
@@ -371,7 +369,6 @@ LiveVideo::~LiveVideo()
 	if(dv) dv_delete(dv);
 	if(mjpeg) mjpeg_delete(mjpeg);
 	delete picture;
-	delete picture_defaults;
 }
 
 
@@ -406,6 +403,7 @@ int LiveVideo::process_buffer(VFrame *frame,
 				case CAPTURE_IEC61883:
 				case CAPTURE_BUZ:
 				case VIDEO4LINUX2JPEG:
+				case CAPTURE_JPEG_WEBCAM:
 					input_cmodel = BC_COMPRESSED;
 					break;
 				default:
@@ -415,17 +413,14 @@ int LiveVideo::process_buffer(VFrame *frame,
 
 
 // Load the picture config from the main defaults file.
-			if(!picture_defaults)
-			{
-				char path[BCTEXTLEN];
-				MWindow::create_defaults_path(path);
-				picture_defaults = new BC_Hash(path);
-				picture_defaults->load();
-			}
+
+// Load channel table
+			VideoDevice::load_channeldb(channeldb, session->vconfig_in);
 
 			if(!picture)
 			{
-				picture = new PictureConfig(picture_defaults);
+				picture = new PictureConfig;
+				picture->load_defaults();
 			}
 
 // Picture must have usage from driver before it can load defaults.
@@ -467,12 +462,13 @@ int LiveVideo::process_buffer(VFrame *frame,
 			}
 			input = temp;
 		}
+
 		vdevice->read_buffer(input);
+
 		if(input != frame)
 		{
 			if(input->get_color_model() != BC_COMPRESSED)
 			{
-SET_TRACE
 				int w = MIN(session->vconfig_in->w, frame->get_w());
 				int h = MIN(session->vconfig_in->h, frame->get_h());
 				BC_CModels::transfer(frame->get_rows(), /* Leave NULL if non existent */
@@ -497,9 +493,9 @@ SET_TRACE
 					input->get_bytes_per_line(),       /* For planar use the luma rowspan */
 					frame->get_bytes_per_line());     /* For planar use the luma rowspan */
 				frame->set_opengl_state(VFrame::RAM);
-SET_TRACE
 			}
 			else
+			if(input->get_compressed_size())
 			{
 				switch(session->vconfig_in->driver)
 				{
@@ -514,14 +510,13 @@ SET_TRACE
 							input->get_compressed_size(),
 							frame->get_color_model());
 						frame->set_opengl_state(VFrame::RAM);
-SET_TRACE
 						break;
 
 					case CAPTURE_BUZ:
 					case VIDEO4LINUX2JPEG:
 						if(!mjpeg)
-							mjpeg = mjpeg_new(w, 
-								h, 
+							mjpeg = mjpeg_new(frame->get_w(), 
+								frame->get_h(), 
 								2);  // fields
 						mjpeg_decompress(mjpeg, 
 							input->get_data(), 
@@ -534,7 +529,32 @@ SET_TRACE
 							frame->get_color_model(),
 							get_project_smp() + 1);
 						break;
+					
+					case CAPTURE_JPEG_WEBCAM:
+						if(!mjpeg)
+							mjpeg = mjpeg_new(frame->get_w(), 
+								frame->get_h(), 
+								1);  // fields
+// printf("LiveVideo::process_buffer %d %p %d\n", 
+// __LINE__, 
+// input->get_data(), 
+// input->get_compressed_size());
+						mjpeg_decompress(mjpeg, 
+							input->get_data(), 
+							input->get_compressed_size(), 
+							0, 
+							frame->get_rows(), 
+							frame->get_y(), 
+							frame->get_u(), 
+							frame->get_v(),
+							frame->get_color_model(),
+							get_project_smp() + 1);
+						break;
 				}
+			}
+			else
+			{
+				printf("LiveVideo::process_buffer %d zero size image\n", __LINE__);
 			}
 		}
 	}
@@ -551,8 +571,6 @@ void LiveVideo::render_stop()
 		delete vdevice;
 		vdevice = 0;
 	}
-	delete picture_defaults;
-	picture_defaults = 0;
 	delete picture;
 	picture = 0;
 }
@@ -570,33 +588,7 @@ NEW_WINDOW_MACRO(LiveVideo, LiveVideoWindow)
 
 LOAD_CONFIGURATION_MACRO(LiveVideo, LiveVideoConfig)
 
-int LiveVideo::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%slivevideo.rc", BCASTDIR);
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
 
-// Load channel table
-	EDLSession *session = PluginClient::get_edlsession();
-	if(session)
-		VideoDevice::load_channeldb(channeldb, session->vconfig_in);
-	config.channel = defaults->get("CHANNEL", 0);
-	w = defaults->get("W", w);
-	h = defaults->get("H", h);
-	return 0;
-}
-
-int LiveVideo::save_defaults()
-{
-	defaults->update("CHANNEL", config.channel);
-	defaults->update("W", w);
-	defaults->update("H", h);
-	defaults->save();
-	return 0;
-}
 
 void LiveVideo::save_data(KeyFrame *keyframe)
 {

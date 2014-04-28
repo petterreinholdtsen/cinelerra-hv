@@ -25,21 +25,30 @@
 #include "vframe.h"
 #include <unistd.h>
 
+// Icon has to be offset so the cursor isn't directly over it.
+// The cursor has to be over the target window for X to detect the right window.
+#define DRAG_OFFSET_X 16
+#define DRAG_OFFSET_Y 16
+
 BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window, 
-	BC_Pixmap *pixmap, 
+	BC_Pixmap *pixmap /*, 
 	int icon_x, 
-	int icon_y)
+	int icon_y */)
  : BC_Popup(parent_window, 
- 	icon_x, 
-	icon_y,
+// 	icon_x, 
+//	icon_y,
+	parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X,
+	parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y,
 	pixmap->get_w(),
 	pixmap->get_h(),
 	-1,
 	0,
 	pixmap)
 {
-	init_x = icon_x;
-	init_y = icon_y;
+//	init_x = icon_x;
+//	init_y = icon_y;
+	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;
+	init_y = parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y;
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);
@@ -50,12 +59,14 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 
 
 BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window, 
-	VFrame *frame, 
+	VFrame *frame /*, 
 	int icon_x, 
-	int icon_y)
+	int icon_y */)
  : BC_Popup(parent_window, 
- 	icon_x, 
-	icon_y,
+// 	icon_x, 
+//	icon_y,
+	parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X,
+	parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y,
 	frame->get_w(),
 	frame->get_h(),
 	-1,
@@ -63,8 +74,10 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	prepare_frame(frame, parent_window))
 {
 	delete temp_frame;  // created in prepare_frame inside constructor
-	init_x = icon_x;
-	init_y = icon_y;
+//	init_x = icon_x;
+//	init_y = icon_y;
+	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;
+	init_y = parent_window->get_abs_cursor_y(0) + DRAG_OFFSET_Y;
 	end_x = BC_INFINITY;
 	end_y = BC_INFINITY;
 	icon_offset_x = init_x - parent_window->get_abs_cursor_x(0);

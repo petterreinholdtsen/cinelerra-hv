@@ -199,8 +199,8 @@ int IndexFile::open_file()
 		{
 			if(debug) printf("IndexFile::open_file %d index_date=%lld source_date=%lld\n",
 				__LINE__,
-				fs.get_date(index_filename),
-				fs.get_date(test_indexable->path));
+				(long long)fs.get_date(index_filename),
+				(long long)fs.get_date(test_indexable->path));
 
 // index older than source
 			result = 2;
@@ -213,8 +213,8 @@ int IndexFile::open_file()
 // source file is a different size than index source file
 			if(debug) printf("IndexFile::open_file %d index_size=%lld source_size=%lld\n",
 				__LINE__,
-				test_indexable->index_state->index_bytes,
-				fs.get_size(test_indexable->path));
+				(long long)test_indexable->index_state->index_bytes,
+				(long long)fs.get_size(test_indexable->path));
 			result = 2;
 			fclose(fd);	
 			fd = 0;
@@ -574,10 +574,10 @@ SET_TRACE
 	if(edit->channel > source_channels) return 1;
 	if(debug) printf("IndexFile::draw_index %d source_samplerate=%d w=%d samplerate=%lld zoom_sample=%lld\n", 
 		__LINE__,
-		source_samplerate,
+		(int)source_samplerate,
 		w,
-		mwindow->edl->session->sample_rate,
-		mwindow->edl->local_session->zoom_sample);
+		(long long)mwindow->edl->session->sample_rate,
+		(long long)mwindow->edl->local_session->zoom_sample);
 
 // calculate a virtual x where the edit_x should be in floating point
 	double virtual_edit_x = 1.0 * edit->track->from_units(edit->startproject) * 
@@ -615,9 +615,9 @@ SET_TRACE
 
 	if(debug) printf("IndexFile::draw_index %d length=%lld index_size=%lld lengthindex=%lld\n", 
 		__LINE__,
-		length,
-		index_state->get_index_size(edit->channel),
-		lengthindex);
+		(long long)length,
+		(long long)index_state->get_index_size(edit->channel),
+		(long long)lengthindex);
 	if(lengthindex <= 0) return 0;
 
 
@@ -667,7 +667,7 @@ SET_TRACE
 			if(startfile + length_read > file_length)
 				length_read = file_length - startfile;
 
-			fread(buffer, length_read + sizeof(float), 1, fd);
+			int temp = fread(buffer, length_read + sizeof(float), 1, fd);
 		}
 
 		if(length_read < lengthfile)
@@ -702,6 +702,10 @@ SET_TRACE
 			if(next_y1 > pixmap->canvas->get_h()) next_y1 = pixmap->canvas->get_h();
 			if(next_y2 < 0) next_y2 = 0;
 			if(next_y2 > pixmap->canvas->get_h()) next_y2 = pixmap->canvas->get_h();
+			if(next_y2 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1) 
+				next_y2 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
+			if(next_y1 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1) 
+				next_y1 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
 
 			int y1 = next_y1;
 			int y2 = next_y2;
@@ -804,14 +808,14 @@ int IndexFile::read_info(Indexable *test_indexable)
 	if(index_state->index_status == INDEX_NOTTESTED)
 	{
 // read start of index data
-		fread((char*)&(index_state->index_start), sizeof(int64_t), 1, fd);
+		int temp = fread((char*)&(index_state->index_start), sizeof(int64_t), 1, fd);
 //printf("IndexFile::read_info %d %f\n", __LINE__, test_indexable->get_frame_rate());
 
 // read test_indexable info from index
 		char *data;
 		
 		data = new char[index_state->index_start];
-		fread(data, index_state->index_start - sizeof(int64_t), 1, fd);
+		temp = fread(data, index_state->index_start - sizeof(int64_t), 1, fd);
 		data[index_state->index_start - sizeof(int64_t)] = 0;
 		FileXML xml;
 		xml.read_from_string(data);

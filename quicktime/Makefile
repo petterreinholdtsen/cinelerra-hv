@@ -28,7 +28,7 @@ FFMPEG_INCLUDE := -I$(FFMPEG_DIR) \
 -I$(FFMPEG_DIR)/libavformat \
 -I$(FFMPEG_DIR)/libavutil
 
-FAAD_DIR := thirdparty/faad2-2.0
+FAAD_DIR := thirdparty/faad2-2.7
 FAAD_LIB := $(OBJDIR)/faad/
 FAAD_INCLUDE := $(FAAD_DIR)/include/
 

@@ -508,42 +508,6 @@ SET_STRING_MACRO(DenoiseMJPEG);
 
 LOAD_CONFIGURATION_MACRO(DenoiseMJPEG, DenoiseMJPEGConfig)
 
-int DenoiseMJPEG::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdenoisevideo.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.radius = defaults->get("RADIUS", config.radius);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.threshold2 = defaults->get("THRESHOLD2", config.threshold2);
-	config.sharpness = defaults->get("SHARPNESS", config.sharpness);
-	config.lcontrast = defaults->get("LCONTRAST", config.lcontrast);
-	config.ccontrast = defaults->get("CCONTRAST", config.ccontrast);
-	config.deinterlace = defaults->get("DEINTERLACE", config.deinterlace);
-	config.mode = defaults->get("MODE", config.mode);
-	config.delay = defaults->get("DELAY", config.delay);
-	return 0;
-}
-
-int DenoiseMJPEG::save_defaults()
-{
-	defaults->update("RADIUS", config.radius);
-	defaults->update("THRESHOLD", config.threshold);
-	defaults->update("THRESHOLD2", config.threshold2);
-	defaults->update("SHARPNESS", config.sharpness);
-	defaults->update("LCONTRAST", config.lcontrast);
-	defaults->update("CCONTRAST", config.ccontrast);
-	defaults->update("DEINTERLACE", config.deinterlace);
-	defaults->update("MODE", config.mode);
-	defaults->update("DELAY", config.delay);
-	defaults->save();
-	return 0;
-}
 
 void DenoiseMJPEG::save_data(KeyFrame *keyframe)
 {

@@ -85,7 +85,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/quicktime/thirdparty/faac-1.24/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/quicktime/thirdparty/faac-1.24/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/quicktime/thirdparty/faac-1.24/missing --run automake-1.8
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -O2 -Wall
@@ -127,7 +127,7 @@ PACKAGE_VERSION =
 PATH_SEPARATOR = :
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.0beta
 ac_ct_AR = @ac_ct_AR@

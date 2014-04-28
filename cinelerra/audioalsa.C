@@ -424,7 +424,7 @@ int AudioALSA::read_buffer(char *buffer, int size)
 			size / (device->in_bits / 8) / device->get_ichannels())) < 0)
 		{
 			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
-				device->total_samples_read);
+				(long long)device->total_samples_read);
 //			snd_pcm_resume(get_input());
 			close_input();
 			open_input();
@@ -461,7 +461,7 @@ int AudioALSA::write_buffer(char *buffer, int size)
 		{
 			device->Thread::disable_cancel();
 			printf("AudioALSA::write_buffer underrun at sample %lld\n",
-				device->current_position());
+				(long long)device->current_position());
 //			snd_pcm_resume(get_output());
 			close_output();
 			open_output();

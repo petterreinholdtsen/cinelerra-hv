@@ -1,11 +1,8 @@
 BIG BUGS
 ----------------
-Node framerates not displaying.
 Drag effect before timeline is finished drawing after a load -> lockup
 Load a sound file.  Change the file on the disk.  Crash on exit.
 Change asset path, CPlayback never returns to redraw the frame.
-Starting recording sometimes jumps to end of time duration or
-significantly ahead and stops.
 
 
 

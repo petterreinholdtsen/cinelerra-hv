@@ -162,7 +162,10 @@ enum
 class RenderFarmServer
 {
 public:
-	RenderFarmServer(PackageDispatcher *packages,
+	RenderFarmServer(
+// Can be 0
+		MWindow *mwindow,
+		PackageDispatcher *packages,
 		Preferences *preferences,
 		int use_local_rate,
 		int *result_return,
@@ -184,7 +187,8 @@ public:
 
 
 	ArrayList<RenderFarmServerThread*> clients;
-//	MWindow *mwindow;
+// Can be 0
+	MWindow *mwindow;
 	PackageDispatcher *packages;
 	Preferences *preferences;
 // Use master node's framerate

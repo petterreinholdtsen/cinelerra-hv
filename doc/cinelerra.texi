@@ -4951,11 +4951,11 @@ editing operations, however.
 
 The most popular keyframe editing operation is replication of some
 curve from one track to the other, to make a stereo pair.  The first
-step is to solo the source track's record @image{recordpatch_up} patch
+step is to solo the source track's record @image{recordpatch} patch
 by @b{shift-clicking} on it.  Then either set in/out points or
 highlight the desired region of keyframes.  Go to @b{keyframes->copy
 keyframes} to copy them to the clipboard.  Solo the destination track's
-record @image{recordpatch_up} patch by @b{shift-clicking} on it and
+record @image{recordpatch} patch by @b{shift-clicking} on it and
 go to @b{keyframes->paste keyframes} to paste the clipboard.
 
 The media editing commands are mapped to the keyframe editing commands

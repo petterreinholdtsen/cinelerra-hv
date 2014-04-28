@@ -274,6 +274,7 @@ public:
 	void add_video_track_entry(Track *dst = 0);
 	int add_video_track(int above, Track *dst);
 
+	void asset_to_all();
 	void asset_to_size();
 	void asset_to_rate();
 // Entry point for clear operations.
@@ -292,7 +293,7 @@ public:
 // Calculate aspect ratio from pixel counts
 	static int create_aspect_ratio(float &w, float &h, int width, int height);
 // Calculate defaults path
-	static void create_defaults_path(char *string);
+	static void create_defaults_path(char *string, const char *config_file);
 
 	void delete_folder(char *folder);
 	void delete_inpoint();
@@ -514,7 +515,7 @@ public:
 // Compositor
 	CWindow *cwindow;
 // Viewer
-	VWindow *vwindow;
+	ArrayList<VWindow*> vwindows;
 // Asset manager
 	AWindow *awindow;
 // Automation window
@@ -567,15 +568,19 @@ public:
 	static void init_plugins(Preferences *preferences, 
 		SplashGUI *splash_window);
 	static void init_plugin_path(Preferences *preferences, 
-		FileSystem *fs,
-		SplashGUI *splash_window,
-		int *counter);
+		char *path,
+		int is_lad);
+// 	static void init_plugin_path(Preferences *preferences, 
+// 		FileSystem *fs,
+// 		SplashGUI *splash_window,
+// 		int *counter);
 	void init_preferences();
 	void init_signals();
 	void init_theme();
 	void init_compositor();
 	void init_levelwindow();
-	void init_viewer();
+// Called when creating a new viewer to view footage
+	VWindow* new_viewer(int show_it);
 	void init_cache();
 	void init_menus();
 	void init_indexes();

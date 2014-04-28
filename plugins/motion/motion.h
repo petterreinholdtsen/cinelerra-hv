@@ -89,14 +89,14 @@ public:
 	int rotation_center;
 	int magnitude;
 	int rotate_magnitude;
-	float return_speed;
-	float rotate_return_speed;
+	int return_speed;
+	int rotate_return_speed;
 	int draw_vectors;
 // Percent of image size
 	int global_block_w;
 	int global_block_h;
-	int rotation_block_w;
-	int rotation_block_h;
+//	int rotation_block_w;
+//	int rotation_block_h;
 // Number of search positions in each refinement of the log search
 	int global_positions;
 	int rotate_positions;
@@ -109,14 +109,16 @@ public:
 	int global;
 	int rotate;
 // Track or stabilize, single pixel, scan only, or nothing
-	int mode1;
+	int action_type;
 // Recalculate, no calculate, save, or load coordinates from disk
-	int mode2;
+	int tracking_type;
 // Track a single frame, previous frame, or previous frame same block
-	int mode3;
+	int tracking_object;
+
+#if 0
 	enum
 	{
-// mode1
+// action_type
 		TRACK,
 		STABILIZE,
 		TRACK_PIXEL,
@@ -127,11 +129,14 @@ public:
 		SAVE,
 		LOAD,
 		NO_CALCULATE,
-// mode3
+// tracking_object
 		TRACK_SINGLE,
 		TRACK_PREVIOUS,
 		PREVIOUS_SAME_BLOCK
 	};
+#endif
+
+
 // Number of single frame to track relative to timeline start
 	int64_t track_frame;
 // Master layer
@@ -155,8 +160,6 @@ public:
 	void draw_vectors(VFrame *frame);
 	int is_multichannel();
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -164,7 +167,7 @@ public:
 	void calculate_pointers(VFrame **frame, VFrame **src, VFrame **dst);
 	void allocate_temp(int w, int h, int color_model);
 
-	PLUGIN_CLASS_MEMBERS(MotionConfig)
+	PLUGIN_CLASS_MEMBERS2(MotionConfig)
 
 
 	static void draw_pixel(VFrame *frame, int x, int y);

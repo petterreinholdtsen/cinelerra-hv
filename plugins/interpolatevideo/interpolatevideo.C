@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,148 +11,23 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ * *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
 
-#include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
-#include "bchash.h"
 #include "filexml.h"
-#include "guicast.h"
-#include "keyframe.h"
+#include "interpolatevideo.h"
+#include "interpolatewindow.h"
 #include "language.h"
-#include "picon_png.h"
-#include "pluginvclient.h"
-#include "theme.h"
+#include "motionscan.h"
+#include "opticflow.h"
 #include "transportque.inc"
-#include "vframe.h"
-
-#include <string.h>
-#include <stdint.h>
-
-
-
-class InterpolateVideo;
-class InterpolateVideoWindow;
-
-
-class InterpolateVideoConfig
-{
-public:
-	InterpolateVideoConfig();
-
-	void copy_from(InterpolateVideoConfig *config);
-	int equivalent(InterpolateVideoConfig *config);
-
-// Frame rate of input
-	double input_rate;
-// If 1, use the keyframes as beginning and end frames and ignore input rate
-	int use_keyframes;
-};
-
-
-
-
-class InterpolateVideoRate : public BC_TextBox
-{
-public:
-	InterpolateVideoRate(InterpolateVideo *plugin, 
-		InterpolateVideoWindow *gui, 
-		int x, 
-		int y);
-	int handle_event();
-	InterpolateVideo *plugin;
-	InterpolateVideoWindow *gui;
-};
-
-class InterpolateVideoRateMenu : public BC_ListBox
-{
-public:
-	InterpolateVideoRateMenu(InterpolateVideo *plugin, 
-		InterpolateVideoWindow *gui, 
-		int x, 
-		int y);
-	int handle_event();
-	InterpolateVideo *plugin;
-	InterpolateVideoWindow *gui;
-};
-
-class InterpolateVideoKeyframes : public BC_CheckBox
-{
-public:
-	InterpolateVideoKeyframes(InterpolateVideo *plugin,
-		InterpolateVideoWindow *gui,
-		int x, 
-		int y);
-	int handle_event();
-	InterpolateVideoWindow *gui;
-	InterpolateVideo *plugin;
-};
-
-class InterpolateVideoWindow : public PluginClientWindow
-{
-public:
-	InterpolateVideoWindow(InterpolateVideo *plugin);
-	~InterpolateVideoWindow();
-
-	void create_objects();
-	void update_enabled();
-
-	ArrayList<BC_ListBoxItem*> frame_rates;
-	InterpolateVideo *plugin;
-
-	InterpolateVideoRate *rate;
-	InterpolateVideoRateMenu *rate_menu;
-	InterpolateVideoKeyframes *keyframes;
-};
-
-
-
-
-
-class InterpolateVideo : public PluginVClient
-{
-public:
-	InterpolateVideo(PluginServer *server);
-	~InterpolateVideo();
-
-	PLUGIN_CLASS_MEMBERS(InterpolateVideoConfig)
-
-	int process_buffer(VFrame *frame,
-		int64_t start_position,
-		double frame_rate);
-	int is_realtime();
-	int load_defaults();
-	int save_defaults();
-	void save_data(KeyFrame *keyframe);
-	void read_data(KeyFrame *keyframe);
-	void update_gui();
-
-	void fill_border(double frame_rate, int64_t start_position);
-
-// beginning and end frames
-	VFrame *frames[2];
-// Last requested positions
-	int64_t frame_number[2];
-// Last output position
-	int64_t last_position;
-	double last_rate;
-
-// Current requested positions
-	int64_t range_start;
-	int64_t range_end;
-
-// Input rate determined by keyframe mode
-	double active_input_rate;
-};
-
-
-
-
+#include <unistd.h>
 
 
 
@@ -166,179 +40,31 @@ InterpolateVideoConfig::InterpolateVideoConfig()
 {
 	input_rate = (double)30000 / 1001;
 	use_keyframes = 0;
+	optic_flow = 1;
+	draw_vectors = 1;
+	search_radius = 16;
+	macroblock_size = 16;
 }
 
 void InterpolateVideoConfig::copy_from(InterpolateVideoConfig *config)
 {
 	this->input_rate = config->input_rate;
 	this->use_keyframes = config->use_keyframes;
+	this->optic_flow = config->optic_flow;
+	this->draw_vectors = config->draw_vectors;
+	this->search_radius = config->search_radius;
+	this->macroblock_size = config->macroblock_size;
 }
 
 int InterpolateVideoConfig::equivalent(InterpolateVideoConfig *config)
 {
 	return EQUIV(this->input_rate, config->input_rate) &&
-		(this->use_keyframes == config->use_keyframes);
+		(this->use_keyframes == config->use_keyframes) &&
+		this->optic_flow == config->optic_flow &&
+		this->draw_vectors == config->draw_vectors &&
+		this->search_radius == config->search_radius &&
+		this->macroblock_size == config->macroblock_size;
 }
-
-
-
-
-
-
-
-
-
-InterpolateVideoWindow::InterpolateVideoWindow(InterpolateVideo *plugin)
- : PluginClientWindow(plugin, 
-	210, 
-	160, 
-	200, 
-	160, 
-	0)
-{
-	this->plugin = plugin;
-}
-
-InterpolateVideoWindow::~InterpolateVideoWindow()
-{
-}
-
-void InterpolateVideoWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
-	y += 30;
-	add_subwindow(rate = new InterpolateVideoRate(plugin, 
-		this, 
-		x, 
-		y));
-	add_subwindow(rate_menu = new InterpolateVideoRateMenu(plugin, 
-		this, 
-		x + rate->get_w() + 5, 
-		y));
-	y += 30;
-	add_subwindow(keyframes = new InterpolateVideoKeyframes(plugin,
-		this,
-		x, 
-		y));
-
-	update_enabled();
-	show_window();
-	flush();
-}
-
-void InterpolateVideoWindow::update_enabled()
-{
-	if(plugin->config.use_keyframes)
-	{
-		rate->disable();
-	}
-	else
-	{
-		rate->enable();
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-InterpolateVideoRate::InterpolateVideoRate(InterpolateVideo *plugin, 
-	InterpolateVideoWindow *gui, 
-	int x, 
-	int y)
- : BC_TextBox(x, 
-	y, 
-	90,
-	1,
-	(float)plugin->config.input_rate)
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int InterpolateVideoRate::handle_event()
-{
-	plugin->config.input_rate = Units::atoframerate(get_text());
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-
-
-InterpolateVideoRateMenu::InterpolateVideoRateMenu(InterpolateVideo *plugin, 
-	InterpolateVideoWindow *gui, 
-	int x, 
-	int y)
- : BC_ListBox(x,
- 	y,
-	100,
-	200,
-	LISTBOX_TEXT,
-	&plugin->get_theme()->frame_rates,
-	0,
-	0,
-	1,
-	0,
-	1)
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int InterpolateVideoRateMenu::handle_event()
-{
-	char *text = get_selection(0, 0)->get_text();
-	plugin->config.input_rate = atof(text);
-	gui->rate->update(text);
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-
-
-InterpolateVideoKeyframes::InterpolateVideoKeyframes(InterpolateVideo *plugin,
-	InterpolateVideoWindow *gui,
-	int x, 
-	int y)
- : BC_CheckBox(x, 
- 	y, 
-	plugin->config.use_keyframes, 
-	_("Use keyframes as input"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-int InterpolateVideoKeyframes::handle_event()
-{
-	plugin->config.use_keyframes = get_value();
-	gui->update_enabled();
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -354,23 +80,34 @@ REGISTER_PLUGIN(InterpolateVideo)
 
 
 
+
+
+
 InterpolateVideo::InterpolateVideo(PluginServer *server)
  : PluginVClient(server)
 {
-	
+	optic_flow_engine = 0;
+	warp_engine = 0;
+	blend_engine = 0;
 	bzero(frames, sizeof(VFrame*) * 2);
 	for(int i = 0; i < 2; i++)
 		frame_number[i] = -1;
 	last_position = -1;
 	last_rate = -1;
+	last_macroblock_size = 0;
+	last_search_radius = 0;
+	total_macroblocks = 0;
 }
 
 
 InterpolateVideo::~InterpolateVideo()
 {
-	
+	delete optic_flow_engine;
+	delete warp_engine;
+	delete blend_engine;
 	if(frames[0]) delete frames[0];
 	if(frames[1]) delete frames[1];
+	macroblocks.remove_all_objects();
 }
 
 
@@ -378,32 +115,616 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 {
 // A border frame changed or the start position is identical to the last 
 // start position.
+//printf("InterpolateVideo::fill_border %d %lld %lld\n", __LINE__, range_start, range_end);
+
+
+
 	if(range_start != frame_number[0] || 
-		last_position != start_position ||
+//		last_position != start_position ||
 		!EQUIV(last_rate, frame_rate))
 	{
+// Keep reads sequential by being smart about what frame to read
+		if(range_start == frame_number[1])
+		{
+			VFrame *temp = frames[0];
+			frames[0] = frames[1];
+			frames[1] = temp;
+			
+			
+			frame_number[0] = frame_number[1];
+			frame_number[1] = -1;
+		}
+		else
+		{
 //printf("InterpolateVideo::fill_border 1 %lld\n", range_start);
-		read_frame(frames[0], 
-			0, 
-			range_start + (get_direction() == PLAY_REVERSE ? 1 : 0), 
-			active_input_rate);
+			read_frame(frames[0], 
+				0, 
+				range_start + (get_direction() == PLAY_REVERSE ? 1 : 0), 
+				active_input_rate);
+		}
 	}
 
 	if(range_end != frame_number[1] || 
-		last_position != start_position ||
+//		last_position != start_position ||
 		!EQUIV(last_rate, frame_rate))
 	{
-//printf("InterpolateVideo::fill_border 2 %lld\n", range_start);
+//printf("InterpolateVideo::fill_border 2 %lld\n", range_end);
 		read_frame(frames[1], 
 			0, 
 			range_end + (get_direction() == PLAY_REVERSE ? 1 : 0), 
 			active_input_rate);
 	}
 
+//printf("InterpolateVideo::fill_border %d\n", __LINE__);
 	last_position = start_position;
 	last_rate = frame_rate;
 	frame_number[0] = range_start;
 	frame_number[1] = range_end;
+}
+
+
+
+
+
+void InterpolateVideo::draw_pixel(VFrame *frame, int x, int y)
+{
+	if(!(x >= 0 && y >= 0 && x < frame->get_w() && y < frame->get_h())) return;
+
+#define DRAW_PIXEL(x, y, components, do_yuv, max, type) \
+{ \
+	type **rows = (type**)frame->get_rows(); \
+	rows[y][x * components] = max - rows[y][x * components]; \
+	if(!do_yuv) \
+	{ \
+		rows[y][x * components + 1] = max - rows[y][x * components + 1]; \
+		rows[y][x * components + 2] = max - rows[y][x * components + 2]; \
+	} \
+	else \
+	{ \
+		rows[y][x * components + 1] = (max / 2 + 1) - rows[y][x * components + 1]; \
+		rows[y][x * components + 2] = (max / 2 + 1) - rows[y][x * components + 2]; \
+	} \
+	if(components == 4) \
+		rows[y][x * components + 3] = max; \
+}
+
+
+	switch(frame->get_color_model())
+	{
+		case BC_RGB888:
+			DRAW_PIXEL(x, y, 3, 0, 0xff, unsigned char);
+			break;
+		case BC_RGBA8888:
+			DRAW_PIXEL(x, y, 4, 0, 0xff, unsigned char);
+			break;
+		case BC_RGB_FLOAT:
+			DRAW_PIXEL(x, y, 3, 0, 1.0, float);
+			break;
+		case BC_RGBA_FLOAT:
+			DRAW_PIXEL(x, y, 4, 0, 1.0, float);
+			break;
+		case BC_YUV888:
+			DRAW_PIXEL(x, y, 3, 1, 0xff, unsigned char);
+			break;
+		case BC_YUVA8888:
+			DRAW_PIXEL(x, y, 4, 1, 0xff, unsigned char);
+			break;
+		case BC_RGB161616:
+			DRAW_PIXEL(x, y, 3, 0, 0xffff, uint16_t);
+			break;
+		case BC_YUV161616:
+			DRAW_PIXEL(x, y, 3, 1, 0xffff, uint16_t);
+			break;
+		case BC_RGBA16161616:
+			DRAW_PIXEL(x, y, 4, 0, 0xffff, uint16_t);
+			break;
+		case BC_YUVA16161616:
+			DRAW_PIXEL(x, y, 4, 1, 0xffff, uint16_t);
+			break;
+	}
+}
+
+
+void InterpolateVideo::draw_line(VFrame *frame, int x1, int y1, int x2, int y2)
+{
+	int w = labs(x2 - x1);
+	int h = labs(y2 - y1);
+//printf("InterpolateVideo::draw_line 1 %d %d %d %d\n", x1, y1, x2, y2);
+
+	if(!w && !h)
+	{
+		draw_pixel(frame, x1, y1);
+	}
+	else
+	if(w > h)
+	{
+// Flip coordinates so x1 < x2
+		if(x2 < x1)
+		{
+			y2 ^= y1;
+			y1 ^= y2;
+			y2 ^= y1;
+			x1 ^= x2;
+			x2 ^= x1;
+			x1 ^= x2;
+		}
+		int numerator = y2 - y1;
+		int denominator = x2 - x1;
+		for(int i = x1; i < x2; i++)
+		{
+			int y = y1 + (int64_t)(i - x1) * (int64_t)numerator / (int64_t)denominator;
+			draw_pixel(frame, i, y);
+		}
+	}
+	else
+	{
+// Flip coordinates so y1 < y2
+		if(y2 < y1)
+		{
+			y2 ^= y1;
+			y1 ^= y2;
+			y2 ^= y1;
+			x1 ^= x2;
+			x2 ^= x1;
+			x1 ^= x2;
+		}
+		int numerator = x2 - x1;
+		int denominator = y2 - y1;
+		for(int i = y1; i < y2; i++)
+		{
+			int x = x1 + (int64_t)(i - y1) * (int64_t)numerator / (int64_t)denominator;
+			draw_pixel(frame, x, i);
+		}
+	}
+//printf("InterpolateVideo::draw_line 2\n");
+}
+
+#define ARROW_SIZE 10
+void InterpolateVideo::draw_arrow(VFrame *frame, 
+	int x1, 
+	int y1, 
+	int x2, 
+	int y2)
+{
+	double angle = atan((float)(y2 - y1) / (float)(x2 - x1));
+	double angle1 = angle + (float)145 / 360 * 2 * 3.14159265;
+	double angle2 = angle - (float)145 / 360 * 2 * 3.14159265;
+	int x3;
+	int y3;
+	int x4;
+	int y4;
+	if(x2 < x1)
+	{
+		x3 = x2 - (int)(ARROW_SIZE * cos(angle1));
+		y3 = y2 - (int)(ARROW_SIZE * sin(angle1));
+		x4 = x2 - (int)(ARROW_SIZE * cos(angle2));
+		y4 = y2 - (int)(ARROW_SIZE * sin(angle2));
+	}
+	else
+	{
+		x3 = x2 + (int)(ARROW_SIZE * cos(angle1));
+		y3 = y2 + (int)(ARROW_SIZE * sin(angle1));
+		x4 = x2 + (int)(ARROW_SIZE * cos(angle2));
+		y4 = y2 + (int)(ARROW_SIZE * sin(angle2));
+	}
+
+// Main vector
+	draw_line(frame, x1, y1, x2, y2);
+//	draw_line(frame, x1, y1 + 1, x2, y2 + 1);
+
+// Arrow line
+	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x3, y3);
+//	draw_line(frame, x2, y2 + 1, x3, y3 + 1);
+// Arrow line
+	if(abs(y2 - y1) || abs(x2 - x1)) draw_line(frame, x2, y2, x4, y4);
+//	draw_line(frame, x2, y2 + 1, x4, y4 + 1);
+}
+
+void InterpolateVideo::draw_rect(VFrame *frame, 
+	int x1, 
+	int y1, 
+	int x2, 
+	int y2)
+{
+	draw_line(frame, x1, y1, x2, y1);
+	draw_line(frame, x2, y1, x2, y2);
+	draw_line(frame, x2, y2, x1, y2);
+	draw_line(frame, x1, y2, x1, y1);
+}
+
+
+void InterpolateVideo::create_macroblocks()
+{
+// Get macroblock size
+	x_macroblocks = frames[0]->get_w() / config.macroblock_size;
+	y_macroblocks = frames[0]->get_h() / config.macroblock_size;
+
+	if(config.macroblock_size * x_macroblocks < frames[0]->get_w())
+	{
+		x_macroblocks++;
+	}
+	
+	if(config.macroblock_size * y_macroblocks < frames[0]->get_h())
+	{
+		y_macroblocks++;
+	}
+	
+	total_macroblocks = x_macroblocks * y_macroblocks;
+
+	if(total_macroblocks != macroblocks.size())
+	{
+		macroblocks.remove_all_objects();
+	}
+
+	for(int i = 0; i < total_macroblocks; i++)
+	{
+		OpticFlowMacroblock *mb = 0;
+		if(macroblocks.size() > i) 
+		{
+			mb = macroblocks.get(i);
+		}
+		else
+		{
+			mb = new OpticFlowMacroblock;
+			macroblocks.append(mb);
+		}
+
+		mb->x = (i % x_macroblocks) * config.macroblock_size + config.macroblock_size / 2;
+		mb->y = (i / x_macroblocks) * config.macroblock_size + config.macroblock_size / 2;
+	}
+}
+
+
+void InterpolateVideo::draw_vectors(int processed)
+{
+// Draw arrows
+	if(config.draw_vectors)
+	{
+		create_macroblocks();
+
+		for(int i = 0; i < total_macroblocks; i++)
+		{
+			OpticFlowMacroblock *mb = macroblocks.get(i);
+// 		    printf("InterpolateVideo::optic_flow %d x=%d y=%d dx=%d dy=%d\n",
+// 		  	    __LINE__,
+// 			    mb->x,
+// 			    mb->y,
+// 			    mb->dx / OVERSAMPLE,
+// 			    mb->dy / OVERSAMPLE);
+
+			if(processed)
+			{
+				draw_arrow(get_output(),
+					mb->x,
+					mb->y,
+					mb->x - mb->dx / OVERSAMPLE,
+					mb->y - mb->dy / OVERSAMPLE);
+
+// debug
+// 				if(mb->is_valid && mb->visible)
+// 				{
+// 					draw_arrow(get_output(),
+// 						mb->x + 1,
+// 						mb->y + 1,
+// 						mb->x - mb->dx / OVERSAMPLE + 1,
+// 						mb->y - mb->dy / OVERSAMPLE + 1);
+// 				}
+			}
+			else
+			{
+				draw_pixel(get_output(),
+					mb->x,
+					mb->y);
+			}
+		}
+		
+// Draw center macroblock
+		OpticFlowMacroblock *mb = macroblocks.get(
+			x_macroblocks / 2 + y_macroblocks / 2 * x_macroblocks);
+		draw_rect(get_output(),
+			mb->x - config.macroblock_size / 2,
+			mb->y - config.macroblock_size / 2,
+			mb->x + config.macroblock_size / 2,
+			mb->y + config.macroblock_size / 2);
+		draw_rect(get_output(),
+			mb->x - config.macroblock_size / 2 - config.search_radius,
+			mb->y - config.macroblock_size / 2 - config.search_radius,
+			mb->x + config.macroblock_size / 2 + config.search_radius,
+			mb->y + config.macroblock_size / 2 + config.search_radius);
+	}
+}
+
+
+int InterpolateVideo::angles_overlap(float dst2_angle1, 
+	float dst2_angle2,
+	float dst1_angle1,
+	float dst1_angle2)
+{
+	if(dst2_angle1 < 0 || dst2_angle2 < 0)
+	{
+		dst2_angle1 += 2 * M_PI;
+		dst2_angle2 += 2 * M_PI;
+	}
+
+	if(dst1_angle1 < 0 || dst1_angle2 < 0)
+	{
+		dst1_angle1 += 2 * M_PI;
+		dst1_angle2 += 2 * M_PI;
+	}
+
+	if(dst1_angle1 < dst2_angle2 && 
+		dst1_angle2 > dst2_angle1) return 1;
+
+	return 0;
+}
+
+
+
+void InterpolateVideo::blend_macroblock(int number)
+{
+	OpticFlowMacroblock *src = macroblocks.get(number);
+	struct timeval start_time;
+	gettimeofday(&start_time, 0);
+// 	printf("InterpolateVideo::blend_macroblock %d %d\n",
+// 	__LINE__,
+// 	src->is_valid);
+
+
+// Copy macroblock table to local thread
+	ArrayList<OpticFlowMacroblock*> local_macroblocks;
+	for(int i = 0; i < macroblocks.size(); i++)
+	{
+		OpticFlowMacroblock *mb = new OpticFlowMacroblock;
+		mb->copy_from(macroblocks.get(i));
+		local_macroblocks.append(mb);
+	}
+
+// Get nearest macroblocks
+	for(int i = 0; i < local_macroblocks.size(); i++)
+	{
+		OpticFlowMacroblock *dst = local_macroblocks.get(i);
+		if(i != number && dst->is_valid)
+		{
+
+// rough estimation of angle coverage
+			float angle = atan2(dst->y - src->y, dst->x - src->x);
+			float dist = sqrt(SQR(dst->y - src->y) + SQR(dst->x - src->x));
+			float span = sin((float)config.macroblock_size / dist);
+			dst->angle1 = angle - span / 2;
+			dst->angle2 = angle + span / 2;
+			dst->dist = dist;
+// All macroblocks start as visible
+			dst->visible = 1;
+
+// printf("InterpolateVideo::blend_macroblock %d %d x=%d y=%d span=%f angle1=%f angle2=%f dist=%f\n", 
+// __LINE__, 
+// i,
+// dst->x, 
+// dst->y, 
+// span * 360 / 2 / M_PI,
+// dst->angle1 * 360 / 2 / M_PI, 
+// dst->angle2 * 360 / 2 / M_PI,
+// dst->dist);
+		}
+	}
+	
+	for(int i = 0; i < local_macroblocks.size(); i++)
+	{
+// Conceil macroblocks which are hidden
+		OpticFlowMacroblock *dst1 = local_macroblocks.get(i);
+		if(i != number && dst1->is_valid && dst1->visible)
+		{
+// Find macroblock which is obstructing
+			for(int j = 0; j < local_macroblocks.size(); j++)
+			{
+				OpticFlowMacroblock *dst2 = local_macroblocks.get(j);
+				if(j != number && 
+					dst2->is_valid && 
+					dst2->dist < dst1->dist &&
+					angles_overlap(dst2->angle1, 
+						dst2->angle2,
+						dst1->angle1,
+						dst1->angle2))
+				{
+					dst1->visible = 0;
+					j = local_macroblocks.size();
+				}
+			}
+		}
+	}
+
+// Blend all visible macroblocks
+// Get distance metrics
+	float total = 0;
+	float min = 0;
+	float max = 0;
+	int first = 1;
+	for(int i = 0; i < local_macroblocks.size(); i++)
+	{
+		OpticFlowMacroblock *dst = local_macroblocks.get(i);
+		if(i != number && dst->is_valid && dst->visible)
+		{
+			total += dst->dist;
+			if(first)
+			{
+				min = max = dst->dist;
+				first = 0;
+			}
+			else
+			{
+				min = MIN(dst->dist, min);
+				max = MAX(dst->dist, max);
+			}
+// printf("InterpolateVideo::blend_macroblock %d %d x=%d y=%d dist=%f\n", 
+// __LINE__, 
+// i,
+// dst->x, 
+// dst->y, 
+// dst->dist);
+
+		}
+	}
+
+// Invert distances to convert to weights
+	total = 0;
+	for(int i = 0; i < local_macroblocks.size(); i++)
+	{
+		OpticFlowMacroblock *dst = local_macroblocks.get(i);
+		if(i != number && dst->is_valid && dst->visible)
+		{
+			dst->dist = max - dst->dist + min;
+			total += dst->dist;
+// printf("InterpolateVideo::blend_macroblock %d %d x=%d y=%d dist=%f\n", 
+// __LINE__, 
+// i,
+// dst->x, 
+// dst->y, 
+// max - dst->dist + min);
+
+		}
+	}
+
+// Add weighted vectors
+	float dx = 0;
+	float dy = 0;
+	if(total > 0)
+	{
+		for(int i = 0; i < local_macroblocks.size(); i++)
+		{
+			OpticFlowMacroblock *dst = local_macroblocks.get(i);
+			if(i != number && dst->is_valid && dst->visible)
+			{
+				dx += dst->dist * dst->dx / total;
+				dy += dst->dist * dst->dy / total;
+				src->dx = dx;
+				src->dy = dy;
+// printf("InterpolateVideo::blend_macroblock %d %d x=%d y=%d dist=%f\n", 
+// __LINE__, 
+// i,
+// dst->x, 
+// dst->y, 
+// max - dst->dist + min);
+
+			}
+		}
+	}
+
+	local_macroblocks.remove_all_objects();
+	
+// printf("InterpolateVideo::blend_macroblock %d total=%f\n", 
+// __LINE__, 
+// total);
+	struct timeval end_time;
+	gettimeofday(&end_time, 0);
+// 	printf("InterpolateVideo::blend_macroblock %d %d\n",
+// 		__LINE__,
+// 		end_time.tv_sec * 1000 + end_time.tv_usec / 1000 -
+// 		start_time.tv_sec * 1000 - start_time.tv_usec / 1000);
+}
+
+
+
+void InterpolateVideo::optic_flow()
+{
+
+	create_macroblocks();
+	int need_motion = 0;
+
+// New engine
+	if(!optic_flow_engine)
+	{
+		optic_flow_engine = new OpticFlow(this,
+			PluginClient::get_project_smp() + 1, 
+			PluginClient::get_project_smp() + 1);
+		need_motion = 1;
+	}
+	else
+// Reuse old vectors
+	if(motion_number[0] == frame_number[0] &&
+		motion_number[1] == frame_number[1] &&
+		last_macroblock_size == config.macroblock_size &&
+		last_search_radius == config.search_radius)
+	{
+		;
+	}
+	else
+// Calculate new vectors
+	{
+		need_motion = 1;
+	}
+
+	if(need_motion)
+	{
+		optic_flow_engine->set_package_count(MIN(MAX_PACKAGES, total_macroblocks));
+		optic_flow_engine->process_packages();
+
+// Fill in failed macroblocks
+		invalid_blocks.remove_all();
+		for(int i = 0; i < macroblocks.size(); i++)
+		{
+			if(!macroblocks.get(i)->is_valid 
+// debug
+//				 && i >= 30 * x_macroblocks)
+				)
+			{
+				invalid_blocks.append(i);
+			}
+		}
+
+		if(invalid_blocks.size())
+		{
+			if(!blend_engine)
+			{
+				blend_engine = new BlendMacroblock(this,
+					PluginClient::get_project_smp() + 1, 
+					PluginClient::get_project_smp() + 1);
+			}
+
+			blend_engine->set_package_count(MIN(PluginClient::get_project_smp() + 1, 
+				invalid_blocks.size()));
+			blend_engine->process_packages();
+		}
+	}
+
+
+
+// for(int i = 0; i < total_macroblocks; i++)
+// {
+// 	OpticFlowPackage *pkg = (OpticFlowPackage*)optic_flow_engine->get_package(
+// 		i);
+// 	if((i / x_macroblocks) % 2)
+// 	{
+// 		pkg->dx = 0;
+// 		pkg->dy = 0;
+// 	}
+// 	else
+// 	{
+// 		pkg->dx = -32;
+// 		pkg->dy = 0;
+// 	}
+// }
+
+
+	if(!warp_engine)
+	{
+		warp_engine = new Warp(this,
+			PluginClient::get_project_smp() + 1, 
+			PluginClient::get_project_smp() + 1);
+	}
+	
+	warp_engine->process_packages();
+
+	motion_number[0] = frame_number[0];
+	motion_number[1] = frame_number[1];
+	last_macroblock_size = config.macroblock_size;
+	last_search_radius = config.search_radius;
+
+
+// Debug
+//	get_output()->copy_from(frames[1]);
+
+
+	draw_vectors(1);
 }
 
 
@@ -414,18 +735,41 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
  \
 	for(int i = 0; i < h; i++) \
 	{ \
-		type *in_row0 = (type*)frames[0]->get_rows()[i]; \
-		type *in_row1 = (type*)frames[1]->get_rows()[i]; \
+		type *prev_row0 = (type*)frames[0]->get_rows()[i]; \
+		type *next_row0 = (type*)frames[1]->get_rows()[i]; \
 		type *out_row = (type*)frame->get_rows()[i]; \
 		for(int j = 0; j < w * components; j++) \
 		{ \
-			*out_row++ = (*in_row0++ * fraction0 + *in_row1++ * fraction1) / max; \
+			*out_row++ = (*prev_row0++ * fraction0 + *next_row0++ * fraction1) / max; \
 		} \
 	} \
 }
 
 
+void InterpolateVideo::average()
+{
+	VFrame *frame = get_output();
+	int w = frame->get_w();
+	int h = frame->get_h();
 
+	switch(frame->get_color_model())
+	{
+		case BC_RGB_FLOAT:
+			AVERAGE(float, float, 3, 1);
+			break;
+		case BC_RGB888:
+		case BC_YUV888:
+			AVERAGE(unsigned char, int, 3, 0xff);
+			break;
+		case BC_RGBA_FLOAT:
+			AVERAGE(float, float, 4, 1);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			AVERAGE(unsigned char, int, 4, 0xff);
+			break;
+	}
+}
 
 
 int InterpolateVideo::process_buffer(VFrame *frame,
@@ -474,7 +818,8 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 			(requested_range_end - requested_range_start);
 
 // Fraction of highest frame in output
-		float lowest_fraction = 1.0 - highest_fraction;
+		lowest_fraction = 1.0 - highest_fraction;
+
 		CLAMP(highest_fraction, 0, 1);
 		CLAMP(lowest_fraction, 0, 1);
 
@@ -489,32 +834,25 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 // lowest_fraction,
 // highest_fraction);
 
-		int w = frame->get_w();
-		int h = frame->get_h();
-		switch(frame->get_color_model())
+		if(start_position == (int64_t)(range_start * frame_rate / active_input_rate))
 		{
-			case BC_RGB_FLOAT:
-				AVERAGE(float, float, 3, 1);
-				break;
-			case BC_RGB888:
-			case BC_YUV888:
-				AVERAGE(unsigned char, int, 3, 0xff);
-				break;
-			case BC_RGBA_FLOAT:
-				AVERAGE(float, float, 4, 1);
-				break;
-			case BC_RGBA8888:
-			case BC_YUVA8888:
-				AVERAGE(unsigned char, int, 4, 0xff);
-				break;
-			case BC_RGB161616:
-			case BC_YUV161616:
-				AVERAGE(uint16_t, int, 3, 0xffff);
-				break;
-			case BC_RGBA16161616:
-			case BC_YUVA16161616:
-				AVERAGE(uint16_t, int, 4, 0xffff);
-				break;
+//printf("InterpolateVideo::process_buffer %d\n", __LINE__);
+			frame->copy_from(frames[0]);
+			
+			if(config.optic_flow)
+			{
+				draw_vectors(0);
+			}
+		}
+		else
+		if(config.optic_flow)
+		{
+//printf("InterpolateVideo::process_buffer %d\n", __LINE__);
+			optic_flow();
+		}
+		else
+		{
+			average();
 		}
 	}
 	return 0;
@@ -527,7 +865,6 @@ int InterpolateVideo::is_realtime()
 	return 1;
 }
 
-NEW_PICON_MACRO(InterpolateVideo) 
 NEW_WINDOW_MACRO(InterpolateVideo, InterpolateVideoWindow)
 const char* InterpolateVideo::plugin_title() { return N_("Interpolate Video"); }
 
@@ -625,29 +962,6 @@ int InterpolateVideo::load_configuration()
 	return !config.equivalent(&old_config);
 }
 
-int InterpolateVideo::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sinterpolatevideo.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);
-	config.input_rate = Units::fix_framerate(config.input_rate);
-	config.use_keyframes = defaults->get("USE_KEYFRAMES", config.use_keyframes);
-	return 0;
-}
-
-int InterpolateVideo::save_defaults()
-{
-	defaults->update("INPUT_RATE", config.input_rate);
-	defaults->update("USE_KEYFRAMES", config.use_keyframes);
-	defaults->save();
-	return 0;
-}
 
 void InterpolateVideo::save_data(KeyFrame *keyframe)
 {
@@ -658,6 +972,10 @@ void InterpolateVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("INTERPOLATEVIDEO");
 	output.tag.set_property("INPUT_RATE", config.input_rate);
 	output.tag.set_property("USE_KEYFRAMES", config.use_keyframes);
+	output.tag.set_property("OPTIC_FLOW", config.optic_flow);
+	output.tag.set_property("DRAW_VECTORS", config.draw_vectors);
+	output.tag.set_property("SEARCH_RADIUS", config.search_radius);
+	output.tag.set_property("MACROBLOCK_SIZE", config.macroblock_size);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -677,6 +995,10 @@ void InterpolateVideo::read_data(KeyFrame *keyframe)
 			config.input_rate = input.tag.get_property("INPUT_RATE", config.input_rate);
 			config.input_rate = Units::fix_framerate(config.input_rate);
 			config.use_keyframes = input.tag.get_property("USE_KEYFRAMES", config.use_keyframes);
+			config.optic_flow = input.tag.get_property("OPTIC_FLOW", config.optic_flow);
+			config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
+			config.search_radius = input.tag.get_property("SEARCH_RADIUS", config.search_radius);
+			config.macroblock_size = input.tag.get_property("MACROBLOCK_SIZE", config.macroblock_size);
 		}
 	}
 }
@@ -690,6 +1012,10 @@ void InterpolateVideo::update_gui()
 			thread->window->lock_window("InterpolateVideo::update_gui");
 			((InterpolateVideoWindow*)thread->window)->rate->update((float)config.input_rate);
 			((InterpolateVideoWindow*)thread->window)->keyframes->update(config.use_keyframes);
+			((InterpolateVideoWindow*)thread->window)->flow->update(config.optic_flow);
+			((InterpolateVideoWindow*)thread->window)->vectors->update(config.draw_vectors);
+			((InterpolateVideoWindow*)thread->window)->radius->update(config.search_radius);
+			((InterpolateVideoWindow*)thread->window)->size->update(config.macroblock_size);
 			((InterpolateVideoWindow*)thread->window)->update_enabled();
 			thread->window->unlock_window();
 		}

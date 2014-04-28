@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,14 +44,14 @@ public:
 	int resize(int w, int h);
 	int reposition(int x, int y);
 	int set_color(int color);
-	int update(const char *text);
+	int update(const char *text, int flush = 1);
 	void update(float value);
 	char* get_text();
 
 private:
-	int draw();
+	int draw(int flush);
 	static void get_size(BC_WindowBase *gui, int font, const char *text, int fixed_w, int &w, int &h);
-	
+
 	char text[BCTEXTLEN];
 	int color;
 	int font;

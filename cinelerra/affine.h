@@ -150,6 +150,7 @@ public:
 	int user_out_viewport;
 	int forward;
 	int use_opengl;
+	int total_packages;
 };
 
 

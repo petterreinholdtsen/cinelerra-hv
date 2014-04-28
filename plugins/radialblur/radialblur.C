@@ -125,8 +125,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -449,42 +447,6 @@ void RadialBlurMain::update_gui()
 	}
 }
 
-
-int RadialBlurMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sradialblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.x = defaults->get("X", config.x);
-	config.y = defaults->get("Y", config.y);
-	config.angle = defaults->get("ANGLE", config.angle);
-	config.steps = defaults->get("STEPS", config.steps);
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
-	return 0;
-}
-
-
-int RadialBlurMain::save_defaults()
-{
-	defaults->update("X", config.x);
-	defaults->update("Y", config.y);
-	defaults->update("ANGLE", config.angle);
-	defaults->update("STEPS", config.steps);
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
-	defaults->save();
-	return 0;
-}
 
 
 

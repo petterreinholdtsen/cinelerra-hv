@@ -171,6 +171,18 @@ int Asset::init_values()
 	return 0;
 }
 
+void Asset::boundaries()
+{
+//printf("Asset::boundaries %d %d %f\n", __LINE__, sample_rate, frame_rate);
+// sample_rate & frame_rate are user defined
+// 	CLAMP(sample_rate, 1, 1000000);
+// 	CLAMP(frame_rate, 0.001, 1000000);
+ 	CLAMP(channels, 1, 1000000);
+ 	CLAMP(width, 1, 1000000);
+ 	CLAMP(height, 1, 1000000);
+//printf("Asset::boundaries %d %d %f\n", __LINE__, sample_rate, frame_rate);
+}
+
 int Asset::reset_index()
 {
 	index_state->reset();
@@ -481,6 +493,7 @@ int Asset::read(FileXML *file,
 		}
 	}
 
+	boundaries();
 //printf("Asset::read 2\n");
 	return 0;
 }
@@ -820,6 +833,8 @@ void Asset::load_defaults(BC_Hash *defaults,
 	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+
+	boundaries();
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 
@@ -988,10 +1003,10 @@ int Asset::dump()
 	printf("   format %d\n", format);
 	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3]);
-	printf("   audio_length %lld\n", audio_length);
+	printf("   audio_length %lld\n", (long long)audio_length);
 	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c aspect_ratio %f\n",
 		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio);
-	printf("   video_length %lld \n", video_length);
+	printf("   video_length %lld \n", (long long)video_length);
 	printf("   ms_bitrate_tolerance=%d\n", ms_bitrate_tolerance);
 	printf("   ms_quantization=%d\n", ms_quantization);
 	printf("   ms_fix_bitrate=%d\n", ms_fix_bitrate);

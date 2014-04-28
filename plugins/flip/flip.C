@@ -273,28 +273,6 @@ void FlipMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-int FlipMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sflip.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.flip_horizontal = defaults->get("FLIP_HORIZONTAL", config.flip_horizontal);
-	config.flip_vertical = defaults->get("FLIP_VERTICAL", config.flip_vertical);
-	return 0;
-}
-
-int FlipMain::save_defaults()
-{
-	defaults->update("FLIP_HORIZONTAL", config.flip_horizontal);
-	defaults->update("FLIP_VERTICAL", config.flip_vertical);
-	defaults->save();
-	return 0;
-}
 
 int FlipMain::handle_opengl()
 {

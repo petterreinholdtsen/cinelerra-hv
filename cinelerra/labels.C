@@ -214,7 +214,7 @@ int Labels::copy(double start, double end, FileXML *xml)
 	xml->append_newline();
 
 	Label *current;
-	sprintf(string, xml_tag);
+	strcpy(string, xml_tag);
 	string[strlen(string) - 1] = 0;
 	for(current = label_of(start); 
 		current && current->position <= end; 

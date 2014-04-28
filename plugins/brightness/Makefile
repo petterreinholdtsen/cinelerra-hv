@@ -1,8 +1,7 @@
 include ../../global_config
 
 OBJS = $(OBJDIR)/brightness.o  \
-	$(OBJDIR)/brightnesswindow.o \
-	../colors/$(OBJDIR)/plugincolors.o
+	$(OBJDIR)/brightnesswindow.o
 
 OUTPUT = $(PLUGIN_DIR)/brightness.plugin
 

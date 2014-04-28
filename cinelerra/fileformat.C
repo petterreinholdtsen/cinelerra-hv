@@ -119,6 +119,8 @@ void FileFormat::create_objects_(char *string2)
 	
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
+	
+	show_window(1);
 	unlock_window();
 }
 

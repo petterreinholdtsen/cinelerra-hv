@@ -42,7 +42,6 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server)
 	this->server = server;
 }
 
-#define SQR(x) ((x) * (x))
 
 
 #define DOWNSAMPLE(type, temp_type, components, max) \

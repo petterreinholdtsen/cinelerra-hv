@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 				data_size++;
 			}
 
-			fread(data_buffer + data_size, 1, size, src);
+			int temp = fread(data_buffer + data_size, 1, size, src);
 			data_size += size;
 // Terminate string
 			if(string_mode) data_buffer[data_size++] = 0;
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 
 // Run system command on it
 	sprintf(system_command, "%s %s %s", BOOTSTRAP, temp_path, out_path);
-	system(system_command);
+	int temp = system(system_command);
 }
 
 

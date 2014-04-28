@@ -34,7 +34,7 @@ class TimeFrontServer;
 #include "guicast.h"
 #include "loadbalance.h"
 #include "overlayframe.inc"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -245,8 +245,6 @@ public:
 
 	int is_realtime();
 	int is_multichannel();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();

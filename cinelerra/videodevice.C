@@ -128,7 +128,7 @@ VideoDevice::VideoDevice(MWindow *mwindow)
 	in_config = new VideoInConfig;
 	out_config = new VideoOutConfig;
 	channel = new Channel;
-	picture = new PictureConfig(mwindow ? mwindow->defaults : 0);
+	picture = new PictureConfig();
 	sharing_lock = new Mutex("VideoDevice::sharing_lock");
 	channel_lock = new Mutex("VideoDevice::channel_lock");
 	picture_lock = new Mutex("VideoDevice::picture_lock");
@@ -203,6 +203,8 @@ int VideoDevice::open_input(VideoInConfig *config,
 
 #ifdef HAVE_VIDEO4LINUX2
 		case VIDEO4LINUX2:
+		case CAPTURE_JPEG_WEBCAM:
+		case CAPTURE_YUYV_WEBCAM:
 			new_device_base();
 			result = input_base->open_input();
 			break;
@@ -254,6 +256,8 @@ VDeviceBase* VideoDevice::new_device_base()
 
 #ifdef HAVE_VIDEO4LINUX2
 		case VIDEO4LINUX2:
+		case CAPTURE_JPEG_WEBCAM:
+		case CAPTURE_YUYV_WEBCAM:
 			return input_base = new VDeviceV4L2(this);
 
 		case VIDEO4LINUX2JPEG:
@@ -289,6 +293,8 @@ static char* get_channeldb_path(VideoInConfig *vconfig_in)
 			path = (char*)"channels_v4l";
 			break;
 		case VIDEO4LINUX2:
+		case CAPTURE_JPEG_WEBCAM:
+		case CAPTURE_YUYV_WEBCAM:
 			path = (char*)"channels_v4l2";
 			break;
 		case VIDEO4LINUX2JPEG:
@@ -325,6 +331,7 @@ int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 // FileMOV needs to have write_frames called so the start codes get scanned.
 	return ((driver == CAPTURE_BUZ && use_fixed) ||
 		(driver == VIDEO4LINUX2JPEG && use_fixed) || 
+		(driver == CAPTURE_JPEG_WEBCAM && use_fixed) || 
 		driver == CAPTURE_LML || 
 		driver == CAPTURE_FIREWIRE ||
 		driver == CAPTURE_IEC61883);
@@ -341,6 +348,13 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 // Fix asset using legacy routine
 	switch(driver)
 	{
+		case CAPTURE_JPEG_WEBCAM:
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+				asset->format = FILE_MOV;
+			strcpy(asset->vcodec, QUICKTIME_JPEG);
+			break;
+	
 		case CAPTURE_BUZ:
 		case CAPTURE_LML:
 		case VIDEO4LINUX2JPEG:
@@ -392,6 +406,12 @@ const char* VideoDevice::drivertostr(int driver)
 			break;
 		case VIDEO4LINUX2JPEG:
 			return VIDEO4LINUX2JPEG_TITLE;
+			break;
+		case CAPTURE_JPEG_WEBCAM:
+			return CAPTURE_JPEG_WEBCAM_TITLE;
+			break;
+		case CAPTURE_YUYV_WEBCAM:
+			return CAPTURE_YUYV_WEBCAM_TITLE;
 			break;
 		case SCREENCAPTURE:
 			return SCREENCAPTURE_TITLE;
@@ -557,7 +577,8 @@ int VideoDevice::update_translation()
 		input_x = new_input_x;
 		input_y = new_input_y;
 
-		if(in_config->driver == VIDEO4LINUX || in_config->driver == VIDEO4LINUX2)
+		if(in_config->driver == VIDEO4LINUX || 
+			in_config->driver == VIDEO4LINUX2)
 		{
 			if(input_z != new_input_z)
 			{

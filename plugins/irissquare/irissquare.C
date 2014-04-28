@@ -155,27 +155,6 @@ VFrame* IrisSquareMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int IrisSquareMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sirissquare.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	direction = defaults->get("DIRECTION", direction);
-	return 0;
-}
-
-int IrisSquareMain::save_defaults()
-{
-	defaults->update("DIRECTION", direction);
-	defaults->save();
-	return 0;
-}
-
 void IrisSquareMain::save_data(KeyFrame *keyframe)
 {
 	FileXML output;

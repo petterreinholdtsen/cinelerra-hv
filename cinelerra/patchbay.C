@@ -150,7 +150,7 @@ int PatchBay::delete_all_patches()
 void PatchBay::create_objects()
 {
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	flash();
+	flash(0);
 
 // Create icons for mode types
 	mode_icons[TRANSFER_NORMAL] = new BC_Pixmap(this, 
@@ -203,7 +203,7 @@ void PatchBay::resize_event()
 		mwindow->theme->patchbay_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	update();
-	flash();
+	flash(0);
 }
 
 int PatchBay::button_press_event()
@@ -448,6 +448,7 @@ int PatchBay::update()
 		patches.remove_number(patches.total - 1);
 	}
 
+	show_window(0);
 	return 0;
 }
 

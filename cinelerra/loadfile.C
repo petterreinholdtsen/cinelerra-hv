@@ -198,6 +198,7 @@ void LoadFileWindow::create_objects()
 		LoadMode::calculate_h(this, mwindow->theme);
 	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0, 1);
 	loadmode->create_objects();
+	show_window(1);
 	unlock_window();
 
 }

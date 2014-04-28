@@ -50,7 +50,7 @@ int BC_SubWindow::initialize()
 			0, 
 			0, 
 			0, 
-			0, 
+			1, 
 			bg_color, 
 			NULL, 
 			SUB_WINDOW, 

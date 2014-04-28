@@ -26,7 +26,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "swapframes.h"
 #include "vframe.h"
@@ -236,24 +236,6 @@ void SwapFrames::update_gui()
 	}
 }
 
-int SwapFrames::load_defaults()
-{
-	char directory[BCTEXTLEN];
-	sprintf(directory, "%sswapframes.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.on = defaults->get("ON", config.on);
-	config.swap_even = defaults->get("SWAP_EVEN", config.swap_even);
-	return 0;
-}
-
-int SwapFrames::save_defaults()
-{
-	defaults->update("ON", config.on);
-	defaults->update("SWAP_EVEN", config.swap_even);
-	defaults->save();
-	return 0;
-}
 
 void SwapFrames::save_data(KeyFrame *keyframe)
 {

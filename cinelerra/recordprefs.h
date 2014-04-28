@@ -52,6 +52,19 @@ public:
 };
 
 
+class RecordFragment : public BC_PopupMenu
+{
+public:
+	RecordFragment(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		RecordPrefs *record, 
+		char *text);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	RecordPrefs *record;
+};
+
 class RecordWriteLength : public BC_TextBox
 {
 public:

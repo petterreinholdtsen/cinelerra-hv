@@ -30,6 +30,7 @@
 #include "colors.h"
 #include "fonts.h"
 #include <string.h>
+#include <unistd.h>
 #include "vframe.h"
 
 
@@ -79,7 +80,8 @@ int BC_MenuBar::initialize()
 
 	if(resources->menu_bg) 
 		set_background(resources->menu_bg);
-	draw_face();
+	draw_face(0, 0);
+	show_window(0);
 	return 0;
 }
 
@@ -159,11 +161,12 @@ int BC_MenuBar::button_release_event()
 int BC_MenuBar::resize_event(int w, int h)
 {
 	resize_window(w, get_h());
-	draw_face();
+	draw_face(0, 0);
 	for(int i = 0; i < menu_titles.total; i++)
 	{
-		menu_titles.values[i]->draw_title();
+		menu_titles.values[i]->draw_title(0, 0);
 	}
+	flash(0);
 	return 0;
 }
 
@@ -245,7 +248,7 @@ int BC_MenuBar::unhighlight()
 	return 0;
 }
 
-int BC_MenuBar::draw_face()
+int BC_MenuBar::draw_face(int flash, int flush)
 {
 	if(menu_bar_bg)
 	{
@@ -275,8 +278,7 @@ int BC_MenuBar::draw_face()
 		draw_line(0, h, w, h);
 	}
 
-	flash();
-	flush();
+	if(flash) this->flash(flush);
 	return 0;
 }
 

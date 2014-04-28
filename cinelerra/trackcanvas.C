@@ -89,21 +89,14 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	current_end = 0;
-	selection_midpoint1 = selection_midpoint2 = 0;
-	selection_type = 0;
-	region_selected = 0;
-	handle_selected = 0;
-	auto_selected = 0;
-	translate_selected = 0;
-	which_handle = 0;
-	handle_pixel = 0;
+	selection_midpoint = 0;
 	drag_scroll = 0;
 	drag_popup = 0;
 	active = 0;
 	temp_picon = 0;
 	resource_timer = new Timer;
 	hourglass_enabled = 0;
+	timebar_position = -1;
 	resource_thread = new ResourceThread(mwindow);
 }
 
@@ -137,15 +130,15 @@ void TrackCanvas::create_objects()
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
 	resource_thread->create_objects();
 	draw();
-	update_cursor();
-	flash();
+	update_cursor(0);
+	flash(0);
 }
 
 void TrackCanvas::resize_event()
 {
 //printf("TrackCanvas::resize_event 1\n");
 	draw(0, 0);
-	flash();
+	flash(0);
 //printf("TrackCanvas::resize_event 2\n");
 }
 
@@ -156,6 +149,10 @@ int TrackCanvas::keypress_event()
 
 	return result;
 }
+
+
+
+
 
 int TrackCanvas::drag_motion()
 {
@@ -338,6 +335,12 @@ int TrackCanvas::cursor_leave_event()
 // Because drag motion calls get_cursor_over_window we can be sure that
 // all highlights get deleted now.
 // This ended up blocking keyboard input from the drag operations.
+	if(timebar_position >= 0)
+	{
+		timebar_position = -1;
+		gui->timebar->update(1);
+	}
+	
 	return 0;
 //	return drag_motion();
 }
@@ -569,12 +572,11 @@ int TrackCanvas::drag_stop()
 	if(redraw)
 	{
 		mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-		gui->get_scrollbars();
+		gui->get_scrollbars(0);
 		draw();
 		gui->patchbay->update();
 		gui->cursor->update();
-		flash();
-		flush();
+		flash(0);
 	}
 
 	return result;
@@ -607,12 +609,12 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 	if(debug) PRINT_TRACE
 }
 
-void TrackCanvas::update_cursor()
+void TrackCanvas::update_cursor(int flush)
 {
 	switch(mwindow->edl->session->editing_mode)
 	{
-		case EDITING_ARROW: set_cursor(ARROW_CURSOR); break;
-		case EDITING_IBEAM: set_cursor(IBEAM_CURSOR); break;
+		case EDITING_ARROW: set_cursor(ARROW_CURSOR, 0, flush); break;
+		case EDITING_IBEAM: set_cursor(IBEAM_CURSOR, 0, flush); break;
 	}
 }
 
@@ -642,9 +644,7 @@ void TrackCanvas::draw_indexes(Indexable *indexable)
 	draw_resources(0, 1, indexable);
 
 	draw_overlays();
-	draw_automation();
-	flash();
-	flush();
+	flash(0);
 }
 
 void TrackCanvas::draw_resources(int mode, 
@@ -1437,6 +1437,7 @@ void TrackCanvas::draw_plugins()
 	int current_on = 0;
 	int current_show = 0;
 
+
 //	if(!mwindow->edl->session->show_assets) goto done;
 
 	for(int i = 0; i < plugin_on_toggles.total; i++)
@@ -1480,15 +1481,15 @@ void TrackCanvas::draw_plugins()
 							total_w,
 							mwindow->theme->get_image("plugin_bg_data"),
 							0);
-						set_color(get_resources()->default_text_color);
-						set_font(MEDIUMFONT_3D);
+						set_color(mwindow->theme->title_color);
+						set_font(mwindow->theme->title_font);
 						plugin->calculate_title(string, 0);
 
 // Truncate string to int64_test visible in background
 						int len = strlen(string), j;
 						for(j = len; j >= 0; j--)
 						{
-							if(left_margin + get_text_width(MEDIUMFONT_3D, string) > w)
+							if(left_margin + get_text_width(mwindow->theme->title_font, string) > w)
 							{
 								string[j] = 0;
 							}
@@ -1499,10 +1500,10 @@ void TrackCanvas::draw_plugins()
 // Justify the text on the left boundary of the edit if it is visible.
 // Otherwise justify it on the left side of the screen.
 						int64_t text_x = total_x + left_margin;
-						int64_t text_w = get_text_width(MEDIUMFONT_3D, string, strlen(string));
+						int64_t text_w = get_text_width(mwindow->theme->title_font, string, strlen(string));
 						text_x = MAX(left_margin, text_x);
 						draw_text(text_x, 
-							y + get_text_ascent(MEDIUMFONT_3D) + 2, 
+							y + get_text_ascent(mwindow->theme->title_font) + 2, 
 							string,
 							strlen(string),
 							0);
@@ -1571,6 +1572,7 @@ done:
 	{
 		plugin_on_toggles.remove_object_number(current_on);
 	}
+
 }
 
 void TrackCanvas::refresh_plugintoggles()
@@ -1637,15 +1639,24 @@ void TrackCanvas::draw_transitions()
 				{
 					PluginServer *server = mwindow->scan_plugindb(edit->transition->title,
 						track->data_type);
-					draw_vframe(server->picon, 
-						x, 
-						y, 
-						w, 
-						h, 
-						0, 
-						0, 
-						server->picon->get_w(), 
-						server->picon->get_h());
+					if(!server->picon)
+					{
+						server->open_plugin(1, mwindow->preferences, 0, 0, -1);
+						server->close_plugin();
+					}
+
+					if(server->picon)
+					{
+						draw_vframe(server->picon, 
+							x, 
+							y, 
+							w, 
+							h, 
+							0, 
+							0, 
+							server->picon->get_w(), 
+							server->picon->get_h());
+					}
 				}
 			}
 		}
@@ -3500,6 +3511,7 @@ void TrackCanvas::draw_overlays()
 // Playback cursor
 	draw_playback_cursor();
 
+	show_window(0);
 }
 
 int TrackCanvas::activate()
@@ -3541,6 +3553,10 @@ void TrackCanvas::update_drag_handle()
 	{
 		mwindow->session->drag_position = new_position;
 		gui->mainclock->update(new_position);
+		
+		
+		timebar_position = new_position;
+		gui->timebar->update(0);
 // Que the CWindow.  Doesn't do anything if selectionstart and selection end 
 // aren't changed.
 //		mwindow->cwindow->update(1, 0, 0);
@@ -4012,9 +4028,9 @@ int TrackCanvas::cursor_motion_event()
 			position = mwindow->edl->align_to_frame(position, 0);
 			position = MAX(position, 0);
 
-			if(position < selection_midpoint1)
+			if(position < selection_midpoint)
 			{
-				mwindow->edl->local_session->set_selectionend(selection_midpoint1);
+				mwindow->edl->local_session->set_selectionend(selection_midpoint);
 				mwindow->edl->local_session->set_selectionstart(position);
 // Que the CWindow
 				gui->unlock_window();
@@ -4026,13 +4042,16 @@ int TrackCanvas::cursor_motion_event()
 			}
 			else
 			{
-				mwindow->edl->local_session->set_selectionstart(selection_midpoint1);
+				mwindow->edl->local_session->set_selectionstart(selection_midpoint);
 				mwindow->edl->local_session->set_selectionend(position);
 // Don't que the CWindow
 			}
 
+			timebar_position = mwindow->edl->local_session->get_selectionend(1);
+
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
+			gui->timebar->update(0);
 			flash();
 			result = 1;
 			update_clock = 1;
@@ -4054,6 +4073,11 @@ int TrackCanvas::cursor_motion_event()
 					(double)mwindow->edl->session->sample_rate;
 				position = mwindow->edl->align_to_frame(position, 0);
 				update_clock = 1;
+
+				timebar_position = position;
+
+//printf("TrackCanvas::cursor_motion_event %d %f\n", __LINE__, timebar_position);
+				gui->timebar->update(0);
 
 // Update cursor
 				if(do_transitions(get_cursor_x(), 
@@ -4115,7 +4139,7 @@ int TrackCanvas::cursor_motion_event()
 //printf("TrackCanvas::cursor_motion_event 1\n");
 	if(update_cursor && new_cursor != get_cursor())
 	{
-		set_cursor(new_cursor);
+		set_cursor(new_cursor, 0, 1);
 	}
 
 //printf("TrackCanvas::cursor_motion_event 1 %d\n", rerender);
@@ -4243,9 +4267,9 @@ int TrackCanvas::repeat_event(int64_t duration)
 		switch(mwindow->session->current_operation)
 		{
 			case SELECT_REGION:
-				if(position < selection_midpoint1)
+				if(position < selection_midpoint)
 				{
-					mwindow->edl->local_session->set_selectionend(selection_midpoint1);
+					mwindow->edl->local_session->set_selectionend(selection_midpoint);
 					mwindow->edl->local_session->set_selectionstart(position);
 // Que the CWindow
 					gui->unlock_window();
@@ -4257,7 +4281,7 @@ int TrackCanvas::repeat_event(int64_t duration)
 				}
 				else
 				{
-					mwindow->edl->local_session->set_selectionstart(selection_midpoint1);
+					mwindow->edl->local_session->set_selectionstart(selection_midpoint);
 					mwindow->edl->local_session->set_selectionend(position);
 // Don't que the CWindow
 				}
@@ -4371,6 +4395,7 @@ int TrackCanvas::button_release_event()
 	}
 	if (result) 
 		cursor_motion_event();
+
 	if(update_overlay)
 	{
 		draw_overlays();
@@ -4466,13 +4491,12 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 				mwindow->cwindow->update(1, 0, 0);
 				gui->lock_window("TrackCanvas::do_edit_handles");
 			}
-			gui->timebar->update_highlights();
+			gui->timebar->update(0);
 			gui->zoombar->update();
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			draw_overlays();
-			flash();
-			flush();
+			flash(0);
 		}
 	}
 
@@ -4563,13 +4587,12 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 				mwindow->cwindow->update(1, 0, 0);
 				gui->lock_window("TrackCanvas::do_plugin_handles");
 			}
-			gui->timebar->update_highlights();
+			gui->timebar->update(0);
 			gui->zoombar->update();
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			draw_overlays();
-			flash();
-			flush();
+			flash(0);
 		}
 	}
 	
@@ -4686,9 +4709,9 @@ int TrackCanvas::do_edits(int cursor_x,
 						mwindow->session->drag_origin_y = cursor_y;
 
 						drag_popup = new BC_DragWindow(gui, 
-							mwindow->theme->get_image("clip_icon"), 
+							mwindow->theme->get_image("clip_icon") /*, 
 							get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
-							get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2);
+							get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2 */);
 
 						result = 1;
 					}
@@ -4810,18 +4833,18 @@ int TrackCanvas::do_plugins(int cursor_x,
 						VFrame *frame = server->picon;
 
 						drag_popup = new BC_DragWindow(gui, 
-							frame, 
+							frame /*, 
 							get_abs_cursor_x(0) - frame->get_w() / 2,
-							get_abs_cursor_y(0) - frame->get_h() / 2);
+							get_abs_cursor_y(0) - frame->get_h() / 2 */);
 						break;
 					}
 					
 					case PLUGIN_SHAREDPLUGIN:
 					case PLUGIN_SHAREDMODULE:
 						drag_popup = new BC_DragWindow(gui, 
-							mwindow->theme->get_image("clip_icon"), 
+							mwindow->theme->get_image("clip_icon") /*, 
 							get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
-							get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2);
+							get_abs_cursor_y(0) - mwindow->theme->get_image("clip_icon")->get_h() / 2 */);
 						break;
 				}
 
@@ -5122,7 +5145,7 @@ int TrackCanvas::button_press_event()
 
 		if(update_cursor)
 		{
-			gui->timebar->update_highlights();
+			gui->timebar->update(0);
 			gui->cursor->hide();
 			gui->cursor->show();
 			gui->zoombar->update();
@@ -5151,14 +5174,14 @@ int TrackCanvas::start_selection(double position)
 		if(position < midpoint)
 		{
 			mwindow->edl->local_session->set_selectionstart(position);
-			selection_midpoint1 = mwindow->edl->local_session->get_selectionend(1);
+			selection_midpoint = mwindow->edl->local_session->get_selectionend(1);
 // Que the CWindow
 			rerender = 1;
 		}
 		else
 		{
 			mwindow->edl->local_session->set_selectionend(position);
-			selection_midpoint1 = mwindow->edl->local_session->get_selectionstart(1);
+			selection_midpoint = mwindow->edl->local_session->get_selectionstart(1);
 // Don't que the CWindow for the end
 		}
 	}
@@ -5168,7 +5191,7 @@ int TrackCanvas::start_selection(double position)
 //printf("TrackCanvas::start_selection %f\n", position);
 		mwindow->edl->local_session->set_selectionstart(position);
 		mwindow->edl->local_session->set_selectionend(position);
-		selection_midpoint1 = position;
+		selection_midpoint = position;
 // Que the CWindow
 		rerender = 1;
 	}
@@ -5234,52 +5257,4 @@ double TrackCanvas::time_visible()
 
 
 
-void TrackCanvas::draw_automation()
-{
-}
-
-
-int TrackCanvas::set_index_file(int flash, Asset *asset)
-{
-	return 0;
-}
-
-
-int TrackCanvas::button_release()
-{
-	return 0;
-}
-
-
-int TrackCanvas::auto_reposition(int &cursor_x, int &cursor_y, int64_t cursor_position)
-{
-	return 0;
-}
-
-
-int TrackCanvas::draw_floating_handle(int flash)
-{
-	return 0;
-}
-
-int TrackCanvas::draw_loop_point(int64_t position, int flash)
-{
-	return 0;
-}
-
-int TrackCanvas::draw_playback_cursor(int pixel, int flash)
-{
-	return 0;
-}
-
-
-int TrackCanvas::update_handle_selection(int64_t cursor_position)
-{
-	return 0;
-}
-
-int TrackCanvas::end_translation()
-{
-	return 0;
-}
 

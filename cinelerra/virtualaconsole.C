@@ -94,7 +94,7 @@ int VirtualAConsole::process_buffer(int64_t len,
 if(debug) printf("VirtualAConsole::process_buffer %d this=%p len=%lld\n", 
 __LINE__, 
 this,
-len);
+(long long)len);
 
 
 // clear output buffers

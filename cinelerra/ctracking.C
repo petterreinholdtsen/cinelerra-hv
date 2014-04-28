@@ -30,6 +30,7 @@
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
+#include "mtimebar.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
@@ -69,7 +70,7 @@ int CTracking::stop_playback()
 	return 0;
 }
 
-#define SCROLL_THRESHOLD 0
+#define SCROLL_THRESHOLD .5
 
 
 int CTracking::update_scroll(double position)
@@ -94,9 +95,9 @@ int CTracking::update_scroll(double position)
 			if(position > left_boundary &&
 				position < right_boundary)
 			{
-				int pixels = Units::to_int64((position - midpoint) * 
-					mwindow->edl->session->sample_rate /
-					mwindow->edl->local_session->zoom_sample);
+				int pixels = Units::to_int64((position - left_boundary) * 
+						mwindow->edl->session->sample_rate /
+						mwindow->edl->local_session->zoom_sample);
 				if(pixels) 
 				{
 					mwindow->move_right(pixels);
@@ -114,7 +115,7 @@ int CTracking::update_scroll(double position)
 				position > left_boundary && 
 				mwindow->edl->local_session->view_start > 0)
 			{
-				int pixels = Units::to_int64((midpoint - position) * 
+				int pixels = Units::to_int64((right_boundary - position) * 
 						mwindow->edl->session->sample_rate /
 						mwindow->edl->local_session->zoom_sample);
 				if(pixels) 
@@ -134,11 +135,14 @@ void CTracking::update_tracker(double position)
 	int updated_scroll = 0;
 // Update cwindow slider
 	cwindow->gui->lock_window("CTracking::update_tracker 1");
+
+#ifdef USE_SLIDER
 	cwindow->gui->slider->update(position);
+#endif
 
 // This is going to boost the latency but we need to update the timebar
-	cwindow->gui->timebar->draw_range();
-	cwindow->gui->timebar->flash();
+	cwindow->gui->timebar->update(1);
+//	cwindow->gui->timebar->flash();
 	cwindow->gui->unlock_window();
 
 // Update mwindow cursor
@@ -151,6 +155,7 @@ void CTracking::update_tracker(double position)
 
 	mwindow->gui->mainclock->update(position);
 	mwindow->gui->patchbay->update();
+	mwindow->gui->timebar->update(0);
 
 	if(!updated_scroll)
 	{
@@ -158,9 +163,10 @@ void CTracking::update_tracker(double position)
 		mwindow->gui->zoombar->update();
 
 
-		mwindow->gui->canvas->flash();
-		mwindow->gui->flush();
+		mwindow->gui->canvas->flash(0);
 	}
+
+	mwindow->gui->flush();
 	mwindow->gui->unlock_window();
 
 // Plugin GUI's hold lock on mwindow->gui here during user interface handlers.

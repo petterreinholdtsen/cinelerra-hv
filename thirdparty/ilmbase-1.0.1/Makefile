@@ -91,7 +91,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/ilmbase-1.0.1/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/ilmbase-1.0.1/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/ilmbase-1.0.1/missing --run automake-1.9
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -lpthread 
@@ -141,7 +141,7 @@ PTHREAD_CFLAGS =
 PTHREAD_LIBS = -lpthread
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.0.1
 ac_ct_AR = ar

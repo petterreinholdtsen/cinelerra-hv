@@ -74,6 +74,7 @@ MWindowGUI::MWindowGUI(MWindow *mwindow)
 	trackscroll = 0;
 	cursor = 0;
 	canvas = 0;
+	timebar = 0;
 	render_engine = 0;
 }
 
@@ -96,16 +97,14 @@ MWindowGUI::~MWindowGUI()
 	delete render_engine;
 }
 
-void MWindowGUI::get_scrollbars()
+void MWindowGUI::get_scrollbars(int flush)
 {
-//printf("MWindowGUI::get_scrollbars 1\n");
 	int64_t h_needed = mwindow->edl->get_tracks_height(mwindow->theme);
 	int64_t w_needed = mwindow->edl->get_tracks_width();
 	int need_xscroll = 0;
 	int need_yscroll = 0;
 	view_w = mwindow->theme->mcanvas_w;
 	view_h = mwindow->theme->mcanvas_h;
-//printf("MWindowGUI::get_scrollbars 1\n");
 
 // Scrollbars are constitutive
 	need_xscroll = need_yscroll = 1;
@@ -139,7 +138,6 @@ void MWindowGUI::get_scrollbars()
 			view_w,
 			view_h);
 	}
-//printf("MWindowGUI::get_scrollbars 1\n");
 
 	if(need_xscroll)
 	{
@@ -152,7 +150,7 @@ void MWindowGUI::get_scrollbars()
 		else
 			samplescroll->resize_event();
 
-		samplescroll->set_position();
+		samplescroll->set_position(0);
 	}
 	else
 	{
@@ -160,7 +158,7 @@ void MWindowGUI::get_scrollbars()
 		samplescroll = 0;
 		mwindow->edl->local_session->view_start = 0;
 	}
-//printf("MWindowGUI::get_scrollbars 1\n");
+
 
 	if(need_yscroll)
 	{
@@ -178,7 +176,8 @@ void MWindowGUI::get_scrollbars()
 //printf("MWindowGUI::get_scrollbars 1.2\n");
 		trackscroll->update_length(mwindow->edl->get_tracks_height(mwindow->theme),
 			mwindow->edl->local_session->track_start,
-			view_h);
+			view_h,
+			0);
 //printf("MWindowGUI::get_scrollbars 1.3\n");
 	}
 	else
@@ -187,19 +186,26 @@ void MWindowGUI::get_scrollbars()
 		trackscroll = 0;
 		mwindow->edl->local_session->track_start = 0;
 	}
-//printf("get_scrollbars 2 %d %d\n", need_xscroll, w_needed);
+
+	if(flush) this->flush();
+
 }
 
 void MWindowGUI::create_objects()
 {
+	const int debug = 0;
+	
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
 	cursor = 0;
 	add_subwindow(mainmenu = new MainMenu(mwindow, this));
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
 	mainmenu->create_objects();
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
@@ -212,43 +218,68 @@ void MWindowGUI::create_objects()
 		mwindow->theme->mtimebar_h));
 	timebar->create_objects();
 
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(patchbay = new PatchBay(mwindow, this));
 	patchbay->create_objects();
 
-	get_scrollbars();
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
+	get_scrollbars(0);
 
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
 	canvas->create_objects();
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));
 	zoombar->create_objects();
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(statusbar = new StatusBar(mwindow, this));
 	statusbar->create_objects();
 
+
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(mainclock = new MainClock(mwindow, 
 		mwindow->theme->mclock_x,
  		mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	mainclock->update(0);
 
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	cursor = new MainCursor(mwindow, this);
 	cursor->create_objects();
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 	edit_menu->create_objects();
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
 	plugin_menu->create_objects();
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
 	keyframe_menu->create_objects();
 
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 	transition_menu->create_objects();
 
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
+
 	canvas->activate();
+
+	if(debug) printf("MWindowGUI::create_objects %d\n", __LINE__);
 }
 
 void MWindowGUI::update_title(char *path)
@@ -265,7 +296,7 @@ void MWindowGUI::update_title(char *path)
 void MWindowGUI::redraw_time_dependancies() 
 {
 	zoombar->redraw_time_dependancies();
-	timebar->update();
+	timebar->update(0);
 	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
 }
 
@@ -284,19 +315,21 @@ int MWindowGUI::focus_out_event()
 
 int MWindowGUI::resize_event(int w, int h)
 {
+//printf("MWindowGUI::resize_event %d\n", __LINE__);
 	mwindow->session->mwindow_w = w;
 	mwindow->session->mwindow_h = h;
 	mwindow->theme->get_mwindow_sizes(this, w, h);
 	mwindow->theme->draw_mwindow_bg(this);
-	flash();
-	mainmenu->reposition_window(0, 0, w, mainmenu->get_h());
+//	mainmenu->reposition_window(0, 0, w, mainmenu->get_h());
 	mbuttons->resize_event();
 	statusbar->resize_event();
 	timebar->resize_event();
 	patchbay->resize_event();
 	zoombar->resize_event();
-	get_scrollbars();
+	get_scrollbars(0);
 	canvas->resize_event();
+//printf("MWindowGUI::resize_event %d\n", __LINE__);
+	flash(0);
 	return 0;
 }
 
@@ -315,8 +348,8 @@ void MWindowGUI::update(int scrollbars,
 	
 	
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-	if(scrollbars) this->get_scrollbars();
-	if(timebar) this->timebar->update();
+	if(scrollbars) this->get_scrollbars(0);
+	if(timebar) this->timebar->update(0);
 	if(zoombar) this->zoombar->update();
 	if(patchbay) this->patchbay->update();
 	if(clock) this->mainclock->update(
@@ -329,7 +362,7 @@ void MWindowGUI::update(int scrollbars,
 	{
 		this->canvas->draw(canvas);
 		this->cursor->show();
-		this->canvas->flash();
+		this->canvas->flash(0);
 // Activate causes the menubar to deactivate.  Don't want this for
 // picon thread.
 		if(canvas != 3) this->canvas->activate();
@@ -349,6 +382,8 @@ void MWindowGUI::update(int scrollbars,
 		mwindow->age_caches();
 		lock_window("MWindowGUI::update");
 	}
+	
+	flush();
 	if(debug) PRINT_TRACE
 }
 
@@ -390,7 +425,7 @@ int MWindowGUI::drag_stop()
 void MWindowGUI::default_positions()
 {
 //printf("MWindowGUI::default_positions 1\n");
-	mwindow->vwindow->gui->lock_window("MWindowGUI::default_positions");
+	mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->lock_window("MWindowGUI::default_positions");
 	mwindow->cwindow->gui->lock_window("MWindowGUI::default_positions");
 	mwindow->awindow->gui->lock_window("MWindowGUI::default_positions");
 
@@ -402,7 +437,7 @@ void MWindowGUI::default_positions()
 		mwindow->session->mwindow_y,
 		mwindow->session->mwindow_w, 
 		mwindow->session->mwindow_h);
-	mwindow->vwindow->gui->reposition_window(mwindow->session->vwindow_x, 
+	mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->reposition_window(mwindow->session->vwindow_x, 
 		mwindow->session->vwindow_y,
 		mwindow->session->vwindow_w, 
 		mwindow->session->vwindow_h);
@@ -419,7 +454,7 @@ void MWindowGUI::default_positions()
 	resize_event(mwindow->session->mwindow_w, 
 		mwindow->session->mwindow_h);
 //printf("MWindowGUI::default_positions 1\n");
-	mwindow->vwindow->gui->resize_event(mwindow->session->vwindow_w, 
+	mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->resize_event(mwindow->session->vwindow_w, 
 		mwindow->session->vwindow_h);
 //printf("MWindowGUI::default_positions 1\n");
 	mwindow->cwindow->gui->resize_event(mwindow->session->cwindow_w, 
@@ -431,11 +466,11 @@ void MWindowGUI::default_positions()
 //printf("MWindowGUI::default_positions 1\n");
 
 	flush();
-	mwindow->vwindow->gui->flush();
+	mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->flush();
 	mwindow->cwindow->gui->flush();
 	mwindow->awindow->gui->flush();
 
-	mwindow->vwindow->gui->unlock_window();
+	mwindow->vwindows.get(DEFAULT_VWINDOW)->gui->unlock_window();
 	mwindow->cwindow->gui->unlock_window();
 	mwindow->awindow->gui->unlock_window();
 //printf("MWindowGUI::default_positions 2\n");

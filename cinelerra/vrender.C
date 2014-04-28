@@ -190,6 +190,7 @@ int VRender::process_buffer(int64_t input_position,
 				int64_t normalized_position = (int64_t)(corrected_position *
 					asset->frame_rate /
 					renderengine->get_edl()->session->frame_rate);
+
 				file->set_video_position(normalized_position,
 					0);
 				file->read_frame(video_out);
@@ -476,7 +477,7 @@ void VRender::run()
 
 		if(debug) printf("VRender::run %d current_position=%lld done=%d\n", 
 			__LINE__, 
-			current_position,
+			(long long)current_position,
 			done);
 
 // Update tracking.

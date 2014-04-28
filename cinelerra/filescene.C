@@ -97,8 +97,8 @@ if(!strncmp(command, title, strlen(title))) \
 	{ \
 		printf("FileScene::read_script %d Line %d: %s but no current character\n",  \
 			__LINE__, \
-			title, \
-			current_line); \
+			current_line, \
+			title); \
 	} \
  \
 	i = len; \
@@ -293,11 +293,11 @@ int FileScene::read_frame(VFrame *frame)
 
 	if(debug) printf("FileScene::read_frame %d frame=%lld frame_rate=%f sample_rate=%d audio_position1=%lld audio_position2=%lld\n",
 		__LINE__,
-		file->current_frame,
+		(long long)file->current_frame,
 		asset->frame_rate,
 		asset->sample_rate,
-		audio_position1,
-		audio_position2);
+		(long long)audio_position1,
+		(long long)audio_position2);
 
 	render_chunks(audio_position1, 
 		audio_position2 - audio_position1,
@@ -703,8 +703,8 @@ void FileScene::render_chunks(int64_t start_position,
 
 	if(debug) printf("FileScene::render_chunks %d start_position=%lld len=%lld\n",
 		__LINE__,
-		start_position,
-		len);
+		(long long)start_position,
+		(long long)len);
 
 // Update script
 	read_script();
@@ -763,8 +763,8 @@ void FileScene::render_chunks(int64_t start_position,
 				chunk->audio_size / 2);
 			if(debug) printf("FileScene::render_chunks %d: start_position=%lld current_sample=%lld\n",
 				__LINE__,
-				start_position,
-				current_sample);
+				(long long)start_position,
+				(long long)current_sample);
 
 // Memcpy it.
 // TODO: allow characters to talk simultaneously
@@ -774,9 +774,9 @@ void FileScene::render_chunks(int64_t start_position,
 
 			if(debug) printf("FileScene::render_chunks %d: src_offset=%lld dst_offset=%lld src_len=%lld\n",
 				__LINE__,
-				src_offset,
-				dst_offset,
-				src_len);
+				(long long)src_offset,
+				(long long)dst_offset,
+				(long long)src_len);
 
 			if(src_offset < 0)
 			{
@@ -792,9 +792,9 @@ void FileScene::render_chunks(int64_t start_position,
 
 			if(debug) printf("FileScene::render_chunks %d: src_offset=%lld dst_offset=%lld src_len=%lld\n",
 				__LINE__,
-				src_offset,
-				dst_offset,
-				src_len);
+				(long long)src_offset,
+				(long long)dst_offset,
+				(long long)src_len);
 
 // Transfer if right channel
 			if(all_channels || 
@@ -1857,7 +1857,7 @@ VFrame* SceneTokens::load_image(char *path)
 
 	unsigned char *data = new unsigned char[size + 4];
 	FILE *fd = fopen(complete_path, "r");
-	fread(data + 4, 1, size, fd);
+	int temp = fread(data + 4, 1, size, fd);
 	data[0] = (size >> 24) & 0xff;
 	data[1] = (size >> 16) & 0xff;
 	data[2] = (size >> 8) & 0xff;

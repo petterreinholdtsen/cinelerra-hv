@@ -10,8 +10,8 @@
 #undef LTP
 
 
-#include "faad.h"
 #include "funcprotos.h"
+#include "neaacdec.h"
 #include "quicktime.h"
 
 
@@ -91,7 +91,7 @@ static int decode(quicktime_t *file,
 // Initialize decoder
 	if(!codec->decoder_initialized)
 	{
-		uint32_t samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
+		unsigned long samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
 // FAAD needs unsigned char here
 		unsigned char channels = track_map->channels;
 		quicktime_init_vbr(vbr, channels);
@@ -102,9 +102,14 @@ static int decode(quicktime_t *file,
 //			trak->mdia.minf.stbl.stsd.table[0].sample_rate;
 
 		faacDecSetConfiguration(codec->decoder_handle, codec->decoder_config);
-		
+
+
 		quicktime_align_vbr(track_map, samples);
+
+//while(quicktime_vbr_input_size(vbr) < 65536)
 		quicktime_read_vbr(file, track_map);
+
+printf("decode %d %p %d\n", __LINE__, quicktime_vbr_input(vbr), quicktime_vbr_input_size(vbr));
 		if(faacDecInit(codec->decoder_handle,
 			quicktime_vbr_input(vbr), 
 			quicktime_vbr_input_size(vbr),
@@ -113,7 +118,7 @@ static int decode(quicktime_t *file,
 		{
 			return 1;
 		}
-//printf("decode %d %d\n", samplerate, channels);
+printf("decode %d %d %d\n", __LINE__, samplerate, channels);
 		codec->decoder_initialized = 1;
 	}
 

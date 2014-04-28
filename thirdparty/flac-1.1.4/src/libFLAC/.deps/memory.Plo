@@ -1,9 +1,8 @@
 memory.lo: memory.c ../../config.h include/private/memory.h \
- /usr/include/stdlib.h /usr/include/features.h \
- /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/stdlib.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-64.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
  /usr/include/bits/byteswap.h /usr/include/sys/types.h \
@@ -11,9 +10,8 @@ memory.lo: memory.c ../../config.h include/private/memory.h \
  /usr/include/time.h /usr/include/sys/select.h /usr/include/bits/select.h \
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
- /usr/include/alloca.h /usr/include/bits/stdlib.h include/private/float.h \
+ /usr/include/alloca.h include/private/float.h \
  ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
  /usr/include/stdint.h /usr/include/bits/wchar.h \
  ../../include/FLAC/assert.h
 
@@ -25,8 +23,6 @@ include/private/memory.h:
 
 /usr/include/features.h:
 
-/usr/include/bits/predefs.h:
-
 /usr/include/sys/cdefs.h:
 
 /usr/include/bits/wordsize.h:
@@ -35,7 +31,7 @@ include/private/memory.h:
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/bits/waitflags.h:
 
@@ -69,15 +65,11 @@ include/private/memory.h:
 
 /usr/include/alloca.h:
 
-/usr/include/bits/stdlib.h:
-
 include/private/float.h:
 
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
-
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 

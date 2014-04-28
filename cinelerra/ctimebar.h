@@ -45,8 +45,10 @@ public:
 	int resize_event();
 	EDL* get_edl();
 	void draw_time();
-	void update_preview();
+//	void update_preview();
 	void select_label(double position);
+	double pixel_to_position(int pixel);
+	void update_cursor();
 
 	CWindowGUI *gui;
 };

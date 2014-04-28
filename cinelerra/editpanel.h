@@ -392,6 +392,8 @@ public:
 	~EditPanel();
 
 	void set_meters(MeterPanel *meter_panel);
+	static int calculate_w(MWindow *mwindow, int use_keyframe, int total_buttons);
+	static int calculate_h(MWindow *mwindow);
 	void update();
 	void delete_buttons();
 	void create_buttons();

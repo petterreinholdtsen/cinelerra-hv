@@ -190,7 +190,7 @@ EditLengthText::EditLengthText(MWindow *mwindow,
 int EditLengthText::handle_event()
 {
 	double result = atof(get_text());
-	if(!EQUIV(result, gui->thread->length))
+	if(fabs(result - gui->thread->length) > 0.000001)
 	{
 		gui->thread->length = result;
 	}

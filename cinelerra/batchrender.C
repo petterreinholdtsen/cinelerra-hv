@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,19 +142,12 @@ void BatchRenderJob::load(FileXML *file)
 
 void BatchRenderJob::save(FileXML *file)
 {
-TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("EDL_PATH", edl_path);
-TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("STRATEGY", strategy);
-TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("ENABLED", enabled);
-TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("ELAPSED", elapsed);
-TRACE("BatchRenderJob::save 1");
 	file->append_tag();
-TRACE("BatchRenderJob::save 1");
 	file->append_newline();
-TRACE("BatchRenderJob::save 1");
 	asset->write(file,
 		0,
 		"");
@@ -174,13 +167,9 @@ TRACE("BatchRenderJob::save 1");
 	defaults.save_string(string);
 	file->append_text(string);
 	delete [] string;
-TRACE("BatchRenderJob::save 1");
 	file->tag.set_title("/JOB");
-TRACE("BatchRenderJob::save 1");
 	file->append_tag();
-TRACE("BatchRenderJob::save 1");
 	file->append_newline();
-TRACE("BatchRenderJob::save 10");
 }
 
 void BatchRenderJob::fix_strategy()
@@ -222,7 +211,6 @@ BatchRenderThread::BatchRenderThread()
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
-
 	char path[BCTEXTLEN];
 	path[0] = 0;
 	save_jobs(path);
@@ -392,6 +380,18 @@ void BatchRenderThread::delete_job()
 		gui->create_list(1);
 		gui->change_job();
 	}
+}
+
+void BatchRenderThread::use_current_edl()
+{
+// printf("BatchRenderThread::use_current_edl %d %p %s\n", 
+// __LINE__, 
+// mwindow->edl->path, 
+// mwindow->edl->path);
+
+	strcpy(get_current_edl(), mwindow->edl->path);
+	gui->create_list(1);
+	gui->edl_path_text->update(get_current_edl());
 }
 
 BatchRenderJob* BatchRenderThread::get_current_job()
@@ -768,7 +768,11 @@ void BatchRenderGUI::create_objects()
 	add_subwindow(delete_batch = new BatchRenderDelete(thread, 
 		x, 
 		y));
-	x += delete_batch->get_w() + 10;
+	x = new_batch->get_x();
+	y += new_batch->get_h() + mwindow->theme->widget_border;
+	add_subwindow(use_current_edl = new BatchRenderCurrentEDL(thread,
+		x,
+		y));
 
 	x = x2;
 	y = y2;
@@ -796,7 +800,7 @@ void BatchRenderGUI::create_objects()
 		x, 
 		y));
 
-	show_window();
+	show_window(1);
 	unlock_window();
 }
 
@@ -844,7 +848,9 @@ int BatchRenderGUI::resize_event(int w, int h)
 	new_batch->reposition_window(x, y);
 	x += new_batch->get_w() + 10;
 	delete_batch->reposition_window(x, y);
-	x += delete_batch->get_w() + 10;
+	x = new_batch->get_x();
+	y += new_batch->get_h() + mwindow->theme->widget_border;
+	use_current_edl->reposition_window(x, y);
 
 	x = x2;
 	y = y2;
@@ -1044,6 +1050,22 @@ int BatchRenderDelete::handle_event()
 
 
 
+
+
+
+BatchRenderCurrentEDL::BatchRenderCurrentEDL(BatchRenderThread *thread, 
+	int x, 
+	int y)
+ : BC_GenericButton(x, y, _("Use Current EDL"))
+{
+	this->thread = thread;
+}
+
+int BatchRenderCurrentEDL::handle_event()
+{
+	thread->use_current_edl();
+	return 1;
+}
 
 
 

@@ -278,8 +278,7 @@ void AC3ConfigAudio::create_objects()
 	bitrate->create_objects();
 
 	add_subwindow(new BC_OKButton(this));
-	show_window();
-	flush();
+	show_window(1);
 	unlock_window();
 }
 

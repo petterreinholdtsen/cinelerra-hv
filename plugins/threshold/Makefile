@@ -1,7 +1,6 @@
 include ../../global_config
 
 OBJS := \
-	../colors/$(OBJDIR)/plugincolors.o \
 	$(OBJDIR)/histogramengine.o \
 	$(OBJDIR)/threshold.o \
 	$(OBJDIR)/thresholdwindow.o

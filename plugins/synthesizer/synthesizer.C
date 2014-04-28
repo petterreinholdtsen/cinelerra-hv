@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
 #include "picon_png.h"
 #include "samples.h"
 #include "synthesizer.h"
+#include "theme.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
@@ -43,7 +45,8 @@ Synth::Synth(PluginServer *server)
  : PluginAClient(server)
 {
 	reset();
-	load_defaults();
+	window_w = 640;
+	window_h = 480;
 }
 
 
@@ -78,35 +81,6 @@ LOAD_CONFIGURATION_MACRO(Synth, SynthConfig)
 
 
 
-int Synth::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-
-	sprintf(directory, "%ssynthesizer.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	w = defaults->get("WIDTH", 380);
-	h = defaults->get("HEIGHT", 400);
-
-	config.wetness = defaults->get("WETNESS", (double)0);
-	for(int i = 0; i < MAX_FREQS; i++)
-	{
-		sprintf(string, "BASEFREQ_%d", i);
-		config.base_freq[i] = defaults->get(string, (double)0);
-	}
-	config.wavefunction = defaults->get("WAVEFUNCTION", 0);
-	momentary_notes = defaults->get("MOMENTARY_NOTES", 0);
-
-	int total_oscillators = defaults->get("OSCILLATORS", TOTALOSCILLATORS);
-	config.oscillator_config.remove_all_objects();
-	for(int i = 0; i < total_oscillators; i++)
-	{
-		config.oscillator_config.append(new SynthOscillatorConfig(i));
-		config.oscillator_config.values[i]->load_defaults(defaults);
-	}
-
-	return 0;
-}
 
 
 void Synth::read_data(KeyFrame *keyframe)
@@ -128,6 +102,14 @@ void Synth::read_data(KeyFrame *keyframe)
 			{
 				config.wetness = input.tag.get_property("WETNESS", config.wetness);
 				
+				if(is_defaults())
+				{
+					window_w = input.tag.get_property("WINDOW_W", window_w);
+					window_h = input.tag.get_property("WINDOW_H", window_h);
+				}
+				config.momentary_notes = input.tag.get_property("MOMENTARY_NOTES", config.momentary_notes);
+
+//printf("Synth::read_data %d %d %d\n", __LINE__, window_w, window_h);
 				for(int i = 0; i < MAX_FREQS; i++)
 				{
 					sprintf(string, "BASEFREQ_%d", i);
@@ -163,6 +145,9 @@ void Synth::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("SYNTH");
 	output.tag.set_property("WETNESS", config.wetness);
+	output.tag.set_property("WINDOW_W", window_w);
+	output.tag.set_property("WINDOW_H", window_h);
+	output.tag.set_property("MOMENTARY_NOTES", config.momentary_notes);
 
 	for(int i = 0; i < MAX_FREQS; i++)
 	{
@@ -189,35 +174,6 @@ void Synth::save_data(KeyFrame *keyframe)
 // data is now in *text
 }
 
-int Synth::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-	defaults->update("WIDTH", w);
-	defaults->update("HEIGHT", h);
-	defaults->update("WETNESS", config.wetness);
-
-	for(int i = 0; i < MAX_FREQS; i++)
-	{
-//		if(!EQUIV(config.base_freq[i], 0))
-		{
-			sprintf(string, "BASEFREQ_%d", i);
-			defaults->update(string, config.base_freq[i]);
-		}
-	}
-	
-	defaults->update("WAVEFUNCTION", config.wavefunction);
-	defaults->update("OSCILLATORS", config.oscillator_config.total);
-	defaults->update("MOMENTARY_NOTES", momentary_notes);
-
-	for(int i = 0; i < config.oscillator_config.total; i++)
-	{
-		config.oscillator_config.values[i]->save_defaults(defaults);
-	}
-	defaults->save();
-
-	return 0;
-}
 
 
 void Synth::update_gui()
@@ -283,10 +239,13 @@ double Synth::solve_eqn(double *output,
 		freq;
 // Starting sample in waveform
 	double x = waveform_sample;
+//printf("Synth::solve_eqn %d %f\n", __LINE__, config->phase);
 	double phase_offset = config->phase * orig_period;
 // Period of current oscillator
 	double period = orig_period / config->freq_factor;
 	int sample;
+	double step = 1;
+	if(get_direction() == PLAY_REVERSE) step = -1;
 
 	switch(this->config.wavefunction)
 	{
@@ -300,40 +259,47 @@ double Synth::solve_eqn(double *output,
 		case SINE:
 			for(sample = 0; sample < length; sample++)
 			{
-				output[sample] += sin(x / period * 2 * M_PI) * power;
-				x++;
+				output[sample] += sin((x + phase_offset) / 
+					period * 
+					2 * 
+					M_PI) * power;
+				x += step;
 			}
 			break;
 
 		case SAWTOOTH:
 			for(sample = 0; sample < length; sample++)
 			{
-				output[sample] += function_sawtooth(x / period) * power;
-				x++;
+				output[sample] += function_sawtooth((x + phase_offset) / 
+					period) * power;
+				x += step;
 			}
 			break;
 
 		case SQUARE:
 			for(sample = 0; sample < length; sample++)
 			{
-				output[sample] += function_square(x / period) * power;
-				x++;
+				output[sample] += function_square((x + phase_offset) / 
+					period) * power;
+				x += step;
 			}
 			break;
 
 		case TRIANGLE:
 			for(sample = 0; sample < length; sample++)
 			{
-				output[sample] += function_triangle(x / period) * power;
-				x++;
+				output[sample] += function_triangle((x + phase_offset) / 
+					period) * power;
+				x += step;
 			}
 			break;
 
 		case PULSE:
 			for(sample = 0; sample < length; sample++)
 			{
-				output[sample] += function_pulse(x / period) * power;
-				x++;
+				output[sample] += function_pulse((x + phase_offset) / 
+					period) * power;
+				x += step;
 			}
 			break;
 
@@ -420,6 +386,9 @@ int Synth::process_realtime(int64_t size,
 	Samples *input_ptr, 
 	Samples *output_ptr)
 {
+// sample relative to start of plugin
+	waveform_sample = get_source_position();
+
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
 
@@ -446,7 +415,7 @@ int Synth::process_realtime(int64_t size,
 		}
 	}
 
-	waveform_sample += size;	
+//	waveform_sample += size;	
 	return 0;
 }
 
@@ -468,7 +437,7 @@ int Synth::overlay_synth(double freq,
 void Synth::reconfigure()
 {
 	need_reconfigure = 0;
-	waveform_sample = 0;
+//	waveform_sample = 0;
 }
 
 int Synth::freq_exists(double freq)
@@ -561,10 +530,10 @@ void Synth::delete_freqs()
 
 SynthWindow::SynthWindow(Synth *synth)
  : PluginClientWindow(synth, 
-	synth->w, 
-	synth->h, 
-	950, 
+	synth->window_w, 
+	synth->window_h, 
 	400, 
+	350, 
 	1)
 {
 	this->synth = synth; 
@@ -645,11 +614,12 @@ void SynthWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Base Frequency:")));
 	y += 30;
 	add_subwindow(base_freq = new SynthBaseFreq(synth, this, x, y));
-	x += 80;
+	base_freq->update((float)synth->config.base_freq[0]);
+	x += base_freq->get_w() + synth->get_theme()->widget_border;
 	add_subwindow(freqpot = new SynthFreqPot(synth, this, x, y - 10));
 	base_freq->freq_pot = freqpot;
 	freqpot->freq_text = base_freq;
-	x -= 80;
+	x -= base_freq->get_w() + synth->get_theme()->widget_border;
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Wetness:")));
 	add_subwindow(wetness = new SynthWetness(synth, x + 70, y - 10));
@@ -765,13 +735,14 @@ int SynthWindow::resize_event(int w, int h)
 	note_scroll->update_length(white_key[0]->get_w() * TOTALNOTES * 7 / 12 +
 			white_key[0]->get_w(), 
 		note_scroll->get_position(), 
-		note_subwindow->get_w());
+		note_subwindow->get_w(),
+		0);
 	
 	update_scrollbar();
 	update_notes();
 	update_oscillators();
-	synth->w = w;
-	synth->h = h;
+	synth->window_w = w;
+	synth->window_h = h;
 	return 1;
 }
 
@@ -783,18 +754,21 @@ void SynthWindow::update_gui()
 	wetness->update(synth->config.wetness);
 	waveform_to_text(string, synth->config.wavefunction);
 	waveform->set_text(string);
+	momentary->update(synth->config.momentary_notes);
 	
 	update_scrollbar();
 	update_oscillators();
 	canvas->update();
 	update_note_selection();
+	show_window();
 }
 
 void SynthWindow::update_scrollbar()
 {
 	osc_scroll->update_length(synth->config.oscillator_config.total * OSCILLATORHEIGHT, 
 		osc_scroll->get_position(), 
-		osc_subwindow->get_h());
+		osc_subwindow->get_h(),
+		0);
 }
 
 
@@ -1053,7 +1027,7 @@ int SynthWindow::waveform_to_text(char *text, int waveform)
 SynthMomentary::SynthMomentary(SynthWindow *window, int x, int y, char *text)
  : BC_CheckBox(x, 
 	y, 
-	window->synth->momentary_notes, 
+	window->synth->config.momentary_notes, 
 	text)
 {
 	this->window = window;
@@ -1061,15 +1035,16 @@ SynthMomentary::SynthMomentary(SynthWindow *window, int x, int y, char *text)
 
 int SynthMomentary::handle_event()
 {
-	window->synth->momentary_notes = get_value();
-	window->synth->save_defaults();
+	window->synth->config.momentary_notes = get_value();
+	window->synth->send_configure_change();
 	return 1;
 }
 
 
 
 
-SynthNote::SynthNote(SynthWindow *window, VFrame **images, 
+SynthNote::SynthNote(SynthWindow *window, 
+	VFrame **images, 
 	int number, 
 	int x, 
 	int y)
@@ -1087,10 +1062,10 @@ SynthNote::SynthNote(SynthWindow *window, VFrame **images,
 
 void SynthNote::start_note()
 {
-	if(window->synth->momentary_notes) note_on = 1;
+	if(window->synth->config.momentary_notes) note_on = 1;
 
 //printf("SynthNote::start_note %d %d\n", __LINE__, ctrl_down());
-	if(window->synth->momentary_notes || (!ctrl_down() && !shift_down()))
+	if(window->synth->config.momentary_notes || (!ctrl_down() && !shift_down()))
 	{
 // Kill all frequencies
 		window->synth->delete_freqs();
@@ -1098,6 +1073,7 @@ void SynthNote::start_note()
 
 	window->synth->new_freq(keyboard_freqs[number]);
 	window->base_freq->update((float)window->synth->config.base_freq[0]);
+//printf("SynthNote::start_note %d %f\n", __LINE__, window->synth->config.base_freq[0]);
 	window->freqpot->update(window->synth->config.base_freq[0]);
 	window->synth->send_configure_change();
 	window->update_note_selection();
@@ -1139,7 +1115,7 @@ int SynthNote::keypress_event()
 
 int SynthNote::keyrelease_event()
 {
-	if(note_on && window->synth->momentary_notes)
+	if(note_on && window->synth->config.momentary_notes)
 	{
 		stop_note();
 		set_value(0);
@@ -1207,7 +1183,7 @@ int SynthNote::button_release_event()
 // Change frequency permanently
 	if(window->current_note == number)
 	{
-		if(window->synth->momentary_notes)
+		if(window->synth->config.momentary_notes)
 		{
 // Mute on button release
 			stop_note();
@@ -1218,6 +1194,50 @@ int SynthNote::button_release_event()
 
 	return BC_Toggle::button_release_event();
 }
+
+int SynthNote::draw_face(int flash, int flush)
+{
+	BC_Toggle::draw_face(0, 0);
+	static const char *titles[] =
+	{
+		"C",
+		"C#",
+		"D",
+		"D#",
+		"E",
+		"F",
+		"F#",
+		"G",
+		"G#",
+		"A",
+		"A#",
+		"B"
+	};
+	
+
+	const char *text = titles[number % (sizeof(titles) / sizeof(char*))];
+	char string[BCTEXTLEN];
+	sprintf(string, "%s%d", text, number / 12);
+//printf("SynthNote::draw_face %d %d %d %d %s\n", __LINE__, number, get_w(), get_h(), text);
+	if(text[1] == '#')
+	{
+	}
+	else
+	{
+		set_color(BLACK);
+		draw_text(get_w() / 2 - get_text_width(MEDIUMFONT, string) / 2,
+			get_h() - get_text_height(MEDIUMFONT, string) - window->synth->get_theme()->widget_border,
+			string);
+	}
+
+	if(flash) this->flash(0);
+	if(flush) this->flush();
+	return 0;
+}
+
+
+
+
 
 
 
@@ -1547,11 +1567,11 @@ int SynthFreqPot::handle_event()
 
 
 SynthBaseFreq::SynthBaseFreq(Synth *synth, SynthWindow *window, int x, int y)
- : BC_TextBox(x, y, 70, 1, (float)synth->config.base_freq[0])
+ : BC_TextBox(x, y, 100, 1, (float)0)
 {
 	this->synth = synth;
 	this->window = window;
-	set_precision(0.01);
+	set_precision(2);
 }
 SynthBaseFreq::~SynthBaseFreq()
 {
@@ -2053,29 +2073,6 @@ void SynthOscillatorConfig::reset()
 	freq_factor = 1;
 }
 
-void SynthOscillatorConfig::load_defaults(BC_Hash *defaults)
-{
-	char string[BCTEXTLEN];
-
-	sprintf(string, "LEVEL%d", number);
-	level = defaults->get(string, (float)0);
-	sprintf(string, "PHASE%d", number);
-	phase = defaults->get(string, (float)0);
-	sprintf(string, "FREQFACTOR%d", number);
-	freq_factor = defaults->get(string, (float)1);
-}
-
-void SynthOscillatorConfig::save_defaults(BC_Hash *defaults)
-{
-	char string[BCTEXTLEN];
-
-	sprintf(string, "LEVEL%d", number);
-	defaults->update(string, (float)level);
-	sprintf(string, "PHASE%d", number);
-	defaults->update(string, (float)phase);
-	sprintf(string, "FREQFACTOR%d", number);
-	defaults->update(string, (float)freq_factor);
-}
 
 void SynthOscillatorConfig::read_data(FileXML *file)
 {
@@ -2143,6 +2140,8 @@ void SynthConfig::reset()
 	{
 		oscillator_config.values[i]->reset();
 	}
+	
+	momentary_notes = 0;
 }
 
 int SynthConfig::equivalent(SynthConfig &that)
@@ -2152,7 +2151,8 @@ int SynthConfig::equivalent(SynthConfig &that)
 		if(base_freq[i] != that.base_freq[i]) return 0;
 
 	if(wavefunction != that.wavefunction ||
-		oscillator_config.total != that.oscillator_config.total) return 0;
+		oscillator_config.total != that.oscillator_config.total ||
+		momentary_notes != that.momentary_notes) return 0;
 
 	for(int i = 0; i < oscillator_config.total; i++)
 	{
@@ -2169,6 +2169,7 @@ void SynthConfig::copy_from(SynthConfig& that)
 	for(int i = 0; i < MAX_FREQS; i++)
 		base_freq[i] = that.base_freq[i];
 	wavefunction = that.wavefunction;
+	momentary_notes = that.momentary_notes;
 
 	int i;
 	for(i = 0; 
@@ -2192,6 +2193,7 @@ void SynthConfig::copy_from(SynthConfig& that)
 	{
 		oscillator_config.remove_object();
 	}
+
 }
 
 void SynthConfig::interpolate(SynthConfig &prev, 
@@ -2206,6 +2208,8 @@ void SynthConfig::interpolate(SynthConfig &prev,
 	copy_from(prev);
 	wetness = (int)(prev.wetness * prev_scale + next.wetness * next_scale);
 //	base_freq = (int)(prev.base_freq * prev_scale + next.base_freq * next_scale);
+
+	momentary_notes = prev.momentary_notes;
 }
 
 

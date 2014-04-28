@@ -24,7 +24,7 @@
 #include "filexml.h"
 #include "histogramengine.h"
 #include "language.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "threshold.h"
 #include "thresholdwindow.h"
 #include "vframe.h"
@@ -154,26 +154,6 @@ int ThresholdMain::process_buffer(VFrame *frame,
 	return 0;
 }
 
-int ThresholdMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sthreshold.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	config.min = defaults->get("MIN", config.min);
-	config.max = defaults->get("MAX", config.max);
-	config.plot = defaults->get("PLOT", config.plot);
-	config.boundaries();
-	return 0;
-}
-
-int ThresholdMain::save_defaults()
-{
-	defaults->update("MIN", config.min);
-	defaults->update("MAX", config.max);
-	defaults->update("PLOT", config.plot);
-	defaults->save();
-}
 
 void ThresholdMain::save_data(KeyFrame *keyframe)
 {

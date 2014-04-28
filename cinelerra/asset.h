@@ -47,6 +47,7 @@ public:
 
 	int init_values();
 	int dump();
+	void boundaries();
 
 	void copy_from(Asset *asset, int do_index);
 	void copy_location(Asset *asset);

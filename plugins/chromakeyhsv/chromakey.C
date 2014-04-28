@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "playback3d.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -276,7 +276,6 @@ ChromaKeyWindow::create_objects ()
 
   update_sample ();
   show_window ();
-  flush ();
 }
 
 void
@@ -463,7 +462,8 @@ ChromaKeyShowMask::handle_event ()
   return 1;
 }
 
-ChromaKeyUseColorPicker::ChromaKeyUseColorPicker (ChromaKeyHSV * plugin, ChromaKeyWindow * gui, int x, int y):BC_GenericButton (x, y,
+ChromaKeyUseColorPicker::ChromaKeyUseColorPicker (ChromaKeyHSV * plugin, ChromaKeyWindow * gui, int x, int y)
+ : BC_GenericButton (x, y,
 		  _
 		  ("Use color picker"))
 {
@@ -477,7 +477,10 @@ ChromaKeyUseColorPicker::handle_event ()
   plugin->config.red = plugin->get_red ();
   plugin->config.green = plugin->get_green ();
   plugin->config.blue = plugin->get_blue ();
+
   gui->update_sample ();
+
+
   plugin->send_configure_change ();
   return 1;
 }
@@ -522,9 +525,8 @@ ChromaKeySpillAmount::handle_event ()
 
 
 
-ChromaKeyColorThread::ChromaKeyColorThread (ChromaKeyHSV * plugin, ChromaKeyWindow * gui):ColorThread (1,
-	     _
-	     ("Inner color"))
+ChromaKeyColorThread::ChromaKeyColorThread (ChromaKeyHSV * plugin, ChromaKeyWindow * gui)
+ : ColorThread (1, _("Inner color"))
 {
   this->plugin = plugin;
   this->gui = gui;
@@ -536,7 +538,14 @@ ChromaKeyColorThread::handle_new_color (int output, int alpha)
   plugin->config.red = (float) (output & 0xff0000) / 0xff0000;
   plugin->config.green = (float) (output & 0xff00) / 0xff00;
   plugin->config.blue = (float) (output & 0xff) / 0xff;
+
+  get_gui()->unlock_window();
+  gui->lock_window("ChromaKeyColorThread::handle_new_color");
   gui->update_sample ();
+  gui->unlock_window();
+  get_gui()->lock_window("ChromaKeyColorThread::handle_new_color");
+
+
   plugin->send_configure_change ();
   return 1;
 }
@@ -674,6 +683,15 @@ void ChromaKeyUnit::process_chromakey(int components,
 	  		HSV::rgb_to_hsv (r, g, b, h, s, v);
 
 // First, test if the hue is in range
+
+/* Hue wrap */
+			if(h <= hue_key - tolerance_in * 180.0)
+				h += 360;
+			else
+			if(h >= hue_key + tolerance_in * 180.0)
+				h -= 360;
+
+
 			if (tolerance == 0)
 	    	    ah = 1.0;
 			else 
@@ -909,57 +927,6 @@ NEW_PICON_MACRO(ChromaKeyHSV)
 
 LOAD_CONFIGURATION_MACRO(ChromaKeyHSV, ChromaKeyConfig)
 
-int ChromaKeyHSV::load_defaults ()
-{
-  char directory[BCTEXTLEN];
-// set the default directory
-  sprintf (directory, "%schromakey-hsv.rc", BCASTDIR);
-
-// load the defaults
-  defaults = new BC_Hash (directory);
-  defaults->load ();
-
-  config.red = defaults->get ("RED", config.red);
-  config.green = defaults->get ("GREEN", config.green);
-  config.blue = defaults->get ("BLUE", config.blue);
-  config.min_brightness =
-    defaults->get ("MIN_BRIGHTNESS", config.min_brightness);
-  config.max_brightness =
-    defaults->get ("MAX_BRIGHTNESS", config.max_brightness);
-  config.saturation = defaults->get ("SATURATION", config.saturation);
-  config.min_saturation =
-    defaults->get ("MIN_SATURATION", config.min_saturation);
-  config.tolerance = defaults->get ("TOLERANCE", config.tolerance);
-  config.spill_threshold =
-    defaults->get ("SPILL_THRESHOLD", config.spill_threshold);
-  config.spill_amount = defaults->get ("SPILL_AMOUNT", config.spill_amount);
-  config.in_slope = defaults->get ("IN_SLOPE", config.in_slope);
-  config.out_slope = defaults->get ("OUT_SLOPE", config.out_slope);
-  config.alpha_offset = defaults->get ("ALPHA_OFFSET", config.alpha_offset);
-  config.show_mask = defaults->get ("SHOW_MASK", config.show_mask);
-  return 0;
-}
-
-int
-ChromaKeyHSV::save_defaults ()
-{
-  defaults->update ("RED", config.red);
-  defaults->update ("GREEN", config.green);
-  defaults->update ("BLUE", config.blue);
-  defaults->update ("MIN_BRIGHTNESS", config.min_brightness);
-  defaults->update ("MAX_BRIGHTNESS", config.max_brightness);
-  defaults->update ("SATURATION", config.saturation);
-  defaults->update ("MIN_SATURATION", config.min_saturation);
-  defaults->update ("TOLERANCE", config.tolerance);
-  defaults->update ("IN_SLOPE", config.in_slope);
-  defaults->update ("OUT_SLOPE", config.out_slope);
-  defaults->update ("ALPHA_OFFSET", config.alpha_offset);
-  defaults->update ("SPILL_THRESHOLD", config.spill_threshold);
-  defaults->update ("SPILL_AMOUNT", config.spill_amount);
-  defaults->update ("SHOW_MASK", config.show_mask);
-  defaults->save ();
-  return 0;
-}
 
 void
 ChromaKeyHSV::save_data (KeyFrame * keyframe)
@@ -1061,7 +1028,7 @@ int ChromaKeyHSV::handle_opengl()
 	ChromaKeyHSV *plugin = this;
 	OUTER_VARIABLES
 
-	static char *yuv_shader = 
+	const char *yuv_shader = 
 		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
@@ -1076,7 +1043,7 @@ int ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n";
 
-	static char *rgb_shader = 
+	const char *rgb_shader = 
 		"const vec3 black = vec3(0.0, 0.0, 0.0);\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
@@ -1088,7 +1055,7 @@ int ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n";
 
-	static char *hsv_shader = 
+	const char *hsv_shader = 
 		"vec4 rgb_to_hsv(vec4 color)\n"
 		"{\n"
 			RGB_TO_HSV_FRAG("color")
@@ -1102,19 +1069,19 @@ int ChromaKeyHSV::handle_opengl()
 		"}\n"
 		"\n";
 
-	static char *show_rgbmask_shader = 
+	const char *show_rgbmask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(1.0, 1.0, 1.0, min(color.a, color2.a));"
 		"}\n";
 
-	static char *show_yuvmask_shader = 
+	const char *show_yuvmask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(1.0, 0.5, 0.5, min(color.a, color2.a));"
 		"}\n";
 
-	static char *nomask_shader = 
+	const char *nomask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(color.rgb, min(color.a, color2.a));"
@@ -1122,16 +1089,13 @@ int ChromaKeyHSV::handle_opengl()
 
 	extern unsigned char _binary_chromakey_sl_start[];
 	static char *shader = (char*)_binary_chromakey_sl_start;
-SET_TRACE
 
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
 
-SET_TRACE
-	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+	const char* shader_stack[] = { 0, 0, 0, 0, 0 };
 
-SET_TRACE
 	switch(get_output()->get_color_model())
 	{
 		case BC_YUV888:
@@ -1157,7 +1121,6 @@ SET_TRACE
 	}
 
 
-SET_TRACE
 	unsigned int frag = VFrame::make_shader(0, 
 		shader_stack[0], 
 		shader_stack[1], 
@@ -1165,7 +1128,6 @@ SET_TRACE
 		shader_stack[3], 
 		0);
 
-SET_TRACE
 	if(frag)
 	{
 		glUseProgram(frag);
@@ -1196,7 +1158,6 @@ SET_TRACE
 		glUniform1f(glGetUniformLocation(frag, "value_key"), value_key);
 	}
 
-SET_TRACE
 
 	get_output()->bind_texture(0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1210,14 +1171,12 @@ SET_TRACE
 	}
 	get_output()->draw_texture();
 
-SET_TRACE
 	glUseProgram(0);
 	get_output()->set_opengl_state(VFrame::SCREEN);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_BLEND);
 
-SET_TRACE
 
 #endif
 }

@@ -1,9 +1,7 @@
 include ../../global_config
 
 OBJS = $(OBJDIR)/title.o  \
-	$(OBJDIR)/titlewindow.o \
-	../colors/$(OBJDIR)/colorpicker.o \
-	../colors/$(OBJDIR)/plugincolors.o
+	$(OBJDIR)/titlewindow.o
 
 
 

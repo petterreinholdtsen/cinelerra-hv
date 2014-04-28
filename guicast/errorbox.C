@@ -45,6 +45,7 @@ int ErrorBox::create_objects(const char *text)
 	x = get_w() / 2 - 30;
 	y = get_h() - 50;
 	add_tool(new BC_OKButton(x, y));
+	show_window(1);
 	unlock_window();
 	return 0;
 }

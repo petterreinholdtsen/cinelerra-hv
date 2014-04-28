@@ -87,7 +87,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/libavc1394-0.5.1/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/libavc1394-0.5.1/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/libavc1394-0.5.1/missing --run automake-1.9
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -I/root/hvirtual/thirdparty/libraw1394-1.2.0/ -Wall -Wunused
@@ -135,7 +135,7 @@ PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 VERSION = 0.5.1
 ac_ct_AR = ar

@@ -122,8 +122,8 @@ int VirtualANode::read_data(Samples *output_temp,
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualANode::read_data position=%lld rate=%lld title=%s parent_node=%p parent_edit=%p\n", 
-				start_position,
-				sample_rate,
+				(long long)start_position,
+				(long long)sample_rate,
 				track->title,
 				parent_node,
 				parent_edit);
@@ -248,6 +248,11 @@ int VirtualANode::render_as_module(Samples **audio_out,
 			sample_rate);
 	}
 
+// for(int k = 0; k < len; k++)
+// {
+// 	output_temp->get_data()[k] = (k / 10) % 2;
+// }
+
 if(debug) printf("VirtualANode::render_as_module %d\n", __LINE__);
 	render_fade(output_temp->get_data(),
 				len,
@@ -356,6 +361,7 @@ if(debug) printf("VirtualANode::render_as_module %d\n", __LINE__);
 								j,
 								direction,
 								0);
+//printf("VirtualANode::render_as_module %d %lld\n", __LINE__, start_position);
 				}
 			}
 		}

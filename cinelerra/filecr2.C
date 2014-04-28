@@ -29,8 +29,6 @@
 #include <string.h>
 #include <unistd.h>
 
-// Only allow one instance of the decoder to run simultaneously.
-static Mutex cr2_mutex("cr2_mutex");
 
 extern "C"
 {
@@ -43,7 +41,7 @@ int dcraw_main (int argc, const char **argv);
 
 
 FileCR2::FileCR2(Asset *asset, File *file)
- : FileBase(asset, file)
+ : FileList(asset, file, "CR2LIST", ".cr2", FILE_CR2, FILE_CR2_LIST)
 {
 	reset();
 	if(asset->format == FILE_UNKNOWN)
@@ -65,9 +63,26 @@ int FileCR2::check_sig(Asset *asset)
 {
 	char *ptr = strstr(asset->path, ".pcm");
 	if(ptr) return 0;
+//printf("FileCR2::check_sig %d\n", __LINE__);
+	FILE *stream = fopen(asset->path, "rb");
+
+	if(stream)
+	{
+		char test[10];
+		int temp = fread(test, 10, 1, stream);
+		fclose(stream);
+
+		if(test[0] == 'C' && test[1] == 'R' && test[2] == '2' && 
+			test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && test[6] == 'T')
+		{
+//printf("FileCR2::check_sig %d\n", __LINE__);
+			return 1;
+		}
+	}
+
+//printf("FileCR2::check_sig %d\n", __LINE__);
 
 
-	cr2_mutex.lock("FileCR2::check_sig");
 	char string[BCTEXTLEN];
 	int argc = 3;
 
@@ -83,52 +98,68 @@ int FileCR2::check_sig(Asset *asset)
 
 	int result = dcraw_main(argc, argv);
 
-	cr2_mutex.unlock();
+//printf("FileCR2::check_sig %d %d\n", __LINE__, result);
 
 	return !result;
 }
 
-int FileCR2::open_file(int rd, int wr)
-{
-	cr2_mutex.lock("FileCR2::check_sig");
+// int FileCR2::open_file(int rd, int wr)
+// {
+// 
+// 	int argc = 3;
+// 	const char *argv[4] = 
+// 	{
+// 		"dcraw",
+// 		"-i",
+// 		asset->path,
+// 		0
+// 	};
+// 
+// 	int result = dcraw_main(argc, argv);
+// 	if(!result) format_to_asset();
+// 
+// 	return result;
+// }
 
+int FileCR2::read_frame_header(char *path)
+{
 	int argc = 3;
+printf("FileCR2::read_frame_header %d\n", __LINE__);
 	const char *argv[4] = 
 	{
 		"dcraw",
 		"-i",
-		asset->path,
+		path,
 		0
 	};
 
 	int result = dcraw_main(argc, argv);
 	if(!result) format_to_asset();
 
-	cr2_mutex.unlock();
+printf("FileCR2::read_frame_header %d %d\n", __LINE__, result);
 	return result;
 }
 
 
-int FileCR2::close_file()
-{
-	return 0;
-}
 
+
+// int FileCR2::close_file()
+// {
+// 	return 0;
+// }
+// 
 void FileCR2::format_to_asset()
 {
 	asset->video_data = 1;
 	asset->layers = 1;
 	sscanf(dcraw_info, "%d %d", &asset->width, &asset->height);
-	if(!asset->frame_rate) asset->frame_rate = 1;
-	asset->video_length = -1;
 }
 
 
-int FileCR2::read_frame(VFrame *frame)
+int FileCR2::read_frame(VFrame *frame, char *path)
 {
 //printf("FileCR2::read_frame\n");
 
-	cr2_mutex.lock("FileCR2::read_frame");
 	if(frame->get_color_model() == BC_RGBA_FLOAT)
 		dcraw_alpha = 1;
 	else
@@ -175,8 +206,8 @@ int FileCR2::read_frame(VFrame *frame)
 		argv[argc++] = (char*)"-d";
 	}
 
-
-	argv[argc++] = asset->path;
+printf("FileCR2::read_frame %d %s\n", __LINE__, path);
+	argv[argc++] = path;
 
 	dcraw_data = (float**)frame->get_rows();
 
@@ -207,7 +238,6 @@ int FileCR2::read_frame(VFrame *frame)
 
 // frame->dump_params();
 
-	cr2_mutex.unlock();
 	return 0;
 }
 
@@ -227,13 +257,18 @@ int FileCR2::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB_FLOAT;
 }
 
-int64_t FileCR2::get_memory_usage()
-{
-	int64_t result = asset->width * asset->height * sizeof(float) * 3;
-//printf("FileCR2::get_memory_usage %d %lld\n", __LINE__, result);
-	return result;
-}
+// int64_t FileCR2::get_memory_usage()
+// {
+// 	int64_t result = asset->width * asset->height * sizeof(float) * 3;
+// //printf("FileCR2::get_memory_usage %d %lld\n", __LINE__, result);
+// 	return result;
+// }
 
+
+int FileCR2::use_path()
+{
+	return 1;
+}
 
 
 

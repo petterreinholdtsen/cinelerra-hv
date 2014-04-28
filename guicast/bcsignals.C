@@ -327,9 +327,9 @@ void BC_Signals::dump_traces()
 	if(execution_table.size)
 	{
 		for(int i = execution_table.current_value; i < execution_table.size; i++)
-			printf("    %s\n", execution_table.values[i]);
+			printf("    %s\n", (char*)execution_table.values[i]);
 		for(int i = 0; i < execution_table.current_value; i++)
-			printf("    %s\n", execution_table.values[i]);
+			printf("    %s\n", (char*)execution_table.values[i]);
 	}
 
 }
@@ -337,6 +337,7 @@ void BC_Signals::dump_traces()
 void BC_Signals::dump_locks()
 {
 // Dump lock table
+#ifdef TRACE_LOCKS
 	printf("signal_entry: lock table size=%d\n", lock_table.size);
 	for(int i = 0; i < lock_table.size; i++)
 	{
@@ -347,11 +348,12 @@ void BC_Signals::dump_locks()
 			table->location,
 			table->is_owner ? "*" : "");
 	}
-
+#endif
 }
 
 void BC_Signals::dump_buffers()
 {
+#ifdef TRACE_MEMORY
 	pthread_mutex_lock(lock);
 // Dump buffer table
 	printf("BC_Signals::dump_buffers: buffer table size=%d\n", memory_table.size);
@@ -361,12 +363,13 @@ void BC_Signals::dump_buffers()
 		printf("    %d %p %s\n", entry->size, entry->ptr, entry->location);
 	}
 	pthread_mutex_unlock(lock);
+#endif
 }
 
 void BC_Signals::delete_temps()
 {
 	pthread_mutex_lock(lock);
-	printf("BC_Signals::delete_temps: deleting %d temp files\n", temp_files.size);
+	if(temp_files.size) printf("BC_Signals::delete_temps: deleting %d temp files\n", temp_files.size);
 	for(int i = 0; i < temp_files.size; i++)
 	{
 		printf("    %s\n", (char*)temp_files.values[i]);

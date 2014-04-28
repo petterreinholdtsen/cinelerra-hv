@@ -1,8 +1,8 @@
 include ../../global_config
 
 OBJS := \
-	../downsample/$(OBJDIR)/downsampleengine.o \
-	../motion/$(OBJDIR)/motionscan.o \
+	$(OBJDIR)/downsampleengine.o \
+	$(OBJDIR)/motionscan.o \
 	$(OBJDIR)/motion.o \
 	$(OBJDIR)/motionwindow.o
 
@@ -10,5 +10,7 @@ OUTPUT := $(PLUGIN_DIR)/motion2.plugin
 
 include ../../plugin_config
 
+$(OBJDIR)/downsampleengine.o: downsampleengine.C
 $(OBJDIR)/motion.o: motion.C
+$(OBJDIR)/motionscan.o: motionscan.C
 $(OBJDIR)/motionwindow.o: motionwindow.C

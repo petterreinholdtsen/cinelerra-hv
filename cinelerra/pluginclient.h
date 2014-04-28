@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 // Base class inherited by all the different types of plugins.
 
 #define BCASTDIR "~/.bcast/"
+#define MAX_FRAME_BUFFER 1024
 
 class PluginClient;
 
@@ -79,6 +80,15 @@ PluginClient* new_plugin(PluginServer *server) \
 #define PLUGIN_CLASS_MEMBERS(config_name) \
 	int load_configuration(); \
 	VFrame* new_picon(); \
+	const char* plugin_title(); \
+	PluginClientWindow* new_window(); \
+	config_name config;
+
+
+
+// Prototypes for user to put in class header
+#define PLUGIN_CLASS_MEMBERS2(config_name) \
+	int load_configuration(); \
 	const char* plugin_title(); \
 	PluginClientWindow* new_window(); \
 	config_name config;
@@ -147,8 +157,17 @@ public:
 		int min_w,
 		int min_h,
 		int allow_resize);
+	PluginClientWindow(const char *title, 
+		int x,
+		int y,
+		int w,
+		int h,
+		int min_w,
+		int min_h,
+		int allow_resize);
 	virtual ~PluginClientWindow();
 	
+	virtual int translation_event();
 	virtual int close_event();
 	
 	PluginClient *client;
@@ -173,6 +192,22 @@ public:
 
 private:
 	Condition *init_complete;
+};
+
+
+
+// Client overrides for GUI update data
+class PluginClientFrame
+{
+public:
+// Period_d is 1 second
+	PluginClientFrame(int data_size, int period_n, int period_d);
+	virtual ~PluginClientFrame();
+	int data_size;
+	int period_n;
+	int period_d;
+// Draw immediately
+	int force;
 };
 
 
@@ -222,6 +257,10 @@ public:
 	virtual int start_loop();
 	virtual int process_loop();
 	virtual int stop_loop();
+// Hash files are the defaults for rendered plugins
+	virtual int load_defaults();       // load default settings for the plugin
+	virtual int save_defaults();      // save the current settings as defaults
+	BC_Hash* get_defaults();
 
 
 
@@ -241,8 +280,13 @@ public:
 	void raise_window();
 // Create GUI
 	int show_gui();
+// XML keyframes are the defaults for realtime plugins
+	void load_defaults_xml();
+	void save_defaults_xml();
+// Tell the client if the load is the defaults
+	int is_defaults();
 
-	virtual void update_gui() {};
+	virtual void update_gui();
 	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
 	int send_hide_gui();                                    // should be sent when the GUI recieves a close event from the user
@@ -252,8 +296,13 @@ public:
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
 // Called by plugin server to update GUI with rendered data.
-	virtual void plugin_render_gui(void *data) {};
-	virtual void plugin_render_gui(void *data, int size) {};
+	void plugin_render_gui(void *data);
+	void plugin_render_gui(void *data, int size);
+
+	void begin_process_buffer();
+	void end_process_buffer();
+
+	void plugin_update_gui();
 	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
 	virtual int plugin_process_loop(Samples **buffers, int64_t &write_length) { return 1; };
 // get parameters depending on video or audio
@@ -360,9 +409,6 @@ public:
 
 
 // All plugins define these.
-	virtual int load_defaults();       // load default settings for the plugin
-	virtual int save_defaults();      // save the current settings as defaults
-	BC_Hash* get_defaults();
 	PluginClientThread* get_thread();
 
 
@@ -397,6 +443,31 @@ public:
 	int plugin_init_realtime(int realtime_priority, 
 		int total_in_buffers,
 		int buffer_size);
+
+
+// GUI updating wrappers for realtime plugins
+// Append frame to queue for next send_frame_buffer
+	void add_gui_frame(PluginClientFrame *frame);
+
+
+
+	virtual void render_gui(void *data);
+	virtual void render_gui(void *data, int size);
+
+// Called by client to get the total number of frames to draw in update_gui
+	int get_gui_update_frames();
+// Get GUI frame from frame_buffer.  Client must delete it.
+	PluginClientFrame* get_gui_frame();
+
+// Called by client to cause GUI to be rendered with data.
+	void send_render_gui();
+	void send_render_gui(void *data);
+	void send_render_gui(void *data, int size);
+
+
+
+
+
 
 
 
@@ -476,7 +547,14 @@ public:
 	BC_Hash *defaults;
 	PluginClientThread *thread;
 
+// Frames for updating GUI
+	ArrayList<PluginClientFrame*> frame_buffer;
+// Time of last GUI update
+	Timer *update_timer;
+
+
 private:
+	int using_defaults;
 // Temporaries set in new_window
 	int window_x, window_y;
 // File handlers:

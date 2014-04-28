@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,6 +163,18 @@ int PreferencesThread::update_framerate()
 	return 0;
 }
 
+
+void PreferencesThread::update_rates()
+{
+	if(thread_running)
+	{
+		lock_gui("PreferencesThread::update_framerate");
+		PreferencesWindow *window = (PreferencesWindow*)get_gui();
+		if(window) window->update_rates();
+		unlock_gui();
+	}
+}
+
 int PreferencesThread::apply_settings()
 {
 // Compare sessions 											
@@ -212,12 +224,16 @@ int PreferencesThread::apply_settings()
 
 
 
-		mwindow->vwindow->gui->lock_window("PreferencesThread::apply_settings");
-		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
-			edl->session->min_meter_db,
-			edl->session->max_meter_db);
-		mwindow->vwindow->gui->unlock_window();
+		for(int i = 0; i < mwindow->vwindows.size(); i++)
+		{
+			VWindow *vwindow = mwindow->vwindows.get(i);
+			vwindow->gui->lock_window("PreferencesThread::apply_settings");
+			vwindow->gui->meters->change_format(edl->session->meter_format,
+				edl->session->min_meter_db,
+				edl->session->max_meter_db);
+			vwindow->gui->unlock_window();
 
+		}
 
 
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
@@ -405,19 +421,32 @@ void PreferencesWindow::create_objects()
 int PreferencesWindow::update_framerate()
 {
 	lock_window("PreferencesWindow::update_framerate");
-	if(thread->current_dialog == 0)
+	if(thread->current_dialog == PreferencesThread::PLAYBACK)
 	{
-		dialog->draw_framerate();
-		flash();
+		dialog->draw_framerate(1);
+//		flash();
 	}
 	unlock_window();
 	return 0;
 }
 
+
+void PreferencesWindow::update_rates()
+{
+	lock_window("PreferencesWindow::update_rates");
+	if(thread->current_dialog == PreferencesThread::PERFORMANCE)
+	{
+		dialog->update_rates();
+	}
+	unlock_window();
+}
+
+
 int PreferencesWindow::set_current_dialog(int number)
 {
 	thread->current_dialog = number;
-	if(dialog) delete dialog;
+
+	PreferencesDialog *dialog2 = dialog;
 	dialog = 0;
 
 // Redraw category buttons
@@ -433,7 +462,7 @@ int PreferencesWindow::set_current_dialog(int number)
 			category_button[i]->set_images(
 				mwindow->theme->get_image_set("category_button"));
 		}
-		category_button[i]->draw_face();
+		category_button[i]->draw_face(0);
 
 // Copy face to background for next button's overlap.
 // Still can't do state changes right.
@@ -466,9 +495,17 @@ int PreferencesWindow::set_current_dialog(int number)
 	if(dialog)
 	{
 		dialog->draw_top_background(this, 0, 0, dialog->get_w(), dialog->get_h());
+//printf("PreferencesWindow::set_current_dialog %d\n", __LINE__);
 		dialog->create_objects();
+//printf("PreferencesWindow::set_current_dialog %d\n", __LINE__);
+		dialog->show_window(0);
 	}
 
+	if(dialog2) 
+	{
+		dialog2->hide_window(0);
+		delete dialog2;
+	}
 
 	return 0;
 }

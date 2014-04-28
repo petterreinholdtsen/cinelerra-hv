@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,16 +166,22 @@ void SetFormatThread::apply_changes()
 	mwindow->cwindow->gui->resize_event(mwindow->cwindow->gui->get_w(), 
 		mwindow->cwindow->gui->get_h());
 	mwindow->cwindow->gui->meters->set_meters(new_channels, 1);
+#ifdef USE_SLIDER
 	mwindow->cwindow->gui->slider->set_position();
+#endif
 	mwindow->cwindow->gui->flush();
 	mwindow->cwindow->gui->unlock_window();
 
-	mwindow->vwindow->gui->lock_window("SetFormatThread::apply_changes");
-	mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
-		mwindow->vwindow->gui->get_h());
-	mwindow->vwindow->gui->meters->set_meters(new_channels, 1);
-	mwindow->vwindow->gui->flush();
-	mwindow->vwindow->gui->unlock_window();
+	for(int i = 0; i < mwindow->vwindows.size(); i++)
+	{
+		VWindow *vwindow = mwindow->vwindows.get(i);
+		vwindow->gui->lock_window("SetFormatThread::apply_changes");
+		vwindow->gui->resize_event(vwindow->gui->get_w(), 
+			vwindow->gui->get_h());
+		vwindow->gui->meters->set_meters(new_channels, 1);
+		vwindow->gui->flush();
+		vwindow->gui->unlock_window();
+	}
 
 	mwindow->lwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);

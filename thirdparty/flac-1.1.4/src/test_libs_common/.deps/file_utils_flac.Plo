@@ -1,18 +1,16 @@
 file_utils_flac.lo: file_utils_flac.c ../../config.h \
  ../../include/FLAC/assert.h ../../include/FLAC/stream_encoder.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/bits/predefs.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
- ../../include/FLAC/export.h ../../include/FLAC/format.h \
- ../../include/FLAC/ordinals.h /usr/include/inttypes.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
- /usr/include/stdint.h /usr/include/bits/wchar.h \
+ /usr/include/bits/stdio.h ../../include/FLAC/export.h \
+ ../../include/FLAC/format.h ../../include/FLAC/ordinals.h \
+ /usr/include/inttypes.h /usr/include/stdint.h /usr/include/bits/wchar.h \
  ../../include/FLAC/stream_decoder.h \
  ../../include/test_libs_common/file_utils_flac.h \
  ../../include/FLAC/format.h /usr/include/sys/types.h /usr/include/time.h \
@@ -22,8 +20,7 @@ file_utils_flac.lo: file_utils_flac.c ../../config.h \
  /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
  /usr/include/bits/pthreadtypes.h /usr/include/stdlib.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
- /usr/include/alloca.h /usr/include/bits/stdlib.h /usr/include/sys/stat.h \
- /usr/include/bits/stat.h
+ /usr/include/alloca.h /usr/include/sys/stat.h /usr/include/bits/stat.h
 
 ../../config.h:
 
@@ -35,8 +32,6 @@ file_utils_flac.lo: file_utils_flac.c ../../config.h \
 
 /usr/include/features.h:
 
-/usr/include/bits/predefs.h:
-
 /usr/include/sys/cdefs.h:
 
 /usr/include/bits/wordsize.h:
@@ -45,7 +40,7 @@ file_utils_flac.lo: file_utils_flac.c ../../config.h \
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/bits/types.h:
 
@@ -57,15 +52,13 @@ file_utils_flac.lo: file_utils_flac.c ../../config.h \
 
 /usr/include/wchar.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
 /usr/include/bits/sys_errlist.h:
 
 /usr/include/bits/stdio.h:
-
-/usr/include/bits/stdio2.h:
 
 ../../include/FLAC/export.h:
 
@@ -74,8 +67,6 @@ file_utils_flac.lo: file_utils_flac.c ../../config.h \
 ../../include/FLAC/ordinals.h:
 
 /usr/include/inttypes.h:
-
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 
@@ -116,8 +107,6 @@ file_utils_flac.lo: file_utils_flac.c ../../config.h \
 /usr/include/bits/waitstatus.h:
 
 /usr/include/alloca.h:
-
-/usr/include/bits/stdlib.h:
 
 /usr/include/sys/stat.h:
 

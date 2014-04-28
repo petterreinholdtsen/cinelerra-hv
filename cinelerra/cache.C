@@ -395,14 +395,14 @@ int CICache::dump()
 {
 	CICacheItem *current;
 	total_lock->lock("CICache::dump");
-	printf("CICache::dump total size %lld\n", get_memory_usage(0));
+	printf("CICache::dump total size %lld\n", (long long)get_memory_usage(0));
 	for(current = first; current; current = NEXT)
 	{
-		printf("cache item %x asset %x %s age=%d\n", 
+		printf("cache item %p asset %p %s age=%d\n", 
 			current, 
 			current->asset,
 			current->asset->path, 
-			current->age);
+			(int)current->age);
 	}
 	total_lock->unlock();
 }

@@ -1,7 +1,6 @@
 include ../../global_config
 
-OBJS = ../colors/$(OBJDIR)/plugincolors.o \
-	$(OBJDIR)/videoscope.o
+OBJS = $(OBJDIR)/videoscope.o
 
 OUTPUT = $(PLUGIN_DIR)/videoscope.plugin
 

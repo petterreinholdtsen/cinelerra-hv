@@ -93,8 +93,6 @@ public:
 	void update_gui();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	int load_defaults();
-	int save_defaults();
 
 	void reduce_field(VFrame *output, VFrame *input, int src_field, int dst_field);
 

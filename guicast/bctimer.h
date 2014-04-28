@@ -34,6 +34,8 @@ public:
 	
 // set last update to now
 	int update();
+// subtract milliseconds from current difference
+	void subtract(int64_t value);
 	
 // get difference between now and last update in milliseconds
 // must be positive or error results

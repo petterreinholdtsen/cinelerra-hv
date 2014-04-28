@@ -35,7 +35,7 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "vframe.h"
 
 

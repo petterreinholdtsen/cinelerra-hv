@@ -71,8 +71,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(LoopAudioConfig)
 
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -275,7 +273,7 @@ int LoopAudio::process_buffer(int64_t size,
 // current_position, current_loop_position, current_loop_end, fragment_size);
 		int offset = buffer->get_offset();
 		buffer->set_offset(offset + i);
-		read_samples(buffer + i,
+		read_samples(buffer,
 			0,
 			sample_rate,
 			current_loop_position,
@@ -302,26 +300,6 @@ int LoopAudio::load_configuration()
 	return old_samples != config.samples;
 }
 
-int LoopAudio::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sloopaudio.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.samples = defaults->get("SAMPLES", config.samples);
-	return 0;
-}
-
-int LoopAudio::save_defaults()
-{
-	defaults->update("SAMPLES", config.samples);
-	defaults->save();
-	return 0;
-}
 
 void LoopAudio::save_data(KeyFrame *keyframe)
 {

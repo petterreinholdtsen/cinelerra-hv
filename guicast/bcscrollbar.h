@@ -88,7 +88,7 @@ public:
 	void set_images(VFrame **data);
 	int in_use();
 	int update_value(int64_t value);
-	int update_length(int64_t length, int64_t position, int64_t handlelength);
+	int update_length(int64_t length, int64_t position, int64_t handlelength, int flush);
 	int reposition_window(int x, int y, int pixels);
 	int get_span();
 	static int get_span(int orientation);
@@ -97,7 +97,7 @@ public:
 private:
 	void calculate_dimensions(int &w, int &h);
 	int activate();
-	void draw();
+	void draw(int flush);
 	void get_handle_dimensions();
 	int get_cursor_zone(int cursor_x, int cursor_y);
 

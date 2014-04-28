@@ -40,7 +40,7 @@ LocalSession::LocalSession(EDL *edl)
 	sprintf(clip_title, "Program");
 	strcpy(clip_notes, "Hello world");
 	clipboard_length = 0;
-	preview_start = preview_end = 0;
+//	preview_start = preview_end = 0;
 	loop_playback = 0;
 	loop_start = 0;
 	loop_end = 0;
@@ -76,8 +76,8 @@ void LocalSession::copy_from(LocalSession *that)
 	zoom_sample = that->zoom_sample;
 	zoom_y = that->zoom_y;
 	zoom_track = that->zoom_track;
-	preview_start = that->preview_start;
-	preview_end = that->preview_end;
+//	preview_start = that->preview_start;
+//	preview_end = that->preview_end;
 	red = that->red;
 	green = that->green;
 	automation_min = that->automation_min;
@@ -108,13 +108,13 @@ void LocalSession::save_xml(FileXML *file, double start)
 //printf("EDLSession::save_session 1 %d\n", zoom_track);
 	file->tag.set_property("ZOOM_TRACK", zoom_track);
 	
-	double preview_start = this->preview_start - start;
-	if(preview_start < 0) preview_start = 0;
-	double preview_end = this->preview_end - start;
-	if(preview_end < 0) preview_end = 0;
+//	double preview_start = this->preview_start - start;
+//	if(preview_start < 0) preview_start = 0;
+//	double preview_end = this->preview_end - start;
+//	if(preview_end < 0) preview_end = 0;
 	
-	file->tag.set_property("PREVIEW_START", preview_start);
-	file->tag.set_property("PREVIEW_END", preview_end);
+//	file->tag.set_property("PREVIEW_START", preview_start);
+//	file->tag.set_property("PREVIEW_END", preview_end);
 	file->tag.set_property("RED", red);
 	file->tag.set_property("GREEN", green);
 	file->tag.set_property("BLUE", blue);
@@ -131,8 +131,8 @@ void LocalSession::synchronize_params(LocalSession *that)
 	loop_playback = that->loop_playback;
 	loop_start = that->loop_start;
 	loop_end = that->loop_end;
-	preview_start = that->preview_start;
-	preview_end = that->preview_end;
+//	preview_start = that->preview_start;
+//	preview_end = that->preview_end;
 	red = that->red;
 	green = that->green;
 	blue = that->blue;
@@ -159,8 +159,8 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
-		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
-		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
+//		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
+//		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
 		red = file->tag.get_property("RED", red);
 		green = file->tag.get_property("GREEN", green);
 		blue = file->tag.get_property("BLUE", blue);

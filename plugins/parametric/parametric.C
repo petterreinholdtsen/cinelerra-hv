@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,13 @@
 #include "parametric.h"
 #include "picon_png.h"
 #include "samples.h"
+#include "theme.h"
 #include "units.h"
 #include "vframe.h"
 
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 
 
 
@@ -100,6 +102,7 @@ void ParametricBand::interpolate(ParametricBand &prev,
 ParametricConfig::ParametricConfig()
 {
 	wetness = INFINITYGAIN;
+	window_size = 4096;
 }
 
 
@@ -108,13 +111,15 @@ int ParametricConfig::equivalent(ParametricConfig &that)
 	for(int i = 0; i < BANDS; i++)
 		if(!band[i].equivalent(that.band[i])) return 0;
 
-	if(!EQUIV(wetness, that.wetness)) return 0;
+	if(!EQUIV(wetness, that.wetness) ||
+		window_size != that.window_size) return 0;
 	return 1;
 }
 
 void ParametricConfig::copy_from(ParametricConfig &that)
 {
 	wetness = that.wetness;
+	window_size = that.window_size;
 	for(int i = 0; i < BANDS; i++)
 		band[i].copy_from(that.band[i]);
 }
@@ -128,6 +133,7 @@ void ParametricConfig::interpolate(ParametricConfig &prev,
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	wetness = prev.wetness;
+	window_size = prev.window_size;
 	for(int i = 0; i < BANDS; i++)
 	{
 		band[i].interpolate(prev.band[i], next.band[i], prev_scale, next_scale);
@@ -353,11 +359,52 @@ int ParametricWetness::handle_event()
 
 
 
+
+ParametricSize::ParametricSize(ParametricWindow *window, ParametricEQ *plugin, int x, int y)
+ : BC_PopupMenu(x, y, 100, "4096", 1)
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ParametricSize::handle_event()
+{
+	plugin->config.window_size = atoi(get_text());
+	plugin->send_configure_change();
+
+	window->update_canvas();
+	return 1;
+}
+
+void ParametricSize::create_objects()
+{
+	add_item(new BC_MenuItem("2048"));
+	add_item(new BC_MenuItem("4096"));
+	add_item(new BC_MenuItem("8192"));
+	add_item(new BC_MenuItem("16384"));
+	add_item(new BC_MenuItem("32768"));
+	add_item(new BC_MenuItem("65536"));
+	add_item(new BC_MenuItem("131072"));
+	add_item(new BC_MenuItem("262144"));
+}
+
+void ParametricSize::update(int size)
+{
+	char string[BCTEXTLEN];
+	sprintf(string, "%d", size);
+	set_text(string);
+}
+
+
+
+
+
+
 ParametricWindow::ParametricWindow(ParametricEQ *plugin)
  : PluginClientWindow(plugin, 
-	320, 
+	350, 
 	400, 
-	320, 
+	350, 
 	400,
 	0)
 {
@@ -387,8 +434,26 @@ SET_TRACE
 	}
 
 SET_TRACE	
-	add_subwindow(new BC_Title(10, y + 10, _("Wetness:")));
-	add_subwindow(wetness = new ParametricWetness(plugin, 80, y));
+	BC_Title *title;
+	int x = plugin->get_theme()->widget_border;
+	add_subwindow(title = new BC_Title(x, y + 10, _("Wetness:")));
+	x += title->get_w() + plugin->get_theme()->widget_border;
+	add_subwindow(wetness = new ParametricWetness(plugin, 
+		x, 
+		y));
+	x += wetness->get_w() + plugin->get_theme()->widget_border;
+
+	add_subwindow(title = new BC_Title(x, y + 10, _("Window:")));
+	x += title->get_w() + plugin->get_theme()->widget_border;
+	add_subwindow(size = new ParametricSize(this, 
+		plugin, 
+		x, 
+		y + 10));
+	size->create_objects();
+	size->update(plugin->config.window_size);
+
+
+
 	y += 50;
 	int canvas_x = 30;
 	int canvas_y = y;
@@ -398,7 +463,7 @@ SET_TRACE
 		canvas_y, 
 		canvas_w, 
 		canvas_h, 
-		WHITE));
+		BLACK));
 
 SET_TRACE	
 // Draw canvas titles
@@ -493,6 +558,7 @@ void ParametricWindow::update_gui()
 	for(int i = 0; i < BANDS; i++)
 		bands[i]->update_gui();
 	wetness->update(plugin->config.wetness);
+	size->update(plugin->config.window_size);
 	update_canvas();
 }
 
@@ -509,21 +575,89 @@ void ParametricWindow::update_canvas()
 			4);
 
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+
+
+
+// Draw spectrogram
+	int total_frames = plugin->get_gui_update_frames();
+	ParametricGUIFrame *frame = (ParametricGUIFrame*)plugin->get_gui_frame();
+
+	if(frame)
+	{
+		delete plugin->last_frame;
+		plugin->last_frame = frame;
+	}
+	else
+	{
+		frame = plugin->last_frame;
+	}
+
+// Draw most recent frame
+	if(frame)
+	{
+		canvas->set_color(MEGREY);
+		int y1 = 0;
+		int y2 = 0;
+		for(int i = 0; i < canvas->get_w(); i++)
+		{
+			int freq = Freq::tofreq(i * TOTALFREQS / canvas->get_w());
+			int index = (int64_t)freq * (int64_t)frame->window_size / 2 / niquist;
+			if(index < frame->window_size / 2)
+			{
+				double magnitude = frame->data[index] / 
+					frame->freq_max * 
+					frame->time_max;
+				y2 = (int)(canvas->get_h() - 
+					(DB::todb(magnitude) - INFINITYGAIN) *
+					canvas->get_h() / 
+					-INFINITYGAIN);
+				CLAMP(y2, 0, canvas->get_h() - 1);
+				if(i > 0)
+				{
+					canvas->draw_line(i - 1, y1, i, y2);
+				}
+				y1 = y2;
+			}
+		}
+
+		total_frames--;
+	}
+
+
+
+
+
+
+// Delete remaining frames
+	while(total_frames > 0)
+	{
+		PluginClientFrame *frame = plugin->get_gui_frame();
+
+		if(frame) delete frame;
+		total_frames--;
+	}
+	
+
+
+
+
 // 	canvas->set_color(GREEN);
 // 	canvas->draw_line(0, 
 // 		wetness, 
 // 		canvas->get_w(), 
 // 		wetness);
 
-	canvas->set_color(BLACK);
+	canvas->set_color(WHITE);
+	canvas->set_line_width(2);
 
 	plugin->calculate_envelope();
-	for(int i = 0; i < canvas->get_w() - 1; i++)
+	for(int i = 0; i < canvas->get_w(); i++)
 	{
 		int freq = Freq::tofreq(i * TOTALFREQS / canvas->get_w());
-		int index = freq * WINDOW_SIZE / 2 / niquist;
-		if(freq < niquist)
+		int index = (int64_t)freq * (int64_t)plugin->config.window_size / 2 / niquist;
+		if(freq < niquist && index < plugin->config.window_size / 2)
 		{
+//printf("ParametricWindow::update_canvas %d %d\n", __LINE__, index);
 			double magnitude = plugin->envelope[index];
 			int y2 = canvas->get_h() * 3 / 4;
 
@@ -547,12 +681,13 @@ void ParametricWindow::update_canvas()
 			canvas->draw_line(i - 1, y1, i, y1);
 		}
 	}
+	canvas->set_line_width(1);
 
 
 // 	for(int i = 0; i < canvas->get_w(); i++)
 // 	{
 // 		int freq = Freq::tofreq((int)((float)i / canvas->get_w() * TOTALFREQS));
-// 		int index = (int)((float)freq / niquist * WINDOW_SIZE / 2);
+// 		int index = (int)((float)freq / niquist * plugin->config.window_size / 2);
 // 		double magnitude = plugin->envelope[index];
 // 		int y2 = canvas->get_h() - 
 // 			(int)((double)canvas->get_h() / normalize * magnitude);
@@ -560,12 +695,28 @@ void ParametricWindow::update_canvas()
 // 		y1 = y2;
 // 	}
 
-	canvas->flash();
+	canvas->flash(1);
 }
 
 
 
 
+
+
+
+ParametricGUIFrame::ParametricGUIFrame(int window_size, int sample_rate)
+ : PluginClientFrame(window_size / 2, window_size / 2, sample_rate)
+{
+	this->window_size = window_size;
+	data = new double[window_size / 2];
+	freq_max = 0;
+	time_max = 0;
+}
+
+ParametricGUIFrame::~ParametricGUIFrame()
+{
+	delete [] data;
+}
 
 
 
@@ -589,17 +740,47 @@ ParametricFFT::~ParametricFFT()
 
 int ParametricFFT::signal_process()
 {
+// Create new frame for updating GUI
+	frame = new ParametricGUIFrame(window_size, 
+		plugin->PluginAClient::project_sample_rate);
+	plugin->add_gui_frame(frame);
+
+	double freq_max = 0;
 	for(int i = 0; i < window_size / 2; i++)
 	{
-		double result = plugin->envelope[i] * sqrt(freq_real[i] * freq_real[i] + freq_imag[i] * freq_imag[i]);
+
+// if(i == 10) printf("ParametricFFT::signal_process %d %f\n", 
+// __LINE__, 
+// plugin->envelope[i]);
+
+		double result = plugin->envelope[i] * 
+			sqrt(freq_real[i] * freq_real[i] + freq_imag[i] * freq_imag[i]);
 		double angle = atan2(freq_imag[i], freq_real[i]);
 		freq_real[i] = result * cos(angle);
 		freq_imag[i] = result * sin(angle);
+		
+		frame->data[i] = result;
+		if(result > freq_max) freq_max = result;
 	}
+	frame->freq_max = freq_max;
+
 
 	symmetry(window_size, freq_real, freq_imag);
 	return 0;
 }
+
+int ParametricFFT::post_process()
+{
+	double time_max = 0;
+	for(int i = 0; i < window_size; i++)
+	{
+		if(output_real[i] > time_max) time_max = output_real[i];
+	}
+	frame->time_max = time_max;
+	return 0;
+}
+
+
 
 int ParametricFFT::read_samples(int64_t output_sample, 
 	int samples, 
@@ -625,12 +806,14 @@ ParametricEQ::ParametricEQ(PluginServer *server)
 	
 	fft = 0;
 	need_reconfigure = 1;
+	envelope = 0;
+	last_frame = 0;
 }
 
 ParametricEQ::~ParametricEQ()
 {
-	
-
+	delete last_frame;
+	delete [] envelope;
 	if(fft) delete fft;
 }
 
@@ -658,6 +841,7 @@ void ParametricEQ::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("PARAMETRICEQ"))
 			{
 				config.wetness = input.tag.get_property("WETNESS", config.wetness);
+				config.window_size = input.tag.get_property("WINDOW_SIZE", config.window_size);
 			}
 			else
 			if(input.tag.title_is("BAND"))
@@ -679,6 +863,7 @@ void ParametricEQ::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("PARAMETRICEQ");
 	output.tag.set_property("WETNESS", config.wetness);
+	output.tag.set_property("WINDOW_SIZE", config.window_size);
 	output.append_tag();
 	output.append_newline();
 
@@ -699,10 +884,19 @@ void ParametricEQ::save_data(KeyFrame *keyframe)
 
 void ParametricEQ::reconfigure()
 {
+	if(fft &&
+		config.window_size != fft->window_size)
+	{
+//printf("ParametricEQ::reconfigure %d %d\n", __LINE__, config.window_size);
+		delete fft;
+		fft = 0;
+	}
+
 	if(!fft)
 	{
+//printf("ParametricEQ::reconfigure %d %d\n", __LINE__, config.window_size);
 		fft = new ParametricFFT(this);
-		fft->initialize(WINDOW_SIZE);
+		fft->initialize(config.window_size);
 	}
 
 // Reset envelope
@@ -710,7 +904,7 @@ void ParametricEQ::reconfigure()
 //printf("ParametricEQ::reconfigure %f\n", wetness);
 	calculate_envelope();
 
-	for(int i = 0; i < WINDOW_SIZE / 2; i++)
+	for(int i = 0; i < config.window_size / 2; i++)
 	{
 		if(envelope[i] < 0) envelope[i] = 0;
 	}
@@ -721,11 +915,13 @@ void ParametricEQ::reconfigure()
 double ParametricEQ::calculate_envelope()
 {
 	double wetness = DB::fromdb(config.wetness);
+	if(EQUIV(config.wetness, INFINITYGAIN)) wetness = 0;
 	int niquist = PluginAClient::project_sample_rate / 2;
-//printf("ParametricEQ::calculate_envelope %d %d\n", niquist, PluginAClient::project_sample_rate);
 
+	if(!envelope) envelope = new double[MAX_WINDOW / 2];
 
-	for(int i = 0; i < WINDOW_SIZE / 2; i++)
+//printf("ParametricEQ::calculate_envelope %d %f\n", __LINE__, wetness);
+	for(int i = 0; i < config.window_size / 2; i++)
 	{
 		envelope[i] = wetness;
 	}
@@ -740,8 +936,8 @@ double ParametricEQ::calculate_envelope()
 					if(pass == 1)
 					{
 						double magnitude = DB::fromdb(config.band[band].magnitude);
-						int cutoff = (int)((float)config.band[band].freq / niquist * WINDOW_SIZE / 2);
-						for(int i = 0; i < WINDOW_SIZE / 2; i++)
+						int cutoff = (int)((double)config.band[band].freq / niquist * config.window_size / 2);
+						for(int i = 0; i < config.window_size / 2; i++)
 						{
 							if(i < cutoff) 
 								envelope[i] += magnitude;
@@ -753,8 +949,8 @@ double ParametricEQ::calculate_envelope()
 					if(pass == 1)
 					{
 						double magnitude = DB::fromdb(config.band[band].magnitude);
-						int cutoff = (int)((float)config.band[band].freq / niquist * WINDOW_SIZE / 2);
-						for(int i = 0; i < WINDOW_SIZE / 2; i++)
+						int cutoff = (int)((double)config.band[band].freq / niquist * config.window_size / 2);
+						for(int i = 0; i < config.window_size / 2; i++)
 						{
 							if(i > cutoff) 
 								envelope[i] += magnitude;
@@ -778,16 +974,18 @@ double ParametricEQ::calculate_envelope()
 						if(config.band[band].magnitude <= -MAXMAGNITUDE) 
 							magnitude = -1;
 
-						for(int i = 0; i < WINDOW_SIZE / 2; i++)
+						for(int i = 0; i < config.window_size / 2; i++)
 						{
-							int freq = i * niquist / (WINDOW_SIZE / 2);
+							int freq = i * niquist / (config.window_size / 2);
 							int current_slot = Freq::fromfreq(freq);
 							envelope[i] += magnitude * 
 								gauss(sigma, center, (double)current_slot / TOTALFREQS) / 
 								normalize;
-// printf("freq=%d magnitude=%f envelope[i]=%f\n",
+// printf("freq=%d magnitude=%f gauss=%f normalize=%f envelope[i]=%f\n",
 // freq,
 // magnitude,
+// gauss(sigma, center, (double)current_slot / TOTALFREQS),
+// normalize,
 // envelope[i]);
 						}
 					}
@@ -795,6 +993,7 @@ double ParametricEQ::calculate_envelope()
 			}
 		}
 	}
+
 	return 0;
 }
 
@@ -802,10 +1001,13 @@ double ParametricEQ::gauss(double sigma, double center, double x)
 {
 	if(EQUIV(sigma, 0)) sigma = 0.01;
 
-	return 1.0 / 
+	double result = 1.0 / 
 		sqrt(2 * M_PI * sigma * sigma) * 
 		exp(-(x - center) * (x - center) / 
 			(2 * sigma * sigma));
+
+
+	return result;
 }
 
 
@@ -818,7 +1020,7 @@ int ParametricEQ::process_buffer(int64_t size,
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
 	
-	
+
 	fft->process_buffer(start_position, 
 		size, 
 		buffer, 
@@ -837,52 +1039,6 @@ int ParametricEQ::process_buffer(int64_t size,
 
 
 
-int ParametricEQ::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sparametriceq.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	
-	config.wetness = defaults->get("WETNESS", config.wetness);
-	for(int i = 0; i < BANDS; i++)
-	{
-		sprintf(string, "FREQ_%d", i);
-		config.band[i].freq = defaults->get(string, config.band[i].freq);
-		sprintf(string, "QUALITY_%d", i);
-		config.band[i].quality = defaults->get(string, config.band[i].quality);
-		sprintf(string, "MAGNITUDE_%d", i);
-		config.band[i].magnitude = defaults->get(string, config.band[i].magnitude);
-		sprintf(string, "MODE_%d", i);
-		config.band[i].mode = defaults->get(string, config.band[i].mode);
-	}
-	return 0;
-}
-
-int ParametricEQ::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-	defaults->update("WETNESS", config.wetness);
-
-
-	for(int i = 0; i < BANDS; i++)
-	{
-		sprintf(string, "FREQ_%d", i);
-		defaults->update(string, config.band[i].freq);
-		sprintf(string, "QUALITY_%d", i);
-		defaults->update(string, config.band[i].quality);
-		sprintf(string, "MAGNITUDE_%d", i);
-		defaults->update(string, config.band[i].magnitude);
-		sprintf(string, "MODE_%d", i);
-		defaults->update(string, config.band[i].mode);
-	}
-
-
-	defaults->save();
-
-	return 0;
-}
 
 
 void ParametricEQ::reset()
@@ -899,8 +1055,20 @@ void ParametricEQ::update_gui()
 		if(load_configuration())
 		{
 			((ParametricWindow*)thread->window)->lock_window("ParametricEQ::update_gui");
+			calculate_envelope();
 			((ParametricWindow*)thread->window)->update_gui();
 			((ParametricWindow*)thread->window)->unlock_window();
+		}
+		else
+		{
+			int total_frames = get_gui_update_frames();
+//printf("ParametricEQ::update_gui %d %d\n", __LINE__, total_frames);
+			if(total_frames)
+			{
+				((ParametricWindow*)thread->window)->lock_window("ParametricEQ::update_gui");
+				((ParametricWindow*)thread->window)->update_canvas();
+				((ParametricWindow*)thread->window)->unlock_window();
+			}
 		}
 	}
 }

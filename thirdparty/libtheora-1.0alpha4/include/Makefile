@@ -64,7 +64,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/libtheora-1.0alpha4/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/libtheora-1.0alpha4/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/libtheora-1.0alpha4/missing --run automake-1.8
-AWK = mawk
+AWK = gawk
 BUILDABLE_EXAMPLES =  encoder_example
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -126,7 +126,7 @@ SDL_CFLAGS =
 SDL_CONFIG = no
 SDL_LIBS = 
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 THEORA_SUPPORT_ENCODE_FALSE = #
 THEORA_SUPPORT_ENCODE_TRUE = 

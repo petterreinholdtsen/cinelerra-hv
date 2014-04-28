@@ -67,9 +67,6 @@ public:
 	void update_gui();
 	void render_stop();
 
-	int load_defaults();
-	int save_defaults();
-
 	void compare_fields(VFrame *frame1, 
 		VFrame *frame2, 
 		int64_t &field1,

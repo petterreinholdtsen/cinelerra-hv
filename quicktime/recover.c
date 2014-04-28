@@ -11,27 +11,6 @@
 
 
 
-/*
-
-Face it kids, Linux crashes.  Regardless of how good the free software
-model is, you still need to run on unreliable hardware and to get any
-hardware support at all you need to compete with McRosoft on features. 
-Ever since RedHat started trying to copy McRosoft's every move,
-reliability has been fickle at best.
-
-The X server crashes, the filesystem crashes, the network crashes, the
-sound driver crashes, the video driver crashes.  Signal handlers only
-handle application failures but most of the crashes are complete system
-lockups.   
-
-This utility should read through a truncated movie file and put a
-header on it, no matter what immitated McRosoft feature caused the
-crash.  It only handles JPEG encoded with jpeg-6b and MJPEG encoded
-with the BUZ driver with PCM audio.
-
-*/
-
-
 
 
 
@@ -40,18 +19,29 @@ with the BUZ driver with PCM audio.
 #define FSEEK fseeko64
 
 
-#define WIDTH 720
-#define HEIGHT 480
+//#define WIDTH 720
+//#define HEIGHT 480
+#define WIDTH 1280
+#define HEIGHT 720
 #define FRAMERATE (double)30000/1001
-#define CHANNELS 2
+//#define FRAMERATE (double)30
+#define CHANNELS 1
 #define SAMPLERATE 48000
+#define AUDIO_CHUNK 2048
 #define BITS 24
 #define TEMP_FILE "/tmp/temp.mov"
-#define VCODEC QUICKTIME_MJPA
+
+// Output files
+#define AUDIO_FILE "/tmp/audio.pcm"
+#define VIDEO_FILE "/tmp/video.mov"
+//#define VCODEC QUICKTIME_MJPA
 //#define VCODEC QUICKTIME_JPEG
 
+// Only 1 variation of this, recorded by 1 camcorder
+#define VCODEC QUICKTIME_H264
+#define ACODEC QUICKTIME_MP4A
 
-
+//#define READ_ONLY
 
 
 #define SEARCH_FRAGMENT (int64_t)0x100000
@@ -67,6 +57,19 @@ with the BUZ driver with PCM audio.
 #define GOT_AUDIO   5
 #define GOT_IMAGE_START 6
 #define GOT_IMAGE_END   7
+
+
+// H264 description for cheap camcorder format
+unsigned char h264_desc[] = 
+{
+	0x01, 0x4d, 0x00, 0x28, 0xff, 0xe1, 0x00, 0x30, 0x27, 0x4d, 0x00, 0x28,
+	0x9a, 0x62, 0x80, 0xa0, 0x0b, 0x76, 0x02, 0x20, 0x00, 0x00, 0x7d, 0x20,
+	0x00, 0x1d, 0x4c, 0x1d, 0x0c, 0x00, 0x26, 0x26, 0x00, 0x02, 0xae, 0xa9,
+	0x77, 0x97, 0x1a, 0x18, 0x00, 0x4c, 0x4c, 0x00, 0x05, 0x5d, 0x52, 0xef,
+	0x2e, 0x1f, 0x08, 0x84, 0x51, 0xe0, 0x00, 0x00, 0x01, 0x00, 0x04, 0x28,
+	0xee, 0x3c, 0x80 
+};
+
 
 // Table utilities
 #define NEW_TABLE(ptr, size, allocation) \
@@ -93,17 +96,43 @@ with the BUZ driver with PCM audio.
 	(size)++; \
 }
 
+int get_h264_size(unsigned char *frame_buffer, int frame_size)
+{
+	int result = frame_size;
+	int offset = 0;
+
+// walk NAL codes
+	while(offset < frame_size)
+	{
+		int nal_size = ((frame_buffer[offset + 0] << 24) |
+			(frame_buffer[offset + 1] << 16) |
+			(frame_buffer[offset + 2] << 8) |
+			(frame_buffer[offset + 3])) + 4;
+//printf("get_h264_size %d %d %d\n", __LINE__, offset, nal_size);
+		if(nal_size <= 0 || nal_size + offset >= frame_size)
+		{
+			return offset;
+		}
+		
+		offset += nal_size;
+	}
+	
+	return result;
+}
 
 
 int main(int argc, char *argv[])
 {
-	FILE *in;
-	FILE *temp;
-	quicktime_t *out;
+	FILE *in = 0;
+	FILE *temp = 0;
+	FILE *audio_out = 0;
+//	quicktime_t *out;
+	quicktime_t *video_out;
 	int64_t current_byte, ftell_byte;
 	int64_t jpeg_end;
 	int64_t audio_start = 0, audio_end = 0;
 	unsigned char *search_buffer = calloc(1, SEARCH_FRAGMENT);
+	unsigned char *frame_buffer = calloc(1, SEARCH_FRAGMENT);
 	unsigned char *copy_buffer = 0;
 	int i;
 	int64_t file_size;
@@ -111,6 +140,8 @@ int main(int argc, char *argv[])
 	unsigned char data[8];
 	struct stat ostat;
 	int fields = 1;
+	int is_h264 = 0;
+	int is_keyframe = 0;
 	time_t current_time = time(0);
 	time_t prev_time = 0;
 	int jpeg_header_offset;
@@ -126,7 +157,7 @@ int main(int argc, char *argv[])
 	int field;
 
 // Value taken from Cinelerra preferences
-	int audio_chunk = 131072;
+	int audio_chunk = AUDIO_CHUNK;
 
 
 	int64_t *start_table;
@@ -146,8 +177,9 @@ int main(int argc, char *argv[])
 		"   CHANNELS=%d\n"
 		"   SAMPLERATE=%d\n"
 		"   BITS=%d\n"
-		"   audio chunk=%d\n"
-		"   VCODEC=\"%s\"\n",
+		"   AUDIO CHUNK=%d\n"
+		"   VCODEC=\"%s\"\n"
+		"   ACODEC=\"%s\"\n",
 		WIDTH,
 		HEIGHT,
 		FRAMERATE,
@@ -155,7 +187,11 @@ int main(int argc, char *argv[])
 		SAMPLERATE,
 		BITS,
 		audio_chunk,
-		VCODEC);
+		VCODEC,
+		ACODEC);
+#ifdef READ_ONLY
+	printf("   READ ONLY\n");
+#endif
 
 	if(argc < 2)
 	{
@@ -195,33 +231,91 @@ int main(int argc, char *argv[])
 	}
 
 
+// Get the field count
+	if(!memcmp(VCODEC, QUICKTIME_MJPA, 4))
+	{
+		fields = 2;
+	}
+	else
+	{
+		fields = 1;
+	}
+
+	if(!memcmp(VCODEC, QUICKTIME_H264, 4))
+	{
+		is_h264 = 1;
+	}
+
 
 
 	in = fopen(in_path, "rb+");
-	out = quicktime_open(TEMP_FILE, 0, 1);
-
 	if(!in)
 	{
 		perror("open input");
 		exit(1);
 	}
-	if(!out)
+
+
+#ifndef READ_ONLY
+//	out = quicktime_open(TEMP_FILE, 0, 1);
+// 	if(!out)
+// 	{
+// 		perror("open temp");
+// 		exit(1);
+// 	}
+
+// 	quicktime_set_audio(out, 
+// 		CHANNELS, 
+// 		SAMPLERATE, 
+// 		BITS, 
+// 		QUICKTIME_TWOS);
+// 	quicktime_set_video(out, 
+// 		1, 
+// 		WIDTH, 
+// 		HEIGHT, 
+// 		FRAMERATE, 
+// 		VCODEC);
+
+	audio_out = fopen(AUDIO_FILE, "w");
+	if(!audio_out)
 	{
-		perror("open temp");
+		perror("open audio output");
 		exit(1);
 	}
 
-	quicktime_set_audio(out, 
-		CHANNELS, 
-		SAMPLERATE, 
-		BITS, 
-		QUICKTIME_TWOS);
-	quicktime_set_video(out, 
+	video_out = quicktime_open(VIDEO_FILE, 0, 1);
+		
+	if(!video_out)
+	{
+		perror("open video out");
+		exit(1);
+	}
+
+	quicktime_set_video(video_out, 
 		1, 
 		WIDTH, 
 		HEIGHT, 
 		FRAMERATE, 
 		VCODEC);
+	quicktime_set_audio(video_out, 
+		CHANNELS, 
+		SAMPLERATE, 
+		BITS, 
+		ACODEC);
+
+
+	if(is_h264)
+	{
+		quicktime_video_map_t *vtrack = &(video_out->vtracks[0]);
+		quicktime_trak_t *trak = vtrack->track;
+		quicktime_avcc_t *avcc = &trak->mdia.minf.stbl.stsd.table[0].avcc;
+		quicktime_set_avcc_header(avcc,
+		  	h264_desc, 
+		  	sizeof(h264_desc));
+	}
+	
+#endif
+
 	audio_start = (int64_t)0x10;
 	ftell_byte = 0;
 
@@ -235,22 +329,13 @@ int main(int argc, char *argv[])
 	NEW_TABLE(field_table, field_size, field_allocation)
 
 
-// Get the field count
-	if(!memcmp(VCODEC, QUICKTIME_MJPA, 4))
-	{
-		fields = 2;
-	}
-	else
-	{
-		fields = 1;
-	}
 
 	audio_frame = BITS * CHANNELS / 8;
 
 // Tabulate the start and end of all the JPEG images.
 // This search is intended to be as simple as possible, reserving more
 // complicated operations for a table pass.
-printf("Pass 1 video only.\n");
+//printf("Pass 1 video only.\n");
 	while(ftell_byte < file_size)
 	{
 		current_byte = ftell_byte;
@@ -263,6 +348,23 @@ printf("Pass 1 video only.\n");
 // Search for image start
 			if(state == GOT_NOTHING)
 			{
+				if(is_h264)
+				{
+					if(search_buffer[i] == 0x00 &&
+						search_buffer[i + 1] == 0x00 &&
+						search_buffer[i + 2] == 0x00 &&
+						search_buffer[i + 3] == 0x02 &&
+						search_buffer[i + 4] == 0x09)
+					{
+						state = GOT_IMAGE_START;
+						image_start = current_byte + i;
+						if(search_buffer[i + 5] == 0x10)
+							is_keyframe = 1;
+						else
+							is_keyframe = 0;
+					}
+				}
+				else
 				if(search_buffer[i] == 0xff &&
 					search_buffer[i + 1] == 0xd8 &&
 					search_buffer[i + 2] == 0xff &&
@@ -311,6 +413,89 @@ printf("Pass 1 video only.\n");
 // Search for image end
 			if(state == GOT_IMAGE_START)
 			{
+				if(is_h264)
+				{
+// got next frame & end of previous frame or previous audio
+// search 1 byte ahead so the loop doesn't skip the next frame
+					if(search_buffer[i + 1] == 0x00 &&
+						search_buffer[i + 2] == 0x00 &&
+						search_buffer[i + 3] == 0x00 &&
+						search_buffer[i + 4] == 0x02 &&
+						search_buffer[i + 5] == 0x09)
+					{
+						state = GOT_NOTHING;
+						image_end = current_byte + i + 1;
+
+// Read entire frame & get length from NAL codes
+						if(image_end - image_start <= SEARCH_FRAGMENT)
+						{
+							int frame_size = image_end - image_start;
+							FSEEK(in, image_start, SEEK_SET);
+							fread(frame_buffer, frame_size, 1, in);
+							FSEEK(in, ftell_byte, SEEK_SET);
+
+							int new_frame_size = get_h264_size(frame_buffer, frame_size);
+/*
+ * printf("%d: image_start=%lx image_end=%lx new_frame_size=%x\n",
+ * __LINE__,
+ * image_start,
+ * image_end,
+ * new_frame_size);
+ */
+
+							image_end = image_start + new_frame_size;
+
+//printf("%d: image_start=0x%lx image_size=0x%x\n", __LINE__, image_start, new_frame_size);
+						}
+						else
+						{
+							printf("%d: Possibly lost image between %llx and %llx\n", 
+								__LINE__,
+								image_start,
+								image_end);
+						}
+
+
+						APPEND_TABLE(start_table, start_size, start_allocation, image_start)
+						APPEND_TABLE(end_table, end_size, end_allocation, image_end)
+
+#ifndef READ_ONLY
+// Write frame
+						quicktime_write_frame(video_out, 
+							frame_buffer, 
+							image_end - image_start, 
+							0);
+						if(is_keyframe)
+						{
+							quicktime_video_map_t *vtrack = &(video_out->vtracks[0]);
+							quicktime_insert_keyframe(video_out, 
+								vtrack->current_position - 1, 
+								0);
+						}
+
+// Write audio
+						if(start_size > 1)
+						{
+							int64_t next_frame_start = start_table[start_size - 1];
+							int64_t prev_frame_end = end_table[start_size - 2];
+							int audio_size = next_frame_start - prev_frame_end;
+							if(audio_size > SEARCH_FRAGMENT)
+								audio_size = SEARCH_FRAGMENT;
+							FSEEK(in, prev_frame_end, SEEK_SET);
+							fread(frame_buffer, audio_size, 1, in);
+							FSEEK(in, ftell_byte, SEEK_SET);
+//							fwrite(frame_buffer, audio_size, 1, audio_out);
+
+							quicktime_write_vbr_frame(video_out, 
+								0,
+								frame_buffer,
+								audio_size,
+								audio_chunk);
+						}
+#endif
+					}
+				}
+				else
 				if(search_buffer[i] == 0xff &&
 					search_buffer[i + 1] == 0xd9)
 				{
@@ -325,7 +510,8 @@ printf("Pass 1 video only.\n");
 // because the audio may by misaligned.  Use the extract utility to get the audio.
 						if(image_end - image_start > audio_chunk * audio_frame)
 						{
-							printf("Possibly lost image between %llx and %llx\n", 
+							printf("%d: Possibly lost image between %llx and %llx\n", 
+								__LINE__,
 								image_start,
 								image_end);
 // Put in fake image
@@ -360,119 +546,112 @@ fflush(stdout);
 
 // With the image table complete, 
 // write chunk table from the gaps in the image table
-printf("Pass 2 audio table.\n");
-	total_samples = 0;
-	for(i = 1; i < start_size; i++)
-	{
-		int64_t next_image_start = start_table[i];
-		int64_t prev_image_end = end_table[i - 1];
+// printf("Pass 2 audio table.\n");
+// 	total_samples = 0;
+// 	for(i = 1; i < start_size; i++)
+// 	{
+// 		int64_t next_image_start = start_table[i];
+// 		int64_t prev_image_end = end_table[i - 1];
+// 
+// // Got a chunk
+// 		if(next_image_start - prev_image_end >= audio_chunk * audio_frame)
+// 		{
+// 			long samples = (next_image_start - prev_image_end) / audio_frame;
+// 			quicktime_atom_t chunk_atom;
+// 
+// 			quicktime_set_position(out, prev_image_end);
+// 			quicktime_write_chunk_header(out, 
+// 				out->atracks[0].track, 
+// 				&chunk_atom);
+// 			quicktime_set_position(out, next_image_start);
+// 			quicktime_write_chunk_footer(out,
+// 				out->atracks[0].track, 
+// 				out->atracks[0].current_chunk, 
+// 				&chunk_atom,
+// 				samples);
+// 			out->atracks[0].current_position += samples;
+// 			out->atracks[0].current_chunk++;
+// 			total_samples += samples;
+// 		}
+// 	}
+// 
+// 
+// 
+// 
+// 
+// // Put image table in movie
+// printf("Got %d frames %d samples total.\n", start_size, total_samples);
+// 	for(i = 0; i < start_size - fields; i += fields)
+// 	{
+// // Got a field out of order.  Skip just 1 image instead of 2.
+// 		if(fields == 2 && field_table[i] != 0)
+// 		{
+// 			printf("Got field out of order at 0x%llx\n", start_table[i]);
+// 			i--;
+// 		}
+// 		else
+// 		{
+// 			quicktime_atom_t chunk_atom;
+// 			quicktime_set_position(out, start_table[i]);
+// 			quicktime_write_chunk_header(out, 
+// 				out->vtracks[0].track,
+// 				&chunk_atom);
+// 			quicktime_set_position(out, end_table[i + fields - 1]);
+// 			quicktime_write_chunk_footer(out,
+// 				out->vtracks[0].track, 
+// 				out->vtracks[0].current_chunk, 
+// 				&chunk_atom,
+// 				1);
+// 			out->vtracks[0].current_position++;
+// 			out->vtracks[0].current_chunk++;
+// 		}
+// 	}
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// // Force header out at beginning of temp file
+// 	quicktime_set_position(out, 0x10);
+// 	quicktime_close(out);
+// 
+// // Transfer header
+// 	FSEEK(in, 0x8, SEEK_SET);
+// 
+// 	data[0] = (ftell_byte & 0xff00000000000000LL) >> 56;
+// 	data[1] = (ftell_byte & 0xff000000000000LL) >> 48;
+// 	data[2] = (ftell_byte & 0xff0000000000LL) >> 40;
+// 	data[3] = (ftell_byte & 0xff00000000LL) >> 32;
+// 	data[4] = (ftell_byte & 0xff000000LL) >> 24;
+// 	data[5] = (ftell_byte & 0xff0000LL) >> 16;
+// 	data[6] = (ftell_byte & 0xff00LL) >> 8;
+// 	data[7] = ftell_byte & 0xff;
+// 	fwrite(data, 8, 1, in);
+// 
+// 	FSEEK(in, ftell_byte, SEEK_SET);
+// 	stat(TEMP_FILE, &ostat);
+// 
+// 	temp = fopen(TEMP_FILE, "rb");
+// 	FSEEK(temp, 0x10, SEEK_SET);
+// 
+// 	copy_buffer = calloc(1, ostat.st_size);
+// 	fread(copy_buffer, ostat.st_size, 1, temp);
+// 	fclose(temp);
+// 
+// // Enable to alter the original file
+// 	printf("%d: writing header to file\n", __LINE__);
+// 	fwrite(copy_buffer, ostat.st_size, 1, in);
 
-// Got a chunk
-		if(next_image_start - prev_image_end >= audio_chunk * audio_frame)
-		{
-			long samples = (next_image_start - prev_image_end) / audio_frame;
-			quicktime_atom_t chunk_atom;
-
-			quicktime_set_position(out, prev_image_end);
-			quicktime_write_chunk_header(out, 
-				out->atracks[0].track, 
-				&chunk_atom);
-			quicktime_set_position(out, next_image_start);
-			quicktime_write_chunk_footer(out,
-				out->atracks[0].track, 
-				out->atracks[0].current_chunk, 
-				&chunk_atom,
-				samples);
-/*
- * 			quicktime_update_tables(out, 
- * 						out->atracks[0].track, 
- * 						prev_image_end, 
- * 						out->atracks[0].current_chunk, 
- * 						out->atracks[0].current_position, 
- * 						samples, 
- * 						0);
- */
-			out->atracks[0].current_position += samples;
-			out->atracks[0].current_chunk++;
-			total_samples += samples;
-		}
-	}
-
-
-
-
-
-// Put image table in movie
-printf("Got %d frames %d samples total.\n", start_size, total_samples);
-	for(i = 0; i < start_size - fields; i += fields)
-	{
-// Got a field out of order.  Skip just 1 image instead of 2.
-		if(fields == 2 && field_table[i] != 0)
-		{
-			printf("Got field out of order at 0x%llx\n", start_table[i]);
-			i--;
-		}
-		else
-		{
-			quicktime_atom_t chunk_atom;
-			quicktime_set_position(out, start_table[i]);
-			quicktime_write_chunk_header(out, 
-				out->vtracks[0].track,
-				&chunk_atom);
-			quicktime_set_position(out, end_table[i + fields - 1]);
-			quicktime_write_chunk_footer(out,
-				out->vtracks[0].track, 
-				out->vtracks[0].current_chunk, 
-				&chunk_atom,
-				1);
-/*
- * 			quicktime_update_tables(out,
- * 						out->vtracks[0].track,
- * 						start_table[i],
- * 						out->vtracks[0].current_chunk,
- * 						out->vtracks[0].current_position,
- * 						1,
- * 						end_table[i + fields - 1] - start_table[i]);
- */
-			out->vtracks[0].current_position++;
-			out->vtracks[0].current_chunk++;
-		}
-	}
-
-
-
-
-
-
-
-// Force header out at beginning of temp file
-	quicktime_set_position(out, 0x10);
-	quicktime_close(out);
-
-// Transfer header
-	FSEEK(in, 0x8, SEEK_SET);
-
-	data[0] = (ftell_byte & 0xff00000000000000LL) >> 56;
-	data[1] = (ftell_byte & 0xff000000000000LL) >> 48;
-	data[2] = (ftell_byte & 0xff0000000000LL) >> 40;
-	data[3] = (ftell_byte & 0xff00000000LL) >> 32;
-	data[4] = (ftell_byte & 0xff000000LL) >> 24;
-	data[5] = (ftell_byte & 0xff0000LL) >> 16;
-	data[6] = (ftell_byte & 0xff00LL) >> 8;
-	data[7] = ftell_byte & 0xff;
-	fwrite(data, 8, 1, in);
-
-	FSEEK(in, ftell_byte, SEEK_SET);
-	stat(TEMP_FILE, &ostat);
-
-	temp = fopen(TEMP_FILE, "rb");
-	FSEEK(temp, 0x10, SEEK_SET);
-	copy_buffer = calloc(1, ostat.st_size);
-	fread(copy_buffer, ostat.st_size, 1, temp);
-	fclose(temp);
-	fwrite(copy_buffer, ostat.st_size, 1, in);
 
 	fclose(in);
+
+#ifndef READ_ONLY
+	quicktime_close(video_out);
+	fclose(audio_out);
+#endif
+
 }
 
 

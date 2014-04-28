@@ -43,17 +43,19 @@ REGISTER_PLUGIN(TimeStretchRT);
 TimeStretchRTConfig::TimeStretchRTConfig()
 {
 	scale = 1;
+	size = 40;
 }
 
 
 int TimeStretchRTConfig::equivalent(TimeStretchRTConfig &src)
 {
-	return fabs(scale - src.scale) < 0.0001;
+	return fabs(scale - src.scale) < 0.0001 && size == src.size;
 }
 
 void TimeStretchRTConfig::copy_from(TimeStretchRTConfig &src)
 {
 	this->scale = src.scale;
+	this->size = src.size;
 }
 
 void TimeStretchRTConfig::interpolate(TimeStretchRTConfig &prev, 
@@ -63,6 +65,7 @@ void TimeStretchRTConfig::interpolate(TimeStretchRTConfig &prev,
 	int64_t current_frame)
 {
 	this->scale = prev.scale;
+	this->size = prev.size;
 	boundaries();
 }
 
@@ -70,6 +73,8 @@ void TimeStretchRTConfig::boundaries()
 {
 	if(fabs(scale) < 0.01) scale = 0.01;
 	if(fabs(scale) > 100) scale = 100;
+	if(size < 10) size = 10;
+	if(size > 1000) size = 1000;
 }
 
 
@@ -102,6 +107,16 @@ void TimeStretchRTWindow::create_objects()
 		x, 
 		y);
 	scale->create_objects();
+	
+	y += scale->get_h() + plugin->get_theme()->widget_border;
+	add_subwindow(title = new BC_Title(x, y, _("Window size (ms):")));
+	y += title->get_h() + plugin->get_theme()->widget_border;
+	size = new TimeStretchRTSize(this,
+		plugin, 
+		x, 
+		y);
+	size->create_objects();
+
 	show_window();
 }
 
@@ -134,6 +149,30 @@ int TimeStretchRTScale::handle_event()
 }
 
 
+
+
+TimeStretchRTSize::TimeStretchRTSize(TimeStretchRTWindow *window,
+	TimeStretchRT *plugin, 
+	int x, 
+	int y)
+ : BC_TumbleTextBox(window,
+ 	plugin->config.size,
+	10,
+	1000,
+ 	x, 
+	y, 
+	100)
+{
+	this->plugin = plugin;
+	set_increment(10);
+}
+
+int TimeStretchRTSize::handle_event()
+{
+	plugin->config.size = atoi(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
@@ -176,7 +215,9 @@ int TimeStretchRT::process_buffer(int64_t size,
 {
 	need_reconfigure = load_configuration();
 
-	if(!engine) engine = new TimeStretchEngine(config.scale, sample_rate);
+	if(!engine) engine = new TimeStretchEngine(config.scale, 
+		sample_rate,
+		config.size);
 
 	if(start_position != dest_start) need_reconfigure = 1;
 	dest_start = start_position;
@@ -195,13 +236,18 @@ int TimeStretchRT::process_buffer(int64_t size,
 			prev_position = get_source_start();
 		}
 
-		source_start = (int64_t)((start_position - prev_position) * 
+		source_start = (int64_t)((start_position - prev_position) / 
 			config.scale) + prev_position;
 
 		engine->reset();
-		engine->update(config.scale, sample_rate);
+		engine->update(config.scale, sample_rate, config.size);
 		need_reconfigure = 0;
-//printf("TimeStretchRT::process_buffer %d\n", __LINE__);
+printf("TimeStretchRT::process_buffer %d start_position=%lld prev_position=%lld scale=%f source_start=%lld\n", 
+__LINE__, 
+start_position,
+prev_position,
+config.scale,
+source_start);
 	}
 
 // process buffers until output length is reached
@@ -248,26 +294,6 @@ int TimeStretchRT::process_buffer(int64_t size,
 
 
 
-int TimeStretchRT::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%stimestretchrt.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.scale = defaults->get("SCALE", config.scale);
-	return 0;
-}
-
-int TimeStretchRT::save_defaults()
-{
-	defaults->update("SCALE", config.scale);
-	defaults->save();
-	return 0;
-}
 
 void TimeStretchRT::save_data(KeyFrame *keyframe)
 {
@@ -277,6 +303,7 @@ void TimeStretchRT::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
 	output.tag.set_title("TIMESTRETCHRT");
 	output.tag.set_property("SCALE", config.scale);
+	output.tag.set_property("SIZE", config.size);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -294,6 +321,7 @@ void TimeStretchRT::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("TIMESTRETCHRT"))
 		{
 			config.scale = input.tag.get_property("SCALE", config.scale);
+			config.size = input.tag.get_property("SIZE", config.size);
 		}
 	}
 }
@@ -307,6 +335,7 @@ void TimeStretchRT::update_gui()
 		
 			thread->window->lock_window("TimeStretchRT::update_gui");
 			((TimeStretchRTWindow*)thread->window)->scale->update((float)(1.0 / config.scale));
+			((TimeStretchRTWindow*)thread->window)->size->update((int64_t)config.size);
 			thread->window->unlock_window();
 		}
 	}

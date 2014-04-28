@@ -60,9 +60,6 @@ MaskUnit::~MaskUnit()
 	if(temp) delete temp;
 }
 
-#ifndef SQR
-#define SQR(x) ((x) * (x))
-#endif
 
 #define OVERSAMPLE 8
 

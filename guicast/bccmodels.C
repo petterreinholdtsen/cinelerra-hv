@@ -18,6 +18,7 @@
 
 
 #include "bccmodels.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -358,20 +359,20 @@ void BC_CModels::transfer(unsigned char **output_rows,
 		in_x, in_y, in_x + in_w, in_y + in_h,
 		out_x, out_y, out_x + out_w, out_y + out_h);
 
-/*
- * printf("transfer %d %d %d %d,%d %d,%d %d,%d %d,%d\n", 
- * __LINE__,
- * in_colormodel, 
- * out_colormodel, 
- * out_x, 
- * out_y, 
- * out_w, 
- * out_h, 
- * in_x, 
- * in_y, 
- * in_w, 
- * in_h);
- */
+
+// printf("BC_CModels::transfer %d %d %d %d,%d %d,%d %d,%d %d,%d\n", 
+// __LINE__,
+// in_colormodel, 
+// out_colormodel, 
+// out_x, 
+// out_y, 
+// out_w, 
+// out_h, 
+// in_x, 
+// in_y, 
+// in_w, 
+// in_h);
+
 
 
 #define PERMUTATION_VALUES \

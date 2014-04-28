@@ -94,29 +94,6 @@ int ScaleMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ScaleMain)
 
-int ScaleMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sscale.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.w = defaults->get("WIDTH", config.w);
-	config.h = defaults->get("HEIGHT", config.h);
-	config.constrain = defaults->get("CONSTRAIN", config.constrain);
-//printf("ScaleMain::load_defaults %f %f\n",config.w  , config.h);
-}
-
-int ScaleMain::save_defaults()
-{
-	defaults->update("WIDTH", config.w);
-	defaults->update("HEIGHT", config.h);
-	defaults->update("CONSTRAIN", config.constrain);
-	defaults->save();
-}
 
 LOAD_CONFIGURATION_MACRO(ScaleMain, ScaleConfig)
 

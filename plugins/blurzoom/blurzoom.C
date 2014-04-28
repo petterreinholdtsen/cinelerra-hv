@@ -71,15 +71,6 @@ VFrame* BlurZoomMain::new_picon()
 
 NEW_WINDOW_MACRO(BlurZoomMain, BlurZoomWindow)
 
-int BlurZoomMain::load_defaults()
-{
-	return 0;
-}
-
-int BlurZoomMain::save_defaults()
-{
-	return 0;
-}
 
 int BlurZoomMain::load_configuration()
 {

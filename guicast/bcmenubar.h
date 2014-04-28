@@ -54,7 +54,7 @@ public:
 	void draw_items();
 
 private:
-	int draw_face();
+	int draw_face(int flash, int flush);
 	int activate();
 // Array of menu titles
 	ArrayList<BC_Menu*> menu_titles;  

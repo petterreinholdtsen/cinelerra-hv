@@ -25,10 +25,12 @@
 #include "filexml.h"
 #include "keyframe.h"
 #include "messages.inc"
-#include "mwindow.inc"
+#include "mwindow.h"
+#include "pluginserver.h"
 #include "preferences.inc"
 #include "presets.h"
 
+#include <errno.h>
 #include <string.h>
 
 PresetsDB::PresetsDB()
@@ -191,6 +193,7 @@ void PresetsDB::save_preset(char *plugin_title, char *preset_title, char *data)
 	if(!keyframe) keyframe = plugin->new_keyframe(preset_title);
 	keyframe->set_data(data);
 	save();
+
 }
 
 
@@ -280,6 +283,7 @@ void PresetsDBPlugin::load(FileXML *file)
 				file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 				keyframe->set_data(data);
 				keyframes.append(keyframe);
+		
 			}
 		}
 	}while(!result);
@@ -348,6 +352,41 @@ void PresetsDBPlugin::load_preset(char *preset_title, KeyFrame *keyframe)
 	if(src)
 	{
 		keyframe->set_data(src->data);
+// Save as the plugin's default
+// Need the path
+//printf("PresetsDBPlugin::load_preset %d %s\n", __LINE__, title);
+		PluginServer *server = MWindow::scan_plugindb(title, -1);
+		if(!server)
+		{
+		}
+		else
+		{
+			char path[BCTEXTLEN];
+			server->get_defaults_path(path);
+			FileSystem fs;
+			fs.complete_path(path);
+
+			FILE *fd = fopen(path, "w");
+			if(fd)
+			{
+				if(!fwrite(src->data, strlen(src->data), 1, fd))
+				{
+					fprintf(stderr, "PresetsDBPlugin::load_preset %d \"%s\": %s\n",
+						__LINE__,
+						path,
+						strerror(errno));
+				}
+
+				fclose(fd);
+			}
+			else
+			{
+				fprintf(stderr, "PresetsDBPlugin::load_preset %d \"%s\": %s\n",
+					__LINE__,
+					path,
+					strerror(errno));
+			}
+		}
 	}
 }
 

@@ -68,10 +68,10 @@ public:
 
 
 
-class DelayAudioTextBox : public BC_TextBox
+class DelayAudioTextBox : public BC_TumbleTextBox
 {
 public:
-	DelayAudioTextBox(DelayAudio *plugin, int x, int y);
+	DelayAudioTextBox(DelayAudio *plugin, DelayAudioWindow *window, int x, int y);
 	~DelayAudioTextBox();
 	
 	int handle_event();
@@ -89,8 +89,6 @@ public:
 	~DelayAudio();
 
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr);

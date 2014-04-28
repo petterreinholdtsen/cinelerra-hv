@@ -39,7 +39,7 @@ public:
 	int set_images();
 
 private:
-	int draw(int force = 0);
+	int draw(int force = 0, int flush = 1);
 
 	int64_t length, position;
 	int pixel;

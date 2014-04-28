@@ -54,7 +54,7 @@ int BC_ProgressBar::initialize()
 	h = images[PROGRESS_UP]->get_h();
 
 	BC_SubWindow::initialize();
-	draw(1);
+	draw(1, 0);
 	return 0;
 }
 
@@ -63,7 +63,7 @@ int BC_ProgressBar::reposition_window(int x, int y, int w, int h)
 	if(w < 0) w = get_w();
 	if(h < 0) h = get_h();
 	BC_WindowBase::reposition_window(x, y, w, h);
-	draw(1);
+	draw(1, 0);
 }
 
 void BC_ProgressBar::set_do_text(int value)
@@ -86,7 +86,7 @@ int BC_ProgressBar::set_images()
 }
 
 
-int BC_ProgressBar::draw(int force)
+int BC_ProgressBar::draw(int force, int flush)
 {
 	char string[32];
 	int new_pixel;
@@ -109,7 +109,7 @@ int BC_ProgressBar::draw(int force)
 			sprintf(string, "%d%%", (int)(100 * (float)position / length + 0.5 / w));
 			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
 		}
-		flash();
+		flash(flush);
 	}
 	return 0;
 }
@@ -117,7 +117,7 @@ int BC_ProgressBar::draw(int force)
 int BC_ProgressBar::update(int64_t position)
 {
 	this->position = position;
-	draw();
+	draw(0, 1);
 	return 0;
 }
 
@@ -126,7 +126,7 @@ int BC_ProgressBar::update_length(int64_t length)
 	this->length = length;
 	position = 0;
 
-	draw();
+	draw(0, 1);
 	return 0;
 }
 

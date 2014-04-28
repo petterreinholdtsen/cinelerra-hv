@@ -52,6 +52,17 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 }
 
 
+double MTimeBar::pixel_to_position(int pixel)
+{
+	return (double)pixel * 
+		mwindow->edl->local_session->zoom_sample / 
+		mwindow->edl->session->sample_rate + 
+		(double)mwindow->edl->local_session->view_start * 
+		mwindow->edl->local_session->zoom_sample / 
+		mwindow->edl->session->sample_rate;
+}
+
+
 int64_t MTimeBar::position_to_pixel(double position)
 {
 	return (int64_t)(position * 
@@ -417,7 +428,16 @@ void MTimeBar::draw_range()
 		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
 	}
 	else
+	{
 		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+	}
+
+
+//  	int64_t pixel = position_to_pixel(
+//  		mwindow->edl->local_session->get_selectionstart(1));
+// 
+//  	set_color(mwindow->theme->timebar_cursor_colorg);
+//  	draw_line(pixel, 0, pixel, get_h());
 //printf("MTimeBar::draw_range %f %f\n", mwindow->session->brender_end, time_per_pixel);
 }
 
@@ -451,7 +471,7 @@ void MTimeBar::select_label(double position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(1, 0, 0);
+	mwindow->cwindow->update(1, 0, 0, 0, 1);
 	mwindow->gui->cursor->hide(0);
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->canvas->activate();
@@ -467,16 +487,86 @@ int MTimeBar::resize_event()
 		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h);
-	update();
+	update(0);
 	return 1;
 }
 
-int MTimeBar::test_preview(int buttonpress)
+// int MTimeBar::test_preview(int buttonpress)
+// {
+// 	int result = 0;
+// 	return result;
+// }
+// 
+
+
+void MTimeBar::handle_mwindow_drag()
 {
-	int result = 0;
-	return result;
+//printf("TimeBar::cursor_motion_event %d %d\n", __LINE__, current_operation);
+	int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
+	if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
+		relative_cursor_x < 0)
+	{
+		mwindow->gui->canvas->start_dragscroll();
+	}
+	else
+	if(relative_cursor_x < mwindow->gui->canvas->get_w() && 
+		relative_cursor_x >= 0)
+	{
+		mwindow->gui->canvas->stop_dragscroll();
+	}
+	
+	update(0);
 }
 
+void MTimeBar::update_cursor()
+{
+	double position = pixel_to_position(get_cursor_x());
+	
+	position = mwindow->edl->align_to_frame(position, 0);
+	position = MAX(0, position);
+
+	mwindow->select_point(position);
+	update(1);
+}
+
+double MTimeBar::test_highlight()
+{
+// Don't crash during initialization
+	if(mwindow->gui->canvas)
+	{
+		if(mwindow->session->current_operation == NO_OPERATION)
+		{
+			if(mwindow->gui->canvas->is_event_win() &&
+				mwindow->gui->canvas->cursor_inside())
+			{
+				int cursor_x = mwindow->gui->canvas->get_cursor_x();
+				double position = (double)cursor_x * 
+					(double)mwindow->edl->local_session->zoom_sample / 
+					(double)mwindow->edl->session->sample_rate + 
+					(double)mwindow->edl->local_session->view_start * 
+					(double)mwindow->edl->local_session->zoom_sample / 
+					(double)mwindow->edl->session->sample_rate;
+				mwindow->gui->canvas->timebar_position = mwindow->edl->align_to_frame(position, 0);
+			}
+			
+//printf("MTimeBar::test_highlight %d %d %f\n", __LINE__, mwindow->gui->canvas->cursor_inside(), mwindow->gui->canvas->timebar_position);
+			return mwindow->gui->canvas->timebar_position;
+		}
+		else
+		if(mwindow->session->current_operation == SELECT_REGION ||
+			mwindow->session->current_operation == DRAG_EDITHANDLE2)
+		{
+//printf("MTimeBar::test_highlight %d %f\n", __LINE__, mwindow->gui->canvas->timebar_position);
+			return mwindow->gui->canvas->timebar_position;
+		}
+		
+		return -1;
+	}
+	else
+	{
+		return -1;
+	}
+}
 
 
 

@@ -60,10 +60,12 @@ void PlaybackPrefs::create_objects()
 	BC_WindowBase *window;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
+
 	playback_config = pwindow->thread->edl->session->playback_config;
 
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
+	int margin = mwindow->theme->widget_border;
 
 // Audio
 	add_subwindow(new BC_Title(x, 
@@ -71,13 +73,12 @@ void PlaybackPrefs::create_objects()
 		_("Audio Out"), 
 		LARGEFONT));
 
-SET_TRACE
 
 	y += get_text_height(LARGEFONT) + 5;
 
 
 	BC_Title *title1, *title2;
-	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer size:"), MEDIUMFONT));
+	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer samples:"), MEDIUMFONT));
 	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
 SET_TRACE
@@ -88,6 +89,7 @@ SET_TRACE
 		pwindow, 
 		this, 
 		string));
+	menu->add_item(new BC_MenuItem("1024"));
 	menu->add_item(new BC_MenuItem("2048"));
 	menu->add_item(new BC_MenuItem("4096"));
 	menu->add_item(new BC_MenuItem("8192"));
@@ -97,7 +99,6 @@ SET_TRACE
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
 
-SET_TRACE
 	y += menu->get_h() + 5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
@@ -124,7 +125,7 @@ SET_TRACE
 		playback_config->aconfig, 
 		0,
 		MODEPLAY);
-	audio_device->initialize();
+	audio_device->initialize(0);
 
 SET_TRACE
 
@@ -146,27 +147,28 @@ SET_TRACE
 
 	add_subwindow(new BC_Title(x + 200, y + 5, _("Framerate achieved:")));
 	add_subwindow(framerate_title = new BC_Title(x + 350, y + 5, _("--"), MEDIUMFONT, RED));
-	draw_framerate();
+	draw_framerate(0);
 	y += window->get_h() + 5;
 
 	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
 	y += asynchronous->get_h() + 10;
 
 SET_TRACE
- 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
-	y += 20;
+	BC_Title *title;
+ 	add_subwindow(title = new BC_Title(x, y, _("Scaling equation:")));
+	y += title->get_h() + margin;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == NEAREST_NEIGHBOR, 
 		10, 
 		y));
-	y += 20;
+	y += nearest_neighbor->get_h();
 	add_subwindow(cubic_linear = new PlaybackBicubicBilinear(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == CUBIC_LINEAR, 
 		10, 
 		y));
-	y += 20;
+	y += nearest_neighbor->get_h();
 	add_subwindow(linear_linear = new PlaybackBilinearBilinear(pwindow, 
 		this, 
 		pwindow->thread->edl->session->interpolation_type == LINEAR_LINEAR, 
@@ -174,9 +176,9 @@ SET_TRACE
 		y));
 
 SET_TRACE
-	y += 35;
+	y += nearest_neighbor->get_h() + margin;
 	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT));
-	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
+	sprintf(string, "%d", (int)pwindow->thread->edl->session->playback_preload);
 	PlaybackPreload *preload;
 	add_subwindow(preload = new PlaybackPreload(x + 210, y, pwindow, this, string));
 
@@ -227,7 +229,7 @@ SET_TRACE
 		playback_config->vconfig, 
 		0,
 		MODEPLAY);
-	video_device->initialize();
+	video_device->initialize(0);
 
 SET_TRACE	
 
@@ -249,12 +251,12 @@ int PlaybackPrefs::get_buffer_bytes()
 //	return pwindow->thread->edl->aconfig->oss_out_bits / 8 * pwindow->thread->preferences->aconfig->oss_out_channels * pwindow->thread->preferences->playback_buffer;
 }
 
-int PlaybackPrefs::draw_framerate()
+int PlaybackPrefs::draw_framerate(int flush)
 {
 //printf("PlaybackPrefs::draw_framerate 1 %f\n", mwindow->session->actual_frame_rate);
 	char string[BCTEXTLEN];
 	sprintf(string, "%.4f", mwindow->session->actual_frame_rate);
-	framerate_title->update(string);
+	framerate_title->update(string, flush);
 	return 0;
 }
 

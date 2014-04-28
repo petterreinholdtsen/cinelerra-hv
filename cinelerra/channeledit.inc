@@ -24,5 +24,6 @@
 
 class ChannelEdit;
 class ChannelEditThread;
+class ChannelEditPictureThread;
 
 #endif

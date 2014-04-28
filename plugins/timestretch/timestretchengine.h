@@ -30,11 +30,11 @@ class TimeStretchEngine
 {
 public:
 // scale = out length / in length
-	TimeStretchEngine(double scale, int sample_rate);
+	TimeStretchEngine(double scale, int sample_rate, int window_time);
 	~TimeStretchEngine();
 
 	void reset();
-	void update(double scale, int sample_rate);
+	void update(double scale, int sample_rate, int window_time);
 	void overlay(double *out, double *in, int size, int skirt);
 // Returns the number of samples in the output buffer
 	int process(Samples *in_buffer, int in_size);

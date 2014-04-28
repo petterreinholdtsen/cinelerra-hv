@@ -53,12 +53,17 @@ void VTracking::update_tracker(double position)
 	vwindow->gui->lock_window("VTracking::update_tracker");
 	vwindow->get_edl()->local_session->set_selectionstart(position);
 	vwindow->get_edl()->local_session->set_selectionend(position);
+
+#ifdef USE_SLIDER
 	vwindow->gui->slider->update(position);
+#endif
+
 	vwindow->gui->clock->update(position);
 
 // This is going to boost the latency but we need to update the timebar
-	vwindow->gui->timebar->draw_range();
-	vwindow->gui->timebar->flash();
+//	vwindow->gui->timebar->draw_range();
+	vwindow->gui->timebar->update(1);
+//	vwindow->gui->timebar->flash();
 
 	vwindow->gui->unlock_window();
 

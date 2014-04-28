@@ -39,6 +39,13 @@ void main()
 	color2 = yuv_to_rgb(color);
 	color2 = rgb_to_hsv(color2);
 
+/* Hue wrap */
+	if(color2.r <= hue_key - tolerance_in * 180.0)
+		color2.r += 360;
+	else
+	if(color2.r >= hue_key + tolerance_in * 180.0)
+		color2.r -= 360;
+
 /* Hue is completely out of range */
 	if (tolerance == 0.0)
 	    alpha_hue = 1.0;

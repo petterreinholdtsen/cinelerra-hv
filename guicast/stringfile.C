@@ -50,7 +50,7 @@ StringFile::StringFile(const char *filename)
 		fseek(in, 0, SEEK_SET);
 		string = new char[length + 5];
 
-		fread(string, length, 1, in);
+		int temp = fread(string, length, 1, in);
 		for(int i = 0; i < 5; i++) string[length + i] = 0;
 		fclose(in);
 	}
@@ -231,7 +231,7 @@ int StringFile::writeline(char *arg1, int indent)
 	}
 	
 	for(i = 0; i < indent; i++, pointer++) string[pointer] = ' ';
-	sprintf(&string[pointer], arg1);
+	strcpy(string + pointer, arg1);
 	pointer += strlen(arg1);
 	return 0;
 }

@@ -1,7 +1,7 @@
  ###########################################################################
  ## This file is created automatically from your config file.
  ## Do not hand edit.
- ## Created:Fri Aug 5 11:40:35 PDT 2011
+ ## Created:Sun Aug 7 00:25:02 PDT 2011
  ###########################################################################
 
 MOD_DESC_NATIVE_AUDIO=(from EST) Native audio module for your system

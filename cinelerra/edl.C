@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ EDL::EDL(EDL *parent_edl)
 	tracks = 0;
 	labels = 0;
 	local_session = 0;
-	vwindow_edl = 0;
-	vwindow_edl_shared = 0;
+//	vwindow_edl = 0;
+//	vwindow_edl_shared = 0;
 
 	folders.set_array_delete();
 
@@ -99,8 +99,11 @@ EDL::~EDL()
 		delete local_session;
 	}
 
-	if(vwindow_edl && !vwindow_edl_shared)
-		vwindow_edl->Garbage::remove_user();
+
+	remove_vwindow_edls();
+
+//	if(vwindow_edl && !vwindow_edl_shared)
+//		vwindow_edl->Garbage::remove_user();
 
 	if(!parent_edl)
 	{
@@ -115,6 +118,7 @@ EDL::~EDL()
 	clips.remove_all();
 	delete nested_edls;
 }
+
 
 
 void EDL::create_objects()
@@ -189,8 +193,14 @@ int EDL::load_xml(FileXML *file,
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
 
-
+// Clear objects
 	folders.remove_all_objects();
+
+	if((load_flags & LOAD_ALL) == LOAD_ALL)	
+	{
+		remove_vwindow_edls();
+	}
+
 
 // Search for start of master EDL.
 
@@ -336,12 +346,16 @@ int EDL::load_xml(FileXML *file,
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
-						if(vwindow_edl && !vwindow_edl_shared) 
-							vwindow_edl->Garbage::remove_user();
-						vwindow_edl = new_edl;
-						vwindow_edl_shared = 0;
+//						if(vwindow_edl && !vwindow_edl_shared) 
+//							vwindow_edl->Garbage::remove_user();
+//						vwindow_edl_shared = 0;
+//						vwindow_edl = new_edl;
+
+						append_vwindow_edl(new_edl, 0);
+
 					}
 					else
+// Discard if not replacing EDL
 					{
 						new_edl->Garbage::remove_user();
 						new_edl = 0;
@@ -394,15 +408,21 @@ void EDL::copy_clips(EDL *edl)
 {
 	if(this == edl) return;
 
-	if(vwindow_edl && !vwindow_edl_shared) vwindow_edl->Garbage::remove_user();
-	vwindow_edl = 0;
-	vwindow_edl_shared = 0;
-	if(edl->vwindow_edl)
+	remove_vwindow_edls();
+
+//	if(vwindow_edl && !vwindow_edl_shared) 
+//		vwindow_edl->Garbage::remove_user();
+//	vwindow_edl = 0;
+//	vwindow_edl_shared = 0;
+
+	for(int i = 0; i < edl->total_vwindow_edls(); i++)
 	{
-		vwindow_edl = new EDL(this);
-		vwindow_edl->create_objects();
-		vwindow_edl->copy_all(edl->vwindow_edl);
+		EDL *new_edl = new EDL(this);
+		new_edl->create_objects();
+		new_edl->copy_all(edl->get_vwindow_edl(i));
+		append_vwindow_edl(new_edl, 0);
 	}
+
 	for(int i = 0; i < clips.size(); i++)
 		clips.get(i)->Garbage::remove_user();
 	clips.remove_all();
@@ -528,7 +548,7 @@ int EDL::copy(double start,
 // Save path for restoration of the project title from a backup.
 		if(this->path[0])
 		{
-			file->tag.set_property("path", path);
+			file->tag.set_property("PATH", path);
 		}
 	}
 
@@ -585,10 +605,9 @@ int EDL::copy(double start,
 // Don't want this if using clipboard
 		if(all)
 		{
-			if(vwindow_edl)
+			for(int i = 0; i < total_vwindow_edls(); i++)
 			{
-				
-				vwindow_edl->save_xml(file, 
+				get_vwindow_edl(i)->save_xml(file, 
 					output_path,
 					0,
 					1);
@@ -866,9 +885,9 @@ void EDL::remove_from_project(ArrayList<Indexable*> *assets)
 			clips.values[j]->remove_from_project(assets);
 		}
 
-// Remove from VWindow
-	if(vwindow_edl)
-		vwindow_edl->remove_from_project(assets);
+// Remove from VWindow EDLs
+	for(int i = 0; i < total_vwindow_edls(); i++)
+		get_vwindow_edl(i)->remove_from_project(assets);
 
 	for(int i = 0; i < assets->size(); i++)
 	{
@@ -980,8 +999,9 @@ int EDL::dump()
 		printf("CLIP\n");
 	else
 		printf("EDL\n");
-	printf("clip_title: %s parent_edl: %p\n", local_session->clip_title, parent_edl);
-	printf("selectionstart %f selectionend %f loop_start %f loop_end %f\n", 
+	printf("  clip_title: %s\n"
+		"  parent_edl: %p\n", local_session->clip_title, parent_edl);
+	printf("  selectionstart %f\n  selectionend %f\n  loop_start %f\n  loop_end %f\n", 
 		local_session->get_selectionstart(1), 
 		local_session->get_selectionend(1),
 		local_session->loop_start,
@@ -989,21 +1009,21 @@ int EDL::dump()
 
 	if(!parent_edl)
 	{
-		printf("audio_channels: %d "
-			"audio_tracks: %d \n"
-			"sample_rate: %d\n",
-			session->audio_channels,
-			session->audio_tracks,
-			session->sample_rate);
-		printf("video_channels: %d "
-			"video_tracks: %d "
-			"frame_rate: %.2f "
-			"frames_per_foot: %.2f\n"
-    		"output_w: %d "
-    		"output_h: %d "
-    		"aspect_w: %f "
-    		"aspect_h %f "
-			"color_model %d\n",
+		printf("  audio_channels: %d\n"
+			"  audio_tracks: %d\n"
+			"  sample_rate: %d\n",
+			(int)session->audio_channels,
+			(int)session->audio_tracks,
+			(int)session->sample_rate);
+		printf("  video_channels: %d\n"
+			"  video_tracks: %d\n"
+			"  frame_rate: %.2f\n"
+			"  frames_per_foot: %.2f\n"
+    		"  output_w: %d\n"
+    		"  output_h: %d\n"
+    		"  aspect_w: %f\n"
+    		"  aspect_h %f\n"
+			"  color_model %d\n",
 				session->video_channels,
 				session->video_tracks,
 				session->frame_rate,
@@ -1014,7 +1034,7 @@ int EDL::dump()
     			session->aspect_h,
 				session->color_model);
 
-		printf(" EDLS\n");
+		printf(" CLIPS\n");
 		printf("  total: %d\n", clips.total);
 	
 		for(int i = 0; i < clips.total; i++)
@@ -1024,6 +1044,14 @@ int EDL::dump()
 			printf("\n\n");
 		}
 
+		printf(" VWINDOW EDLS\n");
+		printf("  total: %d\n", total_vwindow_edls());
+		
+		for(int i = 0; i < total_vwindow_edls(); i++)
+		{
+			printf("   %s\n", get_vwindow_edl(i)->local_session->clip_title);
+		}
+	
 		printf(" ASSETS\n");
 		assets->dump();
 	}
@@ -1165,9 +1193,9 @@ void EDL::optimize()
 {
 //printf("EDL::optimize 1\n");
 	double length = tracks->total_length();
-	if(local_session->preview_end > length) local_session->preview_end = length;
-	if(local_session->preview_start > length ||
-		local_session->preview_start < 0) local_session->preview_start = 0;
+//	if(local_session->preview_end > length) local_session->preview_end = length;
+//	if(local_session->preview_start > length ||
+//		local_session->preview_start < 0) local_session->preview_start = 0;
 	for(Track *current = tracks->first; current; current = NEXT)
 		current->optimize();
 }
@@ -1467,6 +1495,44 @@ int64_t EDL::get_video_frames()
 {
 	return (int64_t)(tracks->total_playable_length() *
 		session->frame_rate);
+}
+
+
+void EDL::remove_vwindow_edls()
+{
+	for(int i = 0; i < total_vwindow_edls(); i++)
+	{
+		get_vwindow_edl(i)->Garbage::remove_user();
+	}
+	vwindow_edls.remove_all();
+}
+
+void EDL::remove_vwindow_edl(EDL *edl)
+{
+	if(vwindow_edls.number_of(edl) >= 0)
+	{
+		edl->Garbage::remove_user();
+		vwindow_edls.remove(edl);
+	}
+}
+
+
+EDL* EDL::get_vwindow_edl(int number)
+{
+	return vwindow_edls.get(number);
+}
+
+int EDL::total_vwindow_edls()
+{
+	return vwindow_edls.size();
+}
+
+void EDL::append_vwindow_edl(EDL *edl, int increase_counter)
+{
+	if(vwindow_edls.number_of(edl) >= 0) return;
+
+	if(increase_counter) edl->Garbage::add_user();
+	vwindow_edls.append(edl);
 }
 
 

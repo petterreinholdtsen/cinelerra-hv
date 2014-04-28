@@ -72,26 +72,6 @@ void RGB601Main::update_gui()
 	}
 }
 
-int RGB601Main::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%srgb601.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.direction = defaults->get("DIRECTION", config.direction);
-	return 0;
-}
-
-int RGB601Main::save_defaults()
-{
-	defaults->update("DIRECTION", config.direction);
-	defaults->save();
-	return 0;
-}
 
 int RGB601Main::load_configuration()
 {

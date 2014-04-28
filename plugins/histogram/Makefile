@@ -1,7 +1,6 @@
 include ../../global_config
 
 OBJS = \
-	../colors/$(OBJDIR)/plugincolors.o \
 	$(OBJDIR)/histogram.o \
 	$(OBJDIR)/histogramconfig.o \
 	$(OBJDIR)/histogramwindow.o

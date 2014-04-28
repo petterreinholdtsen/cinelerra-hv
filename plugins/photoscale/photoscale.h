@@ -54,7 +54,29 @@ public:
 	int *output;
 };
 
+class PhotoScaleFile : public BC_Radial
+{
+public:
+	PhotoScaleFile(PhotoScaleMain *plugin, 
+		PhotoScaleWindow *gui, 
+		int x, 
+		int y);
+	int handle_event();
+	PhotoScaleMain *plugin;
+	PhotoScaleWindow *gui;
+};
 
+class PhotoScaleScan : public BC_Radial
+{
+public:
+	PhotoScaleScan(PhotoScaleMain *plugin, 
+		PhotoScaleWindow *gui, 
+		int x, 
+		int y);
+	int handle_event();
+	PhotoScaleMain *plugin;
+	PhotoScaleWindow *gui;
+};
 
 class PhotoScaleWindow : public PluginClientWindow
 {
@@ -67,6 +89,8 @@ public:
 	PhotoScaleMain *plugin;
 // Output size w, h
 	PhotoScaleSizeText *output_size[2];
+	PhotoScaleFile *file;
+	PhotoScaleScan *scan;
 };
 
 
@@ -106,6 +130,7 @@ public:
 
 // Output size
 	int width, height;
+	int use_file;
 };
 
 
@@ -165,8 +190,6 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();

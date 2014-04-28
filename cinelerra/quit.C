@@ -70,6 +70,7 @@ int Quit::handle_event()
 void Quit::run()
 {
 	int result = 0;
+
 // Test execution conditions
 	if(mwindow->gui->mainmenu->record->current_state == RECORD_CAPTURING)
 	{
@@ -81,7 +82,7 @@ void Quit::run()
 		return;
 	}
 	else
-	if(mwindow->render->running())
+	if(mwindow->render->thread->running())
 	{
 		ErrorBox error(PROGRAM_NAME ": Error", 
 			mwindow->gui->get_abs_cursor_x(1), 

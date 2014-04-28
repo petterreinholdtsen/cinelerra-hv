@@ -1,9 +1,7 @@
 include ../../global_config
 
 OBJS := \
-	$(OBJDIR)/chromakey.o \
-	../colors/$(OBJDIR)/colorpicker.o \
-	../colors/$(OBJDIR)/plugincolors.o
+	$(OBJDIR)/chromakey.o
 
 SHADER := $(OBJDIR)/chromakey_sl.o
 

@@ -83,14 +83,15 @@ int BC_Button::initialize()
 	BC_SubWindow::initialize();
 
 // Display the bitmap
-	draw_face();
+	draw_face(0);
+	show_window(0);
 	return 0;
 }
 
 int BC_Button::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
-	draw_face();
+	draw_face(0);
 	return 0;
 }
 
@@ -139,7 +140,7 @@ int BC_Button::set_images(VFrame **data)
 	return 0;
 }
 
-int BC_Button::draw_face()
+int BC_Button::draw_face(int flush)
 {
 	draw_top_background(parent_window, 0, 0, w, h);
 	pixmap->draw_pixmap(images[status], 
@@ -149,7 +150,7 @@ int BC_Button::draw_face()
 			h,
 			0,
 			0);
-	flash();
+	this->flash(flush);
 	return 0;
 }
 
@@ -434,7 +435,7 @@ int BC_GenericButton::calculate_h()
 	return resources->generic_button_images[0]->get_h();
 }
 
-int BC_GenericButton::draw_face()
+int BC_GenericButton::draw_face(int flush)
 {
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_3segmenth(0, 0, get_w(), images[status]);
@@ -464,16 +465,15 @@ int BC_GenericButton::draw_face()
 	{
 		y++;
 		int x1 = get_text_width(current_font, text, underline_number) + 
-			x + 
-			resources->toggle_text_margin;
+			x;
 		int x2 = get_text_width(current_font, text, underline_number + 1) + 
-			x +
-			resources->toggle_text_margin;
+			x;
+
 		draw_line(x1, y, x2, y);
 		draw_line(x1, y + 1, (x2 + x1) / 2, y + 1);
 	}
 
-	flash();
+	this->flash(flush);
 	return 0;
 }
 

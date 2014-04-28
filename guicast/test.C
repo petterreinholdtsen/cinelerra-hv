@@ -155,8 +155,8 @@ public:
 				break;
 		}
 		printf("%d\n", current_cursor);
-//		set_x_cursor(current_cursor);
-set_cursor(TRANSPARENT_CURSOR);
+		set_cursor(current_cursor, 0, 1);
+//set_cursor(TRANSPARENT_CURSOR);
 	}
 	
 	int current_cursor;

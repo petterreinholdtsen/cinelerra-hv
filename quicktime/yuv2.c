@@ -94,7 +94,7 @@ static void convert_encode_2vuy(quicktime_yuv2_codec_t *codec, unsigned char **r
 		unsigned char *in_row = row_pointers[y];
 		for(x = 0; x < codec->bytes_per_line; )
 		{
-                        out_row[0] = in_row[1]; /* Y */
+            out_row[0] = in_row[1]; /* Y */
 			out_row[1] = in_row[0]; /* U */
 			out_row[2] = in_row[3]; /* Y */
 			out_row[3] = in_row[2]; /* V */

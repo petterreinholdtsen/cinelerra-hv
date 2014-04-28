@@ -45,7 +45,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/libsndfile-1.0.11/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/libsndfile-1.0.11/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/libsndfile-1.0.11/missing --run automake-1.7
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2 -W -Wall -Wstrict-prototypes -Wmissing-prototypes -Waggregate-return -Wcast-align -Wcast-qual -Wnested-externs -Wshadow -Wbad-function-cast -Wwrite-strings -pipe 
@@ -98,7 +98,7 @@ RANLIB = ranlib
 SET_MAKE = 
 SF_COUNT_MAX = 0x7FFFFFFFFFFFFFFFLL
 SHARED_VERSION_INFO = 1:11:0
-SHELL = /bin/bash
+SHELL = /bin/sh
 SHLIB_VERSION_ARG = -Wl,--version-script=$(srcdir)/Symbols.linux
 SIZEOF_SF_COUNT_T = 8
 STRIP = strip

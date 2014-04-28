@@ -1,67 +1,70 @@
 libmplex2_la-inputstrm.lo: inputstrm.cpp ../config.h \
- /usr/include/assert.h /usr/include/features.h \
- /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/assert.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-64.h ../utils/mjpeg_types.h \
  /usr/include/sys/types.h /usr/include/bits/types.h \
  /usr/include/bits/typesizes.h /usr/include/time.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
  /usr/include/bits/byteswap.h /usr/include/sys/select.h \
  /usr/include/bits/select.h /usr/include/bits/sigset.h \
  /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
- /usr/include/bits/pthreadtypes.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
- /usr/include/stdint.h /usr/include/bits/wchar.h /usr/include/inttypes.h \
- inputstrm.hpp /usr/include/stdio.h /usr/include/libio.h \
- /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/stdint.h \
+ /usr/include/bits/wchar.h /usr/include/inttypes.h inputstrm.hpp \
+ /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
- /usr/include/c++/4.5/vector /usr/include/c++/4.5/bits/stl_algobase.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h \
- /usr/include/c++/4.5/cstddef /usr/include/c++/4.5/bits/functexcept.h \
- /usr/include/c++/4.5/exception_defines.h \
- /usr/include/c++/4.5/bits/cpp_type_traits.h \
- /usr/include/c++/4.5/ext/type_traits.h \
- /usr/include/c++/4.5/ext/numeric_traits.h \
- /usr/include/c++/4.5/bits/stl_pair.h /usr/include/c++/4.5/bits/move.h \
- /usr/include/c++/4.5/bits/concept_check.h \
- /usr/include/c++/4.5/bits/stl_iterator_base_types.h \
- /usr/include/c++/4.5/bits/stl_iterator_base_funcs.h \
- /usr/include/c++/4.5/bits/stl_iterator.h \
- /usr/include/c++/4.5/debug/debug.h /usr/include/c++/4.5/bits/allocator.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h \
- /usr/include/c++/4.5/ext/new_allocator.h /usr/include/c++/4.5/new \
- /usr/include/c++/4.5/exception /usr/include/c++/4.5/bits/stl_construct.h \
- /usr/include/c++/4.5/bits/stl_uninitialized.h \
- /usr/include/c++/4.5/bits/stl_vector.h \
- /usr/include/c++/4.5/initializer_list \
- /usr/include/c++/4.5/bits/stl_bvector.h \
- /usr/include/c++/4.5/bits/vector.tcc /usr/include/sys/stat.h \
- /usr/include/bits/stat.h /usr/include/c++/4.5/cassert \
+ /usr/include/bits/stdio.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/vector \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_algobase.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/os_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/cpu_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cstddef \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/functexcept.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cpp_type_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/type_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/numeric_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_pair.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/move.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/concept_check.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_types.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_funcs.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/debug/debug.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/allocator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++allocator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/new_allocator.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/new \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_construct.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_uninitialized.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_vector.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/initializer_list \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_bvector.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/vector.tcc \
+ /usr/include/sys/stat.h /usr/include/bits/stat.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cassert \
  ../utils/mpegconsts.h ../utils/yuv4mpeg.h /usr/include/stdlib.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
- /usr/include/xlocale.h /usr/include/alloca.h /usr/include/bits/stdlib.h \
- /usr/include/unistd.h /usr/include/bits/posix_opt.h \
- /usr/include/bits/environments.h /usr/include/bits/confname.h \
- /usr/include/getopt.h /usr/include/bits/unistd.h \
+ /usr/include/xlocale.h /usr/include/alloca.h /usr/include/unistd.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
+ /usr/include/bits/confname.h /usr/include/getopt.h \
  ../utils/mjpeg_logging.h ../utils/format_codes.h mplexconsts.hpp \
- bits.hpp aunitbuffer.hpp /usr/include/c++/4.5/deque \
- /usr/include/c++/4.5/bits/stl_deque.h \
- /usr/include/c++/4.5/bits/deque.tcc aunit.hpp decodebufmodel.hpp \
- multiplexor.hpp interact.hpp stream_params.hpp systems.hpp \
- outputstrm.hpp padstrm.hpp
+ bits.hpp aunitbuffer.hpp \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/deque \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_deque.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/deque.tcc \
+ aunit.hpp decodebufmodel.hpp multiplexor.hpp interact.hpp \
+ stream_params.hpp systems.hpp outputstrm.hpp padstrm.hpp
 
 ../config.h:
 
 /usr/include/assert.h:
 
 /usr/include/features.h:
-
-/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -81,7 +84,7 @@ libmplex2_la-inputstrm.lo: inputstrm.cpp ../config.h \
 
 /usr/include/time.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/endian.h:
 
@@ -101,8 +104,6 @@ libmplex2_la-inputstrm.lo: inputstrm.cpp ../config.h \
 
 /usr/include/bits/pthreadtypes.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
-
 /usr/include/stdint.h:
 
 /usr/include/bits/wchar.h:
@@ -119,7 +120,7 @@ inputstrm.hpp:
 
 /usr/include/wchar.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
@@ -127,71 +128,69 @@ inputstrm.hpp:
 
 /usr/include/bits/stdio.h:
 
-/usr/include/bits/stdio2.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/vector:
 
-/usr/include/c++/4.5/vector:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_algobase.h:
 
-/usr/include/c++/4.5/bits/stl_algobase.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/os_defines.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/cpu_defines.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cstddef:
 
-/usr/include/c++/4.5/cstddef:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/functexcept.h:
 
-/usr/include/c++/4.5/bits/functexcept.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception_defines.h:
 
-/usr/include/c++/4.5/exception_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cpp_type_traits.h:
 
-/usr/include/c++/4.5/bits/cpp_type_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/type_traits.h:
 
-/usr/include/c++/4.5/ext/type_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/numeric_traits.h:
 
-/usr/include/c++/4.5/ext/numeric_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_pair.h:
 
-/usr/include/c++/4.5/bits/stl_pair.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/move.h:
 
-/usr/include/c++/4.5/bits/move.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/concept_check.h:
 
-/usr/include/c++/4.5/bits/concept_check.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_types.h:
 
-/usr/include/c++/4.5/bits/stl_iterator_base_types.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator_base_funcs.h:
 
-/usr/include/c++/4.5/bits/stl_iterator_base_funcs.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_iterator.h:
 
-/usr/include/c++/4.5/bits/stl_iterator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/debug/debug.h:
 
-/usr/include/c++/4.5/debug/debug.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/allocator.h:
 
-/usr/include/c++/4.5/bits/allocator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++allocator.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++allocator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/new_allocator.h:
 
-/usr/include/c++/4.5/ext/new_allocator.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/new:
 
-/usr/include/c++/4.5/new:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/exception:
 
-/usr/include/c++/4.5/exception:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_construct.h:
 
-/usr/include/c++/4.5/bits/stl_construct.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_uninitialized.h:
 
-/usr/include/c++/4.5/bits/stl_uninitialized.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_vector.h:
 
-/usr/include/c++/4.5/bits/stl_vector.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/initializer_list:
 
-/usr/include/c++/4.5/initializer_list:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_bvector.h:
 
-/usr/include/c++/4.5/bits/stl_bvector.h:
-
-/usr/include/c++/4.5/bits/vector.tcc:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/vector.tcc:
 
 /usr/include/sys/stat.h:
 
 /usr/include/bits/stat.h:
 
-/usr/include/c++/4.5/cassert:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cassert:
 
 ../utils/mpegconsts.h:
 
@@ -207,8 +206,6 @@ inputstrm.hpp:
 
 /usr/include/alloca.h:
 
-/usr/include/bits/stdlib.h:
-
 /usr/include/unistd.h:
 
 /usr/include/bits/posix_opt.h:
@@ -218,8 +215,6 @@ inputstrm.hpp:
 /usr/include/bits/confname.h:
 
 /usr/include/getopt.h:
-
-/usr/include/bits/unistd.h:
 
 ../utils/mjpeg_logging.h:
 
@@ -231,11 +226,11 @@ bits.hpp:
 
 aunitbuffer.hpp:
 
-/usr/include/c++/4.5/deque:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/deque:
 
-/usr/include/c++/4.5/bits/stl_deque.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/stl_deque.h:
 
-/usr/include/c++/4.5/bits/deque.tcc:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/deque.tcc:
 
 aunit.hpp:
 

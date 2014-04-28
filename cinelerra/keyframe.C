@@ -346,6 +346,6 @@ void KeyFrame::set_data(char *data)
 
 void KeyFrame::dump()
 {
-	printf("     position: %lld\n", position);
+	printf("     position: %lld\n", (long long)position);
 	printf("     data: %s\n", data);
 }

@@ -150,6 +150,7 @@ int BC_ProgressWindow::create_objects(const char *text, int64_t length)
 	y += caption->get_h() + 20;
 	add_tool(bar = new BC_ProgressBar(x, y, get_w() - 20, length));
 	add_tool(new BC_CancelButton(this));
+	show_window(1);
 	unlock_window();
 
 	return 0;

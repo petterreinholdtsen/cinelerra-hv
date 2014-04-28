@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@
 
 
 #define BANDS 3
-#define WINDOW_SIZE 16384
 #define MAXMAGNITUDE 15
+#define MAX_WINDOW 262144
 
 
 
@@ -96,6 +96,7 @@ public:
 
 	ParametricBand band[BANDS];
 	float wetness;
+	int window_size;
 };
 
 
@@ -182,6 +183,21 @@ public:
 };
 
 
+class ParametricSize : public BC_PopupMenu
+{
+public:
+	ParametricSize(ParametricWindow *window, ParametricEQ *plugin, int x, int y);
+
+	int handle_event();
+	void create_objects();         // add initial items
+	void update(int size);
+
+	ParametricWindow *window;
+	ParametricEQ *plugin;
+};
+
+
+
 
 class ParametricWetness : public BC_FPot
 {
@@ -206,7 +222,23 @@ public:
 	ParametricEQ *plugin;
 	ParametricBandGUI* bands[BANDS];
 	ParametricWetness *wetness;
+	ParametricSize *size;
 };
+
+
+class ParametricGUIFrame : public PluginClientFrame
+{
+public:
+	ParametricGUIFrame(int window_size, int sample_rate);
+	virtual ~ParametricGUIFrame();
+	double *data;
+// Maximum of window in frequency domain
+	double freq_max;
+// Maximum of window in time domain
+	double time_max;
+	int window_size;
+};
+
 
 class ParametricFFT : public CrossfadeFFT
 {
@@ -215,11 +247,14 @@ public:
 	~ParametricFFT();
 	
 	int signal_process();
+	int post_process();
 	int read_samples(int64_t output_sample, 
 		int samples, 
 		Samples *buffer);
 
 	ParametricEQ *plugin;
+// Current GUI frame being filled
+	ParametricGUIFrame *frame;
 };
 
 
@@ -237,8 +272,6 @@ public:
 		int64_t start_position,
 		int sample_rate);
 
-	int load_defaults();
-	int save_defaults();
 	void reset();
 	void reconfigure();
 	void update_gui();
@@ -246,10 +279,12 @@ public:
 	double calculate_envelope();
 	double gauss(double sigma, double a, double x);
 
-	double envelope[WINDOW_SIZE / 2];
+	double *envelope;
 	int need_reconfigure;
 	PLUGIN_CLASS_MEMBERS(ParametricConfig)
 	ParametricFFT *fft;
+// For refreshing the canvas
+	ParametricGUIFrame *last_frame;
 };
 
 

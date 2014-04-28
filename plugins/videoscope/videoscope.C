@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,11 @@
 #include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 #include "fonts.h"
+#include "scopewindow.h"
+#include "theme.h"
 #include "vframe.h"
 
 #include <math.h>
@@ -39,15 +40,11 @@
 
 
 
-#define FLOAT_MIN -0.1
-#define FLOAT_MAX 1.1
-#define WAVEFORM_DIVISIONS 12
-#define VECTORSCOPE_DIVISIONS 12
 
 
 class VideoScopeEffect;
 class VideoScopeEngine;
-
+class VideoScopeWindow;
 
 class VideoScopeConfig
 {
@@ -55,49 +52,18 @@ public:
 	VideoScopeConfig();
 };
 
-class VideoScopeWaveform : public BC_SubWindow
-{
-public:
-	VideoScopeWaveform(VideoScopeEffect *plugin, 
-		int x, 
-		int y,
-		int w,
-		int h);
-	VideoScopeEffect *plugin;
-};
-
-
-class VideoScopeVectorscope : public BC_SubWindow
-{
-public:
-	VideoScopeVectorscope(VideoScopeEffect *plugin, 
-		int x, 
-		int y,
-		int w,
-		int h);
-	VideoScopeEffect *plugin;
-};
-
-class VideoScopeWindow : public PluginClientWindow
+class VideoScopeWindow : public ScopeGUI
 {
 public:
 	VideoScopeWindow(VideoScopeEffect *plugin);
 	~VideoScopeWindow();
 
-	void calculate_sizes(int w, int h);
 	void create_objects();
+	void toggle_event();
 	int resize_event(int w, int h);
-	void allocate_bitmaps();
-	void draw_overlays();
+	void update();
 
 	VideoScopeEffect *plugin;
-	VideoScopeWaveform *waveform;
-	VideoScopeVectorscope *vectorscope;
-	BC_Bitmap *waveform_bitmap;
-	BC_Bitmap *vector_bitmap;
-
-	int vector_x, vector_y, vector_w, vector_h;
-	int wave_x, wave_y, wave_w, wave_h;
 };
 
 
@@ -139,16 +105,17 @@ public:
 	~VideoScopeEffect();
 
 
-	PLUGIN_CLASS_MEMBERS(VideoScopeConfig)
+	PLUGIN_CLASS_MEMBERS2(VideoScopeConfig)
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void render_gui(void *input);
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 
+	int use_hist, use_wave, use_vector;
+	int use_hist_parade, use_wave_parade;
 	int w, h;
 	VFrame *input;
-	VideoScopeEngine *engine;
 };
 
 
@@ -176,171 +143,56 @@ VideoScopeConfig::VideoScopeConfig()
 
 
 
-VideoScopeWaveform::VideoScopeWaveform(VideoScopeEffect *plugin, 
-		int x, 
-		int y,
-		int w,
-		int h)
- : BC_SubWindow(x, y, w, h, BLACK)
-{
-	this->plugin = plugin;
-}
-
-
-VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin, 
-		int x, 
-		int y,
-		int w,
-		int h)
- : BC_SubWindow(x, y, w, h, BLACK)
-{
-	this->plugin = plugin;
-}
-
-
-
-
-
 
 
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin)
- : PluginClientWindow(plugin, 
+ : ScopeGUI(plugin, 
 	plugin->w, 
-	plugin->h, 
-	50, 
-	50, 
-	1)
+	plugin->h)
 {
 	this->plugin = plugin;
-	waveform_bitmap = 0;
-	vector_bitmap = 0;
 }
 
 VideoScopeWindow::~VideoScopeWindow()
 {
-
-	if(waveform_bitmap) delete waveform_bitmap;
-	if(vector_bitmap) delete vector_bitmap;
-}
-
-void VideoScopeWindow::calculate_sizes(int w, int h)
-{
-	wave_x = 30;
-	wave_y = 10;
-	wave_w = w / 2 - 5 - wave_x;
-	wave_h = h - 20 - wave_y;
-	vector_x = w / 2 + 30;
-	vector_y = 10;
-	vector_w = w - 10 - vector_x;
-	vector_h = h - 10 - vector_y;
 }
 
 void VideoScopeWindow::create_objects()
 {
-	calculate_sizes(get_w(), get_h());
-
-	add_subwindow(waveform = new VideoScopeWaveform(plugin, 
-		wave_x, 
-		wave_y, 
-		wave_w, 
-		wave_h));
-	add_subwindow(vectorscope = new VideoScopeVectorscope(plugin, 
-		vector_x, 
-		vector_y, 
-		vector_w, 
-		vector_h));
-	allocate_bitmaps();
-	draw_overlays();
-
-	show_window();
-	flush();
-	
+	use_hist = plugin->use_hist;
+	use_wave = plugin->use_wave;
+	use_vector = plugin->use_vector;
+	use_hist_parade = plugin->use_hist_parade;
+	use_wave_parade = plugin->use_wave_parade;
+	ScopeGUI::create_objects();
 }
 
+void VideoScopeWindow::toggle_event()
+{
+	plugin->use_hist = use_hist;
+	plugin->use_wave = use_wave;
+	plugin->use_vector = use_vector;
+	plugin->use_hist_parade = use_hist_parade;
+	plugin->use_wave_parade = use_wave_parade;
+// Make it reprocess
+	plugin->send_configure_change();
+}
 
 
 int VideoScopeWindow::resize_event(int w, int h)
 {
-
-	clear_box(0, 0, w, h);
+	ScopeGUI::resize_event(w, h);
 	plugin->w = w;
 	plugin->h = h;
-	calculate_sizes(w, h);
-	waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
-	vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
-	waveform->clear_box(0, 0, wave_w, wave_h);
-	vectorscope->clear_box(0, 0, wave_w, wave_h);
-	allocate_bitmaps();
-	draw_overlays();
-	flash();
-
-	return 1;
+// Make it reprocess
+	plugin->send_configure_change();
 }
 
-void VideoScopeWindow::allocate_bitmaps()
-{
-	if(waveform_bitmap) delete waveform_bitmap;
-	if(vector_bitmap) delete vector_bitmap;
-
-	waveform_bitmap = new_bitmap(wave_w, wave_h);
-	vector_bitmap = new_bitmap(vector_w, vector_h);
-}
-
-void VideoScopeWindow::draw_overlays()
-{
-	set_color(GREEN);
-	set_font(SMALLFONT);
-
-// Waveform overlay
-	for(int i = 0; i <= WAVEFORM_DIVISIONS; i++)
-	{
-		int y = wave_h * i / WAVEFORM_DIVISIONS;
-		int text_y = y + wave_y + get_text_ascent(SMALLFONT) / 2;
-		int x = wave_x - 20;
-		char string[BCTEXTLEN];
-		sprintf(string, "%d", 
-			(int)((FLOAT_MAX - 
-			i * (FLOAT_MAX - FLOAT_MIN) / WAVEFORM_DIVISIONS) * 100));
-		draw_text(x, text_y, string);
-
-		waveform->draw_line(0, 
-			CLAMP(y, 0, waveform->get_h() - 1), 
-			wave_w, 
-			CLAMP(y, 0, waveform->get_h() - 1));
-//waveform->draw_rectangle(0, 0, wave_w, wave_h);
-	}
 
 
 
-// Vectorscope overlay
-	int radius = MIN(vector_w / 2, vector_h / 2);
-	for(int i = 1; i <= VECTORSCOPE_DIVISIONS - 1; i += 2)
-	{
-		int x = vector_w / 2 - radius * i / VECTORSCOPE_DIVISIONS;
-		int y = vector_h / 2 - radius * i / VECTORSCOPE_DIVISIONS;
-		int text_x = vector_x - 20;
-		int text_y = y + vector_y + get_text_ascent(SMALLFONT) / 2;
-		int w = radius * i / VECTORSCOPE_DIVISIONS * 2;
-		int h = radius * i / VECTORSCOPE_DIVISIONS * 2;
-		char string[BCTEXTLEN];
-		
-		sprintf(string, "%d", 
-			(int)((FLOAT_MIN + 
-				(FLOAT_MAX - FLOAT_MIN) / VECTORSCOPE_DIVISIONS * i) * 100));
-		draw_text(text_x, text_y, string);
-		vectorscope->draw_circle(x, y, w, h);
-//vectorscope->draw_rectangle(0, 0, vector_w, vector_h);
-	}
-// 	vectorscope->draw_circle(vector_w / 2 - radius, 
-// 		vector_h / 2 - radius, 
-// 		radius * 2, 
-// 		radius * 2);
-	set_font(MEDIUMFONT);
 
-	waveform->flash();
-	vectorscope->flash();
-	flush();
-}
+
 
 
 
@@ -365,17 +217,19 @@ REGISTER_PLUGIN(VideoScopeEffect)
 VideoScopeEffect::VideoScopeEffect(PluginServer *server)
  : PluginVClient(server)
 {
-	engine = 0;
-	w = 640;
-	h = 260;
-	
+	w = MIN_SCOPE_W;
+	h = MIN_SCOPE_H;
+	use_hist = 0;
+	use_wave = 0;
+	use_vector = 1;
+	use_hist_parade = 1;
+	use_wave_parade = 1;
 }
 
 VideoScopeEffect::~VideoScopeEffect()
 {
 	
 
-	if(engine) delete engine;
 }
 
 
@@ -388,32 +242,67 @@ int VideoScopeEffect::load_configuration()
 	return 0;
 }
 
-NEW_PICON_MACRO(VideoScopeEffect)
+void VideoScopeEffect::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+
+// cause data to be stored directly in text
+	output.set_shared_string(keyframe->get_data(), MESSAGESIZE);
+	output.tag.set_title("VIDEOSCOPE");
+
+
+	if(is_defaults())
+	{
+		output.tag.set_property("W", w);
+		output.tag.set_property("H", h);
+		output.tag.set_property("USE_HIST", use_hist);
+		output.tag.set_property("USE_WAVE", use_wave);
+		output.tag.set_property("USE_VECTOR", use_vector);
+		output.tag.set_property("USE_HIST_PARADE", use_hist_parade);
+		output.tag.set_property("USE_WAVE_PARADE", use_wave_parade);
+	}
+
+	output.append_tag();
+	output.append_newline();
+	output.terminate_string();
+}
+
+void VideoScopeEffect::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+	input.set_shared_string(keyframe->get_data(), strlen(keyframe->get_data()));
+
+	int result = 0;
+
+
+	while(!result)
+	{
+		result = input.read_tag();
+
+		if(!result)
+		{
+			if(input.tag.title_is("VIDEOSCOPE"))
+			{
+				if(is_defaults())
+				{
+					w = input.tag.get_property("W", w);
+					h = input.tag.get_property("H", h);
+					use_hist = input.tag.get_property("USE_HIST", use_hist);
+					use_wave = input.tag.get_property("USE_WAVE", use_wave);
+					use_vector = input.tag.get_property("USE_VECTOR", use_vector);
+					use_hist_parade = input.tag.get_property("USE_HIST_PARADE", use_hist_parade);
+					use_wave_parade = input.tag.get_property("USE_WAVE_PARADE", use_wave_parade);
+				}
+			}
+		}
+	}
+}
+
+
+
 
 NEW_WINDOW_MACRO(VideoScopeEffect, VideoScopeWindow)
 
-int VideoScopeEffect::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%svideoscope.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	w = defaults->get("W", w);
-	h = defaults->get("H", h);
-	return 0;
-}
-
-int VideoScopeEffect::save_defaults()
-{
-	defaults->update("W", w);
-	defaults->update("H", h);
-	defaults->save();
-	return 0;
-}
 
 int VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
 {
@@ -435,40 +324,7 @@ void VideoScopeEffect::render_gui(void *input)
 //printf("VideoScopeEffect::process_realtime 1\n");
 		this->input = (VFrame*)input;
 //printf("VideoScopeEffect::process_realtime 1\n");
-
-
-		if(!engine)
-		{
-			engine = new VideoScopeEngine(this, 
-				(PluginClient::smp + 1));
-		}
-
-//printf("VideoScopeEffect::process_realtime 1 %d\n", PluginClient::smp);
-// Clear bitmaps
-		bzero(window->waveform_bitmap->get_data(), 
-			window->waveform_bitmap->get_h() * 
-			window->waveform_bitmap->get_bytes_per_line());
-		bzero(window->vector_bitmap->get_data(), 
-			window->vector_bitmap->get_h() * 
-			window->vector_bitmap->get_bytes_per_line());
-
-		engine->process_packages();
-//printf("VideoScopeEffect::process_realtime 2\n");
-//printf("VideoScopeEffect::process_realtime 1\n");
-
-		window->waveform->draw_bitmap(window->waveform_bitmap, 
-			1,
-			0,
-			0);
-
-//printf("VideoScopeEffect::process_realtime 1\n");
-		window->vectorscope->draw_bitmap(window->vector_bitmap, 
-			1,
-			0,
-			0);
-
-
-		window->draw_overlays();
+		window->process(this->input);
 
 
 		window->unlock_window();
@@ -589,48 +445,99 @@ static void draw_point(unsigned char **rows,
 					v); \
  \
 /* Calculate waveform */ \
-			if(!use_yuv) intensity = v; \
-			intensity = (intensity - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * \
-				waveform_h; \
-			int y = waveform_h - (int)intensity; \
-			int x = j * waveform_w / w; \
-			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h) \
-				draw_point(waveform_rows, \
-					waveform_cmodel, \
-					x, \
-					y, \
-					0xff, \
-					0xff, \
-					0xff); \
+			if(parade) \
+			{ \
+/* red */ \
+				int x = j * waveform_w / w / 3; \
+				int y = waveform_h - (int)(((float)r / max - FLOAT_MIN) / \
+					(FLOAT_MAX - FLOAT_MIN) * \
+					waveform_h); \
+				if(x >= 0 && x < waveform_w / 3 && y >= 0 && y < waveform_h) \
+					draw_point(waveform_rows, \
+						waveform_cmodel, \
+						x, \
+						y, \
+						0xff, \
+						0x0, \
+						0x0); \
+ \
+/* green */ \
+				x = waveform_w / 3 + j * waveform_w / w / 3; \
+				y = waveform_h - (int)(((float)g / max - FLOAT_MIN) / \
+					(FLOAT_MAX - FLOAT_MIN) * \
+					waveform_h); \
+				if(x >= waveform_w / 3 && x < waveform_w * 2 / 3 && \
+					y >= 0 && y < waveform_h) \
+					draw_point(waveform_rows, \
+						waveform_cmodel, \
+						x, \
+						y, \
+						0x0, \
+						0xff, \
+						0x0); \
+ \
+/* blue */ \
+				x = waveform_w * 2 / 3 + j * waveform_w / w / 3; \
+				y = waveform_h - (int)(((float)b / max - FLOAT_MIN) / \
+					(FLOAT_MAX - FLOAT_MIN) * \
+					waveform_h); \
+				if(x >= waveform_w * 2 / 3 && x < waveform_w && \
+					y >= 0 && y < waveform_h) \
+					draw_point(waveform_rows, \
+						waveform_cmodel, \
+						x, \
+						y, \
+						0x0, \
+						0x0, \
+						0xff); \
+			} \
+			else \
+			{ \
+				if(!use_yuv) intensity = v; \
+				intensity = (intensity - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * \
+					waveform_h; \
+				int y = waveform_h - (int)intensity; \
+				int x = j * waveform_w / w; \
+				if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h) \
+					draw_point(waveform_rows, \
+						waveform_cmodel, \
+						x, \
+						y, \
+						0xff, \
+						0xff, \
+						0xff); \
+			} \
  \
 /* Calculate vectorscope */ \
-			float adjacent = cos(h / 360 * 2 * M_PI); \
-			float opposite = sin(h / 360 * 2 * M_PI); \
-			x = (int)(vector_w / 2 +  \
+			float adjacent = cos((h + 90) / 360 * 2 * M_PI); \
+			float opposite = sin((h + 90) / 360 * 2 * M_PI); \
+			int x = (int)(vector_w / 2 +  \
 				adjacent * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
  \
-			y = (int)(vector_h / 2 -  \
+			int y = (int)(vector_h / 2 -  \
 				opposite * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
  \
  \
 			CLAMP(x, 0, vector_w - 1); \
 			CLAMP(y, 0, vector_h - 1); \
+/* Get color with full saturation & value */ \
 			float r_f, g_f, b_f; \
 			HSV::hsv_to_rgb(r_f, \
 					g_f, \
 					b_f, \
 					h, \
-					1, \
+					s, \
 					1); \
 			r = (int)(r_f * 255); \
 			g = (int)(g_f * 255); \
 			b = (int)(b_f * 255); \
  \
+ /* float */ \
 			if(sizeof(type) == 4) \
 			{ \
-				r = CLIP(r, 0, 1) * 0xff; \
-				g = CLIP(g, 0, 1) * 0xff; \
-				b = CLIP(b, 0, 1) * 0xff; \
+				r = CLIP(r, 0, 0xff); \
+				g = CLIP(g, 0, 0xff); \
+				b = CLIP(b, 0, 0xff); \
 			} \
  \
 			draw_point(vector_rows, \
@@ -660,6 +567,7 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 	int vector_cmodel = window->vector_bitmap->get_color_model();
 	unsigned char **vector_rows = window->vector_bitmap->get_row_pointers();
 	float radius = MIN(vector_w / 2, vector_h / 2);
+	int parade = 1;
 
 	switch(plugin->input->get_color_model())
 	{

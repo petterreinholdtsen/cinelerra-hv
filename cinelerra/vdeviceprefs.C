@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,10 +127,10 @@ int VDevicePrefs::initialize(int creation)
 			create_v4l_objs();
 			break;
 		case VIDEO4LINUX2:
-			create_v4l2_objs();
-			break;
+		case CAPTURE_JPEG_WEBCAM:
+		case CAPTURE_YUYV_WEBCAM:
 		case VIDEO4LINUX2JPEG:
-			create_v4l2jpeg_objs();
+			create_v4l2_objs();
 			break;
 		case SCREENCAPTURE:
 			create_screencap_objs();
@@ -400,18 +400,6 @@ int VDevicePrefs::create_v4l2_objs()
 	return 0;
 }
 
-int VDevicePrefs::create_v4l2jpeg_objs()
-{
-	BC_Resources *resources = BC_WindowBase::get_resources();
-	char *output_char;
-	int x1 = x + menu->get_w() + 5;
-	output_char = pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
-
-	return 0;
-}
-
 
 
 int VDevicePrefs::create_screencap_objs()
@@ -465,8 +453,11 @@ char* VDriverMenu::driver_to_string(int driver)
 		case VIDEO4LINUX2:
 			sprintf(string, VIDEO4LINUX2_TITLE);
 			break;
-		case VIDEO4LINUX2JPEG:
-			sprintf(string, VIDEO4LINUX2JPEG_TITLE);
+		case CAPTURE_JPEG_WEBCAM:
+			sprintf(string, CAPTURE_JPEG_WEBCAM_TITLE);
+			break;
+		case CAPTURE_YUYV_WEBCAM:
+			sprintf(string, CAPTURE_YUYV_WEBCAM_TITLE);
 			break;
 		case SCREENCAPTURE:
 			sprintf(string, SCREENCAPTURE_TITLE);
@@ -526,6 +517,8 @@ void VDriverMenu::create_objects()
 
 #ifdef HAVE_VIDEO4LINUX2
 		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
+		add_item(new VDriverItem(this, CAPTURE_JPEG_WEBCAM_TITLE, CAPTURE_JPEG_WEBCAM));
+		add_item(new VDriverItem(this, CAPTURE_YUYV_WEBCAM_TITLE, CAPTURE_YUYV_WEBCAM));
 		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
 #endif
 
@@ -567,7 +560,7 @@ int VDriverItem::handle_event()
 {
 	popup->set_text(get_text());
 	*(popup->output) = driver;
-	popup->device_prefs->initialize();
+	popup->device_prefs->initialize(0);
 	return 1;
 }
 
@@ -582,6 +575,9 @@ VDeviceTextBox::VDeviceTextBox(int x, int y, char *output)
 
 int VDeviceTextBox::handle_event() 
 { 
+// Suggestions
+	calculate_suggestions(0);
+
 	strcpy(output, get_text()); 
 }
 

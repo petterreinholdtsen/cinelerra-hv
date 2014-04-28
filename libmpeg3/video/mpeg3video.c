@@ -390,15 +390,19 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 	mpeg3_bits_t *bitstream;
 	mpeg3_demuxer_t *demuxer;
 	int result = 0;
+	const int debug = 0;
 
 	video = mpeg3video_allocate_struct(file, track);
 	bitstream = video->vstream;
 	demuxer = bitstream->demuxer;
 
 // Get encoding parameters from stream
+//if(0)
 	if(file->seekable)
 	{
+if(debug) printf("mpeg3video_new %d\n", __LINE__);
 		result = mpeg3video_get_header(video, 1);
+if(debug) printf("mpeg3video_new %d\n", __LINE__);
 
 		if(!result)
 		{

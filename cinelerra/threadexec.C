@@ -135,7 +135,7 @@ void ThreadExec::run()
 
 	if(pipe_stdin)
 	{
-		pipe(filedes);
+		int temp = pipe(filedes);
 		stdin_fd = fdopen(filedes[1], "w");
 	}
 

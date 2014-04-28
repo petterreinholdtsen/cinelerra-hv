@@ -330,6 +330,13 @@ void AffineUnit::process_package(LoadPackage *package)
 	int max_in_x = server->in_x + server->in_w - 1;
 	int max_in_y = server->in_y + server->in_h - 1;
 
+
+// printf("AffineUnit::process_package %d %d %d %d %d\n", 
+// __LINE__, 
+// min_in_x,
+// min_in_y,
+// max_in_x,
+// max_in_y);
 	int min_out_x = server->out_x;
 	int min_out_y = server->out_y;
 	int max_out_x = server->out_x + server->out_w;
@@ -611,6 +618,7 @@ void AffineUnit::process_package(LoadPackage *package)
 		in_row[col3_offset] - chroma_offset, \
 		in_row[col4_offset] - chroma_offset)
 
+
 #define TRANSFORM(components, type, temp_type, chroma_offset, max) \
 { \
 	type **in_rows = (type**)server->input->get_rows(); \
@@ -715,6 +723,7 @@ void AffineUnit::process_package(LoadPackage *package)
 				x >= min_out_x &&  \
 				x < max_out_x) \
 			{ \
+/* clipping region */ \
 				if ((itx + 2) >= min_in_x && \
 					(itx - 1) <= max_in_x && \
                   	(ity + 2) >= min_in_y && \
@@ -739,6 +748,7 @@ void AffineUnit::process_package(LoadPackage *package)
 					int col2_offset = col2 * components; \
 					int col3_offset = col3 * components; \
 					int col4_offset = col4 * components; \
+ \
 					type *row1_ptr = in_rows[row1]; \
 					type *row2_ptr = in_rows[row2]; \
 					type *row3_ptr = in_rows[row3]; \
@@ -1000,6 +1010,7 @@ total_clients, total_packages
 	out_x = out_y = out_w = out_h = 0;
 	in_pivot_x = in_pivot_y = 0;
 	out_pivot_x = out_pivot_y = 0;
+	this->total_packages = total_packages;
 }
 
 void AffineEngine::init_packages()
@@ -1100,9 +1111,15 @@ void AffineEngine::process(VFrame *output,
 	}
 
 	if(use_opengl)
+	{
+		set_package_count(1);
 		process_single();
+	}
 	else
+	{
+		set_package_count(total_packages);
 		process_packages();
+	}
 }
 
 
@@ -1124,6 +1141,12 @@ void AffineEngine::rotate(VFrame *output,
 		in_y = 0;
 		in_w = input->get_w();
 		in_h = input->get_h();
+// DEBUG
+// in_x = 4;
+// in_w = 2992;
+// in_y = 4;
+// in_h = 2992;
+// printf("AffineEngine::rotate %d %d %d %d %d\n", __LINE__, in_x, in_w, in_y, in_h);
 	}
 
 	if(!user_in_pivot)
@@ -1193,10 +1216,15 @@ void AffineEngine::rotate(VFrame *output,
 // y4 * h / 100);
 
 	if(use_opengl)
+	{
+		set_package_count(1);
 		process_single();
+	}
 	else
+	{
+		set_package_count(total_packages);
 		process_packages();
-//	process_packages();
+	}
 }
 
 void AffineEngine::set_in_viewport(int x, int y, int w, int h)

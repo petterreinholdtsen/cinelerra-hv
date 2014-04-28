@@ -27,7 +27,7 @@
 #include "histogramconfig.h"
 #include "histogramwindow.inc"
 #include "loadbalance.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 
 enum

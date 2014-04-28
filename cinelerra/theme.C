@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
  */
 
 #include "awindowgui.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "colors.h"
 #include "cwindowgui.h"
@@ -71,6 +72,7 @@ Theme::Theme()
 	mtransport_margin = 0;
 	toggle_margin = 0;
 	control_pixels = 50;
+	timebar_cursor_color = RED;
 
 	BC_WindowBase::get_resources()->bg_color = BLOND;
 	BC_WindowBase::get_resources()->button_up = 0xffc000;
@@ -84,6 +86,8 @@ Theme::Theme()
 	pan_x = 50;
 	play_h = 22;
 	title_h = 23;
+	clock_bg_color = BLACK;
+	assetedit_color = YELLOW;
 
 	preferences_category_overlap = 0;
 
@@ -137,7 +141,24 @@ void Theme::initialize()
 	new_image("mode_normal", "mode_normal.png");
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
+
+
+// Images all themes have
+	new_image("mwindow_icon", "heroine_icon.png");
+	new_image("vwindow_icon", "heroine_icon.png");
+	new_image("cwindow_icon", "heroine_icon.png");
+	new_image("awindow_icon", "heroine_icon.png");
+	new_image("record_icon", "heroine_icon.png");
+	new_image("clip_icon", "clip_icon.png");
+
+
+	new_image("aeffect_icon", "aeffect_icon.png");
+	new_image("veffect_icon", "veffect_icon.png");
+	new_image("atransition_icon", "atransition_icon.png");
+	new_image("vtransition_icon", "atransition_icon.png");
 }
+
+
 
 
 
@@ -435,11 +456,207 @@ void Theme::build_toggle(VFrame** &data,
 
 void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
+	mbuttons_x = 0;
+	mbuttons_y = gui->mainmenu->get_h() + 1;
+	mbuttons_w = w;
+	mbuttons_h = get_image("mbutton_bg")->get_h();
+	mclock_x = 10;
+	mclock_y = mbuttons_y - 1 + mbuttons_h + widget_border;
+	mclock_w = get_image("clock_bg")->get_w() - 40;
+	mclock_h = get_image("clock_bg")->get_h();
+	mtimebar_x = get_image("patchbay_bg")->get_w();
+	mtimebar_y = mbuttons_y - 1 + mbuttons_h;
+	mtimebar_w = w - mtimebar_x;
+	mtimebar_h = get_image("timebar_bg")->get_h();
+	mzoom_h = 25;
+	mzoom_x = 0;
+	mzoom_y = h - get_image("statusbar")->get_h();
+	mzoom_w = w;
+	mstatus_x = 0;
+	mstatus_y = mzoom_y + mzoom_h;
+	mstatus_w = w;
+	mstatus_h = h - mstatus_y;
+	mstatus_message_x = 10;
+	mstatus_message_y = 5;
+	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 240;
+	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h() - 3;
+	mstatus_progress_w = 230;
+	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
+	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
+	patchbay_x = 0;
+	patchbay_y = mtimebar_y + mtimebar_h;
+	patchbay_w = get_image("patchbay_bg")->get_w();
+	patchbay_h = mzoom_y - patchbay_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
+	mcanvas_x = patchbay_x + patchbay_w;
+	mcanvas_y = mtimebar_y + mtimebar_h;
+	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
+	mcanvas_h = patchbay_h;
+	mhscroll_x = 0;
+	mhscroll_y = mcanvas_y + mcanvas_h;
+	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
+	mvscroll_x = mcanvas_x + mcanvas_w;
+	mvscroll_y = mcanvas_y;
+	mvscroll_h = mcanvas_h;
 }
 
 void Theme::draw_mwindow_bg(MWindowGUI *gui)
 {
 }
+
+
+void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
+{
+	czoom_w = 80;
+
+	int edit_w = EditPanel::calculate_w(mwindow, 1, 14);
+	int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
+	int zoom_w = ZoomPanel::calculate_w(czoom_w);
+	int status_w = get_image("cwindow_active")->get_w();
+// Space between buttons & status icon
+	int division_w = 40;
+
+	ctimebar_h = 16;
+
+	if(cwindow_controls)
+	{
+SET_TRACE
+		if(mwindow->edl->session->cwindow_meter)
+		{
+			cmeter_x = mwindow->session->cwindow_w - 
+				MeterPanel::get_meters_width(this,
+					mwindow->edl->session->audio_channels, 
+					mwindow->edl->session->cwindow_meter);
+		}
+		else
+		{
+			cmeter_x = mwindow->session->cwindow_w + widget_border;
+		}
+
+		int buttons_h;
+#ifdef USE_SLIDER
+		cslider_x = 5;
+		cslider_y = ccomposite_h + 20;
+		cedit_y = cslider_y + BC_Slider::get_span(0);
+#endif
+
+		if(edit_w + 
+			widget_border * 2 + 
+			transport_w + widget_border + 
+			zoom_w + widget_border + 
+			division_w +
+			status_w > cmeter_x)
+		{
+			buttons_h = get_image("cbuttons_left")->get_h();
+
+			cedit_x = widget_border;
+			cedit_y = mwindow->session->cwindow_h - 
+				buttons_h + 
+				ctimebar_h + 
+				widget_border;
+
+			ctransport_x = widget_border;
+			ctransport_y = mwindow->session->cwindow_h - 
+				get_image_set("autokeyframe")[0]->get_h() - 
+				widget_border;
+
+			czoom_x = ctransport_x + transport_w + widget_border;
+			czoom_y = ctransport_y + widget_border;
+
+			cstatus_x = 426;
+			cstatus_y = mwindow->session->cwindow_h - 
+				get_image("cwindow_active")->get_h() - 30;
+		}
+		else
+		{
+			buttons_h = ctimebar_h + 
+				widget_border +
+				EditPanel::calculate_h(mwindow) +
+				widget_border;
+			ctransport_x = widget_border;
+			ctransport_y = mwindow->session->cwindow_h - 
+				buttons_h + 
+				ctimebar_h + 
+				widget_border;
+			
+			cedit_x = ctransport_x + transport_w + widget_border;
+			cedit_y = ctransport_y;
+
+			czoom_x = cedit_x + edit_w + widget_border;
+			czoom_y = cedit_y + widget_border;
+//printf("Theme::get_cwindow_sizes %d %d %d\n", __LINE__, czoom_x, zoom_w);
+			cstatus_x = czoom_x + zoom_w + division_w;
+			cstatus_y = ctransport_y;
+		}
+
+
+		ccomposite_x = 0;
+		ccomposite_y = 5;
+		ccomposite_w = get_image("cpanel_bg")->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - buttons_h;
+
+
+
+
+
+
+
+		ccanvas_x = ccomposite_x + ccomposite_w;
+		ccanvas_y = 0;
+		ccanvas_h = ccomposite_h;
+
+
+		ccanvas_w = cmeter_x - ccanvas_x - widget_border;
+SET_TRACE
+	}
+	else
+// no controls
+	{
+SET_TRACE
+		ccomposite_x = -get_image("cpanel_bg")->get_w();
+		ccomposite_y = 0;
+		ccomposite_w = get_image("cpanel_bg")->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
+
+		cslider_x = 5;
+		cslider_y = mwindow->session->cwindow_h;
+		cedit_x = 10;
+		cedit_y = cslider_y + 17;
+		ctransport_x = 10;
+		ctransport_y = cedit_y + 40;
+		ccanvas_x = 0;
+		ccanvas_y = 0;
+		ccanvas_w = mwindow->session->cwindow_w;
+		ccanvas_h = mwindow->session->cwindow_h;
+		cmeter_x = mwindow->session->cwindow_w;
+		cstatus_x = mwindow->session->cwindow_w;
+		cstatus_y = mwindow->session->cwindow_h;
+		czoom_x = mwindow->session->cwindow_w;
+		czoom_y = mwindow->session->cwindow_h;
+SET_TRACE
+	}
+
+SET_TRACE
+
+
+	cmeter_y = widget_border;
+	cmeter_h = mwindow->session->cwindow_h - cmeter_y - widget_border;
+
+	cslider_w = ccanvas_x + ccanvas_w - cslider_x - widget_border;
+
+//	ctimebar_x = ccanvas_x;
+//	ctimebar_y = ccanvas_y + ccanvas_h;
+//	ctimebar_w = ccanvas_w;
+	ctimebar_x = 0;
+	ctimebar_y = ccanvas_y + ccanvas_h;
+	ctimebar_w = mwindow->session->cwindow_w;
+	if(mwindow->edl->session->cwindow_meter)
+	{
+		ctimebar_w = cmeter_x - widget_border;
+	}
+
+SET_TRACE
+}
+
 
 
 
@@ -524,13 +741,98 @@ void Theme::draw_resource_bg(TrackCanvas *canvas,
 		pixmap);
 }
 
+
 void Theme::get_vwindow_sizes(VWindowGUI *gui)
 {
+	int edit_w = EditPanel::calculate_w(mwindow, 0, 10);
+	int transport_w = PlayTransport::get_transport_width(mwindow) + toggle_margin;
+// Space between buttons & time
+	int division_w = 30;
+	vtime_w = 150;
+	vtimebar_h = 16;
+	int vtime_border = 15;
+
+	vmeter_y = widget_border;
+	vmeter_h = mwindow->session->vwindow_h - cmeter_y - widget_border;
+
+	int buttons_h;
+	if(mwindow->edl->session->vwindow_meter)
+	{
+		vmeter_x = mwindow->session->vwindow_w - 
+			MeterPanel::get_meters_width(this,
+				mwindow->edl->session->audio_channels, 
+				mwindow->edl->session->vwindow_meter);
+	}
+	else
+	{
+		vmeter_x = mwindow->session->vwindow_w + widget_border;
+	}
+
+	vcanvas_x = 0;
+	vcanvas_y = 0;
+	vcanvas_w = vmeter_x - vcanvas_x - widget_border;
+
+#ifdef USE_SLIDER
+	vslider_x = 10;
+	vslider_y = vtimebar_y + 20;
+	vslider_w = vtimebar_w - vslider_x;
+	vedit_y = vslider_y + BC_Slider::get_span(0);
+#endif
+
+	if(edit_w +
+		widget_border * 2 +
+		transport_w + widget_border +
+		vtime_w + division_w +
+		vtime_border > vmeter_x)
+	{
+		buttons_h = get_image("vbuttons_left")->get_h();
+		vedit_x = widget_border;
+		vedit_y = mwindow->session->vwindow_h -
+			buttons_h + 
+			vtimebar_h + 
+			widget_border;
+		
+		vtransport_x = widget_border;
+		vtransport_y = mwindow->session->vwindow_h - 
+			get_image_set("autokeyframe")[0]->get_h() - 
+			widget_border;
+
+		vdivision_x = 280;
+		vtime_x = vdivision_x;
+		vtime_y = vedit_y + 20;
+	}
+	else
+	{
+		buttons_h = vtimebar_h + 
+			widget_border + 
+			EditPanel::calculate_h(mwindow) +
+			widget_border;
+		vtransport_x = widget_border;
+		vtransport_y = mwindow->session->vwindow_h - 
+			buttons_h +
+			vtimebar_h + 
+			widget_border;
+		
+		vedit_x = vtransport_x + transport_w + widget_border;
+		vedit_y = vtransport_y;
+		
+		vdivision_x = vedit_x + edit_w + division_w;
+		vtime_x = vdivision_x + vtime_border;
+		vtime_y = vedit_y + widget_border;
+	}
+
+
+//	vtimebar_x = vcanvas_x;
+//	vtimebar_y = vcanvas_y + vcanvas_h;
+//	vtimebar_w = vcanvas_w;
+
+	vcanvas_h = mwindow->session->vwindow_h - buttons_h;
+	vtimebar_x = 0;
+	vtimebar_y = vcanvas_y + vcanvas_h;
+	vtimebar_w = vmeter_x - widget_border;
+
 }
 
-void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
-{
-}
 
 void Theme::get_awindow_sizes(AWindowGUI *gui)
 {
@@ -595,7 +897,18 @@ void Theme::get_rmonitor_sizes(int do_audio,
 
 	if(do_audio)
 	{
-		rmonitor_meter_x = mwindow->session->rmonitor_w - MeterPanel::get_meters_width(audio_channels, 1);
+		if(do_video)
+		{
+			rmonitor_meter_x = mwindow->session->rmonitor_w - 
+				MeterPanel::get_meters_width(this, audio_channels, 1);
+			rmonitor_meter_w = mwindow->session->rmonitor_w;
+		}
+		else
+		{
+			rmonitor_meter_x = widget_border;
+			rmonitor_meter_w = mwindow->session->rmonitor_w - widget_border * 2;
+		}
+
 		rmonitor_meter_y = 40;
 		rmonitor_meter_h = mwindow->session->rmonitor_h - 10 - rmonitor_meter_y;
 	}
@@ -608,6 +921,13 @@ void Theme::get_rmonitor_sizes(int do_audio,
 	rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
 	if(do_audio) rmonitor_canvas_w -= 10;
 	rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
+
+	if(!do_video && do_audio)
+	{
+		rmonitor_meter_y -= 30;
+		rmonitor_meter_h += 30;
+	}
+
 }
 
 void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)

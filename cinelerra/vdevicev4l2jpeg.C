@@ -76,7 +76,7 @@ int VDeviceV4L2JPEG::initialize()
 int VDeviceV4L2JPEG::open_input()
 {
 	return VDeviceV4L2::get_sources(device,
-		device->in_config->v4l2jpeg_in_device);
+		device->in_config->v4l2_in_device);
 }
 
 int VDeviceV4L2JPEG::close_all()

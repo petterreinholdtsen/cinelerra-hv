@@ -70,6 +70,7 @@ public:
 	virtual int handle_event() { return 1; };
 	int get_w();
 	void calculate_menu();
+	static int calculate_w(int menu_w);
 	void update_menu();
 	void create_objects();
 	double get_value();

@@ -435,38 +435,6 @@ void DenoiseVideo::update_gui()
 
 
 
-int DenoiseVideo::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdenoisevideo.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.frames = defaults->get("FRAMES", config.frames);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.do_r = defaults->get("DO_R", config.do_r);
-	config.do_g = defaults->get("DO_G", config.do_g);
-	config.do_b = defaults->get("DO_B", config.do_b);
-	config.do_a = defaults->get("DO_A", config.do_a);
-	config.count_changed = defaults->get("COUNT_CHANGED", config.count_changed);
-	return 0;
-}
-
-int DenoiseVideo::save_defaults()
-{
-	defaults->update("THRESHOLD", config.threshold);
-	defaults->update("FRAMES", config.frames);
-	defaults->update("DO_R", config.do_r);
-	defaults->update("DO_G", config.do_g);
-	defaults->update("DO_B", config.do_b);
-	defaults->update("DO_A", config.do_a);
-	defaults->update("COUNT_CHANGED", config.count_changed);
-	defaults->save();
-	return 0;
-}
 
 void DenoiseVideo::save_data(KeyFrame *keyframe)
 {

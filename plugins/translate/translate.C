@@ -118,39 +118,6 @@ int TranslateMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(TranslateMain)
 
-int TranslateMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%stranslate.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-
-	config.in_x = defaults->get("IN_X", config.in_x);
-	config.in_y = defaults->get("IN_Y", config.in_y);
-	config.in_w = defaults->get("IN_W", config.in_w);
-	config.in_h = defaults->get("IN_H", config.in_h);
-	config.out_x = defaults->get("OUT_X", config.out_x);
-	config.out_y = defaults->get("OUT_Y", config.out_y);
-	config.out_w = defaults->get("OUT_W", config.out_w);
-	config.out_h = defaults->get("OUT_H", config.out_h);
-}
-
-int TranslateMain::save_defaults()
-{
-	defaults->update("IN_X", config.in_x);
-	defaults->update("IN_Y", config.in_y);
-	defaults->update("IN_W", config.in_w);
-	defaults->update("IN_H", config.in_h);
-	defaults->update("OUT_X", config.out_x);
-	defaults->update("OUT_Y", config.out_y);
-	defaults->update("OUT_W", config.out_w);
-	defaults->update("OUT_H", config.out_h);
-	defaults->save();
-}
 
 LOAD_CONFIGURATION_MACRO(TranslateMain, TranslateConfig)
 

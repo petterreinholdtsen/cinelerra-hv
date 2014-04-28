@@ -41,7 +41,7 @@
 /* #undef HAVE_LIBXV */
 
 /* Define to 1 if you have the <linux/videodev.h> header file. */
-/* #undef HAVE_LINUX_VIDEODEV_H */
+#define HAVE_LINUX_VIDEODEV_H 1
 
 /* Define to 1 if you have the <machine/endian.h> header file. */
 /* #undef HAVE_MACHINE_ENDIAN_H */

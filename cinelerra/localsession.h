@@ -106,8 +106,8 @@ public:
 	float red, green, blue;
 
 // Range for CWindow and VWindow preview in seconds.
-	double preview_start;
-	double preview_end;
+//	double preview_start;
+//	double preview_end;
 
 private:
 // The reason why selection ranges and inpoints have to be separate:

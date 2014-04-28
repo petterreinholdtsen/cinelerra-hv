@@ -65,6 +65,7 @@ MainSession::MainSession(MWindow *mwindow)
 	rwindow_fullscreen = 0;
 	vwindow_fullscreen = 0;
 	actual_frame_rate = 0;
+	record_scope = 0;
 }
 
 MainSession::~MainSession()
@@ -147,8 +148,29 @@ void MainSession::default_window_positions()
 	ewindow_w = 640;
 	ewindow_h = 240;
 
+	channels_x = 0;
+	channels_y = 0;
+	picture_x = 0;
+	picture_y = 0;
+	scope_x = 0;
+	scope_y = 0;
+	scope_w = 640;
+	scope_h = 320;
+	histogram_x = 0;
+	histogram_y = 0;
+	histogram_w = 320;
+	histogram_h = 480;
+	record_scope = 0;
+	use_hist = 1;
+	use_wave = 1;
+	use_vector = 1;
+	use_hist_parade = 1;
+	use_wave_parade = 1;
+
 	if(mwindow->edl)
-		lwindow_w = MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 1);
+		lwindow_w = MeterPanel::get_meters_width(mwindow->theme, 
+			mwindow->edl->session->audio_channels, 
+			1);
 	else
 		lwindow_w = 100;
 
@@ -211,6 +233,25 @@ int MainSession::load_defaults(BC_Hash *defaults)
 
 	ewindow_w = defaults->get("EWINDOW_W", ewindow_w);
 	ewindow_h = defaults->get("EWINDOW_H", ewindow_h);
+
+	channels_x = defaults->get("CHANNELS_X", channels_x);
+	channels_y = defaults->get("CHANNELS_Y", channels_y);
+	picture_x = defaults->get("PICTURE_X", picture_x);
+	picture_y = defaults->get("PICTURE_Y", picture_y);
+	scope_x = defaults->get("SCOPE_X", scope_x);
+	scope_y = defaults->get("SCOPE_Y", scope_y);
+	scope_w = defaults->get("SCOPE_W", scope_w);
+	scope_h = defaults->get("SCOPE_H", scope_h);
+	histogram_x = defaults->get("HISTOGRAM_X", histogram_x);
+	histogram_y = defaults->get("HISTOGRAM_Y", histogram_y);
+	histogram_w = defaults->get("HISTOGRAM_W", histogram_w);
+	histogram_h = defaults->get("HISTOGRAM_H", histogram_h);
+	record_scope = defaults->get("RECORD_SCOPE", record_scope);
+	use_hist = defaults->get("USE_HIST", use_hist);
+	use_wave = defaults->get("USE_WAVE", use_wave);
+	use_vector = defaults->get("USE_VECTOR", use_vector);
+	use_hist_parade = defaults->get("USE_HIST_PARADE", use_hist_parade);
+	use_wave_parade = defaults->get("USE_WAVE_PARADE", use_wave_parade);
 
 //printf("MainSession::load_defaults 1\n");
 
@@ -297,6 +338,25 @@ int MainSession::save_defaults(BC_Hash *defaults)
 
 	defaults->update("EWINDOW_W", ewindow_w);
 	defaults->update("EWINDOW_H", ewindow_h);
+
+	defaults->update("CHANNELS_X", channels_x);
+	defaults->update("CHANNELS_Y", channels_y);
+	defaults->update("PICTURE_X", picture_x);
+	defaults->update("PICTURE_Y", picture_y);
+	defaults->update("SCOPE_X", scope_x);
+	defaults->update("SCOPE_Y", scope_y);
+	defaults->update("SCOPE_W", scope_w);
+	defaults->update("SCOPE_H", scope_h);
+	defaults->update("HISTOGRAM_X", histogram_x);
+	defaults->update("HISTOGRAM_Y", histogram_y);
+	defaults->update("HISTOGRAM_W", histogram_w);
+	defaults->update("HISTOGRAM_H", histogram_h);
+	defaults->update("RECORD_SCOPE", record_scope);
+	defaults->update("USE_HIST", use_hist);
+	defaults->update("USE_WAVE", use_wave);
+	defaults->update("USE_VECTOR", use_vector);
+	defaults->update("USE_HIST_PARADE", use_hist_parade);
+	defaults->update("USE_WAVE_PARADE", use_wave_parade);
 
  	defaults->update("ABINS_W", afolders_w);
 

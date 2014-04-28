@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,12 +50,12 @@ RecordChannelPicker::RecordChannelPicker(MWindow *mwindow,
 	ChannelDB *channeldb, 
 	int x,
 	int y)
- : ChannelPicker(channeldb, 
+ : ChannelPicker(mwindow, 
+ 		channeldb, 
 		x,
 		y,
 		parent_window)
 {
-	this->mwindow = mwindow;
 	this->record = record;
 	this->record_monitor = record_monitor;
 }
@@ -192,8 +192,8 @@ int RecordChannelPicker::set_picture(int device_id, int value)
 {
 	if(record) 
 	{
-		record->picture->set_item(device_id, value);
-		record->set_video_picture();
+		if(record->picture->set_item(device_id, value))
+			record->set_video_picture();
 	}
 	return 0;
 }
@@ -272,13 +272,13 @@ PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow,
 		ChannelDB *channeldb, 
 		int x,
 		int y)
- : ChannelPicker(channeldb, 
+ : ChannelPicker(mwindow,
+ 		channeldb, 
 		x,
 		y,
 		prefs->dialog)
 {
 //	printf("PrefsChannelPicker::PrefsChannelPicker 1\n");
-	this->mwindow = mwindow;
 	this->prefs = prefs;
 
 #ifdef HAVE_VIDEO4LINUX
@@ -413,11 +413,13 @@ int PrefsChannelPicker::get_whiteness()
 
 
 
-ChannelPicker::ChannelPicker(ChannelDB *channeldb, 
+ChannelPicker::ChannelPicker(MWindow *mwindow,
+		ChannelDB *channeldb, 
 		int x,
 		int y,
 		BC_WindowBase *parent_window)
 {
+	this->mwindow = mwindow;
 	this->parent_window = parent_window;
 	this->x = x;
 	this->y = y;
@@ -451,7 +453,14 @@ void ChannelPicker::update_channel_list()
 		channel_text->update_list(&channel_listitems);
 }
 
-
+int ChannelPicker::get_w()
+{
+	return channel_text->get_w() + 
+		channel_select->get_w() + 
+		channel_button->get_w() +
+		picture_button->get_w() +
+		((Theme*)get_theme())->widget_border * 4;
+}
 
 
 
@@ -474,16 +483,30 @@ void ChannelPicker::create_objects()
 {
 	channel_text = 0;
 	update_channel_list();
+
+
 	channel_text = new ChannelText(this, x, y);
 	channel_text->create_objects();
-	x += channel_text->get_w();
+
+
+	x += channel_text->get_w() + ((Theme*)get_theme())->widget_border;
 	get_subwindow()->add_subwindow(channel_select = new ChannelTumbler(this, 
 		x, 
 		y));
-	x += channel_select->get_w() + 5;
+
+
+	x += channel_select->get_w() + ((Theme*)get_theme())->widget_border;
 	get_subwindow()->add_subwindow(channel_button = new ChannelButton(this, 
 		x, 
 		y - 1));
+
+//PRINT_TRACE
+	x += channel_button->get_w() + ((Theme*)get_theme())->widget_border;
+	get_subwindow()->add_subwindow(picture_button = new PictureButton(this, 
+		x, 
+		y - 1));
+//PRINT_TRACE
+	
 }
 
 int ChannelPicker::reposition()
@@ -538,6 +561,38 @@ int ChannelPicker::channel_up()
 	set_channel_number(number);
 	return 0;
 }
+
+
+
+
+
+PictureButton::PictureButton(ChannelPicker *channel_picker, int x, int y)
+ : BC_Button(x, 
+ 	y, 
+	channel_picker->get_theme() ? 
+		channel_picker->get_theme()->get_image_set("picture") :
+		0)
+{
+	this->channel_picker = channel_picker;
+	thread = new ChannelEditPictureThread(channel_picker);
+	set_tooltip(_("Edit picture"));
+}
+
+PictureButton::~PictureButton()
+{
+//printf("PictureButton::PictureButton %d\n", __LINE__);
+	delete thread;
+//printf("PictureButton::PictureButton %d\n", __LINE__);
+}
+
+int PictureButton::handle_event()
+{
+	unlock_window();
+	thread->edit_picture();
+	lock_window("PictureButton::handle_event");
+	return 1;
+}
+
 
 
 

@@ -23,6 +23,7 @@
 #include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "bcwindowevents.h"
+#include <unistd.h>
 
 BC_WindowEvents::BC_WindowEvents(BC_WindowBase *window)
  : Thread(1, 0, 0)
@@ -84,13 +85,15 @@ void BC_WindowEvents::run()
 //printf("BC_WindowEvents::run %d %s\n", __LINE__, window->title);
 		select(x_fd + 1, &x_fds, 0, 0, 0);
 		
-		
-//printf("BC_WindowEvents::run %d %s\n", __LINE__, window->title);
 		XLockDisplay(window->display);
 		while(XPending(window->display) && !done)
 		{
 			event = new XEvent;
 			XNextEvent(window->display, event);
+// HACK: delay is required to get the close event
+			usleep(1);
+//if(window && event)
+//printf("BC_WindowEvents::run %d %s %d\n", __LINE__, window->title, event->type);
 			window->put_event(event);
 		}
 		XUnlockDisplay(window->display);

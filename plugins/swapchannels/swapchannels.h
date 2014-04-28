@@ -131,8 +131,6 @@ public:
 
 
 	void reset();
-	int load_defaults();
-	int save_defaults();
 
 
 

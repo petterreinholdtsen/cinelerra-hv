@@ -135,14 +135,14 @@ public:
 // Updates the stores
 	virtual void update_zoom(int x, int y, float zoom) {};
 	void check_boundaries(EDL *edl, int &x, int &y, float &zoom);
-	void update_scrollbars();
+	void update_scrollbars(int flush);
 // Get scrollbar positions relative to output.
 // No correction is done if output is smaller than canvas
 	virtual int get_xscroll() { return 0; };
 	virtual int get_yscroll() { return 0; };
 	virtual float get_zoom() { return 0; };
 // Redraws the image
-	virtual void draw_refresh() {};
+	virtual void draw_refresh(int flush = 1) {};
 
 // Get top left offset of canvas relative to output.
 // Normally negative.  Can be positive if output is smaller than canvas.

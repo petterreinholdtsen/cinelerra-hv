@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,9 +63,11 @@ void AssetPopup::create_objects()
 	add_item(new AssetPopupSort(mwindow, this));
 	add_item(index = new AssetPopupBuildIndex(mwindow, this));
 	add_item(view = new AssetPopupView(mwindow, this));
+	add_item(view_window = new AssetPopupViewWindow(mwindow, this));
 	add_item(new AssetPopupPaste(mwindow, this));
 	add_item(new AssetMatchSize(mwindow, this));
 	add_item(new AssetMatchRate(mwindow, this));
+	add_item(new AssetMatchAll(mwindow, this));
 	add_item(new AssetPopupProjectRemove(mwindow, this));
 	add_item(new AssetPopupDiskRemove(mwindow, this));
 }
@@ -101,6 +103,15 @@ void AssetPopup::match_rate()
 	gui->collect_assets();
 	mwindow->gui->lock_window("AssetPopup::match_rate");
 	mwindow->asset_to_rate();
+	mwindow->gui->unlock_window();
+}
+
+void AssetPopup::match_all()
+{
+// Collect items into the drag vectors for temporary storage
+	gui->collect_assets();
+	mwindow->gui->lock_window("AssetPopup::match_rate");
+	mwindow->asset_to_all();
 	mwindow->gui->unlock_window();
 }
 
@@ -221,17 +232,78 @@ AssetPopupView::~AssetPopupView()
 
 int AssetPopupView::handle_event()
 {
-	mwindow->vwindow->gui->lock_window("AssetPopupView::handle_event");
+	VWindow *vwindow = 0;
+	if(!mwindow->vwindows.size())
+		vwindow = mwindow->new_viewer(1);
+	else
+		vwindow = mwindow->vwindows.get(DEFAULT_VWINDOW);
+
+	if(!vwindow->is_running())
+	{
+		vwindow->start();
+	}
+
+	vwindow->gui->lock_window("AssetPopupView::handle_event");
 
 	if(mwindow->session->drag_assets->total)
-		mwindow->vwindow->change_source(
+		vwindow->change_source(
 			mwindow->session->drag_assets->values[0]);
 	else
 	if(mwindow->session->drag_clips->total)
-		mwindow->vwindow->change_source(
+		vwindow->change_source(
 			mwindow->session->drag_clips->values[0]);
 
-	mwindow->vwindow->gui->unlock_window();
+	vwindow->gui->unlock_window();
+	return 1;
+}
+
+
+
+
+
+
+
+AssetPopupViewWindow::AssetPopupViewWindow(MWindow *mwindow, AssetPopup *popup)
+ : BC_MenuItem(_("View in new window"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+AssetPopupViewWindow::~AssetPopupViewWindow()
+{
+}
+
+int AssetPopupViewWindow::handle_event()
+{
+// Find window with nothing
+	VWindow *vwindow = 0;
+	for(int i = 0; i < mwindow->vwindows.size(); i++)
+	{
+		if(!mwindow->vwindows.get(i)->get_edl())
+		{
+			vwindow = mwindow->vwindows.get(i);
+			break;
+		}
+	}
+
+	if(!vwindow)
+	{
+		vwindow = mwindow->new_viewer(1);
+	}
+
+// TODO: create new vwindow or change current vwindow
+	vwindow->gui->lock_window("AssetPopupView::handle_event");
+
+	if(mwindow->session->drag_assets->total)
+		vwindow->change_source(
+			mwindow->session->drag_assets->values[0]);
+	else
+	if(mwindow->session->drag_clips->total)
+		vwindow->change_source(
+			mwindow->session->drag_clips->values[0]);
+
+	vwindow->gui->unlock_window();
 	return 1;
 }
 
@@ -295,6 +367,26 @@ AssetMatchRate::AssetMatchRate(MWindow *mwindow, AssetPopup *popup)
 int AssetMatchRate::handle_event()
 {
 	popup->match_rate();
+	return 1;
+}
+
+
+
+
+
+
+
+
+AssetMatchAll::AssetMatchAll(MWindow *mwindow, AssetPopup *popup)
+ : BC_MenuItem(_("Match all"))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+int AssetMatchAll::handle_event()
+{
+	popup->match_all();
 	return 1;
 }
 

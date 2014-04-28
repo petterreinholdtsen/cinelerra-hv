@@ -1,11 +1,11 @@
 cmp.lo: cmp.c ../config.h iec61883.h \
  /root/hvirtual/thirdparty/libraw1394-1.2.0/libraw1394/raw1394.h \
  /usr/include/sys/types.h /usr/include/features.h \
- /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
- /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
- /usr/include/gnu/stubs-64.h /usr/include/bits/types.h \
- /usr/include/bits/typesizes.h /usr/include/time.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/time.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
  /usr/include/bits/byteswap.h /usr/include/sys/select.h \
  /usr/include/bits/select.h /usr/include/bits/sigset.h \
@@ -13,18 +13,16 @@ cmp.lo: cmp.c ../config.h iec61883.h \
  /usr/include/bits/pthreadtypes.h iec61883-private.h tsbuffer.h cooked.h \
  /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
  /usr/include/wchar.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /root/hvirtual/thirdparty/libraw1394-1.2.0/libraw1394/csr.h \
- /usr/include/netinet/in.h \
- /usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h \
- /usr/include/stdint.h /usr/include/bits/wchar.h \
- /usr/include/sys/socket.h /usr/include/sys/uio.h /usr/include/bits/uio.h \
+ /usr/include/netinet/in.h /usr/include/stdint.h \
+ /usr/include/bits/wchar.h /usr/include/sys/socket.h \
+ /usr/include/sys/uio.h /usr/include/bits/uio.h \
  /usr/include/bits/socket.h /usr/include/bits/sockaddr.h \
- /usr/include/x86_64-linux-gnu/asm/socket.h \
- /usr/include/asm-generic/socket.h \
- /usr/include/x86_64-linux-gnu/asm/sockios.h \
- /usr/include/asm-generic/sockios.h /usr/include/bits/in.h
+ /usr/include/asm/socket.h /usr/include/asm-generic/socket.h \
+ /usr/include/asm/sockios.h /usr/include/asm-generic/sockios.h \
+ /usr/include/bits/in.h
 
 ../config.h:
 
@@ -35,8 +33,6 @@ iec61883.h:
 /usr/include/sys/types.h:
 
 /usr/include/features.h:
-
-/usr/include/bits/predefs.h:
 
 /usr/include/sys/cdefs.h:
 
@@ -52,7 +48,7 @@ iec61883.h:
 
 /usr/include/time.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stddef.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stddef.h:
 
 /usr/include/endian.h:
 
@@ -86,7 +82,7 @@ cooked.h:
 
 /usr/include/wchar.h:
 
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdarg.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/include/stdarg.h:
 
 /usr/include/bits/stdio_lim.h:
 
@@ -95,8 +91,6 @@ cooked.h:
 /root/hvirtual/thirdparty/libraw1394-1.2.0/libraw1394/csr.h:
 
 /usr/include/netinet/in.h:
-
-/usr/lib/x86_64-linux-gnu/gcc/x86_64-linux-gnu/4.5.2/include/stdint.h:
 
 /usr/include/stdint.h:
 
@@ -112,11 +106,11 @@ cooked.h:
 
 /usr/include/bits/sockaddr.h:
 
-/usr/include/x86_64-linux-gnu/asm/socket.h:
+/usr/include/asm/socket.h:
 
 /usr/include/asm-generic/socket.h:
 
-/usr/include/x86_64-linux-gnu/asm/sockios.h:
+/usr/include/asm/sockios.h:
 
 /usr/include/asm-generic/sockios.h:
 

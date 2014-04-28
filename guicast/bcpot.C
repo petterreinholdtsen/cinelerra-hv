@@ -39,6 +39,7 @@ BC_Pot::BC_Pot(int x, int y, VFrame **data)
 	for(int i = 0; i < POT_STATES; i++)
 		images[i] = 0;
 	use_caption = 1;
+	enabled = 1;
 }
 
 BC_Pot::~BC_Pot()
@@ -48,6 +49,11 @@ BC_Pot::~BC_Pot()
 int BC_Pot::calculate_h()
 {
 	return BC_WindowBase::get_resources()->pot_images[0]->get_h();
+}
+
+int BC_Pot::calculate_w()
+{
+	return BC_WindowBase::get_resources()->pot_images[0]->get_w();
 }
 
 int BC_Pot::initialize()
@@ -62,14 +68,14 @@ int BC_Pot::initialize()
 	w = data[0]->get_w();
 	h = data[0]->get_h();
 	BC_SubWindow::initialize();
-	draw();
+	draw(0);
 	return 0;
 }
 
 int BC_Pot::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
-	draw();
+	draw(0);
 	return 0;
 }
 
@@ -89,7 +95,21 @@ void BC_Pot::set_use_caption(int value)
 	use_caption = value;
 }
 
-int BC_Pot::draw()
+
+void BC_Pot::enable()
+{
+	enabled = 1;
+	draw(1);
+}
+
+void BC_Pot::disable()
+{
+	enabled = 0;
+	draw(1);
+}
+
+
+int BC_Pot::draw(int flush)
 {
 	int x1, y1, x2, y2;
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
@@ -99,7 +119,7 @@ int BC_Pot::draw()
 	angle_to_coords(x1, y1, x2, y2, percentage_to_angle(get_percentage()));
 	draw_line(x1, y1, x2, y2);
 
-	flash();
+	flash(flush);
 	return 0;
 }
 
@@ -261,7 +281,7 @@ int BC_Pot::keypress_event()
 	if(result)
 	{
 		show_value_tooltip();
-		draw();
+		draw(1);
 		handle_event();
 	}
 	return result;
@@ -269,14 +289,14 @@ int BC_Pot::keypress_event()
 
 int BC_Pot::cursor_enter_event()
 {
-	if(top_level->event_win == win)
+	if(top_level->event_win == win && enabled)
 	{
 		tooltip_done = 0;
 		if(!top_level->button_down && status == POT_UP)
 		{
 			status = POT_HIGH;
 		}
-		draw();
+		draw(1);
 	}
 	return 0;
 }
@@ -286,7 +306,7 @@ int BC_Pot::cursor_leave_event()
 	if(status == POT_HIGH)
 	{
 		status = POT_UP;
-		draw();
+		draw(1);
 		hide_tooltip();
 	}
 	return 0;
@@ -295,7 +315,7 @@ int BC_Pot::cursor_leave_event()
 int BC_Pot::button_press_event()
 {
 	if(!tooltip_on) top_level->hide_tooltip();
-	if(top_level->event_win == win)
+	if(top_level->event_win == win && enabled)
 	{
 		if(status == POT_HIGH || status == POT_UP)
 		{
@@ -303,7 +323,7 @@ int BC_Pot::button_press_event()
 			{
 				increase_value();
 				show_value_tooltip();
-				draw();
+				draw(1);
 				handle_event();
 			}
 			else
@@ -311,7 +331,7 @@ int BC_Pot::button_press_event()
 			{
 				decrease_value();
 				show_value_tooltip();
-				draw();
+				draw(1);
 				handle_event();
 			}
 			else
@@ -322,7 +342,7 @@ int BC_Pot::button_press_event()
 				angle_offset = start_cursor_angle - start_needle_angle;
 				prev_angle = start_cursor_angle;
 				angle_correction = 0;
-				draw();
+				draw(1);
 				top_level->deactivate();
 				top_level->active_subwindow = this;
 				show_value_tooltip();
@@ -347,7 +367,7 @@ int BC_Pot::button_release_event()
 				top_level->hide_tooltip();
 			}
 		}
-		draw();
+		draw(1);
 		return 1;
 	}
 	return 0;
@@ -379,7 +399,7 @@ int BC_Pot::cursor_motion_event()
 			angle_to_percentage(angle + angle_correction - angle_offset)))
 		{
 			set_tooltip(get_caption());
-			draw();
+			draw(1);
 			handle_event();
 		}
 		return 1;
@@ -468,7 +488,7 @@ void BC_FPot::update(float value)
 		if(value < minvalue) value = minvalue;
 		if(value > maxvalue) value = maxvalue;
 		this->value = value;
-		draw();
+		draw(1);
 	}
 }
 
@@ -481,7 +501,7 @@ void BC_FPot::update(float value, float minvalue, float maxvalue)
 		this->value = value;
 		this->minvalue = minvalue;
 		this->maxvalue = maxvalue;
-		draw();
+		draw(1);
 	}
 }
 
@@ -556,7 +576,7 @@ void BC_IPot::update(int64_t value)
 		if(value < minvalue) value = minvalue;
 		if(value > maxvalue) value = maxvalue;
 		this->value = value;
-		draw();
+		draw(1);
 	}
 }
 
@@ -569,7 +589,7 @@ void BC_IPot::update(int64_t value, int64_t minvalue, int64_t maxvalue)
 		this->value = value;
 		this->minvalue = minvalue;
 		this->maxvalue = maxvalue;
-		draw();
+		draw(1);
 	}
 }
 
@@ -609,7 +629,7 @@ int BC_QPot::decrease_value()
 
 char*  BC_QPot::get_caption()
 {
-	sprintf(caption, "%ld", Freq::tofreq(value));
+	sprintf(caption, "%ld", (long)Freq::tofreq(value));
 	return caption;
 }
 
@@ -641,7 +661,7 @@ void BC_QPot::update(int64_t value)
 		if(value < minvalue) value = minvalue;
 		if(value > maxvalue) value = maxvalue;
 //		this->value = Freq::fromfreq(value);
-		draw();
+		draw(1);
 	}
 }
 
@@ -716,7 +736,7 @@ void BC_PercentagePot::update(float value)
 		if(value < minvalue) value = minvalue;
 		if(value > maxvalue) value = maxvalue;
 		this->value = value;
-		draw();
+		draw(1);
 	}
 }
 

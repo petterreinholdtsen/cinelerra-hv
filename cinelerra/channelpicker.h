@@ -38,7 +38,7 @@ class ChannelTumbler;
 class ChannelButton;
 class UpChannel;
 class DnChannel;
-
+class PictureButton;
 
 
 class ChannelPicker
@@ -53,7 +53,8 @@ public:
  * 		int y,
  * 		BC_WindowBase *parent_window);
  */
-	ChannelPicker(ChannelDB *channeldb, 
+	ChannelPicker(MWindow *mwindow,
+		ChannelDB *channeldb, 
 		int x,
 		int y,
 		BC_WindowBase *parent_window);
@@ -113,10 +114,11 @@ public:
 	const char *current_channel_name();    // Get the name of the current channel of the device
 	int channel_up();
 	int channel_down();
+	int get_w();
 
 	int x, y;
 	Channel *current_channel;
-//	MWindow *mwindow;
+	MWindow *mwindow;
 //	Record *record;
 //	RecordMonitor *record_monitor;
 	ChannelDB *channeldb;
@@ -131,6 +133,7 @@ public:
 	ChannelList *channel_list;
 	ChannelButton *channel_button;
 	ChannelTumbler *channel_select;
+	PictureButton *picture_button;
 	ArrayList <BC_ListBoxItem*> channel_listitems;
 	BC_Title *channel_title;
 };
@@ -180,7 +183,6 @@ public:
 	int get_whiteness();
 
 	ArrayList<Channel*> input_sources;	
-	MWindow *mwindow;
 	VDevicePrefs *prefs;
 };
 
@@ -233,7 +235,6 @@ public:
 // Get a structure containing what parameters the device supports
 	PictureConfig* get_picture_usage();
 
-	MWindow *mwindow;
 	Record *record;
 	RecordMonitor *record_monitor;
 };
@@ -278,6 +279,16 @@ public:
 	int handle_event();
 	ChannelPicker *channel_picker;
 	ChannelEditThread *thread;
+};
+
+class PictureButton : public BC_Button
+{
+public:
+	PictureButton(ChannelPicker *channel_picker, int x, int y);
+	~PictureButton();
+	int handle_event();
+	ChannelPicker *channel_picker;
+	ChannelEditPictureThread *thread;
 };
 
 #endif

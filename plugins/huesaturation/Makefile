@@ -1,7 +1,6 @@
 include ../../global_config
 
-OBJS = ../colors/$(OBJDIR)/plugincolors.o \
-	$(OBJDIR)/huesaturation.o
+OBJS = $(OBJDIR)/huesaturation.o
 
 OUTPUT = $(PLUGIN_DIR)/huesaturation.plugin
 

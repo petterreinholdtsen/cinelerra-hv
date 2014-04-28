@@ -143,6 +143,14 @@ const uint8_t *ff_h264_decode_nal(H264Context *h, const uint8_t *src, int *dst_l
     h->nal_ref_idc= src[0]>>5;
     h->nal_unit_type= src[0]&0x1F;
 
+/*
+ * printf("ff_h264_decode_nal %d 0x%x 0x%x 0x%x\n", 
+ * __LINE__, 
+ * h->nal_ref_idc, 
+ * h->nal_unit_type, 
+ * length);
+ */
+
     src++; length--;
 #if 0
     for(i=0; i<length; i++)
@@ -2747,6 +2755,15 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size){
             nalsize = 0;
             for(i = 0; i < h->nal_length_size; i++)
                 nalsize = (nalsize << 8) | buf[buf_index++];
+
+/*
+ * printf("decode_nal_units %d nal_length_size=%d nalsize=0x%x\n", 
+ * __LINE__, 
+ * h->nal_length_size,
+ * nalsize);
+ */
+
+
             if(nalsize <= 1 || nalsize > buf_size - buf_index){
                 if(nalsize == 1){
                     buf_index++;

@@ -364,7 +364,7 @@ void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 			{
 				int size_change = (bitmap->get_w() != output->get_canvas()->get_w() ||
 					bitmap->get_h() != output->get_canvas()->get_h());
-printf("VDeviceX11::new_output_buffer %d\n", __LINE__);
+//printf("VDeviceX11::new_output_buffer %d\n", __LINE__);
 				delete bitmap;
 				delete output_frame;
 				bitmap = 0;

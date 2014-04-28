@@ -66,7 +66,7 @@ RenderFarmClient::RenderFarmClient(int port,
 	signals->initialize();
 
 	this_pid = getpid();
-	nice(nice_value);
+	int temp = nice(nice_value);
 
 
 	MWindow::init_defaults(boot_defaults, config_path);
@@ -443,6 +443,9 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 		1,
 		1);
 
+//printf("RenderFarmClientThread::read_asset %d\n", __LINE__);
+//asset->dump();
+
 	delete [] string1;
 	delete [] string2;
 	unlock();
@@ -683,8 +686,8 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 			break;
 		}
 
-		Timer timer;
-		timer.update();
+//		Timer timer;
+//		timer.update();
 
 // Error
 		if(package_renderer.render_package(package))
@@ -694,8 +697,10 @@ void RenderFarmClientThread::do_packages(int socket_fd)
 			break;
 		}
 
-		frames_per_second = (double)(package->video_end - package->video_start) / 
-			((double)timer.get_difference() / 1000);
+
+		frames_per_second = package_renderer.frames_per_second;
+//		frames_per_second = (double)(package->video_end - package->video_start) / 
+//			((double)timer.get_difference() / 1000);
 
 //printf("RenderFarmClientThread::run 9\n");
 
@@ -813,11 +818,18 @@ void FarmPackageRenderer::set_progress(int64_t total_samples)
 {
 	thread->lock("FarmPackageRenderer::set_progress");
 	thread->send_request_header(RENDERFARM_PROGRESS, 
-		4);
-	unsigned char datagram[4];
+		8);
+	unsigned char datagram[8];
 	int i = 0;
 	STORE_INT32(total_samples);
-	thread->write_socket((char*)datagram, 4);
+	
+
+	int64_t fixed = (!EQUIV(frames_per_second, 0.0)) ? 
+		(int64_t)(frames_per_second * 65536.0) : 0;
+	STORE_INT32(fixed);
+	
+	
+	thread->write_socket((char*)datagram, 8);
 	thread->unlock();
 }
 

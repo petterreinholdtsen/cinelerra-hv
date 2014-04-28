@@ -100,6 +100,9 @@ public:
 // Verify all images have been used after initialization.
 	void check_used();
 
+
+
+
 	void dump();
 	BC_Resources* get_resources();
 

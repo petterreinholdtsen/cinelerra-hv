@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@
 #include "patchbay.h"
 #include "playabletracks.h"
 #include "preferences.h"
+#include "preferencesthread.h"
 #include "quicktime.h"
 #include "renderfarm.h"
 #include "render.h"
@@ -129,6 +130,8 @@ void RenderProgress::run()
 		{
 			render->progress->update(render->total_rendered);
 			last_value = render->total_rendered;
+			
+			if(mwindow) mwindow->preferences_thread->update_rates();
 		}
 
 		Thread::enable_cancel();
@@ -173,12 +176,21 @@ void MainPackageRenderer::set_result(int value)
 {
 	if(value)
 		render->result = value;
+	
+	
+	
 }
 
 void MainPackageRenderer::set_progress(int64_t value)
 {
 	render->counter_lock->lock("MainPackageRenderer::set_progress");
+// Increase total rendered for all nodes
 	render->total_rendered += value;
+
+// Update frames per second for master node
+	render->preferences->set_rate(frames_per_second, -1);
+
+//printf("MainPackageRenderer::set_progress %d %ld %f\n", __LINE__, (long)value, frames_per_second);
 
 // If non interactive, print progress out
 	if(!render->progress)
@@ -214,6 +226,9 @@ void MainPackageRenderer::set_progress(int64_t value)
 	}
 
 	render->counter_lock->unlock();
+
+// This locks the preferences
+	if(mwindow) mwindow->preferences->copy_rates_from(preferences);
 }
 
 int MainPackageRenderer::progress_cancelled()
@@ -255,7 +270,8 @@ Render::~Render()
 	delete package_lock;
 	delete counter_lock;
 	delete completion;
-// May be owned by someone else
+// May be owned by someone else.  This is owned by mwindow, so we don't care
+// about deletion.
 //	delete preferences;
 	delete progress_timer;
 	asset->Garbage::remove_user();
@@ -357,8 +373,12 @@ void Render::handle_close_event(int result)
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 	}
 
+PRINT_TRACE
+
 	save_defaults(asset);
+PRINT_TRACE
 	mwindow->save_defaults();
+PRINT_TRACE
 
 	if(!format_error && !result)
 	{
@@ -368,6 +388,7 @@ void Render::handle_close_event(int result)
 		if(debug) printf("Render::handle_close_event %d\n", __LINE__);
 
 	}
+PRINT_TRACE
 }
 
 
@@ -750,7 +771,6 @@ void RenderThread::render_single(int test_overwrite,
 
 	done = 0;
 	render->total_rendered = 0;
-	render->frames_per_second = 0;
 
 	if(!render->result)
 	{
@@ -769,7 +789,8 @@ void RenderThread::render_single(int test_overwrite,
 
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
-			farm_server = new RenderFarmServer(render->packages,
+			farm_server = new RenderFarmServer(mwindow,
+				render->packages,
 				render->preferences, 
 				1,
 				&render->result,
@@ -830,7 +851,10 @@ void RenderThread::render_single(int test_overwrite,
 
 			if(strategy == SINGLE_PASS_FARM)
 			{
-				package = render->packages->get_package(render->frames_per_second, -1, 1);
+				package = render->packages->get_package(
+					package_renderer.frames_per_second, 
+					-1, 
+					1);
 			}
 			else
 			{
@@ -851,11 +875,6 @@ void RenderThread::render_single(int test_overwrite,
 
 			if(package_renderer.render_package(package))
 				render->result = 1;
-
-// Result is also set directly by the RenderFarm.
-
-			render->frames_per_second = (double)(package->video_end - package->video_start) / 
-				(double)(timer.get_difference() / 1000);
 
 
 		} // file_number
@@ -880,14 +899,17 @@ if(debug) printf("Render::render %d\n", __LINE__);
 			(!render->progress || !render->progress->is_cancelled()) &&
 			!render->batch_cancelled)
 		{
+if(debug) printf("Render::render %d\n", __LINE__);
 			if(mwindow)
 			{
+if(debug) printf("Render::render %d\n", __LINE__);
 				ErrorBox error_box(PROGRAM_NAME ": Error",
 					mwindow->gui->get_abs_cursor_x(1),
 					mwindow->gui->get_abs_cursor_y(1));
 				error_box.create_objects(_("Error rendering data."));
 				error_box.raise_window();
 				error_box.run_window();
+if(debug) printf("Render::render %d\n", __LINE__);
 			}
 			else
 			{

@@ -457,13 +457,13 @@ void FloatAutos::dump()
 {
 	printf("	FloatAutos::dump %p\n", this);
 	printf("	Default: position %lld value=%f\n", 
-		default_auto->position, 
+		(long long)default_auto->position, 
 		((FloatAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %lld mode=%d value=%f invalue=%f outvalue=%f inposition=%lld outposition=%lld\n", 
-			current->position, 
-			((FloatAuto*)current)->mode,
+		printf("	position %lld mode=%d value=%f invalue=%f outvalue=%f\n", 
+			(long long)current->position, 
+			(int)((FloatAuto*)current)->mode,
 			((FloatAuto*)current)->value,
 			((FloatAuto*)current)->control_in_value,
 			((FloatAuto*)current)->control_out_value);

@@ -126,6 +126,7 @@ void ZoomBar::update_formatting(BC_TextBox *dst)
 
 void ZoomBar::resize_event()
 {
+	hide_window(0);
 	reposition_window(mwindow->theme->mzoom_x,
 		mwindow->theme->mzoom_y,
 		mwindow->theme->mzoom_w,
@@ -138,7 +139,8 @@ void ZoomBar::resize_event()
 // 	amp_zoom->reposition_window(x, y);
 // 	x += amp_zoom->get_w();
 // 	track_zoom->reposition_window(x, y);
-	flash();
+	flash(0);
+	show_window(0);
 }
 
 void ZoomBar::redraw_time_dependancies()

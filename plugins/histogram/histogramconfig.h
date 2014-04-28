@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,33 +28,6 @@
 #include "linklist.h"
 #include <stdint.h>
 
-class HistogramPoint : public ListItem<HistogramPoint>
-{
-public:
-	HistogramPoint();
-	~HistogramPoint();
-
-	int equivalent(HistogramPoint *src);
-	float x, y;
-};
-
-
-class HistogramPoints : public List<HistogramPoint>
-{
-public:
-	HistogramPoints();
-	~HistogramPoints();
-
-// Insert new point
-	HistogramPoint* insert(float x, float y);
-	int equivalent(HistogramPoints *src);
-	void boundaries();
-	void copy_from(HistogramPoints *src);
-	void interpolate(HistogramPoints *prev, 
-		HistogramPoints *next,
-		double prev_scale,
-		double next_scale);
-};
 
 class HistogramConfig
 {
@@ -76,11 +49,15 @@ public:
 
 // Range 0 - 1.0
 // Input points
-	HistogramPoints points[HISTOGRAM_MODES];
+	float low_input[HISTOGRAM_MODES];
+	float high_input[HISTOGRAM_MODES];
+	float gamma[HISTOGRAM_MODES];
 // Output points
-	float output_min[HISTOGRAM_MODES];
-	float output_max[HISTOGRAM_MODES];
+	float low_output[HISTOGRAM_MODES];
+	float high_output[HISTOGRAM_MODES];
+
 	int automatic;
+	int automatic_v;
 	float threshold;
 	int plot;
 	int split;

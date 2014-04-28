@@ -34,7 +34,7 @@
 #include "language.h"
 #include "mwindow.inc"
 #include "picon_png.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "title.h"
 #include "titlewindow.h"
 #include "transportque.inc"
@@ -77,6 +77,8 @@ TitleConfig::TitleConfig()
 	pixels_per_second = 1.0;
 	timecode = 0;
 	outline_size = 0;
+	window_w = 640;
+	window_h = 480;
 }
 
 // Does not test equivalency but determines if redrawing text is necessary.
@@ -122,6 +124,10 @@ void TitleConfig::copy_from(TitleConfig &that)
 	outline_size = that.outline_size;
 	strcpy(text, that.text);
 	strcpy(encoding, that.encoding);
+	window_w = that.window_w;
+	window_h = that.window_h;
+
+	limits();
 }
 
 void TitleConfig::interpolate(TitleConfig &prev, 
@@ -159,9 +165,18 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	timecode = prev.timecode;
 //	this->dropshadow = (int)(prev.dropshadow * prev_scale + next.dropshadow * next_scale);
 	this->dropshadow = prev.dropshadow;
+	
+	this->window_w = prev.window_w;
+	this->window_h = prev.window_h;
+
+	limits();
 }
 
-
+void TitleConfig::limits()
+{
+	if(window_w < 100) window_w = 100;
+	if(window_h < 100) window_h = 100;
+}
 
 
 
@@ -945,10 +960,6 @@ ArrayList<FontEntry*>* TitleMain::fonts = 0;
 TitleMain::TitleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	
-
-// Build font database
-	build_fonts();
 	text_mask = 0;
 	outline_mask = 0;
 	glyph_engine = 0;
@@ -1008,7 +1019,7 @@ void TitleMain::build_fonts()
 		while(!feof(in))
 		{
 			char string[BCTEXTLEN], string2[BCTEXTLEN];
-			fgets(string, BCTEXTLEN, in);
+			char *temp = fgets(string, BCTEXTLEN, in);
 			if(!strlen(string)) break;
 
 			char *in_ptr = string;
@@ -1274,7 +1285,7 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 		0,
 		&freetype_face))
 	{
-		fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n");
+		fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n", path);
 		FT_Done_FreeType(freetype_library);
 		freetype_face = 0;
 		freetype_library = 0;
@@ -1902,6 +1913,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	int result = 0;
 	input = input_ptr;
 	output = output_ptr;
+	build_fonts();
 
 	need_reconfigure |= load_configuration();
 
@@ -2003,107 +2015,6 @@ void TitleMain::update_gui()
 }
 
 
-int TitleMain::load_defaults()
-{
-//printf("TitleMain::load_defaults %d\n", __LINE__);
-	char directory[BCTEXTLEN], text_path[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%stitle.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	defaults->get("FONT", config.font);
-	defaults->get("ENCODING", config.encoding);
-	config.style = defaults->get("STYLE", (int64_t)config.style);
-	config.size = defaults->get("SIZE", config.size);
-	config.color = defaults->get("COLOR", config.color);
-	config.outline_color = defaults->get("OUTLINE_COLOR", config.outline_color);
-	config.alpha = defaults->get("ALPHA", config.alpha);
-	config.outline_alpha = defaults->get("OUTLINE_ALPHA", config.outline_alpha);
-	config.motion_strategy = defaults->get("MOTION_STRATEGY", config.motion_strategy);
-	config.loop = defaults->get("LOOP", config.loop);
-	config.pixels_per_second = defaults->get("PIXELS_PER_SECOND", config.pixels_per_second);
-	config.hjustification = defaults->get("HJUSTIFICATION", config.hjustification);
-	config.vjustification = defaults->get("VJUSTIFICATION", config.vjustification);
-	config.fade_in = defaults->get("FADE_IN", config.fade_in);
-	config.fade_out = defaults->get("FADE_OUT", config.fade_out);
-	config.x = defaults->get("TITLE_X", config.x);
-	config.y = defaults->get("TITLE_Y", config.y);
-	config.dropshadow = defaults->get("DROPSHADOW", config.dropshadow);
-	config.outline_size = defaults->get("OUTLINE_SIZE", config.outline_size);
-	config.timecode = defaults->get("TIMECODE", config.timecode);
-	window_w = defaults->get("WINDOW_W", 640);
-	window_h = defaults->get("WINDOW_H", 480);
-	if(window_w < 100) window_w = 100;
-	if(window_h < 100) window_h = 100;
-
-// Store text in separate path to isolate special characters
-	FileSystem fs;
-	sprintf(text_path, "%stitle_text.rc", BCASTDIR);
-	fs.complete_path(text_path);
-	FILE *fd = fopen(text_path, "rb");
-	if(fd)
-	{
-		fseek(fd, 0, SEEK_END);
-		long len = ftell(fd);
-		fseek(fd, 0, SEEK_SET);
-		fread(config.text, len, 1, fd);
-		config.text[len] = 0;
-//printf("TitleMain::load_defaults %s\n", config.text);
-		fclose(fd);
-	}
-	else
-		config.text[0] = 0;
-//printf("TitleMain::load_defaults %d\n", __LINE__);
-	return 0;
-}
-
-int TitleMain::save_defaults()
-{
-//printf("TitleMain::save_defaults %d\n", __LINE__);
-	char text_path[BCTEXTLEN];
-
-	defaults->update("FONT", config.font);
-	defaults->update("ENCODING", config.encoding);
-	defaults->update("STYLE", (int64_t)config.style);
-	defaults->update("SIZE", config.size);
-	defaults->update("COLOR", config.color);
-	defaults->update("OUTLINE_COLOR", config.outline_color);
-	defaults->update("ALPHA", config.alpha);
-	defaults->update("OUTLINE_ALPHA", config.outline_alpha);
-	defaults->update("MOTION_STRATEGY", config.motion_strategy);
-	defaults->update("LOOP", config.loop);
-	defaults->update("PIXELS_PER_SECOND", config.pixels_per_second);
-	defaults->update("HJUSTIFICATION", config.hjustification);
-	defaults->update("VJUSTIFICATION", config.vjustification);
-	defaults->update("FADE_IN", config.fade_in);
-	defaults->update("FADE_OUT", config.fade_out);
-	defaults->update("TITLE_X", config.x);
-	defaults->update("TITLE_Y", config.y);
-	defaults->update("DROPSHADOW", config.dropshadow);
-	defaults->update("OUTLINE_SIZE", config.outline_size);
-	defaults->update("TIMECODE", config.timecode);
-	defaults->update("WINDOW_W", window_w);
-	defaults->update("WINDOW_H", window_h);
-	defaults->save();
-
-// Store text in separate path to isolate special characters
-	FileSystem fs;
-	sprintf(text_path, "%stitle_text.rc", BCASTDIR);
-	fs.complete_path(text_path);
-	FILE *fd = fopen(text_path, "wb");
-	if(fd)
-	{
-		fwrite(config.text, strlen(config.text), 1, fd);
-		fclose(fd);
-	}
-//	else
-//		perror("TitleMain::save_defaults");
-//printf("TitleMain::save_defaults %d\n", __LINE__);
-	return 0;
-}
 
 
 
@@ -2186,6 +2097,8 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DROPSHADOW", config.dropshadow);
 	output.tag.set_property("OUTLINE_SIZE", config.outline_size);
 	output.tag.set_property("TIMECODE", config.timecode);
+	output.tag.set_property("WINDOW_W", config.window_w);
+	output.tag.set_property("WINDOW_H", config.window_h);
 	output.append_tag();
 	output.append_newline();
 	
@@ -2237,6 +2150,8 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.dropshadow = input.tag.get_property("DROPSHADOW", config.dropshadow);
 				config.outline_size = input.tag.get_property("OUTLINE_SIZE", config.outline_size);
 				config.timecode = input.tag.get_property("TIMECODE", config.timecode);
+				config.window_w = input.tag.get_property("WINDOW_W", config.window_w);
+				config.window_h = input.tag.get_property("WINDOW_H", config.window_h);
 				strcpy(config.text, input.read_text());
 			}
 			else

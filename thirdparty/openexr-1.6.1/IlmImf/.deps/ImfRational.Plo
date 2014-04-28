@@ -1,43 +1,43 @@
-ImfRational.lo: ImfRational.cpp ImfRational.h /usr/include/c++/4.5/cmath \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h \
- /usr/include/features.h /usr/include/bits/predefs.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ImfRational.lo: ImfRational.cpp ImfRational.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cmath \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h \
+ /usr/include/bits/wordsize.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/os_defines.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
- /usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h \
- /usr/include/c++/4.5/bits/cpp_type_traits.h \
- /usr/include/c++/4.5/ext/type_traits.h /usr/include/math.h \
- /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
- /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
- /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
- /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
- /usr/include/c++/4.5/bits/cmath.tcc
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/cpu_defines.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cpp_type_traits.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/type_traits.h \
+ /usr/include/math.h /usr/include/bits/huge_val.h \
+ /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h \
+ /usr/include/bits/inf.h /usr/include/bits/nan.h \
+ /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h \
+ /usr/include/bits/mathinline.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cmath.tcc
 
 ImfRational.h:
 
-/usr/include/c++/4.5/cmath:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/cmath:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/c++config.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/os_defines.h:
+/usr/include/bits/wordsize.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/os_defines.h:
 
 /usr/include/features.h:
 
-/usr/include/bits/predefs.h:
-
 /usr/include/sys/cdefs.h:
-
-/usr/include/bits/wordsize.h:
 
 /usr/include/gnu/stubs.h:
 
 /usr/include/gnu/stubs-64.h:
 
-/usr/include/c++/4.5/x86_64-linux-gnu/bits/cpu_defines.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/cpu_defines.h:
 
-/usr/include/c++/4.5/bits/cpp_type_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cpp_type_traits.h:
 
-/usr/include/c++/4.5/ext/type_traits.h:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ext/type_traits.h:
 
 /usr/include/math.h:
 
@@ -57,4 +57,4 @@ ImfRational.h:
 
 /usr/include/bits/mathinline.h:
 
-/usr/include/c++/4.5/bits/cmath.tcc:
+/usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/cmath.tcc:

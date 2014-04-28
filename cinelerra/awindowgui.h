@@ -149,6 +149,10 @@ public:
 	BC_Pixmap *audio_icon;
 	BC_Pixmap *video_icon;
 	BC_Pixmap *clip_icon;
+	BC_Pixmap *atransition_icon;
+	BC_Pixmap *vtransition_icon;
+	BC_Pixmap *aeffect_icon;
+	BC_Pixmap *veffect_icon;
 	NewFolderThread *newfolder_thread;
 
 // Popup menus

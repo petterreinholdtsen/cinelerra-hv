@@ -99,7 +99,8 @@ int BC_Slider::initialize()
 	button_pixel = value_to_pixel();
 
 	BC_SubWindow::initialize();
-	draw_face();
+	draw_face(0);
+	show_window(0);
 	return 0;
 }
 
@@ -115,7 +116,7 @@ int BC_Slider::get_span(int vertical)
 	}
 }
 
-int BC_Slider::draw_face()
+int BC_Slider::draw_face(int flush)
 {
 // Clear background
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
@@ -151,7 +152,7 @@ int BC_Slider::draw_face()
 		}
 	}
 
-	flash();
+	flash(flush);
 	return 0;
 }
 
@@ -248,7 +249,7 @@ int BC_Slider::keypress_event()
 	{
 		handle_event();
 		show_value_tooltip();
-		draw_face();
+		draw_face(1);
 	}
 	return result;
 }
@@ -260,7 +261,7 @@ int BC_Slider::cursor_enter_event()
 	{
 		tooltip_done = 0;
 		status = SLIDER_HI;
-		draw_face();
+		draw_face(1);
 	}
 //printf("BC_Slider::cursor_enter_event 2\n");
 	return 0;
@@ -271,7 +272,7 @@ int BC_Slider::cursor_leave_event()
 	if(status == SLIDER_HI)
 	{
 		status = SLIDER_UP;
-		draw_face();
+		draw_face(1);
 		hide_tooltip();
 	}
 	return 0;
@@ -292,13 +293,13 @@ int BC_Slider::activate()
 void BC_Slider::enable()
 {
 	enabled = 1;
-	draw_face();
+	draw_face(1);
 }
 
 void BC_Slider::disable()
 {
 	enabled = 0;
-	draw_face();
+	draw_face(1);
 }
 
 int BC_Slider::button_press_event()
@@ -314,7 +315,7 @@ int BC_Slider::button_press_event()
 				increase_value();
 				handle_event();
 				show_value_tooltip();
-				draw_face();
+				draw_face(1);
 			}
 			else
 			if(get_buttonpress() == 5)
@@ -322,14 +323,14 @@ int BC_Slider::button_press_event()
 				decrease_value();
 				handle_event();
 				show_value_tooltip();
-				draw_face();
+				draw_face(1);
 			}
 			else
 			if(get_buttonpress() == 1)
 			{
 				button_down = 1;
 				status = SLIDER_DN;
-				draw_face();
+				draw_face(1);
 				init_selection(top_level->cursor_x, top_level->cursor_y);
 				top_level->deactivate();
 				activate();
@@ -353,7 +354,7 @@ int BC_Slider::button_release_event()
 			status = SLIDER_UP;
 			top_level->hide_tooltip();
 		}
-		draw_face();
+		draw_face(1);
 		return 1;
 	}
 	return 0;
@@ -365,7 +366,7 @@ int BC_Slider::cursor_motion_event()
 	{
 		int old_pixel = button_pixel;
 		int result = update_selection(top_level->cursor_x, top_level->cursor_y);
-		if(button_pixel != old_pixel) draw_face();
+		if(button_pixel != old_pixel) draw_face(1);
 		if(result) 
 		{
 			handle_event();
@@ -380,7 +381,7 @@ int BC_Slider::reposition_window(int x, int y, int w, int h)
 {
 	BC_SubWindow::reposition_window(x, y, w, h);
 	button_pixel = value_to_pixel();
-	draw_face();
+	draw_face(0);
 	return 0;
 }
 
@@ -388,6 +389,11 @@ int BC_Slider::reposition_window(int x, int y, int w, int h)
 int BC_Slider::get_pointer_motion_range()
 {
 	return pointer_motion_range;
+}
+
+void BC_Slider::set_pointer_motion_range(int value)
+{
+	pointer_motion_range = value;
 }
 
 
@@ -441,7 +447,7 @@ int BC_ISlider::update(int64_t value)
 		this->value = value;
 		int old_pixel = button_pixel;
 		button_pixel = value_to_pixel();
-		if(button_pixel != old_pixel) draw_face();
+		if(button_pixel != old_pixel) draw_face(1);
 	}
 	return 0;
 }
@@ -458,7 +464,7 @@ int BC_ISlider::update(int pointer_motion_range,
 
 	int old_pixel = button_pixel;
 	button_pixel = value_to_pixel();
-	if(button_pixel != old_pixel) draw_face();
+	if(button_pixel != old_pixel) draw_face(1);
 	return 0;
 }
 
@@ -601,7 +607,7 @@ int BC_FSlider::update(float value)
 		int old_pixel = button_pixel;
 		button_pixel = value_to_pixel();
 //printf("BC_FSlider::update 1 %f %d\n", value, button_pixel);
-		if(button_pixel != old_pixel) draw_face();
+		if(button_pixel != old_pixel) draw_face(1);
 	}
 	return 0;
 }
@@ -614,7 +620,7 @@ int BC_FSlider::update(int pointer_motion_range, float value, float minvalue, fl
 	this->pointer_motion_range = pointer_motion_range;
 	int old_pixel = button_pixel;
 	button_pixel = value_to_pixel();
-	if(button_pixel != old_pixel) draw_face();
+	if(button_pixel != old_pixel) draw_face(1);
 	return 0;
 }
 

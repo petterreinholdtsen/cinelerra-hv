@@ -169,6 +169,24 @@ void EditPanel::delete_buttons()
 	nextedit = 0;
 }
 
+int EditPanel::calculate_w(MWindow *mwindow, int use_keyframe, int total_buttons)
+{
+	int result = 0;
+	int button_w = mwindow->theme->get_image_set("ibeam")[0]->get_w();
+	if(use_keyframe)
+	{
+		result += button_w + mwindow->theme->toggle_margin;
+	}
+	
+	result += button_w * total_buttons;
+	return result;
+}
+
+int EditPanel::calculate_h(MWindow *mwindow)
+{
+	return mwindow->theme->get_image_set("ibeam")[0]->get_h();
+}
+
 void EditPanel::create_buttons()
 {
 	x1 = x, y1 = y;

@@ -19,17 +19,15 @@
  * 
  */
 
+
+#include "bcsignals.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "mwindow.h"
 #include "statusbar.h"
 #include "theme.h"
 #include "vframe.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 StatusBar::StatusBar(MWindow *mwindow, MWindowGUI *gui)
@@ -87,17 +85,22 @@ void StatusBar::resize_event()
 		mwindow->theme->mstatus_y,
 		mwindow->theme->mstatus_w,
 		mwindow->theme->mstatus_h);
+
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+
 
 	status_text->reposition_window(mwindow->theme->mstatus_message_x, 
 		mwindow->theme->mstatus_message_y);
+
 	x = get_w() - 290;
 	main_progress->reposition_window(mwindow->theme->mstatus_progress_x, 
 		mwindow->theme->mstatus_progress_y);
+
 	x += main_progress->get_w() + 5;
 	main_progress_cancel->reposition_window(mwindow->theme->mstatus_cancel_x, 
 		mwindow->theme->mstatus_cancel_y);
-	flash();
+
+	flash(0);
 }
 
 void StatusBar::set_message(char *text)

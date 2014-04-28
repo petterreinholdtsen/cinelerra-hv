@@ -175,6 +175,8 @@ __LINE__, file->fs->path, title->total_bytes);
 	}
 
 	mpeg3io_seek(title->fs, MPEG3_START_BYTE);
+if(debug) fprintf(stderr, "mpeg3_create_title %d\n",
+__LINE__);
 	demuxer->read_all = 0;
 	return 0;
 }

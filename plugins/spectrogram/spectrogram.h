@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 #include "bchash.inc"
 #include "bctimer.inc"
-#include "../parametric/fourier.h"
+#include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
@@ -40,19 +40,51 @@
 
 class Spectrogram;
 
-#define MIN_FRAGMENT 128
-#define MAX_FRAGMENT 16384
-#define MIN_WINDOW 4096
-#define MAX_WINDOW 16384
+#define MIN_XZOOM 1
+#define MAX_XZOOM 256
+#define MIN_WINDOW 1024
+#define MAX_WINDOW 65536
 #define DIVISIONS 10
 #define DIVISION_W 60
 #define MARGIN 10
 #define MAX_COLUMNS 1024
+#define MAX_HISTORY 32
+#define MIN_HISTORY 1
+#define MIN_FREQ 1
+#define MAX_FREQ 30000
+
+// mode
+#define VERTICAL 0
+#define HORIZONTAL 1
+
 
 class SpectrogramLevel : public BC_FPot
 {
 public:
 	SpectrogramLevel(Spectrogram *plugin, int x, int y);
+	int handle_event();
+	Spectrogram *plugin;
+};
+
+class SpectrogramMode : public BC_PopupMenu
+{
+public:
+	SpectrogramMode(Spectrogram *plugin,
+		int x, 
+		int y);
+	int handle_event();
+	static const char* mode_to_text(int mode);
+	static int text_to_mode(const char *text);
+	void create_objects();
+	Spectrogram *plugin;
+};
+
+class SpectrogramHistory : public BC_IPot
+{
+public:
+	SpectrogramHistory(Spectrogram *plugin,
+		int x, 
+		int y);
 	int handle_event();
 	Spectrogram *plugin;
 };
@@ -105,6 +137,43 @@ public:
 	Spectrogram *plugin;
 };
 
+class SpectrogramFreq : public BC_TextBox
+{
+public:
+	SpectrogramFreq(Spectrogram *plugin, int x, int y);
+	int handle_event();
+	Spectrogram *plugin;
+};
+
+class SpectrogramXZoom : public BC_IPot
+{
+public:
+	SpectrogramXZoom(Spectrogram *plugin, int x, int y);
+	int handle_event();
+	Spectrogram *plugin;
+};
+
+class SpectrogramCanvas : public BC_SubWindow
+{
+public:
+	SpectrogramCanvas(Spectrogram *plugin, int x, int y, int w, int h);
+	int button_press_event();
+	int button_release_event();
+	int cursor_motion_event();
+	void calculate_point();
+	void draw_overlay();
+
+	enum
+	{
+		NONE,
+		DRAG
+	};
+
+	int current_operation;
+	Spectrogram *plugin;
+};
+
+
 class SpectrogramWindow : public PluginClientWindow
 {
 public:
@@ -114,20 +183,33 @@ public:
 	void create_objects();
 	void update_gui();
 	int resize_event(int w, int h);
+	void calculate_frequency(int x, int y, int do_overlay);
 
-	BC_Title *division[DIVISIONS + 1];
+	SpectrogramCanvas *canvas;
+
 	BC_Title *level_title;
 	SpectrogramLevel *level;
 	BC_Title *window_size_title;
 	SpectrogramWindowSize *window_size;
 	SpectrogramWindowSizeTumbler *window_size_tumbler;
-	BC_Title *window_fragment_title;
-	SpectrogramFragmentSize *window_fragment;
-	SpectrogramFragmentSizeTumbler *window_fragment_tumbler;
+
+	BC_Title *mode_title;
+	SpectrogramMode *mode;
+	BC_Title *history_title;
+	SpectrogramHistory *history;
+
+	BC_Title *freq_title;
+//	SpectrogramFreq *freq;
+	BC_Title *amplitude_title;
+
+
+	BC_Title *xzoom_title;
+	SpectrogramXZoom *xzoom;
+//	SpectrogramFragmentSizeTumbler *window_fragment_tumbler;
+
 	SpectrogramNormalize *normalize;
 	Spectrogram *plugin;
-	int done;
-	BC_SubWindow *canvas;
+	int probe_x, probe_y;
 };
 
 
@@ -149,16 +231,20 @@ public:
 	double level;
 	int window_size;
 // Generate this many columns for each window
-	int window_fragment;
+	int xzoom;
+// Frequency probed
+	int frequency;
 	int normalize;
+	int mode;
+	int history_size;
 };
 
 // Header for data buffer
 typedef struct
 {
 	int window_size;
-// Total fragments in this buffer
-	int total_fragments;
+// Total windows in this buffer
+	int total_windows;
 // Samples per fragment
 	int window_fragment;
 // Samplerate
@@ -166,16 +252,17 @@ typedef struct
 // Linearized user level
 	float level;
 // Nothing goes after this
+// 1st sample in each window is the max
 	float samples[1];
 } data_header_t;
 
-class SpectrogramColumn
+class SpectrogramFrame
 {
 public:
-	SpectrogramColumn(int data_size, int fragment_number);
-	~SpectrogramColumn();
+	SpectrogramFrame(int data_size);
+	~SpectrogramFrame();
 
-	int64_t fragment_number;
+	int data_size;
 	float *data;
 // Draw immediately
 	int force;
@@ -187,14 +274,12 @@ public:
 	Spectrogram(PluginServer *server);
 	~Spectrogram();
 	
-	PLUGIN_CLASS_MEMBERS(SpectrogramConfig)
+	PLUGIN_CLASS_MEMBERS2(SpectrogramConfig)
 	int is_realtime();
 	int process_buffer(int64_t size, 
 		Samples *buffer,
 		int64_t start_position,
 		int sample_rate);
-	int load_defaults();
-	int save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	void update_gui();
@@ -208,23 +293,26 @@ public:
 	FFT *fft;
 // Data buffer for frequency & magnitude
 	unsigned char *data;
-// This stores 2 windows at a time to pull off the fragmenting
+// Accumulate data for windowing
 	Samples *audio_buffer;
+// Total samples in the buffer
+	int buffer_size;
+// Last window size rendered
+	int window_size;
 // Temporaries for the FFT
 	double *freq_real;
 	double *freq_imag;
-// Last window size rendered
-	int window_size;
-// Total fragments sent to current GUI
-	int total_fragments;
-// Last fragment drawn by current GUI
-	int last_fragment;
+// Total windows sent to current GUI
+	int total_windows;
 // Starting sample in audio_buffer.
 	int64_t audio_buffer_start;
 // Total floats allocated in data buffer
 	int allocated_data;
 // Accumulates canvas pixels until the next update_gui
-	ArrayList<SpectrogramColumn*> column_buffer;
+	ArrayList<SpectrogramFrame*> frame_buffer;
+// History for vertical mode
+// Probing data for horizontal mode
+	ArrayList<SpectrogramFrame*> frame_history;
 // Header from last data buffer
 	data_header_t header;
 // Time of last GUI update

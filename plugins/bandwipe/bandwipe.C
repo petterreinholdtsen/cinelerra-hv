@@ -191,28 +191,6 @@ VFrame* BandWipeMain::new_picon()
 	return new VFrame(picon_png);
 }
 
-int BandWipeMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sbandwipe.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	bands = defaults->get("BANDS", bands);
-	direction = defaults->get("DIRECTION", direction);
-	return 0;
-}
-
-int BandWipeMain::save_defaults()
-{
-	defaults->update("BANDS", bands);
-	defaults->update("DIRECTION", direction);
-	defaults->save();
-	return 0;
-}
 
 void BandWipeMain::save_data(KeyFrame *keyframe)
 {

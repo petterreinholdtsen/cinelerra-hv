@@ -110,7 +110,6 @@ REGISTER_PLUGIN(BlurMain)
 BlurMain::BlurMain(PluginServer *server)
  : PluginVClient(server)
 {
-	defaults = 0;
 	need_reconfigure = 1;
 	engine = 0;
 	overlayer = 0;
@@ -307,41 +306,6 @@ void BlurMain::update_gui()
 }
 
 
-int BlurMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%sblur.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.vertical = defaults->get("VERTICAL", config.vertical);
-	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
-	config.radius = defaults->get("RADIUS", config.radius);
-	config.r = defaults->get("R", config.r);
-	config.g = defaults->get("G", config.g);
-	config.b = defaults->get("B", config.b);
-	config.a = defaults->get("A", config.a);
-	config.a_key = defaults->get("A_KEY", config.a_key);
-	return 0;
-}
-
-
-int BlurMain::save_defaults()
-{
-	defaults->update("VERTICAL", config.vertical);
-	defaults->update("HORIZONTAL", config.horizontal);
-	defaults->update("RADIUS", config.radius);
-	defaults->update("R", config.r);
-	defaults->update("G", config.g);
-	defaults->update("B", config.b);
-	defaults->update("A", config.a);
-	defaults->update("A_KEY", config.a_key);
-	defaults->save();
-	return 0;
-}
 
 
 

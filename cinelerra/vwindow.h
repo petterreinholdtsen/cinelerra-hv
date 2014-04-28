@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #define VWINDOW_H
 
 #include "asset.inc"
+#include "bcdialog.h"
 #include "clipedit.inc"
 #include "edl.inc"
 #include "indexable.inc"
@@ -33,25 +34,25 @@
 #include "vtracking.inc"
 #include "vwindowgui.inc"
 
-class VWindow : public Thread
+class VWindow : public BC_DialogThread
 {
 public:
 	VWindow(MWindow *mwindow);
 	~VWindow();
 
+	void handle_close_event(int result);
+	BC_Window* new_gui();
+
 	void load_defaults();
 	void create_objects();
-	void run();
 // Change source to asset, creating a new EDL
 	void change_source(Indexable *indexable);
 // Change source to EDL
 	void change_source(EDL *edl);
-// Change source to master EDL's vwindow EDL after a load.
-	void change_source();
+// Change source to 1 of master EDL's vwindow EDLs after a load.
+	void change_source(int number);
 // Change source to folder and item number
 	void change_source(char *folder, int item);
-// Remove source
-	void remove_source();
 // Returns private EDL of VWindow
 // If an asset is dropped in, a new VWindow EDL is created in the master EDL
 // and this points to it.
@@ -66,6 +67,7 @@ public:
 		int use_slider = 1,
 		int update_slider = 0,
 		int lock_window = 0);
+	int update_position(double position);
 	void set_inpoint();
 	void set_outpoint();
 	void clear_inpoint();
@@ -73,7 +75,7 @@ public:
 	void copy();
 	void splice_selection();
 	void overwrite_selection();	
-	void delete_edl();
+	void delete_source(int do_main_edl, int update_gui);
 	void goto_start();
 	void goto_end();
 
@@ -86,7 +88,8 @@ public:
 	VWindowGUI *gui;
 	VPlayback *playback_engine;
 	ClipEdit *clip_edit;
-// Object being played back.
+// Pointer to object being played back in the main EDL.
+	EDL *edl;
 
 // Pointer to source for accounting
 	Indexable *indexable;

@@ -47,15 +47,16 @@ public:
 		int max,
 		int mode, /* = METER_DB, */
 		int use_titles, /* = 0, */
-// Number of updates before over dissappears
-		long over_delay, /* = 150, */
-// Number of updates before peak updates
-		long peak_delay /* = 15 */);
+		int span /* = -1 width for vertical mode only */);
 	virtual ~BC_Meter();
 
 	int initialize();
+	int set_delays(
+// Number of updates before over dissappears
+		int over_delay, /* = 150, */
+// Number of updates before peak updates
+		int peak_delay /* = 15 */);
 	void set_images(VFrame **data);
-	int set_delays(int over_delay, int peak_delay);
 	int region_pixel(int region);
 	int region_pixels(int region);
 	virtual int button_press_event();
@@ -63,14 +64,17 @@ public:
 	static int get_title_w();
 	static int get_meter_w();
 	int update(float new_value, int over);
-	int reposition_window(int x, int y, int pixels);
+	int reposition_window(int x, 
+		int y, 
+		int span /* = -1 for vertical mode only */, 
+		int pixels);
 	int reset();
 	int reset_over();
 	int change_format(int mode, int min, int max);
 
 private:
-	void draw_titles();
-	void draw_face();
+	void draw_titles(int flush);
+	void draw_face(int flush);
 	int level_to_pixel(float level);
 	void get_divisions();
 
@@ -78,6 +82,8 @@ private:
 	int orientation;
 // Number of pixels in the longest dimension
 	int pixels;
+// Width if variable width
+	int span;
 	int low_division;
 	int medium_division;
 	int high_division;
@@ -101,8 +107,8 @@ private:
 	int over_count, over_timer;
 	int min;
 	int max;
-	long over_delay;       // Number of updates the over warning lasts.
-	long peak_delay;       // Number of updates the peak lasts.
+	int over_delay;       // Number of updates the over warning lasts.
+	int peak_delay;       // Number of updates the peak lasts.
 };
 
 #endif

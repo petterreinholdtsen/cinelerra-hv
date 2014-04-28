@@ -20,7 +20,7 @@
  */
 
 #include "histogramengine.h"
-#include "../colors/plugincolors.h"
+#include "cicolors.h"
 #include "vframe.h"
 
 #include <stdio.h>

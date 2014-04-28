@@ -29,7 +29,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "loadbalance.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "pluginvclient.h"
 
 
@@ -147,8 +147,6 @@ public:
 		double frame_rate);
 	int is_realtime();
 	int is_multichannel();
-	int load_defaults();
-	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
@@ -334,30 +332,6 @@ const char* DiffKey::plugin_title() { return N_("Difference key"); }
 int DiffKey::is_realtime() { return 1; }
 int DiffKey::is_multichannel() { return 1; }
 
-int DiffKey::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdiffkey.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.slope = defaults->get("SLOPE", config.slope);
-	config.do_value = defaults->get("DO_VALUE", config.do_value);
-	return 0;
-}
-
-int DiffKey::save_defaults()
-{
-	defaults->update("THRESHOLD", config.threshold);
-	defaults->update("SLOPE", config.slope);
-	defaults->update("DO_VALUE", config.do_value);
-	defaults->save();
-	return 0;
-}
 
 void DiffKey::save_data(KeyFrame *keyframe)
 {
@@ -626,7 +600,6 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 #define RGB_TO_VALUE(r, g, b) \
 ((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
 
-#define SQR(x) ((x) * (x))
 
 #define DIFFKEY_MACRO(type, components, max, chroma_offset) \
 { \

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include <ctype.h>
 #include "bchash.h"
+#include "mwindow.h"
 #include "picture.h"
 #include <string.h>
 
@@ -72,9 +73,13 @@ char* PictureItem::get_default_string(char *string)
 
 
 
-PictureConfig::PictureConfig(BC_Hash *defaults)
+PictureConfig::PictureConfig()
 {
-	this->defaults = defaults;
+	char path[BCTEXTLEN];
+	MWindow::create_defaults_path(path, PICTURE_FILE);
+	defaults = new BC_Hash(path);
+
+
 	brightness = -1;
 	hue = -1;
 	color = -1;
@@ -91,6 +96,7 @@ PictureConfig::PictureConfig(BC_Hash *defaults)
 PictureConfig::~PictureConfig()
 {
 	controls.remove_all_objects();
+	delete defaults;
 }
 
 void PictureConfig::copy_settings(PictureConfig *picture)
@@ -160,6 +166,9 @@ void PictureConfig::load_defaults()
 		printf("PictureConfig::load_defaults: no defaults pointer.\n");
 		return;
 	}
+
+
+	defaults->load();
 	brightness = defaults->get("VIDEO_BRIGHTNESS", 0);
 	hue = defaults->get("VIDEO_HUE", 0);
 	color = defaults->get("VIDEO_COLOR", 0);
@@ -198,6 +207,7 @@ void PictureConfig::save_defaults()
 		defaults->update(string, item->value);
 //printf("PictureConfig::save_defaults %s %d %d\n", string, item->device_id, item->value);
 	}
+	defaults->save();
 }
 
 void PictureConfig::dump()
@@ -238,16 +248,22 @@ PictureItem* PictureConfig::get_item(const char *name, int id)
 	return 0;
 }
 
-void PictureConfig::set_item(int device_id, int value)
+int PictureConfig::set_item(int device_id, int value)
 {
 	for(int i = 0; i < controls.total; i++)
 	{
 		if(controls.values[i]->device_id == device_id)
 		{
-			controls.values[i]->value = value;
-			return;
+			if(controls.values[i]->value != value)
+			{
+				controls.values[i]->value = value;
+				return 1;
+			}
+			return 0;
 		}
 	}
+
+	return 0;
 }
 
 

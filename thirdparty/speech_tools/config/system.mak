@@ -1,10 +1,10 @@
  ###########################################################################
  ## This file is created automatically from your config file.
  ## Do not hand edit.
- ## Created:Fri Aug 5 11:40:24 PDT 2011
+ ## Created:Sun Aug 7 00:23:06 PDT 2011
  ###########################################################################
 
-OSTYPE:=DebianGNULinux
+OSTYPE:=RedHatLinux
 MACHINETYPE:=unknown
 OSREV:=
 SYSTEM_LOADED:=1

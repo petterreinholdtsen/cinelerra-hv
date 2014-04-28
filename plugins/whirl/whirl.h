@@ -48,8 +48,6 @@ public:
 	int start_realtime();
 	int stop_realtime();
 	PluginClientWindow* new_window();
-	int load_defaults();
-	int save_defaults();
 	int save_data(char *text);
 	int read_data(char *text);
 

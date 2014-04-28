@@ -154,28 +154,6 @@ NEW_PICON_MACRO(ZoomMain)
 
 
 
-int ZoomMain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%szoomtransition.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	max_magnification_x = defaults->get("MAGNIFICATION_X", max_magnification_x);
-	max_magnification_y = defaults->get("MAGNIFICATION_Y", max_magnification_y);
-	return 0;
-}
-
-int ZoomMain::save_defaults()
-{
-	defaults->update("MAGNIFICATION_X", max_magnification_x);
-	defaults->update("MAGNIFICATION_Y", max_magnification_y);
-	defaults->save();
-	return 0;
-}
 
 void ZoomMain::save_data(KeyFrame *keyframe)
 {

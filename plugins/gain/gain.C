@@ -107,30 +107,6 @@ int Gain::process_realtime(int64_t size, Samples *input_ptr, Samples *output_ptr
 
 
 
-int Gain::load_defaults()
-{
-	char directory[BCTEXTLEN];
-
-// set the default directory
-	sprintf(directory, "%sgain.rc", get_defaultdir());
-	
-// load the defaults
-
-	defaults = new BC_Hash(directory);
-
-	defaults->load();
-
-	config.level = defaults->get("LEVEL", config.level);
-
-	return 0;
-}
-
-int Gain::save_defaults()
-{
-	defaults->update("LEVEL", config.level);
-	defaults->save();
-	return 0;
-}
 
 void Gain::save_data(KeyFrame *keyframe)
 {

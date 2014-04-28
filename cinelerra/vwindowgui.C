@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 	100,
 	1,
 	1,
-	1)
+	0) // Hide it
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
@@ -80,17 +80,21 @@ VWindowGUI::~VWindowGUI()
 
 void VWindowGUI::change_source(EDL *edl, const char *title)
 {
+//printf("VWindowGUI::change_source %d\n", __LINE__);
+
 	update_sources(title);
 	char string[BCTEXTLEN];
 
 	if(title[0]) 
 		sprintf(string, PROGRAM_NAME ": %s", title);
 	else
-		sprintf(string, PROGRAM_NAME);
+		sprintf(string, PROGRAM_NAME ": Viewer");
 
 	lock_window("VWindowGUI::change_source");
+#ifdef USE_SLIDER
 	slider->set_position();
-	timebar->update();
+#endif
+	timebar->update(0);
 	set_title(string);
 	unlock_window();
 }
@@ -169,7 +173,7 @@ void VWindowGUI::create_objects()
 //printf("VWindowGUI::create_objects 1\n");
 	mwindow->theme->get_vwindow_sizes(this);
 	mwindow->theme->draw_vwindow_bg(this);
-	flash();
+	flash(0);
 
 	meters = new VWindowMeters(mwindow, 
 		this,
@@ -185,20 +189,23 @@ void VWindowGUI::create_objects()
 	edit_panel->create_objects();
 
 //printf("VWindowGUI::create_objects 1\n");
+#ifdef USE_SLIDER
 	add_subwindow(slider = new VWindowSlider(mwindow, 
     	vwindow, 
 		this, 
         mwindow->theme->vslider_x, 
         mwindow->theme->vslider_y, 
         mwindow->theme->vslider_w));
-
+#endif
 //printf("VWindowGUI::create_objects 1\n");
 	transport = new VWindowTransport(mwindow, 
 		this, 
 		mwindow->theme->vtransport_x, 
 		mwindow->theme->vtransport_y);
     transport->create_objects();
+#ifdef USE_SLIDER
 	transport->set_slider(slider);
+#endif
 
 //printf("VWindowGUI::create_objects 1\n");
 //	add_subwindow(fps_title = new BC_Title(mwindow->theme->vedit_x, y, ""));
@@ -233,7 +240,11 @@ void VWindowGUI::create_objects()
 
 //printf("VWindowGUI::create_objects 2\n");
 	deactivate();
+#ifdef USE_SLIDER
 	slider->activate();
+#endif
+
+	show_window();
 	unlock_window();
 }
 
@@ -246,30 +257,40 @@ int VWindowGUI::resize_event(int w, int h)
 
 	mwindow->theme->get_vwindow_sizes(this);
 	mwindow->theme->draw_vwindow_bg(this);
-	flash();
+	flash(0);
 
+//printf("VWindowGUI::resize_event %d %d\n", __LINE__, mwindow->theme->vedit_y);
 	edit_panel->reposition_buttons(mwindow->theme->vedit_x, 
 		mwindow->theme->vedit_y);
+
+
+
+#ifdef USE_SLIDER
 	slider->reposition_window(mwindow->theme->vslider_x, 
         mwindow->theme->vslider_y, 
         mwindow->theme->vslider_w);
 // Recalibrate pointer motion range
 	slider->set_position();
+#endif
+
 	timebar->resize_event();
 	transport->reposition_buttons(mwindow->theme->vtransport_x, 
 		mwindow->theme->vtransport_y);
 	clock->reposition_window(mwindow->theme->vtime_x, 
 		mwindow->theme->vtime_y,
-		mwindow->theme->vtime_w);
+		mwindow->theme->vtime_w,
+		clock->get_h());
 	canvas->reposition_window(0,
 		mwindow->theme->vcanvas_x, 
 		mwindow->theme->vcanvas_y, 
 		mwindow->theme->vcanvas_w, 
 		mwindow->theme->vcanvas_h);
+//printf("VWindowGUI::resize_event %d %d\n", __LINE__, mwindow->theme->vcanvas_x);
 // 	source->reposition_window(mwindow->theme->vsource_x,
 // 		mwindow->theme->vsource_y);
 	meters->reposition_window(mwindow->theme->vmeter_x,
 		mwindow->theme->vmeter_y,
+		-1,
 		mwindow->theme->vmeter_h);
 
 	BC_WindowBase::resize_event(w, h);
@@ -287,21 +308,23 @@ int VWindowGUI::translation_event()
 	return 0;
 }
 
-int VWindowGUI::close_event()
-{
-	hide_window();
-	mwindow->session->show_vwindow = 0;
-	unlock_window();
-	
-	
-	mwindow->gui->lock_window("VWindowGUI::close_event");
-	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
-	mwindow->gui->unlock_window();
-
-	lock_window("VWindowGUI::close_event");
-	mwindow->save_defaults();
-	return 1;
-}
+// int VWindowGUI::close_event()
+// {
+// // TODO: destroy window if not the default VWindow
+// 
+// 	hide_window();
+// 	mwindow->session->show_vwindow = 0;
+// 	unlock_window();
+// 	
+// 	
+// 	mwindow->gui->lock_window("VWindowGUI::close_event");
+// 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
+// 	mwindow->gui->unlock_window();
+// 
+// 	lock_window("VWindowGUI::close_event");
+// 	mwindow->save_defaults();
+// 	return 1;
+// }
 
 int VWindowGUI::keypress_event()
 {
@@ -380,6 +403,7 @@ int VWindowGUI::cursor_motion_event()
 
 void VWindowGUI::drag_motion()
 {
+// Window hidden
 	if(get_hidden()) return;
 	if(mwindow->session->current_operation != DRAG_ASSET) return;
 
@@ -393,7 +417,14 @@ void VWindowGUI::drag_motion()
 		cursor_x < canvas->x + canvas->w &&
 		cursor_y >= canvas->y &&
 		cursor_y < canvas->y + canvas->h);
-//printf("VWindowGUI::drag_motion 1 %d\n", mwindow->session->vcanvas_highlighted);
+
+
+printf("VWindowGUI::drag_motion 1 %d %d %d %d %d\n", 
+__LINE__, 
+mwindow->session->vcanvas_highlighted,
+get_cursor_over_window(),
+cursor_x,
+cursor_y);
 
 
 	if(old_status != mwindow->session->vcanvas_highlighted)
@@ -441,9 +472,12 @@ VWindowMeters::VWindowMeters(MWindow *mwindow,
 		gui,
 		x,
 		y,
+		-1,
 		h,
 		mwindow->edl->session->audio_channels,
-		mwindow->edl->session->vwindow_meter)
+		mwindow->edl->session->vwindow_meter,
+		0,
+		0)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -455,7 +489,7 @@ VWindowMeters::~VWindowMeters()
 
 int VWindowMeters::change_status_event()
 {
-	mwindow->edl->session->vwindow_meter = use_meters;
+	mwindow->edl->session->vwindow_meter = visible;
 //printf("VWindowMeters::change_status_event 1 %d\n", mwindow->edl->session->vwindow_meter);
 	mwindow->theme->get_vwindow_sizes(gui);
 	gui->resize_event(gui->get_w(), gui->get_h());
@@ -530,7 +564,7 @@ void VWindowEditing::toggle_label()
 		EDL *edl = vwindow->get_edl();
 		edl->labels->toggle_label(edl->local_session->get_selectionstart(1),
 			edl->local_session->get_selectionend(1));
-		vwindow->gui->timebar->update();
+		vwindow->gui->timebar->update(1);
 	}
 }
 
@@ -552,14 +586,14 @@ void VWindowEditing::prev_label()
 			edl->local_session->set_selectionstart(0);
 			edl->local_session->set_selectionend(0);
 			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update();
+			vwindow->gui->timebar->update(1);
 		}
 		else
 		{
 			edl->local_session->set_selectionstart(current->position);
 			edl->local_session->set_selectionend(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update();
+			vwindow->gui->timebar->update(1);
 		}
 	}
 }
@@ -581,7 +615,7 @@ void VWindowEditing::next_label()
 			edl->local_session->set_selectionstart(position);
 			edl->local_session->set_selectionend(position);
 			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update();
+			vwindow->gui->timebar->update(1);
 		}
 		else
 		{
@@ -592,7 +626,7 @@ void VWindowEditing::next_label()
 			edl->local_session->set_selectionstart(current->position);
 			edl->local_session->set_selectionend(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1, 0);
-			vwindow->gui->timebar->update();
+			vwindow->gui->timebar->update(1);
 		}
 	}
 }
@@ -664,6 +698,7 @@ void VWindowEditing::to_clip()
 
 
 
+#ifdef USE_SLIDER
 
 VWindowSlider::VWindowSlider(MWindow *mwindow, 
 	VWindow *vwindow, 
@@ -692,12 +727,15 @@ VWindowSlider::~VWindowSlider()
 
 int VWindowSlider::handle_event()
 {
-	unlock_window();
-	vwindow->playback_engine->interrupt_playback(1);
-	lock_window("VWindowSlider::handle_event");
+	vwindow->update_position(get_value());
 
-	vwindow->update_position(CHANGE_NONE, 1, 0, 0);
-	gui->timebar->update();
+// 	unlock_window();
+// 	vwindow->playback_engine->interrupt_playback(1);
+// 	lock_window("VWindowSlider::handle_event");
+// 
+// 	vwindow->update_position(CHANGE_NONE, 1, 0, 0);
+
+	gui->timebar->update(1);
 	return 1;
 }
 
@@ -707,19 +745,24 @@ void VWindowSlider::set_position()
 	if(edl)
 	{
 		double new_length = edl->tracks->total_playable_length();
-		if(EQUIV(edl->local_session->preview_end, 0))
-			edl->local_session->preview_end = new_length;
-		if(edl->local_session->preview_end > new_length)
-			edl->local_session->preview_end = new_length;
-		if(edl->local_session->preview_start > new_length)
-			edl->local_session->preview_start = 0;
+
+// 		if(EQUIV(edl->local_session->preview_end, 0))
+// 			edl->local_session->preview_end = new_length;
+// 		if(edl->local_session->preview_end > new_length)
+// 			edl->local_session->preview_end = new_length;
+// 		if(edl->local_session->preview_start > new_length)
+// 			edl->local_session->preview_start = 0;
 
 		update(mwindow->theme->vslider_w, 
 			edl->local_session->get_selectionstart(1), 
-			edl->local_session->preview_start, 
-			edl->local_session->preview_end);
+			0,
+			new_length);
+//			edl->local_session->preview_start, 
+//			edl->local_session->preview_end);
 	}
 }
+
+#endif
 
 
 
@@ -808,36 +851,52 @@ VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
 	0,
 	1)
 {
+//printf("VWindowCanvas::VWindowCanvas %d %d\n", __LINE__, mwindow->theme->vcanvas_x);
 	this->mwindow = mwindow;
 	this->gui = gui;
 }
 
 void VWindowCanvas::zoom_resize_window(float percentage)
 {
-	EDL *edl = mwindow->vwindow->get_edl();
+	EDL *edl = gui->vwindow->get_edl();
 	if(!edl) edl = mwindow->edl;
 
 	int canvas_w, canvas_h;
+	int new_w, new_h;
+
+// Get required canvas size
 	calculate_sizes(edl->get_aspect_ratio(), 
 		edl->session->output_w, 
 		edl->session->output_h, 
 		percentage,
 		canvas_w,
 		canvas_h);
-	int new_w, new_h;
+
+// Estimate window size from current borders
 	new_w = canvas_w + (gui->get_w() - mwindow->theme->vcanvas_w);
 	new_h = canvas_h + (gui->get_h() - mwindow->theme->vcanvas_h);
+
+	mwindow->session->vwindow_w = new_w;
+	mwindow->session->vwindow_h = new_h;
+
+	mwindow->theme->get_vwindow_sizes(gui);
+
+// Estimate again from new borders
+	new_w = canvas_w + (mwindow->session->vwindow_w - mwindow->theme->vcanvas_w);
+	new_h = canvas_h + (mwindow->session->vwindow_h - mwindow->theme->vcanvas_h);
+
+
 	gui->resize_window(new_w, new_h);
 	gui->resize_event(new_w, new_h);
 }
 
 void VWindowCanvas::close_source()
 {
-	mwindow->vwindow->remove_source();
+	gui->vwindow->delete_source(1, 1);
 }
 
 
-void VWindowCanvas::draw_refresh()
+void VWindowCanvas::draw_refresh(int flush)
 {
 	EDL *edl = gui->vwindow->get_edl();
 
@@ -870,7 +929,7 @@ void VWindowCanvas::draw_refresh()
 	if(!get_canvas()->get_video_on())
 	{
 		draw_overlays();
-		get_canvas()->flash();
+		get_canvas()->flash(flush);
 	}
 }
 
@@ -1109,7 +1168,7 @@ int VWindowInPoint::handle_event()
 
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
-		gui->timebar->update();
+		gui->timebar->update(1);
 
 // Que the VWindow
 		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1, 0);
@@ -1142,7 +1201,7 @@ int VWindowOutPoint::handle_event()
 
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
-		gui->timebar->update();
+		gui->timebar->update(1);
 
 // Que the VWindow
 		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1, 0);

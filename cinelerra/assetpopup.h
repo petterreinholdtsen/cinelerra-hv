@@ -25,6 +25,7 @@
 class AssetPopupInfo;
 class AssetPopupBuildIndex;
 class AssetPopupView;
+class AssetPopupViewWindow;
 
 #include "assetedit.inc"
 #include "awindowgui.inc"
@@ -48,6 +49,7 @@ public:
 	void paste_assets();
 	void match_size();
 	void match_rate();
+	void match_all();
 
 	MWindow *mwindow;
 	AWindowGUI *gui;
@@ -56,6 +58,7 @@ public:
 	AssetPopupInfo *info;
 	AssetPopupBuildIndex *index;
 	AssetPopupView *view;
+	AssetPopupViewWindow *view_window;
 	AssetListFormat *format;
 };
 
@@ -108,6 +111,19 @@ public:
 	AssetPopup *popup;
 };
 
+
+class AssetPopupViewWindow : public BC_MenuItem
+{
+public:
+	AssetPopupViewWindow(MWindow *mwindow, AssetPopup *popup);
+	~AssetPopupViewWindow();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
 class AssetPopupPaste : public BC_MenuItem
 {
 public:
@@ -135,6 +151,17 @@ class AssetMatchRate : public BC_MenuItem
 {
 public:
 	AssetMatchRate(MWindow *mwindow, AssetPopup *popup);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	AssetPopup *popup;
+};
+
+class AssetMatchAll : public BC_MenuItem
+{
+public:
+	AssetMatchAll(MWindow *mwindow, AssetPopup *popup);
 
 	int handle_event();
 

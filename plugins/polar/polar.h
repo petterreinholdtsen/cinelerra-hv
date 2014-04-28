@@ -44,8 +44,6 @@ public:
 	int process_realtime(long size, VFrame **input_ptr, VFrame **output_ptr);
 	int plugin_is_realtime();
 	int plugin_is_multi_channel();
-	int load_defaults();
-	int save_defaults();
 	int save_data(char *text);
 	int read_data(char *text);
 

@@ -84,7 +84,7 @@ void OSSThread::run()
 
 
 			Thread::enable_cancel();
-			write(fd, data, bytes);
+			int temp = write(fd, data, bytes);
 			Thread::disable_cancel();
 
 

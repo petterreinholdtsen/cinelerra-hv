@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,12 @@
 #define GRAPHIC_H
 
 #include "guicast.h"
-#include "../parametric/fourier.h"
+#include "fourier.h"
 #include "pluginaclient.h"
 
 
-#define WINDOW_SIZE 16384
+#define MAX_WINDOW 262144
+//#define WINDOW_SIZE 16384
 #define MAXMAGNITUDE 15
 #define MAXFREQ 20000
 #define MIN_DB -15
@@ -68,6 +69,8 @@ public:
 	void delete_point(int number);
 
 	ArrayList<GraphicPoint*> points;
+//	double wetness;
+	int window_size;
 };
 
 
@@ -76,13 +79,28 @@ class GraphicCanvas : public BC_SubWindow
 {
 public:
 	GraphicCanvas(GraphicEQ *plugin, GraphicGUI *gui, int x, int y, int w, int h);
+	virtual ~GraphicCanvas();
 	int button_press_event();
 	int cursor_motion_event();
 	int button_release_event();
 	void process(int buttonpress, int motion, int draw);
-	int freq_to_y(int freq);
+	int freq_to_y(int freq,
+		ArrayList<GraphicPoint*> *points,
+		double *envelope);
+	void insert_point(GraphicPoint *point);
 	GraphicEQ *plugin;
 	GraphicGUI *gui;
+
+// Temporary envelope when editing
+	void new_temps();
+	void save_temps();
+
+	ArrayList<GraphicPoint*> temp_points;
+	double temp_envelope[MAX_WINDOW / 2];
+
+
+
+
 	int state;
 	enum
 	{
@@ -132,6 +150,31 @@ public:
 	GraphicGUI *gui;
 };
 
+
+class GraphicSize : public BC_PopupMenu
+{
+public:
+	GraphicSize(GraphicGUI *window, GraphicEQ *plugin, int x, int y);
+
+	int handle_event();
+	void create_objects();         // add initial items
+	void update(int size);
+
+	GraphicGUI *window;
+	GraphicEQ *plugin;
+};
+
+
+class GraphicWetness : public BC_FPot
+{
+public:
+	GraphicWetness(GraphicGUI *window, GraphicEQ *plugin, int x, int y);
+	int handle_event();
+	GraphicGUI *window;
+	GraphicEQ *plugin;
+};
+
+
 class GraphicGUI : public PluginClientWindow
 {
 public:
@@ -147,12 +190,33 @@ public:
 
 	FreqTextBox *freq_text;
 	ValueTextBox *value_text;
-	GraphicEQ *plugin;
+	BC_Title *freq_title;
+	BC_Title *level_title;
+	BC_Title *size_title;
+
 	GraphicCanvas *canvas;
 	GraphicReset *reset;
+	GraphicSize *size;
+//	GraphicWetness *wetness;
+	GraphicEQ *plugin;
 };
 
 
+
+
+
+class GraphicGUIFrame : public PluginClientFrame
+{
+public:
+	GraphicGUIFrame(int window_size, int sample_rate);
+	virtual ~GraphicGUIFrame();
+	double *data;
+// Maximum of window in frequency domain
+	double freq_max;
+// Maximum of window in time domain
+	double time_max;
+	int window_size;
+};
 
 
 
@@ -162,10 +226,13 @@ public:
 	GraphicFFT(GraphicEQ *plugin);
 	~GraphicFFT();
 	
+	int post_process();
 	int signal_process();
 	int read_samples(int64_t output_sample, 
 		int samples, 
 		Samples *buffer);
+// Current GUI frame being filled
+	GraphicGUIFrame *frame;
 
 	GraphicEQ *plugin;
 };
@@ -179,8 +246,6 @@ public:
 	~GraphicEQ();
 
 	int is_realtime();
-	int load_defaults();
-	int save_defaults();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int process_buffer(int64_t size, 
@@ -188,8 +253,11 @@ public:
 		int64_t start_position,
 		int sample_rate);
 	void update_gui();
-	double freq_to_magnitude(double frequency);
-	void calculate_envelope();
+	double freq_to_magnitude(double frequency,
+		ArrayList<GraphicPoint*> *points,
+		double *envelope);
+	void calculate_envelope(ArrayList<GraphicPoint*> *points,
+		double *envelope);
 	int active_point_exists();
 	void reconfigure();
 
@@ -198,10 +266,13 @@ public:
 
 
 
-	double envelope[WINDOW_SIZE / 2];
+	double envelope[MAX_WINDOW / 2];
 	int active_point;
+// For refreshing the canvas
+	GraphicGUIFrame *last_frame;
 	GraphicFFT *fft;
 	int need_reconfigure;
+	int w, h;
 };
 
 

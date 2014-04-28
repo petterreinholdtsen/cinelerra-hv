@@ -42,7 +42,7 @@
 class BC_Menu
 {
 public:
-	BC_Menu(char *text);
+	BC_Menu(const char *text);
 	virtual ~BC_Menu();
 
 	friend class BC_MenuBar;
@@ -68,7 +68,7 @@ public:
 	void draw_items();
 
 private:
-	int draw_title();
+	int draw_title(int flash, int flush);
 // If this menu is pulled down
 	int active;
 	char text[1024];

@@ -108,7 +108,7 @@ void BC_PopupMenu::set_text(const char *text)
 	if(use_title)
 	{
 		strcpy(this->text, text);
-		draw_title();
+		draw_title(1);
 	}
 }
 
@@ -117,7 +117,7 @@ void BC_PopupMenu::set_icon(BC_Pixmap *icon)
 	if(use_title)
 	{
 		this->icon = icon;
-		if(menu_popup) draw_title();
+		if(menu_popup) draw_title(1);
 	}
 }
 
@@ -151,7 +151,7 @@ int BC_PopupMenu::initialize()
 		0, 
 		this);
 
-	if(use_title) draw_title();
+	if(use_title) draw_title(0);
 
 	return 0;
 }
@@ -176,6 +176,13 @@ int BC_PopupMenu::set_images(VFrame **data)
 
 	h = images[BUTTON_UP]->get_h();
 	return 0;
+}
+
+int BC_PopupMenu::calculate_w(int w_argument)
+{
+	return w_argument + 
+		BC_WindowBase::get_resources()->popupmenu_margin +
+		BC_WindowBase::get_resources()->popupmenu_triangle_margin;
 }
 
 int BC_PopupMenu::calculate_h(VFrame **data)
@@ -215,7 +222,7 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 	return menu_popup->menu_items.values[i];
 }
 
-int BC_PopupMenu::draw_title()
+int BC_PopupMenu::draw_title(int flush)
 {
 	if(!use_title) return 0;
 	BC_Resources *resources = get_resources();
@@ -249,7 +256,7 @@ int BC_PopupMenu::draw_title()
 		get_h() / 2 - TRIANGLE_H / 2, 
 		TRIANGLE_W, TRIANGLE_H);
 
-	flash();
+	flash(flush);
 	return 0;
 }
 
@@ -261,7 +268,7 @@ int BC_PopupMenu::deactivate()
 		popup_down = 0;
 		menu_popup->deactivate_menu();
 
-		if(use_title) draw_title();    // draw the title
+		if(use_title) draw_title(1);    // draw the title
 	}
 	return 0;
 }
@@ -306,7 +313,7 @@ int BC_PopupMenu::activate_menu()
 		else
 			menu_popup->activate_menu(x, y, w, h, 0, 1);
 		popup_down = 1;
-		if(use_title) draw_title();
+		if(use_title) draw_title(1);
 	}
 	return 0;
 }
@@ -321,7 +328,7 @@ int BC_PopupMenu::deactivate_menu()
 int BC_PopupMenu::reposition_window(int x, int y)
 {
 	BC_WindowBase::reposition_window(x, y);
-	draw_title();
+	draw_title(0);
 	return 0;
 }
 
@@ -357,7 +364,7 @@ int BC_PopupMenu::button_press_event()
 		top_level->hide_tooltip();
 		if(status == BUTTON_HI || status == BUTTON_UP) status = BUTTON_DN;
 		activate_menu();
-		draw_title();
+		draw_title(1);
 		return 1;
 	}
 
@@ -384,7 +391,7 @@ int BC_PopupMenu::button_release_event()
 		if(status == BUTTON_DN)
 		{
 			status = BUTTON_HI;
-			draw_title();
+			draw_title(1);
 		}
 	}
 
@@ -474,7 +481,7 @@ int BC_PopupMenu::cursor_leave_event()
 	if(status == BUTTON_HI && use_title)
 	{
 		status = BUTTON_UP;
-		draw_title();
+		draw_title(1);
 		hide_tooltip();
 	}
 
@@ -500,7 +507,7 @@ int BC_PopupMenu::cursor_enter_event()
 		else
 		if(status == BUTTON_UP) 
 			status = BUTTON_HI;
-		draw_title();
+		draw_title(1);
 	}
 
 	return 0;
@@ -523,7 +530,7 @@ int BC_PopupMenu::cursor_motion_event()
 			if(cursor_inside())
 			{
 				highlighted = 0;
-				draw_title();
+				draw_title(1);
 			}
 		}
 		else
@@ -531,7 +538,7 @@ int BC_PopupMenu::cursor_motion_event()
 			if(cursor_inside())
 			{
 				highlighted = 1;
-				draw_title();
+				draw_title(1);
 				result = 1;
 			}
 		}

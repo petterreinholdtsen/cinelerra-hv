@@ -75,6 +75,25 @@ void BC_WindowBase::draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap)
 		360 * 64);
 }
 
+void BC_WindowBase::draw_arc(int x, 
+	int y, 
+	int w, 
+	int h, 
+	int start_angle,
+	int angle_length,
+	BC_Pixmap *pixmap)
+{
+	XDrawArc(top_level->display, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
+		top_level->gc, 
+		x, 
+		y, 
+		(w - 1), 
+		(h - 2), 
+		start_angle * 64, 
+		angle_length * 64);
+}
+
 void BC_WindowBase::draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
 	XFillArc(top_level->display, 
@@ -113,83 +132,97 @@ void BC_WindowBase::draw_text(int x,
 	switch(font)
 	{
 		case MEDIUM_7SEGMENT:
+// Create pixmaps for font, to speed up drawing
+			if(!_7segment_pixmaps)
+			{
+				_7segment_pixmaps = new BC_Pixmap*[TOTAL_7SEGMENT];
+				for(int i = 0; i < TOTAL_7SEGMENT; i++)
+				{
+					_7segment_pixmaps[i] = new BC_Pixmap(
+						this, 
+						get_resources()->medium_7segment[i], 
+						PIXMAP_ALPHA);
+				}
+			}
+		
+		
 			for(int i = 0; i < length; i++)
 			{
-				VFrame *image;
+				BC_Pixmap *image;
 				switch(text[i])
 				{
 					case '0':
-						image = get_resources()->medium_7segment[0];
+						image = _7segment_pixmaps[0];
 						break;
 					case '1':
-						image = get_resources()->medium_7segment[1];
+						image = _7segment_pixmaps[1];
 						break;
 					case '2':
-						image = get_resources()->medium_7segment[2];
+						image = _7segment_pixmaps[2];
 						break;
 					case '3':
-						image = get_resources()->medium_7segment[3];
+						image = _7segment_pixmaps[3];
 						break;
 					case '4':
-						image = get_resources()->medium_7segment[4];
+						image = _7segment_pixmaps[4];
 						break;
 					case '5':
-						image = get_resources()->medium_7segment[5];
+						image = _7segment_pixmaps[5];
 						break;
 					case '6':
-						image = get_resources()->medium_7segment[6];
+						image = _7segment_pixmaps[6];
 						break;
 					case '7':
-						image = get_resources()->medium_7segment[7];
+						image = _7segment_pixmaps[7];
 						break;
 					case '8':
-						image = get_resources()->medium_7segment[8];
+						image = _7segment_pixmaps[8];
 						break;
 					case '9':
-						image = get_resources()->medium_7segment[9];
+						image = _7segment_pixmaps[9];
 						break;
 					case ':':
-						image = get_resources()->medium_7segment[10];
+						image = _7segment_pixmaps[10];
 						break;
 					case '.':
-						image = get_resources()->medium_7segment[11];
+						image = _7segment_pixmaps[11];
 						break;
 					case 'a':
 					case 'A':
-						image = get_resources()->medium_7segment[12];
+						image = _7segment_pixmaps[12];
 						break;
 					case 'b':
 					case 'B':
-						image = get_resources()->medium_7segment[13];
+						image = _7segment_pixmaps[13];
 						break;
 					case 'c':
 					case 'C':
-						image = get_resources()->medium_7segment[14];
+						image = _7segment_pixmaps[14];
 						break;
 					case 'd':
 					case 'D':
-						image = get_resources()->medium_7segment[15];
+						image = _7segment_pixmaps[15];
 						break;
 					case 'e':
 					case 'E':
-						image = get_resources()->medium_7segment[16];
+						image = _7segment_pixmaps[16];
 						break;
 					case 'f':
 					case 'F':
-						image = get_resources()->medium_7segment[17];
+						image = _7segment_pixmaps[17];
 						break;
 					case ' ':
-						image = get_resources()->medium_7segment[18];
+						image = _7segment_pixmaps[18];
 						break;
 					case '-':
-						image = get_resources()->medium_7segment[19];
+						image = _7segment_pixmaps[19];
 						break;
 					default:
-						image = get_resources()->medium_7segment[18];
+						image = _7segment_pixmaps[18];
 						break;
 				}
 
-				draw_vframe(image, 
+				draw_pixmap(image, 
 					x, 
 					y - image->get_h());
 				x += image->get_w();
@@ -320,7 +353,7 @@ void BC_WindowBase::draw_xft_text(int x,
 }
 
 
-void BC_WindowBase::draw_center_text(int x, int y, char *text, int length)
+void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 {
 	if(length < 0) length = strlen(text);
 	int w = get_text_width(current_font, text, length);
@@ -330,13 +363,21 @@ void BC_WindowBase::draw_center_text(int x, int y, char *text, int length)
 
 void BC_WindowBase::draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)
 {
-	XDrawLine(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
-		top_level->gc, 
-		x1, 
-		y1, 
-		x2, 
-		y2);
+// Some X drivers can't draw 0 length lines
+	if(x1 == x2 && y1 == y2)
+	{
+		draw_pixel(x1, y1, pixmap);
+	}
+	else
+	{
+		XDrawLine(top_level->display, 
+			pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
+			top_level->gc, 
+			x1, 
+			y1, 
+			x2, 
+			y2);
+	}
 }
 
 void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap)
@@ -394,8 +435,31 @@ void BC_WindowBase::draw_rectangle(int x, int y, int w, int h)
 		h - 1);
 }
 
-void BC_WindowBase::draw_3d_border(int x, int y, int w, int h, 
-	int light1, int light2, int shadow1, int shadow2)
+void BC_WindowBase::draw_3d_border(int x, 
+	int y, 
+	int w, 
+	int h, 
+	int is_down)
+{
+	draw_3d_border(x, 
+		y, 
+		w, 
+		h, 
+		top_level->get_resources()->border_shadow2,
+		top_level->get_resources()->border_shadow1, 
+		top_level->get_resources()->border_light1, 
+		top_level->get_resources()->border_light2);
+}
+
+
+void BC_WindowBase::draw_3d_border(int x, 
+	int y, 
+	int w, 
+	int h, 
+	int light1, 
+	int light2, 
+	int shadow1, 
+	int shadow2)
 {
 	int lx, ly, ux, uy;
 

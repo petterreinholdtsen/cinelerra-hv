@@ -191,6 +191,7 @@ int CommonRender::restart_playback()
 	delete_vconsole();
 	create_modules();
 	build_virtual_console();
+//vconsole->dump();
 	start_plugins();
 //printf("CommonRender::restart_playback %d\n", __LINE__);
 

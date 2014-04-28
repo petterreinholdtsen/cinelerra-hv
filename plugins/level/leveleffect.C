@@ -232,22 +232,6 @@ void SoundLevelEffect::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-int SoundLevelEffect::load_defaults()
-{
-	defaults = new BC_Hash(BCASTDIR "soundlevel.rc");
-	defaults->load();
-
-	config.duration = defaults->get("DURATION", config.duration);
-	return 0;
-}
-
-int SoundLevelEffect::save_defaults()
-{
-	defaults->update("DURATION", config.duration);
-	defaults->save();
-
-	return 0;
-}
 
 void SoundLevelEffect::update_gui()
 {

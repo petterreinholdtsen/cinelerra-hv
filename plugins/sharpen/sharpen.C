@@ -179,35 +179,6 @@ void SharpenMain::update_gui()
 	}
 }
 
-int SharpenMain::load_defaults()
-{
-	char directory[1024], string[1024];
-// set the default directory
-	sprintf(directory, "%ssharpen.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.sharpness = defaults->get("SHARPNESS", config.sharpness);
-	config.interlace = defaults->get("INTERLACE", config.interlace);
-	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
-	config.luminance = defaults->get("LUMINANCE", config.luminance);
-//printf("SharpenMain::load_defaults 1 %f %d %d %d\n", sharpness, interlace, horizontal, luminance);
-	return 0;
-}
-
-int SharpenMain::save_defaults()
-{
-//printf("SharpenMain::save_defaults 1 %f %d %d %d\n", sharpness, interlace, horizontal, luminance);
-	defaults->update("SHARPNESS", config.sharpness);
-	defaults->update("INTERLACE", config.interlace);
-	defaults->update("HORIZONTAL", config.horizontal);
-	defaults->update("LUMINANCE", config.luminance);
-	defaults->save();
-	return 0;
-}
-
 
 
 

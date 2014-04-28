@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 
 #include "assets.inc"
+#include "bctimer.inc"
 #include "bcwindowbase.inc"
 #include "cache.inc"
 #include "edit.inc"
@@ -119,6 +120,10 @@ public:
 	Asset *default_asset;
 
 // Created locally
+	Timer *timer;
+// Calculate frames per second for the renderfarm table.
+	float frames_per_second;
+	int64_t total_samples_rendered;
 	Asset *asset;
 	Samples **audio_output;
 	int64_t audio_position;

@@ -105,9 +105,6 @@ public:
 	int64_t local_to_edl(int64_t position);
 	int64_t edl_to_local(int64_t position);
 
-	void send_render_gui(void *data, int size);
-	void plugin_render_gui(void *data, int size);
-	virtual void render_gui(void *data, int size) {};
 
 // point to the start of the buffers
 	ArrayList<float**> input_ptr_master;

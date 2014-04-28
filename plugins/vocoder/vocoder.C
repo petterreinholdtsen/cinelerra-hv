@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,35 @@
  * 
  */
 
+
+// Originally from the following:
+/* vocoder.c
+   Version 0.3
+
+   LADSPA Unique ID: 1441
+
+   Version 0.3
+   Added support for changing bands in real time 2003-12-09
+
+   Version 0.2
+   Adapted to LADSPA by Josh Green <jgreen@users.sourceforge.net>
+   15.6.2001 (for the LinuxTag 2001!)
+
+   Original program can be found at:
+   http://www.sirlab.de/linux/
+   Author: Achim Settelmeier <settel-linux@sirlab.de>
+*/
+
+
+
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
 #include "language.h"
-#include "picon_png.h"
 #include "samples.h"
+#include "theme.h"
 #include "units.h"
 #include "vframe.h"
 #include "vocoder.h"
@@ -49,20 +70,78 @@ REGISTER_PLUGIN(Vocoder)
 
 //#define USE_BANDWIDTH
 
+const double decay_table[] =
+{
+  1/100.0,
+  1/100.0, 1/100.0, 1/100.0,
+  1/125.0, 1/125.0, 1/125.0,
+  1/166.0, 1/166.0, 1/166.0,
+  1/200.0, 1/200.0, 1/200.0,
+  1/250.0, 1/250.0, 1/250.0
+};
 
+
+VocoderBand::VocoderBand()
+{
+	reset();
+}
+
+void VocoderBand::reset()
+{
+	c = f = att = 0;
+
+	freq = 0;
+	low1 = low2 = 0;
+	mid1 = mid2 = 0;
+	high1 = high2 = 0;
+	y = 0;
+}
+
+void VocoderBand::copy_from(VocoderBand *src)
+{
+	c = src->c;
+	f = src->f;
+	att = src->att;
+
+	freq = src->freq;
+	low1 = src->low1;
+	low2 = src->low2;
+	mid1 = src->mid1;
+	mid2 = src->mid2;
+	high1 = src->high1;
+	high2 = src->high2;
+	y = src->y;
+}
+
+
+VocoderOut::VocoderOut()
+{
+	reset();
+}
+
+void VocoderOut::reset()
+{
+	decay = 0;
+	oldval = 0;
+	level = 0;  	 /* 0.0 - 1.0 level of this output band */
+}
 
 
 VocoderConfig::VocoderConfig()
 {
 	wetness = INFINITYGAIN;
 	carrier_track = 0;
+	bands = MAX_BANDS;
+	level = 0.0;
 }
 
 
 int VocoderConfig::equivalent(VocoderConfig &that)
 {
 	if(!EQUIV(wetness, that.wetness) ||
-		carrier_track != that.carrier_track) return 0;
+		!EQUIV(level, that.level) ||
+		carrier_track != that.carrier_track ||
+		bands != that.bands) return 0;
 	return 1;
 }
 
@@ -70,6 +149,9 @@ void VocoderConfig::copy_from(VocoderConfig &that)
 {
 	wetness = that.wetness;
 	carrier_track = that.carrier_track;
+	bands = that.bands;
+	level = that.level;
+	CLAMP(bands, 1, MAX_BANDS);
 }
 
 void VocoderConfig::interpolate(VocoderConfig &prev, 
@@ -81,7 +163,10 @@ void VocoderConfig::interpolate(VocoderConfig &prev,
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	wetness = prev.wetness * prev_scale + next.wetness * next_scale;
+	level = prev.level * prev_scale + next.level * next_scale;
 	carrier_track = prev.carrier_track;
+	bands = prev.bands;
+	CLAMP(bands, 1, MAX_BANDS);
 }
 
 
@@ -104,6 +189,23 @@ VocoderWetness::VocoderWetness(Vocoder *plugin, int x, int y)
 int VocoderWetness::handle_event()
 {
 	plugin->config.wetness = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+VocoderLevel::VocoderLevel(Vocoder *plugin, int x, int y)
+ : BC_FPot(x, y, plugin->config.level, INFINITYGAIN, 40)
+{
+	this->plugin = plugin;
+}
+
+int VocoderLevel::handle_event()
+{
+	plugin->config.level = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -140,6 +242,30 @@ int VocoderCarrier::handle_event()
 
 
 
+VocoderBands::VocoderBands(Vocoder *plugin, 
+	VocoderWindow *window, 
+	int x, 
+	int y)
+ : BC_TumbleTextBox(window,
+ 	plugin->config.bands, 
+	1,
+	MAX_BANDS,
+	x, 
+	y,
+	100)
+{
+	this->plugin = plugin;
+}
+
+int VocoderBands::handle_event()
+{
+	plugin->config.bands = atoi(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
 
 
 VocoderWindow::VocoderWindow(Vocoder *plugin)
@@ -159,22 +285,41 @@ VocoderWindow::~VocoderWindow()
 
 void VocoderWindow::create_objects()
 {
-	int x = 10, y = 10;
+	int x = plugin->get_theme()->widget_border;
+	int y = plugin->get_theme()->widget_border;
 	BC_Title *title = 0;
 
-	add_subwindow(title = new BC_Title(x, y + 10, _("Wetness:")));
-	add_subwindow(wetness = new VocoderWetness(plugin, x + title->get_w() + 10, y));
-	y += wetness->get_h();
+	int x1 = x;
+	int y1 = y;
+	add_subwindow(title = new BC_Title(x, y, _("Wetness:")));
+	int x2 = x + title->get_w() + plugin->get_theme()->widget_border;
+	y += BC_Pot::calculate_h() + plugin->get_theme()->widget_border;
+	add_subwindow(title = new BC_Title(x, y, _("Level:")));
+	x2 = MAX(x2, x + title->get_w() + plugin->get_theme()->widget_border);
 
+	x = x2;
+	y = y1;
+	add_subwindow(wetness = new VocoderWetness(plugin, x, y));
+	y += wetness->get_h() + plugin->get_theme()->widget_border;
+	add_subwindow(level = new VocoderLevel(plugin, x, y));
+	y += level->get_h() + plugin->get_theme()->widget_border;
 
-
-	add_subwindow(title = new BC_Title(x, y + 10, _("Carrier Track:")));
+	x = x1;
+	add_subwindow(title = new BC_Title(x, y, _("Carrier Track:")));
 	output = new VocoderCarrier(plugin, 
 		this, 
-		x + title->get_w() + 10, 
+		x + title->get_w() + plugin->get_theme()->widget_border, 
 		y);
 	output->create_objects();
-	y += 50;
+	y += output->get_h() + plugin->get_theme()->widget_border;
+
+	add_subwindow(title = new BC_Title(x, y, _("Bands:")));
+	bands = new VocoderBands(plugin, 
+		this, 
+		x + title->get_w() + plugin->get_theme()->widget_border, 
+		y);
+	bands->create_objects();
+	y += bands->get_h() + plugin->get_theme()->widget_border;
 
 	show_window();
 }
@@ -184,124 +329,13 @@ void VocoderWindow::create_objects()
 void VocoderWindow::update_gui()
 {
 	wetness->update(plugin->config.wetness);
+	level->update(plugin->config.level);
 	output->update((int64_t)plugin->config.carrier_track);
+	bands->update((int64_t)plugin->config.bands);
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-VocoderFFT::VocoderFFT(Vocoder *plugin)
- : CrossfadeFFT()
-{
-	this->plugin = plugin;
-	is_carrier = 0;
-}
-
-VocoderFFT::~VocoderFFT()
-{
-}
-
-
-int VocoderFFT::signal_process()
-{
-	double wetness = DB::fromdb(plugin->config.wetness);
-	if(EQUIV(plugin->config.wetness, INFINITYGAIN)) wetness = 0;
-
-
-printf("VocoderFFT::signal_process %d channel=%d current_window=%d is_carrier=%d\n", 
-__LINE__, 
-channel, 
-plugin->current_window,
-is_carrier);
-
-
-// Compute the envelope of the carrier
-	if(is_carrier)
-	{
-// Get current window
-		if(plugin->current_window >= plugin->carrier_windows)
-		{
-			double **new_carrier_real = new double*[plugin->carrier_windows + 1];
-			double **new_carrier_imag = new double*[plugin->carrier_windows + 1];
-			for(int i = 0; i < plugin->carrier_windows; i++)
-            {
-				new_carrier_real[i] = plugin->carrier_real[i];
-                new_carrier_imag[i] = plugin->carrier_imag[i];
-			}
-
-            new_carrier_real[plugin->carrier_windows] = new double[window_size / 2];
-            new_carrier_imag[plugin->carrier_windows] = new double[window_size / 2];
-
-			delete [] plugin->carrier_real;
-			delete [] plugin->carrier_imag;
-			plugin->carrier_real = new_carrier_real;
-			plugin->carrier_imag = new_carrier_imag;
-			plugin->carrier_windows++;
-		}
-
-// Copy current window
-		double *carrier_real = plugin->carrier_real[plugin->current_window];
-		double *carrier_imag = plugin->carrier_imag[plugin->current_window];
-		for(int i = 0; i < window_size / 2; i++)
-		{
-            carrier_real[i] = freq_real[i];
-            carrier_imag[i] = freq_imag[i];
-		}
-
-		plugin->current_window++;
-	}
-	else
-// Modulate carrier envelope with this channel
-	{
-    	double *carrier_real = plugin->carrier_real[plugin->current_window];
-		double *carrier_imag = plugin->carrier_imag[plugin->current_window];
-
-// Write to output
-		for(int i = 0; i < window_size / 2; i++)
-		{
-            double magnitude = sqrt(freq_real[i] * freq_real[i] +
-                freq_imag[i] * freq_imag[i]) / (window_size / 2);
-//printf("%.2f\n", value);
-			freq_real[i] = (magnitude + wetness) * carrier_real[i];
-			freq_imag[i] = (magnitude + wetness) * carrier_imag[i];
-		}
-
-
-		plugin->current_window++;
-//printf("VocoderFFT::signal_process %d\n", 
-//__LINE__);
-	}
-
-//printf("VocoderFFT::signal_process %d\n", 
-//__LINE__);
-	symmetry(window_size, freq_real, freq_imag);
-	return 0;
-}
-
-int VocoderFFT::read_samples(int64_t output_sample, 
-	int samples, 
-	Samples *buffer)
-{
-// printf("VocoderFFT::read_samples %d channel=%d position=%lld\n", 
-// __LINE__, 
-// channel,
-// output_sample);
-
-	return plugin->read_samples(buffer,
-		channel,
-		plugin->get_samplerate(),
-		output_sample,
-		samples);
-}
 
 
 
@@ -313,40 +347,15 @@ int VocoderFFT::read_samples(int64_t output_sample,
 Vocoder::Vocoder(PluginServer *server)
  : PluginAClient(server)
 {
-	carrier_real = 0;
-	carrier_imag = 0;
-	carrier_windows = 0;
-	fft = 0;
 	need_reconfigure = 1;
+	current_bands = 0;
 }
 
 Vocoder::~Vocoder()
 {
-	if(fft)
-	{
-		for(int i = 0; i < PluginClient::get_total_buffers(); i++)
-			delete fft[i];
-
-		delete [] fft;
-	}
-	
-	if(carrier_real)
-	{
-		for(int i = 0; i < carrier_windows; i++)
-			delete [] carrier_real[i];
-		delete [] carrier_real;
-	}
-	
-	if(carrier_imag)
-	{
-		for(int i = 0; i < carrier_windows; i++)
-			delete [] carrier_imag[i];
-		delete [] carrier_imag;
-	}
 }
 
 NEW_WINDOW_MACRO(Vocoder, VocoderWindow)
-NEW_PICON_MACRO(Vocoder)
 
 LOAD_CONFIGURATION_MACRO(Vocoder, VocoderConfig)
 
@@ -370,7 +379,9 @@ void Vocoder::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("VOCODER"))
 			{
 				config.wetness = input.tag.get_property("WETNESS", config.wetness);
+				config.level = input.tag.get_property("LEVEL", config.level);
 				config.carrier_track = input.tag.get_property("OUTPUT", config.carrier_track);
+				config.bands = input.tag.get_property("BANDS", config.bands);
 			}
 		}
 	}
@@ -383,7 +394,9 @@ void Vocoder::save_data(KeyFrame *keyframe)
 
 	output.tag.set_title("VOCODER");
 	output.tag.set_property("WETNESS", config.wetness);
+	output.tag.set_property("LEVEL", config.level);
 	output.tag.set_property("OUTPUT", config.carrier_track);
+	output.tag.set_property("BANDS", config.bands);
 	output.append_tag();
 	output.append_newline();
 
@@ -392,17 +405,50 @@ void Vocoder::save_data(KeyFrame *keyframe)
 
 void Vocoder::reconfigure()
 {
-	if(!fft)
+	need_reconfigure = 0;
+	
+	if(current_bands != config.bands)
 	{
-		fft = new VocoderFFT*[PluginClient::get_total_buffers()];
-		for(int i = 0; i < PluginClient::get_total_buffers(); i++)
+		current_bands = config.bands;
+		for(int i = 0; i < config.bands; i++)
 		{
-			fft[i] = new VocoderFFT(this);
-			fft[i]->initialize(WINDOW_SIZE);
+			formant_bands[i].reset();
+			double a = 16.0 * i / (double)current_bands;
+
+			if(a < 4.0)
+				formant_bands[i].freq = 150 + 420 * a / 4.0;
+			else
+				formant_bands[i].freq = 600 * pow (1.23, a - 4.0);
+
+		  	double c = formant_bands[i].freq * 2 * M_PI / get_samplerate();
+		  	formant_bands[i].c = c * c;
+
+		  	formant_bands[i].f = 0.4 / c;
+		  	formant_bands[i].att =
+	    		1  / (6.0 + ((exp (formant_bands[i].freq
+				    / get_samplerate()) - 1) * 10));
+
+		  carrier_bands[i].copy_from(&formant_bands[i]);
+
+		  output_bands[i].decay = decay_table[(int)a];
 		}
 	}
+}
 
-	need_reconfigure = 0;
+void Vocoder::do_bandpasses(VocoderBand *bands, double sample)
+{
+  	for(int i = 0; i < current_bands; i++)
+    {
+      	bands[i].high1 = sample - bands[i].f * bands[i].mid1 - bands[i].low1;
+      	bands[i].mid1 += bands[i].high1 * bands[i].c;
+      	bands[i].low1 += bands[i].mid1;
+
+      	bands[i].high2 = bands[i].low1 - bands[i].f * bands[i].mid2 - 
+			bands[i].low2;
+      	bands[i].mid2 += bands[i].high2 * bands[i].c;
+      	bands[i].low2 += bands[i].mid2;
+      	bands[i].y = bands[i].high2 * bands[i].att;
+    }
 }
 
 
@@ -417,33 +463,52 @@ int Vocoder::process_buffer(int64_t size,
 // Process all except output channel
 	int carrier_track = config.carrier_track;
 	CLAMP(carrier_track, 0, PluginClient::get_total_buffers() - 1);
+	int formant_track = 0;
+	if(carrier_track == 0) formant_track = 1;
+	CLAMP(formant_track, 0, PluginClient::get_total_buffers() - 1);
 
 
-// Process carrier channel
-	current_window = 0;
-	fft[carrier_track]->is_carrier = 1;
-	fft[carrier_track]->channel = carrier_track;
-	fft[carrier_track]->process_buffer(start_position, 
-		size, 
-		buffer[carrier_track], 
-		get_direction());
-
-
-// Process modulator channels & write output
-//printf("Vocoder::process_buffer %d\n", __LINE__);
-	for(int i = 0; i < PluginClient::get_total_buffers(); i++)
+// Copy level controls to band levels
+	for(int i = 0; i < current_bands; i++)
 	{
-		if(i != carrier_track)
+		output_bands[i].level = 1.0;
+	}
+
+	
+	for(int i = 0; i < get_total_buffers(); i++)
+	{
+		read_samples(buffer[i],
+			i,
+			get_samplerate(),
+			start_position,
+			size);
+	}
+
+	double *carrier_samples = buffer[carrier_track]->get_data();
+	double *formant_samples = buffer[formant_track]->get_data();
+	double *output = buffer[0]->get_data();
+	double wetness = DB::fromdb(config.wetness);
+	double level = DB::fromdb(config.level);
+	for(int i = 0; i < size; i++)
+	{
+		do_bandpasses(carrier_bands, carrier_samples[i]);
+		do_bandpasses(formant_bands, formant_samples[i]);
+		
+		output[i] *= wetness;
+		double accum = 0;
+		for(int j = 0; j < current_bands; j++)
 		{
-//printf("Vocoder::process_buffer %d %d\n", __LINE__, i);
-			current_window = 0;
-			fft[i]->is_carrier = 0;
-			fft[i]->channel = i;
-			fft[i]->process_buffer(start_position, 
-				size, 
-				buffer[i], 
-				get_direction());
+			output_bands[j].oldval = output_bands[j].oldval +
+	    	  	(fabs (formant_bands[j].y) - 
+		    		output_bands[j].oldval) * 
+	    	 	output_bands[j].decay;
+			double x = carrier_bands[j].y * output_bands[j].oldval;
+			accum += x * output_bands[j].level;
 		}
+
+		accum *= level;
+
+		output[i] += accum;
 	}
 
 	return 0;
@@ -457,37 +522,12 @@ int Vocoder::process_buffer(int64_t size,
 
 
 
-int Vocoder::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%sparametriceq.rc", BCASTDIR);
-	defaults = new BC_Hash(directory);
-	defaults->load();
-	
-	config.wetness = defaults->get("WETNESS", config.wetness);
-	config.carrier_track = defaults->get("OUTPUT", config.carrier_track);
-	return 0;
-}
-
-int Vocoder::save_defaults()
-{
-	char string[BCTEXTLEN];
-
-	defaults->update("WETNESS", config.wetness);
-	defaults->update("OUTPUT", config.carrier_track);
-
-
-	defaults->save();
-
-	return 0;
-}
 
 
 void Vocoder::reset()
 {
 	need_reconfigure = 1;
 	thread = 0;
-	fft = 0;
 }
 
 void Vocoder::update_gui()

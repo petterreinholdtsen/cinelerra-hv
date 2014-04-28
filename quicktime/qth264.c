@@ -319,13 +319,15 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 // Write header
 				if(got_sps && got_pps)
 				{
-printf("encode %d\n", __LINE__);
-int j;
-for(j = 0; j < header_size; j++)
-{
-printf("%02x ", header[j]);
-}
-printf("\n");
+/*
+ * printf("encode %d\n", __LINE__);
+ * int j;
+ * for(j = 0; j < header_size; j++)
+ * {
+ * printf("%02x ", header[j]);
+ * }
+ * printf("\n");
+ */
 					quicktime_set_avcc_header(avcc,
 		  				header, 
 		  				header_size);

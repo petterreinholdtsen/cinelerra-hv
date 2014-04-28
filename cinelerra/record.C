@@ -140,7 +140,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	file = 0;
 	editing_batch = 0;
 	current_batch = 0;
-	picture = new PictureConfig(mwindow->defaults);
+	picture = new PictureConfig();
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
 	window_lock = new Mutex("Record::window_lock");
@@ -349,6 +349,8 @@ void Record::source_to_text(char *string, Batch *batch)
 		case VIDEO4LINUX2:
 		case CAPTURE_BUZ:
 		case VIDEO4LINUX2JPEG:
+		case CAPTURE_JPEG_WEBCAM:
+		case CAPTURE_YUYV_WEBCAM:
 			if(batch->channel < 0 || batch->channel >= channeldb->size())
 				sprintf(string, _("None"));
 			else
@@ -835,11 +837,14 @@ void Record::toggle_label()
 void Record::get_audio_write_length(int &buffer_size, 
 	int &fragment_size)
 {
-	fragment_size = 1;
-	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) 
-		fragment_size *= 2;
-	fragment_size /= 2;
-	CLAMP(fragment_size, 1024, 32768);
+//	fragment_size = 1;
+//	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) 
+//		fragment_size *= 2;
+//	fragment_size /= 2;
+//	CLAMP(fragment_size, 1024, 32768);
+
+// Make sure size written is a multiple of fragment
+	fragment_size = mwindow->edl->session->record_fragment_size;
 
 	for(buffer_size = fragment_size; 
 		buffer_size < mwindow->edl->session->record_write_length; 
@@ -917,13 +922,21 @@ double Record::current_display_position()
 
 
 	if(default_asset->video_data)
+	{
+// printf("Record::current_display_position %d %lld %lld\n",
+// __LINE__,
+// get_current_batch()->current_frame,
+// get_current_batch()->file_offset);
 		return (double)get_current_batch()->current_frame / 
 			default_asset->frame_rate + 
 			get_current_batch()->file_offset;
+	}
 	else
+	{
 		return (double)get_current_batch()->current_sample / 
 			default_asset->sample_rate + 
 			get_current_batch()->file_offset;
+	}
 	return 0;
 }
 
@@ -1020,6 +1033,7 @@ int Record::open_input_devices(int duplex, int context)
 	int video_opened = 0;
 	AudioInConfig *aconfig_in = mwindow->edl->session->aconfig_in;
 
+//printf("Record::open_input_devices %d\n", __LINE__);
 
 // Create devices
 	if(default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
@@ -1100,6 +1114,7 @@ int Record::open_input_devices(int duplex, int context)
 // Set the device configuration
 		set_channel(get_current_channel());
 	}
+//printf("Record::open_input_devices %d\n", __LINE__);
 
 	return 0;
 }
@@ -1228,17 +1243,19 @@ int Record::stop_operation(int resume_monitor)
 // Return the size of the fragments to read from the audio device.
 int Record::get_in_length()
 {
-	int64_t fragment_size = 1;
-	while(fragment_size < default_asset->sample_rate / 
-		mwindow->edl->session->record_speed)
-		fragment_size *= 2;
-	fragment_size /= 2;
-	fragment_size = MAX(fragment_size, 512);
+// 	int64_t fragment_size = 1;
+// 	while(fragment_size < default_asset->sample_rate / 
+// 		mwindow->edl->session->record_speed)
+// 		fragment_size *= 2;
+// 	fragment_size /= 2;
+// 	fragment_size = MAX(fragment_size, 512);
+// 
+// 
+// //fragment_size = 512;
+// //printf("Record::get_in_length %d %d\n", __LINE__, fragment_size);
+// 	return fragment_size;
 
-
-//fragment_size = 512;
-//printf("Record::get_in_length %d %d\n", __LINE__, fragment_size);
-	return fragment_size;
+	return mwindow->edl->session->record_fragment_size;
 }
 
 int Record::set_video_picture()
@@ -1276,8 +1293,12 @@ int Record::set_channel(int channel)
 		if(vdevice)
 		{
 			vdevice->set_channel(channeldb->get(channel));
-			set_video_picture();
 		}
+	}
+
+	if(vdevice)
+	{
+		set_video_picture();
 	}
 	return 0;
 }

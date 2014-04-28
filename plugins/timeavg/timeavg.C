@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"
-#include "plugincolors.h"
+#include "cicolors.h"
 #include "timeavg.h"
 #include "timeavgwindow.h"
 #include "vframe.h"
@@ -984,36 +984,6 @@ void TimeAvgMain::transfer_accum(VFrame *frame)
 }
 
 
-int TimeAvgMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%stimeavg.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.frames = defaults->get("FRAMES", config.frames);
-	config.mode = defaults->get("MODE", config.mode);
-	config.paranoid = defaults->get("PARANOID", config.paranoid);
-	config.nosubtract = defaults->get("NOSUBTRACT", config.nosubtract);
-	config.threshold = defaults->get("THRESHOLD", config.threshold);
-	config.border = defaults->get("BORDER", config.border);
-	return 0;
-}
-
-int TimeAvgMain::save_defaults()
-{
-	defaults->update("FRAMES", config.frames);
-	defaults->update("MODE", config.mode);
-	defaults->update("PARANOID", config.paranoid);
-	defaults->update("NOSUBTRACT", config.nosubtract);
-	defaults->update("THRESHOLD", config.threshold);
-	defaults->update("BORDER", config.border);
-	defaults->save();
-	return 0;
-}
 
 int TimeAvgMain::load_configuration()
 {

@@ -722,62 +722,6 @@ void SelTempAvgMain::transfer_accum(VFrame *frame)
 }
 
 
-int SelTempAvgMain::load_defaults()
-{
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
-// set the default directory
-	sprintf(directory, "%sdenoiseseltempavg.rc", BCASTDIR);
-
-// load the defaults
-	defaults = new BC_Hash(directory);
-	defaults->load();
-
-	config.frames = defaults->get("FRAMES", config.frames);
-	config.method = defaults->get("METHOD", config.method);
-	config.offsetmode = defaults->get("OFFSETMODE", config.offsetmode);
-	config.paranoid = defaults->get("PARANOID", config.paranoid);
-	config.nosubtract = defaults->get("NOSUBTRACT", config.nosubtract);
-	config.offset_restartmarker_keyframe = defaults->get("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-	config.offset_fixed_value = defaults->get("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
-	config.gain = defaults->get("GAIN", config.gain);
-
-	config.avg_threshold_RY = defaults->get("AVG_THRESHOLD_RY", config.avg_threshold_GU); 
-	config.avg_threshold_GU = defaults->get("AVG_THRESHOLD_GU", config.avg_threshold_GU); 
-	config.avg_threshold_BV = defaults->get("AVG_THRESHOLD_BV", config.avg_threshold_BV); 
-	config.std_threshold_RY = defaults->get("STD_THRESHOLD_RY", config.std_threshold_RY); 
-	config.std_threshold_GU = defaults->get("STD_THRESHOLD_GU", config.std_threshold_GU); 
-	config.std_threshold_BV = defaults->get("STD_THRESHOLD_BV", config.std_threshold_BV);
-	config.mask_RY = defaults->get("MASK_RY", config.mask_GU); 
-	config.mask_GU = defaults->get("MASK_GU", config.mask_GU); 
-	config.mask_BV = defaults->get("MASK_BV", config.mask_BV); 
-	return 0;
-}
-
-int SelTempAvgMain::save_defaults()
-{
-	defaults->update("FRAMES", config.frames);
-	defaults->update("METHOD", config.method);
-	defaults->update("OFFSETMODE", config.offsetmode);
-	defaults->update("PARANOID", config.paranoid);
-	defaults->update("NOSUBTRACT", config.nosubtract);
-	defaults->update("OFFSETMODE_RESTARTMODE_KEYFRAME", config.offset_restartmarker_keyframe);
-	defaults->update("OFFSETMODE_FIXED_VALUE", config.offset_fixed_value);
-	defaults->update("GAIN", config.gain);
-
-	defaults->update("AVG_THRESHOLD_RY", config.avg_threshold_RY); 
-	defaults->update("AVG_THRESHOLD_GU", config.avg_threshold_GU);
-	defaults->update("AVG_THRESHOLD_BV", config.avg_threshold_BV); 
-	defaults->update("STD_THRESHOLD_RY", config.std_threshold_RY);
-	defaults->update("STD_THRESHOLD_GU", config.std_threshold_GU); 
-	defaults->update("STD_THRESHOLD_BV", config.std_threshold_BV);
-
-	defaults->update("MASK_RY", config.mask_RY);
-	defaults->update("MASK_GU", config.mask_GU); 
-	defaults->update("MASK_BV", config.mask_BV);
-
-	defaults->save();
-	return 0;
-}
 
 int SelTempAvgMain::load_configuration()
 {

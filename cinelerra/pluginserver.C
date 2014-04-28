@@ -205,6 +205,17 @@ int PluginServer::set_path(char *path)
 	strcpy(this->path, path);
 }
 
+char* PluginServer::get_path()
+{
+	return this->path;
+}
+
+int PluginServer::get_synthesis()
+{
+	return synthesis;
+}
+
+
 void PluginServer::set_title(const char *string)
 {
 	if(title) delete [] title;
@@ -232,7 +243,7 @@ int PluginServer::open_plugin(int master,
 	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
-
+	this->lad_index = lad_index;
 
 
 	if(!new_plugin && !plugin_fd) plugin_fd = dlopen(path, RTLD_NOW);
@@ -308,9 +319,15 @@ int PluginServer::open_plugin(int master,
 
 
 // Run initialization functions
-// Don't load defaults when probing the directory.
-	if(!master) client->load_defaults();
 	realtime = client->is_realtime();
+// Don't load defaults when probing the directory.
+	if(!master)
+	{
+		if(realtime)
+			client->load_defaults_xml();
+		else
+			client->load_defaults();
+	}
 	audio = client->is_audio();
 	video = client->is_video();
 	theme = client->is_theme();
@@ -323,6 +340,7 @@ int PluginServer::open_plugin(int master,
 
 	if(master && (realtime || transition))
 	{
+// This adds 50ms to initialization on a 1Ghz laptop
 		picon = client->new_picon();
 	}
 
@@ -372,6 +390,113 @@ void PluginServer::render_stop()
 		client->render_stop();
 }
 
+void PluginServer::write_table(FILE *fd)
+{
+	if(!fd) return;
+
+	char new_path[BCTEXTLEN];
+	strcpy(new_path, path);
+	char *ptr = strrchr(new_path, '/');
+	if(ptr) ptr++;
+	if(!ptr) ptr = new_path;
+	fprintf(fd, "\"%s\" \"%s\" %d %d %d %d %d %d %d %d %d %d\n", 
+		ptr, 
+		title, 
+		audio,
+		video,
+		theme,
+		realtime,
+		fileio,
+		uses_gui,
+		multichannel,
+		synthesis,
+		transition,
+		is_lad,
+		lad_index);
+}
+
+int PluginServer::read_table(char *text)
+{
+	char string[BCTEXTLEN];
+	char string2[BCTEXTLEN];
+	int result = 0;
+
+// path
+	char *ptr = text;
+	char *ptr2 = 0;
+	while(*ptr != '\"' && *ptr != 0) ptr++;
+	
+	if(*ptr != 0)
+	{
+		ptr++;
+		ptr2 = ptr;
+		while(*ptr2 != '\"' && *ptr2 != 0) ptr2++;
+		
+		if(*ptr2 != 0)
+		{
+			memcpy(string, ptr, ptr2 - ptr);
+			string[ptr2 - ptr] = 0;
+			sprintf(string2, "%s/%s", this->path, string);
+			set_path(string2);
+//printf("PluginServer::read_table %d path=%s\n", __LINE__, string2);
+		}
+		else
+			result = 1;
+	}
+	else
+		result = 1;
+
+// title
+	if(ptr2 && *ptr2 != 0)
+	{
+		ptr2++;
+		ptr = ptr2;
+		while(*ptr != 0 && *ptr != '\"') ptr++;
+		
+		if(*ptr != 0)
+		{
+			ptr++;
+			ptr2 = ptr;
+			while(*ptr2 != '\"' && *ptr2 != 0) ptr2++;
+			
+			if(*ptr2 != 0)
+			{
+				memcpy(string, ptr, ptr2 - ptr);
+				string[ptr2 - ptr] = 0;
+				set_title(string);
+//printf("PluginServer::read_table %d this=%p title=%s\n", __LINE__, this, string);
+			}
+			else
+				result = 1;
+		}
+		else
+			result = 1;
+	}
+	else
+		result = 1;
+
+// Toggles
+	if(ptr2 && *ptr2 != 0)
+	{
+		ptr2++;
+		sscanf(ptr2,
+			"%d %d %d %d %d %d %d %d %d %d",
+			&audio,
+			&video,
+			&theme,
+			&realtime,
+			&fileio,
+			&uses_gui,
+			&multichannel,
+			&synthesis,
+			&transition,
+			&is_lad,
+			&lad_index);
+//write_table(stdout);
+	}
+
+	return result;
+}
 
 int PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
@@ -462,6 +587,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	vclient->direction = direction;
 
 
+	vclient->begin_process_buffer();
 	if(multichannel)
 	{
 		vclient->process_buffer(frame, current_position, frame_rate);
@@ -470,6 +596,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	{
 		vclient->process_buffer(frame[0], current_position, frame_rate);
 	}
+	vclient->end_process_buffer();
 
 	for(int i = 0; i < total_in_buffers; i++)
 		frame[i]->push_prev_effect(title);
@@ -501,6 +628,7 @@ void PluginServer::process_buffer(Samples **buffer,
 			aclient->project_sample_rate;
 
 	aclient->direction = direction;
+	aclient->begin_process_buffer();
 	if(multichannel)
 	{
 		aclient->process_buffer(fragment_size, 
@@ -515,19 +643,20 @@ void PluginServer::process_buffer(Samples **buffer,
 			current_position, 
 			sample_rate);
 	}
+	aclient->end_process_buffer();
 }
 
 
 void PluginServer::send_render_gui(void *data)
 {
 //printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
-	if(attachmentpoint) attachmentpoint->render_gui(data);
+	if(attachmentpoint) attachmentpoint->render_gui(data, this);
 }
 
 void PluginServer::send_render_gui(void *data, int size)
 {
 //printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
-	if(attachmentpoint) attachmentpoint->render_gui(data, size);
+	if(attachmentpoint) attachmentpoint->render_gui(data, size, this);
 }
 
 void PluginServer::render_gui(void *data)
@@ -732,6 +861,7 @@ int PluginServer::read_frame(VFrame *buffer,
 
 	if(nodes->total > channel)
 	{
+//printf("PluginServer::read_frame %d\n", __LINE__);
 		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
 			start_position,
 			frame_rate,
@@ -740,9 +870,11 @@ int PluginServer::read_frame(VFrame *buffer,
 	else
 	if(modules->total > channel)
 	{
+//printf("PluginServer::read_frame %d\n", __LINE__);
 		result = ((VModule*)modules->values[channel])->render(buffer,
 			start_position,
-			PLAY_FORWARD,
+//			PLAY_FORWARD,
+			client->direction,
 			frame_rate,
 			0,
 			0,
@@ -831,6 +963,7 @@ void PluginServer::update_gui()
 
 	client->total_len = plugin->length;
 	client->source_start = plugin->startproject;
+
 	if(video)
 	{
 		client->source_position = Units::to_int64(
@@ -844,7 +977,8 @@ void PluginServer::update_gui()
 			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->sample_rate);
 	}
-	client->update_gui();
+
+	client->plugin_update_gui();
 }
 
 void PluginServer::update_title()
@@ -888,6 +1022,28 @@ void PluginServer::run_opengl(PluginClient *plugin_client)
 }
 
 // ============================= queries
+
+void PluginServer::get_defaults_path(char *path)
+{
+// Get plugin name from path
+	char *ptr1 = strrchr(get_path(), '/');
+	char *ptr2 = strrchr(get_path(), '.');
+	if(!ptr1) ptr1 = get_path();
+	if(!ptr2) ptr2 = get_path() + strlen(get_path());
+	char string2[BCTEXTLEN];
+	char *ptr3 = string2;
+	while(ptr1 < ptr2)
+	{
+		*ptr3++ = *ptr1++;
+	}
+	*ptr3 = 0;
+	sprintf(path, "%s%s.xml", BCASTDIR, string2);
+}
+
+void PluginServer::save_defaults()
+{
+	if(client) client->save_defaults();
+}
 
 int PluginServer::get_samplerate()
 {
@@ -1107,5 +1263,10 @@ void PluginServer::sync_parameters()
 
 void PluginServer::dump()
 {
-	printf("    PluginServer %s %s\n", path, title);
+	printf("    PluginServer %d %p %s %s %d\n", 
+		__LINE__, 
+		this, 
+		path, 
+		title, 
+		realtime);
 }

@@ -1,12 +1,10 @@
 include ../../global_config
 
-OBJS = ../parametric/$(OBJDIR)/fourier.o \
-	$(OBJDIR)/graphic.o
+OBJS = $(OBJDIR)/graphic.o
 
 OUTPUT = $(PLUGIN_DIR)/graphic.plugin
 
 include ../../plugin_config
 
 
-../parametric/$(OBJDIR)/fourier.o: ../parametric/fourier.C
 $(OBJDIR)/graphic.o: graphic.C

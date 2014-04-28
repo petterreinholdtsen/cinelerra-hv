@@ -91,7 +91,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/quicktime/thirdparty/libogg-1.1.2/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/quicktime/thirdparty/libogg-1.1.2/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/quicktime/thirdparty/libogg-1.1.2/missing --run automake-1.8
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -O20 -ffast-math -fsigned-char -g -O2
@@ -143,7 +143,7 @@ PATH_SEPARATOR = :
 PROFILE = -Wall -W -pg -g -O20 -ffast-math -fsigned-char -g -O2
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 SIZE16 = int16_t
 SIZE32 = int32_t
 SIZE64 = int64_t

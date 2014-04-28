@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,9 +42,6 @@ public:
 		int is_input);
 
 	void update();
-	int button_press_event();
-	int button_release_event();
-	int cursor_motion_event();
 	int input_to_pixel(float input);
 
 	int operation;
@@ -59,6 +56,44 @@ public:
 	HistogramMain *plugin;
 	HistogramWindow *gui;
 };
+
+class HistogramParade : public BC_Toggle
+{
+public:
+	HistogramParade(HistogramMain *plugin, 
+		HistogramWindow *gui,
+		int x, 
+		int y,
+		int value);
+	int handle_event();
+	HistogramMain *plugin;
+	HistogramWindow *gui;
+	int value;
+};
+
+class HistogramCarrot : public BC_Toggle
+{
+public:
+	HistogramCarrot(HistogramMain *plugin, 
+		HistogramWindow *gui,
+		int x, 
+		int y);
+	virtual ~HistogramCarrot();
+
+	void update();
+	float* get_value();
+	int cursor_motion_event();
+	int button_release_event();
+	int button_press_event();
+
+	int starting_x;
+	int offset_x;
+	int offset_y;	
+	int drag_operation;
+	HistogramMain *plugin;
+	HistogramWindow *gui;
+};
+
 
 class HistogramAuto : public BC_CheckBox
 {
@@ -113,34 +148,20 @@ public:
 	HistogramMain *plugin;
 };
 
-class HistogramOutputText : public BC_TumbleTextBox
+class HistogramText : public BC_TumbleTextBox
 {
 public:
-	HistogramOutputText(HistogramMain *plugin,
+	HistogramText(HistogramMain *plugin,
 		HistogramWindow *gui,
 		int x,
-		int y,
-		float *output);
-	int handle_event();
-	HistogramMain *plugin;
-	float *output;
-};
-
-class HistogramInputText : public BC_TumbleTextBox
-{
-public:
-	HistogramInputText(HistogramMain *plugin,
-		HistogramWindow *gui,
-		int x,
-		int y,
-		int do_x);
+		int y);
 
 	int handle_event();
 	void update();
+	float* get_value();
 
 	HistogramMain *plugin;
 	HistogramWindow *gui;
-	int do_x;
 };
 
 class HistogramCanvas : public BC_SubWindow
@@ -166,13 +187,15 @@ public:
 	~HistogramWindow();
 
 	void create_objects();
-	void update(int do_input);
-	void update_mode();
+	void update(int do_canvases,
+		int do_carrots,
+		int do_text,
+		int do_toggles);
+	void draw_canvas_mode(int mode, int color, int y, int h);
 	void update_canvas();
-	void draw_canvas_overlay();
-	void update_input();
-	void update_output();
 	int keypress_event();
+	int resize_event(int w, int h);
+
 	void get_point_extents(HistogramPoint *current,
 		int *x1, 
 		int *y1, 
@@ -184,12 +207,27 @@ public:
 	HistogramSlider *output;
 	HistogramAuto *automatic;
 	HistogramMode *mode_v, *mode_r, *mode_g, *mode_b /*,  *mode_a */;
-	HistogramOutputText *output_min;
-	HistogramOutputText *output_max;
-	HistogramOutputText *threshold;
-	HistogramInputText *input_x;
-	HistogramInputText *input_y;
+	HistogramParade *parade_on, *parade_off;
+	HistogramText *low_output;
+	HistogramText *high_output;
+	HistogramText *threshold;
+	HistogramText *low_input;
+	HistogramText *high_input;
+	HistogramText *gamma;
 	HistogramCanvas *canvas;
+	HistogramCarrot *low_input_carrot;
+	HistogramCarrot *gamma_carrot;
+	HistogramCarrot *high_input_carrot;
+	HistogramCarrot *low_output_carrot;
+	HistogramCarrot *high_output_carrot;
+	HistogramReset *reset;
+	BC_Title *canvas_title1;
+	BC_Title *canvas_title2;
+	BC_Title *threshold_title;
+	BC_Bar *bar;
+
+// Value to change with keypresses
+	float *active_value;
 	HistogramMain *plugin;
 	int canvas_w;
 	int canvas_h;
@@ -197,7 +235,6 @@ public:
 	int title2_x;
 	int title3_x;
 	int title4_x;
-	BC_Pixmap *max_picon, *mid_picon, *min_picon;
 	HistogramPlot *plot;
 	HistogramSplit *split;
 };

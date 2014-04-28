@@ -88,7 +88,7 @@ AR = ar
 AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/libraw1394-1.2.0/missing --run autoconf
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/libraw1394-1.2.0/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/libraw1394-1.2.0/missing --run automake-1.9
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -130,7 +130,7 @@ PACKAGE_VERSION = 1.2.0
 PATH_SEPARATOR = :
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.2.0
 ac_ct_AR = ar

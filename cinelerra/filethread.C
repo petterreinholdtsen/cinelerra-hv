@@ -428,7 +428,10 @@ int FileThread::start_writing(long buffer_size,
 				for(frame = 0; frame < buffer_size; frame++)
 				{
 					if(compressed)
+					{
 						video_buffer[buffer][layer][frame] = new VFrame;
+//printf("FileThread::start_writing %d %d\n", __LINE__);
+					}
 					else
 					{
 						video_buffer[buffer][layer][frame] = 
@@ -438,7 +441,8 @@ int FileThread::start_writing(long buffer_size,
 								file->asset->height, 
 								color_model,
 								-1);
-// printf("FileThread::start_writing 4 %d %d %d %p\n", 
+// printf("FileThread::start_writing %d %d %d %d %p\n", 
+// __LINE__, 
 // buffer, 
 // layer, 
 // frame, 
@@ -587,9 +591,9 @@ int FileThread::read_frame(VFrame *frame)
 // __LINE__, 
 // this,
 // frame->get_color_model(),
-// frame->get_h(),
+// frame->get_w(),
 // local_frame->frame->get_color_model(),
-// local_frame->frame->get_h());
+// local_frame->frame->get_w());
 			BC_CModels::transfer(frame->get_rows(), 
 				local_frame->frame->get_rows(),
 				frame->get_y(),

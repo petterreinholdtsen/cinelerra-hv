@@ -1,7 +1,6 @@
 #ifndef VIRTUALVNODE_H
 #define VIRTUALVNODE_H
 
-#include "bezierauto.inc"
 #include "fadeengine.inc"
 #include "maskengine.inc"
 #include "plugin.inc"

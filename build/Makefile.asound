@@ -1,6 +1,6 @@
 include global_config
 
-ALSA_DIR := $(shell expr alsa-lib-1.0.2 )
+ALSA_DIR := $(shell expr alsa-lib-1.0.8 )
 
 
 OBJS := \
@@ -28,12 +28,14 @@ OBJS := \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_mulaw.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_alaw.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_adpcm.o \
+	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_iec958.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_rate.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_plug.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_misc.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_mmap.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_multi.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_shm.o \
+	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_softvol.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_file.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_null.o \
 	$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_share.o \
@@ -114,7 +116,7 @@ $(shell mkdir -p $(ALSA_DIR)/$(OBJDIR))
 $(shell mkdir -p $(DIRS) )
 $(shell echo  $(CFLAGS) > $(ALSA_DIR)/$(OBJDIR)/c_flags)
 $(shell echo  $(OBJS) > $(ALSA_DIR)/$(OBJDIR)/objs)
-$(shell cd $(ALSA_DIR)/include && ln -s . alsa )
+$(shell if ! test -L $(ALSA_DIR)/include/alsa \; then cd $(ALSA_DIR)/include \; ln -sf . alsa \; fi )
 
 
 
@@ -124,7 +126,6 @@ all: $(OUTPUT)
 $(OUTPUT): $(OBJS)
 	@echo AR $(OUTPUT)
 	@ar rcs $(OUTPUT) `cat $(ALSA_DIR)/$(OBJDIR)/objs`
-	if ! test -L $(ALSA_DIR)/include/alsa ; then cd $(ALSA_DIR)/include ; ln -sf . alsa ; fi
 
 
 $(OBJS):
@@ -170,12 +171,14 @@ $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_route.o:  			   $(ALSA_DIR)/src/pcm/pcm_route.
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_mulaw.o:  			   $(ALSA_DIR)/src/pcm/pcm_mulaw.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_alaw.o: 				   $(ALSA_DIR)/src/pcm/pcm_alaw.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_adpcm.o:  			   $(ALSA_DIR)/src/pcm/pcm_adpcm.c
+$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_iec958.o:                $(ALSA_DIR)/src/pcm/pcm_iec958.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_rate.o: 				   $(ALSA_DIR)/src/pcm/pcm_rate.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_plug.o: 				   $(ALSA_DIR)/src/pcm/pcm_plug.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_misc.o: 				   $(ALSA_DIR)/src/pcm/pcm_misc.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_mmap.o: 				   $(ALSA_DIR)/src/pcm/pcm_mmap.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_multi.o:  			   $(ALSA_DIR)/src/pcm/pcm_multi.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_shm.o: 				   $(ALSA_DIR)/src/pcm/pcm_shm.c
+$(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_softvol.o: 			   $(ALSA_DIR)/src/pcm/pcm_softvol.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_file.o: 				   $(ALSA_DIR)/src/pcm/pcm_file.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_null.o: 				   $(ALSA_DIR)/src/pcm/pcm_null.c
 $(ALSA_DIR)/$(OBJDIR)/src/pcm/pcm_share.o:  			   $(ALSA_DIR)/src/pcm/pcm_share.c

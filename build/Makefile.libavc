@@ -24,7 +24,7 @@ $(OUTPUT): $(OBJS)
 	ar rcs $(OUTPUT) $(OBJS)
 
 $(OBJS):
-	echo GCC $*.o
+	@echo GCC $*.o
 	@$(GCC) -c $(CFLAGS) $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 

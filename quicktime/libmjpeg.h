@@ -30,7 +30,7 @@ extern "C" {
 
 
 #include <stdio.h>
-#include "jpeg/jpeglib.h"
+#include "jpeglib.h"
 #include <png.h>              /* Need setjmp.h as included by png.h */
 #include "pthread.h"
 

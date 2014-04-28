@@ -69,7 +69,7 @@ public:
 // When not using the VWindow EDL of the master EDL.
 	int edl_shared;
 // Pointer to clip in master EDL.
-	EDL *edl;
+//	EDL *edl;
 };
 
 

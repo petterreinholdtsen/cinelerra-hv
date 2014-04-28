@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "assets.h"
+#include "bctimer.h"
 #include "edl.h"
 #include "filexml.h"
 #include "mainindexes.h"
@@ -9,65 +10,93 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include <string.h>
+#include "undostack.h"
 
 MainUndo::MainUndo(MWindow *mwindow)
 { 
 	this->mwindow = mwindow;
-	undo_before_updated = 0;
+	undo_stack = new UndoStack;
+	last_update = new Timer;
 }
 
 MainUndo::~MainUndo()
 {
+	delete undo_stack;
+	delete last_update;
 }
 
-void MainUndo::update_undo_before(char *description, uint32_t load_flags)
+
+void MainUndo::update_undo_entry(char *description, 
+	uint32_t load_flags,
+	void *creator, 
+	int changes_made)
 {
-	if(!undo_before_updated)
+	FileXML file;
+
+	mwindow->edl->save_xml(mwindow->plugindb, 
+		&file, 
+		"",
+		0,
+		0);
+	file.terminate_string();
+	if(changes_made) mwindow->session->changes_made = 1;
+
+// Test previous entry.
+	int need_new = 1;
+	UndoStackItem *current_entry;
+	if(creator)
 	{
-		FileXML file;
-		mwindow->session->changes_made = 1;
-		mwindow->edl->save_xml(mwindow->plugindb, 
-			&file, 
-			"",
-			0,
-			0);
-		file.terminate_string();
+		if(undo_stack->current)
+		{
+			current_entry = undo_stack->current;
+			if(last_update->get_difference() < 1000 &&
+				current_entry->get_creator() == creator &&
+				current_entry->get_description() &&
+				!strcmp(current_entry->get_description(), description) &&
+				current_entry->get_flags() == load_flags)
+				need_new = 0;
+		}
+	}
 
-		current_entry = undo_stack.push();
-		current_entry->load_flags = load_flags;
-		current_entry->set_data_before(file.string);
-		current_entry->set_description(description);
 
-// the after update is always without a description
-		mwindow->gui->lock_window("MainUndo::update_undo_before");
+	if(need_new)
+		current_entry = undo_stack->push();
+
+	current_entry->set_flags(load_flags);
+	current_entry->set_data(file.string);
+	current_entry->set_description(description);
+	current_entry->set_creator(creator);
+
+// Can't undo only 1 record.
+	if(undo_stack->total() > 1)
+	{
+		mwindow->gui->lock_window("MainUndo::update_undo");
 		mwindow->gui->mainmenu->undo->update_caption(description);
 		mwindow->gui->mainmenu->redo->update_caption("");
 		mwindow->gui->unlock_window();
-
-		undo_before_updated = 1;
 	}
+	last_update->update();
 }
 
-void MainUndo::update_undo_after()
+void MainUndo::update_undo(char *description, uint32_t load_flags)
 {
-	if(undo_before_updated)
-	{
-		FileXML file;
-//printf("MainUndo::update_undo_after 1\n");
-		mwindow->edl->save_xml(mwindow->plugindb, 
-			&file, 
-			"",
-			0,
-			0);
-//printf("MainUndo::update_undo_after 1\n");
-		file.terminate_string();
-//printf("MainUndo::update_undo_after 1\n");
-		current_entry->set_data_after(file.string);
-//printf("MainUndo::update_undo_after 10\n");
-		undo_before_updated = 0;
-	}
+	update_undo_entry(description, load_flags, 0, 1);
 }
 
+void MainUndo::update_undo(char *description, 
+	uint32_t load_flags,
+	void *creator)
+{
+	update_undo_entry(description, load_flags, creator, 1);
+}
+
+void MainUndo::update_undo(char *description, 
+	uint32_t load_flags,
+	void *creator, 
+	int changes_made)
+{
+	update_undo_entry(description, load_flags, creator, changes_made);
+}
 
 
 
@@ -75,50 +104,75 @@ void MainUndo::update_undo_after()
 
 int MainUndo::undo()
 {
-	if(undo_stack.current)
+	if(undo_stack->current)
 	{
-		current_entry = undo_stack.current;
-		if(current_entry->description && mwindow->gui) 
-			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
-		
-		FileXML file;
-		
-		file.read_from_string(current_entry->data_before);
-		load_from_undo(&file, current_entry->load_flags);
-		
-		undo_stack.pull();    // move current back
-		if(mwindow->gui)
+		UndoStackItem *current_entry = undo_stack->current;
+
+		if(current_entry->previous)
 		{
-			current_entry = undo_stack.current;
-			if(current_entry)
-				mwindow->gui->mainmenu->undo->update_caption(current_entry->description);
-			else
-				mwindow->gui->mainmenu->undo->update_caption("");
+			UndoStackItem *prev_entry = current_entry->previous;
+
+// Set the redo text to the current description
+			if(current_entry->get_description() && mwindow->gui) 
+				mwindow->gui->mainmenu->redo->update_caption(
+					current_entry->get_description());
+
+			FileXML file;
+			char *prev_data = prev_entry->get_data();
+			if(prev_data)
+			{
+				file.read_from_string(prev_data);
+				load_from_undo(&file, current_entry->get_flags());
+				delete [] prev_data;
+
+// move current entry back one step
+				undo_stack->pull();    
+
+
+				if(mwindow->gui)
+				{
+// Must be a previous entry to perform undo
+					if(prev_entry->previous)
+						mwindow->gui->mainmenu->undo->update_caption(
+							prev_entry->get_description());
+					else
+						mwindow->gui->mainmenu->undo->update_caption("");
+				}
+			}
 		}
 	}
+
+	reset_creators();
 	return 0;
 }
 
 int MainUndo::redo()
 {
-	current_entry = undo_stack.pull_next();
-	
+// Move current entry forward one step
+	UndoStackItem *current_entry = undo_stack->pull_next();
+
 	if(current_entry)
 	{
 		FileXML file;
-		file.read_from_string(current_entry->data_after);
-		load_from_undo(&file, current_entry->load_flags);
-
-		if(mwindow->gui)
+		char *next_data = current_entry->get_data();
+		if(next_data)
 		{
-			mwindow->gui->mainmenu->undo->update_caption(current_entry->description);
+			file.read_from_string(next_data);
+			load_from_undo(&file, current_entry->get_flags());
+			delete [] next_data;
+
+			if(mwindow->gui)
+			{
+				mwindow->gui->mainmenu->undo->update_caption(current_entry->get_description());
 			
-			if(current_entry->next)
-				mwindow->gui->mainmenu->redo->update_caption(current_entry->next->description);
-			else
-				mwindow->gui->mainmenu->redo->update_caption("");
+				if(current_entry->next)
+					mwindow->gui->mainmenu->redo->update_caption(current_entry->next->get_description());
+				else
+					mwindow->gui->mainmenu->redo->update_caption("");
+			}
 		}
 	}
+	reset_creators();
 	return 0;
 }
 
@@ -131,12 +185,22 @@ int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 		asset;
 		asset = asset->next)
 	{
-		mwindow->mainindexes->add_next_asset(asset);
+		mwindow->mainindexes->add_next_asset(0, asset);
 	}
 	mwindow->mainindexes->start_build();
 	return 0;
 }
 
+
+void MainUndo::reset_creators()
+{
+	for(UndoStackItem *current = undo_stack->first;
+		current;
+		current = NEXT)
+	{
+		current->set_creator(0);
+	}
+}
 
 
 

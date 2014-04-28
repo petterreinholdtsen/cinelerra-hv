@@ -151,6 +151,7 @@ int VFrame::reset_parameters()
 	u_offset = 0;
 	v_offset = 0;
 	sequence_number = -1;
+	is_keyframe = 0;
 	return 0;
 }
 
@@ -192,6 +193,17 @@ int VFrame::set_field2_offset(int value)
 	this->field2_offset = value;
 	return 0;
 }
+
+void VFrame::set_keyframe(int value)
+{
+	this->is_keyframe = value;
+}
+
+int VFrame::get_keyframe()
+{
+	return is_keyframe;
+}
+
 
 int VFrame::calculate_bytes_per_pixel(int color_model)
 {

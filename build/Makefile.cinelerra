@@ -1,6 +1,3 @@
-FREETYPE_DIR := freetype-2.1.4
-ALSA_DIR := $(shell expr alsa-lib* )
-
 # system tests
 
 
@@ -10,9 +7,7 @@ DIRS := \
 	doc \
 	libmpeg3 \
 	mpeg2enc \
-	mplexhi \
 	mplexlo \
-	quicktime \
 	guicast \
 	cinelerra \
 	plugins \
@@ -29,15 +24,20 @@ DISTOBJS = \
 
 all: $(OBJDIR)/soundtest
 ifeq ($(HAVE_FIREWIRE), y)
-	$(MAKE) -f build/Makefile.libraw
-	$(MAKE) -f build/Makefile.libavc
+	$(MAKE) -C libraw1394*
+	$(MAKE) -C libiec61883*
+	$(MAKE) -C libavc1394*
 endif
+	$(MAKE) -C fftw*
 	$(MAKE) -f build/Makefile.esound
 	$(MAKE) -f build/Makefile.freetype
 	$(MAKE) -f build/Makefile.tiff
 	$(MAKE) -f build/Makefile.toolame
 	$(MAKE) -f build/Makefile.uuid
-	$(MAKE) -f build/Makefile.sndfile
+	MAKE='make -j1' make -j1 -C mjpegtools*
+	$(MAKE) -C libsndfile*
+	$(MAKE) -C quicktime
+	$(MAKE) -C libtheora*
 ifeq ($(HAVE_ALSA), y)
 	$(MAKE) -f build/Makefile.asound
 endif
@@ -63,7 +63,18 @@ clean:
 		-o -name '*.plugin' \
 		-o -name '*.so' \) -exec rm -f {} \; -prune
 	find \( -name $(OBJDIR) \) -exec rm -rf {} \; -prune
+#	find \( -name .deps \) -exec rm -rf {} \; -prune
+	find \( -name .libs \) -exec rm -rf {} \; -prune
 	make -C doc clean
+	$(MAKE) -i -C libraw1394* clean
+	$(MAKE) -i -C libiec61883* clean
+	$(MAKE) -i -C libavc1394* clean
+	$(MAKE) -i -C fftw* clean
+	MAKE='make -j1' make -j1 -i -C mjpegtools* clean
+	$(MAKE) -i -C libsndfile* clean
+	$(MAKE) -i -C quicktime clean
+	$(MAKE) -i -C libtheora* clean
+
 
 wc:
 	cat *.C *.h | wc
@@ -77,7 +88,6 @@ install:
 	$(MAKE) -C cinelerra install
 	$(MAKE) -C plugins install
 	$(MAKE) -C libmpeg3 install
-	$(MAKE) -C mplexhi install
 	$(MAKE) -C mplexlo install
 	$(MAKE) -C po install
 	cp $(OBJDIR)/soundtest /usr/bin

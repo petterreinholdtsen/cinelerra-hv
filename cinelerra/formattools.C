@@ -349,7 +349,7 @@ int FormatTools::set_video_options()
 
 
 FormatAParams::FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y)
- : BC_Button(x, y, mwindow->theme->wrench_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
 {
 	this->format = format;
 	set_tooltip(_("Configure audio compression"));
@@ -363,7 +363,7 @@ int FormatAParams::handle_event()
 }
 
 FormatVParams::FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y)
- : BC_Button(x, y, mwindow->theme->wrench_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("wrench"))
 { 
 	this->format = format; 
 	set_tooltip(_("Configure video compression"));

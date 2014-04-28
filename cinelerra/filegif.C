@@ -49,7 +49,7 @@ int64_t FileGIF::get_memory_usage()
 {
 // give buffer length plus padding
 	if(data)
-		return asset->width * asset->height * sizeof(VPixel);
+		return (int64_t)asset->width * asset->height * sizeof(VPixel);
 	else
 		return 256;
 }

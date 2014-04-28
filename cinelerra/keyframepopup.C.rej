@@ -1,0 +1,17 @@
+***************
+*** 53,59 ****
+  int KeyframePopupDelete::handle_event()
+  {
+  	mwindow->undo->update_undo_before(_("delete keyframe"), LOAD_ALL);
+- 	delete popup->keyframe;
+  	mwindow->save_backup();
+  	mwindow->undo->update_undo_after();
+  
+--- 91,97 ----
+  int KeyframePopupDelete::handle_event()
+  {
+  	mwindow->undo->update_undo_before(_("delete keyframe"), LOAD_ALL);
++ 	delete popup->keyframe_auto;
+  	mwindow->save_backup();
+  	mwindow->undo->update_undo_after();
+  

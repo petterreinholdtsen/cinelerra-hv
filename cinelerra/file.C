@@ -26,6 +26,7 @@
 #include "formatwindow.h"
 #include "framecache.h"
 #include "language.h"
+#include "mutex.h"
 #include "pluginserver.h"
 #include "resample.h"
 #include "stringfile.h"
@@ -56,8 +57,7 @@ File::~File()
 	if(temp_frame) delete temp_frame;
 
 	close_file(0);
-	reset_parameters();
-	delete asset;
+	Garbage::delete_object(asset);
 	delete format_completion;
 	delete write_lock;
 	if(frame_cache) delete frame_cache;
@@ -80,6 +80,8 @@ void File::reset_parameters()
 	resample = 0;
 	use_cache = 0;
 	preferences = 0;
+	playback_subtitle = -1;
+	interpolate_raw = 1;
 }
 
 int File::raise_window()
@@ -108,7 +110,7 @@ int File::get_options(BC_WindowBase *parent_window,
 	Asset *asset, 
 	int audio_options, 
 	int video_options,
-	int lock_compressor)
+	char *locked_compressor)
 {
 	getting_options = 1;
 	format_completion->lock("File::get_options");
@@ -138,7 +140,7 @@ int File::get_options(BC_WindowBase *parent_window,
 				format_window, 
 				audio_options, 
 				video_options,
-				lock_compressor);
+				locked_compressor);
 			break;
 		case FILE_AMPEG:
 		case FILE_VMPEG:
@@ -154,7 +156,7 @@ int File::get_options(BC_WindowBase *parent_window,
 				format_window, 
 				audio_options, 
 				video_options,
-				lock_compressor);
+				locked_compressor);
 			break;
 		case FILE_AVI_LAVTOOLS:
 		case FILE_AVI_ARNE2:
@@ -165,7 +167,7 @@ int File::get_options(BC_WindowBase *parent_window,
 				format_window, 
 				audio_options, 
 				video_options,
-				lock_compressor);
+				locked_compressor);
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
@@ -242,7 +244,7 @@ int File::get_options(BC_WindowBase *parent_window,
 
 void File::set_asset(Asset *asset)
 {
-	*this->asset = *asset;
+	this->asset->copy_from(asset, 1);
 }
 
 int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
@@ -255,6 +257,21 @@ int File::set_preload(int64_t size)
 {
 	this->playback_preload = size;
 	return 0;
+}
+
+void File::set_subtitle(int value)
+{
+	this->playback_subtitle = value;
+}
+
+void File::set_interpolate_raw(int value)
+{
+	this->interpolate_raw = value;
+}
+
+void File::set_white_balance_raw(int value)
+{
+	this->white_balance_raw = value;
 }
 
 void File::set_cache_frames(int value)
@@ -285,11 +302,10 @@ int File::open_file(Preferences *preferences,
 	float base_framerate)
 {
 	this->preferences = preferences;
-	*this->asset = *asset;
+	this->asset->copy_from(asset, 1);
 	file = 0;
 
 
-//printf("File::open_file 1 %s %d\n", asset->path, asset->format);
 	switch(this->asset->format)
 	{
 // get the format now
@@ -306,12 +322,6 @@ int File::open_file(Preferences *preferences,
 			char test[16];
 			fread(test, 16, 1, stream);
 
-// 			if(FileAVI::check_sig(this->asset))
-// 			{
-// 				fclose(stream);
-// 				file = new FileAVI(this->asset, this);
-// 			}
-// 			else
 			if(FileSndFile::check_sig(this->asset))
 			{
 // libsndfile
@@ -483,16 +493,13 @@ int File::open_file(Preferences *preferences,
 			return 1;
 			break;
 	}
-//printf("File::open_file 2\n");
 
 // Reopen file with correct parser and get header.
 	if(file->open_file(rd, wr))
 	{
-//printf("File::open_file 2.5\n");
 		delete file;
 		file = 0;
 	}
-//printf("File::open_file 3\n");
 
 
 // Set extra writing parameters to mandatory settings.
@@ -501,8 +508,12 @@ int File::open_file(Preferences *preferences,
 		if(this->asset->dither) file->set_dither();
 	}
 
+
 // Synchronize header parameters
-	*asset = *this->asset;
+	if(file)
+	{
+		asset->copy_from(this->asset, 1);
+	}
 
 	if(file)
 		return FILE_OK;
@@ -552,8 +563,11 @@ int File::get_index(char *index_path)
 
 int File::start_audio_thread(int64_t buffer_size, int ring_buffers)
 {
-	audio_thread = new FileThread(this, 1, 0);
-	audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
+	if(!audio_thread)
+	{
+		audio_thread = new FileThread(this, 1, 0);
+		audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
+	}
 	return 0;
 }
 
@@ -562,19 +576,30 @@ int File::start_video_thread(int64_t buffer_size,
 	int ring_buffers, 
 	int compressed)
 {
-	video_thread = new FileThread(this, 0, 1);
-//printf("File::start_video_thread 1\n");
-	video_thread->start_writing(buffer_size, 
-		color_model, 
-		ring_buffers, 
-		compressed);
-//printf("File::start_video_thread 2\n");
+	if(!video_thread)
+	{
+		video_thread = new FileThread(this, 0, 1);
+		video_thread->start_writing(buffer_size, 
+			color_model, 
+			ring_buffers, 
+			compressed);
+	}
 	return 0;
+}
+
+int File::start_video_decode_thread()
+{
+// Currently, CR2 is the only one which won't work asynchronously, so
+// we're not using a virtual function yet.
+	if(!video_thread && asset->format != FILE_CR2)
+	{
+		video_thread = new FileThread(this, 0, 1);
+		video_thread->start_reading();
+	}
 }
 
 int File::stop_audio_thread()
 {
-//printf("File::stop_audio_thread 1\n");
 	if(audio_thread)
 	{
 		audio_thread->stop_writing();
@@ -586,9 +611,9 @@ int File::stop_audio_thread()
 
 int File::stop_video_thread()
 {
-//printf("File::stop_video_thread 1\n");
 	if(video_thread)
 	{
+		video_thread->stop_reading();
 		video_thread->stop_writing();
 		delete video_thread;
 		video_thread = 0;
@@ -596,16 +621,9 @@ int File::stop_video_thread()
 	return 0;
 }
 
-int File::lock_read()
+FileThread* File::get_video_thread()
 {
-//	read_lock.lock();
-	return 0;
-}
-
-int File::unlock_read()
-{
-//	read_lock.unlock();
-	return 0;
+	return video_thread;
 }
 
 int File::set_channel(int channel) 
@@ -619,12 +637,18 @@ int File::set_channel(int channel)
 		return 1;
 }
 
-int File::set_layer(int layer) 
+int File::set_layer(int layer, int is_thread) 
 {
 	if(file && layer < asset->layers)
 	{
-		current_layer = layer;
-//printf("File::set_layer 1 %d\n", layer);
+		if(!is_thread && video_thread)
+		{
+			video_thread->set_layer(layer);
+		}
+		else
+		{
+			current_layer = layer;
+		}
 		return 0; 
 	}
 	else
@@ -746,7 +770,7 @@ int File::set_audio_position(int64_t position, float base_samplerate)
 	return result;
 }
 
-int File::set_video_position(int64_t position, float base_framerate) 
+int File::set_video_position(int64_t position, float base_framerate, int is_thread) 
 {
 	int result = 0;
 	if(!file) return 0;
@@ -759,10 +783,19 @@ int File::set_video_position(int64_t position, float base_framerate)
 			0.5);
 
 
-	if(current_frame != position && file)
+	if(video_thread && !is_thread)
 	{
-		current_frame = position;
-		result = file->set_video_position(current_frame);
+// Call thread.  Thread calls this again to set the file state.
+		video_thread->set_video_position(position);
+	}
+	else
+	if(current_frame != position)
+	{
+		if(file)
+		{
+			current_frame = position;
+			result = file->set_video_position(current_frame);
+		}
 	}
 
 	return result;
@@ -859,7 +892,7 @@ VFrame*** File::get_video_buffer()
 int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate)
 {
 	int result = 0;
-//printf("File::read_samples 1\n");
+	if(len < 0) return 0;
 
 // Load with resampling	
 	if(file)
@@ -921,18 +954,20 @@ int64_t File::compressed_frame_size()
 
 
 
-int File::read_frame(VFrame *frame)
+int File::read_frame(VFrame *frame, int is_thread)
 {
+	if(video_thread && !is_thread) return video_thread->read_frame(frame);
+
 	if(file)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 		int advance_position = 1;
 
-
 // Test cache
 		if(use_cache &&
 			frame_cache->get_frame(frame,
 				current_frame,
+				current_layer,
 				asset->frame_rate))
 		{
 // Can't advance position if cache used.
@@ -964,15 +999,16 @@ int File::read_frame(VFrame *frame)
 					supported_colormodel);
 			}
 
+			temp_frame->copy_stacks(frame);
 			file->read_frame(temp_frame);
 			cmodel_transfer(frame->get_rows(), 
 				temp_frame->get_rows(),
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
+				temp_frame->get_y(),
+				temp_frame->get_u(),
+				temp_frame->get_v(),
+				frame->get_y(),
+				frame->get_u(),
+				frame->get_v(),
 				0, 
 				0, 
 				temp_frame->get_w(), 
@@ -995,8 +1031,11 @@ int File::read_frame(VFrame *frame)
 
 		if(use_cache) frame_cache->put_frame(frame,
 			current_frame,
+			current_layer,
 			asset->frame_rate,
 			1);
+// printf("File::read_frame\n");
+// frame->dump_params();
 
 		if(advance_position) current_frame++;
 		return 0;
@@ -1332,12 +1371,13 @@ int File::colormodel_supported(int colormodel)
 }
 
 
-int File::get_memory_usage()
+int64_t File::get_memory_usage() 
 {
-	int result = 0;
+	int64_t result = 0;
 	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
 	result += frame_cache->get_memory_usage();
+	if(video_thread) result += video_thread->get_memory_usage();
 
 	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
 	return result;
@@ -1424,4 +1464,41 @@ int File::supports_audio(int format)
 			break;
 	}
 }
+
+char* File::get_tag(int format)
+{
+	switch(format)
+	{
+		case FILE_AC3:          return "ac3";
+		case FILE_AIFF:         return "aif";
+		case FILE_AMPEG:        return "mp3";
+		case FILE_AU:           return "au";
+		case FILE_AVI:          return "avi";
+		case FILE_EXR:          return "exr";
+		case FILE_EXR_LIST:     return "exr";
+		case FILE_JPEG:         return "jpg";
+		case FILE_JPEG_LIST:    return "jpg";
+		case FILE_MOV:          return "mov";
+		case FILE_OGG:          return "ogg";
+		case FILE_PCM:          return "pcm";
+		case FILE_PNG:          return "png";
+		case FILE_PNG_LIST:     return "png";
+		case FILE_TGA:          return "tga";
+		case FILE_TGA_LIST:     return "tga";
+		case FILE_TIFF:         return "tif";
+		case FILE_TIFF_LIST:    return "tif";
+		case FILE_VMPEG:        return "m2v";
+		case FILE_VORBIS:       return "ogg";
+		case FILE_WAV:          return "wav";
+	}
+	return 0;
+}
+
+
+
+
+
+
+
+
 

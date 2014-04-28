@@ -5,7 +5,7 @@
 #include "channelpicker.h"
 #include "clip.h"
 #include "condition.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
@@ -58,7 +58,7 @@ TRACE("RecordGUI::~RecordGUI 1");
 	delete batch_source;
 	delete batch_mode;
 	delete startover_thread;
-	delete cancel_thread;
+	delete interrupt_thread;
 	delete batch_start;
 	delete batch_duration;
 	delete load_mode;
@@ -401,10 +401,10 @@ int RecordGUI::create_objects()
 	load_mode->create_objects();
 	y += load_mode->get_h() + 5;
 
-	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new RecordGUIOK(record, this));
 
-	cancel_thread = new RecordCancelThread(record, this);
-	add_subwindow(new RecordGUISave(record, this));
+	interrupt_thread = new EndRecordThread(record, this);
+//	add_subwindow(new RecordGUISave(record, this));
 	add_subwindow(new RecordGUICancel(record, this));
 
 	startover_thread = new RecordStartoverThread(record, this);
@@ -541,15 +541,17 @@ int RecordGUI::resize_event(int w, int h)
 
 	int new_h = mwindow->session->rwindow_h - bottom_margin - batch_list->get_y();
 	if(new_h < 10) new_h = 10;
+printf("RecordGUI::resize_event 1 %d\n", mwindow->session->rwindow_h - bottom_margin - batch_list->get_y());
 	batch_list->reposition_window(batch_list->get_x(), 
 		batch_list->get_y(),
 		mwindow->session->rwindow_w - 20,
 		mwindow->session->rwindow_h - bottom_margin - batch_list->get_y());
 
-
 	load_mode->reposition_window(mwindow->session->rwindow_w / 2 - 
 			mwindow->theme->loadmode_w / 2,
 		mwindow->session->rwindow_h - mode_margin);
+
+	
 
 	flash();
 	return 1;
@@ -716,9 +718,7 @@ int RecordGUISave::keypress_event()
 
 RecordGUICancel::RecordGUICancel(Record *record, 
 	RecordGUI *record_gui)
- : BC_Button(record_gui->get_w() - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10, 
- 	record_gui->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10, 
-	BC_WindowBase::get_resources()->cancel_images)
+ : BC_CancelButton(record_gui)
 {
 	set_tooltip(_("Quit without pasting into project."));
 	this->record = record;
@@ -727,8 +727,7 @@ RecordGUICancel::RecordGUICancel(Record *record,
 
 int RecordGUICancel::handle_event()
 {
-	if(!gui->cancel_thread->running())
-		gui->cancel_thread->start();
+	gui->interrupt_thread->start(0);
 	return 1;
 }
 
@@ -742,6 +741,32 @@ int RecordGUICancel::keypress_event()
 
 	return 0;
 }
+
+
+
+
+
+RecordGUIOK::RecordGUIOK(Record *record, 
+	RecordGUI *record_gui)
+ : BC_OKButton(record_gui)
+{
+	set_tooltip(_("Quit and paste into project."));
+	this->record = record;
+	this->gui = record_gui;
+}
+
+int RecordGUIOK::handle_event()
+{
+	gui->interrupt_thread->start(1);
+	return 1;
+}
+
+
+
+
+
+
+
 
 RecordGUIStartOver::RecordGUIStartOver(Record *record, RecordGUI *record_gui, int x, int y)
  : BC_GenericButton(x, y, _("Start Over"))
@@ -1078,39 +1103,46 @@ int RecordGUILabel::keypress_event()
 
 
 
-RecordCancelThread::RecordCancelThread(Record *record, RecordGUI *record_gui)
+EndRecordThread::EndRecordThread(Record *record, RecordGUI *record_gui)
  : Thread(1, 0, 0)
 {
 	this->record = record;
 	this->gui = record_gui;
+	is_ok = 0;
 }
 
-RecordCancelThread::~RecordCancelThread()
+EndRecordThread::~EndRecordThread()
 {
 	if(Thread::running()) 
 	{
-		window->lock_window("RecordCancelThread::~RecordCancelThread");
+		window->lock_window("EndRecordThread::~EndRecordThread");
 		window->set_done(1);
 		window->unlock_window();
 		Thread::join();
 	}
 }
 
-
-void RecordCancelThread::run()
+void EndRecordThread::start(int is_ok)
 {
-	if(record->prompt_cancel)
+	this->is_ok = is_ok;
+	if(record->capture_state == IS_RECORDING)
 	{
-		window = new QuestionWindow(record->mwindow);
-		window->create_objects(_("Quit without pasting into project?"), 0);
-		int result = window->run_window();
-		if(result == 2) gui->set_done(1);
-		delete window;
+		if(!running())		
+			Thread::start();
 	}
 	else
 	{
-		gui->set_done(1);
+		gui->set_done(!is_ok);
 	}
+}
+
+void EndRecordThread::run()
+{
+	window = new QuestionWindow(record->mwindow);
+	window->create_objects(_("Interrupt recording in progress?"), 0);
+	int result = window->run_window();
+	delete window;
+	if(result == 2) gui->set_done(!is_ok);
 }
 
 
@@ -1499,19 +1531,3 @@ int RecordGUIResetTranslation::handle_event()
 
 
 
-RecordGUIOK::RecordGUIOK(MWindow *mwindow, int y)
- : BC_OKButton(50, y)
-{
-}
-
-RecordGUIOK::~RecordGUIOK()
-{
-}
-
-int RecordGUIOK::handle_event()
-{
-	unlock_window();
-//	engine->set_done(0);
-	lock_window();
-	return 1;
-}

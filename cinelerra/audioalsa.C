@@ -1,6 +1,7 @@
 #include "audiodevice.h"
 #include "audioalsa.h"
 #include "bcsignals.h"
+#include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -17,6 +18,7 @@ AudioALSA::AudioALSA(AudioDevice *device)
 	delay = 0;
 	timer_lock = new Mutex("AudioALSA::timer_lock");
 	interrupted = 0;
+	dsp_out = 0;
 }
 
 AudioALSA::~AudioALSA()
@@ -25,7 +27,7 @@ AudioALSA::~AudioALSA()
 	delete timer;
 }
 
-void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
+void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 {
 	snd_ctl_t *handle;
 	int card, err, dev, idx;
@@ -34,6 +36,15 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 	char string[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 	int error;
+	switch(mode)
+	{
+		case MODERECORD:
+			stream = SND_PCM_STREAM_CAPTURE;
+			break;
+		case MODEPLAY:
+			stream = SND_PCM_STREAM_PLAYBACK;
+			break;
+	}
 
 	snd_ctl_card_info_alloca(&info);
 	snd_pcm_info_alloca(&pcminfo);
@@ -52,13 +63,13 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 
 		if((err = snd_ctl_open(&handle, name, 0)) < 0)
 		{
-			printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
+			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 			continue;
 		}
 
 		if((err = snd_ctl_card_info(handle, info)) < 0)
 		{
-			printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
+			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 			snd_ctl_close(handle);
 			continue;
 		}
@@ -81,7 +92,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 			if((err = snd_ctl_pcm_info(handle, pcminfo)) < 0) 
 			{
 				if(err != -ENOENT)
-					printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
+					printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 				continue;
 			}
 
@@ -112,9 +123,13 @@ void AudioALSA::translate_name(char *output, char *input)
 {
 	ArrayList<char*> titles;
 	ArrayList<char*> pcm_titles;
+	int mode;
+	if(device->r) mode = MODERECORD;
+	else
+	if(device->w) mode = MODEPLAY;
 	
-	list_devices(&titles, 0);
-	list_devices(&pcm_titles, 1);
+	list_devices(&titles, 0, mode);
+	list_devices(&pcm_titles, 1, mode);
 
 	sprintf(output, "default");	
 	for(int i = 0; i < titles.total; i++)
@@ -249,10 +264,11 @@ int AudioALSA::open_input()
 	int open_mode = 0;
 	int err;
 
-	device->in_channels = device->in_config->alsa_in_channels;
+	device->in_channels = device->get_ichannels();
 	device->in_bits = device->in_config->alsa_in_bits;
 
 	translate_name(pcm_name, device->in_config->alsa_in_device);
+//printf("AudioALSA::open_input %s\n", pcm_name);
 
 	err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode);
 
@@ -263,7 +279,7 @@ int AudioALSA::open_input()
 	}
 
 	set_params(dsp_in, 
-		device->in_config->alsa_in_channels, 
+		device->get_ichannels(), 
 		device->in_config->alsa_in_bits,
 		device->in_samplerate,
 		device->in_samples);
@@ -278,7 +294,7 @@ int AudioALSA::open_output()
 	int open_mode = 0;
 	int err;
 
-	device->out_channels = device->out_config->alsa_out_channels;
+	device->out_channels = device->get_ochannels();
 	device->out_bits = device->out_config->alsa_out_bits;
 
 	translate_name(pcm_name, device->out_config->alsa_out_device);
@@ -287,12 +303,13 @@ int AudioALSA::open_output()
 
 	if(err < 0)
 	{
+		dsp_out = 0;
 		printf("AudioALSA::open_output %s: %s\n", pcm_name, snd_strerror(err));
 		return 1;
 	}
 
 	set_params(dsp_out, 
-		device->out_config->alsa_out_channels, 
+		device->get_ochannels(), 
 		device->out_config->alsa_out_bits,
 		device->out_samplerate,
 		device->out_samples);
@@ -308,7 +325,7 @@ int AudioALSA::open_duplex()
 
 int AudioALSA::close_output()
 {
-	if(device->w)
+	if(device->w && dsp_out)
 	{
 		snd_pcm_close(dsp_out);
 	}
@@ -361,11 +378,18 @@ int AudioALSA::read_buffer(char *buffer, int size)
 //printf("AudioALSA::read_buffer 1\n");
 	int attempts = 0;
 	int done = 0;
+
+	if(!get_input())
+	{
+		sleep(1);
+		return 0;
+	}
+
 	while(attempts < 1 && !done)
 	{
 		if(snd_pcm_readi(get_input(), 
 			buffer, 
-			size / (device->in_bits / 8) / device->in_channels) < 0)
+			size / (device->in_bits / 8) / device->get_ichannels()) < 0)
 		{
 			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
 				device->total_samples_read);
@@ -385,7 +409,10 @@ int AudioALSA::write_buffer(char *buffer, int size)
 // Don't give up and drop the buffer on the first error.
 	int attempts = 0;
 	int done = 0;
-	int samples = size / (device->out_bits / 8) / device->out_channels;
+	int samples = size / (device->out_bits / 8) / device->get_ochannels();
+
+	if(!get_output()) return 0;
+
 	while(attempts < 2 && !done && !interrupted)
 	{
 // Buffers written must be equal to period_time

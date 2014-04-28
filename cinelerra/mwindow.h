@@ -13,14 +13,17 @@
 #include "channel.inc"
 #include "channeldb.inc"
 #include "cwindow.inc"
-#include "defaults.inc"
+#include "bchash.inc"
+#include "devicedvbinput.inc"
 #include "edit.inc"
 #include "edl.inc"
 #include "filesystem.inc"
 #include "filexml.inc"
+#include "framecache.inc"
 #include "gwindow.inc"
 #include "levelwindow.inc"
 #include "loadmode.inc"
+#include "mainerror.inc"
 #include "mainindexes.inc"
 #include "mainprogress.inc"
 #include "mainsession.inc"
@@ -31,6 +34,7 @@
 #include "mwindowgui.inc"
 #include "new.inc"
 #include "patchbay.inc"
+#include "playback3d.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
@@ -38,11 +42,13 @@
 #include "preferences.inc"
 #include "preferencesthread.inc"
 #include "recordlabel.inc"
+#include "removethread.inc"
 #include "render.inc"
 #include "sharedlocation.inc"
 #include "sighandler.inc"
 #include "splashgui.inc"
 #include "theme.inc"
+#include "thread.h"
 #include "threadloader.inc"
 #include "timebar.inc"
 #include "timebomb.h"
@@ -54,14 +60,14 @@
 #include "transportque.inc"
 #include "videowindow.inc"
 #include "vwindow.inc"
-
+#include "wavecache.inc"
 
 #include <stdint.h>
 
 // All entry points for commands except for window locking should be here.
 // This allows scriptability.
 
-class MWindow
+class MWindow : public Thread
 {
 public:
 	MWindow();
@@ -74,6 +80,7 @@ public:
 	void show_splash();
 	void hide_splash();
 	void start();
+	void run();
 
 	int run_script(FileXML *script);
 	int new_project();
@@ -127,6 +134,7 @@ public:
 	void fit_autos();
 	void expand_autos();
 	void shrink_autos();
+	void zoom_autos(float min, float max);
 // move the window to include the cursor
 	void find_cursor();
 // Append a plugindb with pointers to the master plugindb
@@ -174,8 +182,15 @@ public:
 	int move_right(int64_t distance = 0);
 	void move_up(int64_t distance = 0);
 	void move_down(int64_t distance = 0);
-	int next_label();   // seek to labels
-	int prev_label();
+
+// seek to labels
+// shift_down must be passed by the caller because different windows call
+// into this
+	int next_label(int shift_down);   
+	int prev_label(int shift_down);
+// seek to edit handles
+	int next_edit_handle(int shift_down);
+	int prev_edit_handle(int shift_down);  
 	void trackmovement(int track_start);
 	int samplemovement(int64_t view_start);     // view_start is pixels
 	void select_all();
@@ -202,9 +217,21 @@ public:
 	void render_plugin_gui(void *data, Plugin *plugin);
 	void render_plugin_gui(void *data, int size, Plugin *plugin);
 
+// Called from PluginVClient::process_buffer
+// Returns 1 if a GUI for the plugin is open so OpenGL routines can determine if
+// they can run.
+	int plugin_gui_open(Plugin *plugin);
+
 
 // ============================= editing commands ========================
 
+// Map each recordable audio track to the desired pattern
+	void map_audio(int pattern);
+	enum
+	{
+		AUDIO_5_1_TO_2,
+		AUDIO_1_TO_1
+	};
 	void add_audio_track_entry(int above, Track *dst);
 	int add_audio_track(int above, Track *dst);
 	void add_clip_to_edl(EDL *edl);
@@ -212,6 +239,7 @@ public:
 	int add_video_track(int above, Track *dst);
 
 	void asset_to_size();
+	void asset_to_rate();
 // Entry point for clear operations.
 	void clear_entry();
 // Clears active region in EDL.
@@ -223,8 +251,12 @@ public:
 	void concatenate_tracks();
 	void copy();
 	int copy(double start, double end);
-	static int create_aspect_ratio(float &w, float &h, int width, int height);
 	void cut();
+
+// Calculate aspect ratio from pixel counts
+	static int create_aspect_ratio(float &w, float &h, int width, int height);
+// Calculate defaults path
+	static void create_defaults_path(char *string);
 
 	void delete_folder(char *folder);
 	void delete_inpoint();
@@ -304,7 +336,9 @@ public:
 	void paste_audio_transition();
 	void paste_video_transition();
 	void rebuild_indices();
-// Asset removal
+// Asset removal from caches
+	void reset_caches();
+	void remove_asset_from_caches(Asset *asset);
 	void remove_assets_from_project(int push_undo = 0);
 	void remove_assets_from_disk();
 	void resize_track(Track *track, int w, int h);
@@ -324,10 +358,12 @@ public:
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);
 
+
 	int cut_automation();
 	int copy_automation();
 	int paste_automation();
 	void clear_automation();
+	void straighten_automation();
 	int cut_default_keyframe();
 	int copy_default_keyframe();
 // Use paste_automation to paste the default keyframe in other position.
@@ -347,24 +383,28 @@ public:
 	
 
 // Send new EDL to caches
-	void update_caches();
+	void age_caches();
 	int optimize_assets();            // delete unused assets from the cache and assets
 
-// ================================= cursor selection ======================
 
 	void select_point(double position);
 	int set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
-// ================================ handle selection =======================
 
-
-
+	Playback3D *playback_3d;
+	RemoveThread *remove_thread;
+	
 	SplashGUI *splash_window;
+// Main undo stack
 	MainUndo *undo;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	Assets *assets;
 // CICaches for drawing timeline only
 	CICache *audio_cache, *video_cache;
+// Frame cache for drawing timeline only.
+// Cache drawing doesn't wait for file decoding.
+	FrameCache *frame_cache;
+	WaveCache *wave_cache;
 	Preferences *preferences;
 	PreferencesThread *preferences_thread;
 	MainSession *session;
@@ -419,6 +459,16 @@ public:
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
 
+// Single device drivers which must be shared between audio and video go here.
+// They are managed by the garbage collector.
+	DeviceDVBInput *dvb_input;
+// Must be locked before accessing dvb_input or Garbage functions in it.
+	Mutex *dvb_input_lock;
+
+
+// Initialize shared memory
+	void init_shm();
+
 // Initialize channel DB's for playback
 	void init_channeldb();
 	void init_render();
@@ -434,7 +484,8 @@ public:
 	int brender_available(int position);
 	void set_brender_start();
 
-	static void init_defaults(Defaults* &defaults, 
+	void init_error();
+	static void init_defaults(BC_Hash* &defaults, 
 		char *config_path);
 	void init_edl();
 	void init_awindow();
@@ -459,6 +510,7 @@ public:
 	void init_menus();
 	void init_indexes();
 	void init_gui();
+	void init_3d();
 	void init_playbackcursor();
 	void delete_plugins();
 // 

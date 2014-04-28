@@ -13,7 +13,9 @@
 #include "keyframe.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "resourcethread.inc"
 #include "plugin.inc"
+#include "plugintoggles.inc"
 #include "resourcepixmap.inc"
 #include "track.inc"
 #include "tracks.inc"
@@ -32,7 +34,10 @@ public:
 	int cursor_leave_event();
 	int drag_stop_event();
 	int keypress_event();
-	void draw_resources(int force = 0,  // Redraw everything
+// mode - 1 causes incremental drawing of pixmaps.  Used for navigation and index refresh.
+//        2 causes all resource pixmaps to be redrawn from scratch.  Used by editing.
+//        3 causes resource pixmaps to ignore picon thread.  Used by Piconthread.
+	void draw_resources(int mode = 0,
 		int indexes_only = 0,     // Redraw only certain audio resources with indexes
 		Asset *index_asset = 0);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
@@ -144,21 +149,24 @@ public:
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		int color);
+		int color,
+        Auto * &auto_instance);
 	int do_toggle_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		int color);
+		int color,
+        Auto * &auto_instance);
 	int do_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		BC_Pixmap *pixmap);
+		BC_Pixmap *pixmap,
+        Auto * &auto_instance);
 	int do_plugin_autos(Track *track,
 		int cursor_x, 
 		int cursor_y, 
@@ -205,11 +213,14 @@ public:
 	void draw_transitions();
 	void draw_drag_handle();
 	void draw_plugins();
+	void refresh_plugintoggles();
 	void update_edit_handles(Edit *edit, int64_t edit_x, int64_t edit_y, int64_t edit_w, int64_t edit_h);
 	void update_transitions();
 	void update_keyframe_handles(Track *track);
-// Draw everything to synchronize with the view
-	void draw(int force = 0, int hide_cursor = 1);
+// Draw everything to synchronize with the view.
+// mode - if 2 causes all resource pixmaps to be redrawn from scratch
+//        if 3 causes resource pixmaps to ignore picon thread
+	void draw(int mode = 0, int hide_cursor = 1);
 // Draw resources during index building
 	void draw_indexes(Asset *asset);
 // Get location of edit on screen without boundary checking
@@ -276,6 +287,7 @@ public:
 	int update_drag_floatauto(int cursor_x, int cursor_y);
 	int update_drag_toggleauto(int cursor_x, int cursor_y);
 	int update_drag_auto(int cursor_x, int cursor_y);
+	int update_drag_pluginauto(int cursor_x, int cursor_y);
 
 // Update status bar to reflect drag operation
 	void update_drag_caption();
@@ -302,6 +314,7 @@ public:
 	BC_Pixmap *pankeyframe_pixmap;
 	BC_Pixmap *projectorkeyframe_pixmap;
 	BC_Pixmap *maskkeyframe_pixmap;
+	
 	int active;
 // Currently in a drag scroll operation
 	int drag_scroll;
@@ -313,9 +326,11 @@ public:
 // Timer for hourglass
 	Timer *resource_timer;
 
+// Plugin toggle interfaces
+	ArrayList<PluginOn*> plugin_on_toggles;
+	ArrayList<PluginShow*> plugin_show_toggles;
 
-
-
+	ResourceThread *resource_thread;
 
 
 

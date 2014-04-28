@@ -1,11 +1,13 @@
 #include "asset.h"
 #include "assets.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
+#include "dvbtune.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "pluginserver.h"
 #include "preferences.h"
@@ -45,7 +47,6 @@ RenderFarmClient::RenderFarmClient(int port,
 	this_pid = getpid();
 	nice(nice_value);
 
-	thread = new RenderFarmClientThread(this);
 
 	MWindow::init_defaults(boot_defaults, config_path);
 	boot_preferences = new Preferences;
@@ -58,7 +59,7 @@ RenderFarmClient::RenderFarmClient(int port,
 
 RenderFarmClient::~RenderFarmClient()
 {
-	delete thread;
+//	delete thread;
 	delete boot_defaults;
 	delete boot_preferences;
 	plugindb->remove_all_objects();
@@ -153,6 +154,8 @@ void RenderFarmClient::main_loop()
 			else
 			{
 //printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clientname.sin_addr));
+				RenderFarmClientThread *thread = 
+					new RenderFarmClientThread(this);
 				thread->main_loop(new_socket_fd);
 			}
 		}
@@ -170,6 +173,8 @@ void RenderFarmClient::main_loop()
 			else
 			{
 //printf("RenderFarmClient::main_loop: Session started from %s\n", clientname.sun_path);
+				RenderFarmClientThread *thread = 
+					new RenderFarmClientThread(this);
 				thread->main_loop(new_socket_fd);
 			}
 		}
@@ -202,19 +207,23 @@ printf("RenderFarmClient::kill_client 2\n");
 // after every frame for the error status.
 // Detaches when finished.
 RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
- : Thread()
+ : Thread(0, 0, 1)
 {
 	this->client = client;
 	frames_per_second = 0;
 	Thread::set_synchronous(0);
 //	fs_client = 0;
 	mutex_lock = new Mutex("RenderFarmClientThread::mutex_lock");
+	watchdog = 0;
+	keep_alive = 0;
 }
 
 RenderFarmClientThread::~RenderFarmClientThread()
 {
 //	if(fs_client) delete fs_client;
 	delete mutex_lock;
+	delete watchdog;
+	delete keep_alive;
 }
 
 
@@ -229,29 +238,103 @@ int RenderFarmClientThread::send_request_header(int request,
 // printf("RenderFarmClientThread::send_request_header %d %02x%02x%02x%02x%02x\n",
 // request, datagram[0], datagram[1], datagram[2], datagram[3], datagram[4]);
 
-	return (write_socket((char*)datagram, 
-		5, 
-		RENDERFARM_TIMEOUT) != 5);
+	return (write_socket((char*)datagram, 5) != 5);
 }
 
-int RenderFarmClientThread::write_socket(char *data, int len, int timeout)
+int RenderFarmClientThread::write_socket(char *data, int len)
 {
-	int result = RenderFarmServerThread::write_socket(socket_fd, 
-		data, 
-		len, 
-		timeout);
-// Assume the stream is offset and give up future accesses.
-	if(result <= 0) abort();
+	return write(socket_fd, data, len);
 }
 
-int RenderFarmClientThread::read_socket(char *data, int len, int timeout)
+int RenderFarmClientThread::read_socket(char *data, int len)
 {
-	int result = RenderFarmServerThread::read_socket(socket_fd, 
-		data, 
-		len, 
-		timeout);
-// Assume the stream is offset and give up future accesses.
-	if(result <= 0) abort();
+	int bytes_read = 0;
+	int offset = 0;
+	watchdog->begin_request();
+	while(len > 0 && bytes_read >= 0)
+	{
+		bytes_read = read(socket_fd, data + offset, len);
+		if(bytes_read > 0)
+		{
+			len -= bytes_read;
+			offset += bytes_read;
+		}
+		else
+		if(bytes_read < 0)
+		{
+			break;
+		}
+	}
+	watchdog->end_request();
+
+	return offset;
+}
+
+int RenderFarmClientThread::write_int64(int64_t value)
+{
+	unsigned char data[sizeof(int64_t)];
+	data[0] = (value >> 56) & 0xff;
+	data[1] = (value >> 48) & 0xff;
+	data[2] = (value >> 40) & 0xff;
+	data[3] = (value >> 32) & 0xff;
+	data[4] = (value >> 24) & 0xff;
+	data[5] = (value >> 16) & 0xff;
+	data[6] = (value >> 8) & 0xff;
+	data[7] = value & 0xff;
+	return (write_socket((char*)data, sizeof(int64_t)) != sizeof(int64_t));
+}
+
+int64_t RenderFarmClientThread::read_int64(int *error)
+{
+	int temp = 0;
+	if(!error) error = &temp;
+
+	unsigned char data[sizeof(int64_t)];
+	*error = (read_socket((char*)data, sizeof(int64_t)) != sizeof(int64_t));
+
+// Make it return 1 if error so it can be used to read a result code from the
+// server.
+	int64_t result = 1;
+	if(!*error)
+	{
+		result = (((int64_t)data[0]) << 56) |
+			(((uint64_t)data[1]) << 48) | 
+			(((uint64_t)data[2]) << 40) |
+			(((uint64_t)data[3]) << 32) |
+			(((uint64_t)data[4]) << 24) |
+			(((uint64_t)data[5]) << 16) |
+			(((uint64_t)data[6]) << 8)  |
+			data[7];
+	}
+	return result;
+}
+
+void RenderFarmClientThread::read_string(char* &string)
+{
+	unsigned char header[4];
+	if(read_socket((char*)header, 4) != 4)
+	{
+		string = 0;
+		return;
+	}
+
+	int64_t len = (((u_int32_t)header[0]) << 24) | 
+				(((u_int32_t)header[1]) << 16) | 
+				(((u_int32_t)header[2]) << 8) | 
+				((u_int32_t)header[3]);
+
+	if(len)
+	{
+		string = new char[len];
+		if(read_socket(string, len) != len)
+		{
+			delete [] string;
+			string = 0;
+		}
+	}
+	else
+		string = 0;
+
 }
 
 void RenderFarmClientThread::abort()
@@ -271,62 +354,49 @@ void RenderFarmClientThread::unlock()
 	mutex_lock->unlock();
 }
 
-void RenderFarmClientThread::read_string(int socket_fd, char* &string)
+void RenderFarmClientThread::get_command(int socket_fd, int *command)
 {
-	unsigned char header[4];
-	if(read_socket((char*)header, 4, RENDERFARM_TIMEOUT) != 4)
+	unsigned char data[4];
+	int error;
+	*command = read_int64(&error);
+	if(error)
 	{
-		string = 0;
+		*command = 0;
 		return;
 	}
-
-	int64_t len = (((u_int32_t)header[0]) << 24) | 
-				(((u_int32_t)header[1]) << 16) | 
-				(((u_int32_t)header[2]) << 8) | 
-				((u_int32_t)header[3]);
-
-	if(len)
-	{
-		string = new char[len];
-		if(read_socket(string, len, RENDERFARM_TIMEOUT) != len)
-		{
-			delete [] string;
-			string = 0;
-		}
-	}
-	else
-		string = 0;
-
 }
 
 
 void RenderFarmClientThread::read_preferences(int socket_fd, 
 	Preferences *preferences)
 {
+	lock("RenderFarmClientThread::read_preferences");
 	send_request_header(RENDERFARM_PREFERENCES, 
 		0);
 
 	char *string;
-	read_string(socket_fd, string);
+	read_string(string);
 
-	Defaults defaults;
+	BC_Hash defaults;
 	defaults.load_string((char*)string);
 	preferences->load_defaults(&defaults);
 
 	delete [] string;
+	unlock();
 }
 
 
 
 void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 {
+	lock("RenderFarmClientThread::read_asset");
 	send_request_header(RENDERFARM_ASSET, 
 		0);
 
 	char *string1;
 	char *string2;
-	read_string(socket_fd, string1);
-	read_string(socket_fd, string2);
+	read_string(string1);
+	read_string(string2);
 
 
 
@@ -336,7 +406,7 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 	
 
 
-	Defaults defaults;
+	BC_Hash defaults;
 	defaults.load_string((char*)string1);
 	asset->load_defaults(&defaults,
 		0,
@@ -348,19 +418,20 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 
 	delete [] string1;
 	delete [] string2;
+	unlock();
 }
 
 void RenderFarmClientThread::read_edl(int socket_fd, 
 	EDL *edl, 
 	Preferences *preferences)
 {
+	lock("RenderFarmClientThread::read_edl");
 	send_request_header(RENDERFARM_EDL, 
 		0);
 
 	char *string;
-	read_string(socket_fd, string);
+	read_string(string);
 
-//printf("RenderFarmClientThread::read_edl 1\n");
 
 	FileXML file;
 	file.read_from_string((char*)string);
@@ -378,40 +449,12 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 		LOAD_ALL);
 
 
-
-// Tag input paths for VFS here.
-// Create VFS object.
-	FileSystem fs;
-//	if(preferences->renderfarm_vfs)
-//	{
-//		fs_client = new RenderFarmFSClient(this);
-//		fs_client->initialize();
-// 
-// 		for(Asset *asset = edl->assets->first;
-// 			asset;
-// 			asset = asset->next)
-// 		{
-// 			char string2[BCTEXTLEN];
-// 			strcpy(string2, asset->path);
-// 			sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", string2);
-// 		}
-// 	}
-
-// 	for(Asset *asset = edl->assets->first;
-// 		asset;
-// 		asset = asset->next)
-// 	{
-//		char string2[BCTEXTLEN];
-//		strcpy(string2, asset->path);
-//		fs.join_names(asset->path, preferences->renderfarm_mountpoint, string2);
-//	}
-
-
-//edl->dump();
+	unlock();
 }
 
 int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 {
+	lock("RenderFarmClientThread::read_package");
 	send_request_header(RENDERFARM_PACKAGE, 
 		4);
 
@@ -423,18 +466,19 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	int64_t fixed = !EQUIV(frames_per_second, 0.0) ? 
 		(int64_t)(frames_per_second * 65536.0) : 0;
 	STORE_INT32(fixed);
-	write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
+	write_socket((char*)datagram, 4);
 
 
 //printf("RenderFarmClientThread::read_package 1 %f %ld\n", frames_per_second, fixed);
 	char *data;
 	unsigned char *data_ptr;
-	read_string(socket_fd, data);
+	read_string(data);
 //printf("RenderFarmClientThread::read_package 2 %p\n", data);
 // Signifies end of session.
 	if(!data) 
 	{
 //		printf(_("RenderFarmClientThread::read_package no output path recieved.\n"));
+		unlock();
 		return 1;
 	}
 
@@ -456,29 +500,40 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	package->use_brender = READ_INT32(data_ptr);
 
 	delete [] data;
+	unlock();
 
 	return 0;
 }
 
 int RenderFarmClientThread::send_completion(int socket_fd)
 {
-	return send_request_header(RENDERFARM_DONE, 
-		0);
+	lock("RenderFarmClientThread::send_completion");
+	int result = send_request_header(RENDERFARM_DONE, 0);
+	unlock();
+	return result;
 }
 
+
+void RenderFarmClientThread::ping_server()
+{
+	lock("RenderFarmClientThread::ping_server");
+	send_request_header(RENDERFARM_KEEPALIVE, 0);
+	unlock();
+}
 
 
 
 void RenderFarmClientThread::main_loop(int socket_fd)
 {
-	 this->socket_fd = socket_fd;
-	 Thread::start();
+	this->socket_fd = socket_fd;
+
+	Thread::start();
 }
 
 void RenderFarmClientThread::run()
 {
 // Create new memory space
-	int pid = fork();
+	pid = fork();
 	if(pid != 0)
 	{
 		int return_value;
@@ -486,19 +541,74 @@ void RenderFarmClientThread::run()
 		return;
 	}
 
-
-
+// Get the pid of the fork if inside the fork
+	pid = getpid();
 
 
 
 	int socket_fd = this->socket_fd;
-//printf("RenderFarmClientThread::run 1\n");
+
+	init_client_keepalive();
+
+// Get command to run
+	int command;
+SET_TRACE
+	lock("RenderFarmClientThread::run");
+SET_TRACE
+	get_command(socket_fd, &command);
+SET_TRACE
+	unlock();
+
+//printf("RenderFarmClientThread::run command=%d\n", command);
+
+SET_TRACE
+	switch(command)
+	{
+		case RENDERFARM_TUNER:
+			do_tuner(socket_fd);
+			break;
+		case RENDERFARM_PACKAGES:
+			do_packages(socket_fd);
+			break;
+	}
+
+	_exit(0);
+}
+
+
+void RenderFarmClientThread::init_client_keepalive()
+{
+	keep_alive = new RenderFarmKeepalive(this);
+	keep_alive->start();
+	watchdog = new RenderFarmWatchdog(0, this);
+	watchdog->start();
+}
+
+
+
+void RenderFarmClientThread::do_tuner(int socket_fd)
+{
+// Currently only 1 tuner driver.  Maybe more someday.
+	DVBTune server(this);
+	server.main_loop();
+	::close(socket_fd);
+}
+
+
+void RenderFarmClientThread::do_packages(int socket_fd)
+{
+
 	EDL *edl;
 	RenderPackage *package;
 	Asset *default_asset;
 	Preferences *preferences;
+
+
+
 	FarmPackageRenderer package_renderer(this, socket_fd);
 	int result = 0;
+
+
 
 //printf("RenderFarmClientThread::run 2\n");
 // Read settings
@@ -548,7 +658,7 @@ void RenderFarmClientThread::run()
 // Finished list
 		if(result)
 		{
-//printf("RenderFarmClientThread::run 7 %d\n", result);
+//printf("RenderFarmClientThread::run 7\n");
 
 			result = send_completion(socket_fd);
 			break;
@@ -576,22 +686,59 @@ void RenderFarmClientThread::run()
 
 
 //printf("RenderFarmClientThread::run 9\n");
-	delete default_asset;
+	Garbage::delete_object(default_asset);
 //printf("RenderFarmClientThread::run 10\n");
 	delete edl;
 //printf("RenderFarmClientThread::run 11\n");
 	delete preferences;
-//printf("RenderFarmClientThread::run 12\n");
 printf(_("RenderFarmClientThread::run: Session finished.\n"));
-
-// Socket error should be the only cause of this
-	if(result)
-	{
-		;
-	}
-
-	_exit(0);
 }
+
+
+
+
+
+
+
+
+
+RenderFarmKeepalive::RenderFarmKeepalive(
+	RenderFarmClientThread *client_thread)
+ : Thread(1, 0, 0)
+{
+	this->client_thread = client_thread;
+	done = 0;
+}
+
+RenderFarmKeepalive::~RenderFarmKeepalive()
+{
+	done = 1;
+	cancel();
+	join();
+}
+
+
+void RenderFarmKeepalive::run()
+{
+	while(!done)
+	{
+		enable_cancel();
+		sleep(5);
+		disable_cancel();
+		if(!done)
+		{
+// watchdog thread kills this if it gets stuck
+			client_thread->ping_server();
+		}
+	}
+}
+
+
+
+
+
+
+
 
 
 
@@ -622,7 +769,7 @@ int FarmPackageRenderer::get_result()
 		0);
 	unsigned char data[1];
 	data[0] = 1;
-	if(thread->read_socket((char*)data, 1, RENDERFARM_TIMEOUT) != 1)
+	if(thread->read_socket((char*)data, 1) != 1)
 	{
 		thread->unlock();
 		return 1;
@@ -638,7 +785,7 @@ void FarmPackageRenderer::set_result(int value)
 		1);
 	unsigned char data[1];
 	data[0] = value;
-	thread->write_socket((char*)data, 1, RENDERFARM_TIMEOUT);
+	thread->write_socket((char*)data, 1);
 	thread->unlock();
 }
 
@@ -650,7 +797,7 @@ void FarmPackageRenderer::set_progress(int64_t total_samples)
 	unsigned char datagram[4];
 	int i = 0;
 	STORE_INT32(total_samples);
-	thread->write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
+	thread->write_socket((char*)datagram, 4);
 	thread->unlock();
 }
 
@@ -666,10 +813,10 @@ int FarmPackageRenderer::set_video_map(int64_t position, int value)
 		8);
 	STORE_INT32(position);
 	STORE_INT32(value);
-	thread->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT);
+	thread->write_socket((char*)datagram, 8);
 
 // Get completion since the GUI may be locked for a long time.
-	if(!thread->read_socket(return_value, 1, RENDERFARM_TIMEOUT))
+	if(!thread->read_socket(return_value, 1))
 	{
 		result = 1;
 	}
@@ -677,4 +824,13 @@ int FarmPackageRenderer::set_video_map(int64_t position, int value)
 	thread->unlock();
 	return result;
 }
+
+
+
+
+
+
+
+
+
 

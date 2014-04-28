@@ -6,7 +6,7 @@
 #include "autoconf.inc"
 #include "automation.inc"
 #include "datatype.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edit.inc"
 #include "edits.inc"
 #include "edl.inc"
@@ -40,7 +40,7 @@ public:
 
 	int create_objects();
 	int get_id();
-	virtual int load_defaults(Defaults *defaults);
+	virtual int load_defaults(BC_Hash *defaults);
 	int load(FileXML *file, int track_offset, uint32_t load_flags);
 	virtual int save_header(FileXML *file) { return 0; };
 	virtual int save_derived(FileXML *file) { return 0; };
@@ -127,9 +127,9 @@ public:
 		int direction);
 
 // Used by PlayableTracks::is_playable
-	virtual int channel_is_playable(int64_t position, 
-		int direction, 
-		int *do_channel);
+// Returns 1 if the track is in the output boundaries.
+	virtual int is_playable(int64_t position, 
+		int direction);
 
 // Test direct copy conditions common to all the rendering routines
 	virtual int direct_copy_possible(int64_t start, int direction, int use_nudge);
@@ -225,6 +225,8 @@ public:
 		double selectionend, 
 		int shift_autos   /* = 1 */,
 		int default_only  /* = 0 */);
+	void straighten_automation(double selectionstart, 
+		double selectionend);
 	virtual int clear_automation_derived(AutoConf *auto_conf, 
 		double selectionstart, 
 		double selectionend, 

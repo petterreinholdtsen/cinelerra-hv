@@ -26,6 +26,7 @@
 #include "bcmenubar.inc"
 #include "bcmeter.inc"
 #include "bcpan.inc"
+#include "bcpbuffer.inc"
 #include "bcpixmap.inc"
 #include "bcpopup.inc"
 #include "bcpopupmenu.inc"
@@ -36,7 +37,9 @@
 #include "bcscrollbar.inc"
 #include "bcslider.inc"
 #include "bcsubwindow.inc"
+#include "bcsynchronous.inc"
 #include "bctextbox.inc"
+#include "bctimer.inc"
 #include "bctitle.inc"
 #include "bctoggle.inc"
 #include "bctumble.inc"
@@ -44,9 +47,9 @@
 #include "bcwindowbase.inc"
 #include "bcwindowevents.inc"
 #include "condition.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "linklist.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "vframe.inc"
 
 
@@ -64,12 +67,14 @@
 #ifdef HAVE_LIBXXF86VM
 #include <X11/extensions/xf86vmode.h>
 #endif
-
+#ifdef HAVE_GL
+#include <GL/glx.h>
+#endif
 
 
 
 #ifdef HAVE_GL
-typedef void* GLXContext;
+//typedef void* GLXContext;
 #endif
 
 class BC_ResizeCall
@@ -103,6 +108,7 @@ public:
 	friend class BC_MenuPopup;
 	friend class BC_Meter;
 	friend class BC_Pan;
+	friend class BC_PBuffer;
 	friend class BC_Pixmap;
 	friend class BC_Popup;
 	friend class BC_PopupMenu;
@@ -113,6 +119,7 @@ public:
 	friend class BC_ScrollBar;
 	friend class BC_Slider;
 	friend class BC_SubWindow;
+	friend class BC_Synchronous;
 	friend class BC_TextBox;
 	friend class BC_Title;
 	friend class BC_Toggle;
@@ -157,11 +164,26 @@ public:
 // Shouldn't deference a pointer to delete a window if a parent is 
 // currently being deleted.  This returns 1 if any parent is being deleted.
 	int get_deleting();
+
+
+
+//============================= OpenGL functions ===============================
+// OpenGL functions must be called from inside a BC_Synchronous command.
+// Create openGL context and bind it to the current window.
+// If it's called inside start_video/stop_video, the context is bound to the window.
+// If it's called outside start_video/stop_video, the context is bound to the pixmap.
+// Must be called at the beginning of any opengl routine to make sure
+// the context is current.
+// No locking is performed.
 	void enable_opengl();
 	void disable_opengl();
-	void lock_opengl();
-	void unlock_opengl();
 	void flip_opengl();
+
+// Calls the BC_Synchronous version of the function with the window_id.
+// Not run in OpenGL thread because it has its own lock.
+	unsigned int get_shader(char *title, int *got_it);
+	void put_shader(unsigned int handle, char *title);
+
 
 	int flash(int x, int y, int w, int h, int flush = 1);
 	int flash(int flush = 1);
@@ -177,6 +199,9 @@ public:
 	BC_WindowBase* add_tool(BC_WindowBase *subwindow);
 
 	static BC_Resources* get_resources();
+// User must create synchronous object first
+	static BC_Synchronous* get_synchronous();
+
 // Dimensions
 	virtual int get_w();
 	virtual int get_h();
@@ -242,16 +267,20 @@ public:
 // Get if toggle is being dragged
 	int get_toggle_drag();
 
-
 // Set the gc to the color
 	void set_color(int64_t color);
 	int get_bgcolor();
 	void set_font(int font);
 // Set the cursor to a macro from cursors.h
-	void set_cursor(int cursor, int is_hourglass = 0);
+// Set override if the caller is enabling hourglass or hiding the cursor
+	void set_cursor(int cursor, int override = 0);
 // Set the cursor to a character in the X cursor library.  Used by test.C
 	void set_x_cursor(int cursor);
 	int get_cursor();
+// Shows the cursor after it's hidden by video playback
+	void unhide_cursor();
+// Called by video updating routines to hide the cursor after a timeout
+	void update_video_cursor();
 
 // Entry point for starting hourglass.  
 // Converts all cursors and saves the previous cursor.
@@ -269,6 +298,16 @@ public:
 	void draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_text(int x, int y, char *text, int length = -1, BC_Pixmap *pixmap = 0);
+	void draw_xft_text(int x, 
+		int y, 
+		char *text, 
+		int length, 
+		BC_Pixmap *pixmap,
+		int x2,
+		int k,
+		int y2,
+		int j,
+		int i);
 	void draw_center_text(int x, int y, char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -383,7 +422,7 @@ public:
 	char* get_title();
 	void start_video();
 	void stop_video();
-	int video_is_on();
+	int get_id();
 	void set_done(int return_value);
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
@@ -452,8 +491,8 @@ public:
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
 	int set_icon(VFrame *data);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 #ifdef HAVE_LIBXXF86VM
 // Mode switch methods.
@@ -486,6 +525,9 @@ private:
 				int group_it);
 
 	static Display* init_display(char *display_name);
+// Get display from top level
+	Display* get_display();
+	int get_screen();
 	virtual int initialize();
 	int get_atoms();
 	void init_cursors();
@@ -500,6 +542,7 @@ private:
 	int allocate_color_table();
 	int init_gc();
 	int init_fonts();
+	void init_xft();
 	int get_color_rgb8(int color);
 	int64_t get_color_rgb16(int color);
 	int64_t get_color_bgr16(int color);
@@ -553,7 +596,6 @@ private:
 
 	int find_next_textbox(BC_WindowBase **first_textbox, BC_WindowBase **next_textbox, int &result);
 	int find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
-
 
 
 	void translate_coordinates(Window src_w, 
@@ -655,11 +697,7 @@ private:
 	int current_font;
 	XFontStruct *largefont, *mediumfont, *smallfont;
 
-// Xft
-//	XftDraw *xft_drawable;
-//	XftFont *largefont_xft, *mediumfont_xft, *smallfont_xft;
 // Must be void so users don't need to include the wrong libpng version.
-	void *xft_drawable;
 	void *largefont_xft, *mediumfont_xft, *smallfont_xft;
 
 
@@ -686,11 +724,11 @@ private:
 // Display to send events on
 	Display *event_display;
  	Window win;
-	Pixmap pixmap;
 #ifdef HAVE_GL
-	GLXContext gl_context;
+// The first context to be created and the one whose texture id 
+// space is shared with the other contexts.
+	GLXContext gl_win_context;
 #endif
-	static Mutex opengl_lock;
 	int window_lock;
 	GC gc;
 // Depth given by the X Server
@@ -699,12 +737,14 @@ private:
 	Atom ProtoXAtom;
 	Atom RepeaterXAtom;
 	Atom SetDoneXAtom;
-// Cursor before starting an hourglass operation.
-	int prev_cursor;
 // Number of times start_hourglass was called
 	int hourglass_total;
-// Cursor set by last set_cursor.
+// Cursor set by last set_cursor which wasn't an hourglass or transparent.
 	int current_cursor;
+// If hourglass overrides current cursor.  Only effective in top level.
+	int is_hourglass;
+// If transparent overrides all cursors.  Only effective in subwindow.
+	int is_transparent;
 	Cursor arrow_cursor;
 	Cursor cross_cursor;
 	Cursor ibeam_cursor;
@@ -720,9 +760,12 @@ private:
 	Cursor downleft_resize_cursor;
 	Cursor downright_resize_cursor;
 	Cursor hourglass_cursor;
+	Cursor transparent_cursor;
 
 	int xvideo_port_id;
 	ArrayList<BC_ResizeCall*> resize_history;
+// Back buffer
+	BC_Pixmap *pixmap;
 // Background tile if tiled
 	BC_Pixmap *bg_pixmap;
 // Icon
@@ -748,6 +791,10 @@ private:
 	Condition *event_condition;
 	BC_WindowEvents *event_thread;
 	int is_deleting;
+// Hide cursor when video is enabled
+	Timer *cursor_timer;
+// unique ID of window.
+	int id;
 };
 
 

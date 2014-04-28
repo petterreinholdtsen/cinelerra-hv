@@ -378,18 +378,12 @@ void TimeBar::update_presentations()
 
 void TimeBar::update(int do_range, int do_others)
 {
-SET_TRACE
 	draw_time();
-SET_TRACE
 // Need to redo these when range is drawn to get the background updated.
 	update_labels();
-SET_TRACE
 	update_points();
-SET_TRACE
 	update_presentations();
-SET_TRACE
 	flash();
-SET_TRACE
 }
 
 
@@ -904,8 +898,8 @@ int TimeBar::select_region(double position)
 
 // Que the CWindow
 	mwindow->cwindow->update(1, 0, 0);
-	mwindow->gui->cursor->hide();
-	mwindow->gui->cursor->draw();
+	mwindow->gui->cursor->hide(0);
+	mwindow->gui->cursor->draw(1);
 	mwindow->gui->canvas->flash();
 	mwindow->gui->canvas->activate();
 	mwindow->gui->zoombar->update();

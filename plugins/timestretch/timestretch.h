@@ -1,7 +1,7 @@
 #ifndef TIMESTRETCH_H
 #define TIMESTRETCH_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "../parametric/fourier.h"
 #include "guicast.h"
 #include "mainprogress.inc"
@@ -111,7 +111,7 @@ public:
 	int use_fft;
 	TimeStretchEngine *stretch;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	MainProgressBar *progress;
 	double scale;
 	int64_t scaled_size;

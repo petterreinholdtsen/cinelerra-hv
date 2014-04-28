@@ -2,6 +2,7 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
+#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "labels.h"
@@ -201,6 +202,16 @@ void MWindow::shrink_autos()
 }
 
 
+void MWindow::zoom_autos(float min, float max)
+{
+	edl->local_session->automation_min = min;
+	edl->local_session->automation_max = max;
+	gui->zoombar->update_autozoom();
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+}
+
+
 void MWindow::zoom_amp(int64_t zoom_amp)
 {
 	edl->local_session->zoom_y = zoom_amp;
@@ -362,7 +373,7 @@ void MWindow::select_all()
 	cwindow->update(1, 0, 0);
 }
 
-int MWindow::next_label()
+int MWindow::next_label(int shift_down)
 {
 	Label *current;
 	Labels *labels = edl->labels;
@@ -392,10 +403,11 @@ int MWindow::next_label()
 	{
 
 		edl->local_session->set_selectionend(current->position);
-		if(!gui->shift_down()) 
+		if(!shift_down) 
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
 
+		update_plugin_guis();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -414,11 +426,10 @@ int MWindow::next_label()
 		}
 		else
 		{
-			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
@@ -432,7 +443,7 @@ int MWindow::next_label()
 	return 0;
 }
 
-int MWindow::prev_label()
+int MWindow::prev_label(int shift_down)
 {
 	Label *current;
 	Labels *labels = edl->labels;
@@ -462,9 +473,10 @@ int MWindow::prev_label()
 	if(current)
 	{
 		edl->local_session->set_selectionstart(current->position);
-		if(!gui->shift_down()) 
+		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
+		update_plugin_guis();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -485,11 +497,10 @@ int MWindow::prev_label()
 		else
 // Don't scroll the display
 		{
-			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
@@ -502,6 +513,149 @@ int MWindow::prev_label()
 	}
 	return 0;
 }
+
+
+
+
+
+
+int MWindow::next_edit_handle(int shift_down)
+{
+	double position = edl->local_session->get_selectionend(1);
+	Units::fix_double(&position);
+	double new_position = INFINITY;
+// Test for edit handles after cursor position
+	for (Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if (track->record)
+		{
+			for (Edit *edit = track->edits->first; edit; edit = edit->next)
+			{
+				double edit_end = track->from_units(edit->startproject + edit->length);
+				Units::fix_double(&edit_end);
+				if (edit_end > position && edit_end < new_position)
+					new_position = edit_end;
+			}
+		}
+	}
+
+	if(new_position != INFINITY)
+	{
+
+		edl->local_session->set_selectionend(new_position);
+printf("MWindow::next_edit_handle %d\n", shift_down);
+		if(!shift_down) 
+			edl->local_session->set_selectionstart(
+				edl->local_session->get_selectionend(1));
+
+		update_plugin_guis();
+		if(edl->local_session->get_selectionend(1) >= 
+			(double)edl->local_session->view_start *
+			edl->local_session->zoom_sample /
+			edl->session->sample_rate + 
+			gui->canvas->time_visible() ||
+			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
+			edl->local_session->zoom_sample /
+			edl->session->sample_rate)
+		{
+			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
+				edl->session->sample_rate /
+				edl->local_session->zoom_sample - 
+				gui->canvas->get_w() / 
+				2));
+			cwindow->update(1, 0, 0, 0, 0);
+		}
+		else
+		{
+			gui->patchbay->update();
+			gui->timebar->update();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
+			gui->zoombar->update();
+			gui->canvas->flash();
+			gui->flush();
+			cwindow->update(1, 0, 0);
+		}
+	}
+	else
+	{
+		goto_end();
+	}
+	return 0;
+}
+
+int MWindow::prev_edit_handle(int shift_down)
+{
+	double position = edl->local_session->get_selectionstart(1);
+	double new_position = -1;
+	Units::fix_double(&position);
+// Test for edit handles before cursor position
+	for (Track *track = edl->tracks->first; track; track = track->next)
+	{
+		if (track->record)
+		{
+			for (Edit *edit = track->edits->first; edit; edit = edit->next)
+			{
+				double edit_end = track->from_units(edit->startproject);
+				Units::fix_double(&edit_end);
+				if (edit_end < position && edit_end > new_position)
+					new_position = edit_end;
+			}
+		}
+	}
+
+	if(new_position != -1)
+	{
+
+		edl->local_session->set_selectionstart(new_position);
+printf("MWindow::next_edit_handle %d\n", shift_down);
+		if(!shift_down) 
+			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
+
+		update_plugin_guis();
+// Scroll the display
+		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
+			edl->local_session->zoom_sample /
+			edl->session->sample_rate + 
+			gui->canvas->time_visible() 
+		||
+			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
+			edl->local_session->zoom_sample /
+			edl->session->sample_rate)
+		{
+			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
+				edl->session->sample_rate /
+				edl->local_session->zoom_sample - 
+				gui->canvas->get_w() / 
+				2));
+			cwindow->update(1, 0, 0, 0, 0);
+		}
+		else
+// Don't scroll the display
+		{
+			gui->patchbay->update();
+			gui->timebar->update();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
+			gui->zoombar->update();
+			gui->canvas->flash();
+			gui->flush();
+			cwindow->update(1, 0, 0);
+		}
+	}
+	else
+	{
+		goto_start();
+	}
+	return 0;
+}
+
+
+
+
+
+
+
 
 int MWindow::expand_y()
 {

@@ -48,6 +48,7 @@ extern "C" {
 #define QUICKTIME_DV "dvc "
 #define QUICKTIME_DV25 "dv25"
 #define QUICKTIME_DVSD "dvsd"
+#define QUICKTIME_DVCP "dvcp"          // PAL video inside Quicktime
 
 /* RGB uncompressed.  Allows alpha */
 #define QUICKTIME_RAW  "raw "
@@ -63,6 +64,9 @@ extern "C" {
 
 /* YUV 4:2:2 */
 #define QUICKTIME_YUV2 "yuv2"
+
+/* 8 bit Packed YUV (video range) 4:2:2 */
+#define QUICKTIME_2VUY "2vuy"
 
 /* Crazy YUV 4:2:0 configuration for early tests.  NOT STANDARD. */
 #define QUICKTIME_YUV4 "yuv4"
@@ -376,6 +380,9 @@ int quicktime_encode_video(quicktime_t *file,
 long quicktime_decode_video(quicktime_t *file, 
 	unsigned char **row_pointers, 
 	int track);
+
+/* Get memory used by video decoders.  Only counts frame caches. */
+int64_t quicktime_memory_usage(quicktime_t *file);
 
 /* Decode or encode audio for a single channel into the buffer. */
 /* Pass a buffer for the _i or the _f argument if you want int16 or float data. */

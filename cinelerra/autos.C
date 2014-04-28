@@ -344,7 +344,6 @@ Auto* Autos::insert_auto(int64_t position)
 		;
 	}
 
-//printf("Autos::insert_auto %p\n", current);
 // Insert new
 	if(!current)
 	{
@@ -569,7 +568,9 @@ void Autos::remove_nonsequential(Auto *keyframe)
 }
 
 
-
+void Autos::straighten(int64_t start, int64_t end)
+{
+}
 
 void Autos::clear(int64_t start, 
 	int64_t end, 

@@ -62,7 +62,7 @@ int RGB601Main::load_defaults()
 	sprintf(directory, "%srgb601.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.direction = defaults->get("DIRECTION", config.direction);
@@ -131,10 +131,10 @@ void RGB601Main::read_data(KeyFrame *keyframe)
 { \
 	for(int i = 0; i < max; i++) \
 	{ \
-		forward_table[i] = (int)((double)0.8588 * i + max * 0.0627 + 0.5); \
-		reverse_table[i] = (int)((double)1.1644 * i - max * 0.0627 + 0.5); \
-		CLAMP(forward_table[i], 0, max); \
-		CLAMP(reverse_table[i], 0, max); \
+		int forward_output = (int)((double)0.8588 * i + max * 0.0627 + 0.5); \
+		int reverse_output = (int)((double)1.1644 * i - max * 0.0627 + 0.5); \
+		forward_table[i] = CLIP(forward_output, 0, max - 1); \
+		reverse_table[i] = CLIP(reverse_output, 0, max - 1); \
 	} \
 }
 
@@ -146,14 +146,14 @@ void RGB601Main::create_table(VFrame *input_ptr)
 		case BC_YUV888:
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			CREATE_TABLE(0xff);
+			CREATE_TABLE(0x100);
 			break;
 
 		case BC_RGB161616:
 		case BC_YUV161616:
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			CREATE_TABLE(0xffff);
+			CREATE_TABLE(0x10000);
 			break;
 	}
 }
@@ -281,27 +281,114 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 				PROCESS(reverse_table, u_int16_t, 4, 0);
 				break;
 		}
-	else
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-		output_ptr->copy_from(input_ptr);
 }
 
-int RGB601Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int RGB601Main::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
 
-	create_table(input_ptr);
+// Set parameters for aggregation with previous or next effect.
+	frame->get_params()->update("RGB601_DIRECTION", config.direction);
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
+
+// Deinterlace effects may aggregate this one,
+	if(get_use_opengl() &&
+		(prev_effect_is("Frames to fields") ||
+		next_effect_is("Frames to fields")))
+	{
+		return 0;
+	}
+
+	if(get_use_opengl() && config.direction)
+	{
+		run_opengl();
+		return 0;
+	}
+	
+
+	create_table(frame);
 
 	if(config.direction == 1)
-		process(forward_table, input_ptr, output_ptr);
+		process(forward_table, frame, frame);
 	else
 	if(config.direction == 2)
-		process(reverse_table, input_ptr, output_ptr);
-	else
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-		output_ptr->copy_from(input_ptr);
+		process(reverse_table, frame, frame);
 
 	return 0;
 }
+
+int RGB601Main::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *yuv_fwd_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
+		"}\n";
+	static char *yuv_rev_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.r = gl_FragColor.r * 1.1644 - 0.0627;\n"
+		"}\n";
+	static char *rgb_fwd_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(0.8588, 0.8588, 0.8588) + vec3(0.0627, 0.0627, 0.0627);\n"
+		"}\n";
+	static char *rgb_rev_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(1.1644, 1.1644, 1.1644) - vec3(0.0627, 0.0627, 0.0627);\n"
+		"}\n";
+
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->bind_texture(0);
+
+	unsigned int frag_shader = 0;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			frag_shader = VFrame::make_shader(0,
+				config.direction == 1 ? yuv_fwd_frag : yuv_rev_frag,
+				0);
+		break;
+
+		default:
+			frag_shader = VFrame::make_shader(0,
+				config.direction == 1 ? rgb_fwd_frag : rgb_rev_frag,
+				0);
+		break;
+	}
+
+	if(frag_shader)
+	{
+		glUseProgram(frag_shader);
+		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+	}
+	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
 
 

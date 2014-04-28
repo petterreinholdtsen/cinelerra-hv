@@ -1,5 +1,5 @@
 #include "channel.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include <string.h>
 
@@ -39,12 +39,30 @@ void Channel::reset()
 	device_index = 0;
 	tuner = 0;
 	has_scanning = 0;
+
+	audio_pid = 0x14;
+	video_pid = 0x11;
 }
 
+void Channel::dump()
+{
+	printf("Channel::dump title=%s\n"
+		"use_freq=%d\n"
+		"use_fine=%d\n"
+		"use_norm=%d\n"
+		"use_input=%d\n"
+		"has_scanning=%d\n",
+		title,
+		use_frequency,
+		use_fine,
+		use_norm,
+		use_input,
+		has_scanning);
+}
 
 Channel& Channel::operator=(Channel &channel)
 {
-	printf("Channel::operator= not supported.\n");
+	printf("Channel::operator= is not supported.\n");
 	return *this;
 }
 
@@ -58,6 +76,8 @@ void Channel::copy_settings(Channel *channel)
 	this->norm = channel->norm;
 	this->device_index = channel->device_index;
 	this->tuner = channel->tuner;
+	this->audio_pid = channel->audio_pid;
+	this->video_pid = channel->video_pid;
 }
 
 void Channel::copy_usage(Channel *channel)
@@ -89,6 +109,8 @@ int Channel::load(FileXML *file)
 				norm = file->tag.get_property("NORM", norm);
 				device_index = file->tag.get_property("DEVICE_INDEX", device_index);
 				tuner = file->tag.get_property("TUNER", tuner);
+				audio_pid = file->tag.get_property("AUDIO_PID", audio_pid);
+				video_pid = file->tag.get_property("VIDEO_PID", video_pid);
 				text = file->read_text();
 				strcpy(title, text);
 			}
@@ -110,6 +132,8 @@ int Channel::save(FileXML *file)
 	file->tag.set_property("NORM", norm);
 	file->tag.set_property("DEVICE_INDEX", device_index);
 	file->tag.set_property("TUNER", tuner);
+	file->tag.set_property("AUDIO_PID", audio_pid);
+	file->tag.set_property("VIDEO_PID", video_pid);
 	file->append_tag();
 	file->append_text(title);
 	file->tag.set_title("/CHANNEL");
@@ -119,14 +143,14 @@ int Channel::save(FileXML *file)
 
 
 
-void Channel::load_defaults(Defaults *defaults)
+void Channel::load_defaults(BC_Hash *defaults)
 {
 	freqtable = defaults->get("SCAN_FREQTABLE", freqtable);
 	input = defaults->get("SCAN_INPUT", input);
 	norm = defaults->get("SCAN_NORM", norm);
 }
 
-void Channel::save_defaults(Defaults *defaults)
+void Channel::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("SCAN_FREQTABLE", freqtable);
 	defaults->update("SCAN_INPUT", input);

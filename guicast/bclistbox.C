@@ -3,6 +3,7 @@
 #include "bclistboxitem.h"
 #include "bcpixmap.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "cursors.h"
 #include "fonts.h"
@@ -487,7 +488,7 @@ void BC_ListBox::init_column_width()
 		int widest = 5, w;
 		for(int i = 0; i < data[0].total; i++)
 		{
-			w = get_text_width(MEDIUMFONT, data[0].values[i]->get_text()) + 2 * LISTBOX_MARGIN;
+		w = get_text_width(MEDIUMFONT, data[0].values[i]->get_text()) + 2 * LISTBOX_MARGIN;
 			if(w > widest) widest = w;
 		}
 		default_column_width[0] = widest;
@@ -579,7 +580,7 @@ int BC_ListBox::draw_button()
 			image_number = 2;
 
 
-		button_images[image_number]->write_drawable(pixmap, 
+		pixmap->draw_pixmap(button_images[image_number], 
 			0, 
 			0,
 			w,
@@ -1476,7 +1477,6 @@ int BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 	int recalc_positions,
 	int draw)
 {
-
 	set_columns(column_titles, 
 		column_widths, 
 		columns);
@@ -2728,7 +2728,6 @@ int BC_ListBox::button_press_event()
 	hide_tooltip();
 
 
-
 // Pressed in button
 	if(is_popup && top_level->event_win == win)
 	{
@@ -2763,39 +2762,45 @@ int BC_ListBox::button_press_event()
 		}
 
 // Wheel mouse pressed
-		if(get_buttonpress() == 4 && current_operation == NO_OPERATION)
+		if(get_buttonpress() == 4)
 		{
-			current_operation = WHEEL;
-			if(yscrollbar)
+			if(current_operation == NO_OPERATION)
 			{
-				set_yposition(yposition - gui->get_h() / 10, 0);
-				clamp_positions();
-				update_scrollbars();
-				highlighted_ptr = 0;
-				highlighted_item = get_cursor_item(data,
-					top_level->cursor_x, 
-					top_level->cursor_y, 
-					&highlighted_ptr);
-				draw_items(1);
-				result = 1;
+				current_operation = WHEEL;
+				if(yscrollbar)
+				{
+					set_yposition(yposition - gui->get_h() / 10, 0);
+					clamp_positions();
+					update_scrollbars();
+					highlighted_ptr = 0;
+					highlighted_item = get_cursor_item(data,
+						top_level->cursor_x, 
+						top_level->cursor_y, 
+						&highlighted_ptr);
+					draw_items(1);
+					result = 1;
+				}
 			}
 		}
 		else
-		if(get_buttonpress() == 5 && current_operation == NO_OPERATION)
+		if(get_buttonpress() == 5)
 		{
-			current_operation = WHEEL;
-			if(yscrollbar)
+			if(current_operation == NO_OPERATION)
 			{
-				set_yposition(yposition + gui->get_h() / 10, 0);
-				clamp_positions();
-				update_scrollbars();
-				highlighted_ptr = 0;
-				highlighted_item = get_cursor_item(data,
-					top_level->cursor_x, 
-					top_level->cursor_y,
-					&highlighted_ptr);
-				draw_items(1);
-				result = 1;
+				current_operation = WHEEL;
+				if(yscrollbar)
+				{
+					set_yposition(yposition + gui->get_h() / 10, 0);
+					clamp_positions();
+					update_scrollbars();
+					highlighted_ptr = 0;
+					highlighted_item = get_cursor_item(data,
+						top_level->cursor_x, 
+						top_level->cursor_y,
+						&highlighted_ptr);
+					draw_items(1);
+					result = 1;
+				}
 			}
 		}
 		else
@@ -4080,7 +4085,7 @@ int BC_ListBox::draw_items(int flash)
 // Draw icons
 					gui->set_color(get_item_color(data, 0, i));
 					if(item->icon)
-						item->icon->write_drawable(gui->pixmap, 
+						gui->pixmap->draw_pixmap(item->icon, 
 							icon_x + ICON_MARGIN, 
 							icon_y + ICON_MARGIN);
 					gui->draw_text(text_x + ICON_MARGIN, 

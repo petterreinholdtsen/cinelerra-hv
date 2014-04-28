@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -59,7 +59,9 @@ class InvertVideoEffect : public PluginVClient
 public:
 	InvertVideoEffect(PluginServer *server);
 	~InvertVideoEffect();
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -72,10 +74,11 @@ public:
 	void raise_window();
 	int set_string();
 	int load_configuration();
+	int handle_opengl();
 
 	InvertVideoConfig config;
 	InvertVideoThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 
@@ -226,7 +229,7 @@ int InvertVideoEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%sinvertvideo.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.r = defaults->get("R", config.r);
 	config.g = defaults->get("G", config.g);
@@ -277,10 +280,10 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 
 #define INVERT_MACRO(type, components, max) \
 { \
-	for(int i = 0; i < input->get_h(); i++) \
+	for(int i = 0; i < frame->get_h(); i++) \
 	{ \
-		type *in_row = (type*)input->get_rows()[i]; \
-		type *out_row = (type*)output->get_rows()[i]; \
+		type *in_row = (type*)frame->get_rows()[i]; \
+		type *out_row = (type*)frame->get_rows()[i]; \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
@@ -296,20 +299,29 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 	} \
 }
 
-int InvertVideoEffect::process_realtime(VFrame *input, VFrame *output)
+int InvertVideoEffect::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
 
-	if(!config.r && !config.g && !config.b && !config.a)
-	{
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
-	}
-	else
-	{
-		int w = input->get_w();
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
 
-		switch(input->get_color_model())
+
+	if(config.r || config.g || config.b || config.a)
+	{
+		if(get_use_opengl())
+		{
+			run_opengl();
+			return 0;
+		}
+		int w = frame->get_w();
+
+		switch(frame->get_color_model())
 		{
 			case BC_RGB_FLOAT:
 				INVERT_MACRO(float, 3, 1.0)
@@ -337,6 +349,47 @@ int InvertVideoEffect::process_realtime(VFrame *input, VFrame *output)
 	}
 
 	return 0;
+}
+
+int InvertVideoEffect::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *invert_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform bool do_r;\n"
+		"uniform bool do_g;\n"
+		"uniform bool do_b;\n"
+		"uniform bool do_a;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	if(do_r) gl_FragColor.r = 1.0 - gl_FragColor.r;\n"
+		"	if(do_g) gl_FragColor.g = 1.0 - gl_FragColor.g;\n"
+		"	if(do_b) gl_FragColor.b = 1.0 - gl_FragColor.b;\n"
+		"	if(do_a) gl_FragColor.a = 1.0 - gl_FragColor.a;\n"
+		"}\n";
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int frag_shader = 0;
+	frag_shader = VFrame::make_shader(0,
+		invert_frag,
+		0);
+	glUseProgram(frag_shader);
+	glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_r"), config.r);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_g"), config.g);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_b"), config.b);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_a"), config.a);
+
+
+	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
 }
 
 

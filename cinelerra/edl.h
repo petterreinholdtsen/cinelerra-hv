@@ -4,7 +4,7 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "autoconf.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edits.inc"
 #include "edl.inc"
 #include "edlsession.inc"
@@ -12,6 +12,7 @@
 #include "labels.inc"
 #include "localsession.inc"
 #include "maxchannels.h"
+#include "mutex.inc"
 #include "playbackconfig.h"
 #include "pluginserver.h"
 #include "preferences.inc"
@@ -53,8 +54,8 @@ public:
 	EDL& operator=(EDL &edl);
 
 // Load configuration and track counts
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // Clip default settings to boundaries.
 	void boundaries();
 // Create tracks using existing configuration
@@ -81,7 +82,10 @@ public:
 	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);
 	void copy_tracks(EDL *edl);
-	void copy_session(EDL *edl);
+// Copies project path, folders, EDLSession, and LocalSession from edl argument.
+// session_only - used by preferences and format specify 
+// whether to only copy EDLSession
+	void copy_session(EDL *edl, int session_only = 0);
 	int copy_all(EDL *edl);
 	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);
@@ -192,6 +196,8 @@ public:
 	ArrayList<EDL*> clips;
 // VWindow
 	EDL *vwindow_edl;
+// is the vwindow_edl shared and therefore should not be deleted in destructor
+	int vwindow_edl_shared;
 
 // Media files
 // Shared between all EDLs
@@ -218,6 +224,8 @@ public:
 // Use parent Assets if nonzero
 	EDL *parent_edl;
 
+
+	static Mutex *id_lock;
 
 // unique ID of this EDL for resource window
 	int id;

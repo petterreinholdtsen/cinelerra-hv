@@ -39,12 +39,24 @@ RecordVideo::RecordVideo(MWindow *mwindow,
 	this->gui = record->record_gui;
 	unhang_lock = new Mutex("RecordVideo::unhang_lock");
 	trigger_lock = new Condition(1, "RecordVideo::trigger_lock");
+	capture_frame = 0;
+	frame_ptr = 0;
 }
 
 RecordVideo::~RecordVideo()
 {
 	delete unhang_lock;
 	delete trigger_lock;
+// These objects are shared with the file if recording.
+	if(record_thread->monitor)
+	{
+		if(frame_ptr)
+		{
+			if(frame_ptr[0]) delete [] frame_ptr[0];
+			delete [] frame_ptr;
+		}
+		delete capture_frame;
+	}
 }
 
 void RecordVideo::reset_parameters()
@@ -96,6 +108,7 @@ int RecordVideo::stop_recording()
 			cleanup_recording();
 		}
 	}
+// Joined in RecordThread
 	return 0;
 }
 
@@ -104,38 +117,40 @@ int RecordVideo::cleanup_recording()
 {
 	if(!record_thread->monitor)
 	{
-//printf("RecordVideo::cleanup_recording 1\n");
 // write last buffer
 		write_buffer(1);
 // stop file I/O
-//printf("RecordVideo::cleanup_recording 2\n");
 	}
 	else
 	{
-		delete [] frame_ptr[0];
-		delete [] frame_ptr;
-		delete capture_frame;
+// RecordMonitorThread still needs capture_frame if uncompressed.
+// 		delete [] frame_ptr[0];
+// 		delete [] frame_ptr;
+// 		delete capture_frame;
 	}
 	return 0;
 }
 
 void RecordVideo::get_capture_frame()
 {
-	if(record->fixed_compression)
+	if(!capture_frame)
 	{
-		capture_frame = new VFrame;
-	}
-	else
-	{
-		capture_frame = new VFrame(0, 
-			record->default_asset->width, 
-			record->default_asset->height, 
-			record->vdevice->get_best_colormodel(record->default_asset));
+		if(record->fixed_compression)
+		{
+			capture_frame = new VFrame;
+		}
+		else
+		{
+			capture_frame = new VFrame(0, 
+				record->default_asset->width, 
+				record->default_asset->height, 
+				record->vdevice->get_best_colormodel(record->default_asset));
 //printf("RecordVideo::get_capture_frame %d %d\n", capture_frame->get_w(), capture_frame->get_h());
+		}
+		frame_ptr = new VFrame**[1];
+		frame_ptr[0] = new VFrame*[1];
+		frame_ptr[0][0] = capture_frame;
 	}
-	frame_ptr = new VFrame**[1];
-	frame_ptr[0] = new VFrame*[1];
-	frame_ptr[0][0] = capture_frame;
 }
 
 
@@ -185,7 +200,10 @@ void RecordVideo::run()
 // In 2.6.7 this doesn't work.  For some reason, probably buffer overflowing,
 // it causes the driver to hang up momentarily so we try to only delay
 // when really really far ahead.
-			if(delay < 2000 && delay > 0) delayer.delay(delay);
+			if(delay < 2000 && delay > 0) 
+			{
+				delayer.delay(delay);
+			}
 			gui->update_dropped_frames(0);
 			last_dropped_frames = 0;
 		}
@@ -336,7 +354,7 @@ void RecordVideo::run()
 	}
 
 	cleanup_recording();
-//TRACE("RecordVideo::run 100");
+SET_TRACE
 }
 
 void RecordVideo::read_buffer()

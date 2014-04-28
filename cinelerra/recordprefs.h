@@ -7,8 +7,10 @@ class RecordVUDB;
 class RecordVUInt;
 class RecordWriteLength;
 class RecordRealTime;
+class RecordChannels;
 
 #include "adeviceprefs.inc"
+#include "formattools.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
 #include "recordprefs.inc"
@@ -22,7 +24,8 @@ public:
 
 	int create_objects();
 
-	ADevicePrefs *in_device /*, *duplex_device */;
+	FormatTools *recording_format;
+	ADevicePrefs *audio_in_device;
 	VDevicePrefs *video_in_device;
 	MWindow *mwindow;
 };
@@ -134,6 +137,17 @@ public:
 class RecordFrameRateText : public BC_TextBox
 {
 	RecordFrameRateText(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class RecordChannels : public BC_TumbleTextBox
+{
+public:
+	RecordChannels(PreferencesWindow *pwindow, 
+		BC_SubWindow *gui, 
+		int x, 
+		int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

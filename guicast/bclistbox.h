@@ -280,6 +280,8 @@ public:
 
 
 
+// Draw the list items
+	int draw_items(int flash);
 
 
 
@@ -296,8 +298,6 @@ private:
 		int columns);
 // Draw the button for a popup listbox
 	int draw_button();
-// Draw the list items
-	int draw_items(int flash);
 // Draw list border
 	int draw_border(int flash);
 // Draw column titles
@@ -351,7 +351,7 @@ private:
 
 	int get_title_h();
 	int calculate_item_coords();
-	void BC_ListBox::calculate_last_coords_recursive(
+	void calculate_last_coords_recursive(
 		ArrayList<BC_ListBoxItem*> *data,
 		int *icon_x,
 		int *next_icon_x,

@@ -3,6 +3,7 @@
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "formattools.h"
 #include "new.h"
 #include "language.h"
 #include "mwindow.h"
@@ -23,7 +24,8 @@ RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 
 RecordPrefs::~RecordPrefs()
 {
-	delete in_device;
+	delete audio_in_device;
+	delete recording_format;
 //	delete duplex_device;
 }
 
@@ -32,34 +34,71 @@ int RecordPrefs::create_objects()
 	int x, y, x2;
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
+	BC_Title *title;
 
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("Audio In"), 
-		LARGEFONT, 
-		resources->text_default));
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 
+	add_subwindow(title = new BC_Title(x, 
+		y, 
+		_("File Format:"), 
+		LARGEFONT, 
+		resources->text_default));
+	y += title->get_h() + 5;
+
+	recording_format = 
+		new FormatTools(mwindow,
+			this, 
+			pwindow->thread->edl->session->recording_format);
+	recording_format->create_objects(x, 
+		y, 
+		1,  // Include tools for audio
+		1,  // Include tools for video
+		1,  // Include checkbox for audio
+		1,  // Include checkbox for video
+		0,
+		1,
+		0,  // Select compressors to be offered
+		1,  // Prompt for recording options
+		0,  // If nonzero, prompt for insertion strategy
+		0); // Supply file formats for background rendering
+
+
+
+
+
+// Audio hardware
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+
+	add_subwindow(title = new BC_Title(x, 
+		y, 
+		_("Audio In"), 
+		LARGEFONT, 
+		resources->text_default));
+
+	y += title->get_h() + 5;
 
 	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
-	in_device = new ADevicePrefs(x + 110, 
+	audio_in_device = new ADevicePrefs(x + 110, 
 		y, 
 		pwindow, 
 		this, 
 		0,
 		pwindow->thread->edl->session->aconfig_in, 
 		MODERECORD);
-	in_device->initialize();
-
-	y += in_device->get_h();
+	audio_in_device->initialize(1);
+	y += audio_in_device->get_h(1);
 
 
 	BC_TextBox *textbox;
-	BC_Title *title1, *title2;
+	BC_Title *title1, *title2, *title3;
 	add_subwindow(title1 = new BC_Title(x, y, _("Samples to write to disk at a time:")));
 	add_subwindow(title2 = new BC_Title(x, y + 30, _("Sample rate for recording:")));
+	add_subwindow(title3 = new BC_Title(x, y + 60, _("Channels to record:")));
 	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
+	x2 = MAX(x2, title3->get_w() + 10);
 
 	sprintf(string, "%ld", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, 
@@ -70,7 +109,10 @@ int RecordPrefs::create_objects()
 	add_subwindow(textbox = new RecordSampleRate(pwindow, x2, y + 30));
 	add_subwindow(new SampleRatePulldown(mwindow, textbox, x2 + textbox->get_w(), y + 30));
 
-	y += 60;
+	RecordChannels *channels = new RecordChannels(pwindow, this, x2, y + 60);
+	channels->create_objects();
+
+	y += 90;
 
 
 	add_subwindow(new RecordRealTime(mwindow, 
@@ -84,7 +126,7 @@ int RecordPrefs::create_objects()
 
 
 
-// Video
+// Video hardware
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
 
@@ -92,7 +134,11 @@ int RecordPrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, resources->text_default));
 	y += 25;
 
-	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
+	add_subwindow(new BC_Title(x, 
+		y, 
+		_("Record Driver:"), 
+		MEDIUMFONT, 
+		resources->text_default));
 	video_in_device = new VDevicePrefs(x + 110, 
 		y, 
 		pwindow, 
@@ -100,7 +146,7 @@ int RecordPrefs::create_objects()
 		0, 
 		pwindow->thread->edl->session->vconfig_in, 
 		MODERECORD);
-	video_in_device->initialize();
+	video_in_device->initialize(1);
 
 	y += 55;
 	sprintf(string, "%d", pwindow->thread->edl->session->video_write_length);
@@ -147,7 +193,6 @@ int RecordPrefs::create_objects()
 	add_subwindow(textbox = new RecordFrameRate(pwindow, x, y));
 	x += 75;
 	add_subwindow(new FrameRatePulldown(mwindow, textbox, x, y));
-	y += 30;
 
 	return 0;
 }
@@ -167,8 +212,15 @@ int RecordWriteLength::handle_event()
 
 
 
-RecordRealTime::RecordRealTime(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value)
- : BC_CheckBox(x, y, value, _("Record in realtime priority (root only)"))
+RecordRealTime::RecordRealTime(MWindow *mwindow, 
+	PreferencesWindow *pwindow, 
+	int x, 
+	int y, 
+	int value)
+ : BC_CheckBox(x, 
+ 	y, 
+	value, 
+	_("Record in realtime priority (root only)"))
 { 
 	this->pwindow = pwindow; 
 }
@@ -234,6 +286,27 @@ int RecordFrameRate::handle_event()
 	pwindow->thread->edl->session->vconfig_in->in_framerate = atof(get_text());
 	return 1;
 }
+
+
+
+RecordChannels::RecordChannels(PreferencesWindow *pwindow, BC_SubWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, 
+		pwindow->thread->edl->session->aconfig_in->channels,
+		1,
+		MAX_CHANNELS,
+		x, 
+		y, 
+		100)
+{
+	this->pwindow = pwindow; 
+}
+
+int RecordChannels::handle_event()
+{
+	pwindow->thread->edl->session->aconfig_in->channels = atoi(get_text());
+	return 1;
+}
+
 
 
 VideoWriteLength::VideoWriteLength(PreferencesWindow *pwindow, char *text, int y)
@@ -318,6 +391,7 @@ int RecordSyncDrives::handle_event()
 	pwindow->thread->edl->session->record_sync_drives = get_value(); 
 	return 1;
 }
+
 
 
 

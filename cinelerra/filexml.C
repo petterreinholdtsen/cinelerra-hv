@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bcsignals.h"
 #include "filexml.h"
 
 
@@ -312,12 +313,13 @@ int FileXML::read_from_file(char *filename, int ignore_error)
 	if(in = fopen(filename, "rb"))
 	{
 		fseek(in, 0, SEEK_END);
-		length = ftell(in);
+		int new_length = ftell(in);
 		fseek(in, 0, SEEK_SET);
-		reallocate_string(length + 1);
-		fread(string, length, 1, in);
-		string[length] = 0;
+		reallocate_string(new_length + 1);
+		fread(string, new_length, 1, in);
+		string[new_length] = 0;
 		position = 0;
+		length = new_length;
 	}
 	else
 	{
@@ -449,7 +451,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 	while(input[position] != left_delimiter && position < length) position++;
 	
 	if(position >= length) return 1;
-	
+
 // find the start
 	while(position < length &&
 		(input[position] == ' ' ||         // skip spaces
@@ -530,13 +532,15 @@ int XMLTag::read_tag(char *input, long &position, long length)
 			terminating_char = '\"';     // use quotes to terminate
 			if(position < length) position++;   // don't store the quote itself
 		}
-		else terminating_char = ' ';         // use space to terminate
+		else 
+			terminating_char = ' ';         // use space to terminate
 
 // read until the terminating char
 		for(j = 0;
 			j < MAX_LENGTH &&
 			position < length &&
 			input[position] != right_delimiter &&
+			input[position] != '\n' &&
 			input[position] != terminating_char;
 			j++, position++)
 		{
@@ -558,7 +562,10 @@ int XMLTag::read_tag(char *input, long &position, long length)
 // skip the >
 	if(position < length && input[position] == right_delimiter) position++;
 
-	if(total_properties || tag_title[0]) return 0; else return 1;
+	if(total_properties || tag_title[0]) 
+		return 0; 
+	else 
+		return 1;
 	return 0;
 }
 
@@ -599,6 +606,7 @@ char* XMLTag::get_property(char *property, char *value)
 	{
 		if(!strcasecmp(tag_properties[i], property))
 		{
+//printf("XMLTag::get_property %s %s\n", tag_properties[i], tag_property_values[i]);
 			strcpy(value, tag_property_values[i]);
 			result = 1;
 		}
@@ -716,23 +724,22 @@ int XMLTag::set_property(char *text, int64_t value)
 	return 0;
 }
 
-// int XMLTag::set_property(char *text, int value)
-// {
-// 	sprintf(temp_string, "%d", value);
-// 	set_property(text, temp_string);
-// 	return 0;
-// }
-
 int XMLTag::set_property(char *text, float value)
 {
-	sprintf(temp_string, "%.6e", value);
+	if (value - (float)((int64_t)value) == 0)
+		sprintf(temp_string, "%lld", (int64_t)value);
+	else
+		sprintf(temp_string, "%.6e", value);
 	set_property(text, temp_string);
 	return 0;
 }
 
 int XMLTag::set_property(char *text, double value)
 {
-	sprintf(temp_string, "%.16e", value);
+	if (value - (double)((int64_t)value) == 0)
+		sprintf(temp_string, "%lld", (int64_t)value);
+	else
+		sprintf(temp_string, "%.16e", value);
 	set_property(text, temp_string);
 	return 0;
 }

@@ -10,7 +10,7 @@
 #include "confirmsave.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -246,6 +246,7 @@ void Render::start_interactive()
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects("Already rendering");
+		error_box.raise_window();
 		error_box.run_window();
 	}
 }
@@ -266,12 +267,13 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects("Already rendering");
+		error_box.raise_window();
 		error_box.run_window();
 	}
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
-	Defaults *boot_defaults,
+	BC_Hash *boot_defaults,
 	Preferences *preferences,
 	ArrayList<PluginServer*> *plugindb)
 {
@@ -308,39 +310,54 @@ void Render::run()
 	if(mode == Render::INTERACTIVE)
 	{
 // Fix the asset for rendering
+printf("Render::run 1\n");
 		Asset *asset = new Asset;
 		load_defaults(asset);
+printf("Render::run 2\n");
 		check_asset(mwindow->edl, *asset);
+printf("Render::run 3\n");
 
 // Get format from user
 		if(!result)
 		{
+printf("Render::run 4\n");
 			do
 			{
 				format_error = 0;
 				result = 0;
 
 				{
+printf("Render::run 5\n");
 					RenderWindow window(mwindow, this, asset);
+printf("Render::run 6\n");
 					window.create_objects();
+printf("Render::run 7\n");
 					result = window.run_window();
+printf("Render::run 8\n");
 				}
 
 				if(!result)
 				{
+printf("Render::run 8.1\n");
 // Check the asset format for errors.
 					FormatCheck format_check(asset);
+printf("Render::run 8.2\n");
 					format_error = format_check.check_format();
+printf("Render::run 8.3\n");
 				}
 			}while(format_error && !result);
 		}
+printf("Render::run 9\n");
 
 		save_defaults(asset);
 		mwindow->save_defaults();
+printf("Render::run 10\n");
 
 		if(!result) render(1, asset, mwindow->edl, strategy);
+printf("Render::run 11\n");
 
-		delete asset;
+		Garbage::delete_object(asset);
+printf("Render::run 12\n");
 	}
 	else
 	if(mode == Render::BATCH)
@@ -403,6 +420,7 @@ void Render::run()
 			mwindow->batch_render->update_done(-1, 0, 0);
 		}
 	}
+printf("Render::run 100\n");
 }
 
 
@@ -568,16 +586,10 @@ int Render::render(int test_overwrite,
 // Configure preview monitor
 	VideoOutConfig vconfig;
 	PlaybackConfig *playback_config = new PlaybackConfig;
-	for(int i = 0; i < MAX_CHANNELS; i++)
-	{
-		vconfig.do_channel[i] = (i < command->get_edl()->session->video_channels);
-		playback_config->vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-		playback_config->aconfig->do_channel[i] = (i < command->get_edl()->session->audio_channels);
-	}
 
 // Create caches
-	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
-	video_cache = new CICache(command->get_edl(), preferences, plugindb);
+	audio_cache = new CICache(preferences, plugindb);
+	video_cache = new CICache(preferences, plugindb);
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
@@ -749,10 +761,9 @@ int Render::render(int test_overwrite,
 
 
 
-//printf("Render::run: Session finished.\n");
+printf("Render::run: Session finished.\n");
 
 
-//printf("Render::render 80\n");
 
 
 
@@ -761,7 +772,7 @@ int Render::render(int test_overwrite,
 			farm_server->wait_clients();
 		}
 
-//printf("Render::render 90\n");
+printf("Render::render 90\n");
 
 // Notify of error
 		if(result && 
@@ -774,6 +785,7 @@ int Render::render(int test_overwrite,
 					mwindow->gui->get_abs_cursor_x(1),
 					mwindow->gui->get_abs_cursor_y(1));
 				error_box.create_objects(_("Error rendering data."));
+				error_box.raise_window();
 				error_box.run_window();
 			}
 			else
@@ -815,7 +827,6 @@ int Render::render(int test_overwrite,
 			0,
 			mwindow->edl->session->labels_follow_edits,
 			mwindow->edl->session->plugins_follow_edits);
-		assets->remove_all_objects();
 		delete assets;
 
 

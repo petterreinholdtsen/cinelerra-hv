@@ -2,6 +2,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "audiodevice.h"
+#include "bcsignals.h"
 #include "channeldb.h"
 #include "condition.h"
 #include "edl.h"
@@ -113,67 +114,14 @@ int RenderEngine::arm_command(TransportCommand *command,
 	AudioOutConfig *aconfig = this->config->aconfig;
 	if(command->realtime)
 	{
-		int device_channels = 0;
-		int edl_channels = 0;
-		if(command->single_frame())
+		if(command->single_frame() && vconfig->driver != PLAYBACK_X11_GL)
 		{
 			vconfig->driver = PLAYBACK_X11;
-			device_channels = 1;
-			edl_channels = command->get_edl()->session->video_channels;
 		}
-		else
-		{
-			device_channels = 1;
-			edl_channels = command->get_edl()->session->video_channels;
-		}
-
-		for(int i = 0; i < MAX_CHANNELS; i++)
-		{
-			vconfig->do_channel[i] = 
-				((i == current_vchannel) && 
-					device_channels &&
-					edl_channels);
-
-// GCC 3.2 optimization error causes do_channel[0] to always be 0 unless
-// we do this.
-Workarounds::clamp(vconfig->do_channel[i], 0, 1);
-
-			if(vconfig->do_channel[i])
-			{
-				current_vchannel++;
-				device_channels--;
-				edl_channels--;
-			}
-		}
-
-		device_channels = aconfig->total_output_channels();
-		edl_channels = command->get_edl()->session->audio_channels;
-
-		for(int i = 0; i < MAX_CHANNELS; i++)
-		{
-
-			aconfig->do_channel[i] = 
-				(i == current_achannel && 
-					device_channels &&
-					edl_channels);
-			if(aconfig->do_channel[i])
-			{
-				current_achannel++;
-				device_channels--;
-				edl_channels--;
-			}
-		}
-
 	}
 	else
 	{
 		vconfig->driver = PLAYBACK_X11;
-		for(int i = 0; i < MAX_CHANNELS; i++)
-		{
-			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-			aconfig->do_channel[i] = (i < command->get_edl()->session->audio_channels);
-		}
 	}
 
 
@@ -217,17 +165,14 @@ void RenderEngine::get_duty()
 	do_video = 0;
 
 //edl->dump();
-//printf("RenderEngine::get_duty 1 %d %d\n", edl->tracks->playable_audio_tracks(), config->vconfig->total_playable_channels());
 	if(!command->single_frame() &&
 		edl->tracks->playable_audio_tracks() &&
-		config->aconfig->total_playable_channels())
+		edl->session->audio_channels)
 	{
 		do_audio = 1;
 	}
 
-//printf("RenderEngine::get_duty 2 %d %d\n", edl->tracks->playable_video_tracks(), config->vconfig->total_playable_channels());
-	if(edl->tracks->playable_video_tracks() &&
-		config->vconfig->total_playable_channels())
+	if(edl->tracks->playable_video_tracks())
 	{
 		do_video = 1;
 	}
@@ -356,12 +301,18 @@ int RenderEngine::open_output()
 // Retool playback configuration
 		if(do_audio)
 		{
-			audio->open_output(config->aconfig, 
+			if(audio->open_output(config->aconfig, 
 				edl->session->sample_rate, 
 				adjusted_fragment_len,
-				edl->session->real_time_playback);
-			audio->set_software_positioning(edl->session->playback_software_position);
-			audio->start_playback();
+				edl->session->audio_channels,
+				edl->session->real_time_playback))
+				do_audio = 0;
+			else
+			{
+				audio->set_software_positioning(
+					edl->session->playback_software_position);
+				audio->start_playback();
+			}
 		}
 
 		if(do_video)
@@ -653,7 +604,6 @@ int RenderEngine::reset_parameters()
 	end_position = 0;
 	infinite = 0;
 	start_position = 0;
-	audio_channels = 0;
 	do_audio = 0;
 	do_video = 0;
 	done = 0;
@@ -662,10 +612,8 @@ int RenderEngine::reset_parameters()
 int RenderEngine::arm_playback_audio(int64_t input_length, 
 			int64_t amodule_render_fragment, 
 			int64_t playback_buffer, 
-			int64_t output_length, 
-			int audio_channels)
+			int64_t output_length)
 {
-	this->audio_channels = audio_channels;
 
 	do_audio = 1;
 

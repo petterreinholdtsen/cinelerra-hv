@@ -10,6 +10,7 @@ class PluginClient;
 
 #include "arraylist.h"
 #include "condition.h"
+#include "edlsession.inc"
 #include "keyframe.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
@@ -62,16 +63,14 @@ public: \
 	void run(); \
 	window_class *window; \
 	plugin_class *plugin; \
-	Condition *completion; \
 };
 
 
 #define PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class) \
 thread_class::thread_class(plugin_class *plugin) \
- : Thread(0, 0, 0) \
+ : Thread(0, 0, 1) \
 { \
 	this->plugin = plugin; \
-	completion = new Condition(0, "thread_class::completion"); \
 } \
  \
 thread_class::~thread_class() \
@@ -90,7 +89,6 @@ void thread_class::run() \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
  	plugin->thread = this; \
 	int result = window->run_window(); \
-	completion->unlock(); \
 /* This is needed when the GUI is closed from itself */ \
 	if(result) plugin->client_side_close(); \
 }
@@ -105,7 +103,7 @@ void thread_class::run() \
 	int show_gui(); \
 	int set_string(); \
 	void raise_window(); \
-	Defaults *defaults; \
+	BC_Hash *defaults; \
 	config_name config; \
 	thread_name *thread;
 
@@ -118,11 +116,12 @@ void thread_class::run() \
 	if(thread) \
 	{ \
 /* This is needed when the GUI is closed from elsewhere than itself */ \
+/* Since we now use autodelete, this is all that has to be done, thread will take care of itself ... */ \
+/* Thread join will wait if this was not called from the thread itself or go on if it was */ \
 		thread->window->lock_window("PLUGIN_DESTRUCTOR_MACRO"); \
 		thread->window->set_done(0); \
 		thread->window->unlock_window(); \
-		thread->completion->lock("PLUGIN_DESTRUCTOR_MACRO"); \
-		delete thread; \
+		thread->join(); \
 	} \
  \
  \
@@ -273,24 +272,15 @@ public:
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
-// Replaced by pull method
-/*
- * 	virtual void plugin_process_realtime(double **input, 
- * 		double **output, 
- * 		int64_t current_position, 
- * 		int64_t fragment_size,
- * 		int64_t total_len) {};
- * 	virtual void plugin_process_realtime(VFrame **input, 
- * 		VFrame **output, 
- * 		int64_t current_position,
- * 		int64_t total_len) {};
- */
 // Called by plugin server to update GUI with rendered data.
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
 	virtual int plugin_process_loop(double **buffers, int64_t &write_length) { return 1; };
-	virtual int init_realtime_parameters();     // get parameters depending on video or audio
+// get parameters depending on video or audio
+	virtual int init_realtime_parameters();     
+// release objects which are required after playback stops
+	virtual void render_stop() {};
 	int get_gui_status();
 	char* get_gui_string();
 
@@ -308,10 +298,19 @@ public:
 // is_local - if 1, the position is converted to the EDL rate.
 	KeyFrame* get_prev_keyframe(int64_t position, int is_local = 1);
 	KeyFrame* get_next_keyframe(int64_t position, int is_local = 1);
+// get current camera and projector position
+	void get_camera(float *x, float *y, float *z, int64_t position);
+	void get_projector(float *x, float *y, float *z, int64_t position);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual
 // console.  This gets a keyframe from the EDL, with the position set to the
 // EDL tracking position.
 	int send_configure_change();                            
+
+
+// Called from process_buffer
+// Returns 1 if a GUI is open so OpenGL routines can determine if
+// they can run.
+	int gui_open();
 
 
 
@@ -340,11 +339,16 @@ public:
 // the requested rate.
 	int64_t get_source_position();
 
-
+// Get the EDL Session.  May return 0 if the server has no edl.
+	EDLSession* get_edlsession();
 
 
 // Get the direction of the most recent process_buffer
 	int get_direction();
+
+// Plugin must call this before performing OpenGL operations.
+// Returns 1 if the user supports opengl buffers.
+	int get_use_opengl();
 
 // Get total tracks to process
 	int get_total_buffers();

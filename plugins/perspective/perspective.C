@@ -641,7 +641,7 @@ int PerspectiveMain::load_defaults()
 	sprintf(directory, "%sperspective.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.x1 = defaults->get("X1", config.x1);
@@ -819,30 +819,51 @@ void PerspectiveMain::set_current_y(float value)
 
 
 
-int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int PerspectiveMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	int need_reconfigure = load_configuration();
 
 
-	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
-		get_project_smp() + 1);
-
-	this->input = input_ptr;
-	this->output = output_ptr;
-
+// Do nothing
 	if( EQUIV(config.x1, 0)   && EQUIV(config.y1, 0) &&
 		EQUIV(config.x2, 100) && EQUIV(config.y2, 0) &&
 		EQUIV(config.x3, 100) && EQUIV(config.y3, 100) &&
 		EQUIV(config.x4, 0)   && EQUIV(config.y4, 100))
 	{
-		if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-			output_ptr->copy_from(input_ptr);
+		read_frame(frame, 
+			0, 
+			start_position, 
+			frame_rate,
+			get_use_opengl());
 		return 1;
 	}
 
-	int w = input_ptr->get_w();
-	int h = input_ptr->get_h();
-	int color_model = input_ptr->get_color_model();
+// Opengl does some funny business with stretching.
+	int use_opengl = get_use_opengl() &&
+		(config.mode == AffineEngine::PERSPECTIVE || 
+		config.mode == AffineEngine::SHEER);
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		use_opengl);
+
+	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
+		get_project_smp() + 1);
+
+	if(use_opengl)
+		return run_opengl();
+
+
+
+	this->input = frame;
+	this->output = frame;
+
+	int w = frame->get_w();
+	int h = frame->get_h();
+	int color_model = frame->get_color_model();
 
 	if(temp && 
 		config.mode == AffineEngine::STRETCH &&
@@ -878,7 +899,7 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(config.mode == AffineEngine::PERSPECTIVE ||
 		config.mode == AffineEngine::SHEER)
 	{
-		if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
+		if(frame->get_rows()[0] == frame->get_rows()[0])
 		{
 			if(!temp) 
 			{
@@ -966,7 +987,7 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	} \
 }
 
-		switch(input_ptr->get_color_model())
+		switch(frame->get_color_model())
 		{
 			case BC_RGB_FLOAT:
 				RESAMPLE(float, 3, 0)
@@ -1005,7 +1026,27 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-
+int PerspectiveMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	engine->set_opengl(1);
+	engine->process(get_output(),
+		get_output(),
+		get_output(), 
+		config.mode,
+		config.x1,
+		config.y1,
+		config.x2,
+		config.y2,
+		config.x3,
+		config.y3,
+		config.x4,
+		config.y4,
+		config.forward);
+	engine->set_opengl(0);
+	return 0;
+#endif
+}
 
 
 

@@ -167,8 +167,22 @@ public:
 	~SetFormatPresets();
 	int handle_event();
 	EDL* get_edl();
-};	
-	
+};
+
+class FormatSwapExtents : public BC_Button
+{
+public:
+	FormatSwapExtents(MWindow *mwindow, 
+		SetFormatThread *thread,
+		SetFormatWindow *gui, 
+		int x, 
+		int y);
+	int handle_event();
+	MWindow *mwindow;
+	SetFormatThread *thread;
+	SetFormatWindow *gui;
+};
+
 class SetFormatWindow : public BC_Window
 {
 public:
@@ -185,6 +199,7 @@ public:
 	SetChannelsCanvas *canvas;
 // Screen size width, height
 	ScaleSizeText* dimension[2];
+	SetFormatPresets *presets;
 // Size ratio width, height
 	ScaleRatioText* ratio[2];
 // Aspect ratio
@@ -194,7 +209,6 @@ public:
 	SetChannelsTextBox *channels;
 	SetFrameRateTextBox *frame_rate;
 	BC_TextBox *color_model;
-	SetFormatPresets *presets;
 	ScaleAspectAuto *auto_aspect;
 };
 

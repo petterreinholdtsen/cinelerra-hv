@@ -51,6 +51,9 @@ public:
 		int video_options);
 
 	static int check_sig(Asset *asset);
+
+// Get extra info for info dialog.
+	static void get_info(Asset *asset, int64_t *bytes, int *stracks);
 	int open_file(int rd, int wr);
 	int close_file();
 	int create_index();
@@ -65,6 +68,8 @@ public:
 
 	int read_frame(VFrame *frame);
 	int read_samples(double *buffer, int64_t len);
+
+	int64_t get_memory_usage();
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
@@ -88,6 +93,9 @@ private:
 	void append_vcommand_line(const char *string);
 
 
+
+// DVB capture
+	FILE *dvb_out;
 
 
 

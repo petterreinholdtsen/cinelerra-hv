@@ -41,13 +41,15 @@ public:
 		int rows, 
 		float text, 
 		int has_border = 1, 
-		int font = MEDIUMFONT);
+		int font = MEDIUMFONT,
+		int precision = 4);
 	virtual ~BC_TextBox();
 
 // Whenever the contents of the text change
 	virtual int handle_event() { return 0; };
 // Whenever the position of the text changes
 	virtual int motion_event() { return 0; };
+	void set_selection(int char1, int char2, int ibeam);
 	int update(char *text);
 	int update(int64_t value);
 	int update(float value);

@@ -16,7 +16,7 @@
 //#ifdef TRACE_LOCKS
 //#undef TRACE_LOCKS
 //#endif
-//#define TRACE_MEMORY
+#define TRACE_MEMORY
 
 
 // Need to use structs to avoid the memory manager.
@@ -46,7 +46,7 @@ public:
 // Add a trace
 #define TRACE(text) BC_Signals::new_trace(text);
 #define SET_TRACE BC_Signals::new_trace(__FILE__, __FUNCTION__, __LINE__);
-
+#define PRINT_TRACE { printf("%s: %d\n", __FILE__, __LINE__); fflush(stdout); }
 // Delete all traces
 #define UNTRACE BC_Signals::delete_traces();
 
@@ -54,6 +54,7 @@ public:
 
 #define TRACE(text) ;
 #define UNTRACE ;
+#define PRINT_TRACE ;
 
 #endif
 
@@ -62,8 +63,10 @@ public:
 
 // Before user acquires
 #define SET_LOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location);
-// After successful acquisition
+// After successful acquisition of a mutex, the table is flagged
 #define SET_LOCK2 BC_Signals::set_lock2(table_id);
+// After successful acquisition of a condition, the table is removed because
+// the user never unlocks a condition after locking it.
 // Release current lock table after failing to acquire
 #define UNSET_LOCK2 BC_Signals::unset_lock2(table_id);
 
@@ -77,6 +80,7 @@ public:
 
 #define SET_LOCK(ptr, title, location) ;
 #define SET_LOCK2 ;
+#define SET_LOCK2_CONDITION ;
 #define UNSET_LOCK(ptr) ;
 #define UNSET_LOCK2 ;
 #define UNSET_ALL_LOCKS(ptr) ;
@@ -88,7 +92,11 @@ public:
 
 #define ENABLE_BUFFER BC_Signals::enable_memory();
 #define DISABLE_BUFFER BC_Signals::disable_memory();
+// Note the size, pointer, and location of an allocation
 #define BUFFER(size, ptr, location) BC_Signals::set_buffer(size, ptr, location);
+// Note the pointer and location of an allocation
+#define BUFFER2(ptr, location) BC_Signals::set_buffer(0, ptr, location);
+// Remove a pointer from the allocation table
 #define UNBUFFER(ptr) BC_Signals::unset_buffer(ptr);
 
 #else
@@ -114,6 +122,7 @@ public:
 
 	static int set_lock(void *ptr, char *title, char *location);
 	static void set_lock2(int table_id);
+	static void set_lock2_condition(int table_id);
 	static void unset_lock2(int table_id);
 	static void unset_lock(void *ptr);
 // Used in lock destructors so takes away all references

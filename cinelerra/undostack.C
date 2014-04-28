@@ -532,7 +532,6 @@ static unsigned char* apply_difference(unsigned char *before,
 		int patch_len,
 		int *result_len)
 {
-SET_TRACE
 	unsigned char *patch_ptr = patch;
 	*result_len = *(int32_t*)patch_ptr;
 	patch_ptr += 4;
@@ -581,7 +580,6 @@ SET_TRACE
 			done = 1;
 		}
 	}
-SET_TRACE
 
 	return result;
 }
@@ -630,12 +628,10 @@ int UndoStackItem::has_data()
 
 void UndoStackItem::set_data(char *data)
 {
-SET_TRACE
 	delete [] this->data;
 	this->data = 0;
 	this->data_size = 0;
 
-SET_TRACE
 // Search for key buffer within interval
 	int need_key = 1;
 	UndoStackItem *current = this;
@@ -651,16 +647,12 @@ SET_TRACE
 			current = PREVIOUS;
 	}
 
-SET_TRACE
 	int new_size = strlen(data) + 1;
 
-SET_TRACE
 	if(!need_key)
 	{
 // Reconstruct previous data for difference
-SET_TRACE
 		char *prev_buffer = previous->get_data();
-SET_TRACE
 		int prev_size = prev_buffer ? strlen(prev_buffer) + 1 : 0;
 // Timer timer;
 // timer.update();
@@ -698,14 +690,12 @@ SET_TRACE
 		else
 		{
 // Reconstruct current data from difference
-SET_TRACE
 			int test_size;
 			char *test_buffer = (char*)apply_difference((unsigned char*)prev_buffer,
 				prev_size,
 				(unsigned char*)this->data,
 				this->data_size,
 				&test_size);
-SET_TRACE
 			if(test_size != new_size ||
 				memcmp(test_buffer, data, test_size))
 			{
@@ -736,7 +726,6 @@ SET_TRACE
 		delete [] prev_buffer;
 	}
 
-SET_TRACE
 	if(need_key)
 	{
 		this->key = 1;
@@ -744,7 +733,6 @@ SET_TRACE
 		this->data = new char[this->data_size];
 		memcpy(this->data, data, this->data_size);
 	}
-SET_TRACE
 	return;
 }
 

@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "edit.h"
@@ -21,6 +22,7 @@
 #include "bctimer.h"
 #include "trackcanvas.h"
 #include "tracks.h"
+#include <unistd.h>
 #include "vframe.h"
 
 // Use native sampling rates for files so the same index can be used in
@@ -114,23 +116,25 @@ int IndexFile::open_file()
 	{
 // Index file already exists.
 // Get its last size without changing the status.
-		Asset test_asset;
-		test_asset = *asset;
-		read_info(&test_asset);
+		Asset *test_asset = new Asset;
+		*test_asset = *asset;
+		read_info(test_asset);
 
 		FileSystem fs;
-		if(fs.get_date(index_filename) < fs.get_date(test_asset.path))
+		if(fs.get_date(index_filename) < fs.get_date(test_asset->path))
 		{
 // index older than source
 			result = 2;
 			fclose(file);
+			file = 0;
 		}
 		else
-		if(fs.get_size(asset->path) != test_asset.index_bytes)
+		if(fs.get_size(asset->path) != test_asset->index_bytes)
 		{
 // source file is a different size than index source file
 			result = 2;
 			fclose(file);	
+			file = 0;
 		}
 		else
 		{
@@ -139,6 +143,7 @@ int IndexFile::open_file()
 			fseek(file, 0, SEEK_SET);
 			result = 0;
 		}
+		Garbage::delete_object(test_asset);
 	}
 	else
 	{
@@ -341,8 +346,8 @@ printf("IndexFile::create_index 1\n");
 		index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 2");
 		index_thread->last_buffer[current_buffer] = 1;
 		index_thread->output_lock[current_buffer]->unlock();
-
 		index_thread->stop_build();
+
 		delete index_thread;
 	}
 
@@ -350,10 +355,12 @@ printf("IndexFile::create_index 1\n");
 	source.close_file();
 
 
+
 	open_index(asset);
+
 	close_index();
+
 	mwindow->edl->set_index_file(asset);
-//printf("IndexFile::create_index 11\n");
 	return 0;
 }
 
@@ -446,7 +453,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	int buffer_shared = 0;
 	int i;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
-	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->title_bg_data->get_h();
+	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 	int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
 	int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
 	int x1 = 0, y1, y2;
@@ -567,7 +574,9 @@ int IndexFile::close_index()
 {
 	if(file)
 	{
+
 		fclose(file);
+
 		file = 0;
 	}
 }

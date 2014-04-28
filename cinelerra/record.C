@@ -6,7 +6,7 @@
 #include "channeldb.h"
 #include "channelpicker.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -20,6 +20,7 @@
 #include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "picture.h"
@@ -35,6 +36,7 @@
 #include "recordthread.h"
 #include "recordvideo.h"
 #include "recordwindow.h"
+#include "removethread.h"
 #include "mainsession.h"
 #include "sighandler.h"
 #include "testobject.h"
@@ -117,7 +119,9 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	file = 0;
 	editing_batch = 0;
 	current_batch = 0;
-	picture = new PictureConfig(mwindow);
+SET_TRACE
+	picture = new PictureConfig(mwindow->defaults);
+SET_TRACE
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
 	window_lock = new Mutex("Record::window_lock");
@@ -135,30 +139,28 @@ Record::~Record()
 int Record::load_defaults()
 {
 	char string[BCTEXTLEN];
-	Defaults *defaults = mwindow->defaults;
+	BC_Hash *defaults = mwindow->defaults;
 
-// Load default asset
-	default_asset->load_defaults(defaults, 
-		"RECORD_", 
-		1,
-		1,
-		1,
-		1,
-		1);
-
-
-
-
-
-
+// Load file format
+// 	default_asset->load_defaults(defaults, 
+// 		"RECORD_", 
+// 		1,
+// 		1,
+// 		1,
+// 		1,
+// 		1);
+// This reads back everything that was saved in save_defaults.
+	default_asset->copy_from(mwindow->edl->session->recording_format, 0);
+	default_asset->channels = mwindow->edl->session->aconfig_in->channels;
 	default_asset->sample_rate = mwindow->edl->session->aconfig_in->in_samplerate;
 	default_asset->frame_rate = mwindow->edl->session->vconfig_in->in_framerate;
 	default_asset->width = mwindow->edl->session->vconfig_in->w;
 	default_asset->height = mwindow->edl->session->vconfig_in->h;
-	default_asset->channels = defaults->get("RECORD_CHANNELS", 2);
 	default_asset->layers = 1;
 
 
+
+// Fix encoding parameters depending on driver.
 // These are locked by a specific driver.
 	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_LML ||
 		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
@@ -210,7 +212,9 @@ int Record::load_defaults()
 	video_y = defaults->get("RECORD_VIDEO_Y", 0);
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
 
+SET_TRACE
 	picture->load_defaults();
+SET_TRACE
 
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
 	for(int i = 0; i < MAXCHANNELS; i++) 
@@ -225,19 +229,31 @@ int Record::load_defaults()
 int Record::save_defaults()
 {
 	char string[BCTEXTLEN];
-	Defaults *defaults = mwindow->defaults;
+	BC_Hash *defaults = mwindow->defaults;
 	editing_batch = 0;
 
-// Save default asset
+// Save default asset path but not the format because that's
+// overridden by the driver.
+// The format is saved in preferences.
+	if(batches.total)
+		strcpy(default_asset->path, batches.values[0]->assets.values[0]->path);
 	default_asset->save_defaults(defaults,
 		"RECORD_",
-		1,
-		!fixed_compression,
-		1,
-		1,
-		1);
+		0,
+		0,
+		0,
+		0,
+		0);
 
-	defaults->update("RECORD_CHANNELS", default_asset->channels);
+// 	default_asset->save_defaults(defaults,
+// 		"RECORD_",
+// 		1,
+// 		!fixed_compression,
+// 		1,
+// 		1,
+// 		1);
+
+//	defaults->update("RECORD_CHANNELS", default_asset->channels);
 
 
 
@@ -277,7 +293,9 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_Y", video_y);
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
 	
+SET_TRACE
 	picture->save_defaults();
+SET_TRACE
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -322,28 +340,6 @@ void Record::source_to_text(char *string, Batch *batch)
 }
 
 
-char* Record::get_channeldb_prefix()
-{
-	char *path = "";
-	switch(mwindow->edl->session->vconfig_in->driver)
-	{
-		case VIDEO4LINUX:
-			path = "channels_v4l";
-			break;
-		case VIDEO4LINUX2:
-			path = "channels_v4l2";
-			break;
-		case VIDEO4LINUX2JPEG:
-			path = "channels_v4l2jpeg";
-			break;
-		case CAPTURE_BUZ:
-			path = "channels_buz";
-			break;
-	}
-
-	return path;
-}
-
 void Record::run()
 {
 	int result = 0, format_error = 0;
@@ -356,7 +352,7 @@ void Record::run()
 	prompt_cancel = 0;
 
 // Determine information about the device.
-	channeldb->load(get_channeldb_prefix());
+	VideoDevice::load_channeldb(channeldb, mwindow->edl->session->vconfig_in);
 	fixed_compression = VideoDevice::is_compressed(
 		mwindow->edl->session->vconfig_in->driver,
 		0,
@@ -365,41 +361,43 @@ void Record::run()
 
 	if(fixed_compression)
 	{
-		strcpy(default_asset->vcodec, 
-			VideoDevice::get_vcodec(mwindow->edl->session->vconfig_in->driver));
+		VideoDevice device;
+		device.fix_asset(default_asset, 
+			mwindow->edl->session->vconfig_in->driver);
 	}
 
 
 	menu_item->current_state = RECORD_INTRO;
 
-// Get information about the file format
-	do
-	{
- 		int x = mwindow->gui->get_root_w(0, 1) / 2 - RECORD_WINDOW_WIDTH / 2;
-		int y = mwindow->gui->get_root_h(1) / 2 - RECORD_WINDOW_HEIGHT / 2;
-		
-		window_lock->lock("Record::run 1");
-		record_window = new RecordWindow(mwindow, this, x, y);
-		record_window->create_objects();
-		window_lock->unlock();
+// // Get information about the file format
+// 	do
+// 	{
+//  		int x = mwindow->gui->get_root_w(0, 1) / 2 - RECORD_WINDOW_WIDTH / 2;
+// 		int y = mwindow->gui->get_root_h(1) / 2 - RECORD_WINDOW_HEIGHT / 2;
+//
+// 		window_lock->lock("Record::run 1");
+// 		record_window = new RecordWindow(mwindow, this, x, y);
+// 		record_window->create_objects();
+// 		window_lock->unlock();
+// 
+// 
+// 		result = record_window->run_window();
+// 		window_lock->lock("Record::run 2");
+// 		delete record_window;
+// 		record_window = 0;
+// 		window_lock->unlock();
+// 
+// 
+// 
+// 		if(!result)
+// 		{
+// 			FormatCheck check_format(default_asset);
+// 			format_error = check_format.check_format();
+// 		}
+// 	}while(format_error && !result);
 
-
-		result = record_window->run_window();
-		window_lock->lock("Record::run 2");
-		delete record_window;
-		record_window = 0;
-		window_lock->unlock();
-
-
-
-		if(!result)
-		{
-			FormatCheck check_format(default_asset);
-			format_error = check_format.check_format();
-		}
-	}while(format_error && !result);
-
-	channeldb->save(get_channeldb_prefix());
+	default_asset->channels = mwindow->edl->session->aconfig_in->channels;
+	VideoDevice::save_channeldb(channeldb, mwindow->edl->session->vconfig_in);
 	save_defaults();
 	mwindow->save_defaults();
 
@@ -417,52 +415,47 @@ void Record::run()
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
 
+SET_TRACE
 		window_lock->lock("Record::run 3");
 SET_TRACE
 		record_gui = new RecordGUI(mwindow, this);
-SET_TRACE
 		record_gui->load_defaults();
-SET_TRACE
 		record_gui->create_objects();
-SET_TRACE
 
+SET_TRACE
 		record_monitor = new RecordMonitor(mwindow, this);
 SET_TRACE
 		record_monitor->create_objects();
 SET_TRACE
 		record_gui->update_batch_sources();
-SET_TRACE
 
+SET_TRACE
 		menu_item->current_state = RECORD_CAPTURING;
-SET_TRACE
 		record_engine = new RecordThread(mwindow, this);
-SET_TRACE
 		record_engine->create_objects();
-SET_TRACE
 		monitor_engine = new RecordThread(mwindow, this);
-SET_TRACE
 		monitor_engine->create_objects();
-SET_TRACE
 
+SET_TRACE
 
 		record_gui->show_window();
-SET_TRACE
 		record_gui->flush();
-SET_TRACE
 		if(video_window_open)
 		{
 			record_monitor->window->show_window();
 			record_monitor->window->raise_window();
 			record_monitor->window->flush();
 		}
-SET_TRACE
 
+SET_TRACE
 		start_monitor();
-SET_TRACE
 
+SET_TRACE
 		window_lock->unlock();
 
 		result = record_gui->run_window();
+// Must unlock to stop operation
+		record_gui->unlock_window();
 
 // Force monitor to quit without resuming
 		if(monitor_engine->record_video) 
@@ -470,25 +463,44 @@ SET_TRACE
 		else
 			monitor_engine->record_audio->batch_done = 1;
 
-		stop_operation(0);;
+SET_TRACE
+//		stop_operation(0);
+// Need to stop everything this time
+		monitor_engine->stop_recording(0);
+SET_TRACE
+		record_engine->stop_recording(0);
+SET_TRACE
 
 		close_output_file();
+SET_TRACE
 
 		window_lock->lock("Record::run 4");
+
+SET_TRACE
 		delete record_monitor;
 		record_monitor = 0;
+SET_TRACE
 
+
+		delete record_engine;
+		record_engine = 0;
+SET_TRACE
+
+		delete monitor_engine;
+		monitor_engine = 0;
+
+SET_TRACE
 		record_gui->save_defaults();
 
-TRACE("Record::run 1");
+SET_TRACE
 		delete record_gui;
 		record_gui = 0;
 		window_lock->unlock();
 
-TRACE("Record::run 2");
+SET_TRACE
 		delete edl;
 
-TRACE("Record::run 3");
+SET_TRACE
 	}
 
 	menu_item->current_state = RECORD_NOTHING;
@@ -517,11 +529,13 @@ TRACE("Record::run 3");
 			{
 				for(int j = 0; j < batch->assets.total; j++)
 				{
+					Asset *new_asset = batch->assets.values[j];
 					EDL *new_edl = new EDL;
+					mwindow->remove_asset_from_caches(new_asset);
 					new_edl->create_objects();
 					new_edl->copy_session(mwindow->edl);
 					mwindow->asset_to_edl(new_edl, 
-						batch->assets.values[j], 
+						new_asset, 
 						batch->labels);
 					new_edls.append(new_edl);
 				}
@@ -567,7 +581,7 @@ TRACE("Record::run 3");
 // Delete everything
 	script = 0;
 	batches.remove_all_objects();
-	delete default_asset;
+	Garbage::delete_object(default_asset);
 }
 
 void Record::activate_batch(int number, int stop_operation)
@@ -660,8 +674,10 @@ int Record::delete_output_file()
 			sprintf(batch->news, _("Deleting"));
 			record_gui->update_batches();
 
-// Remove it
-			remove(batch->get_current_asset()->path);
+// Remove it from disk
+			mwindow->remove_asset_from_caches(batch->get_current_asset());
+			mwindow->remove_thread->remove_file(batch->get_current_asset()->path);
+//			remove(batch->get_current_asset()->path);
 
 // Update GUI
 			sprintf(batch->news, _("OK"));
@@ -689,7 +705,6 @@ int Record::open_output_file()
 			1, 
 			default_asset->sample_rate, 
 			default_asset->frame_rate);
-//printf("Record::open_output_file 1\n");
 
 		if(result)
 		{
@@ -701,15 +716,13 @@ int Record::open_output_file()
 			mwindow->sighandler->push_file(file);
 			IndexFile::delete_index(mwindow->preferences, 
 				batch->get_current_asset());
-			file->set_processors(mwindow->preferences->processors);
+			file->set_processors(mwindow->preferences->real_processors);
 			batch->calculate_news();
 			record_gui->lock_window("Record::open_output_file");
 			record_gui->update_batches();
 			record_gui->unlock_window();
 		}
-//printf("Record::open_output_file 1\n");
 	}
-//printf("Record::open_output_file 2\n");
 	return result;
 }
 
@@ -982,9 +995,10 @@ int Record::open_input_devices(int duplex, int context)
 	int video_opened = 0;
 	AudioInConfig *aconfig_in = mwindow->edl->session->aconfig_in;
 
+
 // Create devices
 	if(default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
-		adevice = new AudioDevice;
+		adevice = new AudioDevice(mwindow);
 	else
 		adevice = 0;
 
@@ -1004,32 +1018,27 @@ int Record::open_input_devices(int duplex, int context)
 	if(adevice)
 	{
 		adevice->set_software_positioning(mwindow->edl->session->record_software_position);
-		adevice->set_record_dither(default_asset->dither);
-
-		for(int i = 0; i < default_asset->channels; i++)
-		{
-			adevice->set_dc_offset(dc_offset[i], i);
-		}
 
 // Initialize full duplex
 // Duplex is only needed if the timeline and the recording have audio
 		if(duplex && mwindow->edl->tracks->playable_audio_tracks())
 		{
 // Case 1: duplex device is identical to input device
-			if(AudioInConfig::is_duplex(aconfig_in, mwindow->edl->session->aconfig_duplex))
-			{
-			  	adevice->open_duplex(mwindow->edl->session->aconfig_duplex,
-							default_asset->sample_rate,
-							get_in_length(),
-							mwindow->edl->session->real_time_playback);
-				audio_opened = 1;
-			}
-			else
+// 			if(AudioInConfig::is_duplex(aconfig_in, mwindow->edl->session->aconfig_duplex))
+// 			{
+// 			  	adevice->open_duplex(mwindow->edl->session->aconfig_duplex,
+// 							default_asset->sample_rate,
+// 							get_in_length(),
+// 							mwindow->edl->session->real_time_playback);
+// 				audio_opened = 1;
+// 			}
+// 			else
 // Case 2: two separate devices
 			{
 			  	adevice->open_output(mwindow->edl->session->aconfig_duplex,
 						default_asset->sample_rate,
 						mwindow->edl->session->playback_buffer,
+						mwindow->edl->session->audio_channels,
 						mwindow->edl->session->real_time_playback);
 			}
 		}
@@ -1039,7 +1048,10 @@ int Record::open_input_devices(int duplex, int context)
 			adevice->open_input(mwindow->edl->session->aconfig_in, 
 				mwindow->edl->session->vconfig_in, 
 				default_asset->sample_rate, 
-				get_in_length());
+				get_in_length(),
+				default_asset->channels,
+				mwindow->edl->session->real_time_record);
+			adevice->start_recording();
 		}
 	}
 
@@ -1067,8 +1079,10 @@ int Record::open_input_devices(int duplex, int context)
 	return 0;
 }
 
-int Record::close_input_devices()
+int Record::close_input_devices(int is_monitor)
 {
+	if(is_monitor && capture_state != IS_MONITORING) return 0;
+
 	if(vdevice)
 	{
 		vdevice->close_all();
@@ -1187,11 +1201,14 @@ int Record::stop_operation(int resume_monitor)
 
 // Remember to change meters if you change this.
 // Return the size of the fragments to read from the audio device.
-int Record::get_in_length() 
+int Record::get_in_length()
 {
 	int64_t fragment_size = 1;
-	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) fragment_size *= 2;
+	while(fragment_size < default_asset->sample_rate / 
+		mwindow->edl->session->record_speed)
+		fragment_size *= 2;
 	fragment_size /= 2;
+	fragment_size = MAX(fragment_size, 512);
 	return fragment_size;
 }
 

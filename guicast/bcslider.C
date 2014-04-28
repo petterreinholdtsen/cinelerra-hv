@@ -225,9 +225,9 @@ int BC_Slider::keypress_event()
 
 	if(result)
 	{
+		handle_event();
 		show_value_tooltip();
 		draw_face();
-		handle_event();
 	}
 	return result;
 }
@@ -279,17 +279,17 @@ int BC_Slider::button_press_event()
 			if(get_buttonpress() == 4)
 			{
 				increase_value();
+				handle_event();
 				show_value_tooltip();
 				draw_face();
-				handle_event();
 			}
 			else
 			if(get_buttonpress() == 5)
 			{
 				decrease_value();
+				handle_event();
 				show_value_tooltip();
 				draw_face();
-				handle_event();
 			}
 			else
 			if(get_buttonpress() == 1)
@@ -335,8 +335,8 @@ int BC_Slider::cursor_motion_event()
 		if(button_pixel != old_pixel) draw_face();
 		if(result) 
 		{
-			set_tooltip(get_caption());
 			handle_event();
+			set_tooltip(get_caption());
 		}
 		return 1;
 	}
@@ -604,7 +604,7 @@ char* BC_FSlider::get_caption()
 
 int BC_FSlider::increase_value()
 {
-	value += 0.1;
+	value += precision;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
 	return 0;
@@ -612,7 +612,7 @@ int BC_FSlider::increase_value()
 
 int BC_FSlider::decrease_value()
 {
-	value -= 0.1;
+	value -= precision;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
 	return 0;
@@ -658,11 +658,12 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 	if(value > maxvalue) value = maxvalue;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-// printf("BC_FSlider::update_selection 1 %d %d %d %d %f\n", 
+// printf("BC_FSlider::update_selection 1 %d %d %d %d %f %f\n", 
 // pointer_motion_range, 
 // min_pixel,
 // max_pixel,
 // cursor_x, 
+// precision,
 // value);
 
 	if(old_value != value)
@@ -710,7 +711,7 @@ char* BC_PercentageSlider::get_caption()
 
 int BC_PercentageSlider::increase_value()
 {
-	value += 1;
+	value += precision;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
 //printf("BC_PercentageSlider::increase_value %f\n", value);
@@ -719,7 +720,7 @@ int BC_PercentageSlider::increase_value()
 
 int BC_PercentageSlider::decrease_value()
 {
-	value -= 1;
+	value -= precision;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
 //printf("BC_PercentageSlider::decrease_value %f\n", value);

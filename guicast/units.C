@@ -515,7 +515,6 @@ float Units::quantize(float value, float precision)
 	return value;
 }
 
-
 int64_t Units::to_int64(double result)
 {
 // This must round up if result is one sample within cieling.
@@ -650,6 +649,10 @@ void Units::punctuate(char *string)
 	}
 }
 
+void Units::fix_double(double *x)
+{
+	*x = *x;
+}
 
 
 

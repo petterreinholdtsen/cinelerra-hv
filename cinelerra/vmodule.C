@@ -20,8 +20,10 @@
 #include "transportque.h"
 #include "units.h"
 #include "vattachmentpoint.h"
+#include "vdevicex11.h"
 #include "vedit.h"
 #include "vframe.h"
+#include "videodevice.h"
 #include "vmodule.h"
 #include "vrender.h"
 #include "vplugin.h"
@@ -70,7 +72,8 @@ int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
 	int64_t input_position,
 	double frame_rate,
-	int direction)
+	int direction,
+	int use_opengl)
 {
 	int64_t corrected_position;
 	int64_t corrected_position_project;
@@ -84,7 +87,6 @@ int VModule::import_frame(VFrame *output,
 	float out_w1;
 	float out_h1;
 	int result = 0;
-SET_TRACE
 	double edl_rate = get_edl()->session->frame_rate;
 	int64_t input_position_project = (int64_t)(input_position * 
 		edl_rate / 
@@ -92,7 +94,6 @@ SET_TRACE
 		0.001);
 	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
-SET_TRACE
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
 	if(direction == PLAY_REVERSE)
@@ -101,14 +102,24 @@ SET_TRACE
 		input_position_project--;
 	}
 
+	VDeviceX11 *x11_device = 0;
+	if(use_opengl)
+	{
+		if(renderengine && renderengine->video)
+		{
+			x11_device = (VDeviceX11*)renderengine->video->get_output_base();
+			output->set_opengl_state(VFrame::RAM);
+		}
+	}
+
+
 // Load frame into output
 	if(current_edit &&
 		current_edit->asset)
 	{
 		get_cache()->age();
-SET_TRACE
-		File *source = get_cache()->check_out(current_edit->asset);
-SET_TRACE
+		File *source = get_cache()->check_out(current_edit->asset,
+			get_edl());
 //		get_cache()->dump();
 
 		if(source)
@@ -125,10 +136,19 @@ SET_TRACE
 			// if we hit the end of stream, freeze at last frame
 			uint64_t max_position = source->get_video_length(frame_rate) - 1;
 			if (position > max_position) position = max_position;
-			source->set_video_position(position,
-				frame_rate);
+			int use_cache = renderengine && 
+				renderengine->command->single_frame();
+			int use_asynchronous = !use_cache && 
+				renderengine->command->realtime &&
+				renderengine->edl->session->video_asynchronous;
+
+			if(use_asynchronous)
+				source->start_video_decode_thread();
+			else
+				source->stop_video_thread();
+
+			source->set_video_position(position, frame_rate);
 			source->set_layer(current_edit->channel);
-SET_TRACE
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
 				input_position_project, 
@@ -142,7 +162,6 @@ SET_TRACE
 				out_w1, 
 				out_h1);
 
-SET_TRACE
 
 
 // file -> temp -> output
@@ -157,7 +176,10 @@ SET_TRACE
 				!EQUIV(in_w1, current_edit->asset->width) ||
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
-//printf("VModule::import_frame 1\n");
+
+
+
+
 // Get temporary input buffer
 				VFrame **input = 0;
 // Realtime playback
@@ -196,18 +218,25 @@ SET_TRACE
 
 
 
+				(*input)->copy_stacks(output);
+
 // file -> temp
 // Cache for single frame only
-				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(1);
-SET_TRACE
+				if(use_cache) source->set_cache_frames(1);
 				result = source->read_frame((*input));
-SET_TRACE
-				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(0);
+				if(use_cache) source->set_cache_frames(0);
+				(*input)->set_opengl_state(VFrame::RAM);
 
 //printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
+
+// Find an overlayer object to perform the camera transformation
 				OverlayFrame *overlayer = 0;
+
+// OpenGL playback uses hardware
+				if(use_opengl)
+				{
+				}
+				else
 // Realtime playback
 				if(commonrender)
 				{
@@ -240,7 +269,22 @@ SET_TRACE
 // for(int j = 0; j < output->get_w() * 3 * 5; j++)
 // 	output->get_rows()[0][j] = 255;
 
-				output->clear_frame();
+				if(use_opengl)
+				{
+					x11_device->do_camera(output,
+						(*input), 
+						in_x1,
+						in_y1,
+						in_x1 + in_w1,
+						in_y1 + in_h1,
+						out_x1,
+						out_y1,
+						out_x1 + out_w1,
+						out_y1 + out_h1);
+				}
+				else
+				{
+					output->clear_frame();
 
 
 // get_cache()->check_in(current_edit->asset);
@@ -248,54 +292,66 @@ SET_TRACE
 
 // TRANSFER_REPLACE is the fastest transfer mode but it has the disadvantage
 // of producing green borders in floating point translation of YUV
-				int mode = TRANSFER_REPLACE;
-				if(get_edl()->session->interpolation_type != NEAREST_NEIGHBOR &&
-					cmodel_is_yuv(output->get_color_model()))
-					mode = TRANSFER_NORMAL;
+					int mode = TRANSFER_REPLACE;
+					if(get_edl()->session->interpolation_type != NEAREST_NEIGHBOR &&
+						cmodel_is_yuv(output->get_color_model()))
+						mode = TRANSFER_NORMAL;
 
-				overlayer->overlay(output,
-					(*input), 
-					in_x1,
-					in_y1,
-					in_x1 + in_w1,
-					in_y1 + in_h1,
-					out_x1,
-					out_y1,
-					out_x1 + out_w1,
-					out_y1 + out_h1,
-					1,
-					mode,
-					get_edl()->session->interpolation_type);
+					overlayer->overlay(output,
+						(*input), 
+						in_x1,
+						in_y1,
+						in_x1 + in_w1,
+						in_y1 + in_h1,
+						out_x1,
+						out_y1,
+						out_x1 + out_w1,
+						out_y1 + out_h1,
+						1,
+						mode,
+						get_edl()->session->interpolation_type);
+				}
 				result = 1;
-//printf("VModule::import_frame 20\n");
+				output->copy_stacks((*input));
 			}
 			else
 // file -> output
 			{
-//printf("VModule::import_frame 30 %p\n", output);
 // Cache single frames only
-				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(1);
+				if(use_cache) source->set_cache_frames(1);
 				result = source->read_frame(output);
-				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(0);
-//printf("VModule::import_frame 40\n");
+				if(use_cache) source->set_cache_frames(0);
+				output->set_opengl_state(VFrame::RAM);
 			}
-SET_TRACE
 
 			get_cache()->check_in(current_edit->asset);
 		}
 		else
 		{
-			output->clear_frame();
+			if(use_opengl)
+			{
+				x11_device->clear_input(output);
+			}
+			else
+			{
+				output->clear_frame();
+			}
 			result = 1;
 		}
 	}
 	else
 // Silence
 	{
-		output->clear_frame();
+		if(use_opengl)
+		{
+			x11_device->clear_input(output);
+		}
+		else
+		{
+			output->clear_frame();
+		}
 	}
+
 
 	return result;
 }
@@ -307,37 +363,38 @@ int VModule::render(VFrame *output,
 	int direction,
 	double frame_rate,
 	int use_nudge,
-	int debug_render)
+	int debug_render,
+	int use_opengl)
 {
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
 
-
 	if(use_nudge) start_position += (int64_t)(track->nudge * 
 		frame_rate / 
 		edl_rate);
-
 
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate /
 		frame_rate + 
 		0.5);
 
-	if(debug_render)
-		printf("    VModule::render %d %lld %s\n", 
-			use_nudge, 
-			start_position_project,
-			track->title);
-
 	update_transition(start_position_project, 
 		direction);
-SET_TRACE
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
 		direction,
 		0);
-SET_TRACE
 	VEdit* previous_edit = 0;
+
+	if(debug_render)
+		printf("    VModule::render %d %lld %s transition=%p opengl=%d current_edit=%p output=%p\n", 
+			use_nudge, 
+			start_position_project,
+			track->title,
+			transition,
+			use_opengl,
+			current_edit,
+			output);
 
 	if(!current_edit)
 	{
@@ -349,7 +406,7 @@ SET_TRACE
 
 
 // Process transition
-	if(transition)
+	if(transition && transition->on)
 	{
 
 // Get temporary buffer
@@ -386,7 +443,8 @@ SET_TRACE
 			current_edit, 
 			start_position,
 			frame_rate,
-			direction);
+			direction,
+			use_opengl);
 
 
 // Load transition buffer
@@ -396,9 +454,12 @@ SET_TRACE
 			previous_edit, 
 			start_position,
 			frame_rate,
-			direction);
+			direction,
+			use_opengl);
 
 // Execute plugin with transition_input and output here
+		if(renderengine) 
+			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
 			(direction == PLAY_FORWARD) ? 
@@ -409,13 +470,12 @@ SET_TRACE
 	else
 	{
 // Load output buffer
-SET_TRACE
 		result = import_frame(output, 
 			current_edit, 
 			start_position,
 			frame_rate,
-			direction);
-SET_TRACE
+			direction,
+			use_opengl);
 	}
 
 

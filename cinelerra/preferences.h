@@ -3,7 +3,7 @@
 
 #include "asset.inc"
 #include "audioconfig.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "maxchannels.h"
 #include "mutex.inc"
@@ -19,10 +19,16 @@ public:
 
 	Preferences& operator=(Preferences &that);
 	void copy_from(Preferences *that);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 	void boundaries();
 
+	static void print_channels(char *string, 
+		int *channel_positions, 
+		int channels);
+	static void scan_channels(char *string, 
+		int *channel_positions, 
+		int channels);
 
 	void add_node(char *text, int port, int enabled, float rate);
 	void delete_node(int number);
@@ -42,8 +48,10 @@ public:
 // Set frame rate for a node.  Node -1 is the master node.
 // The node number is relative to the enabled nodes.
 	void set_rate(float rate, int node);
-// Calculate the number of cpus to use.  Determined by /proc/cpuinfo and force_uniprocessor
-	int calculate_processors();
+// Calculate the number of cpus to use.  
+// Determined by /proc/cpuinfo and force_uniprocessor.
+// interactive forces it to ignore force_uniprocessor
+	int calculate_processors(int interactive = 0);
 
 // ================================= Performance ================================
 // directory to look in for indexes
@@ -58,9 +66,14 @@ public:
 	double render_preroll;
 	int brender_preroll;
 	int force_uniprocessor;
-// The number of cpus to use.  Determined by /proc/cpuinfo and force_uniprocessor
+// The number of cpus to use when rendering.
+// Determined by /proc/cpuinfo and force_uniprocessor
 	int processors;
+// Number of processors for interactive operations.
+	int real_processors;
 
+// Default positions for channels
+	int channel_positions[MAXCHANNELS * MAXCHANNELS];
 
 	Asset *brender_asset;
 	int use_brender;

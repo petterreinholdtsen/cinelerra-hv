@@ -7,7 +7,7 @@
 #include "canvas.inc"
 #include "channeldb.inc"
 #include "condition.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "mwindow.inc"
 #include "maxchannels.h"
@@ -18,7 +18,6 @@
 #include "thread.h"
 #include "bctimer.h"
 #include "transportque.inc"
-#include "videodevice.inc"
 
 class PlaybackEngine : public Thread
 {

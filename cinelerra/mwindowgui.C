@@ -3,7 +3,7 @@
 #include "bcsignals.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "editpopup.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -178,7 +178,9 @@ SET_TRACE
 SET_TRACE
 
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
+SET_TRACE
 	mwindow->theme->draw_mwindow_bg(this);
+SET_TRACE
 	mainmenu->create_objects();
 SET_TRACE
 
@@ -304,30 +306,27 @@ void MWindowGUI::update(int scrollbars,
 	int clock,
 	int buttonbar)
 {
-//TRACE("MWindowGUI::update 1");
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-//TRACE("MWindowGUI::update 1");
 	if(scrollbars) this->get_scrollbars();
-//TRACE("MWindowGUI::update 1");
 	if(timebar) this->timebar->update();
-//TRACE("MWindowGUI::update 1");
 	if(zoombar) this->zoombar->update();
-//TRACE("MWindowGUI::update 1");
 	if(patchbay) this->patchbay->update();
-//TRACE("MWindowGUI::update 1");
 	if(clock) this->mainclock->update(
 		mwindow->edl->local_session->get_selectionstart(1));
-//TRACE("MWindowGUI::update 1");
 	if(canvas)
 	{
-		this->canvas->draw(canvas == 2);
+		this->canvas->draw(canvas);
 		this->cursor->show();
 		this->canvas->flash();
-		this->canvas->activate();
+// Activate causes the menubar to deactivate.  Don't want this for
+// picon thread.
+		if(canvas != 3) this->canvas->activate();
 	}
-//TRACE("MWindowGUI::update 1");
 	if(buttonbar) mbuttons->update();
-//TRACE("MWindowGUI::update 100");
+
+// Can't age if the cache called this to draw missing picons
+	if(canvas != 2 && canvas != 3)
+		mwindow->age_caches();
 }
 
 int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)
@@ -451,7 +450,7 @@ int MWindowGUI::translation_event()
 }
 
 
-int MWindowGUI::save_defaults(Defaults *defaults)
+int MWindowGUI::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("MWINDOWWIDTH", get_w());
 	defaults->update("MWINDOWHEIGHT", get_h());
@@ -472,14 +471,30 @@ int MWindowGUI::keypress_event()
 			case LEFT:
 				if(!ctrl_down()) 
 				{ 
-					mwindow->move_left(); 
-					result = 1; 
+					if (alt_down())
+					{
+						unlock_window();
+						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+						lock_window("MWindowGUI::keypress_event 1");
+						mwindow->prev_edit_handle(shift_down());
+					}
+					else
+						mwindow->move_left(); 
+ 					result = 1; 
 				}
 				break;
 			case RIGHT:
 				if(!ctrl_down()) 
 				{ 
-					mwindow->move_right(); 
+					if (alt_down())
+					{
+						unlock_window();
+						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+						lock_window("MWindowGUI::keypress_event 2");
+						mwindow->next_edit_handle(shift_down());
+					}
+					else
+						mwindow->move_right(); 
 					result = 1; 
 				}
 				break;
@@ -637,7 +652,7 @@ int MWindowGUI::keypress_event()
 						1);
 				unlock_window();
 				mwindow->cwindow->update(0, 1, 1);
-				lock_window("TrackCanvas::keypress_event");
+				lock_window("TrackCanvas::keypress_event 3");
 
 				result = 1;
 				break;

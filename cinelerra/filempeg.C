@@ -12,6 +12,7 @@
 #include "guicast.h"
 #include "indexfile.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mwindow.inc"
 #include "preferences.h"
 #include "vframe.h"
@@ -111,6 +112,20 @@ int FileMPEG::check_sig(Asset *asset)
 	return mpeg3_check_sig(asset->path);
 }
 
+void FileMPEG::get_info(Asset *asset, int64_t *bytes, int *stracks)
+{
+	mpeg3_t *fd;
+
+	int error = 0;
+	if((fd = mpeg3_open(asset->path, &error)))
+	{
+		*bytes = mpeg3_get_bytes(fd);
+		*stracks = mpeg3_subtitle_tracks(fd);
+		mpeg3_close(fd);
+	}
+	return;
+}
+
 int FileMPEG::reset_parameters_derived()
 {
 	wrote_header = 0;
@@ -118,6 +133,8 @@ int FileMPEG::reset_parameters_derived()
 	mjpeg_eof = 0;
 	mjpeg_error = 0;
 
+
+	dvb_out = 0;
 
 
 	fd = 0;
@@ -143,27 +160,43 @@ int FileMPEG::reset_parameters_derived()
 // for reopening.
 int FileMPEG::open_file(int rd, int wr)
 {
+SET_TRACE
 	int result = 0;
 	this->rd = rd;
 	this->wr = wr;
 
 	if(rd)
 	{
-		if(!(fd = mpeg3_open(asset->path)))
+		int error = 0;
+		if(!(fd = mpeg3_open(asset->path, &error)))
 		{
-			printf("FileMPEG::open_file %s\n", asset->path);
+			char string[BCTEXTLEN];
+			if(error == MPEG3_INVALID_TOC_VERSION)
+			{
+				sprintf(string, 
+					"Couldn't open %s because it has an invalid table of contents version.\n"
+					"Rebuild the table of contents with mpeg3toc.",
+					asset->path);
+				MainError::show_error(string);
+			}
+			else
+			if(error == MPEG3_TOC_DATE_MISMATCH)
+			{
+				sprintf(string, 
+					"Couldn't open %s because the table of contents date differs from the source date.\n"
+					"Rebuild the table of contents with mpeg3toc.",
+					asset->path);
+				MainError::show_error(string);
+			}
 			result = 1;
 		}
 		else
 		{
 // Determine if the file needs a table of contents and create one if needed.
-			if(!mpeg3_has_toc(fd))
-			{
 // If it has video it must be scanned since video has keyframes.
-				if(mpeg3_total_vstreams(fd))
-				{
-					if(create_index()) return 1;
-				}
+			if(mpeg3_total_vstreams(fd))
+			{
+				if(create_index()) return 1;
 			}
 
 			mpeg3_set_cpus(fd, file->cpus);
@@ -192,11 +225,16 @@ int FileMPEG::open_file(int rd, int wr)
 					(mpeg3_colormodel(fd, 0) == MPEG3_YUV422P) ? MPEG_YUV422 : MPEG_YUV420;
 				if(!asset->frame_rate)
 					asset->frame_rate = mpeg3_frame_rate(fd, 0);
+
+// Enable subtitles
+//printf("FileMPEG::open %d\n", file->playback_subtitle);
+				if(file->playback_subtitle >= 0)
+					mpeg3_show_subtitle(fd, file->playback_subtitle);
 			}
 		}
 	}
-	
-	
+
+
 	
 	if(wr && asset->format == FILE_VMPEG)
 	{
@@ -264,13 +302,25 @@ int FileMPEG::open_file(int rd, int wr)
 			char string[BCTEXTLEN];
 			sprintf(mjpeg_command, MJPEG_EXE);
 
+// Must disable interlacing if MPEG-1
+			switch (asset->vmpeg_preset)
+			{
+				case 0: asset->vmpeg_progressive = 1; break;
+				case 1: asset->vmpeg_progressive = 1; break;
+				case 2: asset->vmpeg_progressive = 1; break;
+			}
+
+
+
+// The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
+// quantization of 1 when bitrate is fixed.  Perfectly intuitive.
 			if(asset->vmpeg_fix_bitrate)
 			{
-				sprintf(string, " -b %d -q %d", asset->vmpeg_bitrate, 0);
+				sprintf(string, " -b %d -q 1", asset->vmpeg_bitrate / 1000);
 			}
 			else
 			{
-				sprintf(string, " -b %d -q %d", asset->vmpeg_bitrate, asset->vmpeg_quantization);
+				sprintf(string, " -b 0 -q %d", asset->vmpeg_quantization);
 			}
 			strcat(mjpeg_command, string);
 
@@ -327,7 +377,8 @@ int FileMPEG::open_file(int rd, int wr)
 
 
 
-			strcat(mjpeg_command, asset->vmpeg_progressive ? " -I 0" : " -I 1");
+			strcat(mjpeg_command, 
+				asset->vmpeg_progressive ? " -I 0" : " -I 1");
 			
 
 
@@ -355,7 +406,7 @@ int FileMPEG::open_file(int rd, int wr)
 			sprintf(string, " -R %d", CLAMP(asset->vmpeg_pframe_distance, 0, 2));
 			strcat(mjpeg_command, string);
 
-			sprintf(string, " -o %s", asset->path);
+			sprintf(string, " -o '%s'", asset->path);
 			strcat(mjpeg_command, string);
 
 
@@ -370,7 +421,7 @@ int FileMPEG::open_file(int rd, int wr)
 			video_out->start();
 		}
 	}
-
+	else
 	if(wr && asset->format == FILE_AMPEG)
 	{
 		char command_line[BCTEXTLEN];
@@ -406,6 +457,8 @@ int FileMPEG::open_file(int rd, int wr)
 			lame_set_quality(lame_global, 0);
 			lame_set_in_samplerate(lame_global, 
 				asset->sample_rate);
+			lame_set_num_channels(lame_global,
+				asset->channels);
 			if((result = lame_init_params(lame_global)) < 0)
 			{
 				printf(_("encode: lame_init_params returned %d\n"), result);
@@ -418,6 +471,7 @@ int FileMPEG::open_file(int rd, int wr)
 				perror("FileMPEG::open_file");
 				lame_close(lame_global);
 				lame_global = 0;
+				result = 1;
 			}
 		}
 		else
@@ -426,9 +480,21 @@ int FileMPEG::open_file(int rd, int wr)
 			result = 1;
 		}
 	}
+	else
+// Transport stream for DVB capture
+	if(wr)
+	{
+		if(!(dvb_out = fopen(asset->path, "w")))
+		{
+			perror("FileMPEG::open_file");
+			result = 1;
+		}
+		
+	}
+
 
 //asset->dump();
-//printf("FileMPEG::open_file 100\n");
+SET_TRACE
 	return result;
 }
 
@@ -449,18 +515,22 @@ int FileMPEG::create_index()
 		index_filename, 
 		asset->path);
 	char *ptr = strrchr(index_filename, '.');
+	int error = 0;
+
 	if(!ptr) return 1;
+
+// File is a table of contents.
+	if(fd && mpeg3_has_toc(fd)) return 0;
 
 	sprintf(ptr, ".toc");
 
-// Test existence of TOC
-	FILE *test = fopen(index_filename, "r");
-	if(test)
-	{
-// Reopen with table of contents
-		fclose(test);
-	}
-	else
+	int need_toc = 1;
+
+// Test existing copy of TOC
+	if((fd = mpeg3_open(index_filename, &error)))
+		need_toc = 0;
+
+	if(need_toc)
 	{
 // Create progress window.
 // This gets around the fact that MWindowGUI is locked.
@@ -520,24 +590,36 @@ int FileMPEG::create_index()
 
 		progress->stop_progress();
 		delete progress;
+
+// Remove if error
 		if(result)
 		{
 			remove(index_filename);
 			return 1;
 		}
+		else
+// Fix date to date of source if success
+		{
+		}
+
+		if(fd) mpeg3_close(fd);
+		fd = 0;
 	}
 
 
-// Failed
 
 // Reopen file from index path instead of asset path.
-	if(fd) mpeg3_close(fd);
-	if(!(fd = mpeg3_open(index_filename)))
+	if(!fd)
 	{
-		return 1;
+		if(!(fd = mpeg3_open(index_filename, &error)))
+		{
+			return 1;
+		}
+		else
+			return 0;
 	}
-	else
-		return 0;
+
+	return 0;
 }
 
 
@@ -607,6 +689,11 @@ int FileMPEG::close_file()
 	if(lame_fd) fclose(lame_fd);
 
 	if(mjpeg_out) fclose(mjpeg_out);
+
+
+	if(dvb_out)
+		fclose(dvb_out);
+
 	reset_parameters();
 
 	FileBase::close_file();
@@ -624,8 +711,12 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
 			break;
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_ASYNCHRONOUS:
 			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
 			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
+			break;
+		case PLAYBACK_X11_GL:
+			return BC_YUV888;
 			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
@@ -746,10 +837,21 @@ int FileMPEG::set_video_position(int64_t x)
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
 	{
+//printf("FileMPEG::set_video_position 1 %lld\n", x);
 		mpeg3_set_frame(fd, x, file->current_layer);
 	}
 	else
 		return 1;
+}
+
+int64_t FileMPEG::get_memory_usage()
+{
+	if(rd && fd)
+	{
+		int64_t result = mpeg3_memory_usage(fd);
+		return result;
+	}
+	return 0;
 }
 
 
@@ -1017,14 +1119,16 @@ int FileMPEG::read_frame(VFrame *frame)
 	int result = 0;
 	int src_cmodel;
 
-SET_TRACE
+// printf("FileMPEG::read_frame\n");
+// frame->dump_stacks();
+// frame->dump_params();
+
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV420P)
 		src_cmodel = BC_YUV420P;
 	else
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV422P)
 		src_cmodel = BC_YUV422P;
 
-SET_TRACE
 	switch(frame->get_color_model())
 	{
 		case MPEG3_RGB565:
@@ -1033,6 +1137,7 @@ SET_TRACE
 		case MPEG3_RGB888:
 		case MPEG3_RGBA8888:
 		case MPEG3_RGBA16161616:
+SET_TRACE
 			mpeg3_read_frame(fd, 
 					frame->get_rows(), /* Array of pointers to the start of each output row */
 					0,                    /* Location in input frame to take picture */
@@ -1043,6 +1148,7 @@ SET_TRACE
 					asset->height, 
 					frame->get_color_model(),             /* One of the color model #defines */
 					file->current_layer);
+SET_TRACE
 			break;
 
 // Use Temp
@@ -1050,6 +1156,7 @@ SET_TRACE
 // Read these directly
 			if(frame->get_color_model() == src_cmodel)
 			{
+SET_TRACE
 				mpeg3_read_yuvframe(fd,
 					(char*)frame->get_y(),
 					(char*)frame->get_u(),
@@ -1059,17 +1166,19 @@ SET_TRACE
 					asset->width,
 					asset->height,
 					file->current_layer);
-
+SET_TRACE
 			}
 			else
 // Process through temp frame
 			{
 				char *y, *u, *v;
+SET_TRACE
 				mpeg3_read_yuvframe_ptr(fd,
 					&y,
 					&u,
 					&v,
 					file->current_layer);
+SET_TRACE
 				if(y && u && v)
 				{
 					cmodel_transfer(frame->get_rows(), 
@@ -1095,12 +1204,13 @@ SET_TRACE
 						frame->get_w());
 				}
 			}
-SET_TRACE
 			break;
 	}
 
+SET_TRACE
 	return result;
 }
+
 
 void FileMPEG::to_streamchannel(int channel, int &stream_out, int &channel_out)
 {
@@ -1114,6 +1224,7 @@ void FileMPEG::to_streamchannel(int channel, int &stream_out, int &channel_out)
 int FileMPEG::read_samples(double *buffer, int64_t len)
 {
 	if(!fd) return 0;
+	if(len < 0) return 0;
 
 // This is directed to a FileMPEGBuffer
 	float *temp_float = new float[len];
@@ -1317,6 +1428,14 @@ int MPEGConfigAudio::create_objects()
 	int x1 = 150;
 	MPEGLayer *layer;
 
+
+	if(asset->format == FILE_MPEG)
+	{
+		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
+		return 0;
+	}
+
+
 	add_tool(new BC_Title(x, y, _("Layer:")));
 	add_tool(layer = new MPEGLayer(x1, y, this));
 	layer->create_objects();
@@ -1505,6 +1624,11 @@ int MPEGConfigVideo::create_objects()
 	int x1 = x + 150;
 	int x2 = x + 300;
 
+	if(asset->format == FILE_MPEG)
+	{
+		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
+		return 0;
+	}
 
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	add_subwindow(cmodel = new MPEGColorModel(x1, y, this));

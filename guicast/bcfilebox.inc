@@ -10,7 +10,7 @@ class BC_FileBox;
 
 
 #define FILEBOX_COLUMNS 3
-#define DIRBOX_COLUMNS 2
+//#define DIRBOX_COLUMNS 2
 
 // Column definitions
 #define FILEBOX_NAME 0

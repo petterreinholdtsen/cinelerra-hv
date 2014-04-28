@@ -37,8 +37,11 @@ public:
 	int focus_in_event();
 	int focus_out_event();
 
+// canvas - 1 for incremental drawing of resources
+//          2 for delete and redraw of resources
+//          3 to ignore picon thread
 	void update(int scrollbars,
-		int canvas,      // 1 for incremental drawing.  2 for full refresh
+		int canvas, 
 		int timebar,
 		int zoombar,
 		int patchbay, 
@@ -51,7 +54,7 @@ public:
 	int keypress_event();
 	int close_event();
 	int quit();
-	int save_defaults(Defaults *defaults);
+	int save_defaults(BC_Hash *defaults);
 	int menu_h();
 // Draw on the status bar only.
 	int show_message(char *message, int color = -1);

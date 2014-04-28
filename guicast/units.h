@@ -101,6 +101,7 @@ public:
 	static double fix_framerate(double value);
 	static double atoframerate(char *text);
 
+
 // Punctuate with commas
 	static void punctuate(char *string);
 
@@ -116,7 +117,7 @@ public:
 				int time_format, 
 				int samplerate, 
 				float frame_rate = 0, 
-				float frames_per_foot = 0);    
+				float frames_per_foot = 0);
 // give text representation as time
 	static char* totext(char *text, 
 				double seconds, 
@@ -155,6 +156,9 @@ public:
 	static void* int64_to_ptr(uint64_t value);
 	static uint64_t ptr_to_int64(void *ptr);
 
+// Comparisons between double seem to work more often when this is called
+// on the comparison values.
+	static void fix_double(double *x);
 };
 
 #endif

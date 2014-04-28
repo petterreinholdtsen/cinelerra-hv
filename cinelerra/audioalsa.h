@@ -1,11 +1,12 @@
 #ifndef AUDIOALSA_H
 #define AUDIOALSA_H
 
+#include "adeviceprefs.inc"
 #include "arraylist.h"
 #include "audiodevice.h"
 
 #ifdef HAVE_ALSA
-#include "asoundlib.h"
+#include "alsa/asoundlib.h"
 
 class AudioALSA : public AudioLowLevel
 {
@@ -13,7 +14,7 @@ public:
 	AudioALSA(AudioDevice *device);
 	~AudioALSA();
 
-	static void list_devices(ArrayList<char*> *devices, int pcm_title = 0);
+	static void list_devices(ArrayList<char*> *devices, int pcm_title = 0, int mode = MODEPLAY);
 	int open_input();
 	int open_output();
 	int open_duplex();

@@ -1,12 +1,6 @@
 #ifndef ADEVICEPREFS_H
 #define ADEVICEPREFS_H
 
-// Modes
-#ifndef MODEPLAY
-#define MODEPLAY 0
-#define MODERECORD 1
-#define MODEDUPLEX 2
-#endif
 
 class OSSEnable;
 class ALSADevice;
@@ -34,9 +28,11 @@ public:
 	~ADevicePrefs();
 
 	void reset();
-	static int get_h();
+	static int get_h(int recording = 0);
 	int update(AudioOutConfig *out_config);
-	int initialize();
+// creation - set if this is the first initialize of the object
+//            to prevent file format from being overwritten
+	int initialize(int creation = 0);
 	int delete_objects();
 
 	PreferencesWindow *pwindow;
@@ -46,6 +42,7 @@ private:
 	int create_esound_objs();
 	int create_firewire_objs();
 	int create_alsa_objs();
+	int create_cine_objs();
 
 	int delete_oss_objs();
 	int delete_esound_objs();
@@ -60,27 +57,27 @@ private:
 	int x;
 	int y;
 	ADriverMenu *menu;
-	BC_Title *driver_title, *path_title, *bits_title, *channels_title;
+	BC_Title *driver_title, *path_title, *bits_title;
 	BC_Title *server_title, *port_title, *channel_title, *syt_title;
 	OSSEnable *oss_enable[MAXDEVICES];
 	ADeviceTextBox *oss_path[MAXDEVICES];
 	BitsPopup *oss_bits;
-	ADeviceIntBox *oss_channels[MAXDEVICES];
 	ADeviceTextBox *esound_server;
 	ADeviceIntBox *esound_port;
 	ADeviceIntBox *firewire_port;
 	ADeviceIntBox *firewire_channel;
-	ADeviceIntBox *firewire_channels;
 	ADeviceTextBox *firewire_path;
 	ADeviceIntBox *firewire_syt;
 
 
 	ALSADevice *alsa_device;
 	BitsPopup *alsa_bits;
-	ADeviceIntBox *alsa_channels;
 	BC_CheckBox *alsa_workaround;
-
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
+
+
+	BitsPopup *cine_bits;
+	ADeviceTextBox *cine_path;
 };
 
 class ADriverMenu : public BC_PopupMenu

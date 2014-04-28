@@ -302,7 +302,8 @@ int FileSystem::test_filter(FileItem *file)
 					else
 // Subfilter must exist at this point in the string
 					{
-						if(strncasecmp(path, string2, strlen(string2))) 
+						if(strncmp(path, string2, strlen(string2))) 
+//						if(strncasecmp(path, string2, strlen(string2))) 
 						{
 							result = 1;
 							token_done = 1;
@@ -454,8 +455,10 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 
 	strcpy(new_dir, path);
 	complete_path(new_dir);
-	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) return 0;
-	return 1;
+	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) 
+		return 1;
+	else
+		return 0;
 }
 
 int FileSystem::create_dir(char *new_dir_)
@@ -623,7 +626,7 @@ int FileSystem::complete_path(char *filename)
 int FileSystem::extract_dir(char *out, const char *in)
 {
 	strcpy(out, in);
-	if(is_dir(in))
+	if(!is_dir(in))
 	{
 // complete string is not directory
 		int i;
@@ -643,7 +646,7 @@ int FileSystem::extract_name(char *out, const char *in, int test_dir)
 {
 	int i;
 
-	if(test_dir && !is_dir(in))
+	if(test_dir && is_dir(in))
 		sprintf(out, "");    // complete string is directory
 	else
 	{
@@ -662,7 +665,7 @@ int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 	strcpy(out, dir_in);
 	int len = strlen(out);
 	int result = 0;
-	
+
 	while(!result)
 		if(len == 0 || out[len] != 0) result = 1; else len--;
 	
@@ -675,7 +678,7 @@ int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 	return 0;
 }
 
-long FileSystem::get_date(char *filename)
+int64_t FileSystem::get_date(char *filename)
 {
 	struct stat file_status;
 	bzero(&file_status, sizeof(struct stat));

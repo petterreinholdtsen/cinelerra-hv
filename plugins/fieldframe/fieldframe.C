@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -351,7 +351,7 @@ int FieldFrame::load_defaults()
 	sprintf(directory, "%sfieldframe.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
@@ -423,7 +423,7 @@ int FieldFrame::process_buffer(VFrame *frame,
 	int result = 0;
 	load_configuration();
 
-	if(input && !input->equivalent(frame))
+	if(input && !input->equivalent(frame, 0))
 	{
 		delete input;
 		input = 0;

@@ -71,7 +71,7 @@ int VRender::flash_output()
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
-int VRender::process_buffer(VFrame **video_out, 
+int VRender::process_buffer(VFrame *video_out, 
 	int64_t input_position, 
 	int last_buffer)
 {
@@ -81,8 +81,7 @@ int VRender::process_buffer(VFrame **video_out,
 	int reconfigure = 0;
 
 
-	for(i = 0; i < MAX_CHANNELS; i++)
-		this->video_out[i] = video_out[i];
+	this->video_out = video_out;
 	this->last_playback = last_buffer;
 
 	current_position = input_position;
@@ -99,11 +98,16 @@ int VRender::process_buffer(VFrame **video_out,
 
 int VRender::process_buffer(int64_t input_position)
 {
+SET_TRACE
 	Edit *playable_edit = 0;
 	int colormodel;
 	int use_vconsole = 1;
 	int use_brender = 0;
 	int result = 0;
+	int use_cache = renderengine->command->single_frame();
+	int use_asynchronous = 
+		renderengine->command->realtime && 
+		renderengine->edl->session->video_asynchronous;
 SET_TRACE
 
 // Determine the rendering strategy for this frame.
@@ -111,23 +115,28 @@ SET_TRACE
 		input_position,
 		use_brender);
 
-SET_TRACE
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
-SET_TRACE
 
 // Get output buffer from device
 	if(renderengine->command->realtime)
-		renderengine->video->new_output_buffers(video_out, colormodel);
-SET_TRACE
+		renderengine->video->new_output_buffer(&video_out, colormodel);
+
+
+// printf("VRender::process_buffer use_vconsole=%d colormodel=%d video_out=%p\n", 
+// use_vconsole, 
+// colormodel,
+// video_out);
 // Read directly from file to video_out
 	if(!use_vconsole)
 	{
 
 		if(use_brender)
 		{
+SET_TRACE
 			Asset *asset = renderengine->preferences->brender_asset;
-			File *file = renderengine->get_vcache()->check_out(asset);
+			File *file = renderengine->get_vcache()->check_out(asset,
+				renderengine->edl);
 			if(file)
 			{
 				int64_t corrected_position = current_position;
@@ -135,25 +144,29 @@ SET_TRACE
 					corrected_position--;
 
 // Cache single frames only
-				if(renderengine->command->single_frame())
-					file->set_cache_frames(1);
+				if(use_asynchronous)
+					file->start_video_decode_thread();
+				else
+					file->stop_video_thread();
+				if(use_cache) file->set_cache_frames(1);
 				file->set_video_position(corrected_position, 
 					renderengine->edl->session->frame_rate);
-				file->read_frame(video_out[0]);
-				if(renderengine->command->single_frame())
-					file->set_cache_frames(0);
+				file->read_frame(video_out);
+				if(use_cache) file->set_cache_frames(0);
 				renderengine->get_vcache()->check_in(asset);
 			}
+SET_TRACE
 		}
 		else
 		if(playable_edit)
 		{
-			result = ((VEdit*)playable_edit)->read_frame(video_out[0], 
+			result = ((VEdit*)playable_edit)->read_frame(video_out, 
 				current_position, 
 				renderengine->command->get_direction(),
 				renderengine->get_vcache(),
 				1,
-				renderengine->command->single_frame());
+				use_cache,
+				use_asynchronous);
 		}
 	}
 	else
@@ -161,9 +174,7 @@ SET_TRACE
 	{
 
 // process this buffer now in the virtual console
-SET_TRACE
 		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
-SET_TRACE
 	}
 
 
@@ -186,7 +197,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 
 
 // Total number of playable tracks is 1
-	if(vconsole->total_entry_nodes != 1) return 1;
+	if(vconsole->total_exit_nodes != 1) return 1;
 
 	playable_track = vconsole->playable_tracks->values[0];
 
@@ -219,16 +230,12 @@ int VRender::get_colormodel(Edit* &playable_edit,
 	int use_vconsole,
 	int use_brender)
 {
-SET_TRACE
 	int colormodel = renderengine->edl->session->color_model;
 
-SET_TRACE
 	if(!use_vconsole && !renderengine->command->single_frame())
 	{
 // Get best colormodel supported by the file
-SET_TRACE
 		int driver = renderengine->config->vconfig->driver;
-SET_TRACE
 		File *file;
 		Asset *asset;
 
@@ -241,17 +248,16 @@ SET_TRACE
 			asset = playable_edit->asset;
 		}
 
-SET_TRACE
-		file = renderengine->get_vcache()->check_out(asset);
-SET_TRACE
+		file = renderengine->get_vcache()->check_out(asset,
+			renderengine->edl);
 
 		if(file)
 		{
 			colormodel = file->get_best_colormodel(driver);
 			renderengine->get_vcache()->check_in(asset);
 		}
-SET_TRACE
 	}
+
 	return colormodel;
 }
 
@@ -293,7 +299,6 @@ void VRender::run()
 		!renderengine->video->interrupt && 
 		!last_playback)
 	{
-TRACE("VRender::run 0");
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
 // and the number of frames skipped after this frame varies.
@@ -302,30 +307,26 @@ TRACE("VRender::run 0");
 		reconfigure = vconsole->test_reconfigure(current_position, 
 			current_input_length,
 			last_playback);
-TRACE("VRender::run 0.1");
 
 		if(reconfigure) restart_playback();
-TRACE("VRender::run 0.2");
 
+SET_TRACE
 		process_buffer(current_position);
+SET_TRACE
 
-TRACE("VRender::run 0.3");
 		if(renderengine->command->single_frame())
 		{
-//TRACE("VRender::run 2");
 			flash_output();
-//TRACE("VRender::run 3");
 			frame_step = 1;
 			done = 1;
 		}
 		else
 // Perform synchronization
 		{
-TRACE("VRender::run 0.4");
+SET_TRACE
 // Determine the delay until the frame needs to be shown.
 			current_sample = (int64_t)(renderengine->sync_position() * 
 				renderengine->command->get_speed());
-TRACE("VRender::run 0.5");
 // latest sample at which the frame can be shown.
 			end_sample = Units::tosamples(session_frame, 
 				renderengine->edl->session->sample_rate, 
@@ -334,11 +335,14 @@ TRACE("VRender::run 0.5");
 			start_sample = Units::tosamples(session_frame - 1, 
 				renderengine->edl->session->sample_rate, 
 				renderengine->edl->session->frame_rate);
+SET_TRACE
 
 			if(first_frame || end_sample < current_sample)
 			{
+SET_TRACE
 // Frame rendered late or this is the first frame.  Flash it now.
 				flash_output();
+SET_TRACE
 
 				if(renderengine->edl->session->video_every_frame)
 				{
@@ -364,14 +368,12 @@ TRACE("VRender::run 0.5");
 								renderengine->edl->session->sample_rate, 
 								renderengine->edl->session->frame_rate);
 				}
-//TRACE("VRender::run 3");
-//printf("VRender:run 11 frame_step %d\n", frame_step);
 			}
 			else
 			{
 // Frame rendered early or just in time.
 				frame_step = 1;
-//TRACE("VRender::run 4");
+SET_TRACE
 
 				if(delay_countdown > 0)
 				{
@@ -383,11 +385,13 @@ TRACE("VRender::run 0.5");
 					skip_countdown = VRENDER_THRESHOLD;
 					if(start_sample > current_sample)
 					{
+SET_TRACE
 						int64_t delay_time = (int64_t)((float)(start_sample - current_sample) * 
 							1000 / 
 							renderengine->edl->session->sample_rate);
+SET_TRACE
 						timer.delay(delay_time);
-//printf("VRender:run 10 %lld\n", delay_time);
+SET_TRACE
 					}
 					else
 					{
@@ -395,10 +399,10 @@ TRACE("VRender::run 0.5");
 					}
 				}
 
-//TRACE("VRender::run 5");
 // Flash frame now.
+SET_TRACE
 				flash_output();
-//TRACE("VRender::run 6");
+SET_TRACE
 			}
 		}
 
@@ -409,7 +413,6 @@ TRACE("VRender::run 0.5");
 			first_frame = 0;
 			renderengine->reset_sync_position();
 		}
-//TRACE("VRender::run 5");
 
 		session_frame += frame_step;
 
@@ -427,7 +430,6 @@ TRACE("VRender::run 0.5");
 			frame_step -= current_input_length;
 			current_input_length = frame_step;
 		}
-TRACE("VRender::run 6");
 
 // Update tracking.
 		if(renderengine->command->realtime &&
@@ -437,7 +439,6 @@ TRACE("VRender::run 6");
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}
 
-TRACE("VRender::run 7");
 // Calculate the framerate counter
 		framerate_counter++;
 		if(framerate_counter >= renderengine->edl->session->frame_rate && 
@@ -448,13 +449,12 @@ TRACE("VRender::run 7");
 			framerate_counter = 0;
 			framerate_timer.update();
 		}
-TRACE("VRender::run 8");
 	}
-TRACE("VRender::run 10");
 
+SET_TRACE
 // In case we were interrupted before the first loop
 	renderengine->first_frame_lock->unlock();
-
+	stop_plugins();
 }
 
 
@@ -489,7 +489,7 @@ VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
 	session_frame = 0;
 	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
-	video_out[0] = 0;
+	video_out = 0;
 	render_strategy = -1;
 }
 
@@ -498,7 +498,7 @@ int VRender::init_device_buffers()
 // allocate output buffer if there is a video device
 	if(renderengine->video)
 	{
-		video_out[0] = 0;
+		video_out = 0;
 		render_strategy = -1;
 	}
 }

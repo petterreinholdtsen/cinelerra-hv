@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "freezeframe.h"
 #include "language.h"
@@ -80,12 +80,14 @@ int FreezeFrameWindow::create_objects()
 		x, 
 		y,
 		_("Enabled")));
-	y += 30;
-	add_tool(line_double = new FreezeFrameToggle(client, 
-		&client->config.line_double,
-		x, 
-		y,
-		_("Line double")));
+// Try using extra effect for the line double since it doesn't
+// change the overhead.
+// 	y += 30;
+// 	add_tool(line_double = new FreezeFrameToggle(client, 
+// 		&client->config.line_double,
+// 		x, 
+// 		y,
+// 		_("Line double")));
 	show_window();
 	flush();
 	return 0;
@@ -178,7 +180,7 @@ void FreezeFrameMain::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->enabled->update(config.enabled);
-		thread->window->line_double->update(config.line_double);
+//		thread->window->line_double->update(config.line_double);
 		thread->window->unlock_window();
 	}
 }
@@ -240,7 +242,7 @@ int FreezeFrameMain::load_defaults()
 	sprintf(directory, "%sfreezeframe.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
@@ -268,7 +270,6 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	int64_t previous_first_frame = first_frame_position;
 	load_configuration();
 
-
 // Just entered frozen range
 	if(!first_frame && config.enabled)
 	{
@@ -277,10 +278,13 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame->get_w(), 
 				frame->get_h(),
 				frame->get_color_model());
+printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
 		read_frame(first_frame, 
 				0, 
 				first_frame_position,
-				frame_rate);
+				frame_rate,
+				get_use_opengl());
+		if(get_use_opengl()) return run_opengl();
 		frame->copy_from(first_frame);
 	}
 	else
@@ -290,7 +294,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position,
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
 	}
 	else
 // Just left frozen range
@@ -301,7 +306,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position,
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
 	}
 	else
 // Still frozen
@@ -313,25 +319,41 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 			read_frame(first_frame, 
 				0, 
 				first_frame_position,
-				frame_rate);
+				frame_rate,
+				get_use_opengl());
 		}
+		if(get_use_opengl()) return run_opengl();
 		frame->copy_from(first_frame);
 	}
 
 
 // Line double to support interlacing
-	if(config.line_double && config.enabled)
-	{
-		for(int i = 0; i < frame->get_h() - 1; i += 2)
-		{
-			memcpy(frame->get_rows()[i + 1], 
-				frame->get_rows()[i], 
-				frame->get_bytes_per_line());
-		}
-	}
+// 	if(config.line_double && config.enabled)
+// 	{
+// 		for(int i = 0; i < frame->get_h() - 1; i += 2)
+// 		{
+// 			memcpy(frame->get_rows()[i + 1], 
+// 				frame->get_rows()[i], 
+// 				frame->get_bytes_per_line());
+// 		}
+// 	}
 
 
 
 	return 0;
 }
+
+int FreezeFrameMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	first_frame->to_texture();
+	first_frame->bind_texture(0);
+	first_frame->draw_texture();
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+	return 0;
+}
+
 

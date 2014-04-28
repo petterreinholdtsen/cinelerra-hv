@@ -1,10 +1,18 @@
 #ifndef BCRESOURCES_H
 #define BCRESOURCES_H
 
+
+
+// Global objects for the user interface
+
+
+
+
 #include "bcdisplayinfo.inc"
 #include "bcfilebox.h"
 #include "bcresources.inc"
 #include "bcsignals.inc"
+#include "bcsynchronous.inc"
 #include "bcwindowbase.inc"
 #include "vframe.inc"
 
@@ -16,6 +24,8 @@ typedef struct
 	int icon_type;
 } suffix_to_type_t;
 
+
+
 class BC_Resources
 {
 public:
@@ -24,6 +34,8 @@ public:
 
 	int initialize_display(BC_WindowBase *window);
 
+// Get unique ID
+	int get_id();
 	int get_bg_color();          // window backgrounds
 	int get_bg_shadow1();        // border for windows
 	int get_bg_shadow2();
@@ -34,9 +46,13 @@ public:
 	int get_left_border();
 	int get_right_border();
 	int get_bottom_border();
-
-// Pointer to signal handler class to run after ipc
-	static BC_Signals *signal_handler;
+// Get synchronous thread for OpenGL
+	BC_Synchronous* get_synchronous();
+// Called by user after synchronous thread is created.
+	void set_synchronous(BC_Synchronous *synchronous);
+// Set signal handler
+	static void set_signals(BC_Signals *signal_handler);
+	static BC_Signals* get_signals();
 
 // These values should be changed before the first window is created.
 // colors
@@ -198,7 +214,7 @@ public:
 // Pots
 	VFrame **pot_images;
 	int pot_x1, pot_y1, pot_r;
-// Amoun of deflection of pot when down
+// Amount of deflection of pot when down
 	int pot_offset;
 	int pot_needle_color;
 
@@ -261,6 +277,11 @@ public:
 	static char *medium_font_xft;
 	static char *small_font_xft;
 
+// Backup of fonts in case the first choices don't exist
+	static char *large_font_xft2;
+	static char *medium_font_xft2;
+	static char *small_font_xft2;
+
 	VFrame **medium_7segment;
 
 
@@ -277,6 +298,8 @@ public:
 	int recursive_resizing;
 // Work around X server bugs
 	int use_xvideo;
+// Seems to help if only 1 window is created at a time.
+	Mutex *create_window_lock;
 
 private:
 // Test for availability of shared memory pixmaps
@@ -287,6 +310,14 @@ private:
  	VFrame **list_pointers[100];
  	int list_lengths[100];
  	int list_total;
+
+	Mutex *id_lock;
+
+// Pointer to signal handler class to run after ipc
+	static BC_Signals *signal_handler;
+	BC_Synchronous *synchronous;
+
+	int id;
 };
 
 

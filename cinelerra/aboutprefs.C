@@ -24,11 +24,11 @@ int AboutPrefs::create_objects()
 
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("About"), 
-		LARGEFONT, 
-		resources->text_default));
+// 	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+// 		mwindow->theme->preferencestitle_y, 
+// 		_("About"), 
+// 		LARGEFONT, 
+// 		resources->text_default));
 	
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y +
@@ -44,7 +44,7 @@ int AboutPrefs::create_objects()
 	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
 	sprintf(license2, "%s%s%s", 
-		_("(c) 2005 Heroine Virtual Ltd.\n\n"),
+		_("(C) 2006 Heroine Virtual Ltd.\n\n"),
 		_("Build date: "), 
 		BUILDDATE);
 	set_font(MEDIUMFONT);
@@ -76,20 +76,29 @@ mpeg3_release());
 
 	char credits[BCTEXTLEN];
 	sprintf(credits,
+
+"Jack Crossfire\n"
 "Richard Baverstock\n"
 "Karl Bielefeldt\n"
 "Kevin Brosius\n"
-"Jack Crossfire\n"
+"Jean-Luc Coulon\n"
 "Jean-Michel POURE\n"
+"Jerome Cornet\n"
 "Johannes Sixt\n"
 "Pierre Marc Dumuid\n"
 "Alex Ferrer\n"
+"Tefan de Konink\n"
+"Nathan Kurz\n"
+"Greg Mekkes\n"
 "Eric Seigne\n"
+"Joe Stewart\n"
+"Dan Streetman\n"
 "Gustavo Iñiguez\n"
 "Johannes Sixt\n"
 "Mark Taraba\n"
-"Nathan Kurz\n"
 "Andraz Tori\n"
+"Jonas Wulff\n"
+
 );
 	draw_text(x, y, credits);
 

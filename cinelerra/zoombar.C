@@ -1,3 +1,4 @@
+#include "apatchgui.inc"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -13,6 +14,7 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "units.h"
+#include "vpatchgui.inc"
 #include "zoombar.h"
 
 
@@ -60,11 +62,19 @@ int ZoomBar::create_objects()
 	x += track_zoom->get_w() + 10;
 
 #define DEFAULT_TEXT "000.00 - 000.00"
-	add_subwindow(auto_zoom_text = new BC_Title(
+	add_subwindow(auto_zoom_popup = new AutoZoomPopup(
+		mwindow, 
+		this, 
 		x, 
-		get_h() / 2 - BC_Title::calculate_h(this, "0") / 2, 
-		DEFAULT_TEXT));
-	x += auto_zoom_text->get_w() + 5;
+		y,
+		get_text_width(MEDIUMFONT, DEFAULT_TEXT) + 20));
+	auto_zoom_popup->create_objects();
+	x += auto_zoom_popup->get_w() + 5;
+// 	add_subwindow(auto_zoom_text = new BC_Title(
+// 		x, 
+// 		get_h() / 2 - BC_Title::calculate_h(this, "0") / 2, 
+// 		DEFAULT_TEXT));
+// 	x += auto_zoom_text->get_w() + 5;
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y));
 	update_autozoom();
 	x += auto_zoom->get_w() + 5;
@@ -135,7 +145,8 @@ void ZoomBar::update_autozoom()
 	sprintf(string, "%0.02f - %0.02f\n", 
 		mwindow->edl->local_session->automation_min, 
 		mwindow->edl->local_session->automation_max);
-	auto_zoom_text->update(string);
+//	auto_zoom_text->update(string);
+	auto_zoom_popup->set_text(string);
 }
 
 int ZoomBar::update()
@@ -383,6 +394,51 @@ int AutoZoom::handle_down_event()
 	mwindow->shrink_autos();
 	return 1;
 }
+
+
+
+
+
+
+
+AutoZoomPopup::AutoZoomPopup(MWindow *mwindow, 
+	ZoomBar *zoombar, 
+	int x, 
+	int y,
+	int w)
+ : BC_PopupMenu(x,
+ 	y,
+	w,
+	"",
+	1,
+	mwindow->theme->get_image_set("zoombar_menu", 0))
+{
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+}
+
+void AutoZoomPopup::create_objects()
+{
+	char string[BCTEXTLEN];
+
+	sprintf(string, "0 - %d", MAX_VIDEO_FADE);
+	add_item(new BC_MenuItem(string));
+
+	sprintf(string, "%d - %d", INFINITYGAIN, MAX_AUDIO_FADE);
+	add_item(new BC_MenuItem(string));
+}
+
+int AutoZoomPopup::handle_event()
+{
+	if(!strcmp(get_text(), get_item(0)->get_text()))
+		mwindow->zoom_autos(0, MAX_VIDEO_FADE);
+	else
+	if(!strcmp(get_text(), get_item(1)->get_text()))
+		mwindow->zoom_autos(INFINITYGAIN, MAX_AUDIO_FADE);
+	return 1;
+}
+
+
 
 
 

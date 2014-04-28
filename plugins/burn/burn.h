@@ -3,7 +3,7 @@
 
 class BurnMain;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "effecttv.inc"
 #include "loadbalance.h"
 #include "mutex.h"
@@ -75,7 +75,7 @@ public:
 
 
 
-	void BurnMain::HSItoRGB(double H, 
+	void HSItoRGB(double H, 
 		double S, 
 		double I, 
 		int *r, 
@@ -95,7 +95,7 @@ public:
 	int total;
 
 	EffectTV *effecttv;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	VFrame *input_ptr, *output_ptr;
 	YUV *yuv;
 };

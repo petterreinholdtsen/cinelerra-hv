@@ -32,9 +32,6 @@ public:
 		ChannelDB *channeldb);
 	~RenderEngine();
 
-	int total_playable_channels();
-// Translate sequential to subscript for EDL array
-	int playable_channel_number(int number);
 	void get_duty();
 	void create_render_threads();
 	void arm_render_threads();
@@ -156,8 +153,7 @@ public:
 	int arm_playback_audio(int64_t input_length, 
 			int64_t amodule_render_fragment, 
 			int64_t playback_buffer, 
-			int64_t output_length, 
-			int audio_channels);
+			int64_t output_length);
 
 	int arm_playback_video(int every_frame, 
 			int64_t read_length, 
@@ -180,7 +176,6 @@ public:
 	int64_t start_position;      // lowest numbered sample in playback range
 	int64_t end_position;        // highest numbered sample in playback range
 	int64_t current_sample;
-	int audio_channels;
 	int every_frame;
 
 	MWindow *mwindow;

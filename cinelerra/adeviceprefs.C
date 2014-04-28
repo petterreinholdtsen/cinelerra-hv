@@ -40,24 +40,23 @@ ADevicePrefs::~ADevicePrefs()
 void ADevicePrefs::reset()
 {
 	menu = 0;
-	firewire_channels = 0;
 	firewire_path = 0;
 	firewire_syt = 0;
 	syt_title = 0;
-	channels_title = 0;
 	path_title = 0;
 
 	alsa_drivers = 0;
 	path_title = 0;
 	bits_title = 0;
-	channels_title = 0;
 	alsa_device = 0;
 	alsa_bits = 0;
-	alsa_channels = 0;
 	alsa_workaround = 0;
+
+	cine_bits = 0;
+	cine_path = 0;
 }
 
-int ADevicePrefs::initialize()
+int ADevicePrefs::initialize(int creation)
 {
 	int *driver;
 	delete_objects();
@@ -103,13 +102,19 @@ int ADevicePrefs::initialize()
 		case AUDIO_IEC61883:
 			create_firewire_objs();
 			break;
+		case AUDIO_CINE:
+			create_cine_objs();
+			break;
 	}
 	return 0;
 }
 
-int ADevicePrefs::get_h()
+int ADevicePrefs::get_h(int recording)
 {
-	return DEVICE_H + 25;
+	if(!recording)
+		return DEVICE_H + 30;
+	else
+		return DEVICE_H;
 }
 
 int ADevicePrefs::delete_objects()
@@ -132,6 +137,10 @@ int ADevicePrefs::delete_objects()
 			delete_firewire_objs();
 			break;
 	}
+
+	delete cine_bits;
+	delete cine_path;
+
 	reset();
 	driver = -1;
 	return 0;
@@ -141,13 +150,10 @@ int ADevicePrefs::delete_oss_objs()
 {
 	delete path_title;
 	delete bits_title;
-	delete channels_title;
 	delete oss_bits;
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
-//				delete oss_enable[i];
 		delete oss_path[i];
-		delete oss_channels[i];
 break;
 	}
 	return 0;
@@ -180,12 +186,6 @@ int ADevicePrefs::delete_firewire_objs()
 		delete syt_title;
 	}
 	firewire_syt = 0;
-	if(firewire_channels)
-	{
-		delete firewire_channels;
-		delete channels_title;
-	}
-	firewire_channels = 0;
 	return 0;
 }
 
@@ -196,10 +196,8 @@ int ADevicePrefs::delete_alsa_objs()
 	delete alsa_drivers;
 	delete path_title;
 	delete bits_title;
-	delete channels_title;
 	delete alsa_device;
 	delete alsa_bits;
-	delete alsa_channels;
 	delete alsa_workaround;
 #endif
 	return 0;
@@ -280,20 +278,6 @@ int ADevicePrefs::create_oss_objs()
 		}
 
 		x1 += oss_bits->get_w() + 5;
-		switch(mode)
-		{
-			case MODEPLAY: 
-				output_int = &out_config->oss_out_channels[i];
-				break;
-			case MODERECORD:
-				output_int = &in_config->oss_in_channels[i];
-				break;
-			case MODEDUPLEX:
-				output_int = &out_config->oss_out_channels[i];
-				break;
-		}
-		if(i == 0) dialog->add_subwindow(channels_title = new BC_Title(x1, y1, _("Channels:"), MEDIUMFONT, resources->text_default));
-		dialog->add_subwindow(oss_channels[i] = new ADeviceIntBox(x1, y1 + 20, output_int));
 		y1 += DEVICE_H;
 break;
 	}
@@ -312,7 +296,7 @@ int ADevicePrefs::create_alsa_objs()
 	int x1 = x + menu->get_w() + 5;
 
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
-	AudioALSA::list_devices(alsa_titles);
+	AudioALSA::list_devices(alsa_titles, 0, mode);
 
 	alsa_drivers = new ArrayList<BC_ListBoxItem*>;
 	for(int i = 0; i < alsa_titles->total; i++)
@@ -366,22 +350,7 @@ int ADevicePrefs::create_alsa_objs()
 		1);
 	alsa_bits->create_objects();
 
-	x1 += alsa_bits->get_w() + 5;
-	switch(mode)
-	{
-		case MODEPLAY: 
-			output_int = &out_config->alsa_out_channels;
-			break;
-		case MODERECORD:
-			output_int = &in_config->alsa_in_channels;
-			break;
-		case MODEDUPLEX:
-			output_int = &out_config->alsa_out_channels;
-			break;
-	}
-	dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, resources->text_default));
-	dialog->add_subwindow(alsa_channels = new ADeviceIntBox(x1, y1 + 20, output_int));
-	y1 += alsa_channels->get_h() + 20 + 5;
+	y1 += alsa_bits->get_h() + 20 + 5;
 	x1 = x2;
 
 	if(mode == MODEPLAY)
@@ -507,27 +476,6 @@ int ADevicePrefs::create_firewire_objs()
 	dialog->add_subwindow(firewire_channel = new ADeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
-// Playback channels
-	switch(mode)
-	{
-		case MODEPLAY:
-			if(driver == AUDIO_DV1394)
-				output_int = &out_config->dv1394_channels;
-			else
-				output_int = &out_config->firewire_channels;
-			break;
-		case MODERECORD:
-			output_int = 0;
-			break;
-	}
-
-	if(output_int)
-	{
-		dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, resources->text_default));
-		dialog->add_subwindow(firewire_channels = new ADeviceIntBox(x1, y + 20, output_int));
-		x1 += firewire_channels->get_w() + 5;
-	}
-
 // Syt offset
 	switch(mode)
 	{
@@ -554,6 +502,17 @@ int ADevicePrefs::create_firewire_objs()
 
 	return 0;
 }
+
+
+
+int ADevicePrefs::create_cine_objs()
+{
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	int x1 = x + menu->get_w() + 5;
+	
+}
+
+
 
 ADriverMenu::ADriverMenu(int x, 
 	int y, 
@@ -585,6 +544,7 @@ void ADriverMenu::create_objects()
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
 	add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
 	add_item(new ADriverItem(this, AUDIO_IEC61883_TITLE, AUDIO_IEC61883));
+	add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -614,6 +574,9 @@ char* ADriverMenu::adriver_to_string(int driver)
 			break;
 		case AUDIO_IEC61883:
 			sprintf(string, AUDIO_IEC61883_TITLE);
+			break;
+		case AUDIO_DVB:
+			sprintf(string, AUDIO_DVB_TITLE);
 			break;
 	}
 	return string;

@@ -3,6 +3,7 @@
 #include "file.h"
 #include "filelist.h"
 #include "guicast.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "render.h"
 #include "renderfarmfsserver.inc"
@@ -13,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 
 FileList::FileList(Asset *asset, 
@@ -292,8 +294,8 @@ int FileList::read_frame(VFrame *frame)
 	}
 	else
 	{
-
 // Allocate and decompress once into temporary
+//printf("FileList::read_frame %d\n", frame->get_color_model());
 		if(!temp || temp->get_color_model() != frame->get_color_model())
 		{
 			if(temp) delete temp;
@@ -335,6 +337,9 @@ int FileList::read_frame(VFrame *frame)
 
 		if(!temp) return result;
 
+// printf("FileList::read_frame frame=%d temp=%d\n", 
+// frame->get_color_model(),
+// temp->get_color_model());
 		if(frame->get_color_model() == temp->get_color_model())
 		{
 			frame->copy_from(temp);
@@ -507,9 +512,9 @@ FrameWriterUnit* FileList::new_writer_unit(FrameWriter *writer)
 	return new FrameWriterUnit(writer);
 }
 
-int FileList::get_memory_usage()
+int64_t FileList::get_memory_usage()
 {
-	int result = 0;
+	int64_t result = 0;
 	if(data) result += data->get_compressed_allocated();
 	if(temp) result += temp->get_data_size();
 	return result;
@@ -583,7 +588,7 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 
 	int result = server->file->write_frame(ptr->input, output, this);
 	
-//printf("FrameWriterUnit::process_package 4");
+//printf("FrameWriterUnit::process_package 4 %s %d\n", ptr->path, output->get_compressed_size());
 	if(!result) result = !fwrite(output->get_data(), output->get_compressed_size(), 1, file);
 //TRACE("FrameWriterUnit::process_package 4");
 	fclose(file);

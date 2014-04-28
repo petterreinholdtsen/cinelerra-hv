@@ -45,7 +45,7 @@ with the BUZ driver with PCM audio.
 #define FRAMERATE (double)30000/1001
 #define CHANNELS 2
 #define SAMPLERATE 48000
-#define BITS 16
+#define BITS 24
 #define TEMP_FILE "/tmp/temp.mov"
 #define VCODEC QUICKTIME_MJPA
 //#define VCODEC QUICKTIME_JPEG
@@ -139,6 +139,24 @@ int main(int argc, char *argv[])
 	int64_t field_size;
 	int64_t field_allocation;
 
+// Dump codec settings
+	printf("Codec settings:\n"
+		"   WIDTH=%d HEIGHT=%d\n"
+		"   FRAMERATE=%.2f\n"
+		"   CHANNELS=%d\n"
+		"   SAMPLERATE=%d\n"
+		"   BITS=%d\n"
+		"   audio chunk=%d\n"
+		"   VCODEC=\"%s\"\n",
+		WIDTH,
+		HEIGHT,
+		FRAMERATE,
+		CHANNELS,
+		SAMPLERATE,
+		BITS,
+		audio_chunk,
+		VCODEC);
+
 	if(argc < 2)
 	{
 		printf("Recover JPEG and PCM audio in a corrupted movie.\n"
@@ -176,24 +194,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
-// Dump codec settings
-	printf("Codec settings:\n"
-		"   WIDTH=%d HEIGHT=%d\n"
-		"   FRAMERATE=%.2f\n"
-		"   CHANNELS=%d\n"
-		"   SAMPLERATE=%d\n"
-		"   BITS=%d\n"
-		"   audio chunk=%d\n"
-		"   VCODEC=\"%s\"\n",
-		WIDTH,
-		HEIGHT,
-		FRAMERATE,
-		CHANNELS,
-		SAMPLERATE,
-		BITS,
-		audio_chunk,
-		VCODEC);
 
 
 

@@ -11,7 +11,7 @@ class GradientServer;
 #define MAXRADIUS 10000
 
 #include "colorpicker.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 #include "guicast.h"
 #include "loadbalance.h"
@@ -215,7 +215,9 @@ public:
 	GradientMain(PluginServer *server);
 	~GradientMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
@@ -223,6 +225,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	int is_synthesis();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(GradientConfig, GradientThread)
 

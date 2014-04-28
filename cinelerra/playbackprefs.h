@@ -1,26 +1,29 @@
 #ifndef PLAYBACKPREFS_H
 #define PLAYBACKPREFS_H
 
-class PlaybackOutPath;
-class PlaybackOutBits;
-class PlaybackBufferSize;
-class PlaybackBufferBytes;
-class PlaybackOutChannels;
-class PlaybackViewFollows;
-class PlaybackRealTime;
-class PlaybackSoftwareTimer;
-class PlaybackModuleFragment;
-class PlaybackReadLength;
-class PlaybackDisableNoEdits;
-class PlaybackPreload;
-class PlaybackNearest;
 class PlaybackBicubicBicubic;
 class PlaybackBicubicBilinear;
 class PlaybackBilinearBilinear;
+class PlaybackBufferBytes;
+class PlaybackBufferSize;
 class PlaybackDeblock;
+class PlaybackDisableNoEdits;
 class PlaybackHead;
 class PlaybackHeadCount;
 class PlaybackHost;
+class PlaybackInterpolateRaw;
+class PlaybackModuleFragment;
+class PlaybackNearest;
+class PlaybackOutBits;
+class PlaybackOutChannels;
+class PlaybackOutPath;
+class PlaybackPreload;
+class PlaybackReadLength;
+class PlaybackRealTime;
+class PlaybackSoftwareTimer;
+class PlaybackViewFollows;
+class PlaybackWhiteBalanceRaw;
+class VideoAsynchronous;
 
 #include "adeviceprefs.h"
 #include "guicast.h"
@@ -41,10 +44,6 @@ public:
 	static char* strategy_to_string(int strategy);
 	void delete_strategy();
 
-/*
- * 	ArrayList<PlaybackConfig*>* current_config_list();
- * 	PlaybackConfig* current_config();
- */
 	void update(int interpolation);
 	int draw_framerate();
 
@@ -59,15 +58,11 @@ public:
 	PlaybackBicubicBilinear *cubic_linear;
 	PlaybackBilinearBilinear *linear_linear;
 	PlaybackDeblock *mpeg4_deblock;
+	PlaybackInterpolateRaw *interpolate_raw;
+	PlaybackWhiteBalanceRaw *white_balance_raw;
+	VideoAsynchronous *asynchronous;
 
-//	int64_t current_head;
-//	BC_Title *head_title;
-//	BC_Title *host_title;
-//	BC_Title *head_count_title;
 	BC_Title *vdevice_title;
-//	PlaybackHead *head_text;
-//	PlaybackHeadCount *head_count_text;
-//	PlaybackHost *host_text;
 };
 
 class PlaybackModuleFragment : public BC_PopupMenu
@@ -120,12 +115,24 @@ public:
 	PreferencesWindow *pwindow;
 };
 
+class VideoAsynchronous : public BC_CheckBox
+{
+public:
+	VideoAsynchronous(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 class VideoEveryFrame : public BC_CheckBox
 {
 public:
-	VideoEveryFrame(PreferencesWindow *pwindow, int x, int y);
+	VideoEveryFrame(PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback_prefs,
+		int x, 
+		int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback_prefs;
 };
 
 class PlaybackDeblock : public BC_CheckBox
@@ -196,6 +203,54 @@ public:
 		PreferencesWindow *pwindow, 
 		PlaybackPrefs *playback, 
 		char *text);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
+
+class PlaybackInterpolateRaw : public BC_CheckBox
+{
+public:
+	PlaybackInterpolateRaw(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
+
+class PlaybackWhiteBalanceRaw : public BC_CheckBox
+{
+public:
+	PlaybackWhiteBalanceRaw(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
+
+class PlaybackSubtitle : public BC_CheckBox
+{
+public:
+	PlaybackSubtitle(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
+
+class PlaybackSubtitleNumber : public BC_TumbleTextBox
+{
+public:
+	PlaybackSubtitleNumber(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
 	int handle_event();
 	PreferencesWindow *pwindow;
 	PlaybackPrefs *playback;

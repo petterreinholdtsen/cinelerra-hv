@@ -1,10 +1,13 @@
 #include "edl.h"
+#include "edlsession.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
 #include "resizetrackthread.h"
+#include "theme.h"
 #include "track.h"
 #include "tracks.h"
 
@@ -65,6 +68,15 @@ void ResizeTrackThread::run()
 			mwindow->resize_track(track, w, h);
 		}
 	}
+
+	if(((w % 4) || 
+		(h % 4)) && 
+		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		MainError::show_error(
+			_("This track's dimensions are not multiples of 4 so\n"
+			"it can't be rendered by OpenGL."));
+	}
 }
 
 
@@ -77,9 +89,9 @@ ResizeTrackWindow::ResizeTrackWindow(MWindow *mwindow,
  : BC_Window(PROGRAM_NAME ": Resize Track", 
 				x - 320 / 2,
 				y - get_resources()->ok_images[0]->get_h() + 100 / 2,
-				320, 
+				340, 
 				get_resources()->ok_images[0]->get_h() + 100, 
-				320, 
+				340, 
 				get_resources()->ok_images[0]->get_h() + 100, 
 				0,
 				0, 
@@ -103,19 +115,23 @@ void ResizeTrackWindow::create_objects()
 		thread,
 		x,
 		y));
-	x += 100;
+	x += w->get_w() + 10;
 	add_subwindow(new BC_Title(x, y, _("x")));
 	x += 15;
 	add_subwindow(h = new ResizeTrackHeight(this, 
 		thread,
 		x,
 		y));
-	x += 100;
-	add_subwindow(new FrameSizePulldown(mwindow, 
+	x += h->get_w() + 5;
+	FrameSizePulldown *pulldown;
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
 		w, 
 		h, 
 		x, 
 		y));
+	x += pulldown->get_w() + 5;
+	add_subwindow(new ResizeTrackSwap(this, thread, x, y));
+
 
 	y += 30;
 	x = 10;
@@ -161,6 +177,35 @@ void ResizeTrackWindow::update(int changed_scale,
 		h_scale->update((float)thread->h_scale);
 	}
 }
+
+
+
+
+
+
+ResizeTrackSwap::ResizeTrackSwap(ResizeTrackWindow *gui, 
+	ResizeTrackThread *thread, 
+	int x, 
+	int y)
+ : BC_Button(x, y, thread->mwindow->theme->get_image_set("swap_extents"))
+{
+	this->thread = thread;
+	this->gui = gui;
+	set_tooltip("Swap dimensions");
+}
+
+int ResizeTrackSwap::handle_event()
+{
+	int w = thread->w;
+	int h = thread->h;
+	thread->w = h;
+	thread->h = w;
+	gui->w->update((int64_t)h);
+	gui->h->update((int64_t)w);
+	gui->update(0, 1, 0);
+	return 1;
+}
+
 
 
 

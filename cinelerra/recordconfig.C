@@ -1,5 +1,5 @@
 #include "audiodevice.inc"
-#include "defaults.h"
+#include "bchash.h"
 #include "playbackconfig.h"
 #include "recordconfig.h"
 #include "videodevice.inc"
@@ -16,7 +16,6 @@ AudioInConfig::AudioInConfig()
 	{
 		oss_enable[i] = (i == 0);
 		sprintf(oss_in_device[i], "/dev/dsp");
-		oss_in_channels[i] = 2;
 	}
 	oss_in_bits = 16;
 	firewire_port = 0;
@@ -26,9 +25,9 @@ AudioInConfig::AudioInConfig()
 	esound_in_port = 0;
 
 	sprintf(alsa_in_device, "default");
-	alsa_in_channels = 2;
 	alsa_in_bits = 16;
 	in_samplerate = 48000;
+	channels = 2;
 }
 
 AudioInConfig::~AudioInConfig()
@@ -44,8 +43,7 @@ int AudioInConfig::is_duplex(AudioInConfig *in, AudioOutConfig *out)
 			case AUDIO_OSS:
 			case AUDIO_OSS_ENVY24:
 				return (!strcmp(in->oss_in_device[0], out->oss_out_device[0]) &&
-					in->oss_in_bits == out->oss_out_bits &&
-					in->oss_in_channels[0] == out->oss_out_channels[0]);
+					in->oss_in_bits == out->oss_out_bits);
 				break;
 
 // ALSA always opens 2 devices
@@ -74,14 +72,13 @@ void AudioInConfig::copy_from(AudioInConfig *src)
 	{
 		oss_enable[i] = src->oss_enable[i];
 		strcpy(oss_in_device[i], src->oss_in_device[i]);
-		oss_in_channels[i] = src->oss_in_channels[i];
 		oss_in_bits = src->oss_in_bits;
 	}
 
 	strcpy(alsa_in_device, src->alsa_in_device);
 	alsa_in_bits = src->alsa_in_bits;
-	alsa_in_channels = src->alsa_in_channels;
 	in_samplerate = src->in_samplerate;
+	channels = src->channels;
 }
 
 AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
@@ -90,7 +87,7 @@ AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
 	return *this;
 }
 
-int AudioInConfig::load_defaults(Defaults *defaults)
+int AudioInConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	driver =                      defaults->get("AUDIOINDRIVER", driver);
@@ -103,8 +100,6 @@ int AudioInConfig::load_defaults(Defaults *defaults)
 		oss_enable[i] = defaults->get(string, oss_enable[i]);
 		sprintf(string, "OSS_IN_DEVICE_%d", i);
 		defaults->get(string, oss_in_device[i]);
-		sprintf(string, "OSS_IN_CHANNELS_%d", i);
-		oss_in_channels[i] = defaults->get(string, oss_in_channels[i]);
 	}
 	sprintf(string, "OSS_IN_BITS");
 	oss_in_bits = defaults->get(string, oss_in_bits);
@@ -113,12 +108,12 @@ int AudioInConfig::load_defaults(Defaults *defaults)
 
 	defaults->get("ALSA_IN_DEVICE", alsa_in_device);
 	alsa_in_bits = defaults->get("ALSA_IN_BITS", alsa_in_bits);
-	alsa_in_channels = defaults->get("ALSA_IN_CHANNELS", alsa_in_channels);
 	in_samplerate = defaults->get("IN_SAMPLERATE", in_samplerate);
+	channels = defaults->get("IN_CHANNELS", channels);
 	return 0;
 }
 
-int AudioInConfig::save_defaults(Defaults *defaults)
+int AudioInConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	defaults->update("AUDIOINDRIVER", driver);
@@ -132,8 +127,6 @@ int AudioInConfig::save_defaults(Defaults *defaults)
 		defaults->update(string, oss_enable[i]);
 		sprintf(string, "OSS_IN_DEVICE_%d", i);
 		defaults->update(string, oss_in_device[i]);
-		sprintf(string, "OSS_IN_CHANNELS_%d", i);
-		defaults->update(string, oss_in_channels[i]);
 	}
 
 	sprintf(string, "OSS_IN_BITS");
@@ -143,8 +136,8 @@ int AudioInConfig::save_defaults(Defaults *defaults)
 
 	defaults->update("ALSA_IN_DEVICE", alsa_in_device);
 	defaults->update("ALSA_IN_BITS", alsa_in_bits);
-	defaults->update("ALSA_IN_CHANNELS", alsa_in_channels);
 	defaults->update("IN_SAMPLERATE", in_samplerate);
+	defaults->update("IN_CHANNELS", channels);
 	return 0;
 }
 
@@ -163,6 +156,17 @@ VideoInConfig::VideoInConfig()
 	sprintf(lml_in_device, "/dev/mvideo/stream");
 	sprintf(buz_in_device, "/dev/video0");
 	sprintf(screencapture_display, "");
+
+
+// DVB
+	sprintf(dvb_in_host, "echephyle");
+	dvb_in_port = 400;
+	dvb_in_number = 0;
+
+
+
+
+
 	firewire_port = 0;
 	firewire_channel = 63;
 	sprintf(firewire_path, "/dev/raw1394");
@@ -194,6 +198,9 @@ char* VideoInConfig::get_path()
 		case CAPTURE_BUZ:
 			return buz_in_device;
 			break;
+		case CAPTURE_DVB:
+			return dvb_in_host;
+			break;
 	}
 	return v4l_in_device;
 }
@@ -207,6 +214,19 @@ void VideoInConfig::copy_from(VideoInConfig *src)
 	strcpy(lml_in_device, src->lml_in_device);
 	strcpy(buz_in_device, src->buz_in_device);
 	strcpy(screencapture_display, src->screencapture_display);
+
+
+
+
+
+	strcmp(dvb_in_host, src->dvb_in_host);
+	dvb_in_port = src->dvb_in_port;
+	dvb_in_number = src->dvb_in_number;
+
+
+
+
+
 	firewire_port = src->firewire_port;
 	firewire_channel = src->firewire_channel;
 	strcpy(firewire_path, src->firewire_path);
@@ -222,7 +242,7 @@ VideoInConfig& VideoInConfig::operator=(VideoInConfig &that)
 	return *this;
 }
 
-int VideoInConfig::load_defaults(Defaults *defaults)
+int VideoInConfig::load_defaults(BC_Hash *defaults)
 {
 	driver = defaults->get("VIDEO_IN_DRIVER", driver);
 	defaults->get("V4L_IN_DEVICE", v4l_in_device);
@@ -231,6 +251,11 @@ int VideoInConfig::load_defaults(Defaults *defaults)
 	defaults->get("LML_IN_DEVICE", lml_in_device);
 	defaults->get("BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("SCREENCAPTURE_DISPLAY", screencapture_display);
+
+	defaults->get("DVB_IN_HOST", dvb_in_host);
+	dvb_in_port = defaults->get("DVB_IN_PORT", dvb_in_port);
+	dvb_in_number = defaults->get("DVB_IN_NUMBER", dvb_in_number);
+
 	firewire_port = defaults->get("VFIREWIRE_IN_PORT", firewire_port);
 	firewire_channel = defaults->get("VFIREWIRE_IN_CHANNEL", firewire_channel);
 	defaults->get("VFIREWIRE_IN_PATH", firewire_path);
@@ -241,7 +266,7 @@ int VideoInConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int VideoInConfig::save_defaults(Defaults *defaults)
+int VideoInConfig::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("VIDEO_IN_DRIVER", driver);
 	defaults->update("V4L_IN_DEVICE", v4l_in_device);
@@ -250,6 +275,18 @@ int VideoInConfig::save_defaults(Defaults *defaults)
 	defaults->update("LML_IN_DEVICE", lml_in_device);
 	defaults->update("BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("SCREENCAPTURE_DISPLAY", screencapture_display);
+
+
+
+
+	defaults->update("DVB_IN_HOST", dvb_in_host);
+	defaults->update("DVB_IN_PORT", dvb_in_port);
+	defaults->update("DVB_IN_NUMBER", dvb_in_number);
+
+
+
+
+
 	defaults->update("VFIREWIRE_IN_PORT", firewire_port);
 	defaults->update("VFIREWIRE_IN_CHANNEL", firewire_channel);
 	defaults->update("VFIREWIRE_IN_PATH", firewire_path);

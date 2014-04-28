@@ -1,8 +1,10 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bctoggle.h"
 #include "clip.h"
 #include "colors.h"
+#include "cursors.h"
 #include "fonts.h"
 #include "vframe.h"
 
@@ -64,7 +66,7 @@ int BC_Toggle::initialize()
 
 // Create the subwindow
 	BC_SubWindow::initialize();
-
+	set_cursor(UPRIGHT_ARROW_CURSOR);
 // Display the bitmap
 	draw_face();
 	return 0;
@@ -218,20 +220,19 @@ int BC_Toggle::draw_face()
 
 	draw_pixmap(images[status]);
 	flash();
-	flush();
 	return 0;
 }
 
 void BC_Toggle::enable()
 {
 	enabled = 1;
-	draw_face();
+	if(parent_window) draw_face();
 }
 
 void BC_Toggle::disable()
 {
 	enabled = 0;
-	draw_face();
+	if(parent_window) draw_face();
 }
 
 void BC_Toggle::set_status(int value)

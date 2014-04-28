@@ -1,1 +1,5 @@
-# dummy
+g721.lo g721.o: g721.c g72x.h g72x_priv.h
+
+g72x.h:
+
+g72x_priv.h:

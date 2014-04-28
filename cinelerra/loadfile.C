@@ -1,5 +1,5 @@
 #include "assets.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "errorbox.h"
 #include "file.h"
@@ -117,6 +117,7 @@ void LoadFileThread::run()
 		return;
 	}
 
+
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("LoadFileThread::run");
 	result = mwindow->load_filenames(&path_list, load_mode);
@@ -126,6 +127,7 @@ void LoadFileThread::run()
 
 
 	mwindow->save_backup();
+
 	mwindow->restart_brender();
 //	mwindow->undo->update_undo(_("load"), LOAD_ALL);
 	return;

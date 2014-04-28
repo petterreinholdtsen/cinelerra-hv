@@ -1,14 +1,19 @@
 #include "filexml.h"
 #include "colorbalance.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
+#include "playback3d.h"
+
+#include "aggregated.h"
+#include "../interpolate/aggregated.h"
+#include "../gamma/aggregated.h"
 
 #include <stdio.h>
 #include <string.h>
 
-// 100 corresponds to (1.0 + MAX_COLOR) * input
-#define MAX_COLOR 4.0
+// 1000 corresponds to (1.0 + MAX_COLOR) * input
+#define MAX_COLOR 1.0
 #define SQR(a) ((a) * (a))
 
 REGISTER_PLUGIN(ColorBalanceMain)
@@ -376,12 +381,12 @@ int64_t ColorBalanceMain::calculate_slider(float in)
 {
 	if(in < 1.0)
 	{
-		return (int64_t)(in * 100 - 100.0);
+		return (int64_t)(in * 1000 - 1000.0);
 	}
 	else
 	if(in > 1.0)
 	{
-		return (int64_t)(100 * (in - 1.0) / MAX_COLOR);
+		return (int64_t)(1000 * (in - 1.0) / MAX_COLOR);
 	}
 	else
 		return 0;
@@ -391,12 +396,12 @@ float ColorBalanceMain::calculate_transfer(float in)
 {
 	if(in < 0)
 	{
-		return (100.0 + in) / 100.0;
+		return (1000.0 + in) / 1000.0;
 	}
 	else
 	if(in > 0)
 	{
-		return 1.0 + in / 100.0 * MAX_COLOR;
+		return 1.0 + in / 1000.0 * MAX_COLOR;
 	}
 	else
 		return 1.0;
@@ -408,8 +413,8 @@ float ColorBalanceMain::calculate_transfer(float in)
 int ColorBalanceMain::test_boundary(float &value)
 {
 
-	if(value < -100) value = -100;
-    if(value > 100) value = 100;
+	if(value < -1000) value = -1000;
+    if(value > 1000) value = 1000;
 	return 0;
 }
 
@@ -454,7 +459,9 @@ SET_STRING_MACRO(ColorBalanceMain)
 
 
 
-int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int ColorBalanceMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
@@ -478,15 +485,44 @@ int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		need_reconfigure = 0;
 	}
 
+	frame->get_params()->update("COLORBALANCE_PRESERVE", config.preserve);
+	frame->get_params()->update("COLORBALANCE_CYAN", calculate_transfer(config.cyan));
+	frame->get_params()->update("COLORBALANCE_MAGENTA", calculate_transfer(config.magenta));
+	frame->get_params()->update("COLORBALANCE_YELLOW", calculate_transfer(config.yellow));
 
-	if(!EQUIV(config.cyan, 0) || !EQUIV(config.magenta, 0) || !EQUIV(config.yellow, 0))
+
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate(),
+		get_use_opengl());
+
+	int aggregate_interpolate = 0;
+	int aggregate_gamma = 0;
+	get_aggregation(&aggregate_interpolate,
+		&aggregate_gamma);
+
+	if(!EQUIV(config.cyan, 0) || 
+		!EQUIV(config.magenta, 0) || 
+		!EQUIV(config.yellow, 0) ||
+		(get_use_opengl() &&
+			(aggregate_interpolate ||
+			aggregate_gamma)))
 	{
+		if(get_use_opengl())
+		{
+get_output()->dump_stacks();
+// Aggregate
+			if(next_effect_is("Histogram")) return 0;
+			return run_opengl();
+		}
+	
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i]->start_process_frame(output_ptr, 
-				input_ptr, 
-				input_ptr->get_h() * i / total_engines, 
-				input_ptr->get_h() * (i + 1) / total_engines);
+			engine[i]->start_process_frame(frame, 
+				frame, 
+				frame->get_h() * i / total_engines, 
+				frame->get_h() * (i + 1) / total_engines);
 		}
 
 		for(int i = 0; i < total_engines; i++)
@@ -494,12 +530,7 @@ int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			engine[i]->wait_process_frame();
 		}
 	}
-	else
-// Data never processed so copy if necessary
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-	{
-		output_ptr->copy_from(input_ptr);
-	}
+
 
 	return 0;
 }
@@ -529,7 +560,7 @@ int ColorBalanceMain::load_defaults()
 	sprintf(directory, "%scolorbalance.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.cyan = defaults->get("CYAN", config.cyan);
@@ -593,9 +624,84 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 	}
 }
 
+void ColorBalanceMain::get_aggregation(int *aggregate_interpolate,
+	int *aggregate_gamma)
+{
+	if(!strcmp(get_output()->get_prev_effect(1), "Interpolate Pixels") &&
+		!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	{
+		*aggregate_interpolate = 1;
+		*aggregate_gamma = 1;
+	}
+	else
+	if(!strcmp(get_output()->get_prev_effect(0), "Interpolate Pixels"))
+	{
+		*aggregate_interpolate = 1;
+	}
+	else
+	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	{
+		*aggregate_gamma = 1;
+	}
+}
 
+int ColorBalanceMain::handle_opengl()
+{
+#ifdef HAVE_GL
 
+	get_output()->to_texture();
+	get_output()->enable_opengl();
 
+	unsigned int shader = 0;
+	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	int current_shader = 0;
+	int aggregate_interpolate = 0;
+	int aggregate_gamma = 0;
+
+	get_aggregation(&aggregate_interpolate,
+		&aggregate_gamma);
+
+printf("ColorBalanceMain::handle_opengl %d %d\n", aggregate_interpolate, aggregate_gamma);
+	if(aggregate_interpolate)
+		INTERPOLATE_COMPILE(shader_stack, current_shader)
+
+	if(aggregate_gamma)
+		GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolate)
+
+	COLORBALANCE_COMPILE(shader_stack, 
+		current_shader, 
+		aggregate_gamma || aggregate_interpolate)
+
+	shader = VFrame::make_shader(0, 
+		shader_stack[0], 
+		shader_stack[1], 
+		shader_stack[2], 
+		shader_stack[3], 
+		shader_stack[4], 
+		shader_stack[5], 
+		shader_stack[6], 
+		shader_stack[7], 
+		0);
+
+	if(shader > 0)
+	{
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+
+		if(aggregate_interpolate) INTERPOLATE_UNIFORMS(shader);
+		if(aggregate_gamma) GAMMA_UNIFORMS(shader);
+
+		COLORBALANCE_UNIFORMS(shader);
+
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
 
 
 

@@ -1,7 +1,7 @@
 #include "../motion/affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -167,7 +167,9 @@ public:
 	RotateEffect(PluginServer *server);
 	~RotateEffect();
 	
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -180,11 +182,12 @@ public:
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
+	int handle_opengl();
 
 	RotateConfig config;
 	AffineEngine *engine;
 	RotateThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	int need_reconfigure;
 };
 
@@ -636,7 +639,7 @@ int RotateEffect::load_defaults()
 	sprintf(directory, "%srotate.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.angle = defaults->get("ANGLE", (float)config.angle);
@@ -701,22 +704,41 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-int RotateEffect::process_realtime(VFrame *input, VFrame *output)
+int RotateEffect::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
-	int w = output->get_w();
-	int h = output->get_h();
-
+	int w = frame->get_w();
+	int h = frame->get_h();
 //printf("RotateEffect::process_realtime 1 %d %f\n", config.bilinear, config.angle);
 
-	VFrame *temp_frame = PluginVClient::new_temp(input->get_w(),
-		input->get_h(),
-		input->get_color_model());
+
+	if(config.angle == 0)
+	{
+		read_frame(frame, 
+			0, 
+			start_position, 
+			frame_rate,
+			get_use_opengl());
+		return 1;
+	}
 
 	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
 		PluginClient::smp + 1);
+	engine->set_pivot((int)(config.pivot_x * get_input()->get_w() / 100), 
+		(int)(config.pivot_y * get_input()->get_h() / 100));
 
-	temp_frame->copy_from(input);
+	if(get_use_opengl())
+	{
+		read_frame(frame, 
+			0, 
+			start_position, 
+			frame_rate,
+			get_use_opengl());
+		return run_opengl();
+	}
+
 
 // engine->set_viewport(50, 
 // 50, 
@@ -724,10 +746,17 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 // 100);
 // engine->set_pivot(100, 100);
 
-	engine->set_pivot((int)(config.pivot_x * input->get_w() / 100), 
-		(int)(config.pivot_y * input->get_h() / 100));
-	output->clear_frame();
-	engine->rotate(output, 
+
+	VFrame *temp_frame = PluginVClient::new_temp(get_input()->get_w(),
+		get_input()->get_h(),
+		get_input()->get_color_model());
+	read_frame(temp_frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
+	frame->clear_frame();
+	engine->rotate(frame, 
 		temp_frame, 
 		config.angle);
 
@@ -737,9 +766,7 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 #define CENTER_W 20
 #define DRAW_CENTER(components, type, max) \
 { \
-	type **rows = (type**)output->get_rows(); \
-	int center_x = (int)(config.pivot_x * w / 100); \
-	int center_y = (int)(config.pivot_y * h / 100); \
+	type **rows = (type**)get_output()->get_rows(); \
 	if(center_x >= 0 && center_x < w || \
 		center_y >= 0 && center_y < h) \
 	{ \
@@ -770,7 +797,9 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 
 	if(config.draw_pivot)
 	{
-		switch(output->get_color_model())
+		int center_x = (int)(config.pivot_x * w / 100); \
+		int center_y = (int)(config.pivot_y * h / 100); \
+		switch(get_output()->get_color_model())
 		{
 			case BC_RGB_FLOAT:
 				DRAW_CENTER(3, float, 1.0)
@@ -794,8 +823,8 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 	}
 
 // Conserve memory by deleting large frames
-	if(input->get_w() > PLUGIN_MAX_W &&
-		input->get_h() > PLUGIN_MAX_H)
+	if(get_input()->get_w() > PLUGIN_MAX_W &&
+		get_input()->get_h() > PLUGIN_MAX_H)
 	{
 		delete engine;
 		engine = 0;
@@ -803,5 +832,39 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 	return 0;
 }
 
+
+
+int RotateEffect::handle_opengl()
+{
+#ifdef HAVE_GL
+	engine->set_opengl(1);
+	engine->rotate(get_output(), 
+		get_output(), 
+		config.angle);
+	engine->set_opengl(0);
+
+	if(config.draw_pivot)
+	{
+		int w = get_output()->get_w();
+		int h = get_output()->get_h();
+		int center_x = (int)(config.pivot_x * w / 100); \
+		int center_y = (int)(config.pivot_y * h / 100); \
+		
+		glDisable(GL_TEXTURE_2D);
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glLogicOp(GL_XOR);
+		glEnable(GL_COLOR_LOGIC_OP);
+		glBegin(GL_LINES);
+		glVertex3f(center_x, -h + center_y - CENTER_H / 2, 0.0);
+		glVertex3f(center_x, -h + center_y + CENTER_H / 2, 0.0);
+		glEnd();
+		glBegin(GL_LINES);
+		glVertex3f(center_x - CENTER_W / 2, -h + center_y, 0.0);
+		glVertex3f(center_x + CENTER_W / 2, -h + center_y, 0.0);
+		glEnd();
+		glDisable(GL_COLOR_LOGIC_OP);
+	}
+#endif
+}
 
 

@@ -54,20 +54,27 @@ RecordMonitor::~RecordMonitor()
 int RecordMonitor::create_objects()
 {
 	int min_w = 150;
+	mwindow->session->rwindow_fullscreen = 0;
+
 	if(!record->default_asset->video_data)
 		min_w = MeterPanel::get_meters_width(
 			record->default_asset->channels, 1);
+SET_TRACE
 	window = new RecordMonitorGUI(mwindow,
 		record, 
 		this,
 		min_w);
+SET_TRACE
 	window->create_objects();
+SET_TRACE
 
 	if(record->default_asset->video_data)
 	{
 // Configure the output for record monitoring
 		VideoOutConfig config;
+SET_TRACE
 		device = new VideoDevice;
+SET_TRACE
 
 
 
@@ -76,6 +83,7 @@ int RecordMonitor::create_objects()
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
 
+SET_TRACE
 
 		device->open_output(&config, 
 						record->default_asset->frame_rate, 
@@ -83,10 +91,14 @@ int RecordMonitor::create_objects()
 						record->default_asset->height,
 						window->canvas,
 						0);
+SET_TRACE
 
 		thread = new RecordMonitorThread(mwindow, record, this);
+SET_TRACE
 		thread->start_playback();
+SET_TRACE
 	}
+SET_TRACE
 
 	Thread::start();
 	return 0;
@@ -200,6 +212,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 
 RecordMonitorGUI::~RecordMonitorGUI()
 {
+	delete canvas;
 	if(bitmap) delete bitmap;
 	if(channel_picker) delete channel_picker;
 	if(avc1394transport_thread)
@@ -258,7 +271,6 @@ int RecordMonitorGUI::create_objects()
 				mwindow->theme->draw_rmonitor_bg(this);
 				background_done = 1;
 
-SET_TRACE
 				avc1394_transport = new AVC1394Transport(mwindow,
 					avc,
 					this,
@@ -266,7 +278,6 @@ SET_TRACE
 					mwindow->theme->rmonitor_tx_y);
 				avc1394_transport->create_objects();
 
-SET_TRACE
 				add_subwindow(avc1394transport_timecode =
 					new BC_Title(avc1394_transport->x_end,
 						mwindow->theme->rmonitor_tx_y + 10,
@@ -279,20 +290,19 @@ SET_TRACE
 						avc);
 
 				avc1394transport_thread->start();
-SET_TRACE
 
 			}
 		}
 
 
-SET_TRACE
 		if(!background_done)
 		{
 			mwindow->theme->draw_rmonitor_bg(this);
 			background_done = 1;
 		}
 
-SET_TRACE
+		mwindow->theme->rmonitor_canvas_w = MAX(10, mwindow->theme->rmonitor_canvas_w);
+		mwindow->theme->rmonitor_canvas_h = MAX(10, mwindow->theme->rmonitor_canvas_h);
 		canvas = new RecordMonitorCanvas(mwindow, 
 			this,
 			record, 
@@ -302,22 +312,21 @@ SET_TRACE
 			mwindow->theme->rmonitor_canvas_h);
 		canvas->create_objects(0);
 
-SET_TRACE
 		if(driver == VIDEO4LINUX ||
 			driver == CAPTURE_BUZ ||
 			driver == VIDEO4LINUX2 ||
 			driver == VIDEO4LINUX2JPEG)
 		{
-			channel_picker = new ChannelPicker(mwindow,
+			channel_picker = new RecordChannelPicker(mwindow,
 				record,
 				thread,
+				this,
 				record->channeldb,
 				mwindow->theme->rmonitor_channel_x, 
 				mwindow->theme->rmonitor_channel_y);
 			channel_picker->create_objects();
 		}
 
-SET_TRACE
 		if(driver == CAPTURE_BUZ ||
 			driver == VIDEO4LINUX2JPEG)
 		{
@@ -326,7 +335,6 @@ SET_TRACE
 				mwindow->theme->rmonitor_interlace_y));
 		}
 		
-SET_TRACE
 		add_subwindow(monitor_menu = new BC_PopupMenu(0, 
 			0, 
 			0, 
@@ -334,7 +342,6 @@ SET_TRACE
 			0));
 		monitor_menu->add_item(new RecordMonitorFullsize(mwindow, 
 			this));
-SET_TRACE
 	}
 
 
@@ -344,7 +351,6 @@ SET_TRACE
 		background_done = 1;
 	}
 
-SET_TRACE
 	if(record->default_asset->audio_data)
 	{
 		meters = new MeterPanel(mwindow, 
@@ -357,12 +363,14 @@ SET_TRACE
 			1);
 		meters->create_objects();
 	}
-SET_TRACE
 	return 0;
 }
 
-int RecordMonitorGUI::button_press()
+int RecordMonitorGUI::button_press_event()
 {
+	if(mwindow->session->rwindow_fullscreen && canvas && canvas->get_canvas())
+		return canvas->button_press_event_base(canvas->get_canvas());
+		
 	if(get_buttonpress() == 2)
 	{
 		return 0;
@@ -377,17 +385,37 @@ int RecordMonitorGUI::button_press()
 	return 0;
 }
 
-int RecordMonitorGUI::button_release()
+int RecordMonitorGUI::cursor_leave_event()
 {
+	if(canvas && canvas->get_canvas())
+		return canvas->cursor_leave_event_base(canvas->get_canvas());
 	return 0;
 }
 
-int RecordMonitorGUI::get_virtual_center()
+int RecordMonitorGUI::cursor_enter_event()
 {
+	if(canvas && canvas->get_canvas())
+		return canvas->cursor_enter_event_base(canvas->get_canvas());
+	return 0;
 }
 
-int RecordMonitorGUI::cursor_motion()
+int RecordMonitorGUI::button_release_event()
 {
+	if(canvas && canvas->get_canvas())
+		return canvas->button_release_event();
+	return 0;
+}
+
+int RecordMonitorGUI::cursor_motion_event()
+{
+SET_TRACE
+	if(canvas && canvas->get_canvas())
+	{
+SET_TRACE
+		canvas->get_canvas()->unhide_cursor();
+SET_TRACE
+		return canvas->cursor_motion_event();
+	}
 	return 0;
 }
 
@@ -448,7 +476,8 @@ int RecordMonitorGUI::keypress_event()
 			close_event();
 			break;
 		default:
-			if(avc1394_transport)
+			result = canvas->keypress_event(this);
+			if(!result && avc1394_transport)
 				result = avc1394_transport->keypress_event(get_keypress());
 			break;
 	}
@@ -500,7 +529,7 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	if(channel_picker) channel_picker->reposition();
 	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
 		reverse_interlace->get_y());
-	if(record->default_asset->video_data)
+	if(canvas && record->default_asset->video_data)
 	{
 		canvas->reposition_window(0,
 			mwindow->theme->rmonitor_canvas_x, 
@@ -565,7 +594,7 @@ int RecordMonitorGUI::create_bitmap()
 		bitmap = 0;
 	}
 
-	if(!bitmap)
+	if(!bitmap && canvas)
 	{
 //		bitmap = canvas->new_bitmap(get_w(), thread->get_canvas_height());
 	}
@@ -595,7 +624,8 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 	int y, 
 	int w, 
 	int h)
- : Canvas(window, 
+ : Canvas(mwindow,
+ 	window, 
  	x, 
 	y, 
 	w, 
@@ -609,7 +639,8 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 	this->window = window;
 	this->mwindow = mwindow;
 	this->record = record;
-//printf("RecordMonitorCanvas::RecordMonitorCanvas 1 %d\n", mwindow->edl->session->vconfig_in->driver);
+printf("RecordMonitorCanvas::RecordMonitorCanvas 1 %d %d %d %d\n", 
+x, y, w, h);
 //printf("RecordMonitorCanvas::RecordMonitorCanvas 2\n");
 }
 
@@ -630,6 +661,7 @@ int RecordMonitorCanvas::get_output_h()
 
 int RecordMonitorCanvas::button_press_event()
 {
+
 	if(Canvas::button_press_event()) return 1;
 	
 	if(mwindow->edl->session->vconfig_in->driver == SCREENCAPTURE)
@@ -660,6 +692,17 @@ void RecordMonitorCanvas::zoom_resize_window(float percentage)
 	window->resize_event(new_w, new_h);
 }
 
+int RecordMonitorCanvas::get_fullscreen()
+{
+	return mwindow->session->rwindow_fullscreen;
+}
+
+void RecordMonitorCanvas::set_fullscreen(int value)
+{
+	mwindow->session->rwindow_fullscreen = value;
+}
+
+
 int RecordMonitorCanvas::button_release_event()
 {
 	window->current_operation = MONITOR_NONE;
@@ -668,11 +711,14 @@ int RecordMonitorCanvas::button_release_event()
 
 int RecordMonitorCanvas::cursor_motion_event()
 {
+SET_TRACE
 	if(window->current_operation == MONITOR_TRANSLATE)
 	{
+SET_TRACE
 		record->set_translation(
 			get_cursor_x() - window->cursor_x_origin + window->translate_x_origin,
 			get_cursor_y() - window->cursor_y_origin + window->translate_y_origin);
+SET_TRACE
 	}
 
 	return 0;
@@ -693,7 +739,7 @@ void RecordMonitorCanvas::reset_translation()
 int RecordMonitorCanvas::keypress_event()
 {
 	int result = 0;
-	switch(canvas->get_keypress())
+	switch(get_canvas() && get_canvas()->get_keypress())
 	{
 		case LEFT:
 			record->set_translation(--record->video_x, record->video_y);
@@ -751,7 +797,7 @@ RecordMonitorThread::RecordMonitorThread(MWindow *mwindow,
 void RecordMonitorThread::reset_parameters()
 {
 	input_frame = 0;
-	output_frame[0] = 0;
+	output_frame = 0;
 	shared_data = 0;
 	jpeg_engine = 0;
 	dv_engine = 0;
@@ -852,7 +898,7 @@ int RecordMonitorThread::write_frame(VFrame *new_frame)
 // Need to wait until after Record creates the input device before starting monitor
 // because the input device deterimes the output format.
 // First time
-		if(!output_frame[0]) init_output_format();
+		if(!output_frame) init_output_format();
 		if(!shared_data)
 		{
 			if(!input_frame) input_frame = new VFrame;
@@ -889,18 +935,7 @@ int RecordMonitorThread::render_dv()
 
 void RecordMonitorThread::render_uncompressed()
 {
-// printf("RecordMonitorThread::render_uncompressed 1 %p %p %p %p %p %p %p\n", 
-//  	output_frame[0],
-//  	output_frame[0]->get_y(), 
-//  	output_frame[0]->get_u(), 
-//  	output_frame[0]->get_v(),
-// 	input_frame->get_y(),
-// 	input_frame->get_u(),
-// 	input_frame->get_v());
-
-	output_frame[0]->copy_from(input_frame);
-
-//printf("RecordMonitorThread::render_uncompressed 2\n");
+	output_frame->copy_from(input_frame);
 }
 
 void RecordMonitorThread::show_output_frame()
@@ -938,9 +973,7 @@ int RecordMonitorThread::render_frame()
 void RecordMonitorThread::new_output_frame()
 {
 	long offset;
-//printf("RecordMonitorThread::new_output_frame %d %p %p\n", output_colormodel, record_monitor, record_monitor->device);
-	record_monitor->device->new_output_buffers(output_frame, output_colormodel);
-//printf("RecordMonitorThread::new_output_frame 2\n");
+	record_monitor->device->new_output_buffer(&output_frame, output_colormodel);
 }
 
 void RecordMonitorThread::run()
@@ -949,19 +982,22 @@ void RecordMonitorThread::run()
 	while(!done)
 	{
 // Wait for next frame
+SET_TRACE
 		output_lock->lock("RecordMonitorThread::run");
+
 		if(done)
 		{
 			unlock_input();
 			return;
 		}
-//printf("RecordMonitorThread::run 1\n");
+
+SET_TRACE
 		new_output_frame();
-//printf("RecordMonitorThread::run 2\n");
+SET_TRACE
 		render_frame();
-//printf("RecordMonitorThread::run 3\n");
+SET_TRACE
 		show_output_frame();
-//printf("RecordMonitorThread::run 4\n");
+SET_TRACE
 		unlock_input();
 // Get next frame
 		ready = 1;
@@ -1011,11 +1047,11 @@ int RecVideoMJPGThread::render_frame(VFrame *frame, long size)
 		frame->get_data(), 
 		frame->get_compressed_size(), 
 		frame->get_field2_offset(), 
-		thread->output_frame[0]->get_rows(), 
-		thread->output_frame[0]->get_y(), 
-		thread->output_frame[0]->get_u(), 
-		thread->output_frame[0]->get_v(),
-		thread->output_frame[0]->get_color_model(),
+		thread->output_frame->get_rows(), 
+		thread->output_frame->get_y(), 
+		thread->output_frame->get_u(), 
+		thread->output_frame->get_v(),
+		thread->output_frame->get_color_model(),
 		record->mwindow->preferences->processors);
 	return 0;
 }
@@ -1050,14 +1086,14 @@ int RecVideoDVThread::stop_rendering()
 int RecVideoDVThread::render_frame(VFrame *frame, long size)
 {
 	unsigned char *yuv_planes[3];
-	yuv_planes[0] = thread->output_frame[0]->get_y();
-	yuv_planes[1] = thread->output_frame[0]->get_u();
-	yuv_planes[2] = thread->output_frame[0]->get_v();
+	yuv_planes[0] = thread->output_frame->get_y();
+	yuv_planes[1] = thread->output_frame->get_u();
+	yuv_planes[2] = thread->output_frame->get_v();
 	dv_read_video(((dv_t*)dv), 
 		yuv_planes, 
 		frame->get_data(), 
 		frame->get_compressed_size(),
-		thread->output_frame[0]->get_color_model());
+		thread->output_frame->get_color_model());
 
 	return 0;
 }

@@ -36,18 +36,18 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = x86_64-unknown-linux-gnu
-ACLOCAL = ${SHELL} /usr/src/redhat/cinelerra-2.0/libsndfile-1.0.11/missing --run aclocal-1.7
+ACLOCAL = ${SHELL} /root/hvirtual/libsndfile-1.0.11/missing --run aclocal-1.7
 ALSA_LIBS = -lasound
 AMDEP_FALSE = #
 AMDEP_TRUE = 
-AMTAR = ${SHELL} /usr/src/redhat/cinelerra-2.0/libsndfile-1.0.11/missing --run tar
+AMTAR = ${SHELL} /root/hvirtual/libsndfile-1.0.11/missing --run tar
 AR = ar
-AUTOCONF = ${SHELL} /usr/src/redhat/cinelerra-2.0/libsndfile-1.0.11/missing --run autoconf
+AUTOCONF = ${SHELL} /root/hvirtual/libsndfile-1.0.11/missing --run autoconf
 
 #======================================================================
 # Disable autoheader. 
 AUTOHEADER = echo
-AUTOMAKE = ${SHELL} /usr/src/redhat/cinelerra-2.0/libsndfile-1.0.11/missing --run automake-1.7
+AUTOMAKE = ${SHELL} /root/hvirtual/libsndfile-1.0.11/missing --run automake-1.7
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -86,7 +86,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIBTOOL_DEPS = ./ltmain.sh
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /usr/src/redhat/cinelerra-2.0/libsndfile-1.0.11/missing --run makeinfo
+MAKEINFO = ${SHELL} /root/hvirtual/libsndfile-1.0.11/missing --run makeinfo
 OBJEXT = o
 
 OS_SPECIFIC_CFLAGS = 
@@ -139,7 +139,7 @@ host_vendor = unknown
 htmldocdir = /usr/local/share/doc/libsndfile1-dev/html
 includedir = ${prefix}/include
 infodir = ${prefix}/info
-install_sh = /usr/src/redhat/cinelerra-2.0/libsndfile-1.0.11/install-sh
+install_sh = /root/hvirtual/libsndfile-1.0.11/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localstatedir = ${prefix}/var

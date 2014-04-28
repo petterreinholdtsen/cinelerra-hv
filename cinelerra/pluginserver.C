@@ -26,7 +26,9 @@
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "transportque.h"
+#include "vdevicex11.h"
 #include "vframe.h"
+#include "videodevice.h"
 #include "virtualanode.h"
 #include "virtualvnode.h"
 #include "vmodule.h"
@@ -125,6 +127,8 @@ int PluginServer::reset_parameters()
 	transition = 0;
 	new_plugin = 0;
 	client = 0;
+	use_opengl = 0;
+	vdevice = 0;
 
 	is_lad = 0;
 	lad_descriptor_function = 0;
@@ -323,20 +327,28 @@ void PluginServer::client_side_close()
 	}
 }
 
+void PluginServer::render_stop()
+{
+	if(client)
+		client->render_stop();
+}
+
+
 int PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
 		int buffer_size)
 {
-SET_TRACE
+
 	if(!plugin_open) return 0;
-SET_TRACE
+
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
+	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
 	client->plugin_init_realtime(realtime_sched, 
 		total_in_buffers, 
 		buffer_size);
-SET_TRACE
+
 }
 
 
@@ -352,8 +364,18 @@ void PluginServer::process_transition(VFrame *input,
 	vclient->source_position = current_position;
 	vclient->source_start = 0;
 	vclient->total_len = total_len;
+
+	vclient->input = new VFrame*[1];
+	vclient->output = new VFrame*[1];
+
+	vclient->input[0] = input;
+	vclient->output[0] = output;
+
 	vclient->process_realtime(input, output);
 	vclient->age_temp();
+	delete [] vclient->input;
+	delete [] vclient->output;
+	use_opengl = 0;
 }
 
 void PluginServer::process_transition(double *input, 
@@ -386,12 +408,20 @@ void PluginServer::process_buffer(VFrame **frame,
 	vclient->source_position = current_position;
 	vclient->total_len = total_len;
 	vclient->frame_rate = frame_rate;
+	vclient->input = new VFrame*[total_in_buffers];
+	vclient->output = new VFrame*[total_in_buffers];
+	for(int i = 0; i < total_in_buffers; i++)
+	{
+		vclient->input[i] = frame[i];
+		vclient->output[i] = frame[i];
+	}
 	vclient->source_start = (int64_t)(plugin ? 
 		plugin->startproject * 
 		frame_rate /
 		vclient->project_frame_rate :
 		0);
 	vclient->direction = direction;
+
 
 	if(multichannel)
 	{
@@ -402,8 +432,14 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->process_buffer(frame[0], current_position, frame_rate);
 	}
 
+	for(int i = 0; i < total_in_buffers; i++)
+		frame[i]->push_prev_effect(title);
+
+	delete [] vclient->input;
+	delete [] vclient->output;
 
     vclient->age_temp();
+	use_opengl = 0;
 }
 
 void PluginServer::process_buffer(double **buffer,
@@ -598,7 +634,8 @@ int PluginServer::read_samples(double *buffer,
 int PluginServer::read_frame(VFrame *buffer, 
 	int channel, 
 	int64_t start_position, 
-	double frame_rate)
+	double frame_rate,
+	int use_opengl)
 {
 // Data source depends on whether we're part of a virtual console or a
 // plugin array.
@@ -608,33 +645,42 @@ int PluginServer::read_frame(VFrame *buffer,
 //     backward propogation and produces the data.
 // If we're a Module, render in the module produces the data.
 
+	int result = -1;
 	if(!multichannel) channel = 0;
 
+// Push our name on the next effect stack
+	buffer->push_next_effect(title);
+//printf("PluginServer::read_frame %p\n", buffer);
+//buffer->dump_stacks();
 
 	if(nodes->total > channel)
 	{
-		return ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
+		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 	else
 	if(modules->total > channel)
 	{
-		return ((VModule*)modules->values[channel])->render(buffer,
+		result = ((VModule*)modules->values[channel])->render(buffer,
 			start_position,
 			PLAY_FORWARD,
 			frame_rate,
 			0,
-			0);
+			0,
+			use_opengl);
 	}
 	else
 	{
 		printf("PluginServer::read_frame no object available for channel=%d\n",
 			channel);
 	}
-//printf("PluginServer::read_frame 10\n");
 
-	return -1;
+// Pop our name from the next effect stack
+	buffer->pop_next_effect();
+
+	return result;
 }
 
 int PluginServer::read_samples(double *buffer,
@@ -762,6 +808,29 @@ int PluginServer::set_string(char *string)
 	return 0;
 }
 
+int PluginServer::gui_open()
+{
+	if(attachmentpoint) return attachmentpoint->gui_open();
+	return 0;
+}
+
+void PluginServer::set_use_opengl(int value, VideoDevice *vdevice)
+{
+	this->use_opengl = value;
+	this->vdevice = vdevice;
+}
+
+int PluginServer::get_use_opengl()
+{
+	return use_opengl;
+}
+
+
+void PluginServer::run_opengl(PluginClient *plugin_client)
+{
+	if(vdevice)
+		((VDeviceX11*)vdevice->get_output_base())->run_plugin(plugin_client);
+}
 
 // ============================= queries
 
@@ -905,6 +974,18 @@ KeyFrame* PluginServer::get_keyframe()
 		return plugin->get_keyframe();
 	else
 		return keyframe;
+}
+
+void PluginServer::get_camera(float *x, float *y, float *z,
+	int64_t position, int direction)
+{
+	plugin->track->automation->get_camera(x, y, z, position, direction);
+}
+
+void PluginServer::get_projector(float *x, float *y, float *z,
+	int64_t position, int direction)
+{
+	plugin->track->automation->get_projector(x, y, z, position, direction);
 }
 
 

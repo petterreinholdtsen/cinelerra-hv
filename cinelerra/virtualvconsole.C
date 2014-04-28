@@ -1,4 +1,5 @@
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -8,6 +9,7 @@
 #include "renderengine.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
 #include "virtualvconsole.h"
@@ -25,7 +27,15 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 
 VirtualVConsole::~VirtualVConsole()
 {
-	if(output_temp) delete output_temp;
+	if(output_temp)
+	{
+		delete output_temp;
+	}
+}
+
+VDeviceBase* VirtualVConsole::get_vdriver()
+{
+	return renderengine->video->get_output_base();
 }
 
 void VirtualVConsole::get_playable_tracks()
@@ -57,31 +67,58 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 
 
 
-SET_TRACE
+// The use of single frame is determined in RenderEngine::arm_command
+	use_opengl = (renderengine->video && 
+		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
+// printf("VirtualVConsole::process_buffer %p %d %d\n", 
+// renderengine->video, 
+// renderengine->video->out_config->driver,
+// use_opengl);
+
+	if(debug_tree) 
+		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
+			exit_nodes.total);
 
 
-	if(debug_tree) printf("VirtualVConsole::process_buffer begin\n");
-// clear output buffers
-	for(i = 0; i < MAX_CHANNELS; i++)
+	if(use_opengl)
 	{
-		if(vrender->video_out[i])
-			vrender->video_out[i]->clear_frame();
+// clear hardware framebuffer
+
+		((VDeviceX11*)get_vdriver())->clear_output();
+
+// que OpenGL driver that everything is overlaid in the framebuffer
+		vrender->video_out->set_opengl_state(VFrame::SCREEN);
+
+	}
+	else
+	{
+// clear device buffer
+		vrender->video_out->clear_frame();
 	}
 
-SET_TRACE
+
+
+
+
 
 // Reset plugin rendering status
 	reset_attachments();
-SET_TRACE
 
+Timer timer;
 // Render exit nodes from bottom to top
-	for(int i = exit_nodes.total - 1; i >= 0; i--)
+	for(current_exit_node = exit_nodes.total - 1; current_exit_node >= 0; current_exit_node--)
 	{
-		VirtualVNode *node = (VirtualVNode*)exit_nodes.values[i];
+		VirtualVNode *node = (VirtualVNode*)exit_nodes.values[current_exit_node];
 		Track *track = node->track;
 
 // Create temporary output to match the track size, which is acceptable since
 // most projects don't have variable track sizes.
+// If the project has variable track sizes, this object is recreated for each track.
+
+
+
+
+
 		if(output_temp && 
 			(output_temp->get_w() != track->track_w ||
 			output_temp->get_h() != track->track_h))
@@ -90,8 +127,10 @@ SET_TRACE
 			output_temp = 0;
 		}
 
+
 		if(!output_temp)
 		{
+// Texture is created on demand
 			output_temp = new VFrame(0, 
 				track->track_w, 
 				track->track_h, 
@@ -99,12 +138,21 @@ SET_TRACE
 				-1);
 		}
 
-//printf("VirtualVConsole::process_buffer %p\n", output_temp->get_rows());
+// Reset OpenGL state
+		if(use_opengl)
+			output_temp->set_opengl_state(VFrame::RAM);
+
+
+// Assume openGL is used for the final stage and let console
+// disable.
+		output_temp->clear_stacks();
 		result |= node->render(output_temp,
 			input_position + track->nudge,
-			renderengine->edl->session->frame_rate);
+			renderengine->edl->session->frame_rate,
+			use_opengl);
+
 	}
-SET_TRACE
+//printf("VirtualVConsole::process_buffer timer=%lld\n", timer.get_difference());
 
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 	return result;

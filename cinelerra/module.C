@@ -148,6 +148,15 @@ int Module::render_init()
 	return 0;
 }
 
+void Module::render_stop()
+{
+	for(int i = 0; i < total_attachments; i++)
+	{
+		if(attachments[i])
+			attachments[i]->render_stop();
+	}
+}
+
 AttachmentPoint* Module::attachment_of(Plugin *plugin)
 {
 //printf("Module::attachment_of 1 %d\n", total_attachments);
@@ -215,29 +224,30 @@ int Module::test_plugins()
 void Module::update_transition(int64_t current_position, 
 	int direction)
 {
-SET_TRACE
-	Plugin *transition = track->get_current_transition(current_position, 
+	transition = track->get_current_transition(current_position,
 		direction,
 		0,
 		0);
 
-SET_TRACE
-	if((!transition && this->transition) || 
-		(transition && this->transition && strcmp(transition->title, this->transition->title)))
-	{
-		this->transition = 0;
+// For situations where we had a transition but not anymore, 
+// keep the server open.
+// Maybe the same transition will follow and we won't need to reinit.
+// (happens a lot while scrubbing over transitions left and right)
 
+
+// If the current transition differs from the previous transition, delete the
+// server.
+	if ((transition && 
+		transition_server && 
+		strcmp(transition->title, transition_server->plugin->title)))
+	{
 		transition_server->close_plugin();
 		delete transition_server;
 		transition_server = 0;
 	}
-SET_TRACE
 
-	if(transition && !this->transition)
+	if(transition && !transition_server)
 	{
-		this->transition = transition;
-SET_TRACE
-
 		if(renderengine)
 		{
 			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
@@ -257,22 +267,17 @@ SET_TRACE
 		else
 		if(plugin_array)
 		{
-SET_TRACE
 			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
-SET_TRACE
 			transition_server = new PluginServer(*plugin_server);
-SET_TRACE
 			transition_server->open_plugin(0, 
 				plugin_array->mwindow->preferences,
 				get_edl(), 
 				transition,
 				-1);
-SET_TRACE
 			transition_server->init_realtime(
 				0,
 				1,
 				get_buffer_size());
-SET_TRACE
 		}
 	}
 }

@@ -1,12 +1,14 @@
 #ifndef EDLSESSION_H
 #define EDLSESSION_H
 
-#include "defaults.inc"
+#include "autoconf.inc"
+#include "bcwindowbase.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
-
-
-
+#include "maxchannels.h"
+#include "playbackconfig.inc"
+#include "recordconfig.inc"
 
 
 // Session shared between all clips
@@ -25,8 +27,8 @@ public:
     int save_audio_config(FileXML *xml);
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
     int save_video_config(FileXML *xml);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // Used by CWindowGUI during initialization.
 	char* get_cwindow_display();
 	void boundaries();
@@ -35,13 +37,16 @@ public:
 //	ArrayList<PlaybackConfig*>* get_playback_config(int strategy);
 //	int get_playback_heads(int strategy);
 
+// Called by PreferencesThread to determine if preference changes need to be
+// rendered.
+	int need_rerender(EDLSession *ptr);
+// Called by BRender to determine if any background rendered frames are valid.
 	void equivalent_output(EDLSession *session, double *result);
 	void dump();
 
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;
-	AudioInConfig *aconfig_in;
 // AWindow format
 	int assetlist_format;
 // AWindow column widths
@@ -100,8 +105,12 @@ public:
 	float frames_per_foot;
 // Number of highlighted track
 	int highlighted_track;
-// From edl.inc
+// Enumeration for how to scale from edl.inc.
 	int interpolation_type;
+// Whether to interpolate CR2 images
+	int interpolate_raw;
+// Whether to white balance CR2 images
+	int white_balance_raw;
 // labels follow edits during editing
 	int labels_follow_edits;
 	int mpeg4_deblock;
@@ -114,6 +123,8 @@ public:
 	int64_t playback_buffer;
 	int playback_cursor_visible;
 	int64_t playback_preload;
+	int decode_subtitles;
+	int subtitle_number;
 	int playback_software_position;
 //	int playback_strategy;
 // Play audio in realtime priority
@@ -149,8 +160,12 @@ public:
 // Recording
 	int video_channels;
 	VideoInConfig *vconfig_in;
+	AudioInConfig *aconfig_in;
+	Asset *recording_format;
 // play every frame
 	int video_every_frame;  
+// decode video asynchronously
+	int video_asynchronous;
 	int video_tracks;
 // number of frames to write to disk at a time during video recording.
 	int video_write_length;

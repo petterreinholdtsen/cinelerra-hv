@@ -37,7 +37,7 @@ public:
 		Asset *asset,
 		int audio_options,
 		int video_options,
-		int lock_compressor);
+		char *locked_compressor);
 
 	int raise_window();
 // Close parameter window
@@ -45,7 +45,14 @@ public:
 
 // ===================================== start here
 	int set_processors(int cpus);   // Set the number of cpus for certain codecs.
-	int set_preload(int64_t size);     // Set the number of bytes to preload during reads.
+// Set the number of bytes to preload during reads for Quicktime.
+	int set_preload(int64_t size);
+// Set the subtitle for libmpeg3.  -1 disables subtitles.
+	void set_subtitle(int value);
+// Set whether to interpolate raw images
+	void set_interpolate_raw(int value);
+// Set whether to white balance raw images.  Always 0 if no interpolation.
+	void set_white_balance_raw(int value);
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
@@ -82,18 +89,16 @@ public:
 		int ring_buffers, 
 		int compressed);
 	int stop_video_thread();
-	int lock_read();
-	int unlock_read();
+
+	int start_video_decode_thread();
+
+// Return the thread.
+// Used by functions that read only.
+	FileThread* get_video_thread();
 
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
 	int close_file(int ignore_thread = 0);
-
-// set channel for buffer accesses
-	int set_channel(int channel);
-
-// set layer for video read
-	int set_layer(int layer);
 
 // get length of file normalized to base samplerate
 	int64_t get_audio_length(int64_t base_samplerate = -1);
@@ -104,10 +109,6 @@ public:
 	int64_t get_video_position(float base_framerate = -1);
 	
 
-// set position in samples
-	int set_audio_position(int64_t position, float base_samplerate);
-// set position in frames
-	int set_video_position(int64_t position, float base_framerate);
 
 // write samples for the current channel
 // written to disk and file pointer updated after last channel is written
@@ -115,8 +116,10 @@ public:
 // subsequent writes must be <= than first write's size because of buffers
 	int write_samples(double **buffer, int64_t len);
 
-// Only called by filethread
+// Only called by filethread to write an array of an array of channels of frames.
 	int write_frames(VFrame ***frames, int len);
+
+
 
 // For writing buffers in a background thread use these functions to get the buffer.
 // Get a pointer to a buffer to write to.
@@ -131,6 +134,14 @@ public:
 	int write_audio_buffer(int64_t len);
 	int write_video_buffer(int64_t len);
 
+
+
+
+// set channel for buffer accesses
+	int set_channel(int channel);
+// set position in samples
+	int set_audio_position(int64_t position, float base_samplerate);
+
 // Read samples for one channel into a shared memory segment.
 // The offset is the offset in floats from the beginning of the buffer and the len
 // is the length in floats from the offset.
@@ -139,8 +150,16 @@ public:
 	int read_samples(double *buffer, int64_t len, int64_t base_samplerate);
 
 
+// set layer for video read
+// is_thread is used by FileThread::run to prevent recursive lockup.
+	int set_layer(int layer, int is_thread = 0);
+// set position in frames
+// is_thread is used by FileThread::run to prevent recursive lockup.
+	int set_video_position(int64_t position, float base_framerate = -1, int is_thread = 0);
+
 // Read frame of video into the argument
-	int File::read_frame(VFrame *frame);
+// is_thread is used by FileThread::run to prevent recursive lockup.
+	int read_frame(VFrame *frame, int is_thread = 0);
 
 
 // The following involve no extra copies.
@@ -153,21 +172,26 @@ public:
 
 // These are separated into two routines so a file doesn't have to be
 // allocated.
-// Get best colormodel to translate for hardware acceleration
+// Get best colormodel to translate for hardware accelerated playback.
+// Called by VRender.
 	int get_best_colormodel(int driver);
+// Get best colormodel for hardware accelerated recording.
+// Called by VideoDevice.
 	static int get_best_colormodel(Asset *asset, int driver);
-// Get nearest colormodel in format after the file is opened and the 
-// direction determined to know whether to use a temp.
+// Get nearest colormodel that can be decoded without a temporary frame.
+// Used by read_frame.
 	int colormodel_supported(int colormodel);
 
 // Used by CICache to calculate the total size of the cache.
 // Based on temporary frames and a call to the file subclass.
 // The return value is limited 1MB each in case of audio file.
 // The minimum setting for cache_size should be bigger than 1MB.
-	int get_memory_usage();
+	int64_t get_memory_usage();
 
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
+// Get the extension for the filename
+	static char* get_tag(int format);
 	static int supports_video(int format);   // returns 1 if the format supports video or audio
 	static int supports_audio(int format);
 	static int strtoformat(char *format);
@@ -196,6 +220,9 @@ public:
 	Condition *write_lock;
 	int cpus;
 	int64_t playback_preload;
+	int playback_subtitle;
+	int interpolate_raw;
+	int white_balance_raw;
 
 // Position information is migrated here to allow samplerate conversion.
 // Current position in file's samplerate.

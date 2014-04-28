@@ -70,12 +70,13 @@ public:
 	MaskEngine(int cpus);
 	~MaskEngine();
 
+
 	void do_mask(VFrame *output, 
-		int64_t start_position,
-		double frame_rate,
-		double project_frame_rate,
+// Position relative to project, compensated for playback direction
+		int64_t start_position_project,
 		MaskAutos *keyframe_set, 
-		int direction);
+		MaskAuto *keyframe,
+		MaskAuto *default_auto);
 	int points_equivalent(ArrayList<MaskPoint*> *new_points, 
 		ArrayList<MaskPoint*> *points);
 

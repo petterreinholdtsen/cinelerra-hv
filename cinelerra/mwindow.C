@@ -4,6 +4,7 @@
 #include "awindow.h"
 #include "batchrender.h"
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"
@@ -14,7 +15,8 @@
 #include "ctimebar.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
+#include "devicedvbinput.inc"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -23,6 +25,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "framecache.h"
 #include "gwindow.h"
 #include "gwindowgui.h"
 #include "indexfile.h"
@@ -32,6 +35,7 @@
 #include "loadfile.inc"
 #include "localsession.h"
 #include "maincursor.h"
+#include "mainerror.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainprogress.h"
@@ -43,6 +47,7 @@
 #include "mwindow.h"
 #include "new.h"
 #include "patchbay.h"
+#include "playback3d.h"
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginserver.h"
@@ -50,6 +55,7 @@
 #include "preferences.h"
 #include "record.h"
 #include "recordlabel.h"
+#include "removethread.h"
 #include "render.h"
 #include "samplescroll.h"
 #include "sighandler.h"
@@ -72,6 +78,7 @@
 #include "vplayback.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
+#include "wavecache.h"
 #include "zoombar.h"
 
 #include <string.h>
@@ -117,9 +124,8 @@ int atexit(void (*function)(void))
 
 
 
-
-
 MWindow::MWindow()
+ : Thread(1, 0, 0)
 {
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");
@@ -127,6 +133,8 @@ MWindow::MWindow()
 	session = 0;
 	channeldb_buz = new ChannelDB;
 	channeldb_v4l2jpeg = new ChannelDB;
+	dvb_input = 0;
+	dvb_input_lock = new Mutex("MWindow::dvb_input_lock");
 }
 
 MWindow::~MWindow()
@@ -139,19 +147,20 @@ MWindow::~MWindow()
 
 	delete mainindexes;
 
-TRACE("MWindow::~MWindow 1\n");
+SET_TRACE
 	clean_indexes();
-TRACE("MWindow::~MWindow 2\n");
+SET_TRACE
 
 	save_defaults();
-TRACE("MWindow::~MWindow 3\n");
+SET_TRACE
 // Give up and go to a movie
 	exit(0);
 
-TRACE("MWindow::~MWindow 4\n");
+SET_TRACE
 	delete mainprogress;
 	delete audio_cache;             // delete the cache after the assets
 	delete video_cache;             // delete the cache after the assets
+	delete frame_cache;
 	if(gui) delete gui;
 	delete undo;
 	delete preferences;
@@ -167,7 +176,28 @@ TRACE("MWindow::~MWindow 4\n");
 	delete plugin_gui_lock;
 }
 
-void MWindow::init_defaults(Defaults* &defaults, char *config_path)
+void MWindow::init_error()
+{
+	new MainError(this);
+}
+
+void MWindow::create_defaults_path(char *string)
+{
+// set the .bcast path
+	FileSystem fs;
+
+	sprintf(string, "%s", BCASTDIR);
+	fs.complete_path(string);
+	if(!fs.is_dir(string)) 
+	{
+		fs.create_dir(string); 
+	}
+
+// load the defaults
+	strcat(string, "Cinelerra_rc");
+}
+
+void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 {
 	char path[BCTEXTLEN];
 // Use user supplied path
@@ -177,21 +207,10 @@ void MWindow::init_defaults(Defaults* &defaults, char *config_path)
 	}
 	else
 	{
-// set the .bcast path
-		FileSystem fs;
-
-		sprintf(path, "%s", BCASTDIR);
-		fs.complete_path(path);
-		if(fs.is_dir(path)) 
-		{
-			fs.create_dir(path); 
-		}
-
-// load the defaults
-		strcat(path, "Cinelerra_rc");
+		create_defaults_path(path);
 	}
 
-	defaults = new Defaults(path);
+	defaults = new BC_Hash(path);
 	defaults->load();
 }
 
@@ -212,7 +231,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 			strcpy(path, fs->dir_list.values[i]->path);
 
 // File is a directory
-			if(!fs->is_dir(path))
+			if(fs->is_dir(path))
 			{
 				continue;
 			}
@@ -252,6 +271,9 @@ void MWindow::init_plugin_path(Preferences *preferences,
 							new_plugin->close_plugin();
 							if(splash_window)
 								splash_window->operation->update(_(new_plugin->title));
+							else
+							{
+							}
 						}
 					}while(!result);
 				}
@@ -261,6 +283,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 					delete new_plugin;
 				}
 			}
+
 			if(splash_window) splash_window->progress->update((*counter)++);
 		}
 	}
@@ -340,6 +363,7 @@ void MWindow::init_plugins(Preferences *preferences,
 	for(int i = 0; i < lad_fs.total; i++)
 		total += lad_fs.values[i]->total_files();
 	if(splash_window) splash_window->progress->update_length(total);
+
 
 // Cinelerra
 #ifndef DO_STATIC
@@ -464,7 +488,7 @@ void MWindow::clean_indexes()
 		for(int i = 0; i < fs.dir_list.total && !result; i++)
 		{
 			fs.join_names(string, preferences->index_directory, fs.dir_list.values[i]->name);
-			if(!fs.is_dir(string))
+			if(fs.is_dir(string))
 			{
 				delete fs.dir_list.values[i];
 				fs.dir_list.remove_number(i);
@@ -573,6 +597,12 @@ void MWindow::init_theme()
 	theme->check_used();
 }
 
+void MWindow::init_3d()
+{
+	playback_3d = new Playback3D(this);
+	playback_3d->create_objects();
+}
+
 void MWindow::init_edl()
 {
 	edl = new EDL;
@@ -603,8 +633,10 @@ void MWindow::init_viewer()
 
 void MWindow::init_cache()
 {
-	audio_cache = new CICache(edl, preferences, plugindb);
-	video_cache = new CICache(edl, preferences, plugindb);
+	audio_cache = new CICache(preferences, plugindb);
+	video_cache = new CICache(preferences, plugindb);
+	frame_cache = new FrameCache;
+	wave_cache = new WaveCache;
 }
 
 void MWindow::init_channeldb()
@@ -735,7 +767,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 	int load_mode,
 	int update_filename)
 {
-TRACE("MWindow::load_filenames 1");
+SET_TRACE
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
 	ArrayList<File*> new_files;
@@ -757,7 +789,6 @@ TRACE("MWindow::load_filenames 1");
 	vwindow->playback_engine->interrupt_playback(0);
 
 
-TRACE("MWindow::load_filenames 80");
 
 // Define new_edls and new_assets to load
 	int result = 0;
@@ -774,24 +805,38 @@ TRACE("MWindow::load_filenames 80");
 
 		sprintf(string, "Loading %s", new_asset->path);
 		gui->show_message(string);
-TRACE("MWindow::load_filenames 81");
+SET_TRACE
 		result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
-TRACE("MWindow::load_filenames 82");
+SET_TRACE
 
 		switch(result)
 		{
 // Convert media file to EDL
 			case FILE_OK:
+// Warn about odd image dimensions
+				if(new_asset->video_data &&
+					((new_asset->width % 2) ||
+					(new_asset->height % 2)))
+				{
+					char string[BCTEXTLEN];
+					sprintf(string, "%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly.",
+						new_asset->path,
+						new_asset->width,
+						new_asset->height);
+					MainError::show_error(string);
+				}
+
+
 				if(load_mode != LOAD_RESOURCESONLY)
 				{
-TRACE("MWindow::load_filenames 83");
+SET_TRACE
 					asset_to_edl(new_edl, new_asset);
-TRACE("MWindow::load_filenames 84");
+SET_TRACE
 					new_edls.append(new_edl);
-TRACE("MWindow::load_filenames 85");
-					delete new_asset;
+SET_TRACE
+					Garbage::delete_object(new_asset);
 					new_asset = 0;
-TRACE("MWindow::load_filenames 86");
+SET_TRACE
 				}
 				else
 				{
@@ -896,7 +941,7 @@ TRACE("MWindow::load_filenames 86");
 					{
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
-						delete new_asset;
+						Garbage::delete_object(new_asset);
 						new_asset = 0;
 					}
 					else
@@ -933,19 +978,19 @@ TRACE("MWindow::load_filenames 86");
 			}
 		}
 
-TRACE("MWindow::load_filenames 87");
+SET_TRACE
 		if(result)
 		{
 			delete new_edl;
-			delete new_asset;
+			Garbage::delete_object(new_asset);
 			new_edl = 0;
 			new_asset = 0;
 		}
-TRACE("MWindow::load_filenames 88");
+SET_TRACE
 
 // Store for testing index
 		new_files.append(new_file);
-TRACE("MWindow::load_filenames 89");
+SET_TRACE
 	}
 
 
@@ -954,7 +999,6 @@ TRACE("MWindow::load_filenames 89");
 
 
 
-TRACE("MWindow::load_filenames 90");
 
 
 
@@ -964,31 +1008,24 @@ TRACE("MWindow::load_filenames 90");
 // Don't back up here.
 	if(new_edls.total)
 	{
-SET_TRACE
 // For pasting, clear the active region
 		if(load_mode == LOAD_PASTE)
 		{
-SET_TRACE
 			double start = edl->local_session->get_selectionstart();
-SET_TRACE
 			double end = edl->local_session->get_selectionend();
-SET_TRACE
 			if(!EQUIV(start, end))
 				edl->clear(start, 
 					end,
 					edl->session->labels_follow_edits,
 					edl->session->plugins_follow_edits);
-SET_TRACE
 		}
 
-SET_TRACE
 		paste_edls(&new_edls, 
 			load_mode,
 			0,
 			-1,
 			edl->session->labels_follow_edits, 
 			edl->session->plugins_follow_edits);
-SET_TRACE
 	}
 
 
@@ -996,8 +1033,8 @@ SET_TRACE
 
 
 
-TRACE("MWindow::load_filenames 91");
-
+// Add new assets to EDL and schedule assets for index building.
+// Used for loading resources only.
 	if(new_assets.total)
 	{
 		for(int i = 0; i < new_assets.total; i++)
@@ -1018,8 +1055,9 @@ TRACE("MWindow::load_filenames 91");
 			}
 
 			mainindexes->add_next_asset(got_it ? new_file : 0, 
-				new_assets.values[i]);
-			edl->assets->update(new_assets.values[i]);
+				new_asset);
+			edl->assets->update(new_asset);
+
 		}
 
 
@@ -1027,20 +1065,22 @@ TRACE("MWindow::load_filenames 91");
 		mainindexes->start_build();
 	}
 
-TRACE("MWindow::load_filenames 100");
-	update_project(load_mode);
-TRACE("MWindow::load_filenames 110");
 
-//printf("MWindow::load_filenames 9\n");
-//sleep(10);
+	update_project(load_mode);
+SET_TRACE
+
+
 
 	new_edls.remove_all_objects();
-TRACE("MWindow::load_filenames 120\n");
-	new_assets.remove_all_objects();
-TRACE("MWindow::load_filenames 130\n");
+SET_TRACE
+	for(int i = 0; i < new_assets.total; i++)
+		Garbage::delete_object(new_assets.values[i]);
+SET_TRACE
+	new_assets.remove_all();
+SET_TRACE
 	new_files.remove_all_objects();
-TRACE("MWindow::load_filenames 140\n");
 
+SET_TRACE
 	undo->update_undo(_("load"), LOAD_ALL, 0);
 
 	if(load_mode == LOAD_REPLACE ||
@@ -1049,8 +1089,9 @@ TRACE("MWindow::load_filenames 140\n");
 	else
 		session->changes_made = 1;
 
+SET_TRACE
 	gui->stop_hourglass();
-UNTRACE
+SET_TRACE
 
 	return 0;
 }
@@ -1060,6 +1101,7 @@ UNTRACE
 
 void MWindow::test_plugins(EDL *new_edl, char *path)
 {
+	char string[BCTEXTLEN];
 // Do a check weather plugins exist
 	for(Track *track = new_edl->tracks->first; track; track = track->next)
 	{
@@ -1085,7 +1127,12 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 					}
 					if (!plugin_found) 
 					{
-						printf("\nWARNING: The plugin '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crashing.\n", plugin->title, path); 
+						sprintf(string, 
+							"The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+							"The project won't be rendered as it was meant and Cinelerra might crash.\n",
+							plugin->title, 
+							path); 
+						MainError::show_error(string);
 					}
 				}
 			}
@@ -1109,7 +1156,12 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 				}
 				if (!transition_found) 
 				{
-					printf("\nWARNING: The transition '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crashing.\n", edit->transition->title, path); 
+					sprintf(string, 
+						"The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
+						edit->transition->title, 
+						path); 
+					MainError::show_error(string);
 				}
 			}
 		}
@@ -1117,7 +1169,37 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 }
 
 
+void MWindow::init_shm()
+{
+// Fix shared memory
+	FILE *fd = fopen("/proc/sys/kernel/shmmax", "w");
+	if(fd)
+	{
+		fprintf(fd, "0x7fffffff");
+		fclose(fd);
+	}
+	fd = 0;
 
+	fd = fopen("/proc/sys/kernel/shmmax", "r");
+	if(!fd)
+	{
+		MainError::show_error("MWindow::init_shm: couldn't open /proc/sys/kernel/shmmax for reading.\n");
+		return;
+	}
+
+	int64_t result = 0;
+	fscanf(fd, "%lld", &result);
+	fclose(fd);
+	fd = 0;
+	if(result < 0x7fffffff)
+	{
+		char string[BCTEXTLEN];
+		sprintf(string, "MWindow::init_shm: /proc/sys/kernel/shmmax is 0x%llx.\n"
+			"It should be at least 0x7fffffff for Cinelerra.\n",
+			result);
+		MainError::show_error(string);
+	}
+}
 
 
 
@@ -1130,45 +1212,51 @@ void MWindow::create_objects(int want_gui,
 	edl = 0;
 
 
+
+	init_3d();
+	remove_thread = new RemoveThread;
+	remove_thread->create_objects();
 	show_splash();
 
 // For some reason, init_signals must come after show_splash or the signals won't
 // get trapped.
 	init_signals();
 
+	init_error();
 
-TRACE("MWindow::create_objects 1");
+SET_TRACE
+
 	init_defaults(defaults, config_path);
-TRACE("MWindow::create_objects 2");
+SET_TRACE
 	init_preferences();
-TRACE("MWindow::create_objects 3");
+SET_TRACE
 	init_plugins(preferences, plugindb, splash_window);
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
-TRACE("MWindow::create_objects 4");
+SET_TRACE
 	init_theme();
 // Default project created here
-TRACE("MWindow::create_objects 5");
+SET_TRACE
 	init_edl();
 
-TRACE("MWindow::create_objects 6");
+SET_TRACE
 	init_awindow();
-TRACE("MWindow::create_objects 7");
+SET_TRACE
 	init_compositor();
-TRACE("MWindow::create_objects 8");
+SET_TRACE
 	init_levelwindow();
-TRACE("MWindow::create_objects 9");
+SET_TRACE
 	init_viewer();
-TRACE("MWindow::create_objects 10");
+SET_TRACE
 	init_cache();
-TRACE("MWindow::create_objects 11");
+SET_TRACE
 	init_indexes();
-TRACE("MWindow::create_objects 12");
+SET_TRACE
 	init_channeldb();
-TRACE("MWindow::create_objects 13");
+SET_TRACE
 
 	init_gui();
 	init_gwindow();
-TRACE("MWindow::create_objects 14");
+SET_TRACE
 	init_render();
 	init_brender();
 	mainprogress = new MainProgress(this, gui);
@@ -1176,36 +1264,36 @@ TRACE("MWindow::create_objects 14");
 
 	plugin_guis = new ArrayList<PluginServer*>;
 
-TRACE("MWindow::create_objects 15");
+SET_TRACE
 	if(session->show_vwindow) vwindow->gui->show_window();
 	if(session->show_cwindow) cwindow->gui->show_window();
 	if(session->show_awindow) awindow->gui->show_window();
 	if(session->show_lwindow) lwindow->gui->show_window();
 	if(session->show_gwindow) gwindow->gui->show_window();
-TRACE("MWindow::create_objects 16");
+SET_TRACE
 
 
 	gui->mainmenu->load_defaults(defaults);
-TRACE("MWindow::create_objects 17");
+SET_TRACE
 	gui->mainmenu->update_toggles(0);
-TRACE("MWindow::create_objects 18");
+SET_TRACE
 	gui->patchbay->update();
-TRACE("MWindow::create_objects 19");
+SET_TRACE
 	gui->canvas->draw();
-TRACE("MWindow::create_objects 20");
-	gui->cursor->draw();
-TRACE("MWindow::create_objects 21");
+SET_TRACE
+	gui->cursor->draw(1);
+SET_TRACE
 	gui->show_window();
 	gui->raise_window();
 
 	if(preferences->use_tipwindow)
 		init_tipwindow();
 		
-TRACE("MWindow::create_objects 22");
-TRACE("MWindow::create_objects 23");
+SET_TRACE
 
 	hide_splash();
-UNTRACE
+SET_TRACE
+	init_shm();
 }
 
 
@@ -1230,11 +1318,18 @@ void MWindow::hide_splash()
 
 void MWindow::start()
 {
+ENABLE_BUFFER
 	vwindow->start();
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
 	gwindow->start();
+	Thread::start();
+	playback_3d->start();
+}
+
+void MWindow::run()
+{
 	gui->run_window();
 }
 
@@ -1271,20 +1366,13 @@ void MWindow::show_gwindow()
 {
 	session->show_gwindow = 1;
 
-SET_TRACE
 	gwindow->gui->lock_window("MWindow::show_gwindow");
-SET_TRACE
 	gwindow->gui->show_window();
-SET_TRACE
 	gwindow->gui->raise_window();
-SET_TRACE
 	gwindow->gui->flush();
-SET_TRACE
 	gwindow->gui->unlock_window();
-SET_TRACE
 
 	gui->mainmenu->show_gwindow->set_checked(1);
-SET_TRACE
 }
 
 void MWindow::show_lwindow()
@@ -1390,10 +1478,44 @@ void MWindow::sync_parameters(int change_type)
 	}
 }
 
-void MWindow::update_caches()
+void MWindow::age_caches()
 {
-	audio_cache->set_edl(edl);
-	video_cache->set_edl(edl);
+	int64_t prev_memory_usage;
+	int64_t memory_usage;
+	int result = 0;
+	do
+	{
+		memory_usage = audio_cache->get_memory_usage(1) +
+			video_cache->get_memory_usage(1) +
+			frame_cache->get_memory_usage() +
+			wave_cache->get_memory_usage();
+
+		if(memory_usage > preferences->cache_size)
+		{
+			int target = 1;
+			int oldest1 = audio_cache->get_oldest();
+			int oldest2 = video_cache->get_oldest();
+			if(oldest2 < oldest1) target = 2;
+			int oldest3 = frame_cache->get_oldest();
+			if(oldest3 < oldest1 && oldest3 < oldest2) target = 3;
+			int oldest4 = wave_cache->get_oldest();
+			if(oldest4 < oldest3 && oldest4 < oldest2 && oldest4 < oldest1) target = 4;
+			switch(target)
+			{
+				case 1: audio_cache->delete_oldest(); break;
+				case 2: video_cache->delete_oldest(); break;
+				case 3: frame_cache->delete_oldest(); break;
+				case 4: wave_cache->delete_oldest(); break;
+			}
+		}
+		prev_memory_usage = memory_usage;
+		memory_usage = audio_cache->get_memory_usage(1) +
+			video_cache->get_memory_usage(1) +
+			frame_cache->get_memory_usage() +
+			wave_cache->get_memory_usage();
+	}while(!result && 
+		prev_memory_usage != memory_usage && 
+		memory_usage > preferences->cache_size);
 }
 
 void MWindow::show_plugin(Plugin *plugin)
@@ -1439,8 +1561,12 @@ void MWindow::show_plugin(Plugin *plugin)
 
 void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
-	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
 	plugin->show = 0;
+	gui->lock_window("MWindow::hide_plugin");
+	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->unlock_window();
+
+	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
@@ -1454,6 +1580,7 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 		}
 	}
 	if(lock) plugin_gui_lock->unlock();
+
 }
 
 void MWindow::hide_plugins()
@@ -1472,6 +1599,22 @@ void MWindow::update_plugin_guis()
 		plugin_guis->values[i]->update_gui();
 	}
 	plugin_gui_lock->unlock();
+}
+
+int MWindow::plugin_gui_open(Plugin *plugin)
+{
+	int result = 0;
+	plugin_gui_lock->lock("MWindow::plugin_gui_open");
+	for(int i = 0; i < plugin_guis->total; i++)
+	{
+		if(plugin_guis->values[i]->plugin->identical_location(plugin))
+		{
+			result = 1;
+			break;
+		}
+	}
+	plugin_gui_lock->unlock();
+	return result;
 }
 
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)
@@ -1628,20 +1771,13 @@ int MWindow::asset_to_edl(EDL *new_edl,
 void MWindow::update_project(int load_mode)
 {
 	restart_brender();
-//TRACE("MWindow::update_project 1");
 	edl->tracks->update_y_pixels(theme);
 
-// Draw timeline
-//TRACE("MWindow::update_project 2");
-	update_caches();
 
-TRACE("MWindow::update_project 3");
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 
-TRACE("MWindow::update_project 4");
 	cwindow->update(0, 0, 1, 1, 1);
 
-TRACE("MWindow::update_project 5");
 
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
@@ -1653,24 +1789,18 @@ TRACE("MWindow::update_project 5");
 		vwindow->update(1);
 	}
 
-TRACE("MWindow::update_project 6");
-
 	cwindow->gui->slider->set_position();
-TRACE("MWindow::update_project 6.1");
 	cwindow->gui->timebar->update(1, 1);
-TRACE("MWindow::update_project 6.2");
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 		CHANGE_ALL,
 		edl,
 		1);
 
-TRACE("MWindow::update_project 7");
 	awindow->gui->lock_window("MWindow::update_project");
 	awindow->gui->update_assets();
 	awindow->gui->flush();
 	awindow->gui->unlock_window();
 	gui->flush();
-TRACE("MWindow::update_project 100");
 }
 
 
@@ -1736,21 +1866,47 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 	return 0;
 }
 
+void MWindow::reset_caches()
+{
+	frame_cache->remove_all();
+	wave_cache->remove_all();
+	audio_cache->remove_all();
+	video_cache->remove_all();
+	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
+		cwindow->playback_engine->audio_cache->remove_all();
+	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
+		cwindow->playback_engine->video_cache->remove_all();
+	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		vwindow->playback_engine->audio_cache->remove_all();
+	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		vwindow->playback_engine->video_cache->remove_all();
+}
+
+void MWindow::remove_asset_from_caches(Asset *asset)
+{
+	frame_cache->remove_asset(asset);
+	wave_cache->remove_asset(asset);
+	audio_cache->delete_entry(asset);
+	video_cache->delete_entry(asset);
+	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
+		cwindow->playback_engine->audio_cache->delete_entry(asset);
+	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
+		cwindow->playback_engine->video_cache->delete_entry(asset);
+	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		vwindow->playback_engine->audio_cache->delete_entry(asset);
+	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		vwindow->playback_engine->video_cache->delete_entry(asset);
+}
+
 
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
-// Remove from caches
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
-		audio_cache->delete_entry(session->drag_assets->values[i]);
-		video_cache->delete_entry(session->drag_assets->values[i]);
+		Asset *asset = session->drag_assets->values[i];
+		remove_asset_from_caches(asset);
 	}
-
-printf("MWindow::remove_assets_from_project 1\n");
-video_cache->dump();
-audio_cache->dump();
-printf("MWindow::remove_assets_from_project 100\n");
 
 // Remove from VWindow.
 	for(int i = 0; i < session->drag_clips->total; i++)

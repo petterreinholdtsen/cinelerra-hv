@@ -321,7 +321,7 @@ void GlyphEngine::init_packages()
 	{
 		if(!plugin->glyphs.values[i]->data)
 		{
-			GlyphPackage *pkg = (GlyphPackage*)packages[current_package++];
+			GlyphPackage *pkg = (GlyphPackage*)get_package(current_package++);
 			pkg->glyph = plugin->glyphs.values[i];
 		}
 	}
@@ -1807,7 +1807,7 @@ int TitleMain::load_defaults()
 	sprintf(directory, "%stitle.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	defaults->get("FONT", config.font);

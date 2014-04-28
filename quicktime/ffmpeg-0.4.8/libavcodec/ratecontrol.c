@@ -644,7 +644,6 @@ float ff_rate_estimate_qscale(MpegEncContext *s)
         rate_factor= rcc->pass1_wanted_bits/rcc->pass1_rc_eq_output_sum * br_compensation;
     
         q= get_qscale(s, rce, rate_factor, picture_number);
-
         assert(q>0.0);
 //printf("%f ", q);
         q= get_diff_limited_q(s, rce, q);

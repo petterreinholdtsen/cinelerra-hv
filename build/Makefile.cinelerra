@@ -41,6 +41,7 @@ endif
 ifeq ($(HAVE_ALSA), y)
 	$(MAKE) -f build/Makefile.asound
 endif
+	$(MAKE) -f build/Makefile.exr
 	@ for i in $(DIRS) ; \
 	do \
 		 $(MAKE) -C $$i ; \

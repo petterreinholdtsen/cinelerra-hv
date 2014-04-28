@@ -1,3 +1,4 @@
+#include "condition.h"
 #include "clip.h"
 #include "maskauto.h"
 #include "maskautos.h"
@@ -11,7 +12,7 @@
 
 MaskPackage::MaskPackage()
 {
-	apply_mutex = new Mutex;
+	apply_mutex = new Condition(1, "MaskPackage::apply_mutex");
 }
 
 MaskPackage::~MaskPackage()
@@ -56,32 +57,6 @@ MaskUnit::~MaskUnit()
 
 
 
-#define DRAW_LINE_CLAMPED(type, value) \
-{ \
-	type **rows = (type**)frame->get_rows(); \
- \
-	if(draw_y2 != draw_y1) \
-	{ \
-		float slope = ((float)draw_x2 - draw_x1) / ((float)draw_y2 - draw_y1); \
-		int w = frame->get_w() - 1; \
-		int h = frame->get_h(); \
- \
-		for(float y = draw_y1; y < draw_y2; y++) \
-		{ \
-			if(y >= 0 && y < h) \
-			{ \
-				int x = (int)((y - draw_y1) * slope + draw_x1); \
-				int y_i = (int)y; \
-				int x_i = CLIP(x, 0, w); \
- \
-				if(rows[y_i][x_i] == value) \
-					rows[y_i][x_i] = 0; \
-				else \
-					rows[y_i][x_i] = value; \
-			} \
-		} \
-	} \
-}
 
 
 
@@ -92,7 +67,6 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 	int y2,
 	unsigned char k)
 {
-//printf("MaskUnit::draw_line_clamped 1 %d %d %d %d\n", x1, y1, x2, y2);
 	int draw_x1;
 	int draw_y1;
 	int draw_x2;
@@ -114,15 +88,28 @@ void MaskUnit::draw_line_clamped(VFrame *frame,
 		draw_y2 = y2;
 	}
 
-	switch(frame->get_color_model())
+	unsigned char **rows = (unsigned char**)frame->get_rows();
+
+	if(draw_y2 != draw_y1)
 	{
-		case BC_A8:
-			DRAW_LINE_CLAMPED(unsigned char, k);
-			break;
-		
-		case BC_A16:
-			DRAW_LINE_CLAMPED(uint16_t, k);
-			break;
+		float slope = ((float)draw_x2 - draw_x1) / ((float)draw_y2 - draw_y1);
+		int w = frame->get_w() - 1;
+		int h = frame->get_h();
+
+		for(float y = draw_y1; y < draw_y2; y++)
+		{
+			if(y >= 0 && y < h)
+			{
+				int x = (int)((y - draw_y1) * slope + draw_x1);
+				int y_i = (int)y;
+				int x_i = CLIP(x, 0, w);
+
+				if(rows[y_i][x_i] == k)
+					rows[y_i][x_i] = 0;
+				else
+					rows[y_i][x_i] = k;
+			}
+		}
 	}
 }
 
@@ -358,6 +345,10 @@ void MaskUnit::do_feather(VFrame *output,
 		case BC_A16:
 			DO_FEATHER(uint16_t, 0xffff);
 			break;
+		
+		case BC_A_FLOAT:
+			DO_FEATHER(float, 1);
+			break;
 	}
 
 
@@ -372,7 +363,6 @@ void MaskUnit::process_package(LoadPackage *package)
 	if(engine->recalculate && ptr->part == RECALCULATE_PART)
 	{
 		VFrame *mask;
-//printf("MaskUnit::process_package 1 %d\n", get_package_number());
 		if(engine->feather > 0) 
 			mask = engine->temp_mask;
 		else
@@ -471,48 +461,35 @@ void MaskUnit::process_package(LoadPackage *package)
 
 
 
-#define FILL_ROWS(type) \
-for(int i = 0; i < oversampled_package_h; i++) \
-{ \
-	type *row = (type*)temp->get_rows()[i]; \
-	int value = 0x0; \
-	int total = 0; \
- \
- 	for(int j = 0; j < oversampled_package_w; j++) \
-		if(row[j] == max) total++; \
- \
- 	if(total > 1) \
-	{ \
-		if(total & 0x1) total--; \
-		for(int j = 0; j < oversampled_package_w; j++) \
-		{ \
-			if(row[j] == max && total > 0) \
-			{ \
-				if(value)  \
-					value = 0x0; \
-				else \
-					value = max; \
-				total--; \
-			} \
-			else \
-			{ \
-				if(value) row[j] = value; \
-			} \
-		} \
-	} \
-}
-
-
 // Fill in the polygon in the horizontal direction
-			switch(temp->get_color_model())
+			for(int i = 0; i < oversampled_package_h; i++)
 			{
-				case BC_A8:
-					FILL_ROWS(unsigned char);
-					break;
+				unsigned char *row = (unsigned char*)temp->get_rows()[i];
+				int value = 0x0;
+				int total = 0;
 
-				case BC_A16:
-					FILL_ROWS(uint16_t);
-					break;
+ 				for(int j = 0; j < oversampled_package_w; j++)
+					if(row[j] == max) total++;
+
+ 				if(total > 1)
+				{
+					if(total & 0x1) total--;
+					for(int j = 0; j < oversampled_package_w; j++)
+					{
+						if(row[j] == max && total > 0)
+						{
+							if(value)
+								value = 0x0;
+							else
+								value = max;
+							total--;
+						}
+						else
+						{
+							if(value) row[j] = value;
+						}
+					}
+				}
 			}
 		}
 
@@ -522,8 +499,7 @@ for(int i = 0; i < oversampled_package_h; i++) \
 
 
 
-
-#define DOWNSAMPLE(type, value) \
+#define DOWNSAMPLE(type, temp_type, value) \
 for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 { \
 	type *output_row = (type*)mask->get_rows()[i + ptr->row1]; \
@@ -532,7 +508,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
  \
 	for(int j = 0; j < mask_w; j++) \
 	{ \
-		int64_t total = 0; \
+		temp_type total = 0; \
  \
 /* Accumulate pixel */ \
 		for(int k = 0; k < OVERSAMPLE; k++) \
@@ -545,16 +521,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 		} \
  \
 /* Divide pixel */ \
-		if(OVERSAMPLE == 8) \
-			total >>= 6; \
-		else \
-		if(OVERSAMPLE == 4) \
-			total >>= 2; \
-		else \
-		if(OVERSAMPLE == 2) \
-			total >>= 2; \
-		else \
-			total /= OVERSAMPLE * OVERSAMPLE; \
+		total /= OVERSAMPLE * OVERSAMPLE; \
  \
 		output_row[j] = total; \
 	} \
@@ -568,7 +535,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 			{
 				unsigned char value;
 				value = (int)((float)engine->value / 100 * 0xff);
-				DOWNSAMPLE(unsigned char, value);
+				DOWNSAMPLE(unsigned char, int64_t, value);
 				break;
 			}
 
@@ -576,11 +543,18 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 			{
 				uint16_t value;
 				value = (int)((float)engine->value / 100 * 0xffff);
-				DOWNSAMPLE(uint16_t, value);
+				DOWNSAMPLE(uint16_t, int64_t, value);
+				break;
+			}
+
+			case BC_A_FLOAT:
+			{
+				float value;
+				value = (float)engine->value / 100;
+				DOWNSAMPLE(float, double, value);
 				break;
 			}
 		}
-
 	}
 
 
@@ -601,12 +575,11 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 
 	}
 
-//printf("MaskUnit::process_package 2\n");
 
 	if(ptr->part == APPLY_PART)
 	{
 //printf("MaskUnit::process_package 2.1\n");
-		ptr->apply_mutex->lock();
+		ptr->apply_mutex->lock("MaskUnit::process_package");
 		ptr->apply_mutex->unlock();
 //printf("MaskUnit::process_package 2.2\n");
 
@@ -633,7 +606,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 { \
 	type *output_row = (type*)engine->output->get_rows()[i]; \
 	type *mask_row = (type*)engine->mask->get_rows()[i]; \
-	int chroma_offset = (max + 1) / 2; \
+	int chroma_offset = (int)(max + 1) / 2; \
  \
 	for(int j  = 0; j < mask_w; j++) \
 	{ \
@@ -661,7 +634,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 { \
 	type *output_row = (type*)engine->output->get_rows()[i]; \
 	type *mask_row = (type*)engine->mask->get_rows()[i]; \
-	int chroma_offset = (max + 1) / 2; \
+	int chroma_offset = (int)(max + 1) / 2; \
  \
 	for(int j  = 0; j < mask_w; j++) \
 	{ \
@@ -699,10 +672,18 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 						case BC_RGB888:
 							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 0);
 							break;
+						case BC_RGB_FLOAT:
+							APPLY_MASK_MULTIPLY_ALPHA(float, 1.0, 3, 0);
+							break;
 						case BC_YUV888:
 							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 1);
 							break;
+						case BC_RGBA_FLOAT:
+							APPLY_MASK_MULTIPLY_ALPHA(float, 1.0, 4, 0);
+							break;
 						case BC_YUVA8888:
+							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 4, 1);
+							break;
 						case BC_RGBA8888:
 							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 4, 0);
 							break;
@@ -713,6 +694,8 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 1);
 							break;
 						case BC_YUVA16161616:
+							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 1);
+							break;
 						case BC_RGBA16161616:
 							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
 							break;
@@ -725,29 +708,38 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 						case BC_RGB888:
 							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 0);
 							break;
+						case BC_RGB_FLOAT:
+							APPLY_MASK_SUBTRACT_ALPHA(float, 1.0, 3, 0);
+							break;
+						case BC_RGBA_FLOAT:
+							APPLY_MASK_SUBTRACT_ALPHA(float, 1.0, 4, 0);
+							break;
+						case BC_RGBA8888:
+							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 0);
+							break;
 						case BC_YUV888:
 							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 1);
 							break;
 						case BC_YUVA8888:
-						case BC_RGBA8888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 0);
+							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 1);
 							break;
 						case BC_RGB161616:
 							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 0);
+							break;
+						case BC_RGBA16161616:
+							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
 							break;
 						case BC_YUV161616:
 							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 1);
 							break;
 						case BC_YUVA16161616:
-						case BC_RGBA16161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
+							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 1);
 							break;
 					}
 					break;
 			}
 		}
 	}
-//printf("MaskUnit::process_package 4 %d\n", get_package_number());
 }
 
 
@@ -756,7 +748,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 
 MaskEngine::MaskEngine(int cpus)
  : LoadServer(cpus, cpus * OVERSAMPLE * 2)
-// : LoadServer(1, 2)
+// : LoadServer(1, OVERSAMPLE * 2)
 {
 	mask = 0;
 }
@@ -831,6 +823,11 @@ void MaskEngine::do_mask(VFrame *output,
 	recalculate = 0;
 	switch(output->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+		case BC_RGBA_FLOAT:
+			new_color_model = BC_A_FLOAT;
+			break;
+
 		case BC_RGB888:
 		case BC_RGBA8888:
 		case BC_YUV888:
@@ -931,7 +928,6 @@ void MaskEngine::do_mask(VFrame *output,
 	process_packages();
 
 
-//printf("MaskEngine::do_mask 6\n");
 }
 
 void MaskEngine::init_packages()
@@ -955,7 +951,7 @@ void MaskEngine::init_packages()
 			part2->row2 = part1->row2 = output->get_h();
 		}
 
-		part2->apply_mutex->lock();
+		part2->apply_mutex->lock("MaskEngine::init_packages");
 
 		part1->part = RECALCULATE_PART;
 		part2->part = APPLY_PART;

@@ -24,7 +24,8 @@ $(OUTPUT): $(OBJS)
 	ar rcs $(OUTPUT) $(OBJS)
 
 $(OBJS):
-	$(GCC) -c `cat $(AVCDIR)/$(OBJDIR)/c_flags` $(subst $(OBJDIR)/,, $*.c) -o $*.o
+	echo GCC $*.o
+	@$(GCC) -c $(CFLAGS) $(subst $(OBJDIR)/,, $*.c) -o $*.o
 
 
 

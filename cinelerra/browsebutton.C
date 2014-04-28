@@ -28,12 +28,12 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	this->mwindow = mwindow;
 	set_tooltip(_("Look for file"));
 	gui = 0;
-	startup_lock = new Mutex;
+	startup_lock = new Mutex("BrowseButton::startup_lock");
 }
 
 BrowseButton::~BrowseButton()
 {
-	startup_lock->lock();
+	startup_lock->lock("BrowseButton::~BrowseButton");
 	if(gui)
 	{
 		gui->lock_window();
@@ -58,12 +58,12 @@ int BrowseButton::handle_event()
 		return 1;
 	}
 
-	x = parent_window->get_abs_cursor_x();
-	y = parent_window->get_abs_cursor_y();
-	startup_lock->lock();
+	x = parent_window->get_abs_cursor_x(0);
+	y = parent_window->get_abs_cursor_y(0);
+	startup_lock->lock("BrowseButton::handle_event 1");
 	Thread::start();
 
-	startup_lock->lock();
+	startup_lock->lock("BrowseButton::handle_event 2");
 	startup_lock->unlock();
 	return 1;
 }
@@ -97,7 +97,7 @@ void BrowseButton::run()
 		parent_window->flush();
 		textbox->handle_event();
 	}
-	startup_lock->lock();
+	startup_lock->lock("BrowseButton::run");
 	gui = 0;
 	startup_lock->unlock();
 }

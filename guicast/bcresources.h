@@ -45,6 +45,8 @@ public:
 	int bg_shadow2;
 	int bg_light1;
 	int bg_light2;
+	int default_text_color;
+	int disabled_text_color;
 
 
 // beveled box colors
@@ -121,8 +123,10 @@ public:
 	VFrame **horizontal_slider_data;
 	VFrame **vertical_slider_data;
 	VFrame **hscroll_data;
-	VFrame **vscroll_data;
 
+	VFrame **vscroll_data;
+// Minimum pixels in handle
+	int scroll_minhandle;
 
 // Pans
 	VFrame **pan_data;
@@ -131,6 +135,7 @@ public:
 // Pots
 	VFrame **pot_images;
 	int pot_x1, pot_y1, pot_r;
+	int pot_needle_color;
 
 // Meters
 	VFrame **xmeter_images, **ymeter_images;
@@ -164,6 +169,10 @@ public:
 	static char *large_font;
 	static char *medium_font;
 	static char *small_font;
+// Backup of fonts in case the first choices don't exist
+	static char *large_font2;
+	static char *medium_font2;
+	static char *small_font2;
 
 	static char *large_fontset;
 	static char *medium_fontset;

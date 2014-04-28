@@ -65,11 +65,11 @@ void AModule::create_objects()
 // Not needed in pluginarray
 	if(commonrender)
 	{
-		level_history = new double[((ARender*)commonrender)->history_size()];
-		level_samples = new int64_t[((ARender*)commonrender)->history_size()];
+		level_history = new double[((ARender*)commonrender)->total_peaks];
+		level_samples = new int64_t[((ARender*)commonrender)->total_peaks];
 		current_level = 0;
 
-		for(int i = 0; i < ((ARender*)commonrender)->history_size(); i++)
+		for(int i = 0; i < ((ARender*)commonrender)->total_peaks; i++)
 		{
 			level_history[i] = 0;
 			level_samples[i] = -1;

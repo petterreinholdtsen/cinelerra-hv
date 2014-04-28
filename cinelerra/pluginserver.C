@@ -199,16 +199,15 @@ int PluginServer::open_plugin(int master,
 {
 	if(plugin_open) return 0;
 
-	if(!plugin_fd) plugin_fd = dlopen(path, RTLD_NOW);
 	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
-//printf("PluginServer::open_plugin %s %p %p\n", path, this->plugin, plugin_fd);
 
 
 
+	if(!new_plugin && !plugin_fd) plugin_fd = dlopen(path, RTLD_NOW);
 
-	if(!plugin_fd)
+	if(!new_plugin && !plugin_fd)
 	{
 // If the dlopen failed it may still be an executable tool for a specific
 // file format, in which case we just store the path.
@@ -225,7 +224,6 @@ int PluginServer::open_plugin(int master,
 
 	if(!new_plugin && !lad_descriptor)
 	{
-//printf("%p %p\n", dlsym(RTLD_NEXT, "open"), dlsym(RTLD_NEXT, "open64"));
 		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
 
 // Probably a LAD plugin but we're not going to instantiate it here anyway.
@@ -234,7 +232,6 @@ int PluginServer::open_plugin(int master,
 			lad_descriptor_function = (LADSPA_Descriptor_Function)dlsym(
 				plugin_fd,
 				"ladspa_descriptor");
-//printf("PluginServer::open_plugin 2 %p\n", lad_descriptor_function);
 
 			if(!lad_descriptor_function)
 			{
@@ -259,7 +256,6 @@ int PluginServer::open_plugin(int master,
 				{
 					dlclose(plugin_fd);
 					plugin_fd = 0;
-//printf("PluginServer::open_plugin 1 %s\n", path);
 					return PLUGINSERVER_IS_LAD;
 				}
 			}
@@ -306,11 +302,9 @@ int PluginServer::close_plugin()
 
 // shared object is persistent since plugin deletion would unlink its own object
 //	dlclose(plugin_fd);
-//printf("PluginServer::close_plugin 1\n");
 	plugin_open = 0;
 
 	cleanup_plugin();
-//printf("PluginServer::close_plugin 2\n");
 
 	return 0;
 }
@@ -406,7 +400,7 @@ void PluginServer::process_buffer(VFrame **frame,
 	}
 
 
-	vclient->age_temp();
+    vclient->age_temp();
 }
 
 void PluginServer::process_buffer(double **buffer,
@@ -579,6 +573,7 @@ int PluginServer::read_frame(VFrame *buffer,
 		start_position,
 		PLAY_FORWARD,
 		mwindow->edl->session->frame_rate,
+		0,
 		0);
 	return 0;
 }
@@ -612,6 +607,7 @@ int PluginServer::read_frame(VFrame *buffer,
 
 	if(!multichannel) channel = 0;
 
+
 	if(nodes->total > channel)
 	{
 		return ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
@@ -625,6 +621,7 @@ int PluginServer::read_frame(VFrame *buffer,
 			start_position,
 			PLAY_FORWARD,
 			frame_rate,
+			0,
 			0);
 	}
 	else
@@ -934,11 +931,8 @@ Theme* PluginServer::get_theme()
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {
-TRACE("PluginServer::sync_parameters 1\n");
 	if(video) mwindow->restart_brender();
-TRACE("PluginServer::sync_parameters 10\n");
 	mwindow->sync_parameters();
-TRACE("PluginServer::sync_parameters 20\n");
 	if(mwindow->edl->session->auto_conf->plugins)
 	{
 		mwindow->gui->lock_window("PluginServer::sync_parameters");
@@ -946,7 +940,6 @@ TRACE("PluginServer::sync_parameters 20\n");
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
 	}
-TRACE("PluginServer::sync_parameters 30\n");
 }
 
 

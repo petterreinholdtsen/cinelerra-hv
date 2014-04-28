@@ -135,27 +135,19 @@ int VirtualAConsole::process_buffer(int64_t len,
 				if(meter_render_end > len) 
 					meter_render_end =  len;
 
-				double min = 0;
-				double max = 0;
 				double peak = 0;
 
 				for( ; j < meter_render_end; j++)
 				{
 // Level history comes before clipping to get over status
-					if(current_buffer[j] > max) max = current_buffer[j];
+					double *sample = &current_buffer[j];
+// Clip it
+					if(fabs(*sample) > peak) peak = fabs(*sample);
+					if(*sample > 1) *sample = 1;
 					else
-					if(current_buffer[j] < min) min = current_buffer[j];
-
-					if(current_buffer[j] > 1) current_buffer[j] = 1;
-					else
-					if(current_buffer[j] < -1) current_buffer[j] = -1;
+					if(*sample < -1) *sample = -1;
 				}
 
-
-				if(fabs(max) > fabs(min))
-					peak = fabs(max);
-				else
-					peak = fabs(min);
 
  				if(renderengine->command->realtime)
  				{

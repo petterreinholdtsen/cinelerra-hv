@@ -18,13 +18,9 @@ public:
 	BC_Theme();
 	virtual ~BC_Theme();
 
-// Must set path of resource file before loading first image.
-// Path defaults to executable path.
-	void set_path(char *path);
-
-// Reverts the path to the executable path.  Useful for base classes
-// which need to fill unset images with defaults after they've been created.
-	void unset_path();
+// Set pointer to binary object containing images and contents.
+// Immediately loads the contents from the object.
+	void set_data(unsigned char *ptr);
 
 	VFrame** new_button(char *overlay_path, 
 		char *up_path, 
@@ -88,13 +84,13 @@ private:
 	char default_path[BCTEXTLEN];
 
 // Compressed images are loaded in here.
-	char *data_buffer;
-	char *contents_buffer;
+	char *data_ptr;
+	char *contents_ptr;
 	ArrayList<char*> contents;
-	ArrayList<int> offsets;
+	ArrayList<unsigned char*> pointers;
 	ArrayList<int> used;
 	char *last_image;
-	int last_offset;
+	unsigned char *last_pointer;
 };
 
 class BC_ThemeSet

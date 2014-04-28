@@ -266,22 +266,10 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	if(open_source(&source)) return 1;
 
 	asset->index_zoom = get_required_scale(&source);
-//printf("IndexFile::create_index 1 %d %s\n", asset->index_zoom, asset->path);
 
 // Indexes are now built for everything since it takes too long to draw
 // from CDROM source.
 
-// too small to build an index for.
-// 	if(asset->index_zoom == 0)
-// 	{
-// 		source.close_file();
-// 		asset->index_status = INDEX_TOOSMALL;
-// // Update the EDL and timeline
-// 		redraw_edits(1);
-// //printf("IndexFile::create_index 2\n");
-// 		return 1;
-// 	}
-//printf("IndexFile::create_index 2\n");
 
 // total length of input file
 	int64_t length_source = source.get_audio_length(0);  
@@ -308,45 +296,40 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		length_source);
 	index_thread->start_build();
 
-	int64_t position = 0;            // current sample in source file
+// current sample in source file
+	int64_t position = 0;
 	int64_t fragment_size = buffersize;
 	int current_buffer = 0;
-//printf("IndexFile::create_index 3\n");
+
 
 // pass through file once
 	while(position < length_source && !result)
 	{
 		if(length_source - position < fragment_size && fragment_size == buffersize) fragment_size = length_source - position;
 
-//printf("IndexFile::create_index 1 %d\n", position);
 		index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
 		index_thread->input_len[current_buffer] = fragment_size;
 
-//printf("IndexFile::create_index 2 %d\n", position);
 		int cancelled = progress->update(position);
-//printf("IndexFile::create_index 3 %d\n", position);
 		if(cancelled || 
 			index_thread->interrupt_flag || 
 			interrupt_flag)
 		{
-			result = 3;    // user cancelled
+			result = 3;
 		}
 
-//printf("IndexFile::create_index 4 %d\n", position);
 		for(int channel = 0; !result && channel < asset->channels; channel++)
 		{
 			source.set_audio_position(position, 0);
 			source.set_channel(channel);
 
-// couldn't read
-//printf("IndexFile::create_index 5\n");
+// Read from source file
 			if(source.read_samples(index_thread->buffer_in[current_buffer][channel], 
 				fragment_size,
 				0)) result = 1;
-//printf("IndexFile::create_index 6\n");
 		}
-//printf("IndexFile::create_index 7 %d\n", position);
 
+// Release buffer to thread
 		if(!result)
 		{
 			index_thread->output_lock[current_buffer]->unlock();
@@ -358,9 +341,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		{
 			index_thread->input_lock[current_buffer]->unlock();
 		}
-//printf("IndexFile::create_index 8 %d\n", position);
 	}
-//printf("IndexFile::create_index 10\n");
 
 // end thread cleanly
 	index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 2");

@@ -323,7 +323,8 @@ private:
 // Handle from dlopen.  Plugins are opened once at startup and stored in the master
 // plugindb.
 	void *plugin_fd;
-// Pointers to C functions
+// If no path, this is going to be set to a function which 
+// instantiates the plugin.
 	PluginClient* (*new_plugin)(PluginServer*);
 
 // LAD support

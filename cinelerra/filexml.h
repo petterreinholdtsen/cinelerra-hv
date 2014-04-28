@@ -114,7 +114,7 @@ public:
 
 	char *string;      // string that contains the actual file
 	long position;    // current position in string file
-	long length;      // length of string file for reading
+	long length;      // length of string file for reading - terminating 0
 	long available;    // possible length before reallocation
 	int share_string;      // string is shared between this and a message buffer so don't delete
 

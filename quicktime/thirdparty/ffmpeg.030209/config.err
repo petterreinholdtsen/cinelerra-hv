@@ -39,12 +39,8 @@ BASH_ARGC=([0]="7")
 BASH_ARGV=([0]="--disable-ffplay" [1]="--disable-ffserver" [2]="--extra-libs=-L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/" [3]="--extra-cflags=-I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include" [4]="--disable-ffplay" [5]="--enable-gpl" [6]="--enable-pthreads")
 BASH_LINENO=([0]="0")
 BASH_SOURCE=([0]="./configure")
-BASH_VERSINFO=([0]="3" [1]="2" [2]="9" [3]="1" [4]="release" [5]="i686-redhat-linux-gnu")
-BASH_VERSION='3.2.9(1)-release'
-BCHP_CHIP=7400
-BCHP_VER=D0
-BCM97455MBV00=n
-BCM_BOARD=97455
+BASH_VERSINFO=([0]="3" [1]="2" [2]="48" [3]="1" [4]="release" [5]="x86_64-pc-linux-gnu")
+BASH_VERSION='3.2.48(1)-release'
 BSF_LIST='dump_extradata_bsf
 h264_mp4toannexb_bsf
 imx_dump_header_bsf
@@ -55,7 +51,6 @@ mov2textsub_bsf
 noise_bsf
 remove_extradata_bsf
 text2movsub_bsf'
-CABLECARD_SUPPORT=MPOD
 CFLAGS=' -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include'
 CMDLINE_SELECT='
     
@@ -264,8 +259,7 @@ CONFIG_LIST='
     x11grab
     zlib
 '
-CVS_RSH=ssh
-DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-19a9WqzwEt,guid=7fb98a9893f6f90140165a004a4bbee0
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-V9jQKybOdR,guid=8a4beb701c1a59efaef14c8a4cb34869
 DECODER_LIST='aasc_decoder
 amv_decoder
 asv1_decoder
@@ -718,15 +712,11 @@ EUID=0
 FFMPEG_CONFIGURATION='--enable-pthreads --enable-gpl --disable-ffplay --extra-cflags=-I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include --extra-libs=-L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ --disable-ffserver --disable-ffplay'
 FFSERVERLDFLAGS=-Wl,-E
 FILTER_LIST=crop_filter
-FNI_BOARD=B7400F3
 FULLNAME='$(NAME)$(BUILDSUF)'
-FUNAI_3_2_BOARD=n
-FUNAI_3_3_BOARD=n
-FUNAI_4_BOARD=y
-FVWM_MODULEDIR=/usr/local/libexec/fvwm/2.4.20
+FVWM_MODULEDIR=/usr/lib/fvwm/2.5.26
 FVWM_USERDIR=/root/.fvwm
 GROUPS=()
-G_BROKEN_FILENAMES=1
+GTK_MODULES=canberra-gtk-module
 HAVE_LIST='
     
     altivec
@@ -814,11 +804,11 @@ HAVE_LIST='
     winsock2_h
     yasm
 '
-HISTSIZE=1000
 HOME=/root
-HOSTDISPLAY=myrina:0.0
-HOSTNAME=myrina
-HOSTTYPE=i686
+HOSTDISPLAY=amazon:0.0
+HOSTNAME=amazon
+HOSTTYPE=x86_64
+HUSHLOGIN=FALSE
 IFS=' 	
 '
 INDEV_LIST='alsa_demuxer
@@ -831,21 +821,20 @@ v4l_demuxer
 vfwcap_demuxer
 x11_grab_device_demuxer
 libdc1394_demuxer'
-INPUTRC=/etc/inputrc
-JAVA_HOME=/usr/java/j2sdk1.4.2_17
-JDK2_BASE=/usr/java/j2sdk1.4.2_17
-LANG=en_GB
+LANG=en_US.UTF-8
 LC_ALL=C
-LESSOPEN='|/usr/bin/lesspipe.sh %s'
+LESSCLOSE='/usr/bin/lesspipe %s %s'
+LESSOPEN='| /usr/bin/lesspipe %s'
 LIBNAME='$(LIBPREF)$(FULLNAME)$(LIBSUF)'
 LIBPREF=lib
 LIBSUF=.a
 LIB_INSTALL_EXTRA_CMD='$(RANLIB) "$(LIBDIR)/$(LIBNAME)"'
-LINUX=/root/VLOCAP/target/linux
 LOGNAME=root
-LS_COLORS='no=00:fi=00:di=00;34:ln=00;36:pi=40;33:so=00;35:bd=40;33;01:cd=40;33;01:or=01;05;37;41:mi=01;05;37;41:ex=00;32:*.cmd=00;32:*.exe=00;32:*.com=00;32:*.btm=00;32:*.bat=00;32:*.sh=00;32:*.csh=00;32:*.tar=00;31:*.tgz=00;31:*.arj=00;31:*.taz=00;31:*.lzh=00;31:*.zip=00;31:*.z=00;31:*.Z=00;31:*.gz=00;31:*.bz2=00;31:*.bz=00;31:*.tz=00;31:*.rpm=00;31:*.cpio=00;31:*.jpg=00;35:*.gif=00;35:*.bmp=00;35:*.xbm=00;35:*.xpm=00;35:*.png=00;35:*.tif=00;35:'
-MACHTYPE=i686-redhat-linux-gnu
-MAIL=/var/spool/mail/root
+LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.svgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:'
+MACHTYPE=x86_64-pc-linux-gnu
+MAIL=/var/mail/root
+MAKE='make -j4'
+MESA_NO_ASM=1
 MUXER_LIST='ac3_muxer
 adts_muxer
 aiff_muxer
@@ -956,7 +945,7 @@ mpegvideo_parser
 pnm_parser
 vc1_parser
 vp3_parser'
-PATH=/usr/kerberos/sbin:/usr/kerberos/bin:/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/java/j2sdk1.4.2_17/bin:/usr/lib:/opt/cinelerra:/usr/local/uclib-mipsel-hf/bin:/root/bin:/usr/java/j2sdk1.4.2_17/bin:/usr/lib:/opt/cinelerra:/usr/local/uclib-mipsel-hf/bin:/root/bin
+PATH=.:/opt/cinelerra/:/usr/local/jdk1.6.0_01/bin/:.:/opt/cinelerra/:/usr/local/jdk1.6.0_01/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
 PATHS_LIST='
     bindir
     datadir
@@ -967,9 +956,8 @@ PATHS_LIST='
     shlibdir
 '
 PIPESTATUS=([0]="0")
-PLATFORM=97455
 POSIXLY_CORRECT=y
-PPID=28056
+PPID=5009
 PROTOCOL_LIST='file_protocol
 gopher_protocol
 http_protocol
@@ -979,19 +967,17 @@ tcp_protocol
 udp_protocol'
 PS4='+ '
 PWD=/root/hvirtual/quicktime/thirdparty/ffmpeg.030209
-RAP_AC3_SUPPORT=y
 SHELL=/bin/bash
 SHELLOPTS=braceexpand:hashall:interactive-comments:posix
 SHFLAGS='-shared -Wl,-soname,$$(@F)'
-SHLVL=6
+SHLVL=7
 SLIBNAME='$(SLIBPREF)$(FULLNAME)$(SLIBSUF)'
 SLIBNAME_WITH_MAJOR='$(SLIBNAME).$(LIBMAJOR)'
 SLIBNAME_WITH_VERSION='$(SLIBNAME).$(LIBVERSION)'
 SLIBPREF=lib
 SLIBSUF=.so
-SSH_AGENT_PID=3192
-SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
-SSH_AUTH_SOCK=/tmp/ssh-DVrBGt3121/agent.3121
+SSH_AGENT_PID=3465
+SSH_AUTH_SOCK=/tmp/ssh-jBUuhD3416/agent.3416
 TERM=xterm
 THREADS_LIST='
     beosthreads
@@ -999,16 +985,16 @@ THREADS_LIST='
     pthreads
     w32threads
 '
-TOPDIR=/root/hvirtual/quicktime
 UID=0
 USER=root
-USE_FUNAI_MFR=y
 VHOOKSHFLAGS='$(SHFLAGS)'
-WINDOWID=37748770
+WINDOWID=23068708
+WINDOWPATH=7
 XAUTHORITY=/root/.Xauthority
-XDG_SESSION_COOKIE=86c4ebf2818c0597d44d4500467a7f00-1246478047.969023-215445987
+XDG_SESSION_COOKIE=cc8f8af9a8d436b4b61a65834874b093-1286817889.666836-1795940606
+XTERM_LOCALE=en_US.UTF-8
 XTERM_SHELL=/bin/bash
-XTERM_VERSION='X.Org 6.8.99.903(225)'
+XTERM_VERSION='XTerm(241)'
 _=--disable-ffplay
 aac_decoder=yes
 aac_decoder_select='fft mdct'
@@ -1083,7 +1069,7 @@ apc_demuxer=yes
 ape_decoder=yes
 ape_demuxer=yes
 ar=ar
-arch=i686
+arch=x86_64
 armv5te=yes
 armv5te_deps=arm
 armv6=yes
@@ -1808,37 +1794,42 @@ zmbv_encoder=yes
 zmbv_encoder_select=zlib
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_cflags -std=c99
 check_cc -std=c99
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+check_cc
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
+    1	        int test[sizeof(char*) - 7];
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cflags -fomit-frame-pointer
 check_cc -fomit-frame-pointer
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int ff_extern;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_asm inline_asm ""
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(void){ __asm__ volatile(""); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <signal.h>
     2	static void sighandler(int sig){
     3	    raise(SIGTERM);
@@ -1856,17 +1847,17 @@ BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
    15	    ::: "%ebp");
    16	    return i; }
    17	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_asm ebx_available "":::"%ebx"
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(void){ __asm__ volatile("":::"%ebx"); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void) {
     2	    int x=0;
     3	    __asm__ volatile(
@@ -1875,461 +1866,437 @@ BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
     6	    );
     7	    return 0;
     8	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_asm ssse3 "pabsw %xmm0, %xmm0"
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(void){ __asm__ volatile("pabsw %xmm0, %xmm0"); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_asm mmx2 "movss %xmm0, %xmm0"
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(void){ __asm__ volatile("movss %xmm0, %xmm0"); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_asm bswap "bswap %%eax" ::: "%eax"
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(void){ __asm__ volatile("bswap %%eax" ::: "%eax"); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_yasm pabsw xmm0, xmm0
-BEGIN /tmp/ffmpeg-conf-28212-6021-7363.S
+BEGIN /tmp/ffmpeg-conf-5304-11299-2306.S
     1	pabsw xmm0, xmm0
-END /tmp/ffmpeg-conf-28212-6021-7363.S
-yasm -f elf -DARCH_X86_32 -g dwarf2 -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-28212-6021-7363.S
+END /tmp/ffmpeg-conf-5304-11299-2306.S
+yasm -f elf -DARCH_X86_64 -m amd64 -g dwarf2 -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-5304-11299-2306.S
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	unsigned int endian = 'B' << 24 | 'I' << 16 | 'G' << 8 | 'E';
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_func dlopen
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int dlopen();
     2	int main(void){ dlopen(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
-/tmp/ffmpeg-conf-3304-6021-3931.o: In function `main':
-ffmpeg-conf-197-6021-19944.c:(.text+0xf): undefined reference to `dlopen'
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+/tmp/ffmpeg-conf-29707-11299-23684.o: In function `main':
+ffmpeg-conf-11624-11299-22685.c:(.text+0xa): undefined reference to `dlopen'
 collect2: ld returned 1 exit status
 check_func dlopen -ldl
 check_ld -ldl
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int dlopen();
     2	int main(void){ dlopen(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -ldl
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -ldl
 check_func nanosleep
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int nanosleep();
     2	int main(void){ nanosleep(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func fork
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int fork();
     2	int main(void){ fork(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func gethrtime
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int gethrtime();
     2	int main(void){ gethrtime(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
-/tmp/ffmpeg-conf-3304-6021-3931.o: In function `main':
-ffmpeg-conf-197-6021-19944.c:(.text+0xf): undefined reference to `gethrtime'
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+/tmp/ffmpeg-conf-29707-11299-23684.o: In function `main':
+ffmpeg-conf-11624-11299-22685.c:(.text+0xa): undefined reference to `gethrtime'
 collect2: ld returned 1 exit status
 check_func getrusage
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int getrusage();
     2	int main(void){ getrusage(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func inet_aton
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int inet_aton();
     2	int main(void){ inet_aton(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func memalign
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int memalign();
     2	int main(void){ memalign(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func mkstemp
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int mkstemp();
     2	int main(void){ mkstemp(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func posix_memalign
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int posix_memalign();
     2	int main(void){ posix_memalign(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/
 check_func_headers io.h setmode
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	
     2	#include <io.h>
     3	int main(int argc, char **argv){
     4	    (void) setmode;
     5	    return 0;
     6	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:2:16: error: io.h: No such file or directory
-/tmp/ffmpeg-conf-197-6021-19944.c: In function 'main':
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: 'setmode' undeclared (first use in this function)
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: (Each undeclared identifier is reported only once
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: for each function it appears in.)
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:2:16: error: io.h: No such file or directory
+/tmp/ffmpeg-conf-11624-11299-22685.c: In function 'main':
+/tmp/ffmpeg-conf-11624-11299-22685.c:4: error: 'setmode' undeclared (first use in this function)
+/tmp/ffmpeg-conf-11624-11299-22685.c:4: error: (Each undeclared identifier is reported only once
+/tmp/ffmpeg-conf-11624-11299-22685.c:4: error: for each function it appears in.)
 check_func_headers windows.h GetProcessTimes
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	
     2	#include <windows.h>
     3	int main(int argc, char **argv){
     4	    (void) GetProcessTimes;
     5	    return 0;
     6	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:2:21: error: windows.h: No such file or directory
-/tmp/ffmpeg-conf-197-6021-19944.c: In function 'main':
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: 'GetProcessTimes' undeclared (first use in this function)
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: (Each undeclared identifier is reported only once
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: for each function it appears in.)
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:2:21: error: windows.h: No such file or directory
+/tmp/ffmpeg-conf-11624-11299-22685.c: In function 'main':
+/tmp/ffmpeg-conf-11624-11299-22685.c:4: error: 'GetProcessTimes' undeclared (first use in this function)
+/tmp/ffmpeg-conf-11624-11299-22685.c:4: error: (Each undeclared identifier is reported only once
+/tmp/ffmpeg-conf-11624-11299-22685.c:4: error: for each function it appears in.)
 check_header conio.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <conio.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:19: error: conio.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:19: error: conio.h: No such file or directory
 check_header dlfcn.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <dlfcn.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header malloc.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <malloc.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header poll.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <poll.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header sys/mman.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <sys/mman.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header sys/resource.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <sys/resource.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header sys/select.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <sys/select.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header termios.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <termios.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header vdpau/vdpau.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <vdpau/vdpau.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:25: error: vdpau/vdpau.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:25: error: vdpau/vdpau.h: No such file or directory
 check_header vdpau/vdpau_x11.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <vdpau/vdpau_x11.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:29: error: vdpau/vdpau_x11.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:29: error: vdpau/vdpau_x11.h: No such file or directory
 check_header X11/extensions/XvMClib.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <X11/extensions/XvMClib.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_lib zlib.h zlibVersion -lz
 check_header zlib.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <zlib.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_func zlibVersion
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int zlibVersion();
     2	int main(void){ zlibVersion(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz
 check_lib2 bzlib.h BZ2_bzlibVersion -lbz2
 check_func_headers bzlib.h BZ2_bzlibVersion
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	
     2	#include <bzlib.h>
     3	int main(int argc, char **argv){
     4	    (void) BZ2_bzlibVersion;
     5	    return 0;
     6	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2
 check_func pthread_create
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int pthread_create();
     2	int main(void){ pthread_create(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2
-/tmp/ffmpeg-conf-3304-6021-3931.o: In function `main':
-ffmpeg-conf-197-6021-19944.c:(.text+0xf): undefined reference to `pthread_create'
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2
+/tmp/ffmpeg-conf-29707-11299-23684.o: In function `main':
+ffmpeg-conf-11624-11299-22685.c:(.text+0xa): undefined reference to `pthread_create'
 collect2: ld returned 1 exit status
 check_func pthread_create -pthread
 check_ld -pthread
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int pthread_create();
     2	int main(void){ pthread_create(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -pthread -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -pthread -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2
 check_lib math.h sin -lm
 check_header math.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_func sin
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int sin();
     2	int main(void){ sin(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1: warning: conflicting types for built-in function 'sin'
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1: warning: conflicting types for built-in function 'sin'
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int main(void) { return (llrint(3.999f) > 0)?0:1; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int main(void) { return (lrint(3.999f) > 0)?0:1; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int main(void) { return (lrintf(3.999f) > 0)?0:1; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int main(void) { return (round(3.999f) > 0)?0:1; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int main(void) { return (roundf(3.999f) > 0)?0:1; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <math.h>
     2	int main(void) { return (truncf(3.999f) > 0)?0:1; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(char * restrict p);
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_ldflags -rdynamic
 check_ld -rdynamic
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -rdynamic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_ldflags -export-dynamic
 check_ld -export-dynamic
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 imlib2-config --version
 ./configure: line 513: imlib2-config: command not found
 freetype-config --version
-9.5.3
+9.20.3
 check_lib ft2build.h FT_Init_FreeType
 check_header ft2build.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <ft2build.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -I/usr/local/include/freetype2 -I/usr/local/include -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -I/usr/include/freetype2 -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_func FT_Init_FreeType
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int FT_Init_FreeType();
     2	int main(void){ FT_Init_FreeType(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -I/usr/local/include/freetype2 -I/usr/local/include -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -L/usr/local/lib -lfreetype -lz
-check_lib2 SDL.h SDL_Init
-check_func_headers SDL.h SDL_Init
-check_ld
-check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
-    1	
-    2	#include <SDL.h>
-    3	int main(int argc, char **argv){
-    4	    (void) SDL_Init;
-    5	    return 0;
-    6	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -L/usr/lib -lSDL -lpthread
-check_cc -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
-    1	#include <SDL.h>
-    2	int main(int argc, char **argv){
-    3	    const SDL_VideoInfo *vi = SDL_GetVideoInfo();
-    4	    int w = vi->current_w;
-    5	    return 0;
-    6	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -I/usr/include/freetype2 -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -lfreetype -lz
 check_type sys/types.h sys/socket.h socklen_t
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	
     2	#include <sys/types.h>
     3	#include <sys/socket.h>
     4	socklen_t v;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header arpa/inet.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <arpa/inet.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_func closesocket
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	extern int closesocket();
     2	int main(void){ closesocket(); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
-/tmp/ffmpeg-conf-3304-6021-3931.o: In function `main':
-ffmpeg-conf-197-6021-19944.c:(.text+0xf): undefined reference to `closesocket'
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+/tmp/ffmpeg-conf-29707-11299-23684.o: In function `main':
+ffmpeg-conf-11624-11299-22685.c:(.text+0xa): undefined reference to `closesocket'
 collect2: ld returned 1 exit status
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <sys/types.h>
     2	#include <sys/socket.h>
     3	#include <netinet/in.h>
@@ -2341,35 +2308,35 @@ BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
     9	    getnameinfo(0,0,0,0,0,0,0);
    10	    IN6_IS_ADDR_MULTICAST((const struct in6_addr *)0);
    11	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
 check_header linux/videodev.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <linux/videodev.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header linux/videodev2.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <linux/videodev2.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header sys/videoio.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <sys/videoio.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:25: error: sys/videoio.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:25: error: sys/videoio.h: No such file or directory
 check_func_headers windows.h vfw.h capCreateCaptureWindow -lvfw32
 check_ld -lvfw32
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	
     2	#include <windows.h>
     3	#include <vfw.h>
@@ -2377,195 +2344,202 @@ BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
     5	    (void) capCreateCaptureWindow;
     6	    return 0;
     7	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:2:21: error: windows.h: No such file or directory
-/tmp/ffmpeg-conf-197-6021-19944.c:3:17: error: vfw.h: No such file or directory
-/tmp/ffmpeg-conf-197-6021-19944.c: In function 'main':
-/tmp/ffmpeg-conf-197-6021-19944.c:5: error: 'capCreateCaptureWindow' undeclared (first use in this function)
-/tmp/ffmpeg-conf-197-6021-19944.c:5: error: (Each undeclared identifier is reported only once
-/tmp/ffmpeg-conf-197-6021-19944.c:5: error: for each function it appears in.)
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:2:21: error: windows.h: No such file or directory
+/tmp/ffmpeg-conf-11624-11299-22685.c:3:17: error: vfw.h: No such file or directory
+/tmp/ffmpeg-conf-11624-11299-22685.c: In function 'main':
+/tmp/ffmpeg-conf-11624-11299-22685.c:5: error: 'capCreateCaptureWindow' undeclared (first use in this function)
+/tmp/ffmpeg-conf-11624-11299-22685.c:5: error: (Each undeclared identifier is reported only once
+/tmp/ffmpeg-conf-11624-11299-22685.c:5: error: for each function it appears in.)
 check_header dev/bktr/ioctl_meteor.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <dev/bktr/ioctl_meteor.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:35: error: dev/bktr/ioctl_meteor.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:35: error: dev/bktr/ioctl_meteor.h: No such file or directory
 check_header machine/ioctl_meteor.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <machine/ioctl_meteor.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:34: error: machine/ioctl_meteor.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:34: error: machine/ioctl_meteor.h: No such file or directory
 check_header dev/video/meteor/ioctl_meteor.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <dev/video/meteor/ioctl_meteor.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:43: error: dev/video/meteor/ioctl_meteor.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:43: error: dev/video/meteor/ioctl_meteor.h: No such file or directory
 check_header dev/ic/bt8xx.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <dev/ic/bt8xx.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:26: error: dev/ic/bt8xx.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:26: error: dev/ic/bt8xx.h: No such file or directory
 check_header sys/soundcard.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <sys/soundcard.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_header soundcard.h
 check_cpp
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	#include <soundcard.h>
     2	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c:1:23: error: soundcard.h: No such file or directory
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -E -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c:1:23: error: soundcard.h: No such file or directory
 check_lib2 alsa/asoundlib.h snd_pcm_htimestamp -lasound
 check_func_headers alsa/asoundlib.h snd_pcm_htimestamp
 check_ld
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	
     2	#include <alsa/asoundlib.h>
     3	int main(int argc, char **argv){
     4	    (void) snd_pcm_htimestamp;
     5	    return 0;
     6	}
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ffmpeg-conf-197-6021-19944.c: In function 'main':
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: 'snd_pcm_htimestamp' undeclared (first use in this function)
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: (Each undeclared identifier is reported only once
-/tmp/ffmpeg-conf-197-6021-19944.c:4: error: for each function it appears in.)
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -rdynamic -export-dynamic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -lasound
 check_cflags -Wdeclaration-after-statement
 check_cc -Wdeclaration-after-statement
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cflags -Wall
 check_cc -Wall
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cflags -Wno-switch
 check_cc -Wno-switch
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cflags -Wdisabled-optimization
 check_cc -Wdisabled-optimization
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wpointer-arith
 check_cc -Wpointer-arith
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wredundant-decls
 check_cc -Wredundant-decls
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wno-pointer-sign
 check_cc -Wno-pointer-sign
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wcast-qual
 check_cc -Wcast-qual
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wwrite-strings
 check_cc -Wwrite-strings
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wtype-limits
 check_cc -Wtype-limits
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-cc1: error: unrecognized command line option "-Wtype-limits"
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_cflags -Wundef
 check_cc -Wundef
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
 check_ldflags -Wl,--warn-common
 check_ld -Wl,--warn-common
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -Wl,--warn-common -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
+gcc -rdynamic -export-dynamic -Wl,--warn-common -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -lasound
 check_ldflags -Wl,--as-needed
 check_ld -Wl,--as-needed
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -Wl,--warn-common -Wl,--as-needed -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
+gcc -rdynamic -export-dynamic -Wl,--warn-common -Wl,--as-needed -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -lasound
 check_ldflags -Wl,-rpath-link,\$(BUILD_ROOT)/libpostproc -Wl,-rpath-link,\$(BUILD_ROOT)/libswscale -Wl,-rpath-link,\$(BUILD_ROOT)/libavfilter -Wl,-rpath-link,\$(BUILD_ROOT)/libavdevice -Wl,-rpath-link,\$(BUILD_ROOT)/libavformat -Wl,-rpath-link,\$(BUILD_ROOT)/libavcodec -Wl,-rpath-link,\$(BUILD_ROOT)/libavutil
 check_ld -Wl,-rpath-link,\$(BUILD_ROOT)/libpostproc -Wl,-rpath-link,\$(BUILD_ROOT)/libswscale -Wl,-rpath-link,\$(BUILD_ROOT)/libavfilter -Wl,-rpath-link,\$(BUILD_ROOT)/libavdevice -Wl,-rpath-link,\$(BUILD_ROOT)/libavformat -Wl,-rpath-link,\$(BUILD_ROOT)/libavcodec -Wl,-rpath-link,\$(BUILD_ROOT)/libavutil
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -Wl,--warn-common -Wl,--as-needed -Wl,-rpath-link,\$(BUILD_ROOT)/libpostproc -Wl,-rpath-link,\$(BUILD_ROOT)/libswscale -Wl,-rpath-link,\$(BUILD_ROOT)/libavfilter -Wl,-rpath-link,\$(BUILD_ROOT)/libavdevice -Wl,-rpath-link,\$(BUILD_ROOT)/libavformat -Wl,-rpath-link,\$(BUILD_ROOT)/libavcodec -Wl,-rpath-link,\$(BUILD_ROOT)/libavutil -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
+gcc -rdynamic -export-dynamic -Wl,--warn-common -Wl,--as-needed -Wl,-rpath-link,\$(BUILD_ROOT)/libpostproc -Wl,-rpath-link,\$(BUILD_ROOT)/libswscale -Wl,-rpath-link,\$(BUILD_ROOT)/libavfilter -Wl,-rpath-link,\$(BUILD_ROOT)/libavdevice -Wl,-rpath-link,\$(BUILD_ROOT)/libavformat -Wl,-rpath-link,\$(BUILD_ROOT)/libavcodec -Wl,-rpath-link,\$(BUILD_ROOT)/libavutil -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -lasound
 check_ldflags -Wl,-Bsymbolic
 check_ld -Wl,-Bsymbolic
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int main(void){ return 0; }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -rdynamic -export-dynamic -Wl,--warn-common -Wl,--as-needed -Wl,-rpath-link,$(BUILD_ROOT)/libpostproc -Wl,-rpath-link,$(BUILD_ROOT)/libswscale -Wl,-rpath-link,$(BUILD_ROOT)/libavfilter -Wl,-rpath-link,$(BUILD_ROOT)/libavdevice -Wl,-rpath-link,$(BUILD_ROOT)/libavformat -Wl,-rpath-link,$(BUILD_ROOT)/libavcodec -Wl,-rpath-link,$(BUILD_ROOT)/libavutil -Wl,-Bsymbolic -o /tmp/ffmpeg-conf-26931-6021-12226 /tmp/ffmpeg-conf-3304-6021-3931.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+cc1: warning: -funit-at-a-time is required for inlining of functions that are only called once
+gcc -rdynamic -export-dynamic -Wl,--warn-common -Wl,--as-needed -Wl,-rpath-link,$(BUILD_ROOT)/libpostproc -Wl,-rpath-link,$(BUILD_ROOT)/libswscale -Wl,-rpath-link,$(BUILD_ROOT)/libavfilter -Wl,-rpath-link,$(BUILD_ROOT)/libavdevice -Wl,-rpath-link,$(BUILD_ROOT)/libavformat -Wl,-rpath-link,$(BUILD_ROOT)/libavcodec -Wl,-rpath-link,$(BUILD_ROOT)/libavutil -Wl,-Bsymbolic -o /tmp/ffmpeg-conf-13087-11299-20083 /tmp/ffmpeg-conf-29707-11299-23684.o -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ -lz -lbz2 -pthread -lm -lasound
 check_cflags -fno-math-errno
 check_cc -fno-math-errno
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -O3 -fno-math-errno -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -O3 -fno-math-errno -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_cflags -fno-signed-zeros
 check_cc -fno-signed-zeros
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	int x;
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -O3 -fno-math-errno -fno-signed-zeros -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-cc1: error: unrecognized command line option "-fno-signed-zeros"
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -O3 -fno-math-errno -fno-signed-zeros -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
 check_asm asmalign_pot ".align 3"
 check_cc
-BEGIN /tmp/ffmpeg-conf-197-6021-19944.c
+BEGIN /tmp/ffmpeg-conf-11624-11299-22685.c
     1	void foo(void){ __asm__ volatile(".align 3"); }
-END /tmp/ffmpeg-conf-197-6021-19944.c
-gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wundef -O3 -fno-math-errno -c -o /tmp/ffmpeg-conf-3304-6021-3931.o /tmp/ffmpeg-conf-197-6021-19944.c
-/tmp/ccmiZg4K.s: Assembler messages:
-/tmp/ccmiZg4K.s:19: Error: alignment not a power of 2
+END /tmp/ffmpeg-conf-11624-11299-22685.c
+gcc -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112 -I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include -std=c99 -fomit-frame-pointer -pthread -g -Wdeclaration-after-statement -Wall -Wno-switch -Wdisabled-optimization -Wpointer-arith -Wredundant-decls -Wno-pointer-sign -Wcast-qual -Wwrite-strings -Wtype-limits -Wundef -O3 -fno-math-errno -fno-signed-zeros -c -o /tmp/ffmpeg-conf-29707-11299-23684.o /tmp/ffmpeg-conf-11624-11299-22685.c
+/tmp/ffmpeg-conf-11624-11299-22685.c: Assembler messages:
+/tmp/ffmpeg-conf-11624-11299-22685.c:1: Error: alignment not a power of 2

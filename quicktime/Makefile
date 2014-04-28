@@ -23,7 +23,7 @@ OBJS :=
 # nonzero before memcmping it.
 FFMPEG_DIR := $(shell expr thirdparty/ffmpeg*)
 FFMPEG_LIB := $(OBJDIR)/ffmpeg/
-FFMPEG_INCLUDE := -I$(FFMPEG_DIR) -I$(FFMPEG_DIR)/libavcodec -I$(FFMPEG_DIR)/libavformat -I$(FFMPEG_DIR)/libavutil
+FFMPEG_INCLUDE := -I$(FFMPEG_DIR) -I$(FFMPEG_DIR)/libavcodec -I$(FFMPEG_DIR)/libavcore -I$(FFMPEG_DIR)/libavformat -I$(FFMPEG_DIR)/libavutil
 
 FAAD_DIR := thirdparty/faad2-2.0
 FAAD_LIB := $(OBJDIR)/faad/
@@ -253,6 +253,7 @@ LIBS := $(OUTPUT) $(MPEG3_DIR)/$(OBJDIR)/libmpeg3.a -lpng -lz -lpthread -ldl -lm
 $(shell mkdir -p $(DIRS) )
 $(shell echo  $(CFLAGS) > $(OBJDIR)/c_flags)
 $(shell echo  $(LAME_CFLAGS) > $(OBJDIR)/lame_flags)
+#$(shell echo  $(OBJS) $(FFMPEG_OBJS) $(FFMPEG_LIB)/avformat/*.o $(FFMPEG_LIB)/avcore/*.o $(FFMPEG_LIB)/avcodec/*.o $(FFMPEG_LIB)/avutil/*.o $(JPEG_LIB)/*.o $(DV_LIB)/*.o $(FAAD_LIB)/*.o $(FAAC_LIB)/*.o $(X264_LIB)/*.o $(OGG_LIB)/*.o $(VORBIS_LIB)/*.o $(LAME_OBJS) > $(OBJDIR)/objs)
 $(shell echo  $(OBJS) $(FFMPEG_OBJS) $(FFMPEG_LIB)/avformat/*.o $(FFMPEG_LIB)/avcodec/*.o $(FFMPEG_LIB)/avutil/*.o $(JPEG_LIB)/*.o $(DV_LIB)/*.o $(FAAD_LIB)/*.o $(FAAC_LIB)/*.o $(X264_LIB)/*.o $(OGG_LIB)/*.o $(VORBIS_LIB)/*.o $(LAME_OBJS) > $(OBJDIR)/objs)
 $(shell echo  $(FFMPEG_CFLAGS) > $(OBJDIR)/ffmpeg_cflags)
 
@@ -264,13 +265,15 @@ $(OUTPUT): $(OBJS) $(FFMPEG_OBJS) $(ENCOREMMX_OBJS) $(JPEG_NASM) $(LAME_OBJS) $(
 # this is the only way we figured out to merge .a files
 $(FFMPEG_LIB):
 	$(MAKE) -C $(FFMPEG_DIR)
-	mkdir -p $(FFMPEG_LIB)/avcodec $(FFMPEG_LIB)/avformat $(FFMPEG_LIB)/avutil
+	mkdir -p $(FFMPEG_LIB)/avcodec $(FFMPEG_LIB)/avcore $(FFMPEG_LIB)/avformat $(FFMPEG_LIB)/avutil
 	cd $(FFMPEG_LIB)/avcodec && \
 	ar x ../../../$(FFMPEG_DIR)/libavcodec/libavcodec.a &&  \
 	cd ../avformat && \
 	ar x ../../../$(FFMPEG_DIR)/libavformat/libavformat.a &&  \
 	cd ../avutil && \
 	ar x ../../../$(FFMPEG_DIR)/libavutil/libavutil.a
+#	cd ../avcore && \
+#	ar x ../../../$(FFMPEG_DIR)/libavcore/libavcore.a
 
 $(FAAD_LIB):
 	$(MAKE) -C $(FAAD_DIR) && \

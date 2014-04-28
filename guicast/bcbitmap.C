@@ -514,14 +514,19 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 		}
 		else
 		{
-// printf("BC_Bitmap::write_drawable %d %d %d %d -> %d %d %d %d\n", source_x, 
-// 				source_y, 
-// 				source_w, 
-// 				source_h, 
-// 				dest_x, 
-// 				dest_y, 
-// 				dest_w, 
-// 				dest_h);
+// printf("BC_Bitmap::write_drawable %p %d %d %d %d -> %d %d %d %d\n", 
+// 	this,
+// 	source_x, 
+// 	source_y, 
+// 	source_w, 
+// 	source_h, 
+// 	dest_x, 
+// 	dest_y, 
+// 	dest_w, 
+// 	dest_h);
+//if(dest_w == 1094) for(int i = 0; i < 100000; i++) get_row_pointers()[0][i] = 255;
+
+
         	XShmPutImage(top_level->display, 
 				pixmap, 
 				gc, 

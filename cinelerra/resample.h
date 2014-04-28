@@ -58,10 +58,10 @@ public:
 
 	static void reverse_buffer(double *buffer, int64_t len);
 
-
-private:
 // Reset after seeking
 	void reset();
+
+private:
 	double blackman(int i, double offset, double fcn, int l);
 // Query output temp
 	int get_output_size();

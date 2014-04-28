@@ -325,10 +325,20 @@ float AffineUnit::transform_cubic(float dx,
 void AffineUnit::process_package(LoadPackage *package)
 {
 	AffinePackage *pkg = (AffinePackage*)package;
-	int minx = server->x;
-	int miny = server->y;
-	int maxx = server->x + server->w - 1;
-	int maxy = server->y + server->h - 1;
+	int min_in_x = server->in_x;
+	int min_in_y = server->in_y;
+	int max_in_x = server->in_x + server->in_w - 1;
+	int max_in_y = server->in_y + server->in_h - 1;
+
+	int min_out_x = server->out_x;
+	int min_out_y = server->out_y;
+	int max_out_x = server->out_x + server->out_w;
+	int max_out_y = server->out_y + server->out_h;
+
+// Amount to shift the input coordinates relative to the output coordinates
+// To get the pivots to line up
+	int pivot_offset_x = server->in_pivot_x - server->out_pivot_x;
+	int pivot_offset_y = server->in_pivot_y - server->out_pivot_y;
 
 // Calculate real coords
 	float out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4;
@@ -336,25 +346,25 @@ void AffineUnit::process_package(LoadPackage *package)
 		server->mode == AffineEngine::PERSPECTIVE ||
 		server->mode == AffineEngine::ROTATE)
 	{
-		out_x1 = (float)server->x + (float)server->x1 * server->w / 100;
-		out_y1 = (float)server->y + (float)server->y1 * server->h / 100;
-		out_x2 = (float)server->x + (float)server->x2 * server->w / 100;
-		out_y2 = (float)server->y + (float)server->y2 * server->h / 100;
-		out_x3 = (float)server->x + (float)server->x3 * server->w / 100;
-		out_y3 = (float)server->y + (float)server->y3 * server->h / 100;
-		out_x4 = (float)server->x + (float)server->x4 * server->w / 100;
-		out_y4 = (float)server->y + (float)server->y4 * server->h / 100;
+		out_x1 = (float)server->in_x + (float)server->x1 * server->in_w / 100;
+		out_y1 = (float)server->in_y + (float)server->y1 * server->in_h / 100;
+		out_x2 = (float)server->in_x + (float)server->x2 * server->in_w / 100;
+		out_y2 = (float)server->in_y + (float)server->y2 * server->in_h / 100;
+		out_x3 = (float)server->in_x + (float)server->x3 * server->in_w / 100;
+		out_y3 = (float)server->in_y + (float)server->y3 * server->in_h / 100;
+		out_x4 = (float)server->in_x + (float)server->x4 * server->in_w / 100;
+		out_y4 = (float)server->in_y + (float)server->y4 * server->in_h / 100;
 	}
 	else
 	{
-		out_x1 = (float)server->x + (float)server->x1 * server->w / 100;
-		out_y1 = server->y;
-		out_x2 = out_x1 + server->w;
-		out_y2 = server->y;
-		out_x4 = (float)server->x + (float)server->x4 * server->w / 100;
-		out_y4 = server->y + server->h;
-		out_x3 = out_x4 + server->w;
-		out_y3 = server->y + server->h;
+		out_x1 = (float)server->in_x + (float)server->x1 * server->in_w / 100;
+		out_y1 = server->in_y;
+		out_x2 = out_x1 + server->in_w;
+		out_y2 = server->in_y;
+		out_x4 = (float)server->in_x + (float)server->x4 * server->in_w / 100;
+		out_y4 = server->in_y + server->in_h;
+		out_x3 = out_x4 + server->in_w;
+		out_y3 = server->in_y + server->in_h;
 	}
 
 
@@ -373,10 +383,10 @@ void AffineUnit::process_package(LoadPackage *package)
 		int texture_w = server->output->get_texture_w();
 		int texture_h = server->output->get_texture_h();
 		float output_h = server->output->get_h();
-		float in_x1 = (float)server->x / texture_w;
-		float in_x2 = (float)(server->x + server->w) / texture_w;
-		float in_y1 = (float)server->y / texture_h;
-		float in_y2 = (float)(server->y + server->h) / texture_h;
+		float in_x1 = (float)server->in_x / texture_w;
+		float in_x2 = (float)(server->in_x + server->in_w) / texture_w;
+		float in_y1 = (float)server->in_y / texture_h;
+		float in_y2 = (float)(server->in_y + server->in_h) / texture_h;
 
 // printf("%f %f %f %f\n%f,%f %f,%f %f,%f %f,%f\n", in_x1, in_y1, in_x2, in_y2,
 // out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4);
@@ -422,10 +432,10 @@ void AffineUnit::process_package(LoadPackage *package)
 
 
 		calculate_matrix(
-			server->x,
-			server->y,
-			server->x + server->w,
-			server->y + server->h,
+			server->in_x,
+			server->in_y,
+			server->in_x + server->in_w,
+			server->in_y + server->in_h,
 			out_x1,
 			out_y1,
 			out_x2,
@@ -450,9 +460,9 @@ void AffineUnit::process_package(LoadPackage *package)
 		float tx, ty, tw;
 		float xinc, yinc, winc;
 		AffineMatrix m, im;
-		float ttx, tty;
-		int itx, ity;
-		int tx1, ty1, tx2, ty2;
+		float ttx = 0, tty = 0;
+		int itx = 0, ity = 0;
+		int tx1 = 0, ty1 = 0, tx2 = 0, ty2 = 0;
 
 		if(reverse)
 		{
@@ -465,18 +475,24 @@ void AffineUnit::process_package(LoadPackage *package)
 			matrix.invert(&m);
 		}
 
-		float dx1, dy1;
-		float dx2, dy2;
-		float dx3, dy3;
-		float dx4, dy4;
-		matrix.transform_point(server->x, server->y, &dx1, &dy1);
-		matrix.transform_point(server->x + server->w, server->y, &dx2, &dy2);
-		matrix.transform_point(server->x, server->y + server->h, &dx3, &dy3);
-		matrix.transform_point(server->x + server->w, server->y + server->h, &dx4, &dy4);
+
+
+
+
+
+		float dx1 = 0, dy1 = 0;
+		float dx2 = 0, dy2 = 0;
+		float dx3 = 0, dy3 = 0;
+		float dx4 = 0, dy4 = 0;
+		matrix.transform_point(server->in_x, server->in_y, &dx1, &dy1);
+		matrix.transform_point(server->in_x + server->in_w, server->in_y, &dx2, &dy2);
+		matrix.transform_point(server->in_x, server->in_y + server->in_h, &dx3, &dy3);
+		matrix.transform_point(server->in_x + server->in_w, server->in_y + server->in_h, &dx4, &dy4);
 
 //printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
 //printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
-//printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
+// printf("AffineUnit::process_package %d use_opengl=%d\n",
+// __LINE__, server->use_opengl);
 
 
 
@@ -571,19 +587,22 @@ void AffineUnit::process_package(LoadPackage *package)
 #define MIN4(a,b,c,d) MIN(MIN(MIN(a,b),c),d)
 #define MAX4(a,b,c,d) MAX(MAX(MAX(a,b),c),d)
 
-    	tx1 = ROUND(MIN4(dx1, dx2, dx3, dx4));
-    	ty1 = ROUND(MIN4(dy1, dy2, dy3, dy4));
+    	tx1 = ROUND(MIN4(dx1 - pivot_offset_x, dx2 - pivot_offset_x, dx3 - pivot_offset_x, dx4 - pivot_offset_x));
+    	ty1 = ROUND(MIN4(dy1 - pivot_offset_y, dy2 - pivot_offset_y, dy3 - pivot_offset_y, dy4 - pivot_offset_y));
 
-    	tx2 = ROUND(MAX4(dx1, dx2, dx3, dx4));
-    	ty2 = ROUND(MAX4(dy1, dy2, dy3, dy4));
+    	tx2 = ROUND(MAX4(dx1 - pivot_offset_x, dx2 - pivot_offset_x, dx3 - pivot_offset_x, dx4 - pivot_offset_x));
+    	ty2 = ROUND(MAX4(dy1 - pivot_offset_y, dy2 - pivot_offset_y, dy3 - pivot_offset_y, dy4 - pivot_offset_y));
 
 		CLAMP(ty1, pkg->y1, pkg->y2);
 		CLAMP(ty2, pkg->y1, pkg->y2);
+		CLAMP(tx1, server->out_x, server->out_x + server->out_w);
+		CLAMP(tx2, server->out_x, server->out_x + server->out_w);
 
 		xinc = m.values[0][0];
 		yinc = m.values[1][0];
 		winc = m.values[2][0];
 
+//printf("AffineUnit::process_package 2 tx1=%d ty1=%d tx2=%d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
 
 #define CUBIC_ROW(in_row, chroma_offset) \
 	transform_cubic(dx, \
@@ -603,15 +622,33 @@ void AffineUnit::process_package(LoadPackage *package)
  \
 		if(!interpolate) \
 		{ \
-        	tx = xinc * (tx1 + 0.5) + m.values[0][1] * (y + 0.5) + m.values[0][2]; \
-        	ty = yinc * (tx1 + 0.5) + m.values[1][1] * (y + 0.5) + m.values[1][2]; \
-        	tw = winc * (tx1 + 0.5) + m.values[2][1] * (y + 0.5) + m.values[2][2]; \
+        	tx = xinc * (tx1 + 0.5) + \
+				m.values[0][1] * (y + pivot_offset_y + 0.5) + \
+				m.values[0][2] + \
+				pivot_offset_x * xinc; \
+        	ty = yinc * (tx1 + 0.5) + \
+				m.values[1][1] * (y + pivot_offset_y + 0.5) + \
+				m.values[1][2] + \
+				pivot_offset_x * yinc; \
+        	tw = winc * (tx1 + 0.5) + \
+				m.values[2][1] * (y + pivot_offset_y + 0.5) + \
+				m.values[2][2] + \
+				pivot_offset_x * winc; \
 		} \
       	else \
         { \
-        	tx = xinc * tx1 + m.values[0][1] * y + m.values[0][2]; \
-        	ty = yinc * tx1 + m.values[1][1] * y + m.values[1][2]; \
-        	tw = winc * tx1 + m.values[2][1] * y + m.values[2][2]; \
+        	tx = xinc * tx1 + \
+				m.values[0][1] * (y + pivot_offset_y) + \
+				m.values[0][2] + \
+				pivot_offset_x * xinc; \
+        	ty = yinc * tx1 + \
+				m.values[1][1] * (y + pivot_offset_y) + \
+				m.values[1][2] + \
+				pivot_offset_x * yinc; \
+        	tw = winc * tx1 + \
+				m.values[2][1] * (y + pivot_offset_y) + \
+				m.values[2][2] + \
+				pivot_offset_x * winc; \
         } \
  \
  \
@@ -642,16 +679,20 @@ void AffineUnit::process_package(LoadPackage *package)
 			int row2 = ity; \
 			int row3 = ity + 1; \
 			int row4 = ity + 2; \
-			CLAMP(row1, miny, maxy); \
-			CLAMP(row2, miny, maxy); \
-			CLAMP(row3, miny, maxy); \
-			CLAMP(row4, miny, maxy); \
+			CLAMP(row1, min_in_y, max_in_y); \
+			CLAMP(row2, min_in_y, max_in_y); \
+			CLAMP(row3, min_in_y, max_in_y); \
+			CLAMP(row4, min_in_y, max_in_y); \
  \
-/* Set destination pixels */ \
-			if(!interpolate && x >= server->x && x < server->x + server->w) \
+/* Set destination pixels if in clipping region */ \
+			if(!interpolate && \
+				x >= min_out_x && \
+				x < max_out_x) \
 			{ \
-				if(itx >= server->x && itx < server->x + server->w && \
-					ity >= server->y && ity < server->y + server->h) \
+				if(itx >= min_in_x && \
+					itx <= max_in_x && \
+					ity >= min_in_y && \
+					ity <= max_in_y) \
 				{ \
 					type *src = in_rows[ity] + itx * components; \
 					*out_row++ = *src++; \
@@ -670,10 +711,14 @@ void AffineUnit::process_package(LoadPackage *package)
 			} \
 			else \
 /* Bicubic algorithm */ \
-			if(interpolate && x >= server->x && x < server->x + server->w) \
+			if(interpolate &&  \
+				x >= min_out_x &&  \
+				x < max_out_x) \
 			{ \
-				if ((itx + 2) >= server->x && (itx - 1) < server->x + server->w && \
-                  	(ity + 2) >= server->y && (ity - 1) < server->y + server->h) \
+				if ((itx + 2) >= min_in_x && \
+					(itx - 1) <= max_in_x && \
+                  	(ity + 2) >= min_in_y && \
+					(ity - 1) <= max_in_y) \
                 { \
                 	float dx, dy; \
  \
@@ -686,10 +731,10 @@ void AffineUnit::process_package(LoadPackage *package)
 					int col2 = itx; \
 					int col3 = itx + 1; \
 					int col4 = itx + 2; \
-					CLAMP(col1, minx, maxx); \
-					CLAMP(col2, minx, maxx); \
-					CLAMP(col3, minx, maxx); \
-					CLAMP(col4, minx, maxx); \
+					CLAMP(col1, min_in_x, max_in_x); \
+					CLAMP(col2, min_in_x, max_in_x); \
+					CLAMP(col3, min_in_x, max_in_x); \
+					CLAMP(col4, min_in_x, max_in_x); \
 					int col1_offset = col1 * components; \
 					int col2_offset = col2 * components; \
 					int col3_offset = col3 * components; \
@@ -701,22 +746,22 @@ void AffineUnit::process_package(LoadPackage *package)
 					temp_type r, g, b, a; \
  \
 					r = (temp_type)(transform_cubic(dy, \
-                    		 CUBIC_ROW(row1_ptr, 0x0), \
-                    		 CUBIC_ROW(row2_ptr, 0x0), \
-                    		 CUBIC_ROW(row3_ptr, 0x0), \
-                    		 CUBIC_ROW(row4_ptr, 0x0)) + \
-							 round_factor); \
+                    	CUBIC_ROW(row1_ptr, 0x0), \
+                    	CUBIC_ROW(row2_ptr, 0x0), \
+                    	CUBIC_ROW(row3_ptr, 0x0), \
+                    	CUBIC_ROW(row4_ptr, 0x0)) + \
+						round_factor); \
  \
 					row1_ptr++; \
 					row2_ptr++; \
 					row3_ptr++; \
 					row4_ptr++; \
 					g = (temp_type)(transform_cubic(dy, \
-                    		 CUBIC_ROW(row1_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row2_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row3_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row4_ptr, chroma_offset)) + \
-							 round_factor); \
+                    	CUBIC_ROW(row1_ptr, chroma_offset), \
+                    	CUBIC_ROW(row2_ptr, chroma_offset), \
+                    	CUBIC_ROW(row3_ptr, chroma_offset), \
+                    	CUBIC_ROW(row4_ptr, chroma_offset)) + \
+						round_factor); \
 					g += chroma_offset; \
  \
 					row1_ptr++; \
@@ -724,11 +769,11 @@ void AffineUnit::process_package(LoadPackage *package)
 					row3_ptr++; \
 					row4_ptr++; \
 					b = (temp_type)(transform_cubic(dy, \
-                    		 CUBIC_ROW(row1_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row2_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row3_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row4_ptr, chroma_offset)) + \
-							 round_factor); \
+                    	CUBIC_ROW(row1_ptr, chroma_offset), \
+                    	CUBIC_ROW(row2_ptr, chroma_offset), \
+                    	CUBIC_ROW(row3_ptr, chroma_offset), \
+                    	CUBIC_ROW(row4_ptr, chroma_offset)) + \
+						round_factor); \
 					b += chroma_offset; \
  \
 					if(components == 4) \
@@ -738,11 +783,11 @@ void AffineUnit::process_package(LoadPackage *package)
 						row3_ptr++; \
 						row4_ptr++; \
 						a = (temp_type)(transform_cubic(dy, \
-                    			 CUBIC_ROW(row1_ptr, 0x0), \
-                    			 CUBIC_ROW(row2_ptr, 0x0), \
-                    			 CUBIC_ROW(row3_ptr, 0x0), \
-                    			 CUBIC_ROW(row4_ptr, 0x0)) +  \
-								 round_factor); \
+                    		CUBIC_ROW(row1_ptr, 0x0), \
+                    		CUBIC_ROW(row2_ptr, 0x0), \
+                    		CUBIC_ROW(row3_ptr, 0x0), \
+                    		CUBIC_ROW(row4_ptr, 0x0)) +  \
+							round_factor); \
 					} \
  \
  					if(sizeof(type) < 4) \
@@ -785,6 +830,8 @@ void AffineUnit::process_package(LoadPackage *package)
 
 
 
+// printf("AffineUnit::process_package %d tx1=%d ty1=%d tx2=%d ty2=%d\n",
+// __LINE__, tx1, ty1, tx2, ty2);
 		switch(server->input->get_color_model())
 		{
 			case BC_RGB_FLOAT:
@@ -822,10 +869,10 @@ void AffineUnit::process_package(LoadPackage *package)
 	}
 	else
 	{
-		int min_x = server->x * AFFINE_OVERSAMPLE;
-		int min_y = server->y * AFFINE_OVERSAMPLE;
-		int max_x = server->x * AFFINE_OVERSAMPLE + server->w * AFFINE_OVERSAMPLE - 1;
-		int max_y = server->y * AFFINE_OVERSAMPLE + server->h * AFFINE_OVERSAMPLE - 1;
+		int min_x = server->in_x * AFFINE_OVERSAMPLE;
+		int min_y = server->in_y * AFFINE_OVERSAMPLE;
+		int max_x = server->in_x * AFFINE_OVERSAMPLE + server->in_w * AFFINE_OVERSAMPLE - 1;
+		int max_y = server->in_y * AFFINE_OVERSAMPLE + server->in_h * AFFINE_OVERSAMPLE - 1;
 		float top_w = out_x2 - out_x1;
 		float bottom_w = out_x3 - out_x4;
 		float left_h = out_y4 - out_y1;
@@ -841,12 +888,12 @@ void AffineUnit::process_package(LoadPackage *package)
 		float max_v = MAX(distance1, distance3);
 		float max_h = MAX(distance2, distance4);
 		float max_dimension = MAX(max_v, max_h);
-		float min_dimension = MIN(server->h, server->w);
+		float min_dimension = MIN(server->in_h, server->in_w);
 		float step = min_dimension / max_dimension / AFFINE_OVERSAMPLE;
-		float x_f = server->x;
-		float y_f = server->y;
-		float h_f = server->h;
-		float w_f = server->w;
+		float x_f = server->in_x;
+		float y_f = server->in_y;
+		float h_f = server->in_h;
+		float w_f = server->in_w;
 
 
 
@@ -944,8 +991,10 @@ AffineEngine::AffineEngine(int total_clients,
 total_clients, total_packages 
 )
 {
-	user_viewport = 0;
-	user_pivot = 0;
+	user_in_viewport = 0;
+	user_in_pivot = 0;
+	user_out_viewport = 0;
+	user_out_pivot = 0;
 	use_opengl = 0;
 }
 
@@ -954,8 +1003,8 @@ void AffineEngine::init_packages()
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		AffinePackage *package = (AffinePackage*)get_package(i);
-		package->y1 = y + (h * i / get_total_packages());
-		package->y2 = y + (h * (i + 1) / get_total_packages());
+		package->y1 = out_y + (out_h * i / get_total_packages());
+		package->y2 = out_y + (out_h * (i + 1) / get_total_packages());
 	}
 }
 
@@ -998,12 +1047,20 @@ void AffineEngine::process(VFrame *output,
 	this->forward = forward;
 
 
-	if(!user_viewport)
+	if(!user_in_viewport)
 	{
-		x = 0;
-		y = 0;
-		w = input->get_w();
-		h = input->get_h();
+		in_x = 0;
+		in_y = 0;
+		in_w = input->get_w();
+		in_h = input->get_h();
+	}
+
+	if(!user_out_viewport)
+	{
+		out_x = 0;
+		out_y = 0;
+		out_w = output->get_w();
+		out_h = output->get_h();
 	}
 
 	if(use_opengl)
@@ -1025,45 +1082,57 @@ void AffineEngine::rotate(VFrame *output,
 	this->mode = ROTATE;
 	this->forward = 1;
 
-	if(!user_viewport)
+	if(!user_in_viewport)
 	{
-		x = 0;
-		y = 0;
-		w = input->get_w();
-		h = input->get_h();
+		in_x = 0;
+		in_y = 0;
+		in_w = input->get_w();
+		in_h = input->get_h();
 	}
 
-	if(!user_pivot)
+	if(!user_in_pivot)
 	{
-		pivot_x = x + w / 2;
-		pivot_y = y + h / 2;
+		in_pivot_x = in_x + in_w / 2;
+		in_pivot_y = in_y + in_h / 2;
+	}
+
+	if(!user_out_viewport)
+	{
+		out_x = 0;
+		out_y = 0;
+		out_w = output->get_w();
+		out_h = output->get_h();
+	}
+
+	if(!user_out_pivot)
+	{
+		out_pivot_x = out_x + out_w / 2;
+		out_pivot_y = out_y + out_h / 2;
 	}
 
 // All subscripts are clockwise around the quadrangle
 	angle = angle * 2 * M_PI / 360;
-	double angle1 = atan((double)(pivot_y - y) / (double)(pivot_x - x)) + angle;
-	double angle2 = atan((double)(x + w - pivot_x) / (double)(pivot_y - y)) + angle;
-	double angle3 = atan((double)(y + h - pivot_y) / (double)(x + w - pivot_x)) + angle;
-	double angle4 = atan((double)(pivot_x - x) / (double)(y + h - pivot_y)) + angle;
-	double radius1 = DISTANCE(x, y, pivot_x, pivot_y);
-	double radius2 = DISTANCE(x + w, y, pivot_x, pivot_y);
-	double radius3 = DISTANCE(x + w, y + h, pivot_x, pivot_y);
-	double radius4 = DISTANCE(x, y + h, pivot_x, pivot_y);
+	double angle1 = atan((double)(in_pivot_y - in_y) / (double)(in_pivot_x - in_x)) + angle;
+	double angle2 = atan((double)(in_x + in_w - in_pivot_x) / (double)(in_pivot_y - in_y)) + angle;
+	double angle3 = atan((double)(in_y + in_h - in_pivot_y) / (double)(in_x + in_w - in_pivot_x)) + angle;
+	double angle4 = atan((double)(in_pivot_x - in_x) / (double)(in_y + in_h - in_pivot_y)) + angle;
+	double radius1 = DISTANCE(in_x, in_y, in_pivot_x, in_pivot_y);
+	double radius2 = DISTANCE(in_x + in_w, in_y, in_pivot_x, in_pivot_y);
+	double radius3 = DISTANCE(in_x + in_w, in_y + in_h, in_pivot_x, in_pivot_y);
+	double radius4 = DISTANCE(in_x, in_y + in_h, in_pivot_x, in_pivot_y);
 
-	x1 = ((pivot_x - x) - cos(angle1) * radius1) * 100 / w;
-	y1 = ((pivot_y - y) - sin(angle1) * radius1) * 100 / h;
-	x2 = ((pivot_x - x) + sin(angle2) * radius2) * 100 / w;
-	y2 = ((pivot_y - y) - cos(angle2) * radius2) * 100 / h;
-	x3 = ((pivot_x - x) + cos(angle3) * radius3) * 100 / w;
-	y3 = ((pivot_y - y) + sin(angle3) * radius3) * 100 / h;
-	x4 = ((pivot_x - x) - sin(angle4) * radius4) * 100 / w;
-	y4 = ((pivot_y - y) + cos(angle4) * radius4) * 100 / h;
+	x1 = ((in_pivot_x - in_x) - cos(angle1) * radius1) * 100 / in_w;
+	y1 = ((in_pivot_y - in_y) - sin(angle1) * radius1) * 100 / in_h;
+	x2 = ((in_pivot_x - in_x) + sin(angle2) * radius2) * 100 / in_w;
+	y2 = ((in_pivot_y - in_y) - cos(angle2) * radius2) * 100 / in_h;
+	x3 = ((in_pivot_x - in_x) + cos(angle3) * radius3) * 100 / in_w;
+	y3 = ((in_pivot_y - in_y) + sin(angle3) * radius3) * 100 / in_h;
+	x4 = ((in_pivot_x - in_x) - sin(angle4) * radius4) * 100 / in_w;
+	y4 = ((in_pivot_y - in_y) + cos(angle4) * radius4) * 100 / in_h;
 
-// printf("AffineEngine::rotate x=%d y=%d w=%d h=%d pivot_x=%d pivot_y=%d angle=%f\n",
-// x, y, w, h, 
-// pivot_x, 
-// pivot_y,
-// angle * 360 / 2 / M_PI);
+// printf("AffineEngine::rotate angle=%f\n",
+// angle);
+
 // 
 // printf("	angle1=%f angle2=%f angle3=%f angle4=%f\n",
 // angle1 * 360 / 2 / M_PI, 
@@ -1094,13 +1163,22 @@ void AffineEngine::rotate(VFrame *output,
 //	process_packages();
 }
 
-void AffineEngine::set_viewport(int x, int y, int w, int h)
+void AffineEngine::set_in_viewport(int x, int y, int w, int h)
 {
-	this->x = x;
-	this->y = y;
-	this->w = w;
-	this->h = h;
-	user_viewport = 1;
+	this->in_x = x;
+	this->in_y = y;
+	this->in_w = w;
+	this->in_h = h;
+	this->user_in_viewport = 1;
+}
+
+void AffineEngine::set_out_viewport(int x, int y, int w, int h)
+{
+	this->out_x = x;
+	this->out_y = y;
+	this->out_w = w;
+	this->out_h = h;
+	this->user_out_viewport = 1;
 }
 
 void AffineEngine::set_opengl(int value)
@@ -1108,21 +1186,30 @@ void AffineEngine::set_opengl(int value)
 	this->use_opengl = value;
 }
 
-void AffineEngine::set_pivot(int x, int y)
+void AffineEngine::set_in_pivot(int x, int y)
 {
-	this->pivot_x = x;
-	this->pivot_y = y;
-	this->user_pivot = 1;
+	this->in_pivot_x = x;
+	this->in_pivot_y = y;
+	this->user_in_pivot = 1;
+}
+
+void AffineEngine::set_out_pivot(int x, int y)
+{
+	this->out_pivot_x = x;
+	this->out_pivot_y = y;
+	this->user_out_pivot = 1;
 }
 
 void AffineEngine::unset_pivot()
 {
-	user_pivot = 0;
+	user_in_pivot = 0;
+	user_out_pivot = 0;
 }
 
 void AffineEngine::unset_viewport()
 {
-	user_viewport = 0;
+	user_in_viewport = 0;
+	user_out_viewport = 0;
 }
 
 

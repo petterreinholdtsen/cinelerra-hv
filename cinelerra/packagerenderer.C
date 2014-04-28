@@ -147,7 +147,6 @@ void PackageRenderer::create_output()
 
 
 // Tag output paths for VFS here.
-//	if(!mwindow && preferences->renderfarm_vfs && preferences->use_renderfarm)
 	if(!get_master() && preferences->renderfarm_vfs && preferences->use_renderfarm)
 		sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", package->path);
 	else
@@ -159,12 +158,14 @@ void PackageRenderer::create_output()
 	file = new File;
 
 	file->set_processors(preferences->processors);
+	file->set_cache(preferences->cache_size);
 
+//printf("PackageRenderer::create_output %d\n", __LINE__);
 	result = file->open_file(preferences, 
 					asset, 
 					0, 
 					1);
-//printf("PackageRenderer::create_output 10 %d\n", result);
+//printf("PackageRenderer::create_output %d %d\n", __LINE__, result);
 
 	if(result && mwindow)
 	{
@@ -183,7 +184,7 @@ void PackageRenderer::create_output()
 		mwindow->sighandler->push_file(file);
 		IndexFile::delete_index(preferences, asset);
 	}
-//printf("PackageRenderer::create_output 100 %d\n", result);
+//printf("PackageRenderer::create_output %d %d\n", __LINE__, result);
 }
 
 void PackageRenderer::create_engine()
@@ -243,11 +244,12 @@ void PackageRenderer::create_engine()
 		direct_frame_copying = 0;
 
 
-//printf("PackageRenderer::create_engine 1\n");
+//printf("PackageRenderer::create_engine %d\n", __LINE__);
 		file->start_video_thread(video_write_length,
 			command->get_edl()->session->color_model,
 			preferences->processors > 1 ? 2 : 1,
 			0);
+//printf("PackageRenderer::create_engine %d\n", __LINE__);
 
 
 		if(mwindow)
@@ -368,11 +370,11 @@ void PackageRenderer::do_video()
 // Try to use the rendering engine to write the frame.
 // Get a buffer for background writing.
 
-
-
+//printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
 				if(video_write_position == 0)
 					video_output = file->get_video_buffer();
 
+//printf("PackageRenderer::do_video %d %d\n", __LINE__, result);
 
 
 
@@ -419,13 +421,14 @@ void PackageRenderer::do_video()
 // Set background rendering parameters
 // Allow us to skip sections of the output file by setting the frame number.
 // Used by background render and render farm.
+//printf("PackageRenderer::do_video %d %lld\n", __LINE__, video_position);
 					video_output_ptr->set_number(video_position);
 					video_write_position++;
 
 					if(video_write_position >= video_write_length)
 					{
-//printf("PackageRenderer::do_video 9\n");
 						result = file->write_video_buffer(video_write_position);
+//printf("PackageRenderer::do_video %d %lld\n", __LINE__, video_position);
 // Update the brender map after writing the files.
 						if(package->use_brender)
 						{
@@ -440,6 +443,7 @@ void PackageRenderer::do_video()
 						video_write_position = 0;
 					}
 				}
+//printf("PackageRenderer::do_video %d %lld\n", __LINE__, video_position);
 
 
 			}
@@ -524,8 +528,10 @@ int PackageRenderer::render_package(RenderPackage *package)
 // 	package->video_start, 
 // 	package->video_end - package->video_start);
 
+//PRINT_TRACE
 
 	create_output();
+//PRINT_TRACE
 
 	if(!asset->video_data) video_done = 1;
 	if(!asset->audio_data) audio_done = 1;
@@ -535,7 +541,6 @@ int PackageRenderer::render_package(RenderPackage *package)
 	{
 		create_engine();
 
-//printf("PackageRenderer::render_package 5 %d\n", result);
 
 // Main loop
 		while((!audio_done || !video_done) && !result)
@@ -564,10 +569,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 			{
 				if(audio_done)
 				{
-					video_read_length = package->video_end - video_position;
-// Packetize video length so progress gets updated
-					video_read_length = (int)MIN(asset->frame_rate, video_read_length);
-					video_read_length = MAX(video_read_length, 30);
+// 					video_read_length = package->video_end - video_position;
+// // Packetize video length so progress gets updated
+// 					video_read_length = (int)MIN(asset->frame_rate, video_read_length);
+// 					video_read_length = MAX(video_read_length, 30);
+					video_read_length = 1;
 				}
 				else
 // Guide video with audio
@@ -772,8 +778,7 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 // Source file must be same size as project output.
 	if(result)
 	{
-//printf("Render::direct_copy_possible 5 %d\n", result);
-		if(!file->can_copy_from(playable_edit, 
+		if(!file->can_copy_from(playable_edit->asset, 
 			current_position + playable_track->nudge,
 			edl->session->output_w, 
 			edl->session->output_h))

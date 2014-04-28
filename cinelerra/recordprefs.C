@@ -46,6 +46,7 @@ RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 RecordPrefs::~RecordPrefs()
 {
 	delete audio_in_device;
+	delete video_in_device;
 	delete recording_format;
 //	delete duplex_device;
 }

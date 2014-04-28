@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +39,40 @@ MenuEditLength::MenuEditLength(MWindow *mwindow)
 int MenuEditLength::handle_event()
 {
 	thread->start(0);
+	return 1;
+}
+
+
+
+MenuEditShuffle::MenuEditShuffle(MWindow *mwindow)
+ : BC_MenuItem(_("Shuffle Edits"))
+{
+	this->mwindow = mwindow;
+}
+
+
+
+int MenuEditShuffle::handle_event()
+{
+	mwindow->shuffle_edits();
+	return 1;
+}
+
+
+
+
+
+MenuEditAlign::MenuEditAlign(MWindow *mwindow)
+ : BC_MenuItem(_("Align Edits"))
+{
+	this->mwindow = mwindow;
+}
+
+
+
+int MenuEditAlign::handle_event()
+{
+	mwindow->align_edits();
 	return 1;
 }
 

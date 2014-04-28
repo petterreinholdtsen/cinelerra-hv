@@ -716,10 +716,13 @@ static void decompress_field(mjpeg_compressor *engine)
 	if(setjmp(engine->jpeg_error.setjmp_buffer))
 	{
 /* If we get here, the JPEG code has signaled an error. */
+printf("decompress_field %d\n", __LINE__);
 		delete_jpeg_objects(engine);
+printf("decompress_field %d\n", __LINE__);
 		new_jpeg_objects(engine);
+printf("decompress_field %d\n", __LINE__);
 		mjpeg->error = 1;
-//printf("decompress_field 1\n");
+printf("decompress_field %d\n", __LINE__);
 		goto finish;
 	}
 

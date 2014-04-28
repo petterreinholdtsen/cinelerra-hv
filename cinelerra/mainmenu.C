@@ -131,7 +131,9 @@ void MainMenu::create_objects()
 	editmenu->add_item(new TrimSelection(mwindow));
 	editmenu->add_item(new SelectAll(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
+	editmenu->add_item(new MenuEditShuffle(mwindow));
 	editmenu->add_item(new MenuEditLength(mwindow));
+	editmenu->add_item(new MenuEditAlign(mwindow));
 	editmenu->add_item(new MenuTransitionLength(mwindow));
 	editmenu->add_item(new DetachTransitions(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));

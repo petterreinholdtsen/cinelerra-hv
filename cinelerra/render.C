@@ -355,10 +355,11 @@ void Render::handle_close_event(int result)
 		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
 	}
 
+	save_defaults(asset);
+	mwindow->save_defaults();
+
 	if(!format_error && !result)
 	{
-		save_defaults(asset);
-		mwindow->save_defaults();
 		if(debug) printf("Render::handle_close_event %d\n%", __LINE__);
 
 		if(!result) start_render();
@@ -996,16 +997,16 @@ void RenderThread::run()
 	else
 	if(render->mode == Render::BATCH)
 	{
-PRINT_TRACE
-printf("RenderThread::run %d %d %d\n", 
-__LINE__, 
-render->jobs->total, 
-render->result);
+// PRINT_TRACE
+// printf("RenderThread::run %d %d %d\n", 
+// __LINE__, 
+// render->jobs->total, 
+// render->result);
 		for(int i = 0; i < render->jobs->total && !render->result; i++)
 		{
-PRINT_TRACE
+//PRINT_TRACE
 			BatchRenderJob *job = render->jobs->values[i];
-PRINT_TRACE
+//PRINT_TRACE
 			if(job->enabled)
 			{
 				if(mwindow)
@@ -1017,7 +1018,7 @@ PRINT_TRACE
 					printf("Render::run: %s\n", job->edl_path);
 				}
 
-PRINT_TRACE
+//PRINT_TRACE
 
 				FileXML *file = new FileXML;
 				EDL *edl = new EDL;
@@ -1025,10 +1026,10 @@ PRINT_TRACE
 				file->read_from_file(job->edl_path);
 				edl->load_xml(file, LOAD_ALL);
 
-PRINT_TRACE
+//PRINT_TRACE
 				render_single(0, job->asset, edl, job->strategy);
 
-PRINT_TRACE
+//PRINT_TRACE
 				edl->Garbage::remove_user();
 				delete file;
 				if(!render->result)
@@ -1054,7 +1055,7 @@ PRINT_TRACE
 						printf("Render::run: failed\n");
 				}
 			}
-PRINT_TRACE
+//PRINT_TRACE
 		}
 
 		if(mwindow)

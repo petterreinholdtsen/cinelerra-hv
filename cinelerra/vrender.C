@@ -159,7 +159,7 @@ int VRender::process_buffer(int64_t input_position,
 		renderengine->video->new_output_buffer(&video_out, colormodel);
 	}
 
-	if(debug) printf("VRender::process_buffer %d\n", __LINE__);
+	if(debug) printf("VRender::process_buffer %d video_out=%p\n", __LINE__, video_out);
 
 // printf("VRender::process_buffer use_vconsole=%d colormodel=%d video_out=%p\n", 
 // use_vconsole, 
@@ -193,6 +193,8 @@ int VRender::process_buffer(int64_t input_position,
 				file->set_video_position(normalized_position,
 					0);
 				file->read_frame(video_out);
+
+
 				if(use_cache) file->set_cache_frames(0);
 				renderengine->get_vcache()->check_in(asset);
 			}
@@ -211,6 +213,8 @@ int VRender::process_buffer(int64_t input_position,
 				use_asynchronous);
 			if(debug) printf("VRender::process_buffer %d\n", __LINE__);
 		}
+
+
 
 		video_out->set_opengl_state(VFrame::RAM);
 	}
@@ -343,11 +347,13 @@ void VRender::run()
 
 		if(debug) printf("VRender::run %d\n", __LINE__);
 		process_buffer(current_position, use_opengl);
+
+
 		if(debug) printf("VRender::run %d\n", __LINE__);
 
 		if(renderengine->command->single_frame())
 		{
-//printf("VRender::run %d\n", __LINE__);
+			if(debug) printf("VRender::run %d\n", __LINE__);
 			flash_output();
 			frame_step = 1;
 			done = 1;

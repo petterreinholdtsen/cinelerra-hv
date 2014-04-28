@@ -1,0 +1,3280 @@
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d892d0
+      nested_edl=(nil)  asset=0x2d88140 /home/jpeg/emergency_use_only/airforce01.jpg
+      channel 0
+      startsource 0 startproject 0 length 329
+   Automation: 0x2d86e10
+    MUTEAUTOS 0x2d85850
+	Default 0x2d86f30: position: 0 value: 0
+    CAMERA_X 0x2d87780
+	FloatAutos::dump 0x2d87780
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d87880
+	FloatAutos::dump 0x2d87880
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d87b80
+	FloatAutos::dump 0x2d87b80
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d87980
+	FloatAutos::dump 0x2d87980
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d87a80
+	FloatAutos::dump 0x2d87a80
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d87c80
+	FloatAutos::dump 0x2d87c80
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d858e0
+	FloatAutos::dump 0x2d858e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d859e0
+	Default 0x2d86fb0: position: 0 value: 0
+    MASKAUTOS 0x2d87010
+	MaskAutos::dump 0x2d87010
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d75480
+      nested_edl=0x2d75900 /home/jpeg/emergency_use_only/ryan1.xml asset=(nil) 
+      channel 0
+      startsource 0 startproject 0 length 329
+   Automation: 0x2d4e080
+    MUTEAUTOS 0x2d52200
+	Default 0x2d51bc0: position: 0 value: 0
+    CAMERA_X 0x2d52b90
+	FloatAutos::dump 0x2d52b90
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d52c90
+	FloatAutos::dump 0x2d52c90
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d75240
+	FloatAutos::dump 0x2d75240
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d52d90
+	FloatAutos::dump 0x2d52d90
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d75140
+	FloatAutos::dump 0x2d75140
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d75340
+	FloatAutos::dump 0x2d75340
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d52290
+	FloatAutos::dump 0x2d52290
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d52390
+	Default 0x2d52420: position: 0 value: 0
+    MASKAUTOS 0x2d52480
+	MaskAutos::dump 0x2d52480
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+     EDIT 0x2de0b00
+      nested_edl=(nil)  asset=0x2db4960 /home/jpeg/emergency_use_only/heroine19.jpg
+      channel 0
+      TRANSITION 0x2de0f80
+       title: Dissolve length: 48
+      startsource 0 startproject 5953 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+     EDIT 0x2de0b00
+      nested_edl=(nil)  asset=0x2db4960 /home/jpeg/emergency_use_only/heroine19.jpg
+      channel 0
+      TRANSITION 0x2de0f80
+       title: Dissolve length: 48
+      startsource 0 startproject 5953 length 331
+     EDIT 0x2de2910
+      nested_edl=(nil)  asset=0x2db5bd0 /home/jpeg/emergency_use_only/heroine20.jpg
+      channel 0
+      TRANSITION 0x2de2d90
+       title: Dissolve length: 48
+      startsource 0 startproject 6284 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+     EDIT 0x2de0b00
+      nested_edl=(nil)  asset=0x2db4960 /home/jpeg/emergency_use_only/heroine19.jpg
+      channel 0
+      TRANSITION 0x2de0f80
+       title: Dissolve length: 48
+      startsource 0 startproject 5953 length 331
+     EDIT 0x2de2910
+      nested_edl=(nil)  asset=0x2db5bd0 /home/jpeg/emergency_use_only/heroine20.jpg
+      channel 0
+      TRANSITION 0x2de2d90
+       title: Dissolve length: 48
+      startsource 0 startproject 6284 length 330
+     EDIT 0x2de4720
+      nested_edl=(nil)  asset=0x2db6e40 /home/jpeg/emergency_use_only/heroine21.jpg
+      channel 0
+      TRANSITION 0x2de4ba0
+       title: Dissolve length: 48
+      startsource 0 startproject 6614 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+     EDIT 0x2de0b00
+      nested_edl=(nil)  asset=0x2db4960 /home/jpeg/emergency_use_only/heroine19.jpg
+      channel 0
+      TRANSITION 0x2de0f80
+       title: Dissolve length: 48
+      startsource 0 startproject 5953 length 331
+     EDIT 0x2de2910
+      nested_edl=(nil)  asset=0x2db5bd0 /home/jpeg/emergency_use_only/heroine20.jpg
+      channel 0
+      TRANSITION 0x2de2d90
+       title: Dissolve length: 48
+      startsource 0 startproject 6284 length 330
+     EDIT 0x2de4720
+      nested_edl=(nil)  asset=0x2db6e40 /home/jpeg/emergency_use_only/heroine21.jpg
+      channel 0
+      TRANSITION 0x2de4ba0
+       title: Dissolve length: 48
+      startsource 0 startproject 6614 length 331
+     EDIT 0x2de6530
+      nested_edl=(nil)  asset=0x2db8110 /home/jpeg/emergency_use_only/heroine22.jpg
+      channel 0
+      TRANSITION 0x2de69b0
+       title: Dissolve length: 48
+      startsource 0 startproject 6945 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+     EDIT 0x2de0b00
+      nested_edl=(nil)  asset=0x2db4960 /home/jpeg/emergency_use_only/heroine19.jpg
+      channel 0
+      TRANSITION 0x2de0f80
+       title: Dissolve length: 48
+      startsource 0 startproject 5953 length 331
+     EDIT 0x2de2910
+      nested_edl=(nil)  asset=0x2db5bd0 /home/jpeg/emergency_use_only/heroine20.jpg
+      channel 0
+      TRANSITION 0x2de2d90
+       title: Dissolve length: 48
+      startsource 0 startproject 6284 length 330
+     EDIT 0x2de4720
+      nested_edl=(nil)  asset=0x2db6e40 /home/jpeg/emergency_use_only/heroine21.jpg
+      channel 0
+      TRANSITION 0x2de4ba0
+       title: Dissolve length: 48
+      startsource 0 startproject 6614 length 331
+     EDIT 0x2de6530
+      nested_edl=(nil)  asset=0x2db8110 /home/jpeg/emergency_use_only/heroine22.jpg
+      channel 0
+      TRANSITION 0x2de69b0
+       title: Dissolve length: 48
+      startsource 0 startproject 6945 length 331
+     EDIT 0x2de8340
+      nested_edl=(nil)  asset=0x2db9380 /home/jpeg/emergency_use_only/heroine23.jpg
+      channel 0
+      TRANSITION 0x2de87c0
+       title: Dissolve length: 48
+      startsource 0 startproject 7276 length 330
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2dc08c0
+      nested_edl=(nil)  asset=0x2da0480 /home/jpeg/emergency_use_only/heroine01.jpg
+      channel 0
+      startsource 0 startproject 0 length 331
+     EDIT 0x2dc0d40
+      nested_edl=(nil)  asset=0x2da1610 /home/jpeg/emergency_use_only/heroine02.jpg
+      channel 0
+      TRANSITION 0x2dc11c0
+       title: Dissolve length: 48
+      startsource 0 startproject 331 length 331
+     EDIT 0x2dc2ad0
+      nested_edl=(nil)  asset=0x2da27a0 /home/jpeg/emergency_use_only/heroine03.jpg
+      channel 0
+      TRANSITION 0x2dc2f50
+       title: Dissolve length: 48
+      startsource 0 startproject 662 length 330
+     EDIT 0x2dc4860
+      nested_edl=(nil)  asset=0x2da3930 /home/jpeg/emergency_use_only/heroine04.jpg
+      channel 0
+      TRANSITION 0x2dc4ce0
+       title: Dissolve length: 48
+      startsource 0 startproject 992 length 331
+     EDIT 0x2dc6670
+      nested_edl=(nil)  asset=0x2da4ac0 /home/jpeg/emergency_use_only/heroine05.jpg
+      channel 0
+      TRANSITION 0x2dc6af0
+       title: Dissolve length: 48
+      startsource 0 startproject 1323 length 331
+     EDIT 0x2dc8400
+      nested_edl=(nil)  asset=0x2da5c50 /home/jpeg/emergency_use_only/heroine06.jpg
+      channel 0
+      TRANSITION 0x2dc8880
+       title: Dissolve length: 48
+      startsource 0 startproject 1654 length 330
+     EDIT 0x2dca240
+      nested_edl=(nil)  asset=0x2da6de0 /home/jpeg/emergency_use_only/heroine07.jpg
+      channel 0
+      TRANSITION 0x2dca6c0
+       title: Dissolve length: 48
+      startsource 0 startproject 1984 length 331
+     EDIT 0x2dcc050
+      nested_edl=(nil)  asset=0x2da7f70 /home/jpeg/emergency_use_only/heroine08.jpg
+      channel 0
+      TRANSITION 0x2dcc4d0
+       title: Dissolve length: 48
+      startsource 0 startproject 2315 length 331
+     EDIT 0x2dcde60
+      nested_edl=(nil)  asset=0x2da9100 /home/jpeg/emergency_use_only/heroine09.jpg
+      channel 0
+      TRANSITION 0x2dce2e0
+       title: Dissolve length: 48
+      startsource 0 startproject 2646 length 331
+     EDIT 0x2dcfc70
+      nested_edl=(nil)  asset=0x2daa370 /home/jpeg/emergency_use_only/heroine10.jpg
+      channel 0
+      TRANSITION 0x2dd00f0
+       title: Dissolve length: 48
+      startsource 0 startproject 2977 length 330
+     EDIT 0x2dd1a80
+      nested_edl=(nil)  asset=0x2dab5e0 /home/jpeg/emergency_use_only/heroine11.jpg
+      channel 0
+      TRANSITION 0x2dd1f00
+       title: Dissolve length: 48
+      startsource 0 startproject 3307 length 331
+     EDIT 0x2dd3890
+      nested_edl=(nil)  asset=0x2dac850 /home/jpeg/emergency_use_only/heroine12.jpg
+      channel 0
+      TRANSITION 0x2dd3d10
+       title: Dissolve length: 48
+      startsource 0 startproject 3638 length 331
+     EDIT 0x2dd56a0
+      nested_edl=(nil)  asset=0x2dadac0 /home/jpeg/emergency_use_only/heroine13.jpg
+      channel 0
+      TRANSITION 0x2dd5b20
+       title: Dissolve length: 48
+      startsource 0 startproject 3969 length 330
+     EDIT 0x2dd74b0
+      nested_edl=(nil)  asset=0x2daed30 /home/jpeg/emergency_use_only/heroine14.jpg
+      channel 0
+      TRANSITION 0x2dd7930
+       title: Dissolve length: 48
+      startsource 0 startproject 4299 length 331
+     EDIT 0x2dd92c0
+      nested_edl=(nil)  asset=0x2daffa0 /home/jpeg/emergency_use_only/heroine15.jpg
+      channel 0
+      TRANSITION 0x2dd9740
+       title: Dissolve length: 48
+      startsource 0 startproject 4630 length 331
+     EDIT 0x2ddb0d0
+      nested_edl=(nil)  asset=0x2db1210 /home/jpeg/emergency_use_only/heroine16.jpg
+      channel 0
+      TRANSITION 0x2ddb550
+       title: Dissolve length: 48
+      startsource 0 startproject 4961 length 330
+     EDIT 0x2ddcee0
+      nested_edl=(nil)  asset=0x2db2480 /home/jpeg/emergency_use_only/heroine17.jpg
+      channel 0
+      TRANSITION 0x2ddd360
+       title: Dissolve length: 48
+      startsource 0 startproject 5291 length 331
+     EDIT 0x2ddecf0
+      nested_edl=(nil)  asset=0x2db36f0 /home/jpeg/emergency_use_only/heroine18.jpg
+      channel 0
+      TRANSITION 0x2ddf170
+       title: Dissolve length: 48
+      startsource 0 startproject 5622 length 331
+     EDIT 0x2de0b00
+      nested_edl=(nil)  asset=0x2db4960 /home/jpeg/emergency_use_only/heroine19.jpg
+      channel 0
+      TRANSITION 0x2de0f80
+       title: Dissolve length: 48
+      startsource 0 startproject 5953 length 331
+     EDIT 0x2de2910
+      nested_edl=(nil)  asset=0x2db5bd0 /home/jpeg/emergency_use_only/heroine20.jpg
+      channel 0
+      TRANSITION 0x2de2d90
+       title: Dissolve length: 48
+      startsource 0 startproject 6284 length 330
+     EDIT 0x2de4720
+      nested_edl=(nil)  asset=0x2db6e40 /home/jpeg/emergency_use_only/heroine21.jpg
+      channel 0
+      TRANSITION 0x2de4ba0
+       title: Dissolve length: 48
+      startsource 0 startproject 6614 length 331
+     EDIT 0x2de6530
+      nested_edl=(nil)  asset=0x2db8110 /home/jpeg/emergency_use_only/heroine22.jpg
+      channel 0
+      TRANSITION 0x2de69b0
+       title: Dissolve length: 48
+      startsource 0 startproject 6945 length 331
+     EDIT 0x2de8340
+      nested_edl=(nil)  asset=0x2db9380 /home/jpeg/emergency_use_only/heroine23.jpg
+      channel 0
+      TRANSITION 0x2de87c0
+       title: Dissolve length: 48
+      startsource 0 startproject 7276 length 330
+     EDIT 0x2dea150
+      nested_edl=(nil)  asset=0x2dba5f0 /home/jpeg/emergency_use_only/heroine24.jpg
+      channel 0
+      TRANSITION 0x2dea5d0
+       title: Dissolve length: 48
+      startsource 0 startproject 7606 length 331
+   Automation: 0x2d9d670
+    MUTEAUTOS 0x2d9d6f0
+	Default 0x2d9d780: position: 0 value: 0
+    CAMERA_X 0x2dc0280
+	FloatAutos::dump 0x2dc0280
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2dc0380
+	FloatAutos::dump 0x2dc0380
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2dc0680
+	FloatAutos::dump 0x2dc0680
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2dc0480
+	FloatAutos::dump 0x2dc0480
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2dc0580
+	FloatAutos::dump 0x2dc0580
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2dc0780
+	FloatAutos::dump 0x2dc0780
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d9d7e0
+	FloatAutos::dump 0x2d9d7e0
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d9d8e0
+	Default 0x2d9d970: position: 0 value: 0
+    MASKAUTOS 0x2d9d9d0
+	MaskAutos::dump 0x2d9d9d0
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d75480
+      nested_edl=0x2d75900 /home/jpeg/emergency_use_only/ryan1.xml asset=(nil) 
+      channel 0
+      startsource 0 startproject 0 length 329
+     EDIT 0x2d85a70
+      nested_edl=0x2d89750 /home/jpeg/emergency_use_only/ryan.xml asset=(nil) 
+      channel 0
+      TRANSITION 0x2d98e60
+       title: Dissolve length: 48
+      startsource 0 startproject 329 length 7937
+   Automation: 0x2d4e080
+    MUTEAUTOS 0x2d52200
+	Default 0x2d51bc0: position: 0 value: 0
+    CAMERA_X 0x2d52b90
+	FloatAutos::dump 0x2d52b90
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d52c90
+	FloatAutos::dump 0x2d52c90
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d75240
+	FloatAutos::dump 0x2d75240
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d52d90
+	FloatAutos::dump 0x2d52d90
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d75140
+	FloatAutos::dump 0x2d75140
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d75340
+	FloatAutos::dump 0x2d75340
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d52290
+	FloatAutos::dump 0x2d52290
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d52390
+	Default 0x2d52420: position: 0 value: 0
+    MASKAUTOS 0x2d52480
+	MaskAutos::dump 0x2d52480
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d75480
+      nested_edl=0x2d75900 /home/jpeg/emergency_use_only/ryan1.xml asset=(nil) 
+      channel 0
+      startsource 0 startproject 0 length 329
+     EDIT 0x2d85a70
+      nested_edl=0x2d89750 /home/jpeg/emergency_use_only/ryan.xml asset=(nil) 
+      channel 0
+      TRANSITION 0x2d98e60
+       title: Dissolve length: 48
+      startsource 0 startproject 329 length 7937
+     EDIT 0x2d9a7f0
+      nested_edl=(nil)  asset=0x2d70710 /home/jpeg/emergency_use_only/heroine25.jpg
+      channel 0
+      TRANSITION 0x2d9ac70
+       title: Dissolve length: 48
+      startsource 0 startproject 8266 length 331
+   Automation: 0x2d4e080
+    MUTEAUTOS 0x2d52200
+	Default 0x2d51bc0: position: 0 value: 0
+    CAMERA_X 0x2d52b90
+	FloatAutos::dump 0x2d52b90
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d52c90
+	FloatAutos::dump 0x2d52c90
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d75240
+	FloatAutos::dump 0x2d75240
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d52d90
+	FloatAutos::dump 0x2d52d90
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d75140
+	FloatAutos::dump 0x2d75140
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d75340
+	FloatAutos::dump 0x2d75340
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d52290
+	FloatAutos::dump 0x2d52290
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d52390
+	Default 0x2d52420: position: 0 value: 0
+    MASKAUTOS 0x2d52480
+	MaskAutos::dump 0x2d52480
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d75480
+      nested_edl=0x2d75900 /home/jpeg/emergency_use_only/ryan1.xml asset=(nil) 
+      channel 0
+      startsource 0 startproject 0 length 329
+     EDIT 0x2d85a70
+      nested_edl=0x2d89750 /home/jpeg/emergency_use_only/ryan.xml asset=(nil) 
+      channel 0
+      TRANSITION 0x2d98e60
+       title: Dissolve length: 48
+      startsource 0 startproject 329 length 7937
+     EDIT 0x2d9a7f0
+      nested_edl=(nil)  asset=0x2d70710 /home/jpeg/emergency_use_only/heroine25.jpg
+      channel 0
+      TRANSITION 0x2d9ac70
+       title: Dissolve length: 48
+      startsource 0 startproject 8266 length 331
+     EDIT 0x2debf80
+      nested_edl=(nil)  asset=0x2d71980 /home/jpeg/emergency_use_only/heroine26.jpg
+      channel 0
+      TRANSITION 0x2dec400
+       title: Dissolve length: 48
+      startsource 0 startproject 8597 length 331
+   Automation: 0x2d4e080
+    MUTEAUTOS 0x2d52200
+	Default 0x2d51bc0: position: 0 value: 0
+    CAMERA_X 0x2d52b90
+	FloatAutos::dump 0x2d52b90
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d52c90
+	FloatAutos::dump 0x2d52c90
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d75240
+	FloatAutos::dump 0x2d75240
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d52d90
+	FloatAutos::dump 0x2d52d90
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d75140
+	FloatAutos::dump 0x2d75140
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d75340
+	FloatAutos::dump 0x2d75340
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d52290
+	FloatAutos::dump 0x2d52290
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d52390
+	Default 0x2d52420: position: 0 value: 0
+    MASKAUTOS 0x2d52480
+	MaskAutos::dump 0x2d52480
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d75480
+      nested_edl=0x2d75900 /home/jpeg/emergency_use_only/ryan1.xml asset=(nil) 
+      channel 0
+      startsource 0 startproject 0 length 329
+     EDIT 0x2d85a70
+      nested_edl=0x2d89750 /home/jpeg/emergency_use_only/ryan.xml asset=(nil) 
+      channel 0
+      TRANSITION 0x2d98e60
+       title: Dissolve length: 48
+      startsource 0 startproject 329 length 7937
+     EDIT 0x2d9a7f0
+      nested_edl=(nil)  asset=0x2d70710 /home/jpeg/emergency_use_only/heroine25.jpg
+      channel 0
+      TRANSITION 0x2d9ac70
+       title: Dissolve length: 48
+      startsource 0 startproject 8266 length 331
+     EDIT 0x2debf80
+      nested_edl=(nil)  asset=0x2d71980 /home/jpeg/emergency_use_only/heroine26.jpg
+      channel 0
+      TRANSITION 0x2dec400
+       title: Dissolve length: 48
+      startsource 0 startproject 8597 length 331
+     EDIT 0x2dedd10
+      nested_edl=(nil)  asset=0x2d72bf0 /home/jpeg/emergency_use_only/heroine27.jpg
+      channel 0
+      TRANSITION 0x2dee190
+       title: Dissolve length: 48
+      startsource 0 startproject 8928 length 330
+   Automation: 0x2d4e080
+    MUTEAUTOS 0x2d52200
+	Default 0x2d51bc0: position: 0 value: 0
+    CAMERA_X 0x2d52b90
+	FloatAutos::dump 0x2d52b90
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d52c90
+	FloatAutos::dump 0x2d52c90
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d75240
+	FloatAutos::dump 0x2d75240
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d52d90
+	FloatAutos::dump 0x2d52d90
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d75140
+	FloatAutos::dump 0x2d75140
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d75340
+	FloatAutos::dump 0x2d75340
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d52290
+	FloatAutos::dump 0x2d52290
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d52390
+	Default 0x2d52420: position: 0 value: 0
+    MASKAUTOS 0x2d52480
+	MaskAutos::dump 0x2d52480
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 1
+   Title Video 1
+   Edits:
+     EDIT 0x2d75480
+      nested_edl=0x2d75900 /home/jpeg/emergency_use_only/ryan1.xml asset=(nil) 
+      channel 0
+      startsource 0 startproject 0 length 329
+     EDIT 0x2d85a70
+      nested_edl=0x2d89750 /home/jpeg/emergency_use_only/ryan.xml asset=(nil) 
+      channel 0
+      TRANSITION 0x2d98e60
+       title: Dissolve length: 48
+      startsource 0 startproject 329 length 7937
+     EDIT 0x2d9a7f0
+      nested_edl=(nil)  asset=0x2d70710 /home/jpeg/emergency_use_only/heroine25.jpg
+      channel 0
+      TRANSITION 0x2d9ac70
+       title: Dissolve length: 48
+      startsource 0 startproject 8266 length 331
+     EDIT 0x2debf80
+      nested_edl=(nil)  asset=0x2d71980 /home/jpeg/emergency_use_only/heroine26.jpg
+      channel 0
+      TRANSITION 0x2dec400
+       title: Dissolve length: 48
+      startsource 0 startproject 8597 length 331
+     EDIT 0x2dedd10
+      nested_edl=(nil)  asset=0x2d72bf0 /home/jpeg/emergency_use_only/heroine27.jpg
+      channel 0
+      TRANSITION 0x2dee190
+       title: Dissolve length: 48
+      startsource 0 startproject 8928 length 330
+     EDIT 0x2defaa0
+      nested_edl=(nil)  asset=0x2d73e60 /home/jpeg/emergency_use_only/heroine28.jpg
+      channel 0
+      TRANSITION 0x2deff20
+       title: Dissolve length: 48
+      startsource 0 startproject 9258 length 330
+   Automation: 0x2d4e080
+    MUTEAUTOS 0x2d52200
+	Default 0x2d51bc0: position: 0 value: 0
+    CAMERA_X 0x2d52b90
+	FloatAutos::dump 0x2d52b90
+	Default: position 0 value=0.000000
+    CAMERA_Y 0x2d52c90
+	FloatAutos::dump 0x2d52c90
+	Default: position 0 value=0.000000
+    CAMERA_Z 0x2d75240
+	FloatAutos::dump 0x2d75240
+	Default: position 0 value=1.000000
+    PROJECTOR_X 0x2d52d90
+	FloatAutos::dump 0x2d52d90
+	Default: position 0 value=0.000000
+    PROJECTOR_Y 0x2d75140
+	FloatAutos::dump 0x2d75140
+	Default: position 0 value=0.000000
+    PROJECTOR_Z 0x2d75340
+	FloatAutos::dump 0x2d75340
+	Default: position 0 value=1.000000
+    FADEAUTOS 0x2d52290
+	FloatAutos::dump 0x2d52290
+	Default: position 0 value=100.000000
+    MODEAUTOS 0x2d52390
+	Default 0x2d52420: position: 0 value: 0
+    MASKAUTOS 0x2d52480
+	MaskAutos::dump 0x2d52480
+	Default: position 0 submasks 8
+	 mode=1 value=100
+	 submask 0
+	 submask 1
+	 submask 2
+	 submask 3
+	 submask 4
+	 submask 5
+	 submask 6
+	 submask 7
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 0
+   Title Audio 1
+   Edits:
+     EDIT 0x2df20c0
+      nested_edl=(nil)  asset=0x2d52e50 /home/mpeg/saved/ryan2.mp2
+      channel 0
+      startsource 0 startproject 0 length 19202688
+   Automation: 0x2df1ce0
+    MUTEAUTOS 0x2df1d60
+	Default 0x2df1df0: position: 0 value: 0
+    FADEAUTOS 0x2df1e50
+	FloatAutos::dump 0x2df1e50
+	Default: position 0 value=0.000000
+    PANAUTOS 0x2df1f50
+	PanAutos::dump 0x2df1f50
+	Default: position 0
+		handle_x 1
+		handle_y 53
+		value 0 1.000000
+		value 1 0.000000
+   Plugin Sets: 0
+Edits::load_edit 554
+Edits::load_edit 552
+   Data type 0
+   Title Audio 2
+   Edits:
+     EDIT 0x2df2e60
+      nested_edl=(nil)  asset=0x2d52e50 /home/mpeg/saved/ryan2.mp2
+      channel 1
+      startsource 0 startproject 0 length 19202688
+   Automation: 0x2df2a80
+    MUTEAUTOS 0x2df2b00
+	Default 0x2df2b90: position: 0 value: 0
+    FADEAUTOS 0x2df2bf0
+	FloatAutos::dump 0x2df2bf0
+	Default: position 0 value=0.000000
+    PANAUTOS 0x2df2cf0
+	PanAutos::dump 0x2df2cf0
+	Default: position 0
+		handle_x 100
+		handle_y 50
+		value 0 0.000000
+		value 1 1.000000
+   Plugin Sets: 0
+Edits::load_edit 554

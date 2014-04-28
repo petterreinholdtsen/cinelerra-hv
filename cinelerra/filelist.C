@@ -71,12 +71,10 @@ int FileList::reset_parameters_derived()
 
 int FileList::open_file(int rd, int wr)
 {
-	this->rd = rd;
-	this->wr = wr;
 	int result = 0;
 
 // skip header for write
-	if(wr)
+	if(file->wr)
 	{
 // Frame files are created in write_frame and list index is created when
 // file is closed.
@@ -91,7 +89,7 @@ int FileList::open_file(int rd, int wr)
 			asset->format == list_type ? file->cpus : 1);
 	}
 	else
-	if(rd)
+	if(file->rd)
 	{
 // Determine type of file.
 // Header isn't used for background rendering, in which case everything known
@@ -150,7 +148,7 @@ int FileList::close_file()
 //	path_list.total, asset->format, list_type, wr);
 	if(asset->format == list_type && path_list.total)
 	{
-		if(wr && asset->use_header) write_list_header();
+		if(file->wr && asset->use_header) write_list_header();
 		path_list.remove_all_objects();
 	}
 	if(data) delete data;
@@ -259,6 +257,13 @@ int FileList::read_list_header()
 int FileList::read_frame(VFrame *frame)
 {
 	int result = 0;
+
+// printf("FileList::read_frame %d %d use_header=%d current_frame=%d total=%d\n", 
+// __LINE__, 
+// result,
+// asset->use_header,
+// file->current_frame,
+// path_list.total);
 	if(file->current_frame < 0 || 
 		(asset->use_header && file->current_frame >= path_list.total &&
 			asset->format == list_type))
@@ -395,8 +400,19 @@ int FileList::read_frame(VFrame *frame)
 	}
 
 
-//printf("FileList::read_frame 5 %d\n", result);
-
+// printf("FileList::read_frame %d %d\n", __LINE__, result);
+// 
+// if(frame->get_y())
+// for(int i = 0; i < 100000; i++)
+// {
+// 	frame->get_y()[i] = 0xff;
+// }
+// if(frame->get_rows())
+// for(int i = 0; i < 100000; i++)
+// {
+// 	frame->get_rows()[0][i] = 0xff;
+// }
+	
 
 	return result;
 }
@@ -414,6 +430,8 @@ int FileList::write_frames(VFrame ***frames, int len)
 			{
 				VFrame *frame = frames[i][j];
 				char *path = create_path(frame->get_number());
+//printf("FileList::write_frames %d %lld\n", __LINE__, frame->get_number());
+
 
 				FILE *fd = fopen(path, "wb");
 				if(fd)
@@ -540,6 +558,11 @@ int64_t FileList::get_memory_usage()
 	int64_t result = 0;
 	if(data) result += data->get_compressed_allocated();
 	if(temp) result += temp->get_data_size();
+// printf("FileList::get_memory_usage %d %p %s %lld\n", 
+// __LINE__, 
+// this, 
+// file->asset->path,
+// result);
 	return result;
 }
 

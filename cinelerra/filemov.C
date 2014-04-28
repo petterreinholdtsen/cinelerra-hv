@@ -117,11 +117,8 @@ FileMOV::FileMOV(Asset *asset, File *file)
 
 FileMOV::~FileMOV()
 {
-SET_TRACE
 	close_file();
-SET_TRACE
 	delete threadframe_lock;
-SET_TRACE
 }
 
 void FileMOV::get_parameters(BC_WindowBase *parent_window, 
@@ -194,46 +191,36 @@ int FileMOV::reset_parameters_derived()
 // for reopening.
 int FileMOV::open_file(int rd, int wr)
 {
-	this->rd = rd;
-	this->wr = wr;
 
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 
-SET_TRACE
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
 		printf(_("FileMOV::open_file %s: No such file or directory\n"), asset->path);
 		return 1;
 	}
-SET_TRACE
 
 	quicktime_set_cpus(fd, file->cpus);
-SET_TRACE
+	quicktime_set_cache_max(fd, file->cache_size);
+//printf("FileMOV::open_file %d %d\n", __LINE__, file->cache_size);
 
 	if(rd) format_to_asset();
-SET_TRACE
 
 	if(wr) asset_to_format();
-SET_TRACE
 
 // Set decoding parameter
 	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
-SET_TRACE
 
 	return 0;
 }
 
 int FileMOV::close_file()
 {
-SET_TRACE
 //printf("FileMOV::close_file 1 %s\n", asset->path);
 	if(fd)
 	{
-SET_TRACE
-		if(wr) quicktime_set_framerate(fd, asset->frame_rate);
-SET_TRACE
+		if(file->wr) quicktime_set_framerate(fd, asset->frame_rate);
 		quicktime_close(fd);
-SET_TRACE
 	}
 
 //printf("FileMOV::close_file 1\n");
@@ -346,6 +333,9 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "divx_quality", &asset->divx_quality);
 		quicktime_set_parameter(fd, "divx_fix_bitrate", &asset->divx_fix_bitrate);
 
+printf("FileMOV::asset_to_format %d\n", 
+__LINE__);
+asset->dump();
 		quicktime_set_parameter(fd, "ffmpeg_bitrate", &asset->ms_bitrate);
 		quicktime_set_parameter(fd, "ffmpeg_bitrate_tolerance", &asset->ms_bitrate_tolerance);
 		quicktime_set_parameter(fd, "ffmpeg_interlaced", &asset->ms_interlaced);
@@ -360,7 +350,7 @@ void FileMOV::asset_to_format()
 
 	}
 
-	if(wr && asset->format == FILE_AVI)
+	if(file->wr && asset->format == FILE_AVI)
 	{
 		quicktime_set_avi(fd, 1);
 	}
@@ -408,7 +398,7 @@ void FileMOV::format_to_asset()
 
 int64_t FileMOV::get_memory_usage()
 {
-	if(rd && fd)
+	if(file->rd && fd)
 	{
 		int64_t result = quicktime_memory_usage(fd);
 //printf("FileMOV::get_memory_usage 1 %d\n", result);
@@ -666,13 +656,16 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	const int debug = 0;
 if(debug) printf("FileMOV::write_frames %d\n", __LINE__);
 	if(!fd) return 0;
-if(debug) printf("FileMOV::write_frames %d\n", __LINE__);
+if(debug) printf("FileMOV::write_frames %d layers=%d\n", __LINE__, asset->layers);
 
 	for(i = 0; i < asset->layers && !result; i++)
 	{
 
 
-if(debug) printf("FileMOV::write_frames %d\n", __LINE__);
+if(debug) printf("FileMOV::write_frames %d colormodel=%d size=%d\n", 
+__LINE__,
+frames[i][0]->get_color_model(),
+frames[i][0]->get_compressed_size());
 
 
 
@@ -951,7 +944,10 @@ int FileMOV::read_frame(VFrame *frame)
 	int result = 0;
 	const int debug = 0;
 
-if(debug) printf("FileMOV::read_frame %d %lld\n", __LINE__, file->current_frame);
+if(debug) printf("FileMOV::read_frame %d frame=%lld color_model=%d\n", 
+__LINE__, 
+file->current_frame,
+frame->get_color_model());
 	switch(frame->get_color_model())
 	{
 		case BC_COMPRESSED:
@@ -1643,15 +1639,10 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 
 MOVConfigVideo::~MOVConfigVideo()
 {
-SET_TRACE
 	lock_window("MOVConfigVideo::~MOVConfigVideo");
-SET_TRACE
 	if(compression_popup) delete compression_popup;
-SET_TRACE
 	compression_items.remove_all_objects();
-SET_TRACE
 	unlock_window();
-SET_TRACE
 }
 
 void MOVConfigVideo::create_objects()
@@ -1858,6 +1849,9 @@ void MOVConfigVideo::update_parameters()
 			&asset->ms_bitrate_tolerance);
 		ms_bitrate_tolerance->create_objects();
 		y += 30;
+
+
+
 		ms_quantization = new MOVConfigVideoNum(this, 
 			_("Quantization:"), 
 			x, 

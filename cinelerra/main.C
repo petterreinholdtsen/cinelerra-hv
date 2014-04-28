@@ -223,11 +223,12 @@ int main(int argc, char *argv[])
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
-		"(C)2009 Adam Williams\n\n"
+		"(C)%d Adam Williams\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
-"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n");
+"certain conditions. There is absolutely no warranty for " PROGRAM_NAME ".\n",
+COPYRIGHT_DATE);
 
 
 

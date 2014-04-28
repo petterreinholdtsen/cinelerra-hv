@@ -5,7 +5,7 @@
 #define COMPILER_IS_GCC 1
 
 /* Target processor clips on negative float to int conversion. */
-#define CPU_CLIPS_NEGATIVE 1
+#define CPU_CLIPS_NEGATIVE 0
 
 /* Target processor clips on positive float to int conversion. */
 #define CPU_CLIPS_POSITIVE 0
@@ -191,19 +191,19 @@
 #define SIZEOF_INT64_T 8
 
 /* The size of a `loff_t', as computed by sizeof. */
-#define SIZEOF_LOFF_T 8
+/* #undef SIZEOF_LOFF_T */
 
 /* The size of a `long', as computed by sizeof. */
-#define SIZEOF_LONG 4
+#define SIZEOF_LONG 8
 
 /* The size of a `long long', as computed by sizeof. */
 #define SIZEOF_LONG_LONG 8
 
 /* The size of a `off64_t', as computed by sizeof. */
-#define SIZEOF_OFF64_T 0
+/* #undef SIZEOF_OFF64_T */
 
 /* The size of a `off_t', as computed by sizeof. */
-#define SIZEOF_OFF_T 4
+#define SIZEOF_OFF_T 8
 
 /* Set to sizeof (long) if unknown. */
 #define SIZEOF_SF_COUNT_T 8
@@ -212,28 +212,28 @@
 #define SIZEOF_SHORT 2
 
 /* The size of a `size_t', as computed by sizeof. */
-#define SIZEOF_SIZE_T 4
+#define SIZEOF_SIZE_T 8
 
 /* The size of a `ssize_t', as computed by sizeof. */
-#define SIZEOF_SSIZE_T 4
+#define SIZEOF_SSIZE_T 8
 
 /* The size of a `void*', as computed by sizeof. */
-#define SIZEOF_VOIDP 4
+#define SIZEOF_VOIDP 8
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Set to long if unknown. */
-#define TYPEOF_SF_COUNT_T loff_t
+#define TYPEOF_SF_COUNT_T off_t
 
 /* Version number of package */
 #define VERSION "1.0.11"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-#define _FILE_OFFSET_BITS 64
+/* #undef _FILE_OFFSET_BITS */
 
 /* Define to make fseeko etc. visible, on some hosts. */
-#define _LARGEFILE_SOURCE 1
+/* #undef _LARGEFILE_SOURCE */
 
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */

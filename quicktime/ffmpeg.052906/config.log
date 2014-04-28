@@ -1,6 +1,0 @@
-Wed Jul 18 17:38:05 PDT 2007
-   ./configure  
-Tue Dec 18 11:23:41 PST 2007
-   ./configure  --disable-ffplay 
-Tue May 12 11:18:24 PDT 2009
-   ./configure  --enable-pthreads --enable-gpl --disable-ffplay --extra-cflags=-I/root/hvirtual/quicktime/thirdparty/faad2-2.0//include --extra-libs=-L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/ --disable-ffserver --disable-ffplay 

@@ -216,8 +216,6 @@ void FileSndFile::format_to_asset()
 int FileSndFile::open_file(int rd, int wr)
 {
 	int result = 0;
-	this->rd = rd;
-	this->wr = wr;
 
 	if(rd)
 	{

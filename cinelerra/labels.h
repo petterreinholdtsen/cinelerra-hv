@@ -78,6 +78,8 @@ public:
 		double start, 
 		double length, 
 		int paste_silence = 1);
+// Always add label without toggling
+	void insert_label(double position);
 
 	int modify_handles(double oldposition, 
 		double newposition, 

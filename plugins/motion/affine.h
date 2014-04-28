@@ -108,12 +108,17 @@ public:
 	void rotate(VFrame *output,
 		VFrame *input, 
 		float angle);
-// Set the viewport to transform.  All operations are clamped to this area
-// instead of the frame dimensions.  The rotation operation centers on this
-// area.
-	void set_viewport(int x, int y, int w, int h);
-// For rotation, set the pivot point.  The default is in the middle of the viewport.
-	void set_pivot(int x, int y);
+// Set the viewport to transform.  The transform is based on the input viewport.  
+// The output viewport clips the transformed output.
+	void set_in_viewport(int x, int y, int w, int h);
+// Only used by motion tracker.  Not used in OpenGL.
+	void set_out_viewport(int x, int y, int w, int h);
+// For rotation, set the pivot point.  Also affects output in OpenGL.
+// The default is in the middle of the viewport.
+	void set_in_pivot(int x, int y);
+// Set the pivot point in the output.  Only used by motion tracker.
+	void set_out_pivot(int x, int y);
+// Never used
 	void unset_pivot();
 	void unset_viewport();
 // To use OpenGL for the processing, set to 1
@@ -130,11 +135,19 @@ public:
 		STRETCH,
 		ROTATE
 	};
+
+// Transformation coordinates
 	float x1, y1, x2, y2, x3, y3, x4, y4;
-	int x, y, w, h;
-	int pivot_x, pivot_y;
-	int user_pivot;
-	int user_viewport;
+// Viewport coordinates
+	int in_x, in_y, in_w, in_h;
+	int out_x, out_y, out_w, out_h;
+// Pivot coordinates
+	int in_pivot_x, in_pivot_y;
+	int out_pivot_x, out_pivot_y;
+	int user_in_pivot;
+	int user_out_pivot;
+	int user_in_viewport;
+	int user_out_viewport;
 	int forward;
 	int use_opengl;
 };

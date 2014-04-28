@@ -1664,20 +1664,6 @@ fi
 
 disabled static && LIBNAME=""
 
-if enabled_any libfaad libfaadbin ; then
-    if check_header faad.h; then
-        check_cc <<EOF
-#include <faad.h>
-#ifndef FAAD2_VERSION
-ok faad1
-#endif
-int main(void) { return 0; }
-EOF
-        test $? = 0 && enable libfaad2
-    else
-        die "FAAD test failed."
-    fi
-fi
 
 
 if ! enabled gpl; then
@@ -1983,7 +1969,7 @@ enabled libdirac   && add_cflags $(pkg-config --cflags dirac) &&
                       require  libdirac libdirac_decoder/dirac_parser.h dirac_decoder_init -ldirac_decoder &&
                       require  libdirac libdirac_encoder/dirac_encoder.h dirac_encoder_init -ldirac_encoder
 enabled libfaac    && require2 libfaac "stdint.h faac.h" faacEncGetVersion -lfaac
-enabled libfaad    && require2 libfaad faad.h faacDecOpen -lfaad
+#enabled libfaad    && require2 libfaad faad.h faacDecOpen -lfaad
 enabled libgsm     && require  libgsm gsm.h gsm_create -lgsm
 enabled libmp3lame && require  libmp3lame lame/lame.h lame_init -lmp3lame -lm
 enabled libnut     && require  libnut libnut.h nut_demuxer_init -lnut

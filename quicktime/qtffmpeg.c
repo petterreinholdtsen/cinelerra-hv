@@ -340,9 +340,9 @@ static int get_chroma_factor(quicktime_ffmpeg_t *ffmpeg, int current_field)
 		case PIX_FMT_YUVJ420P:
 			return 4;
 			break;
-		case PIX_FMT_YUV422:
-			return 2;
-			break;
+//		case PIX_FMT_YUV422:
+//			return 2;
+//			break;
 		case PIX_FMT_YUV422P:
 			return 2;
 			break;
@@ -472,7 +472,7 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
  */
 			while(frame1 <= frame2)
 			{
-//printf("quicktime_ffmpeg_decode %d\n", __LINE__);
+//printf("quicktime_ffmpeg_decode %d frame1=%d\n", __LINE__, frame1);
 				result = decode_wrapper(file, 
 					vtrack, 
 					ffmpeg, 
@@ -551,9 +551,9 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 		case PIX_FMT_YUVJ420P:
 			input_cmodel = BC_YUV420P;
 			break;
-		case PIX_FMT_YUV422:
-			input_cmodel = BC_YUV422;
-			break;
+//		case PIX_FMT_YUV422:
+//			input_cmodel = BC_YUV422;
+//			break;
 		case PIX_FMT_YUV422P:
 			input_cmodel = BC_YUV422P;
 			break;

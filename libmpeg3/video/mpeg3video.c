@@ -515,11 +515,14 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 		else
 		{
 /* No header found */
-#ifdef TODO
-fprintf(stderr, "mpeg3video_new: no header found.\n");
-			mpeg3video_delete(video);
-			video = 0;
-#endif
+// #ifdef TODO
+// fprintf(stderr, "mpeg3video_new: no header found.\n");
+// 			mpeg3video_delete(video);
+// 			video = 0;
+// #endif
+
+// Assume H264
+			video->is_h264 = 1;
 		}
 	}
 

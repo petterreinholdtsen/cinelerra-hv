@@ -1,1 +1,1 @@
-#define FFMPEG_VERSION "SVN-r531"
+#define FFMPEG_VERSION "SVN-r650"

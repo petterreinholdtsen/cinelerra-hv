@@ -94,7 +94,9 @@ public:
 // get pointer to next buffer to be written and lock it
 	Samples** get_audio_buffer();     
 // get pointer to next frame to be written and lock it
-	VFrame*** get_video_buffer();     
+	VFrame*** get_video_buffer();
+// get pointer to last video buffer returned without advancing it
+	VFrame*** get_last_video_buffer();     
 
 	void run();
 	int swap_buffer();

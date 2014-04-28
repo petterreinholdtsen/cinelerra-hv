@@ -658,6 +658,7 @@ typedef struct
 	quicktime_cacheframe_t *frames;
 	int total;
 	int allocation;
+	int max;
 } quicktime_cache_t;
 
 /* table of pointers to every track */
@@ -752,6 +753,9 @@ typedef struct
 	int64_t preload_start;     /* Start of preload_buffer in file */
 	int64_t preload_end;       /* End of preload buffer in file */
 	int64_t preload_ptr;       /* Offset of preload_start in preload_buffer */
+
+/* Temporary storage until tracks are created */
+	int cache_size;
 
 /* Write ahead buffer */
 /* Amount of data in presave buffer */

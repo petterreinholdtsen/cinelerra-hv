@@ -588,7 +588,9 @@ int RadialBlurMain::handle_opengl()
 
 		if(!rotate) rotate = new AffineEngine(PluginClient::smp + 1, 
 			PluginClient::smp + 1);
-		rotate->set_pivot((int)(config.x * w / 100),
+		rotate->set_in_pivot((int)(config.x * w / 100),
+			(int)(config.y * h / 100));
+		rotate->set_out_pivot((int)(config.x * w / 100),
 			(int)(config.y * h / 100));
 		rotate->set_opengl(1);
 		rotate->rotate(get_output(),

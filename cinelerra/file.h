@@ -56,6 +56,8 @@ public:
 	File();
 	~File();
 
+	friend class FileFork;
+
 // Get attributes for various file formats.
 // The dither parameter is carried over from recording, where dither is done at the device.
 	int get_options(BC_WindowBase *parent_window, 
@@ -123,6 +125,8 @@ public:
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
 	int close_file(int ignore_thread = 0);
+	void delete_temp_samples_array();
+	void delete_temp_frame_array();
 
 // get length of file normalized to base samplerate
 	int64_t get_audio_length();
@@ -190,7 +194,7 @@ public:
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
-	int can_copy_from(Edit *edit, int64_t position, int output_w, int output_h); // This file can copy frames directly from the asset
+	int can_copy_from(Asset *asset, int64_t position, int output_w, int output_h); // This file can copy frames directly from the asset
 	int get_render_strategy(ArrayList<int>* render_strategies);
 	int64_t compressed_frame_size();
 	int read_compressed_frame(VFrame *buffer);
@@ -213,6 +217,9 @@ public:
 // The return value is limited 1MB each in case of audio file.
 // The minimum setting for cache_size should be bigger than 1MB.
 	int64_t get_memory_usage();
+
+// Set the amount of caching to use inside the file handler
+	void set_cache(int bytes);
 
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
@@ -237,6 +244,12 @@ public:
 
 // Temporary storage for color conversions
 	VFrame *temp_frame;
+// Temporary storage for get_audio_buffer.
+	Samples **temp_samples_array;
+// Temporary storage for get_video_buffer.
+	VFrame ***temp_frame_array;
+// Number of frames in the temp_frame_array
+	int temp_frame_size;
 
 
 // Lock writes while recording video and audio.
@@ -261,6 +274,10 @@ public:
 	int64_t normalized_sample;
 	int64_t normalized_sample_rate;
 	Preferences *preferences;
+	int wr, rd;
+	int cache_size;
+// Precalculated value for FILEFORK
+	int64_t memory_usage;
 
 
 private:

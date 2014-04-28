@@ -26,6 +26,7 @@
 
 
 #include "samples.h"
+#include <stdio.h>
 #include <sys/shm.h>
 #include <unistd.h>
 
@@ -139,7 +140,13 @@ void Samples::to_filefork(unsigned char *buffer)
 {
 	*(int*)(buffer + 0) = shmid;
 	*(int*)(buffer + 4) = allocated;
-	*(int*)(buffer + 12) = offset;
+	*(int*)(buffer + 8) = offset;
+// printf("Samples::to_filefork %d shmid=%d allocated=%d offset=%d data=%p\n",
+// __LINE__,
+// shmid,
+// allocated,
+// offset,
+// data);
 }
 
 void Samples::from_filefork(unsigned char *buffer)
@@ -149,6 +156,12 @@ void Samples::from_filefork(unsigned char *buffer)
 	allocated = *(int*)(buffer + 4);
 	offset = *(int*)(buffer + 8);
 	data = (double*)shmat(shmid, NULL, 0);
+// printf("Samples::from_filefork %d shmid=%d allocated=%d offset=%d data=%p\n",
+// __LINE__,
+// shmid,
+// allocated,
+// offset,
+// data);
 }
 
 

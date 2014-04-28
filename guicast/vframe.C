@@ -433,9 +433,9 @@ int VFrame::allocate_data(unsigned char *data,
 	else
 	if(shmid > 0)
 	{
-//printf("VFrame::allocate_data %d %d\n", __LINE__, shmid);
 		memory_type = VFrame::SHMGET;
 		this->data = (unsigned char*)shmat(shmid, NULL, 0);
+//printf("VFrame::allocate_data %d %d %p\n", __LINE__, shmid, this->data);
 		this->shmid = shmid;
 		this->y_offset = y_offset;
 		this->u_offset = u_offset;
@@ -453,7 +453,13 @@ int VFrame::allocate_data(unsigned char *data,
 			this->shmid = shmget(IPC_PRIVATE, 
 				size, 
 				IPC_CREAT | 0777);
+			if(this->shmid < 0)
+			{
+				printf("VFrame::allocate_data %d could not allocate shared memory\n", __LINE__);
+			}
+
 			this->data = (unsigned char*)shmat(this->shmid, NULL, 0);
+//printf("VFrame::allocate_data %d %d %p\n", __LINE__, this->shmid, this->data);
 
 //printf("VFrame::allocate_data %d %p\n", __LINE__, this->data);
 // This causes it to automatically delete when the program exits.
@@ -843,7 +849,7 @@ int VFrame::equals(VFrame *frame)
 
 int VFrame::clear_frame()
 {
-//printf("VFrame::clear_frame %d %p\n", __LINE__, data);
+//printf("VFrame::clear_frame %d\n", __LINE__);
 	switch(color_model)
 	{
 		case BC_COMPRESSED:
@@ -985,10 +991,8 @@ int VFrame::copy_from(VFrame *frame)
 // 				h, 
 // 				-1, 
 // 				frame->color_model));
-			memcpy(data, frame->data, calculate_data_size(w, 
-				h, 
-				-1, 
-				frame->color_model));
+// Copy without extra 4 bytes in case the source is a hardware device
+			memcpy(data, frame->data, get_data_size());
 			break;
 	}
 
@@ -1244,9 +1248,21 @@ void VFrame::dump_params()
 	params->dump();
 }
 
+void VFrame::dump()
+{
+	printf("VFrame::dump %d this=%p\n", __LINE__, this);
+	printf("    w=%d h=%d colormodel=%d rows=%p use_shm=%d shmid=%d\n", 
+		w, 
+		h,
+		color_model,
+		rows,
+		use_shm,
+		shmid);
+}
+
 int VFrame::filefork_size()
 {
-	return sizeof(int) * 10;
+	return sizeof(int) * 10 + sizeof(long);
 }
 
 
@@ -1262,6 +1278,15 @@ void VFrame::to_filefork(unsigned char *buffer)
 	*(int*)(buffer + 28) = bytes_per_line;
 	*(int*)(buffer + 32) = compressed_allocated;
 	*(int*)(buffer + 36) = compressed_size;
+	*(long*)(buffer + 40) = sequence_number;
+//printf("VFrame::to_filefork %d %lld\n", __LINE__, sequence_number);
+// printf("VFrame::to_filefork %d", __LINE__);
+// for(int i = 0; i < 40; i++)
+// {
+// printf(" %02x", buffer[i]);
+// }
+// printf("\n");
+// dump();
 }
 
 
@@ -1274,9 +1299,16 @@ void VFrame::from_filefork(unsigned char *buffer)
 			*(int*)(buffer + 0), // shmid
 			*(int*)(buffer + 36), // compressed_size
 			*(int*)(buffer + 32)); // compressed_allocated
+		color_model = BC_COMPRESSED;
 	}
 	else
 	{
+// printf("VFrame::from_filefork %d", __LINE__);
+// for(int i = 0; i < 40; i++)
+// {
+// printf(" %02x", buffer[i]);
+// }
+// printf("\n");
 		reallocate(0,
 			*(int*)(buffer + 0), // shmid
 			*(int*)(buffer + 4), // y_offset
@@ -1286,7 +1318,11 @@ void VFrame::from_filefork(unsigned char *buffer)
 			*(int*)(buffer + 20), // h
 			*(int*)(buffer + 24), // colormodel
 			*(int*)(buffer + 28)); // bytes per line
+//dump();
 	}
+	
+	sequence_number = *(long*)(buffer + 40);
+//printf("VFrame::from_filefork %d %lld\n", __LINE__, sequence_number);
 }
 
 

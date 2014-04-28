@@ -23,8 +23,8 @@
 #define MOTIONSCAN_H
 
 
+#include "affine.inc"
 #include "arraylist.h"
-#include "../downsample/downsampleengine.inc"
 #include "loadbalance.h"
 #include "vframe.inc"
 #include <stdint.h>
@@ -53,6 +53,7 @@ public:
 	int valid;
 // For single block
 	int step;
+// 2 differences are calculated for each subpixel package
 	int64_t difference1;
 	int64_t difference2;
 // Search position to nearest pixel
@@ -61,13 +62,17 @@ public:
 // Subpixel of search position
 	int sub_x;
 	int sub_y;
+// Optimum angle for each difference computed during the search
+	float angle1;
+	float angle2;
 };
 
 class MotionScanCache
 {
 public:
-	MotionScanCache(int x, int y, int64_t difference);
+	MotionScanCache(int x, int y, float angle, int64_t difference);
 	int x, y;
+	float angle;
 	int64_t difference;
 };
 
@@ -78,8 +83,10 @@ public:
 	~MotionScanUnit();
 
 	void process_package(LoadPackage *package);
-	int64_t get_cache(int x, int y);
-	void put_cache(int x, int y, int64_t difference);
+/*
+ * 	int64_t get_cache(int x, int y, float angle);
+ * 	void put_cache(int x, int y, float angle, int64_t difference);
+ */
 
 	MotionScan *server;
 
@@ -99,6 +106,10 @@ public:
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
+
+
+	float get_macroblock_angle(int number);
+
 
 // Invoke the motion engine for a search
 // Frame before motion
@@ -121,19 +132,28 @@ public:
 		int total_dx,
 		int total_dy,
 		int global_origin_x,
-		int global_origin_y);
-	int64_t get_cache(int x, int y);
-	void put_cache(int x, int y, int64_t difference);
+		int global_origin_y,
+// Degrees from center to maximum angle
+		float angle_range, 
+// Accumulated angle from previous frames
+		float total_angle,
+// Total number of angles to test in each pass
+		int total_angle_steps,
+		float global_origin_angle);
+	int64_t get_cache(int x, int y, float angle);
+	void put_cache(int x, int y, float angle, int64_t difference);
 
 	static int64_t abs_diff(unsigned char *prev_ptr,
 		unsigned char *current_ptr,
-		int row_bytes,
+		int prev_row_bytes,
+		int current_row_bytes,
 		int w,
 		int h,
 		int color_model);
 	static int64_t abs_diff_sub(unsigned char *prev_ptr,
 		unsigned char *current_ptr,
-		int row_bytes,
+		int prev_row_bytes,
+		int current_row_bytes,
 		int w,
 		int h,
 		int color_model,
@@ -153,22 +173,25 @@ public:
 		int *scan_y2,
 		int use_absolute);
 
+
 // Change between previous frame and current frame multiplied by 
 // OVERSAMPLE
 	int dx_result;
 	int dy_result;
 
+	float dangle_result;
+
 private:
-// Pointer to downsampled frame before motion
+// Pointer to frame before motion
 	VFrame *previous_frame;
-// Pointer to downsampled frame after motion
+// Pointer to frame after motion
 	VFrame *current_frame;
+// Macroblocks to compare from previous frame with rotation applied
+	VFrame **macroblocks;
+	int total_macroblocks;
 // Frames passed from user
 	VFrame *previous_frame_arg;
 	VFrame *current_frame_arg;
-// Downsampled frames
-	VFrame *downsampled_previous;
-	VFrame *downsampled_current;
 	int skip;
 // For single block
 	int block_x1;
@@ -189,12 +212,19 @@ private:
 	int vertical_only;
 	int global_origin_x;
 	int global_origin_y;
+// Range of angles to compare
+	float scan_angle1, scan_angle2;
+	float total_angle;
+	int total_angle_steps;
+	float global_origin_angle;
+	AffineEngine *rotate_engine;
 
 	ArrayList<MotionScanCache*> cache;
 	Mutex *cache_lock;
-	DownSampleServer *downsample;
 };
 
 
 
 #endif
+
+

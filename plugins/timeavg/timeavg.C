@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,7 +135,6 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 
 	int reset = load_configuration();
 
-
 // Allocate accumulation
 	if(!accumulation)
 	{
@@ -148,7 +147,9 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 
 	if(!config.nosubtract &&
 		(config.mode == TimeAvgConfig::AVERAGE ||
-		config.mode == TimeAvgConfig::ACCUMULATE))
+		config.mode == TimeAvgConfig::ACCUMULATE ||
+		config.mode == TimeAvgConfig::GREATER ||
+		config.mode == TimeAvgConfig::LESS))
 	{
 // Reallocate history
 		if(history)
@@ -210,7 +211,7 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			bzero(history_valid, sizeof(int) * config.frames);
 		}
 
-
+//printf("TimeAvgMain::process_buffer %d\n", __LINE__);
 
 
 
@@ -222,7 +223,8 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			new_history_frames[history_size - i - 1] = start_position - i;
 		}
 
-// Subtract old history frames which are not in the new vector
+// Subtract old history frames from accumulation buffer
+// which are not in the new vector
 		int no_change = 1;
 		for(int i = 0; i < history_size; i++)
 		{
@@ -243,7 +245,12 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 // Didn't find old frame in new frames
 				if(!got_it)
 				{
-					subtract_accum(history[i]);
+					if(config.mode == TimeAvgConfig::AVERAGE ||
+						config.mode == TimeAvgConfig::ACCUMULATE)
+					{
+						subtract_accum(history[i]);
+					}
+
 					history_valid[i] = 0;
 					no_change = 0;
 				}
@@ -256,7 +263,12 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 			{
 				history_valid[i] = 0;
 			}
-			reset_accum(w, h, color_model);
+
+			if(config.mode == TimeAvgConfig::AVERAGE ||
+				config.mode == TimeAvgConfig::ACCUMULATE)
+			{
+				reset_accum(w, h, color_model);
+			}
 		}
 
 // Add new history frames which are not in the old vector
@@ -288,7 +300,11 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 							0,
 							history_frame[j],
 							frame_rate);
-						add_accum(history[j]);
+						if(config.mode == TimeAvgConfig::AVERAGE ||
+							config.mode == TimeAvgConfig::ACCUMULATE)
+						{
+							add_accum(history[j]);
+						}
 						break;
 					}
 				}
@@ -320,12 +336,16 @@ int TimeAvgMain::process_buffer(VFrame *frame,
 		if(config.paranoid && prev_frame == start_position ||
 			prev_frame < 0)
 		{
-printf("TimeAvgMain::process_buffer %d\n", __LINE__);
+//printf("TimeAvgMain::process_buffer %d\n", __LINE__);
 			prev_frame = start_position - config.frames + 1;
 			prev_frame = MAX(0, prev_frame);
 			reset_accum(w, h, color_model);
 		}
 
+// printf("TimeAvgMain::process_buffer %d prev_frame=%lld start_position=%lld\n", 
+// __LINE__,
+// prev_frame,
+// start_position);
 		for(int64_t i = prev_frame; i <= start_position; i++)
 		{
 			read_frame(frame,
@@ -333,7 +353,7 @@ printf("TimeAvgMain::process_buffer %d\n", __LINE__);
 				i,
 				frame_rate);
 			add_accum(frame);
-printf("TimeAvgMain::process_buffer %d %lld %lld %lld\n", 
+printf("TimeAvgMain::process_buffer %d prev_frame=%lld start_position=%lld i=%lld\n", 
 __LINE__, 
 prev_frame, 
 start_position, 
@@ -804,6 +824,109 @@ void TimeAvgMain::add_accum(VFrame *frame)
 				*frame_row++ = (*accum_row++ - chroma) / denominator + chroma; \
 				*frame_row++ = (*accum_row++ - chroma) / denominator + chroma; \
 				if(components == 4) *frame_row++ = *accum_row++ / denominator; \
+			} \
+		} \
+	} \
+	else \
+/* Rescan history every time for these modes */ \
+	if(!config.nosubtract && config.mode == TimeAvgConfig::GREATER) \
+	{ \
+		frame->copy_from(history[0]); \
+		for(int k = 1; k < config.frames; k++) \
+		{ \
+			VFrame *history_frame = history[k]; \
+ \
+			for(int i = 0; i < h; i++) \
+			{ \
+				type *history_row = (type*)history_frame->get_rows()[i]; \
+				type *frame_row = (type*)frame->get_rows()[i]; \
+ \
+				for(int j = 0; j < w; j++) \
+				{ \
+					int copy_it = 0; \
+/* Compare alpha if 4 channel */ \
+					if(components == 4) \
+					{ \
+						if(history_row[3] > frame_row[3]) copy_it = 1; \
+					} \
+					else \
+					if(chroma) \
+					{ \
+/* Compare YUV luma if 3 channel */ \
+						if(history_row[0] > frame_row[0]) copy_it = 1; \
+					} \
+					else \
+					{ \
+/* Compare RGB luma if 3 channel */ \
+						if(RGB_TO_VALUE(history_row[0], history_row[1], history_row[2]) > \
+							RGB_TO_VALUE(frame_row[0], frame_row[1], frame_row[2])) \
+							copy_it = 1; \
+					} \
+ \
+ 					if(copy_it) \
+					{ \
+						*frame_row++ = *history_row++; \
+						*frame_row++ = *history_row++; \
+						*frame_row++ = *history_row++; \
+						if(components == 4) *frame_row++ = *history_row++; \
+					} \
+					else \
+					{ \
+						frame_row += components; \
+						history_row += components; \
+					} \
+				} \
+			} \
+		} \
+	} \
+	else \
+	if(!config.nosubtract && config.mode == TimeAvgConfig::LESS) \
+	{ \
+		frame->copy_from(history[0]); \
+		for(int k = 1; k < config.frames; k++) \
+		{ \
+			VFrame *history_frame = history[k]; \
+ \
+			for(int i = 0; i < h; i++) \
+			{ \
+				type *history_row = (type*)history_frame->get_rows()[i]; \
+				type *frame_row = (type*)frame->get_rows()[i]; \
+ \
+				for(int j = 0; j < w; j++) \
+				{ \
+					int copy_it = 0; \
+/* Compare alpha if 4 channel */ \
+					if(components == 4) \
+					{ \
+						if(history_row[3] < frame_row[3]) copy_it = 1; \
+					} \
+					else \
+					if(chroma) \
+					{ \
+/* Compare YUV luma if 3 channel */ \
+						if(history_row[0] < frame_row[0]) copy_it = 1; \
+					} \
+					else \
+					{ \
+/* Compare RGB luma if 3 channel */ \
+						if(RGB_TO_VALUE(history_row[0], history_row[1], history_row[2]) < \
+							RGB_TO_VALUE(frame_row[0], frame_row[1], frame_row[2])) \
+							copy_it = 1; \
+					} \
+ \
+ 					if(copy_it) \
+					{ \
+						*frame_row++ = *history_row++; \
+						*frame_row++ = *history_row++; \
+						*frame_row++ = *history_row++; \
+						if(components == 4) *frame_row++ = *history_row++; \
+					} \
+					else \
+					{ \
+						frame_row += components; \
+						history_row += components; \
+					} \
+				} \
 			} \
 		} \
 	} \

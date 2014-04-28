@@ -88,7 +88,7 @@ int AModuleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 		module->file->set_channel(module->channel);
 		result = module->file->read_samples(buffer, len);
 
-// Reverse buffer so filter renders forward.
+// Reverse buffer so resampling filter renders forward.
 		if(get_direction() == PLAY_REVERSE)
 			Resample::reverse_buffer(buffer->get_data(), len);
 	}
@@ -347,6 +347,7 @@ nested_edl->session->sample_rate);
 				sample_rate,
 				start_source,
 				direction);
+// Resample reverses to keep it running forward.
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 		}
 		else
@@ -362,15 +363,14 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 				nested_output[edit->channel]->get_data(),
 				fragment_len * sizeof(double));
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
-		}
-if(debug) printf("AModule::import_samples %d\n", __LINE__);
-
 
 // Reverse fragment so ::render can apply transitions going forward.
-		if(direction == PLAY_REVERSE)
-		{
-			Resample::reverse_buffer(buffer->get_data(), fragment_len);
+				if(direction == PLAY_REVERSE)
+				{
+					Resample::reverse_buffer(buffer->get_data(), fragment_len);
+				}
 		}
+
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 	}
 	else
@@ -424,6 +424,7 @@ asset->sample_rate);
 					sample_rate,
 					start_source,
 					direction);
+// Resample reverses to keep it running forward.
 			}
 			else
 			{
@@ -432,6 +433,16 @@ if(debug) printf("AModule::import_samples %d %p\n", __LINE__, buffer);
 				file->set_audio_position(start_source);
 				file->set_channel(edit->channel);
 				result = file->read_samples(buffer, fragment_len);
+// Reverse fragment so ::render can apply transitions going forward.
+if(debug) printf("AModule::import_samples %d buffer=%p data=%p fragment_len=%d\n", 
+__LINE__, 
+buffer,
+buffer->get_data(), 
+fragment_len);
+				if(direction == PLAY_REVERSE)
+				{
+					Resample::reverse_buffer(buffer->get_data(), fragment_len);
+				}
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 			}
 
@@ -439,6 +450,11 @@ if(debug) printf("AModule::import_samples %d\n", __LINE__);
 			get_cache()->check_in(asset);
 if(debug) printf("AModule::import_samples %d\n", __LINE__);
 			file = 0;
+
+
+
+
+
 		}
 	}
 	else
@@ -462,7 +478,9 @@ int AModule::render(Samples *buffer,
 	int use_nudge)
 {
 	int64_t edl_rate = get_edl()->session->sample_rate;
+	const int debug = 0;
 
+if(debug) printf("AModule::render %d\n", __LINE__);
 
 	if(use_nudge) 
 		start_position += track->nudge * 
@@ -497,6 +515,7 @@ int AModule::render(Samples *buffer,
 		playable_edit = (AEdit*)track->edits->first;
 	else
 		playable_edit = (AEdit*)track->edits->last;
+if(debug) printf("AModule::render %d\n", __LINE__);
 
 	while(playable_edit)
 	{
@@ -520,6 +539,7 @@ int AModule::render(Samples *buffer,
 	}
 
 
+if(debug) printf("AModule::render %d\n", __LINE__);
 
 
 
@@ -530,7 +550,7 @@ int AModule::render(Samples *buffer,
 	{
 		int64_t fragment_len = input_len;
 
-//printf("AModule::render %d %lld %lld\n", __LINE__, start_position, end_position);
+if(debug) printf("AModule::render %d %lld %lld\n", __LINE__, start_position, end_position);
 // Clamp fragment to end of input
 		if(direction == PLAY_FORWARD &&
 			start_position + fragment_len > end_position)
@@ -539,7 +559,7 @@ int AModule::render(Samples *buffer,
 		if(direction == PLAY_REVERSE &&
 			start_position - fragment_len < end_position)
 			fragment_len = start_position - end_position;
-//printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
 // Normalize position here since update_transition is a boolean operation.
 		update_transition(start_position * 
@@ -555,12 +575,12 @@ int AModule::render(Samples *buffer,
 			int64_t edit_startproject = playable_edit->startproject;
 			int64_t edit_endproject = playable_edit->startproject + playable_edit->length;
 			int64_t edit_startsource = playable_edit->startsource;
-//printf("AModule::render 52 %lld\n", fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
 			edit_startproject = edit_startproject * sample_rate / edl_rate;
 			edit_endproject = edit_endproject * sample_rate / edl_rate;
 			edit_startsource = edit_startsource * sample_rate / edl_rate;
-//printf("AModule::render 53 %lld\n", fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
 
 
@@ -572,7 +592,7 @@ int AModule::render(Samples *buffer,
 			if(direction == PLAY_REVERSE &&
 				start_position - fragment_len < edit_startproject)
 				fragment_len = start_position - edit_startproject;
-//printf("AModule::render %d %lld\n", __LINE__, fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
 // Clamp to end of transition
 			int64_t transition_len = 0;
@@ -593,6 +613,10 @@ int AModule::render(Samples *buffer,
 					start_position - fragment_len < edit_startproject + transition_len)
 					fragment_len = start_position - edit_startproject - transition_len;
 			}
+if(debug) printf("AModule::render %d buffer_offset=%d fragment_len=%lld\n", 
+__LINE__, 
+buffer_offset,
+fragment_len);
 
 			Samples output(buffer);
 			output.set_offset(output.get_offset() + buffer_offset);
@@ -605,6 +629,7 @@ int AModule::render(Samples *buffer,
 				&output,
 				fragment_len)) result = 1;
 
+if(debug) printf("AModule::render %d\n", __LINE__);
 
 
 // Read transition into temp and render
@@ -638,7 +663,7 @@ int AModule::render(Samples *buffer,
 					transition_temp_alloc = fragment_len;
 				}
 
-//printf("AModule::render 54 %lld\n", fragment_len);
+if(debug) printf("AModule::render %d %lld\n", __LINE__, fragment_len);
 
 				if(transition_fragment_len > 0)
 				{
@@ -680,6 +705,11 @@ int AModule::render(Samples *buffer,
 							transition_fragment_len);
 				}
 			}
+if(debug) printf("AModule::render %d start_position=%lld end_position=%lld fragment_len=%lld\n", 
+__LINE__, 
+start_position,
+end_position,
+fragment_len);
 
 			if(direction == PLAY_REVERSE)
 			{
@@ -693,13 +723,17 @@ int AModule::render(Samples *buffer,
 			}
 		}
 
-		buffer_offset += fragment_len;
-		if(direction == PLAY_FORWARD)
-			start_position += fragment_len;
-		else
-			start_position -= fragment_len;
+		if(fragment_len > 0)
+		{
+			buffer_offset += fragment_len;
+			if(direction == PLAY_FORWARD)
+				start_position += fragment_len;
+			else
+				start_position -= fragment_len;
+		}
 	}
 
+if(debug) printf("AModule::render %d\n", __LINE__);
 
 	return result;
 }

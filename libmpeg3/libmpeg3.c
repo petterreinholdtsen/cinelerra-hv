@@ -413,12 +413,15 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 /* This limits the track count */
 	int toc_atracks = 0x7fffffff;
 	int toc_vtracks = 0x7fffffff;
+	const int debug = 0;
 
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 	if(!error_return) error_return = &error_temp;
 
 /* Initialize the file structure */
 	file = mpeg3_new(path);
 
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 
 /* Need to perform authentication before reading a single byte. */
 	if(mpeg3io_open_file(file->fs))
@@ -426,6 +429,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 		mpeg3_delete(file);
 		return 0;
 	}
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 
 
 
@@ -449,6 +453,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 
 
 
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 
 
 /* Create titles */
@@ -470,6 +475,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 		mpeg3_create_title(file->demuxer, 0);
 	}
 
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 
 
 
@@ -542,9 +548,11 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 
 
 
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 
 
 	mpeg3io_close_file(file->fs);
+if(debug) printf("mpeg3_open_copy %d\n", __LINE__);
 
 	return file;
 }

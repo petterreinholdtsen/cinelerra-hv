@@ -32,6 +32,12 @@
 
 
 
+
+class BC_TextBoxSuggestions;
+
+
+
+
 class BC_TextBox : public BC_SubWindow
 {
 public:
@@ -65,6 +71,10 @@ public:
 		int font = MEDIUMFONT,
 		int precision = 4);
 	virtual ~BC_TextBox();
+
+
+	friend class BC_TextBoxSuggestions;
+
 
 // Whenever the contents of the text change
 	virtual int handle_event() { return 0; };
@@ -114,6 +124,14 @@ public:
 // separators.  The alnums are replaced by user text.
 	void set_separators(const char *separators);
 
+
+// User computes suggestions after handle_event.
+// The array is copied to a local variable.
+// A highlighted extension is added if 1 suggestion or a popup appears
+// if multiple suggestions.
+// column - starting column to replace
+	void set_suggestions(ArrayList<char*> *suggestions, int column);
+
 private:
 	int reset_parameters(int rows, int has_border, int font);
 	void draw();
@@ -129,6 +147,7 @@ private:
 	void get_ibeam_position(int &x, int &y);
 	void find_ibeam(int dispatch_event);
 	void select_word(int &letter1, int &letter2, int ibeam_letter);
+	void select_line(int &letter1, int &letter2, int ibeam_letter);
 	int get_cursor_letter(int cursor_x, int cursor_y);
 	int get_row_h(int rows);
 	void default_keypress(int &dispatch_event, int &result);
@@ -142,7 +161,8 @@ private:
 	int ibeam_letter;
 	int highlight_letter1, highlight_letter2;
 	int highlight_letter3, highlight_letter4;
-	int text_x1, text_start, text_end, text_selected, word_selected;
+	int text_x1, text_start, text_end;
+	int text_selected, word_selected, line_selected;
 	int text_ascent, text_descent, text_height;
 	int left_margin, right_margin, top_margin, bottom_margin;
 	int has_border;
@@ -162,6 +182,24 @@ private:
 // Used for custom formatting text boxes
 	int last_keypress;
 	char *separators;
+	ArrayList<BC_ListBoxItem*> *suggestions;
+	BC_TextBoxSuggestions *suggestions_popup;
+	int suggestion_column;
+};
+
+
+
+class BC_TextBoxSuggestions : public BC_ListBox
+{
+public:
+	BC_TextBoxSuggestions(BC_TextBox *text_box, int x, int y);
+	virtual ~BC_TextBoxSuggestions();
+
+	int selection_changed();
+	int handle_event();
+
+	
+	BC_TextBox *text_box;
 };
 
 

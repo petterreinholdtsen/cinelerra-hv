@@ -7,5 +7,5 @@ OpenEXR_includedir=${prefix}/include/OpenEXR
 Name: OpenEXR
 Description: OpenEXR image library
 Version: 1.6.1
-Libs: -L${libdir} -L/root/hvirtual/thirdparty//lib -lIlmImf -lz -lImath -lHalf -lIex -lIlmThread
-Cflags:  -I/root/hvirtual/thirdparty//include/OpenEXR -I${OpenEXR_includedir}
+Libs: -L${libdir} -L/root/hvirtual/thirdparty//lib   -lIlmImf -lz -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  
+Cflags: -I/root/hvirtual/thirdparty//include/OpenEXR   -I${OpenEXR_includedir}

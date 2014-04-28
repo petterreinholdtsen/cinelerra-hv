@@ -8,5 +8,5 @@ Description: FFmpeg container format library
 Version: 52.31.0
 Requires: libavcodec = 52.20.0
 Conflicts:
-Libs: ${libdir}/libavformat.a  -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/  -lz -lbz2 -pthread -lm   -ldl
+Libs: ${libdir}/libavformat.a  -L/root/hvirtual/quicktime/thirdparty/faad2-2.0//libfaad/.libs/  -lz -lbz2 -pthread -lm  -lasound -ldl -lasound -lasound
 Cflags: -I${includedir}

@@ -249,10 +249,30 @@ public:
 	MotionMain *plugin;
 };
 
-class MotionReturnSpeed : public BC_IPot
+class MotionRMagnitude : public BC_IPot
+{
+public:
+	MotionRMagnitude(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class MotionReturnSpeed : public BC_FPot
 {
 public:
 	MotionReturnSpeed(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class MotionRReturnSpeed : public BC_FPot
+{
+public:
+	MotionRReturnSpeed(MotionMain *plugin, 
 		int x, 
 		int y);
 	int handle_event();
@@ -316,8 +336,8 @@ public:
 	RotationCenter *rotation_center;
 	BlockSize *global_block_w;
 	BlockSize *global_block_h;
-	BlockSize *rotation_block_w;
-	BlockSize *rotation_block_h;
+//	BlockSize *rotation_block_w;
+//	BlockSize *rotation_block_h;
 	MotionBlockX *block_x;
 	MotionBlockY *block_y;
 	MotionBlockXText *block_x_text;
@@ -325,7 +345,9 @@ public:
 	GlobalSearchPositions *global_search_positions;
 	RotationSearchPositions *rotation_search_positions;
 	MotionMagnitude *magnitude;
+	MotionRMagnitude *rotate_magnitude;
 	MotionReturnSpeed *return_speed;
+	MotionRReturnSpeed *rotate_return_speed;
 	Mode1 *mode1;
 	MotionDrawVectors *vectors;
 	MotionGlobal *global;

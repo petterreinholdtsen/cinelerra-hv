@@ -42,6 +42,7 @@
 PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
+	audio_device = 0;
 	video_device = 0;
 }
 

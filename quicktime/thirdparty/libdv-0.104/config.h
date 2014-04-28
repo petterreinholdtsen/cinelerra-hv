@@ -2,10 +2,10 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define as 1 if host is an IA32 */
-#define ARCH_X86 1
+/* #undef ARCH_X86 */
 
 /* Define as 1 if host is an AMD64 */
-/* #undef ARCH_X86_64 */
+#define ARCH_X86_64 1
 
 /* Define to indicate DEBUGGING is enabled possibly with a level */
 #define DEBUG 1
@@ -35,7 +35,7 @@
 #define HAVE_LIBM 1
 
 /* Define if you have the 'popt' library */
-#define HAVE_LIBPOPT 1
+/* #undef HAVE_LIBPOPT */
 
 /* Define if you have the `Xv' library (-lXv). */
 /* #undef HAVE_LIBXV */

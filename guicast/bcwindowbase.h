@@ -274,6 +274,7 @@ public:
 	int shift_down();
 	int ctrl_down();
 	int get_double_click();
+	int get_triple_click();
 // Bottom right corner
 	int get_x2();
 	int get_y2();
@@ -697,8 +698,11 @@ private:
 // Button status information
 	int button_down, button_number;
 // When button was pressed and whether it qualifies as a double click
-	uint64_t button_time1, button_time2;
+	int64_t button_time1;
+	int64_t button_time2;
+	int64_t button_time3;
 	int double_click;
+	int triple_click;
 // Which button is down.  1, 2, 3, 4, 5
 	int button_pressed;
 // Last key pressed

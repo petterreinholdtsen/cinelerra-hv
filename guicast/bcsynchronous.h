@@ -273,6 +273,8 @@ private:
 // When the context is bound to a pbuffer, this
 // signals glCopyTexSubImage2D to use the front buffer.
 	int is_pbuffer;
+
+	int process_group;
 };
 
 

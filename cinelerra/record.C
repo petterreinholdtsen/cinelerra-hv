@@ -325,6 +325,7 @@ SET_TRACE
 		defaults->update(string, dc_offset[i]);
 	}
 	defaults->update("FILL_DROPPED_FRAMES", fill_frames);
+SET_TRACE
 
 	return 0;
 }
@@ -751,6 +752,7 @@ int Record::open_output_file()
 			IndexFile::delete_index(mwindow->preferences, 
 				batch->get_current_asset());
 			file->set_processors(mwindow->preferences->real_processors);
+			file->set_cache(mwindow->preferences->cache_size);
 			batch->calculate_news();
 			record_gui->lock_window("Record::open_output_file");
 			record_gui->update_batches();

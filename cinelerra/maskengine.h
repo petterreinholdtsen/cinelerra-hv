@@ -33,13 +33,14 @@
 
 class MaskEngine;
 
-
+// Values for step
 enum
 {
-	RECALCULATE_PART,
-	APPLY_PART
+	DO_MASK,
+	DO_X_FEATHER,
+	DO_Y_FEATHER,
+	DO_APPLY
 };
-
 
 class MaskPackage : public LoadPackage
 {
@@ -47,9 +48,7 @@ public:
 	MaskPackage();
 	~MaskPackage();
 
-	int row1, row2;
-	int part;
-	Condition *apply_mutex;
+	int start_x, end_x, start_y, end_y;
 };
 
 class MaskUnit : public LoadClient
@@ -67,19 +66,21 @@ public:
 		unsigned char value);
 	void do_feather(VFrame *output,
 		VFrame *input, 
-		float feather, 
-		int start_out, 
-		int end_out);
-	void blur_strip(float *val_p, 
-		float *val_m, 
-		float *dst, 
-		float *src, 
+		double feather, 
+		int start_y, 
+		int end_y, 
+		int start_x, 
+		int end_x);
+	void blur_strip(double *val_p, 
+		double *val_m, 
+		double *dst, 
+		double *src, 
 		int size,
 		int max);
 
-    float n_p[5], n_m[5];
-    float d_p[5], d_m[5];
-    float bd_p[5], bd_m[5];
+    double n_p[5], n_m[5];
+    double d_p[5], d_m[5];
+    double bd_p[5], bd_m[5];
 	MaskEngine *engine;
 	VFrame *temp;
 };
@@ -113,7 +114,8 @@ public:
 	VFrame *temp_mask;
 	ArrayList<ArrayList<MaskPoint*>*> point_sets;
 	int mode;
-	float feather;
+	int step;
+	double feather;
 	int recalculate;
 	int value;
 };

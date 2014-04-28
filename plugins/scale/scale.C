@@ -210,7 +210,7 @@ int ScaleMain::process_buffer(VFrame *frame,
 
 	if(!overlayer)
 	{
-		overlayer = new OverlayFrame(smp + 1);
+		overlayer = new OverlayFrame(PluginClient::get_project_smp() + 1);
 	}
 
 

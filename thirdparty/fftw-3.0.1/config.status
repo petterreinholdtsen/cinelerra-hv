@@ -572,13 +572,13 @@ s,@CCASFLAGS@,,;t t
 s,@LN_S@,ln -s,;t t
 s,@RANLIB@,ranlib,;t t
 s,@ac_ct_RANLIB@,ranlib,;t t
-s,@build@,i686-pc-linux-gnu,;t t
-s,@build_cpu@,i686,;t t
-s,@build_vendor@,pc,;t t
+s,@build@,x86_64-unknown-linux-gnu,;t t
+s,@build_cpu@,x86_64,;t t
+s,@build_vendor@,unknown,;t t
 s,@build_os@,linux-gnu,;t t
-s,@host@,i686-pc-linux-gnu,;t t
-s,@host_cpu@,i686,;t t
-s,@host_vendor@,pc,;t t
+s,@host@,x86_64-unknown-linux-gnu,;t t
+s,@host_cpu@,x86_64,;t t
+s,@host_vendor@,unknown,;t t
 s,@host_os@,linux-gnu,;t t
 s,@ECHO@,echo,;t t
 s,@CPP@,gcc -E,;t t
@@ -912,11 +912,11 @@ ${ac_dA}HAVE_LIMITS_H${ac_dB}HAVE_LIMITS_H${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_STDINT_H${ac_dB}HAVE_STDINT_H${ac_dC}1${ac_dD}
 ${ac_dA}TIME_WITH_SYS_TIME${ac_dB}TIME_WITH_SYS_TIME${ac_dC}1${ac_dD}
 ${ac_dA}SIZEOF_INT${ac_dB}SIZEOF_INT${ac_dC}4${ac_dD}
-${ac_dA}SIZEOF_LONG${ac_dB}SIZEOF_LONG${ac_dC}4${ac_dD}
+${ac_dA}SIZEOF_LONG${ac_dB}SIZEOF_LONG${ac_dC}8${ac_dD}
 ${ac_dA}SIZEOF_LONG_LONG${ac_dB}SIZEOF_LONG_LONG${ac_dC}8${ac_dD}
 ${ac_dA}HAVE_UINTPTR_T${ac_dB}HAVE_UINTPTR_T${ac_dC}1${ac_dD}
 ${ac_dA}SIZEOF_DOUBLE${ac_dB}SIZEOF_DOUBLE${ac_dC}8${ac_dD}
-${ac_dA}SIZEOF_LONG_DOUBLE${ac_dB}SIZEOF_LONG_DOUBLE${ac_dC}12${ac_dD}
+${ac_dA}SIZEOF_LONG_DOUBLE${ac_dB}SIZEOF_LONG_DOUBLE${ac_dC}16${ac_dD}
 ${ac_dA}HAVE_ALLOCA_H${ac_dB}HAVE_ALLOCA_H${ac_dC}1${ac_dD}
 ${ac_dA}HAVE_ALLOCA${ac_dB}HAVE_ALLOCA${ac_dC}1${ac_dD}
 CEOF
@@ -985,11 +985,11 @@ ${ac_uA}HAVE_LIMITS_H${ac_uB}HAVE_LIMITS_H${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_STDINT_H${ac_uB}HAVE_STDINT_H${ac_uC}1${ac_uD}
 ${ac_uA}TIME_WITH_SYS_TIME${ac_uB}TIME_WITH_SYS_TIME${ac_uC}1${ac_uD}
 ${ac_uA}SIZEOF_INT${ac_uB}SIZEOF_INT${ac_uC}4${ac_uD}
-${ac_uA}SIZEOF_LONG${ac_uB}SIZEOF_LONG${ac_uC}4${ac_uD}
+${ac_uA}SIZEOF_LONG${ac_uB}SIZEOF_LONG${ac_uC}8${ac_uD}
 ${ac_uA}SIZEOF_LONG_LONG${ac_uB}SIZEOF_LONG_LONG${ac_uC}8${ac_uD}
 ${ac_uA}HAVE_UINTPTR_T${ac_uB}HAVE_UINTPTR_T${ac_uC}1${ac_uD}
 ${ac_uA}SIZEOF_DOUBLE${ac_uB}SIZEOF_DOUBLE${ac_uC}8${ac_uD}
-${ac_uA}SIZEOF_LONG_DOUBLE${ac_uB}SIZEOF_LONG_DOUBLE${ac_uC}12${ac_uD}
+${ac_uA}SIZEOF_LONG_DOUBLE${ac_uB}SIZEOF_LONG_DOUBLE${ac_uC}16${ac_uD}
 ${ac_uA}HAVE_ALLOCA_H${ac_uB}HAVE_ALLOCA_H${ac_uC}1${ac_uD}
 ${ac_uA}HAVE_ALLOCA${ac_uB}HAVE_ALLOCA${ac_uC}1${ac_uD}
 CEOF

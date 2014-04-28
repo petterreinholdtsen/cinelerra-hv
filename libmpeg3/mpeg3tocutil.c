@@ -859,12 +859,11 @@ static int handle_video(mpeg3_t *file,
 // handle_video.
 			if(!mpeg3video_get_header(video, 0))
 			{
-/*
- * printf("handle_video 1 %d %d %d\n", 
- * vtrack->demuxer->data_position, 
- * video->pict_struct, 
- * video->pict_type);
- */
+// printf("handle_video 1 %d %d %d %d\n", 
+// vtrack->total_frame_offsets,
+// vtrack->demuxer->data_position, 
+// video->pict_struct, 
+// video->pict_type);
 				if(video->pict_struct == BOTTOM_FIELD ||
 					video->pict_struct == FRAME_PICTURE ||
 					!video->pict_struct)

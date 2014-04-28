@@ -222,8 +222,11 @@ int BC_WindowBase::initialize()
 	cursor_x = cursor_y = button_number = 0;
 	button_down = 0;
 	button_pressed = 0;
-	button_time1 = button_time2 = 0;
+	button_time1 = 0;
+	button_time2 = 0;
+	button_time3 = 0;
 	double_click = 0;
+	triple_click = 0;
 	last_motion_win = 0;
 	key_pressed = 0;
 	active_menubar = 0;
@@ -851,7 +854,8 @@ __LINE__, title, event);
 	  			button_down = 1;
 			button_pressed = event->xbutton.button;
 			button_time1 = button_time2;
-			button_time2 = event->xbutton.time;
+			button_time2 = button_time3;
+			button_time3 = event->xbutton.time;
 			drag_x = cursor_x;
 			drag_y = cursor_y;
 			drag_win = event_win;
@@ -860,14 +864,21 @@ __LINE__, title, event);
 			drag_y1 = cursor_y - get_resources()->drag_radius;
 			drag_y2 = cursor_y + get_resources()->drag_radius;
 
-			if(button_time2 - button_time1 < resources.double_click)
+			if(button_time3 - button_time1 < resources.double_click * 2)
 			{
-// Ignore triple clicks
-				double_click = 1; 
-				button_time2 = button_time1 = 0; 
+				triple_click = 1;
+				button_time3 = button_time2 = button_time1 = 0;
 			}
-			else 
+			if(button_time3 - button_time2 < resources.double_click)
+			{
+				double_click = 1; 
+//				button_time3 = button_time2 = button_time1 = 0;
+			}
+			else
+			{
+				triple_click = 0;
 				double_click = 0;
+			}
 
 			dispatch_button_press();
 			break;
@@ -3351,6 +3362,11 @@ int BC_WindowBase::get_keypress()
 int BC_WindowBase::get_double_click()
 {
 	return top_level->double_click;
+}
+
+int BC_WindowBase::get_triple_click()
+{
+	return top_level->triple_click;
 }
 
 int BC_WindowBase::get_bgcolor()

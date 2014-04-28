@@ -118,6 +118,7 @@ BC_Synchronous::BC_Synchronous()
 	done = 0;
 	is_running = 0;
 	current_window = 0;
+	process_group = setpgid(getpid(), 0);
 	BC_WindowBase::get_resources()->set_synchronous(this);
 }
 
@@ -192,6 +193,8 @@ void BC_Synchronous::run()
 //		delete command;
 	}
 	is_running = 0;
+
+	killpg(process_group, SIGUSR1);
 }
 
 void BC_Synchronous::handle_command_base(BC_SynchronousCommand *command)

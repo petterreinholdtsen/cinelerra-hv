@@ -181,11 +181,9 @@ int FileMPEG::reset_parameters_derived()
 int FileMPEG::open_file(int rd, int wr)
 {
 	int result = 0;
-	this->rd = rd;
-	this->wr = wr;
 
 const int debug = 0;
-if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
+if(debug) printf("FileMPEG::open_file %d %s\n", __LINE__, asset->path);
 	if(rd)
 	{
 		int error = 0;
@@ -217,14 +215,19 @@ if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 		{
 // Determine if the file needs a table of contents and create one if needed.
 // If it has video it must be scanned since video has keyframes.
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			if(mpeg3_total_vstreams(fd))
 			{
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				if(create_index()) return 1;
 			}
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			mpeg3_set_cpus(fd, file->cpus);
 
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			asset->audio_data = mpeg3_has_audio(fd);
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			if(asset->audio_data)
 			{
 				asset->channels = 0;
@@ -239,8 +242,10 @@ if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 					!asset->sample_rate)
 					result = 1;
 			}
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 
 			asset->video_data = mpeg3_has_video(fd);
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 			if(asset->video_data)
 			{
 				asset->layers = mpeg3_total_vstreams(fd);
@@ -257,6 +262,7 @@ if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 				if(file->playback_subtitle >= 0)
 					mpeg3_show_subtitle(fd, file->playback_subtitle);
 			}
+if(debug) printf("FileMPEG::open_file %d\n", __LINE__);
 		}
 	}
 
@@ -572,17 +578,23 @@ int FileMPEG::create_index()
 // Calculate TOC path
 	char index_filename[BCTEXTLEN];
 	char source_filename[BCTEXTLEN];
+	const int debug = 0;
+
+	if(debug) printf("FileMPEG::create_index %d %p\n", __LINE__, file->preferences);
 	IndexFile::get_index_filename(source_filename, 
 		file->preferences->index_directory, 
 		index_filename, 
 		asset->path);
+	if(debug) printf("FileMPEG::create_index %d\n", __LINE__);
 	char *ptr = strrchr(index_filename, '.');
 	int error = 0;
 
 	if(!ptr) return 1;
 
+	if(debug) printf("FileMPEG::create_index %d\n", __LINE__);
 // File is a table of contents.
 	if(fd && mpeg3_has_toc(fd)) return 0;
+	if(debug) printf("FileMPEG::create_index %d\n", __LINE__);
 
 	sprintf(ptr, ".toc");
 
@@ -590,6 +602,7 @@ int FileMPEG::create_index()
 
 	if(fd) mpeg3_close(fd);
 	fd = 0;
+	if(debug) printf("FileMPEG::create_index %d\n", __LINE__);
 
 // Test existing copy of TOC
 	if((fd = mpeg3_open(index_filename, &error)))
@@ -916,7 +929,7 @@ int FileMPEG::set_video_position(int64_t x)
 
 int64_t FileMPEG::get_memory_usage()
 {
-	if(rd && fd)
+	if(file->rd && fd)
 	{
 		int64_t result = mpeg3_memory_usage(fd);
 		return result;

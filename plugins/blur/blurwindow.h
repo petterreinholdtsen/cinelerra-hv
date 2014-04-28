@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ class BlurA;
 class BlurR;
 class BlurG;
 class BlurB;
+class BlurAKey;
 
 class BlurWindow : public PluginClientWindow
 {
@@ -59,6 +60,15 @@ public:
 	BlurR *r;
 	BlurG *g;
 	BlurB *b;
+	BlurAKey *a_key;
+};
+
+class BlurAKey : public BC_CheckBox
+{
+public:
+	BlurAKey(BlurMain *client, int x, int y);
+	int handle_event();
+	BlurMain *client;
 };
 
 class BlurA : public BC_CheckBox

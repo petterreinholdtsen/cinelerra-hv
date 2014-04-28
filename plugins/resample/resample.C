@@ -102,6 +102,8 @@ ResampleResample::ResampleResample(ResampleEffect *plugin)
 
 int ResampleResample::read_samples(Samples *buffer, int64_t start, int64_t len)
 {
+//printf("ResampleResample::read_samples %d %lld\n", __LINE__, len);
+
 	return plugin->read_samples(buffer, 
 		0, 
 		start + plugin->get_source_start(), 
@@ -158,11 +160,13 @@ int ResampleEffect::load_defaults()
 	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);
+//printf("ResampleEffect::load_defaults %d %f\n", __LINE__, scale);
 	return 0;
 }
 
 int ResampleEffect::save_defaults()
 {
+//printf("ResampleEffect::save_defaults %d %f\n", __LINE__, scale);
 	defaults->update("SCALE", scale);
 	defaults->save();
 	return 0;
@@ -202,19 +206,15 @@ int ResampleEffect::process_loop(Samples *buffer, int64_t &write_length)
 	int result = 0;
 
 // Length to read based on desired output size
-SET_TRACE
-	int64_t size = (int64_t)((double)PluginAClient::in_buffer_size * scale);
-SET_TRACE
+//printf("ResampleEffect::process_loop %d %d\n", __LINE__);
+//	int64_t size = (int64_t)((double)PluginAClient::in_buffer_size * scale);
 	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) / scale + 0.5);
-SET_TRACE
 
-	Samples *input = new Samples(size);
-SET_TRACE
+//	Samples *input = new Samples(size);
 	
-	read_samples(input, 0, current_position, size);
-	current_position += size;
+//	read_samples(input, 0, current_position, size);
+//	current_position += size;
 
-SET_TRACE
 	resample->resample(buffer,
 		PluginAClient::out_buffer_size,
 		1000000, 
@@ -223,8 +223,13 @@ SET_TRACE
 		PLAY_FORWARD);
 
 	write_length = PluginAClient::out_buffer_size;
-	if(total_written + write_length > predicted_total)
+	if(total_written + write_length >= predicted_total)
+	{
 		write_length = predicted_total - total_written;
+		result = 1;
+	}
+	total_written += write_length;
+//printf("ResampleEffect::process_loop %d %lld %f\n", __LINE__, write_length, scale);
 
 // 	resample->resample_chunk(input, 
 // 		size, 
@@ -232,40 +237,32 @@ SET_TRACE
 // 		(int)(1000000.0 / scale), 
 // 		0);
 // 
-// SET_TRACE
-// 
+// // 
 // 	if(resample->get_output_size(0))
 // 	{
 // 		int64_t output_size = resample->get_output_size(0);
 // 
-// SET_TRACE
-// 		if(output_size)
+// // 		if(output_size)
 // 		{
 // 			total_written += output_size;
 // 		}
 // 
-// SET_TRACE
-// // Trim output to predicted length of stretched selection.
+// // // Trim output to predicted length of stretched selection.
 // 		if(total_written > predicted_total)
 // 		{
 // 			output_size -= total_written - predicted_total;
 // 			result = 1;
 // 		}
 // 
-// SET_TRACE
-// 		resample->read_output(buffer, 0, output_size);
+// // 		resample->read_output(buffer, 0, output_size);
 // 
-// SET_TRACE
-// 		write_length = output_size;
+// // 		write_length = output_size;
 // 	}
 
-SET_TRACE
-	if(PluginClient::interactive) result = progress->update(total_written);
-//printf("TimeStretch::process_loop 1\n");
+	if(PluginClient::interactive) result |= progress->update(total_written);
+//printf("ResampleEffect::process_loop %d %lld\n", __LINE__, total_written);
 
-SET_TRACE
-	delete input;
-SET_TRACE
+//	delete input;
 	return result;
 }
 

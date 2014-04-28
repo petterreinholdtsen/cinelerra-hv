@@ -105,7 +105,8 @@ void VTimeBar::select_label(double position)
 // Que the CWindow
 		mwindow->vwindow->update_position(CHANGE_NONE, 
 			0, 
-			1);
+			1,
+			0);
 		update();
 	}
 }

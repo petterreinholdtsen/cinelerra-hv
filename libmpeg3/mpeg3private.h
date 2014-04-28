@@ -932,6 +932,7 @@ typedef struct
 	int bitrate;
 	mpeg3_timecode_t gop_timecode;     /* Timecode for the last GOP header read. */
 	int has_gops; /* Some streams have no GOPs so try sequence start codes instead */
+	int is_h264;
 
 /* These are only available from elementary streams. */
 	int frames_per_gop;       /* Frames per GOP after the first GOP. */
@@ -1015,7 +1016,6 @@ typedef struct
 	int current_position;  /* Number of next frame to be played */
 	int total_frames;     /* Total frames in the file */
 	unsigned int pid;
-
 
 /* Pointer to master table of contents when the TOC is read. */
 /* Pointer to private table when the TOC is being created */

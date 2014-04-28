@@ -729,8 +729,15 @@ int RotateEffect::process_buffer(VFrame *frame,
 
 	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
 		PluginClient::smp + 1);
-	engine->set_pivot((int)(config.pivot_x * get_input()->get_w() / 100), 
-		(int)(config.pivot_y * get_input()->get_h() / 100));
+	int pivot_x = (int)(config.pivot_x * get_input()->get_w() / 100);
+	int pivot_y = (int)(config.pivot_y * get_input()->get_h() / 100);
+	engine->set_in_pivot(pivot_x, pivot_y);
+	engine->set_out_pivot(pivot_x, pivot_y);
+
+
+// Test
+// engine->set_out_viewport(0, 0, 320, 240);
+// engine->set_out_pivot(160, 120);
 
 	if(get_use_opengl())
 	{

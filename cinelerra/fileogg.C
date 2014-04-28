@@ -207,8 +207,6 @@ static int sync_and_take_page_out(sync_window_t *sw, ogg_page *page)
 
 int FileOGG::open_file(int rd, int wr)
 {
-	this->rd = rd;
-	this->wr = wr;
 	if (!tf)
 	{
 		tf = new theoraframes_info_t;
@@ -1313,7 +1311,7 @@ int FileOGG::check_sig(Asset *asset)
 int FileOGG::close_file()
 {
 
-	if (wr)
+	if (file->wr)
 	{
 		if (asset->audio_data)
 			write_samples_vorbis(0, 0, 1); // set eos
@@ -1338,7 +1336,9 @@ int FileOGG::close_file()
 		
 		if (stream) fclose(stream);
 		stream = 0;
-	} else if (rd) 
+	} 
+	else 
+	if (file->rd) 
 	{	
 		if (asset->audio_data)
 		{

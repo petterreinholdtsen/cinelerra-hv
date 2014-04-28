@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "filesystem.h"
+#include "keys.h"
 #include "language.h"
 #include "mutex.h"
 #include <string.h>
@@ -177,6 +178,101 @@ BC_FileBoxTextBox::~BC_FileBoxTextBox()
 int BC_FileBoxTextBox::handle_event()
 {
 //	filebox->handle_event();
+
+
+//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
+// Let user delete suggestion
+	if(get_last_keypress() != BACKSPACE)
+	{
+
+// Compute suggestions
+		FileSystem fs;
+		ArrayList<char*> suggestions;
+		char *current_text = get_text();
+
+// If directory, tabulate it
+		if(current_text[0] == '/' ||
+			current_text[0] == '~')
+		{
+//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
+			char string[BCTEXTLEN];
+			char string2[BCTEXTLEN];
+			strcpy(string, current_text);
+			char *ptr = strrchr(string, '/');
+			if(!ptr) ptr = strrchr(string, '~');
+
+//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
+			*(ptr + 1) = 0;
+			int suggestion_column = ptr + 1 - string;
+
+			fs.set_filter(get_resources()->filebox_filter);
+			fs.set_sort_order(filebox->sort_order);
+			fs.set_sort_field(filebox->column_type[filebox->sort_column]);
+
+
+//printf("BC_FileBoxTextBox::handle_event %d %c %s\n", __LINE__, *ptr, string);
+			if(current_text[0] == '~' && *ptr != '/')
+			{
+				fs.update("/home");
+			}
+			else
+			{
+				fs.parse_tildas(string);
+				fs.update(string);
+			}
+//printf("BC_FileBoxTextBox::handle_event %d %d\n", __LINE__, fs.total_files());
+
+
+// Accept only entries with matching trailing characters
+			ptr = strrchr(current_text, '/');
+			if(!ptr) ptr = strrchr(current_text, '~');
+			if(ptr) ptr++;
+//printf("BC_FileBoxTextBox::handle_event %d %s %p\n", __LINE__, current_text, ptr);
+
+
+			if(ptr && strlen(ptr))
+			{
+				for(int i = 0; i < fs.total_files(); i++)
+				{
+					char *current_name = fs.get_entry(i)->name;
+					if(!strncmp(ptr, current_name, strlen(ptr)))
+					{
+						suggestions.append(current_name);
+	//printf("BC_FileBoxTextBox::handle_event %d %s\n", __LINE__, current_name);
+					}
+				}
+			}
+			else
+	// Accept all entries
+			for(int i = 0; i < fs.total_files(); i++)
+			{
+	//printf("BC_FileBoxTextBox::handle_event %d %s\n", __LINE__, fs.get_entry(i)->name);
+				suggestions.append(fs.get_entry(i)->name);
+			}
+//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
+
+// Add 1 to column to keep /
+			set_suggestions(&suggestions, suggestion_column);
+//printf("BC_FileBoxTextBox::handle_event %d\n", __LINE__);
+		}
+		else
+// Get entries from current listbox with matching trailing characters
+		{
+			for(int i = 0; i < filebox->list_column[0].size(); i++)
+			{
+				char *current_name = filebox->list_column[0].get(i)->get_text();
+
+//printf("BC_FileBoxTextBox::handle_event %d %s %s\n", __LINE__, current_text, current_name);
+				if(!strncmp(current_text, current_name, strlen(current_text)))
+				{
+					suggestions.append(current_name);
+				}
+			}
+
+			set_suggestions(&suggestions, 0);
+		}
+	}
+
 	return 1;
 }
 
@@ -304,6 +400,7 @@ BC_FileBoxOK::~BC_FileBoxOK()
 
 int BC_FileBoxOK::handle_event()
 {
+//printf("BC_FileBoxOK::handle_event %d\n", __LINE__);
 	filebox->submit_file(filebox->textbox->get_text());
 	return 1;
 }
@@ -943,7 +1040,9 @@ int BC_FileBox::submit_dir(char *dir)
 
 int BC_FileBox::submit_file(char *path, int use_this)
 {
-// blank.  
+// Deactivate textbox to hide suggestions
+	textbox->deactivate();
+
 // If file wanted, take the current directory as the desired file.
 // If directory wanted, ignore it.
 	if(!path[0] && !want_directory)

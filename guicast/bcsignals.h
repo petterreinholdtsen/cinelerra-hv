@@ -133,6 +133,9 @@ public:
 #define SET_TEMP BC_Signals::set_temp
 #define UNSET_TEMP BC_Signals::unset_temp
 
+// Forks need to reset the lock status in case they forked when a lock was held.
+	static void reset_locks();
+
 // Temporary files
 	static void delete_temps();
 	static void set_temp(char *string);

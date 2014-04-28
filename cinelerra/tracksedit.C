@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,6 +111,40 @@ void Tracks::clear_transitions(double start, double end)
 	}
 }
 
+void Tracks::shuffle_edits(double start, double end)
+{
+// This doesn't affect automation or effects
+// Labels follow the first track.
+	int first_track = 1;
+	for(Track *current_track = first; 
+		current_track; 
+		current_track = current_track->next)
+	{
+		if(current_track->record)
+		{
+			current_track->shuffle_edits(start, end, first_track);
+
+			first_track = 0;
+		}
+	}
+}
+
+void Tracks::align_edits(double start, double end)
+{
+// This doesn't affect automation or effects
+	ArrayList<double> times;
+
+	for(Track *current_track = first; 
+		current_track; 
+		current_track = current_track->next)
+	{
+		if(current_track->record)
+		{
+			current_track->align_edits(start, end, &times);
+		}
+	}
+}
+
 void Tracks::set_edit_length(double start, double end, double length)
 {
 	int first_track = 1;
@@ -121,9 +154,18 @@ void Tracks::set_edit_length(double start, double end, double length)
 	{
 		if(current_track->record)
 		{
+// The first edit anchors the length offsets.
+// The idea was to round edits up & down so they end where they should
+// if they all had floating point lengths.  It's easier just to make sure the framerate
+// is divisible by the required length.
+//			int first_edit = 1;
 			int64_t start_units = current_track->to_units(start, 0);
 			int64_t end_units = current_track->to_units(end, 0);
 			int64_t length_units = current_track->to_units(length, 1);
+// Starting time of the length offsets in seconds
+//			double start_time = 0;
+// Number of length offsets added so far
+//			int total_lengths = 0;
 
 			for(Edit *current_edit = current_track->edits->last;
 				current_edit;
@@ -132,6 +174,18 @@ void Tracks::set_edit_length(double start, double end, double length)
 				if(current_edit->startproject >= start_units &&
 					current_edit->startproject + current_edit->length <= end_units)
 				{
+// Calculate starting time of length offsets
+//					if(first_edit)
+//					{
+//						start_time = current_track->from_units(current_edit->startproject);
+//					}
+
+// Calculate true length based on number of length offsets
+//					double end_time = start_time + (1 + total_lengths) * length;
+//					int64_t length_units = current_track->to_units(end_time, 0) -
+//						current_edit->startproject;
+//					if(length_units < 1) length_units = 1;
+
 // Go in using the edit handle interface
 					int64_t starting_length = current_edit->length;
 
@@ -171,6 +225,10 @@ void Tracks::set_edit_length(double start, double end, double length)
 							MOVE_ALL_EDITS,
 							1);
 					}
+					
+					
+//					first_edit = 0;
+//					total_lengths++;
 				}
 			}
 

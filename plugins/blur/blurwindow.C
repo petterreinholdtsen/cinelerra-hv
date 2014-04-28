@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,10 +31,10 @@
 
 BlurWindow::BlurWindow(BlurMain *client)
  : PluginClientWindow(client, 
-	150, 
-	300, 
-	150, 
-	300, 
+	200, 
+	330, 
+	200, 
+	330, 
 	0)
 { 
 	this->client = client; 
@@ -61,6 +61,8 @@ void BlurWindow::create_objects()
 	add_subwindow(radius = new BlurRadius(client, this, x, y));
 	add_subwindow(radius_text = new BlurRadiusText(client, this, x + radius->get_w() + 10, y, 100));
 	y += radius->get_h() + 10;
+	add_subwindow(a_key = new BlurAKey(client, x, y));
+	y += 30;
 	add_subwindow(a = new BlurA(client, x, y));
 	y += 30;
 	add_subwindow(r = new BlurR(client, x, y));
@@ -166,6 +168,21 @@ BlurA::BlurA(BlurMain *client, int x, int y)
 int BlurA::handle_event()
 {
 	client->config.a = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+
+
+
+BlurAKey::BlurAKey(BlurMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.a_key, _("Alpha determines radius"))
+{
+	this->client = client;
+}
+int BlurAKey::handle_event()
+{
+	client->config.a_key = get_value();
 	client->send_configure_change();
 	return 1;
 }

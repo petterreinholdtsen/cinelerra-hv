@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +35,6 @@
 #include <stdint.h>
 
 
-// zero all pointers in FileFork or just use aggregate types.
 
 class Asset : public ListItem<Asset>, public Indexable
 {
@@ -91,7 +89,8 @@ public:
 // Return 1 if the paths match
 	int test_path(const char *path);
 	int test_plugin_title(const char *path);
-	int read(FileXML *file, int expand_relative = 1);
+	int read(FileXML *file, 
+		int expand_relative = 1);
 	int read_audio(FileXML *xml);
 	int read_video(FileXML *xml);
 	int read_index(FileXML *xml);

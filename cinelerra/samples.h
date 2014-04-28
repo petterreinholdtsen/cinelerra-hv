@@ -52,7 +52,7 @@ public:
 	int get_offset();
 
 
-	int filefork_size();
+	static int filefork_size();
 	void to_filefork(unsigned char *buffer);
 	void from_filefork(unsigned char *buffer);
 

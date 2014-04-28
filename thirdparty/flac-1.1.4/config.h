@@ -2,10 +2,10 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
 /* define to align allocated memory on 32-byte boundaries */
-#define FLAC__ALIGN_MALLOC_DATA 1
+/* #undef FLAC__ALIGN_MALLOC_DATA */
 
 /* define if building for ia32/i386 */
-#define FLAC__CPU_IA32 1
+/* #undef FLAC__CPU_IA32 */
 
 /* define if building for PowerPC */
 /* #undef FLAC__CPU_PPC */
@@ -17,16 +17,16 @@
 /* #undef FLAC__HAS_AS */
 
 /* define if you have docbook-to-man or docbook2man */
-#define FLAC__HAS_DOCBOOK_TO_MAN 1
+/* #undef FLAC__HAS_DOCBOOK_TO_MAN */
 
 /* define if you are compiling for PowerPC and have the 'gas' assembler */
 #define FLAC__HAS_GAS 1
 
 /* define if you are compiling for x86 and have the NASM assembler */
-#define FLAC__HAS_NASM 1
+/* #undef FLAC__HAS_NASM */
 
 /* define if you have the ogg library */
-#define FLAC__HAS_OGG 1
+/* #undef FLAC__HAS_OGG */
 
 /* define to disable use of assembly code */
 /* #undef FLAC__NO_ASM */
@@ -123,7 +123,7 @@
 /* #undef WORDS_BIGENDIAN */
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-#define _FILE_OFFSET_BITS 64
+/* #undef _FILE_OFFSET_BITS */
 
 /* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
 /* #undef _LARGEFILE_SOURCE */

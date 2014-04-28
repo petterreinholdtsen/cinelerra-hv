@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +31,7 @@
 #include "floatauto.h"
 #include "floatautos.h"
 #include "keyframe.h"
+#include "labels.h"
 #include "localsession.h"
 #include "module.h"
 #include "patch.h"
@@ -1455,6 +1455,185 @@ int64_t Track::edit_change_duration(int64_t input_position,
 		return edit_length;
 	else
 		return input_length;
+}
+
+void Track::shuffle_edits(double start, double end, int first_track)
+{
+	ArrayList<Edit*> new_edits;
+	ArrayList<Label*> new_labels;
+	int64_t start_units = to_units(start, 0);
+	int64_t end_units = to_units(end, 0);
+// Sample range of all edits selected
+	int64_t total_start_units = 0;
+	int64_t total_end_units = 0;
+// Edit before range
+	Edit *start_edit = 0;
+	int have_start_edit = 0;
+
+// Move all edit pointers to list
+	for(Edit *current = edits->first; 
+		current; )
+	{
+		if(current->startproject >= start_units &&
+			current->startproject + current->length <= end_units)
+		{
+			if(!have_start_edit) start_edit = current->previous;
+			have_start_edit = 1;
+			total_start_units = current->startproject;
+			total_end_units = current->startproject + current->length;
+			new_edits.append(current);
+
+// Move label pointers
+			if(first_track && edl->session->labels_follow_edits)
+			{
+				double start_seconds = from_units(current->startproject);
+				double end_seconds = from_units(current->startproject +
+					current->length);
+				for(Label *label = edl->labels->first;
+					label;
+					label = label->next)
+				{
+					if(label->position >= start_seconds &&
+						label->position < end_seconds)
+					{
+						new_labels.append(label);
+						edl->labels->remove_pointer(label);
+					}
+				}
+			}
+
+// Remove edit pointer
+			Edit *previous = current;
+			current = NEXT;
+			edits->remove_pointer(previous);
+		}
+		else
+		{
+			current = NEXT;
+		}
+	}
+
+// Insert pointers in random order
+	while(new_edits.size())
+	{
+		int index = rand() % new_edits.size();
+		Edit *edit = new_edits.get(index);
+		new_edits.remove_number(index);
+		edits->insert_after(start_edit, edit);
+		start_edit = edit;
+
+// Recalculate start position
+// Save old position for moving labels
+		int64_t startproject1 = edit->startproject;
+		int64_t startproject2 = 0;
+		if(edit->previous)
+		{
+			edit->startproject = 
+				startproject2 =
+				edit->previous->startproject + edit->previous->length;
+		}
+		else
+		{
+			edit->startproject = startproject2 = 0;
+		}
+
+
+// Insert label pointers
+		if(first_track && edl->session->labels_follow_edits)
+		{
+			double start_seconds1 = from_units(startproject1);
+			double start_seconds2 = from_units(startproject2);
+			double end_seconds1 = from_units(edit->startproject +
+				edit->length);
+			for(int i = new_labels.size() - 1; i >= 0; i--)
+			{
+				Label *label = new_labels.get(i);
+// Was in old edit position
+				if(label->position >= start_seconds1 &&
+					label->position < start_seconds2)
+				{
+// Move to new edit position
+					double position = label->position - 
+						start_seconds1 + 
+						start_seconds2;
+					edl->labels->insert_label(position);
+					new_labels.remove_object_number(i);
+				}
+			}
+		}
+
+
+	}
+	
+	optimize();
+	
+	if(first_track && edl->session->labels_follow_edits)
+	{
+		edl->labels->optimize();
+	}
+}
+
+void Track::align_edits(double start, 
+	double end, 
+	ArrayList<double> *times)
+{
+	int64_t start_units = to_units(start, 0);
+	int64_t end_units = to_units(end, 0);
+
+// If 1st track with data, times is empty & we need to collect the edit times.
+	if(!times->size())
+	{
+		for(Edit *current = edits->first; current; current = NEXT)
+		{
+			if(current->startproject >= start_units &&
+				current->startproject + current->length <= end_units)
+			{
+				times->append(from_units(current->startproject));
+			}
+		}
+	}
+	else
+// All other tracks get silence or cut to align the edits on the times.
+	{
+		int current_time = 0;
+		for(Edit *current = edits->first; 
+			current && current_time < times->size(); )
+		{
+			if(current->startproject >= start_units &&
+				current->startproject + current->length <= end_units)
+			{
+				int64_t desired_startunits = to_units(times->get(current_time), 0);
+				int64_t current_startunits = current->startproject;
+				current = NEXT;
+
+
+				if(current_startunits < desired_startunits)
+				{
+//printf("Track::align_edits %d\n", __LINE__);
+					edits->paste_silence(current_startunits,
+						desired_startunits);
+					shift_keyframes(current_startunits,
+						desired_startunits - current_startunits);
+				}
+				else
+				if(current_startunits > desired_startunits)
+				{
+					edits->clear(desired_startunits,
+						current_startunits);
+					shift_keyframes(desired_startunits,
+						current_startunits - desired_startunits);
+				}
+
+				current_time++;
+			}
+			else
+			{
+				current = NEXT;
+			}
+		}
+	}
+
+	optimize();
 }
 
 int Track::purge_asset(Asset *asset)

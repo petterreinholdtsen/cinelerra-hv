@@ -321,6 +321,7 @@ int FileBase::search_render_strategies(ArrayList<int>* render_strategies, int re
 
 int64_t FileBase::get_memory_usage()
 {
+//printf("FileBase::get_memory_usage %d\n", __LINE__);
 	if(pcm_history) 
 		return history_allocated * 
 			history_channels * 

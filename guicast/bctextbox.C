@@ -1,7 +1,6 @@
-
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,10 +100,17 @@ BC_TextBox::BC_TextBox(int x,
 BC_TextBox::~BC_TextBox()
 {
 	if(skip_cursor) delete skip_cursor;
+	suggestions->remove_all_objects();
+	delete suggestions;
+	delete suggestions_popup;
 }
 
 int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 {
+	suggestions = new ArrayList<BC_ListBoxItem*>;
+	suggestions_popup = 0;
+	suggestion_column = 0;
+
 	this->rows = rows;
 	this->has_border = has_border;
 	this->font = font;
@@ -114,7 +120,9 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	highlight_letter3 = highlight_letter4 = 0;
 	ibeam_letter = 0;
 	active = 0;
-	text_selected = word_selected = 0;
+	text_selected = 0;
+	word_selected = 0;
+	line_selected = 0;
 	text_x = 0;
 	enabled = 1;
 	highlighted = 0;
@@ -185,6 +193,64 @@ int BC_TextBox::calculate_h(BC_WindowBase *gui,
 void BC_TextBox::set_precision(int precision)
 {
 	this->precision = precision;
+}
+
+void BC_TextBox::set_suggestions(ArrayList<char*> *suggestions, int column)
+{
+// Copy the array
+	this->suggestions->remove_all_objects();
+	this->suggestion_column = column;
+	
+	if(suggestions)
+	{
+		for(int i = 0; i < suggestions->size(); i++)
+		{
+			this->suggestions->append(new BC_ListBoxItem(suggestions->get(i)));
+		}
+
+// Show the popup
+		if(suggestions->size() > 1)
+		{
+			if(!suggestions_popup)
+			{
+				
+				get_parent()->add_subwindow(suggestions_popup = 
+					new BC_TextBoxSuggestions(this, x, y));
+				suggestions_popup->activate(0);
+			}
+			else
+			{
+				suggestions_popup->update(this->suggestions,
+					0,
+					0,
+					1);
+				suggestions_popup->activate(0);
+			}
+		}
+		else
+// Show the highlighted text
+		if(suggestions->size() == 1)
+		{
+			char *current_suggestion = suggestions->get(0);
+			highlight_letter1 = strlen(text);
+			strcat(text, 
+				current_suggestion + highlight_letter1 - suggestion_column);
+			highlight_letter2 = strlen(text);
+//printf("BC_TextBox::set_suggestions %d %d\n", __LINE__, suggestion_column);
+
+			draw();
+
+			delete suggestions_popup;
+			suggestions_popup = 0;
+		}
+	}
+
+// Clear the popup
+	if(!suggestions || !this->suggestions->size())
+	{
+		delete suggestions_popup;
+		suggestions_popup = 0;
+	}
 }
 
 void BC_TextBox::set_selection(int char1, int char2, int ibeam)
@@ -534,6 +600,17 @@ int BC_TextBox::button_press_event()
 		}
 
 		cursor_letter = get_cursor_letter(top_level->cursor_x, top_level->cursor_y);
+		if(get_triple_click())
+		{
+//printf("BC_TextBox::button_press_event %d\n", __LINE__);
+			line_selected = 1;
+			select_line(highlight_letter1, highlight_letter2, cursor_letter);
+			highlight_letter3 = highlight_letter1;
+			highlight_letter4 = highlight_letter2;
+			ibeam_letter = highlight_letter2;
+			copy_selection(PRIMARY_SELECTION);
+		}
+		else
 		if(get_double_click())
 		{
 			word_selected = 1;
@@ -578,10 +655,11 @@ int BC_TextBox::button_release_event()
 	if(active)
 	{
 		hide_tooltip();
-		if(text_selected || word_selected)
+		if(text_selected || word_selected || line_selected)
 		{
 			text_selected = 0;
 			word_selected = 0;
+			line_selected = 0;
 		}
 	}
 	return 0;
@@ -592,9 +670,16 @@ int BC_TextBox::cursor_motion_event()
 	int cursor_letter, text_len = strlen(text), letter1, letter2;
 	if(active)
 	{
-		if(text_selected || word_selected)
+		if(text_selected || word_selected || line_selected)
 		{
-			cursor_letter = get_cursor_letter(top_level->cursor_x, top_level->cursor_y);
+			cursor_letter = get_cursor_letter(top_level->cursor_x, 
+				top_level->cursor_y);
+
+			if(line_selected)
+			{
+				select_line(letter1, letter2, cursor_letter);
+			}
+			else
 			if(word_selected)
 			{
 				select_word(letter1, letter2, cursor_letter);
@@ -641,6 +726,11 @@ int BC_TextBox::deactivate()
 {
 	active = 0;
 	top_level->unset_repeat(top_level->get_resources()->blink_rate);
+	if(suggestions_popup)
+	{
+		delete suggestions_popup;
+		suggestions_popup = 0;
+	}
 	draw();
 	return 0;
 }
@@ -713,11 +803,26 @@ int BC_TextBox::keypress_event()
 	switch(get_keypress())
 	{
 		case ESC:
-			top_level->deactivate();
-			result = 0;
+// Deactivate the suggestions
+			if(suggestions && suggestions_popup)
+			{
+				delete suggestions_popup;
+				suggestions_popup = 0;
+				result = 1;
+			}
+			else
+			{
+				top_level->deactivate();
+				result = 0;
+			}
 			break;
 
+
+
+
+
 		case RETURN:
+//printf("BC_TextBox::keypress_event %d\n", __LINE__);
 			if(rows == 1)
 			{
 				top_level->deactivate();
@@ -729,12 +834,17 @@ int BC_TextBox::keypress_event()
 				default_keypress(dispatch_event, result);
 			}
 			break;
-// Handle like a default keypress
 
+
+
+
+// Handle like a default keypress
 		case TAB:
 			top_level->cycle_textboxes(1);
 			result = 1;
 			break;
+
+
 
 		case LEFTTAB:
 			top_level->cycle_textboxes(-1);
@@ -845,6 +955,14 @@ int BC_TextBox::keypress_event()
 			break;
 
 		case UP:
+			if(suggestions && suggestions_popup)
+			{
+// Pass to suggestions popup
+				suggestions_popup->activate(1);
+				suggestions_popup->keypress_event();
+				result = 1;
+			}
+			else
 			if(ibeam_letter > 0)
 			{
 //printf("BC_TextBox::keypress_event 1 %d %d %d\n", ibeam_x, ibeam_y, ibeam_letter);
@@ -937,6 +1055,14 @@ int BC_TextBox::keypress_event()
 			break;
 
 		case DOWN:
+			if(suggestions && suggestions_popup)
+			{
+// Pass to suggestions popup
+				suggestions_popup->activate(1);
+				suggestions_popup->keypress_event();
+				result = 1;
+			}
+			else
 //			if(ibeam_letter > 0)
 			{
 // Extend selection
@@ -1033,6 +1159,9 @@ int BC_TextBox::keypress_event()
 		
 		case END:
 		{
+			delete suggestions_popup;
+			suggestions_popup = 0;
+		
 			int old_ibeam_letter = ibeam_letter;
 
 			while(ibeam_letter < text_len && text[ibeam_letter] != '\n')
@@ -1071,6 +1200,9 @@ int BC_TextBox::keypress_event()
 
 		case HOME:
 		{
+			delete suggestions_popup;
+			suggestions_popup = 0;
+
 			int old_ibeam_letter = ibeam_letter;
 
 			while(ibeam_letter > 0 && text[ibeam_letter - 1] != '\n')
@@ -1108,6 +1240,12 @@ int BC_TextBox::keypress_event()
 		}
 
     	case BACKSPACE:
+			if(suggestions_popup)
+			{
+				delete suggestions_popup;
+				suggestions_popup = 0;
+			}
+
 			if(highlight_letter1 == highlight_letter2)
 			{
 				if(ibeam_letter > 0)
@@ -1388,7 +1526,8 @@ void BC_TextBox::find_ibeam(int dispatch_event)
 
 int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 {
-	int i, j, k, l, row_begin, row_end, text_len, result = 0, done = 0;
+	int i, j, k, row_begin, row_end, text_len, result = 0, done = 0;
+	int column1, column2;
 	text_len = strlen(text);
 
 	if(cursor_y < text_y)
@@ -1409,14 +1548,17 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 
 		if(cursor_y >= k && cursor_y < k + text_height)
 		{
+			column1 = 0;
+			column2 = 0;
 			for(j = 0; j <= row_end - row_begin && !done; j++)
 			{
-				l = get_text_width(font, text_row, j) + text_x;
-				if(l > cursor_x)
+				column2 = get_text_width(font, text_row, j) + text_x;
+				if((column2 + column1) / 2 >= cursor_x)
 				{
 					result = row_begin + j - 1;
 					done = 1;
 				}
+				column1 = column2;
 			}
 			if(!done)
 			{
@@ -1439,6 +1581,8 @@ int BC_TextBox::get_cursor_letter(int cursor_x, int cursor_y)
 void BC_TextBox::select_word(int &letter1, int &letter2, int ibeam_letter)
 {
 	int text_len = strlen(text);
+	if(!text_len) return;
+
 	letter1 = letter2 = ibeam_letter;
 	do
 	{
@@ -1451,6 +1595,33 @@ void BC_TextBox::select_word(int &letter1, int &letter2, int ibeam_letter)
 		if(isalnum(text[letter2])) letter2++;
 	}while(letter2 < text_len && isalnum(text[letter2]));
 	if(letter2 < text_len && text[letter2] == ' ') letter2++;
+
+	if(letter1 < 0) letter1 = 0;
+	if(letter2 < 0) letter2 = 0;
+	if(letter1 > text_len) letter1 = text_len;
+	if(letter2 > text_len) letter2 = text_len;
+}
+
+void BC_TextBox::select_line(int &letter1, int &letter2, int ibeam_letter)
+{
+	int text_len = strlen(text);
+	if(!text_len) return;
+
+	letter1 = letter2 = ibeam_letter;
+
+// Rewind to previous linefeed
+	do
+	{
+		if(text[letter1] != '\n') letter1--;
+	}while(letter1 > 0 && text[letter1] != '\n');
+	if(text[letter1] == '\n') letter1++;
+
+// Advance to next linefeed
+	do
+	{
+		if(text[letter2] != '\n') letter2++;
+	}while(letter2 < text_len && text[letter2] != '\n');
+	if(letter2 < text_len && text[letter2] == '\n') letter2++;
 
 	if(letter1 < 0) letter1 = 0;
 	if(letter2 < 0) letter2 = 0;
@@ -1518,8 +1689,51 @@ void BC_TextBox::set_separators(const char *separators)
 
 
 
+BC_TextBoxSuggestions::BC_TextBoxSuggestions(BC_TextBox *text_box, 
+	int x, 
+	int y)
+ : BC_ListBox(x,
+ 	y,
+	text_box->get_w(),
+	200,
+	LISTBOX_TEXT,
+	text_box->suggestions,
+	0,
+	0,
+	1,
+	0,
+	1)
+{
+	this->text_box = text_box;
+	set_use_button(0);
+	set_justify(LISTBOX_LEFT);
+}
 
+BC_TextBoxSuggestions::~BC_TextBoxSuggestions()
+{
+}
 
+int BC_TextBoxSuggestions::selection_changed()
+{
+//printf("BC_TextBoxSuggestions::selection_changed %d\n", __LINE__);
+	BC_ListBoxItem *item = get_selection(0, 0);
+	char *current_suggestion = item->get_text();
+	int text_box_len = strlen(text_box->text);
+	strcpy(text_box->text + text_box->suggestion_column, current_suggestion);
+	*(text_box->text + text_box->suggestion_column + strlen(current_suggestion)) = 0;
+
+	text_box->draw();
+	return 1;
+}
+
+int BC_TextBoxSuggestions::handle_event()
+{
+	text_box->highlight_letter1 = 
+		text_box->highlight_letter2 = 
+		text_box->ibeam_letter = strlen(text_box->text);
+	text_box->draw();
+	return 1;
+}
 
 
 
@@ -1909,6 +2123,7 @@ int BC_TumbleTextBoxText::button_press_event()
 	if(is_event_win())
 	{
 		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+
 		if(get_buttonpress() == 4)
 		{
 			popup->tumbler->handle_up_event();

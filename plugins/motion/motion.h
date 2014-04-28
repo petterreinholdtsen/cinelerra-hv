@@ -88,7 +88,9 @@ public:
 // Center angle of rotation search
 	int rotation_center;
 	int magnitude;
-	int return_speed;
+	int rotate_magnitude;
+	float return_speed;
+	float rotate_return_speed;
 	int draw_vectors;
 // Percent of image size
 	int global_block_w;

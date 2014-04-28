@@ -105,6 +105,35 @@ void Labels::insert_labels(Labels *labels, double start, double length, int past
 	}
 }
 
+
+void Labels::insert_label(double position)
+{
+	int exists = 0;
+	Label *old_label = 0;
+
+// Check every old label for existence
+	for(old_label = first; old_label; old_label = old_label->next)
+	{
+		if(edl->equivalent(old_label->position, position))
+		{
+			exists = 1;
+			break;
+		}
+		else
+		if(old_label->position > position)
+			break;
+	}
+
+	if(!exists)
+	{
+		if(old_label)
+			insert_before(old_label, new Label(edl, this, position));
+		else
+			append(new Label(edl, this, position));
+	}
+}
+
+
 int Labels::toggle_label(double start, double end)
 {
 	Label *current;

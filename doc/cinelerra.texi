@@ -6119,9 +6119,12 @@ ifogen -T -o dvd
 mkisofs -dvd-video -udf -o dvd.iso dvd/
 @end example
 
-Chapters may be set with the following:
+Chapters may be set with the following.  The units are seconds.  Version
+0.3.1 ignores the 1st chapter, so it has to be specified as 0.
 
-ifogen -o dvd --chapters=0021.788,0047.447,0077.043 final.mpg
+@example
+ifogen -o dvd --chapters=0,0021.788,0047.447,0077.043 final.mpg
+@end example
 
 Replace the chapter times.
 

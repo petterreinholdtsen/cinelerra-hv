@@ -52,8 +52,11 @@ public:
 		int &use_vconsole,
 		long position);
 	int get_use_vconsole(Edit* &playable_edit, 
-		long position);
-	int get_colormodel(Edit* &playable_edit, int use_vconsole);
+		long position,
+		int &get_use_vconsole);
+	int get_colormodel(Edit* &playable_edit, 
+		int use_vconsole,
+		int use_brender);
 
 	long tounits(double position, int round);
 	double fromunits(long position);

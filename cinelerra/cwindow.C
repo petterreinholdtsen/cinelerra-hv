@@ -142,7 +142,6 @@ void CWindow::update(int position,
 
 //printf("CWindow::update 5\n");
 
-//printf("CWindow::update 1\n");
 // Updated by video device.
 	if(overlays && !position)
 	{
@@ -166,16 +165,19 @@ void CWindow::update(int position,
 		gui->zoom_panel->update(AUTO_ZOOM);
 	else
 		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
+//printf("CWindow::update 6 %f\n", mwindow->edl->session->cwindow_zoom);
 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
 			mwindow->edl->session->cwindow_yscroll, 
 			mwindow->edl->session->cwindow_zoom);
+//printf("CWindow::update 6 %f\n", mwindow->edl->session->cwindow_zoom);
 	gui->canvas->reposition_window(mwindow->edl, 
 			mwindow->theme->ccanvas_x,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
 
+//printf("CWindow::update 6 %f\n", mwindow->edl->session->cwindow_zoom);
 
 
 

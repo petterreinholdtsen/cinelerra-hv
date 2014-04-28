@@ -13,6 +13,8 @@ PluginAClient::PluginAClient(PluginServer *server)
 		server->edl &&
 		server->edl->session) 
 		project_sample_rate = server->edl->session->sample_rate;
+	else
+		project_sample_rate = 1;
 }
 
 PluginAClient::~PluginAClient()
@@ -92,5 +94,21 @@ int PluginAClient::read_samples(double *buffer, long start_position, long total_
 //printf("PluginAClient::read_samples 1\n");
 	return server->read_samples(buffer, start_position, total_samples);
 }
+
+
+void PluginAClient::send_render_gui(void *data, int size)
+{
+//printf("PluginVClient::send_render_gui 1\n");
+	server->send_render_gui(data, size);
+}
+
+void PluginAClient::plugin_render_gui(void *data, int size)
+{
+	render_gui(data, size);
+}
+
+
+
+
 
 

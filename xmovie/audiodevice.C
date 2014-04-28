@@ -252,13 +252,13 @@ int AudioDevice::write_audio(char *buffer, long samples)
 					switch(i)
 					{
 						case 0: out_channel = 0; break;
-						case 1: out_channel = 0; break;
-						case 2: out_channel = 1; break;
+						case 1: out_channel = 1; break;
+						case 2: out_channel = 0; break;
 						case 3: out_channel = 0; break;
 						case 4: out_channel = 1; break;
 					}
 
-					if(i == 1)
+					if(i == 2)
 					{
 						for(int j = 0; j < samples; j++)
 						{

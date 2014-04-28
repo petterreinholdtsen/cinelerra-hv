@@ -1,16 +1,16 @@
-/Makefile.am/1.1/Tue Jul  2 14:20:27 2002//
-/Makefile.in/1.1/Tue Jul  2 14:20:27 2002//
-/csr.h/1.1/Tue Jul  2 14:20:27 2002//
-/errors.c/1.1/Tue Jul  2 14:20:27 2002//
-/eventloop.c/1.1/Tue Jul  2 14:20:27 2002//
-/fcp.c/1.1/Tue Jul  2 14:20:27 2002//
-/ieee1394.h/1.1/Tue Jul  2 14:20:27 2002//
-/iso.c/1.1/Tue Jul  2 14:20:27 2002//
-/kernel-raw1394.h/1.1/Tue Jul  2 14:20:27 2002//
-/main.c/1.1/Tue Jul  2 14:20:27 2002//
-/raw1394.h/1.1/Tue Jul  2 14:20:27 2002//
-/raw1394_private.h/1.1/Tue Jul  2 14:20:27 2002//
-/readwrite.c/1.1/Tue Jul  2 14:20:27 2002//
-/testlibraw.c/1.1/Tue Jul  2 14:20:27 2002//
-/version.c/1.1/Tue Jul  2 14:20:27 2002//
-D
+D/CVS////
+/Makefile.am/1.1/Tue Feb 27 17:47:18 2001//
+/Makefile.in/1.1/Mon May 14 01:08:28 2001//
+/csr.h/1.1/Sat Dec 18 16:02:15 1999//
+/errors.c/1.1/Fri Jan 19 01:19:04 2001//
+/eventloop.c/1.1/Sun May 13 23:31:12 2001//
+/fcp.c/1.1/Sun Sep 10 21:37:04 2000//
+/ieee1394.h/1.1/Wed Nov 22 22:43:19 2000//
+/iso.c/1.1/Sun Sep 10 21:37:05 2000//
+/kernel-raw1394.h/1.1/Tue Aug  8 00:12:43 2000//
+/main.c/1.1/Sun May 13 23:15:58 2001//
+/raw1394.h/1.1/Sun May 13 23:16:47 2001//
+/raw1394_private.h/1.1/Sun May 13 23:16:17 2001//
+/readwrite.c/1.1/Mon Jan 22 00:16:59 2001//
+/testlibraw.c/1.1/Sat Jan 27 02:26:32 2001//
+/version.c/1.1/Mon May 14 00:47:24 2001//

@@ -1,12 +1,12 @@
-/Makefile/1.1/Mon Jul 22 12:33:53 2002//
-/Makefile.am/1.1/Mon Jul 22 12:33:53 2002//
-/Makefile.in/1.1/Mon Jul 22 12:33:53 2002//
-/build_ogg_dynamic.bat/1.1/Mon Jul 22 12:33:53 2002//
-/build_ogg_dynamic_debug.bat/1.1/Mon Jul 22 12:33:53 2002//
-/build_ogg_static.bat/1.1/Mon Jul 22 12:33:53 2002//
-/build_ogg_static_debug.bat/1.1/Mon Jul 22 12:33:53 2002//
+D/CVS////
+/Makefile/1.1/Mon Jul 22 12:29:20 2002//
+/Makefile.am/1.1/Fri Jul  5 08:07:10 2002//
+/Makefile.in/1.1/Fri Jul 19 14:13:23 2002//
+/build_ogg_dynamic.bat/1.1/Mon Jun 18 15:01:21 2001//
+/build_ogg_dynamic_debug.bat/1.1/Mon Jun 18 15:01:21 2001//
+/build_ogg_static.bat/1.1/Mon Jun 18 15:01:21 2001//
+/build_ogg_static_debug.bat/1.1/Mon Jun 18 15:01:21 2001//
 /ogg.def/1.1/Mon Jul 22 12:33:53 2002//
-/ogg.dsw/1.1/Mon Jul 22 12:33:53 2002//
-/ogg_dynamic.dsp/1.1/Mon Jul 22 12:33:53 2002//
-/ogg_static.dsp/1.1/Mon Jul 22 12:33:53 2002//
-D
+/ogg.dsw/1.1/Fri Jul  5 08:05:19 2002//
+/ogg_dynamic.dsp/1.1/Fri Sep  7 09:31:55 2001//
+/ogg_static.dsp/1.1/Sat Jul  6 04:56:38 2002//

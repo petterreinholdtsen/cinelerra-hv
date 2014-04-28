@@ -30,6 +30,7 @@ MainSession::MainSession(MWindow *mwindow)
 	drag_edits = new ArrayList<Edit*>;
 	drag_edit = 0;
 	clip_number = 1;
+	brender_end = 0;
 }
 
 MainSession::~MainSession()

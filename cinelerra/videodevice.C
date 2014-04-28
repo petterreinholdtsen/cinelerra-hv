@@ -9,7 +9,6 @@
 #include "recordmonitor.h"
 #include "vdevice1394.h"
 #include "vdevicebuz.h"
-#include "vdevicelml.h"
 #include "vdevicev4l.h"
 #include "vdevicex11.h"
 #include "videoconfig.h"
@@ -153,12 +152,6 @@ int VideoDevice::open_input(VideoInConfig *config,
 			this->input_x = input_x;
 			this->input_y = input_y;
 			input_base = new VDeviceX11(this, 0);
-			result = input_base->open_input();
-			break;
-		case CAPTURE_LML:
-			keepalive = new KeepaliveThread(this);
-			keepalive->start_keepalive();
-			input_base = new VDeviceLML(this);
 			result = input_base->open_input();
 			break;
 		case CAPTURE_BUZ:
@@ -494,11 +487,6 @@ int VideoDevice::open_output(VideoOutConfig *config,
 		case PLAYBACK_BUZ:
 			output_base = new VDeviceBUZ(this);
 			break;
-
-		case PLAYBACK_LML:
-			output_base = new VDeviceLML(this);
-			break;
-
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
 			output_base = new VDeviceX11(this, output);

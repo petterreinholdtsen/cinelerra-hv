@@ -19,6 +19,7 @@
 #include "linklist.h"
 #include "mutex.h"
 #include "pluginserver.inc"
+#include "preferences.inc"
 
 class CICacheItem : public ListItem<CICacheItem>
 {
@@ -41,7 +42,9 @@ private:
 class CICache : public List<CICacheItem>
 {
 public:
-	CICache(EDL *edl, ArrayList<PluginServer*> *plugindb);
+	CICache(EDL *edl, 
+		Preferences *preferences,
+		ArrayList<PluginServer*> *plugindb);
 	~CICache();
 
 	friend class CICacheItem;
@@ -66,8 +69,7 @@ public:
 // increment counters after rendering a buffer length
 // since you can't know how big the cache is until after rendering the buffer
 // deletes oldest assets until under the memory limit
-	int age_audio();
-	int age_video();
+	int age();
 
 	int dump();
 
@@ -76,7 +78,6 @@ public:
 private:
 	int delete_oldest();        // returns 0 if successful
 	                        // 1 if nothing was old
-	int age_type(int data_type);
 	long get_memory_usage();
 
 // for deleting items
@@ -89,6 +90,7 @@ private:
 	Mutex check_in_lock, check_out_lock, total_lock;
 // Copy of EDL
 	EDL *edl;
+	Preferences *preferences;
 };
 
 

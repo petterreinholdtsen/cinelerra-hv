@@ -118,7 +118,6 @@ public:
 	DenoiseFFTEffect(PluginServer *server);
 	~DenoiseFFTEffect();
 
-	char* plugin_title();
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
@@ -427,6 +426,7 @@ void DenoiseFFTEffect::update_gui()
 {
 	if(thread)
 	{
+		load_configuration();
 		thread->window->lock_window();
 		thread->window->level->update(config.level);
 		thread->window->collect->update(config.collecting);

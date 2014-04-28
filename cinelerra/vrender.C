@@ -73,36 +73,48 @@ int VRender::process_buffer(VFrame **video_out,
 	long render_len = 1;
 	int reconfigure = 0;
 
+
+//printf("VRender::process_buffer 1\n");
 	for(i = 0; i < MAX_CHANNELS; i++)
 		this->video_out[i] = video_out[i];
 	this->last_playback = last_buffer;
 
 	current_position = input_position;
+//printf("VRender::process_buffer 2\n");
 
 // test for automation configuration and shorten the fragment len if necessary
 	reconfigure = vconsole->test_reconfigure(input_position, 
 		render_len,
 		last_playback);
+//printf("VRender::process_buffer 3\n");
 
 	if(reconfigure) restart_playback();
+//printf("VRender::process_buffer 4\n");
 	return process_buffer(input_position);
 }
 
 
 int VRender::process_buffer(long input_position)
 {
-	Edit *playable_edit;
+	Edit *playable_edit = 0;
 	int colormodel;
-	int use_vconsole;
+	int use_vconsole = 1;
+	int use_brender = 0;
 	int result = 0;
-
 //printf("VRender::process_buffer 1 %d\n", input_position);
+
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
-		input_position);
+		input_position,
+		use_brender);
+
+// printf("VRender::process_buffer 1 %d %d %d\n", 
+// input_position, 
+// use_vconsole, 
+// use_brender);
 
 // Negotiate color model
-	colormodel = get_colormodel(playable_edit, use_vconsole);
+	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
 
 //printf("VRender::process_buffer 2 %p %d %d\n", renderengine->video, use_vconsole, colormodel);
 // Get output buffer from device
@@ -114,13 +126,32 @@ int VRender::process_buffer(long input_position)
 	if(!use_vconsole)
 	{
 
-//printf("VRender::process_buffer 4 %d %p %p %p\n", 
-//current_position, renderengine->get_vcache(), playable_edit, video_out[0]);		
+// printf("VRender::process_buffer 4 %d %p %p %p\n", 
+// current_position, renderengine->get_vcache(), playable_edit, video_out[0]);		
+		if(use_brender)
+		{
+			Asset *asset = renderengine->preferences->brender_asset;
+			File *file = renderengine->get_vcache()->check_out(asset);
+			if(file)
+			{
+				long corrected_position = current_position;
+				if(renderengine->command->get_direction() == PLAY_REVERSE)
+					corrected_position--;
+
+				file->set_video_position(corrected_position, 
+					renderengine->edl->session->frame_rate);
+				file->read_frame(video_out[0]);
+				renderengine->get_vcache()->check_in(asset);
+			}
+		}
+		else
 		if(playable_edit)
+		{
 			result = ((VEdit*)playable_edit)->read_frame(video_out[0], 
 				current_position, 
 				renderengine->command->get_direction(),
 				renderengine->get_vcache());
+		}
 
 //printf("VRender::process_buffer 5\n");
 //for(int j = video_out[0]->get_w() * 3 * 5; j < video_out[0]->get_w() * 3 * 10; j += 2)
@@ -137,7 +168,6 @@ int VRender::process_buffer(long input_position)
 //printf("VRender::process_buffer 7\n");
 	}
 
-	renderengine->get_vcache()->age_video();
 
 //printf("VRender::process_buffer 8\n");
 	return result;
@@ -145,9 +175,18 @@ int VRender::process_buffer(long input_position)
 
 // Determine if virtual console is needed
 int VRender::get_use_vconsole(Edit* &playable_edit, 
-	long position)
+	long position,
+	int &use_brender)
 {
 	Track *playable_track;
+
+
+// Background rendering completed
+	if((use_brender = renderengine->brender_available(position, 
+		renderengine->command->get_direction())) != 0) 
+		return 0;
+
+
 
 //printf("VRender::get_use_vconsole 1\n");
 // Total number of playable tracks is 1
@@ -174,11 +213,14 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 		return 1;
 //printf("VRender::get_use_vconsole 5\n");
 
-// If we get here the frame is going to be directly copied
+// If we get here the frame is going to be directly copied.  Whether it is
+// decompressed in hardware depends on the colormodel.
 	return 0;
 }
 
-int VRender::get_colormodel(Edit* &playable_edit, int use_vconsole)
+int VRender::get_colormodel(Edit* &playable_edit, 
+	int use_vconsole,
+	int use_brender)
 {
 	int colormodel = renderengine->edl->session->color_model;
 
@@ -186,9 +228,25 @@ int VRender::get_colormodel(Edit* &playable_edit, int use_vconsole)
 	{
 // Get best colormodel supported by the file
 		int driver = renderengine->config->vconfig->driver;
-		File *file = renderengine->get_vcache()->check_out(playable_edit->asset);
-		colormodel = file->get_best_colormodel(driver);
-		renderengine->get_vcache()->check_in(playable_edit->asset);
+		File *file;
+		Asset *asset;
+
+		if(use_brender)
+		{
+			asset = renderengine->preferences->brender_asset;
+		}
+		else
+		{
+			asset = playable_edit->asset;
+		}
+
+		file = renderengine->get_vcache()->check_out(asset);
+
+		if(file)
+		{
+			colormodel = file->get_best_colormodel(driver);
+			renderengine->get_vcache()->check_in(asset);
+		}
 	}
 	return colormodel;
 }

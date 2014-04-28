@@ -11,8 +11,13 @@ class GainConfig
 {
 public:
 	GainConfig();
-	int operator==(GainConfig& that);
-	GainConfig& operator=(GainConfig& that);
+	int equivalent(GainConfig &that);
+	void copy_from(GainConfig &that);
+	void interpolate(GainConfig &prev, 
+		GainConfig &next, 
+		long prev_frame, 
+		long next_frame, 
+		long current_frame);
 
 	double level;
 };
@@ -23,30 +28,18 @@ public:
 	Gain(PluginServer *server);
 	~Gain();
 
-	void update_gui();
-	void load_configuration();
-	
-// data for gain
-	GainConfig config;
-	
-	DB db;
-
-	char* plugin_title();
-	VFrame* new_picon();
-	int is_realtime();
 	int process_realtime(long size, double *input_ptr, double *output_ptr);
-	int show_gui();
-	int set_string();
+
+	PLUGIN_CLASS_MEMBERS(GainConfig, GainThread)
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
-
-// non realtime support
 	int load_defaults();
 	int save_defaults();
-	Defaults *defaults;
-	
-	GainThread *thread;
+	void update_gui();
+	int is_realtime();
+
+
+	DB db;
 };
 
 class GainEngine : public Thread

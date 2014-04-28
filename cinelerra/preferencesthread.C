@@ -24,6 +24,7 @@
 #include "preferences.h"
 #include "recordprefs.h"
 #include "theme.h"
+#include "trackcanvas.h"
 #include "transportque.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
@@ -34,7 +35,7 @@ PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
  : BC_MenuItem("Preferences...", "Shift+P", 'P')
 {
 	this->mwindow = mwindow; 
-	
+
 	set_shift(1);
 	thread = new PreferencesThread(mwindow);
 }
@@ -80,6 +81,7 @@ void PreferencesThread::run()
 	redraw_indexes = 0;
 	redraw_meters = 0;
 	redraw_times = 0;
+	redraw_overlays = 0;
 	close_assets = 0;
 	reload_plugins = 0;
 	need_new_indexes = 0;
@@ -96,6 +98,7 @@ void PreferencesThread::run()
 		apply_settings();
 		mwindow->save_defaults();
 	}
+
 	delete window;
 	window = 0;
 	delete preferences;
@@ -147,6 +150,7 @@ int PreferencesThread::apply_settings()
 // TODO: Need to copy just the parameters in PreferencesThread
 	mwindow->edl->copy_session(edl);
 	*mwindow->preferences = *preferences;
+	mwindow->init_brender();
 
 //printf("PreferencesThread::apply_settings 1\n");
 //printf("PreferencesThread::apply_settings %d %d\n", redraw_meters, redraw_times);
@@ -179,13 +183,21 @@ int PreferencesThread::apply_settings()
 		mwindow->lwindow->gui->unlock_window();
 	}
 
+//printf("PreferencesThread::apply_settings 1 %d\n", redraw_overlays);
+	if(redraw_overlays)
+	{
+		mwindow->gui->lock_window();
+		mwindow->gui->canvas->draw_overlays();
+		mwindow->gui->canvas->flash();
+		mwindow->gui->unlock_window();
+	}
+
 //printf("PreferencesThread::apply_settings 1\n");
 	if(redraw_times)
 	{
 		mwindow->gui->lock_window();
 		mwindow->gui->update(0, 0, 1, 1, 0, 1, 0);
 		mwindow->gui->redraw_time_dependancies();
-		mwindow->gui->flush();
 		mwindow->gui->unlock_window();
 	}
 
@@ -198,6 +210,10 @@ int PreferencesThread::apply_settings()
 			1);
 	}
 
+	if(redraw_times || redraw_overlays)
+	{
+		mwindow->gui->flush();
+	}
 //printf("PreferencesThread::apply_settings 2 %d %d %d\n", redraw_meters, redraw_times, rerender);
 	return 0;
 }

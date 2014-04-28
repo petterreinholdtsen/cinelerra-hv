@@ -5,7 +5,8 @@
 
 FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb, 
 	int x, 
-	int y)
+	int y,
+	int use_brender)
  : BC_ListBox(x, 
  	y, 
 	200, 
@@ -19,53 +20,53 @@ FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb,
 	1)
 {
 	this->plugindb = plugindb;
+	this->use_brender = use_brender;
 	set_tooltip("Change file format");
-}
-
-FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb, 
-	int x, 
-	int y, 
-	char *text, 
-	int wr)
- : BC_ListBox(x, 
- 	y, 
-	200, 
-	200,
-	LISTBOX_TEXT,
-	0,
-	0,
-	0,
-	1,
-	0,
-	1)
-{
-	this->plugindb = plugindb;
 }
 
 int FormatPopup::create_objects()
 {
-	format_items.append(new BC_ListBoxItem(AIFF_NAME));
-	format_items.append(new BC_ListBoxItem(AU_NAME));
-//	format_items.append(new BC_ListBoxItem(AVI_ARNE1_NAME));
-//	format_items.append(new BC_ListBoxItem(AVI_ARNE2_NAME));
+	if(!use_brender)
+	{
+		format_items.append(new BC_ListBoxItem(AIFF_NAME));
+		format_items.append(new BC_ListBoxItem(AU_NAME));
+//		format_items.append(new BC_ListBoxItem(AVI_ARNE1_NAME));
+//		format_items.append(new BC_ListBoxItem(AVI_ARNE2_NAME));
 #ifdef USE_AVIFILE
-	format_items.append(new BC_ListBoxItem(AVI_AVIFILE_NAME));
+		format_items.append(new BC_ListBoxItem(AVI_AVIFILE_NAME));
 #endif
-//	format_items.append(new BC_ListBoxItem(AVI_LAVTOOLS_NAME));
-	format_items.append(new BC_ListBoxItem(JPEG_NAME));
+//		format_items.append(new BC_ListBoxItem(AVI_LAVTOOLS_NAME));
+		format_items.append(new BC_ListBoxItem(JPEG_NAME));
+	}
+
 	format_items.append(new BC_ListBoxItem(JPEG_LIST_NAME));
-	format_items.append(new BC_ListBoxItem(AVI_NAME));
-	format_items.append(new BC_ListBoxItem(WAV_NAME));
-	format_items.append(new BC_ListBoxItem(MOV_NAME));
-	format_items.append(new BC_ListBoxItem(AMPEG_NAME));
-	format_items.append(new BC_ListBoxItem(VMPEG_NAME));
-	format_items.append(new BC_ListBoxItem(VORBIS_NAME));
-	format_items.append(new BC_ListBoxItem(PCM_NAME));
-	format_items.append(new BC_ListBoxItem(PNG_NAME));
+
+	if(!use_brender)
+	{
+		format_items.append(new BC_ListBoxItem(AVI_NAME));
+		format_items.append(new BC_ListBoxItem(WAV_NAME));
+		format_items.append(new BC_ListBoxItem(MOV_NAME));
+		format_items.append(new BC_ListBoxItem(AMPEG_NAME));
+		format_items.append(new BC_ListBoxItem(VMPEG_NAME));
+		format_items.append(new BC_ListBoxItem(VORBIS_NAME));
+		format_items.append(new BC_ListBoxItem(PCM_NAME));
+		format_items.append(new BC_ListBoxItem(PNG_NAME));
+	}
+
 	format_items.append(new BC_ListBoxItem(PNG_LIST_NAME));
-	format_items.append(new BC_ListBoxItem(TGA_NAME));
+
+	if(!use_brender)
+	{
+		format_items.append(new BC_ListBoxItem(TGA_NAME));
+	}
+
 	format_items.append(new BC_ListBoxItem(TGA_LIST_NAME));
-	format_items.append(new BC_ListBoxItem(TIFF_NAME));
+
+	if(!use_brender)
+	{
+		format_items.append(new BC_ListBoxItem(TIFF_NAME));
+	}
+
 	format_items.append(new BC_ListBoxItem(TIFF_LIST_NAME));
 // 	for(i = 0; i < plugindb->total; i++)
 // 	{

@@ -34,7 +34,7 @@ public:
 		int out);
 
 	virtual ~VirtualNode();
-	void dump();
+	void dump(int indent);
 
 // derived node creates buffers here
 	virtual void new_output_buffer() { };
@@ -84,8 +84,6 @@ public:
 	VirtualConsole *vconsole;
 // module which created this node.
 	VirtualNode *parent_module;
-// Virtual transition this module owns
-	VirtualNode *virtual_transition;
 // use these to determine if this node is a plugin or module
 // Top level virtual node of module
 	Module *real_module;

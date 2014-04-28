@@ -306,6 +306,7 @@ public:
 	VFrame **stop_data;
 	VFrame **stoprec_data;
 	VFrame *timebar_bg_data;
+	VFrame *timebar_brender_data;
 	VFrame *timebar_view_data;
 	VFrame *title_bg_data;
 	VFrame **titlesafe_data;

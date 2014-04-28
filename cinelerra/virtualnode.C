@@ -42,7 +42,6 @@ VirtualNode::VirtualNode(RenderEngine *renderengine,
 	this->output_is_master = output_is_master;
 	this->in = in;
 	this->out = out;
-	virtual_transition = 0;
 	shared_input = 1;
 	shared_output = 1;
 	render_count = 0;
@@ -52,23 +51,28 @@ VirtualNode::VirtualNode(RenderEngine *renderengine,
 	plugin_autos = 0;
 	plugin_auto_before = plugin_auto_after = 0;
 	attachment = 0;
+//printf("VirtualNode::VirtualNode 1\n");
 }
 
 VirtualNode::~VirtualNode()
 {
-	if(virtual_transition) delete virtual_transition;
 	vplugins.remove_all_objects();
+//printf("VirtualNode::VirtualNode 2\n");
 }
 
-void VirtualNode::dump()
+#define PRINT_INDENT for(int j = 0; j < indent; j++) printf(" ");
+
+void VirtualNode::dump(int indent)
 {
-	printf("  VirtualNode %s\n", track->title);
+	PRINT_INDENT
+	printf("VirtualNode %s\n", track->title);
 	if(real_module)
 	{
-		printf("   Plugins\n");
+		PRINT_INDENT
+		printf(" Plugins\n");
 		for(int i = 0; i < vplugins.total; i++)
 		{
-			vplugins.values[i]->dump();
+			vplugins.values[i]->dump(indent + 2);
 		}
 	}
 	else
@@ -316,21 +320,8 @@ int VirtualNode::sort(ArrayList<VirtualNode*>*render_list)
 
 int VirtualNode::sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result)
 {
-// stop when rendering can't continue without another higher level module
-//printf("VirtualNode::sort_as_module 1\n");
-	if(virtual_transition)
-	{
-		result = virtual_transition->sort(render_list);
-		
-		if(result && !virtual_transition->out)
-		{
-			total_result = 1;
-			result = 0;
-// couldn't render the last plugin but it wasn't patched out so continue to next plugin
-		}
-	}
-//printf("VirtualNode::sort_as_module 2\n");
 
+// Render plugins first.
 	for(int i = 0; i < vplugins.total && !result; i++)
 	{
 // stop when rendering can't continue without another higher level module
@@ -345,8 +336,8 @@ int VirtualNode::sort_as_module(ArrayList<VirtualNode*>*render_list, int &result
 	}
 //printf("VirtualNode::sort_as_module 3\n");
 
-// all plugins rendered or not patched out
-// render this module
+// All plugins rendered.
+// Render this module.
 	if(render_count == 0 && !result)
 	{
 		render_list->append(this);

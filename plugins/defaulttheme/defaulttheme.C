@@ -185,6 +185,7 @@ void DefaultTheme::initialize()
 	mbutton_left = new VFrame(get_image("mbutton_left.png"));
 	mbutton_right = new VFrame(get_image("mbutton_right.png"));
 	timebar_bg_data = new VFrame(get_image("timebar_bg.png"));
+	timebar_brender_data = new VFrame(get_image("timebar_brender.png"));
 	clock_bg = new VFrame(get_image("mclock.png"));
 	patchbay_bg = new VFrame(get_image("patchbay_bg.png"));
 	tracks_bg = new VFrame(get_image("tracks_bg.png"));

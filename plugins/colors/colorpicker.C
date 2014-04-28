@@ -4,12 +4,15 @@
 #include "plugincolors.h"
 #include "vframe.h"
 
+#include <string.h>
 #include <unistd.h>
 
-ColorThread::ColorThread()
+ColorThread::ColorThread(int do_alpha, char *title)
  : Thread()
 {
 	window = 0;
+	this->title = title;
+	this->do_alpha = do_alpha;
 	set_synchronous(0);
 }
 
@@ -23,9 +26,10 @@ ColorThread::~ColorThread()
 	}
 }
 
-void ColorThread::start_window(int output)
+void ColorThread::start_window(int output, int alpha)
 {
 	this->output = output;
+	this->alpha = alpha;
 	if(!running())
 	{
 		completion.lock();
@@ -42,9 +46,20 @@ void ColorThread::run()
 {
 	BC_DisplayInfo info;
 //printf("ColorThread::run 1\n");
+	char window_title[BCTEXTLEN];
+
+	strcpy(window_title, PROGRAM_NAME ": ");
+	if(title)
+		strcat(window_title, title);
+	else
+		strcat(window_title, "Color Picker");
+
+
+
 	window = new ColorWindow(this, 
 		info.get_abs_cursor_x() - 200, 
-		info.get_abs_cursor_y() - 200);
+		info.get_abs_cursor_y() - 200,
+		window_title);
 //printf("ColorThread::run 1 %p\n", window);
 	window->create_objects();
 //printf("ColorThread::run 1 %p\n", window);
@@ -57,14 +72,14 @@ void ColorThread::run()
 
 
 
-ColorWindow::ColorWindow(ColorThread *thread, int x, int y)
- : BC_Window(PROGRAM_NAME ": Color Picker", 
+ColorWindow::ColorWindow(ColorThread *thread, int x, int y, char *title)
+ : BC_Window(title, 
 	x,
 	y,
 	410, 
-	290, 
+	320, 
 	410, 
-	290, 
+	320, 
 	0, 
 	0,
 	1)
@@ -79,6 +94,7 @@ void ColorWindow::create_objects()
 	g = (float)((thread->output & 0xff00) >> 8) / 255;
 	b = (float)((thread->output & 0xff)) / 255;
 	HSV::rgb_to_hsv(r, g, b, h, s, v);
+	a = (float)thread->alpha / 255;
 	
 	
 	
@@ -87,11 +103,12 @@ void ColorWindow::create_objects()
 //printf("ColorWindow::create_objects 1\n");
 	wheel->create_objects();
 //printf("ColorWindow::create_objects 1\n");
-	
+
 	x += 180;
 	add_tool(wheel_value = new PaletteWheelValue(this, x, y));
 //printf("ColorWindow::create_objects 1\n");
 	wheel_value->create_objects();
+
 
 	y += 180;
 	x = init_x; 
@@ -136,8 +153,15 @@ void ColorWindow::create_objects()
 	y += 15;
 //printf("ColorWindow::create_objects 1\n");
 	add_tool(blue = new PaletteBlue(this, x, y));
-//printf("ColorWindow::create_objects 2\n");
-//printf("ColorWindow::create_objects 3\n");
+
+	if(thread->do_alpha)
+	{
+		y += 30;
+		add_tool(new BC_Title(x, y, "Alpha", SMALLFONT));
+		y += 15;
+		add_tool(alpha = new PaletteAlpha(this, x, y));
+	}
+
 	show_window();
 	flush();
 	return;
@@ -170,6 +194,8 @@ void ColorWindow::update_display()
 	if(s > 1) s = 1;
 	if(v < 0) v = 0;
 	if(v > 1) v = 1;
+	if(a < 0) a = 0;
+	if(a > 1) a = 1;
 
 	wheel->draw(wheel->oldhue, 
 				wheel->oldsaturation);
@@ -189,6 +215,10 @@ void ColorWindow::update_display()
 	red->update(r);
 	green->update(g);
 	blue->update(b);
+	if(thread->do_alpha)
+	{
+		alpha->update(a);
+	}
 }
 
 int ColorWindow::handle_event()
@@ -196,7 +226,7 @@ int ColorWindow::handle_event()
 	float r, g, b;
 	HSV::hsv_to_rgb(r, g, b, h, s, v);
 	int result = (((int)(r * 255)) << 16) | (((int)(g * 255)) << 8) | ((int)(b * 255));
-//printf("ColorWindow::handle_event %f %f %f %x\n", r, g, b, result);
+	thread->alpha = (int)(a * 255);
 	thread->handle_event(result);
 	return 1;
 }
@@ -658,6 +688,23 @@ PaletteBlue::~PaletteBlue()
 int PaletteBlue::handle_event()
 {
 	window->update_rgb();
+	window->handle_event();
+	return 1;
+}
+
+PaletteAlpha::PaletteAlpha(ColorWindow *window, int x, int y)
+ : BC_FSlider(x, y, 0, 150, 200, 0, 1, window->a, 0)
+{
+	this->window = window;
+	set_precision(0.01);
+}
+PaletteAlpha::~PaletteAlpha()
+{
+}
+
+int PaletteAlpha::handle_event()
+{
+	window->a = get_value();
 	window->handle_event();
 	return 1;
 }

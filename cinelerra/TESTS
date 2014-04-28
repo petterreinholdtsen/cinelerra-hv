@@ -14,3 +14,5 @@ Copy and paste between Cinelerra sessions.
 Cut and paste multiple tracks.
 Tweek plugin while playing back.
 Show and hide plugin while playing back.
+MJPEG recording with kernel driver
+Number of open file descriptors matches reality.

@@ -2,6 +2,7 @@
 #include "assets.h"
 #include "automation.h"
 #include "cache.h"
+#include "clip.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
@@ -29,18 +30,53 @@ Edits::~Edits()
 {
 }
 
+
+void Edits::equivalent_output(Edits *edits, long *result)
+{
+// For the case of plugin sets, a new plugin set may be created with
+// plugins only starting after 0.  We only want to restart brender at
+// the first plugin in this case.
+	for(Edit *current = first, *that_current = edits->first; 
+		current || that_current; 
+		current = NEXT,
+		that_current = that_current->next)
+	{
+//printf("Edits::equivalent_output 1 %d\n", *result);
+		if(!current && that_current)
+		{
+			long position1 = (last ? last->startproject + last->length : 0);
+			long position2 = that_current->startproject;
+			if(*result < 0 || *result > MIN(position1, position2))
+				*result = MIN(position1, position2);
+			break;
+		}
+		else
+		if(current && !that_current)
+		{
+			long position1 = (edits->last ? edits->last->startproject + edits->last->length : 0);
+			long position2 = current->startproject;
+			if(*result < 0 || *result > MIN(position1, position2))
+				*result = MIN(position1, position2);
+			break;
+		}
+		else
+		{
+//printf("Edits::equivalent_output 2 %d\n", *result);
+			current->equivalent_output(that_current, result);
+//printf("Edits::equivalent_output 3 %d\n", *result);
+		}
+	}
+}
+
+
 Edits& Edits::operator=(Edits& edits)
 {
-//printf("Edits::operator= 1\n");
 	while(last) delete last;
-//printf("Edits::operator= 1\n");
 	for(Edit *current = edits.first; current; current = NEXT)
 	{
 		Edit *new_edit = append(create_edit());
 		new_edit->copy_from(current);
-//printf("Edits::operator= 2 %p %p\n", new_edit->transition, new_edit->asset);
 	}
-//printf("Edits::operator= 3\n");
 	return *this;
 }
 
@@ -532,7 +568,7 @@ int Edits::copy(long start, long end, FileXML *file, char *output_path)
 
 
 
-int Edits::clear(long start, long end)
+void Edits::clear(long start, long end)
 {
 //printf("Edits::clear 1 %d %d\n", start, end - start);
 	Edit* edit1 = editof(start, PLAY_FORWARD);
@@ -540,8 +576,10 @@ int Edits::clear(long start, long end)
 	Edit* current_edit;
 
 //printf("Edits::clear 2\n");
-	if(end == start) return 0;        // nothing selected
-	if(!edit1 && !edit2) return 0;       // nothing selected
+	if(end == start) return;        // nothing selected
+	if(!edit1 && !edit2) return;       // nothing selected
+
+
 	if(!edit2)
 	{                // edit2 beyond end of track
 		edit2 = last;
@@ -558,13 +596,6 @@ int Edits::clear(long start, long end)
 		edit2->length -= end - edit2->startproject;
 		edit2->startsource += end - edit2->startproject;
 		edit2->startproject += end - edit2->startproject;
-
-// Transition is in the space being deleted
-// 		if(edit2->transition) 
-// 		{
-// 			delete edit2->transition;
-// 			edit2->transition = 0;
-// 		}
 
 // delete
 		for(current_edit = edit1->next; current_edit && current_edit != edit2;)
@@ -605,7 +636,6 @@ int Edits::clear(long start, long end)
 //track->dump();
 	optimize();
 //printf("Edits::clear 7\n");
-	return 0;
 }
 
 // Used by edit handle and plugin handle movement but plugin handle movement

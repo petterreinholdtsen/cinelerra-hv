@@ -30,7 +30,9 @@ public:
 // basic commands for every file interpreter
 	int open_file(int rd, int wr);
 	int close_file();
-	char* create_path();
+
+	char* calculate_path(int number, char *string);
+	char* create_path(int number_override);
 	void add_return_value(int amount);
 
 	int read_list_header();
@@ -68,6 +70,9 @@ private:
 	Mutex *table_lock;
 	FrameWriter *writer;
 	int return_value;
+	int first_number;
+	int number_start;
+	int number_digits;
 };
 
 

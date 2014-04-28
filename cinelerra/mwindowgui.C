@@ -243,9 +243,10 @@ void MWindowGUI::update_title(char *path)
 }
 
 void MWindowGUI::redraw_time_dependancies() 
-{ 
+{
 	zoombar->redraw_time_dependancies();
-//	timebar->draw();
+	timebar->update();
+	mainclock->update(mwindow->edl->local_session->selectionstart);
 }
 
 int MWindowGUI::resize_event(int w, int h)

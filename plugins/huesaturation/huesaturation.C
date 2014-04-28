@@ -102,6 +102,7 @@ public:
 	HueUnit(HueEffect *plugin, HueEngine *server);
 	void process_package(LoadPackage *package);
 	HueEffect *plugin;
+	YUV yuv;
 };
 
 class HueEffect : public PluginVClient
@@ -292,6 +293,8 @@ void HueWindow::create_objects()
 	show_window();
 	flush();
 }
+
+
 int HueWindow::close_event()
 {
 	set_done(1);
@@ -372,9 +375,24 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 			float h, s, va; \
 			int y, u, v; \
 			float r, g, b; \
+			int r_i, g_i, b_i; \
  \
 			if(use_yuv) \
-				HSV::yuv_to_hsv(in_row[0], in_row[1], in_row[2], h, s, va, max); \
+			{ \
+				y = in_row[0]; \
+				u = in_row[1]; \
+				v = in_row[2]; \
+				if(max == 0xffff) \
+					yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
+				else \
+					yuv.yuv_to_rgb_8(r_i, g_i, b_i, y, u, v); \
+				HSV::rgb_to_hsv((float)r_i / max, \
+					(float)g_i / max, \
+					(float)b_i / max, \
+					h, \
+					s, \
+					va); \
+			} \
 			else \
 			{ \
 				r = (float)in_row[0] / max; \

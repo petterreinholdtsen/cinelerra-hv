@@ -11,6 +11,7 @@
 #include "pluginpopup.h"
 #include "pluginset.h"
 #include "pluginserver.h"
+#include "renderengine.h"
 #include "track.h"
 #include "tracks.h"
 #include "virtualnode.h"
@@ -117,9 +118,13 @@ void Plugin::copy_keyframes(Plugin *plugin)
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::copy_keyframes(long start, long end, FileXML *file, int default_only)
+void Plugin::copy_keyframes(long start, 
+	long end, 
+	FileXML *file, 
+	int default_only,
+	int autos_only)
 {
-	keyframes->copy(start, end, file, default_only);
+	keyframes->copy(start, end, file, default_only, autos_only);
 }
 
 void Plugin::synchronize_params(Edit *edit)
@@ -133,6 +138,76 @@ void Plugin::synchronize_params(Edit *edit)
 	copy_keyframes(plugin);
 }
 
+void Plugin::equivalent_output(Edit *edit, long *result)
+{
+	Plugin *plugin = (Plugin*)edit;
+// End of plugin changed
+	if(startproject + length != plugin->startproject + plugin->length)
+	{
+		if(*result < 0 || startproject + length < *result)
+			*result = startproject + length;
+	}
+
+// Start of plugin changed
+	if(
+		startproject != plugin->startproject ||
+		plugin_type != plugin->plugin_type ||
+		on != plugin->on ||
+		!(shared_location == plugin->shared_location) ||
+		strcmp(title, plugin->title)
+		)
+	{
+		if(*result < 0 || startproject < *result)
+			*result = startproject;
+	}
+
+// Test keyframes
+	keyframes->equivalent_output(plugin->keyframes, startproject, result);
+}
+
+
+
+int Plugin::is_synthesis(RenderEngine *renderengine, 
+		long position, 
+		int direction)
+{
+	switch(plugin_type)
+	{
+		case PLUGIN_STANDALONE:
+		{
+			PluginServer *plugin_server = renderengine->scan_plugindb(title);
+			return plugin_server->synthesis;
+			break;
+		}
+
+// Dereference real plugin and descend another level
+		case PLUGIN_SHAREDPLUGIN:
+		{
+			int real_module_number = shared_location.module;
+			int real_plugin_number = shared_location.plugin;
+			Track *track = edl->tracks->number(real_module_number);
+			Plugin *plugin = track->get_current_plugin(position, 
+				real_plugin_number, 
+				direction, 
+				0);
+			return plugin->is_synthesis(renderengine, position, direction);
+			break;
+		}
+
+// Dereference the real track and descend
+		case PLUGIN_SHAREDMODULE:
+		{
+			int real_module_number = shared_location.module;
+			Track *track = edl->tracks->number(real_module_number);
+			return track->is_synthesis(renderengine, position, direction);
+			break;
+		}
+	}
+	return 0;
+}
+
+
+
 int Plugin::identical(Plugin *that)
 {
 	char title1[BCTEXTLEN], title2[BCTEXTLEN];
@@ -141,21 +216,40 @@ int Plugin::identical(Plugin *that)
 	that->calculate_title(title2);
 
 // printf("Plugin::identical %s %s %d %d %s %s %d\n",
-// 	title1, title2,
-// 	plugin_type, that.plugin_type,
-// 	keyframes->default_keyframe->data,
-// 	that.keyframes->default_keyframe->data,
-// 	*keyframes->default_keyframe == *that.keyframes->default_keyframe);
+// title1, 
+// title2,
+// plugin_type, 
+// that->plugin_type,
+// ((KeyFrame*)keyframes->default_auto)->data,
+// ((KeyFrame*)that->keyframes->default_auto)->data,
+// ((KeyFrame*)keyframes->default_auto)->identical(((KeyFrame*)that->keyframes->default_auto)));
 
 	return (this->plugin_type == that->plugin_type &&
-		this->in == that->in &&
-		this->out == that->out &&
 		this->on == that->on &&
 		!strcasecmp(title1, title2) &&
 		((KeyFrame*)keyframes->default_auto)->identical(
 			((KeyFrame*)that->keyframes->default_auto)));
 }
 
+int Plugin::identical_location(Plugin *that)
+{
+//printf("Plugin::identical_location\n");
+	if(!plugin_set || !plugin_set->track) return 0;
+	if(!that->plugin_set || !that->plugin_set->track) return 0;
+
+//printf("Plugin::identical_location %d %d %d %d %d %d\n",
+//plugin_set->track->number_of(),
+//that->plugin_set->track->number_of(),
+//plugin_set->get_number(),
+//that->plugin_set->get_number(),
+//startproject,
+//that->startproject);
+	if(plugin_set->track->number_of() == that->plugin_set->track->number_of() &&
+		plugin_set->get_number() == that->plugin_set->get_number() &&
+		startproject == that->startproject) return 1;
+
+	return 0;
+}
 
 void Plugin::change_plugin(char *title, 
 		SharedLocation *shared_location, 
@@ -337,7 +431,7 @@ void Plugin::copy(long start, long end, FileXML *file)
 		file->append_newline();
 
 // Keyframes
-		keyframes->copy(start, end, file, 0);
+		keyframes->copy(start, end, file, 0, 0);
 
 		file->tag.set_title("/PLUGIN");	
 		file->append_tag();
@@ -351,12 +445,11 @@ void Plugin::load(FileXML *file)
 	int first_keyframe = 1;
  	in = 0;
 	out = 0;
-
 // Currently show is ignored when loading
 	show = 0;
 	on = 0;
+	while(keyframes->last) delete keyframes->last;
 
-//printf("Plugin::load 1\n");
 	do{
 		result = file->read_tag();
 
@@ -398,28 +491,19 @@ void Plugin::load(FileXML *file)
 // Default keyframe
 				if(first_keyframe)
 				{
-//printf("Plugin::load 2 %p\n", keyframes);
-//printf("Plugin::load 2 %p\n", keyframes->default_auto);
 					keyframes->default_auto->load(file);
 					first_keyframe = 0;
-//printf("Plugin::load 3\n");
 				}
 				else
 // Override default keyframe
 				{
-//printf("Plugin::load 4\n");
 					KeyFrame *keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
-//printf("Plugin::load 5\n");
 					keyframe->position = file->tag.get_property("POSITION", (long)0);
-//printf("Plugin::load 6\n");
 					keyframe->load(file);
-//printf("Plugin::load 7 %d\n", keyframes->total());
 				}
 			}
 		}
 	}while(!result);
-//dump();
-//printf("Plugin::load 8 %s\n", title);
 }
 
 void Plugin::get_shared_location(SharedLocation *result)
@@ -459,7 +543,7 @@ Plugin* Plugin::get_shared_plugin()
 
 void Plugin::calculate_title(char *string)
 {
-	if(plugin_type == PLUGIN_STANDALONE)
+	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
 	{
 		strcpy(string, title);
 	}
@@ -496,8 +580,12 @@ void Plugin::shift(long difference)
 
 void Plugin::dump()
 {
-	printf("    PLUGIN: type=%d title=\"%s\" on=%d\n", 
-		plugin_type, title, on);
+	printf("    PLUGIN: type=%d title=\"%s\" on=%d track=%d plugin=%d\n", 
+		plugin_type, 
+		title, 
+		on, 
+		shared_location.module, 
+		shared_location.plugin);
 	printf("    startproject %ld length %ld\n", startproject, length);
 	printf("    DEFAULT_KEYFRAME\n");
 	((KeyFrame*)keyframes->default_auto)->dump();

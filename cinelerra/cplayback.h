@@ -12,6 +12,7 @@ public:
 	int create_render_engines();
 	void init_cursor();
 	void stop_cursor();
+	int brender_available(long position);
 
 	CWindow *cwindow;
 };

@@ -48,21 +48,20 @@ int Tracks::clear(double start, double end, int clear_plugins)
 	return 0;
 }
 
-int Tracks::clear_automation(double selectionstart, double selectionend)
+void Tracks::clear_automation(double selectionstart, double selectionend)
 {
 	Track* current_track;
-	
+
 	for(current_track = first; current_track; current_track = current_track->next)
 	{
-		if(current_track->record) 
-		{ 
+		if(current_track->record)
+		{
 			current_track->clear_automation(selectionstart, 
 				selectionend, 
 				0,
 				0); 
 		}
 	}
-	return 0;
 }
 
 int Tracks::clear_default_keyframe()
@@ -103,7 +102,8 @@ int Tracks::clear_handle(double start,
 int Tracks::copy_automation(double selectionstart, 
 	double selectionend, 
 	FileXML *file,
-	int default_only)
+	int default_only,
+	int autos_only)
 {
 // called by MWindow::copy_automation for copying automation alone
 	Track* current_track;
@@ -125,7 +125,8 @@ int Tracks::copy_automation(double selectionstart,
 			current_track->copy_automation(selectionstart, 
 				selectionend, 
 				file,
-				default_only);
+				default_only,
+				autos_only);
 		}
 	}
 
@@ -138,7 +139,7 @@ int Tracks::copy_automation(double selectionstart,
 
 int Tracks::copy_default_keyframe(FileXML *file)
 {
-	copy_automation(0, 0, file, 1);
+	copy_automation(0, 0, file, 1, 0);
 	return 0;
 }
 
@@ -248,6 +249,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				source_track->automation->copy(source_edit->startproject, 
 					source_edit->startproject + source_edit->length, 
 					&temp, 
+					0,
 					0);
 				temp.terminate_string();
 				temp.rewind();
@@ -415,15 +417,8 @@ int Tracks::concatenate_tracks(int edit_plugins)
 			input_track;
 			input_track = input_track->next)
 		{
-			long unit_start = input_track->to_units(edl->local_session->selectionstart, 0);
-			play_keyframe = 0;
-			play_keyframe = (IntAuto*)input_track->automation->play_autos->get_prev_auto(
-					unit_start, 
-					PLAY_FORWARD,
-					(Auto*)play_keyframe);
-
 			if(input_track->data_type == data_type &&
-				play_keyframe->value && 
+				input_track->play && 
 				!input_track->record) break;
 		}
 
@@ -447,17 +442,11 @@ int Tracks::concatenate_tracks(int edit_plugins)
 					input_track; 
 					input_track = input_track->next)
 				{
-					long unit_start = input_track->to_units(edl->local_session->selectionstart, 0);
-//printf("Tracks::concatenate_tracks 1\n");
-					play_keyframe = (IntAuto*)input_track->automation->play_autos->get_prev_auto(
-							unit_start, 
-							PLAY_FORWARD,
-							(Auto*)play_keyframe);
 //printf("Tracks::concatenate_tracks 1 %p %p\n", input_track, play_keyframe);
 
 					if(input_track->data_type == data_type && 
 						!input_track->record && 
-						play_keyframe->value) break;
+						input_track->play) break;
 //printf("Tracks::concatenate_tracks 2\n");
 				}
 //printf("Tracks::concatenate_tracks 3\n");
@@ -806,7 +795,7 @@ void Tracks::paste_transition(PluginServer *server, Edit *dest_edit)
 	dest_edit->insert_transition(server->title);
 }
 
-void Tracks::paste_video_transition(PluginServer *server)
+void Tracks::paste_video_transition(PluginServer *server, int first_track = 0)
 {
 	for(Track *current = first; current; current = NEXT)
 	{
@@ -820,6 +809,7 @@ void Tracks::paste_video_transition(PluginServer *server)
 			{
 				paste_transition(server, current_edit);
 			}
+			if(first_track) break;
 		}
 	}
 }
@@ -885,40 +875,6 @@ int Tracks::end_translation()
 	return result;
 }
 
-int Tracks::select_handle(int cursor_x, int cursor_y, long &handle_oldposition, long &handle_position, int &handle_pixel)
-{
-	int center_pixel;
-	int result = 0;
-	long selection;
-	
-	if(handles)
-	{
-		for(Track* current = first; current && !result; current = NEXT) 
-		{
-			center_pixel = current->pixel + edl->local_session->zoom_track / 2;
-
-			if(cursor_y > center_pixel - 6 && cursor_y < center_pixel + 6)
-				result = current->select_handle(cursor_x, cursor_y, selection);
-		}
-	}
-
-// Result is 3 if the track was recordable or 1,2 if it wasn't recordable
-	if(result) 
-	{
-// Modify selected region
-		result = mwindow->init_handle_selection(selection, cursor_x, result);
-
-		if(result && result != 3)
-		{
-// not a region selection and a recordable track
-			handle_oldposition = selection;
-			handle_position = selection;
-			handle_pixel = cursor_x;
-		}
-	}
-	
-	return result;
-}
 
 int Tracks::select_auto(int cursor_x, int cursor_y)
 {

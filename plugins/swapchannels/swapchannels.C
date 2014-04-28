@@ -206,6 +206,11 @@ char* SwapMain::plugin_title()
 	return "Swap channels";
 }
 
+int SwapMain::is_synthesis()
+{
+	return 1;
+}
+
 SHOW_GUI_MACRO(SwapMain, SwapThread)
 NEW_PICON_MACRO(SwapMain)
 SET_STRING_MACRO(SwapMain)
@@ -361,7 +366,7 @@ void SwapMain::load_configuration()
 			if(green < 4) \
 				*outrow++ = *(inrow + green); \
 			else \
-				*outrow++ = MAXMINSRC(red, max); \
+				*outrow++ = MAXMINSRC(green, max); \
  \
 			if(blue < 4) \
 				*outrow++ = *(inrow + blue); \

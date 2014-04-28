@@ -149,14 +149,16 @@ int VirtualVNode::render(VFrame **video_out, long input_position)
 //printf("VirtualVNode::render 1\n");
 	if(real_module)
 	{
+//printf("VirtualVNode::render 2\n");
 		render_as_module(video_out, input_position);
 	}
 	else
 	if(real_plugin)
 	{
+//printf("VirtualVNode::render 3\n");
 		render_as_plugin(input_position);
 	}
-//printf("VirtualVNode::render 2\n");
+//printf("VirtualVNode::render 4\n");
 	return 0;
 }
 

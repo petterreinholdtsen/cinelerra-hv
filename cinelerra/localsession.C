@@ -90,27 +90,34 @@ void LocalSession::synchronize_params(LocalSession *that)
 }
 
 
-void LocalSession::load_xml(FileXML *file)
+void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 {
-	clipboard_length = 0;
+	if(load_flags & LOAD_SESSION)
+	{
+		clipboard_length = 0;
 // Overwritten by MWindow::load_filenames	
-	file->tag.get_property("CLIP_TITLE", clip_title);
-	file->tag.get_property("CLIP_NOTES", clip_notes);
-	file->tag.get_property("FOLDER", folder);
-	in_point = file->tag.get_property("IN_POINT", (double)-1);
-	loop_playback = file->tag.get_property("LOOP_PLAYBACK", 0);
-	loop_start = file->tag.get_property("LOOP_START", (double)0);
-	loop_end = file->tag.get_property("LOOP_END", (double)0);
-	out_point = file->tag.get_property("OUT_POINT", (double)-1);
-	selectionstart = file->tag.get_property("SELECTION_START", (double)0);
-	selectionend = file->tag.get_property("SELECTION_END", (double)0);
-	track_start = file->tag.get_property("TRACK_START", track_start);
-	view_start = file->tag.get_property("VIEW_START", view_start);
-	zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
-	zoom_y = file->tag.get_property("ZOOMY", zoom_y);
-	zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
-	preview_start = file->tag.get_property("PREVIEW_START", preview_start);
-	preview_end = file->tag.get_property("PREVIEW_END", preview_end);
+		file->tag.get_property("CLIP_TITLE", clip_title);
+		file->tag.get_property("CLIP_NOTES", clip_notes);
+		file->tag.get_property("FOLDER", folder);
+		loop_playback = file->tag.get_property("LOOP_PLAYBACK", 0);
+		loop_start = file->tag.get_property("LOOP_START", (double)0);
+		loop_end = file->tag.get_property("LOOP_END", (double)0);
+		selectionstart = file->tag.get_property("SELECTION_START", (double)0);
+		selectionend = file->tag.get_property("SELECTION_END", (double)0);
+		track_start = file->tag.get_property("TRACK_START", track_start);
+		view_start = file->tag.get_property("VIEW_START", view_start);
+		zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
+		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
+		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
+		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
+		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
+	}
+
+	if(load_flags & LOAD_TIMEBAR)
+	{
+		in_point = file->tag.get_property("IN_POINT", (double)-1);
+		out_point = file->tag.get_property("OUT_POINT", (double)-1);
+	}
 }
 
 void LocalSession::boundaries()

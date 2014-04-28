@@ -58,7 +58,7 @@ backup: clean
 	tar Icvf hvirtual.tar.bz2 hvirtual
 
 clean:
-	find -follow \( -name core \
+	find -follow \( -name 'core*' \
 		-o -name '*.lo' \
 		-o -name '*.o' \
 		-o -name '*.la' \

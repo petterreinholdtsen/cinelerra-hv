@@ -105,6 +105,7 @@ void SetFormatThread::apply_changes()
 	mwindow->undo->update_undo_after();
 
 // Update GUIs
+	mwindow->restart_brender();
 	mwindow->gui->lock_window();
 	mwindow->gui->update(1,
 		1,

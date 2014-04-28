@@ -108,7 +108,7 @@ public:
 	ShowTitles *show_titles;
 	ShowTransitions *show_transitions;
 	FadeAutomation *fade_automation;
-	PlayAutomation *play_automation;
+//	PlayAutomation *play_automation;
 	MuteAutomation *mute_automation;
 	PanAutomation *pan_automation;
 	CameraAutomation *camera_automation;
@@ -424,6 +424,14 @@ class LoopPlayback : public BC_MenuItem
 public:
 	LoopPlayback(MWindow *mwindow);
 
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class SetBRenderStart : public BC_MenuItem
+{
+public:
+	SetBRenderStart(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

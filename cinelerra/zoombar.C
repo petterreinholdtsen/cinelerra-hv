@@ -83,7 +83,7 @@ void ZoomBar::redraw_time_dependancies()
 {
 // Recalculate sample zoom menu
 	sample_zoom->update_menu();
-//	update();
+	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
 }
 
 int ZoomBar::draw()

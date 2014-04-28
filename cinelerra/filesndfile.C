@@ -238,7 +238,7 @@ int FileSndFile::read_samples(double *buffer, long len)
 //printf("FileSndFile::read_samples 1 current_sample=%d len=%d\n", file->current_sample, len);
 	if(temp_allocated && temp_allocated < len)
 	{
-	
+//printf("FileSndFile::read_samples 1\n");
 		delete [] temp_double;
 		temp_double = 0;
 		temp_allocated = 0;
@@ -247,11 +247,13 @@ int FileSndFile::read_samples(double *buffer, long len)
 	if(!temp_allocated)
 	{
 		temp_allocated = len;
+//printf("FileSndFile::read_samples 2\n");
 		temp_double = new double[len * asset->channels];
 	}
 
-//printf("FileSndFile::read_samples 2\n");
+//printf("FileSndFile::read_samples 3\n");
 	result = !sf_read_double(fd, temp_double, len * asset->channels, 1);
+//printf("FileSndFile::read_samples 4\n");
 
 	if(result)
 		printf("FileSndFile::read_samples fd=%p temp_double=%p len=%d asset=%p asset->channels=%d\n",
@@ -265,7 +267,7 @@ int FileSndFile::read_samples(double *buffer, long len)
 	{
 		buffer[i] = temp_double[j];
 	}
-//printf("FileSndFile::read_samples 5\n");
+//printf("FileSndFile::read_samples 6\n");
 
 	return result;
 }

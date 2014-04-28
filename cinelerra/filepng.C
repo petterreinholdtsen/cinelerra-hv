@@ -280,9 +280,9 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	png_read_image(png_ptr, output->get_rows());
 //printf("FilePNG::read_frame 3\n");
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-	
+
 	input->set_compressed_size(size);
-	
+
 //printf("FilePNG::read_frame 4\n");
 	return result;
 }

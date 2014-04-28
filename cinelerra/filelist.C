@@ -3,6 +3,7 @@
 #include "filelist.h"
 #include "guicast.h"
 #include "mwindow.inc"
+#include "render.h"
 #include "vframe.h"
 
 #include <ctype.h>
@@ -40,6 +41,7 @@ int FileList::reset_parameters_derived()
 	data = 0;
 	writer = 0;
 	temp = 0;
+	first_number = 0;
 }
 
 int FileList::open_file(int rd, int wr)
@@ -53,38 +55,60 @@ int FileList::open_file(int rd, int wr)
 	{
 // Frame files are created in write_frame and list index is created when
 // file is closed.
+// Look for the starting number in the path but ignore the starting character
+// and total digits since these are used by the header.
+		Render::get_starting_number(asset->path, 
+			first_number,
+			number_start, 
+			number_digits);
 		path_list.remove_all_objects();
-		writer = new FrameWriter(this, asset->format == list_type ? file->cpus : 1);
+		writer = new FrameWriter(this, 
+			asset->format == list_type ? file->cpus : 1);
 	}
 	else
 	if(rd)
 	{
-// Determine type of file
-		FILE *stream = fopen(asset->path, "rb");
-		if(stream)
+// Determine type of file.
+// Header isn't used for background rendering, in which case everything known
+// by the file encoder is known by the decoder.
+//printf("FileList::open_file 1 %d\n", asset->use_header);
+		if(asset->use_header)
 		{
-			char string[BCTEXTLEN];
-			fread(string, strlen(list_prefix), 1, stream);
-			fclose(stream);
-
-			if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
+			FILE *stream = fopen(asset->path, "rb");
+			if(stream)
 			{
+				char string[BCTEXTLEN];
+				fread(string, strlen(list_prefix), 1, stream);
+				fclose(stream);
 
-				asset->format = list_type;
+				if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
+				{
+
+					asset->format = list_type;
 
 // Open index here or get frame size from file.
-				result = read_list_header();
-				if(!result) result = read_frame_header(path_list.values[0]);
+					result = read_list_header();
+					if(!result) result = read_frame_header(path_list.values[0]);
+				}
+				else
+				{
+//printf("FileList::open_file 2\n", asset->use_header);
+					asset->format = frame_type;
+					result = read_frame_header(asset->path);
+					asset->layers = 1;
+					if(!asset->frame_rate)
+						asset->frame_rate = 1;
+					asset->video_length = -1;
+				}
 			}
-			else
-			{
-				asset->format = frame_type;
-				result = read_frame_header(asset->path);
-				asset->layers = 1;
-				if(!asset->frame_rate)
-					asset->frame_rate = 1;
-				asset->video_length = -1;
-			}
+		}
+		else
+		{
+			Render::get_starting_number(asset->path, 
+				first_number,
+				number_start, 
+				number_digits,
+				6);
 		}
 	}
 
@@ -101,7 +125,8 @@ int FileList::close_file()
 //	path_list.total, asset->format, list_type, wr);
 	if(asset->format == list_type && path_list.total)
 	{
-		if(wr) write_list_header();
+//printf("FileList::close_file 1 %d\n", asset->use_header);
+		if(wr && asset->use_header) write_list_header();
 		path_list.remove_all_objects();
 	}
 	if(data) delete data;
@@ -194,11 +219,24 @@ int FileList::read_list_header()
 int FileList::read_frame(VFrame *frame)
 {
 	int result = 0;
+	if(file->current_frame < 0 || 
+		(asset->use_header && file->current_frame >= path_list.total &&
+			asset->format == list_type))
+		return 1;
+
 	if(asset->format == list_type)
 	{
-		char *path = path_list.values[file->current_frame];
+		char string[BCTEXTLEN];
+		char *path;
+		if(asset->use_header)
+		{
+			path = path_list.values[file->current_frame];
+		}
+		else
+		{
+			path = calculate_path(file->current_frame, string);
+		}
 		FILE *in;
-
 
 
 		if(!(in = fopen(path, "rb")))
@@ -221,9 +259,10 @@ int FileList::read_frame(VFrame *frame)
 					data->allocate_compressed_data(ostat.st_size);
 					data->set_compressed_size(ostat.st_size);
 					fread(data->get_data(), ostat.st_size, 1, in);
-					return read_frame(frame, data);
+					result = read_frame(frame, data);
 					break;
 			}
+
 
 			fclose(in);
 		}
@@ -231,12 +270,14 @@ int FileList::read_frame(VFrame *frame)
 	else
 	{
 
+//printf("FileList::read_frame 1\n");
 // Allocate and decompress once into temporary
 		if(!temp || temp->get_color_model() != frame->get_color_model())
 		{
 			if(temp) delete temp;
 			temp = 0;
 		
+//printf("FileList::read_frame 2\n");
 			FILE *fd = fopen(asset->path, "rb");
 			if(fd)
 			{
@@ -261,8 +302,9 @@ int FileList::read_frame(VFrame *frame)
 						read_frame(temp, data);
 						break;
 				}
+
+//printf("FileList::read_frame 3\n");
 				fclose(fd);
-				
 			}
 			else
 			{
@@ -271,6 +313,7 @@ int FileList::read_frame(VFrame *frame)
 			}
 		}
 
+//printf("FileList::read_frame 4\n");
 		if(!temp) return result;
 
 		if(frame->get_color_model() == temp->get_color_model())
@@ -305,6 +348,7 @@ int FileList::read_frame(VFrame *frame)
 	}
 
 
+//printf("FileList::read_frame 5 %d\n", result);
 
 
 	return result;
@@ -320,20 +364,23 @@ int FileList::write_frames(VFrame ***frames, int len)
 		{
 			for(int j = 0; j < len && !return_value; j++)
 			{
-				char *path = create_path();
+				VFrame *frame = frames[i][j];
+				char *path = create_path(frame->get_number());
 				FILE *fd = fopen(path, "wb");
 				if(fd)
 				{
-					return_value += fwrite(frames[i][j]->get_data(),
+					return_value = !fwrite(frames[i][j]->get_data(),
 						frames[i][j]->get_compressed_size(),
 						1,
 						fd);
-					
+
 					fclose(fd);
 				}
 				else
+				{
+					printf("FileList::write_frames %s: %s\n", path, strerror(errno));
 					return_value++;
-					
+				}
 			}
 		}
 	}
@@ -359,7 +406,36 @@ void FileList::add_return_value(int amount)
 	table_lock->unlock();
 }
 
-char* FileList::create_path()
+char* FileList::calculate_path(int number, char *string)
+{
+// Synthesize filename.
+// If a header is used, the filename number must be in a different location.
+	if(asset->use_header)
+	{
+		int k;
+		strcpy(string, asset->path);
+		for(k = strlen(string) - 1; k > 0 && string[k] != '.'; k--)
+			;
+		if(k <= 0) k = strlen(string);
+
+		sprintf(&string[k], "%06d%s", 
+			number, 
+			file_extension);
+	}
+	else
+// Without a header, the original filename can be altered.
+	{
+		Render::create_filename(string, 
+			asset->path, 
+			number,
+			number_digits,
+			number_start);
+	}
+
+	return string;
+}
+
+char* FileList::create_path(int number_override)
 {
 	if(asset->format != list_type) return asset->path;
 
@@ -367,16 +443,23 @@ char* FileList::create_path()
 
 
 
-	int k;
 	char *path = "";
 	char output[BCTEXTLEN];
-	if(file->current_frame >= path_list.total)
+	if(file->current_frame >= path_list.total || !asset->use_header)
 	{
-		strcpy(output, asset->path);
-		for(k = strlen(output) - 1; k > 0 && output[k] != '.'; k--)
-			;
-		if(k <= 0) k = strlen(output);
-		sprintf(&output[k], "%06d%s", file->current_frame++, file_extension);
+		int number;
+		if(number_override < 0)
+			number = file->current_frame++;
+		else
+			number = number_override;
+
+		if(!asset->use_header)
+		{
+			number += first_number;
+		}
+
+		calculate_path(number, output);
+
 		path = new char[strlen(output) + 1];
 		strcpy(path, output);
 		path_list.append(path);
@@ -386,9 +469,6 @@ char* FileList::create_path()
 // Overwrite an old path
 		path = path_list.values[file->current_frame];
 	}
-
-
-
 
 
 	table_lock->unlock();
@@ -446,7 +526,15 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 	FrameWriterPackage *ptr = (FrameWriterPackage*)package;
 
 	FILE *file;
-	if(!(file = fopen(ptr->path, "wb"))) return;
+
+//printf("FrameWriterUnit::process_package 1 %s\n", ptr->path);
+	if(!(file = fopen(ptr->path, "wb")))
+	{
+		printf("FrameWriterUnit::process_package %s: %s\n",
+			ptr->path,
+			strerror(errno));
+		return;
+	}
 	
 	
 	int result = server->file->write_frame(ptr->input, output, this);
@@ -486,7 +574,10 @@ void FrameWriter::init_packages()
 	{
 		FrameWriterPackage *package = (FrameWriterPackage*)get_package(i);
 		package->input = frames[layer][number];
-		package->path = file->create_path();
+		package->path = file->create_path(package->input->get_number());
+// printf("FrameWriter::init_packages 1 %d %s\n", 
+// package->input->get_number(), 
+// package->path);
 		number++;
 		if(number >= len)
 		{

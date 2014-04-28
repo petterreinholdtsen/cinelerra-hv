@@ -1195,7 +1195,7 @@ static inline void transfer_YUV888_to_RGB8(unsigned char *(*output), unsigned ch
 	int y, u, v;
 	int r, g, b;
 	
-	y = ((int)input[0]) << 16;
+	y = (input[0] << 16);
 	u = input[1];
 	v = input[2];
 	YUV_TO_RGB(y, u, v, r, g, b);
@@ -3200,10 +3200,10 @@ static inline void transfer_YUV422_to_RGB888(unsigned char *(*output),
 
 // Even pixel
 	if(!(column & 1))
-		y = (int)(input[0]) << 16;
+		y = (input[0] << 16) | (input[0] << 8) | input[0];
 	else
 // Odd pixel
-		y = (int)(input[2]) << 16;
+		y = (input[2] << 16) | (input[2] << 8) | input[2];
 	u = input[1];
 	v = input[3];
 	YUV_TO_RGB(y, u, v, r, g, b)
@@ -3212,6 +3212,77 @@ static inline void transfer_YUV422_to_RGB888(unsigned char *(*output),
 	(*output)[1] = g;
 	(*output)[2] = b;
 	(*output) += 3;
+}
+
+static inline void transfer_YUV422_to_RGBA8888(unsigned char *(*output), 
+	unsigned char *input, 
+	int column)
+{
+	int y, u, v;
+	int r, g, b;
+
+// Even pixel
+	if(!(column & 1))
+		y = (input[0] << 16) | (input[0] << 8) | input[0];
+	else
+// Odd pixel
+		y = (input[2] << 16) | (input[2] << 8) | input[2];
+	u = input[1];
+	v = input[3];
+	YUV_TO_RGB(y, u, v, r, g, b)
+
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output)[3] = 0xff;
+	(*output) += 4;
+}
+
+static inline void transfer_YUV422_to_RGB161616(uint16_t *(*output), 
+	unsigned char *input, 
+	int column)
+{
+	int y, u, v;
+	int r, g, b;
+
+// Even pixel
+	if(!(column & 1))
+		y = (input[0] << 16) | (input[0] << 8) | input[0];
+	else
+// Odd pixel
+		y = (input[2] << 16) | (input[2] << 8) | input[2];
+	u = (input[1] << 8) | input[1];
+	v = (input[3] << 8) | input[3];
+	YUV_TO_RGB16(y, u, v, r, g, b)
+
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output) += 3;
+}
+
+static inline void transfer_YUV422_to_RGBA16161616(uint16_t *(*output), 
+	unsigned char *input, 
+	int column)
+{
+	int y, u, v;
+	int r, g, b;
+
+// Even pixel
+	if(!(column & 1))
+		y = (input[0] << 16) | (input[0] << 8) | input[0];
+	else
+// Odd pixel
+		y = (input[2] << 16) | (input[2] << 8) | input[2];
+	u = (input[1] << 8) | input[1];
+	v = (input[3] << 8) | input[3];
+	YUV_TO_RGB16(y, u, v, r, g, b)
+
+	(*output)[0] = r;
+	(*output)[1] = g;
+	(*output)[2] = b;
+	(*output)[3] = 0xffff;
+	(*output) += 4;
 }
 
 static inline void transfer_YUV422_to_YUV888(unsigned char *(*output), 
@@ -3253,13 +3324,13 @@ static inline void transfer_YUV422_to_YUV161616(uint16_t *(*output),
 {
 // Even pixel
 	if(!(column & 1))
-		(*output)[0] = input[0] << 8;
+		(*output)[0] = (input[0] << 8) | input[0];
 	else
 // Odd pixel
-		(*output)[0] = input[2] << 8;
+		(*output)[0] = (input[2] << 8) | input[2];
 
-	(*output)[1] = input[1] << 8;
-	(*output)[2] = input[3] << 8;
+	(*output)[1] = (input[1] << 8) | input[1];
+	(*output)[2] = (input[3] << 8) | input[3];
 	(*output) += 3;
 }
 
@@ -3269,13 +3340,13 @@ static inline void transfer_YUV422_to_YUVA16161616(uint16_t *(*output),
 {
 // Even pixel
 	if(!(column & 1))
-		(*output)[0] = input[0] << 8;
+		(*output)[0] = (input[0] << 8) | input[0];
 	else
 // Odd pixel
-		(*output)[0] = input[2] << 8;
+		(*output)[0] = (input[2] << 8) | input[2];
 
-	(*output)[1] = input[1] << 8;
-	(*output)[2] = input[3] << 8;
+	(*output)[1] = (input[1] << 8) | input[1];
+	(*output)[2] = (input[3] << 8) | input[3];
 	(*output)[3] = 0xffff;
 	(*output) += 4;
 }

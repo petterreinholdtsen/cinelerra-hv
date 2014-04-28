@@ -11,6 +11,7 @@ Auto::Auto()
 	skip = 0;
 	WIDTH = 10;
 	HEIGHT = 10;
+	is_default = 0;
 }
 
 Auto::Auto(EDL *edl, Autos *autos)
@@ -22,6 +23,7 @@ Auto::Auto(EDL *edl, Autos *autos)
 	skip = 0;
 	WIDTH = 10;
 	HEIGHT = 10;
+	is_default = 0;
 }
 
 Auto& Auto::operator=(Auto& that)
@@ -32,11 +34,13 @@ Auto& Auto::operator=(Auto& that)
 
 int Auto::operator==(Auto &that)
 {
+	printf("Auto::operator== called\n");
 	return 0;
 }
 
-void Auto::copy(long start, long end, FileXML *file)
+void Auto::copy(long start, long end, FileXML *file, int default_only)
 {
+	printf("Auto::copy called\n");
 }
 
 void Auto::copy_from(Auto *that)
@@ -47,73 +51,9 @@ void Auto::copy_from(Auto *that)
 
 void Auto::load(FileXML *xml)
 {
-//	printf("Auto::load\n");
+	printf("Auto::load\n");
 }
 
-int Auto::draw(BC_SubWindow *canvas, 
-			int x, 
-			int y, 
-			int center_pixel, 
-			int zoom_track, 
-			int vertical, 
-			int show_value)
-{
-// 	static int x1, y1, x2, y2;
-// 	static char string[5];
-// 	static int j;
-// 		
-// 	if(skip) return 1;
-// 	x1 = x - WIDTH/2; x2 = x + WIDTH/2;
-// 	y1 = y - HEIGHT/2; y2 = y + HEIGHT/2;
-// 	
-// 	if(y1 < -zoom_track / 2) y1 = -zoom_track / 2;
-// 	if(y2 > zoom_track / 2) y2 = zoom_track / 2;
-// 
-// 	if(vertical)
-// 	canvas->draw_box(center_pixel - y2, x1, y2 - y1, x2 - x1);
-// 	else
-// 	canvas->draw_box(x1, center_pixel + y1, x2 - x1, y2 - y1);
-// 
-// 	if(show_value)
-// 	{
-// 		value_to_str(string, value);
-// 		//canvas->set_font(SMALLFONT);
-// 		
-// 		if(y > 0)
-// 		{
-// 			if(vertical)
-// 			canvas->draw_text(center_pixel - y, x, string);
-// 			else
-// 			canvas->draw_text(x + 5, center_pixel + y - 5, string);
-// 		}
-// 		else
-// 		{
-// 			if(vertical)
-// 			canvas->draw_text(center_pixel - y - 50, x, string);
-// 			else
-// 			canvas->draw_text(x + 5, center_pixel + y + 20, string);
-// 		}
-// 		//canvas->set_font(MEDIUMFONT);
-// 	}
-}
-
-int Auto::selected(int ax, int ay, int cursor_x, int cursor_y, int center_pixel, int zoom_track)
-{
-	static int x1, y1, x2, y2;
-	
-	x1 = ax - WIDTH/2; x2 = ax + WIDTH/2;
-	y1 = ay - HEIGHT/2; y2 = ay + HEIGHT/2;
-	
-	if(y1 <  -zoom_track) y1 = -zoom_track;
-	if(y2 > zoom_track) y2 = zoom_track;
-	
-//printf("ay %d cursor_y %d\n", ay, cursor_y);
-	if(cursor_x > x1 && cursor_x < x2 && cursor_y > y1 && cursor_y < y2)
-	{
-		return 1;
-	}
-	return 0;
-}
 
 
 float Auto::value_to_percentage()

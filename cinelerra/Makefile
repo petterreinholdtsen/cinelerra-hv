@@ -42,6 +42,7 @@ OBJS = \
 	$(OBJDIR)/bezierauto.o \
 	$(OBJDIR)/bezierautos.o \
 	$(OBJDIR)/bitspopup.o \
+	$(OBJDIR)/brender.o \
 	$(OBJDIR)/browsebutton.o \
 	$(OBJDIR)/byteorderpopup.o \
 	$(OBJDIR)/cache.o \
@@ -140,6 +141,7 @@ OBJS = \
 	$(OBJDIR)/newfolder.o \
 	$(OBJDIR)/neworappend.o \
 	$(OBJDIR)/overlayframe.o \
+	$(OBJDIR)/packagedispatcher.o \
 	$(OBJDIR)/packagerenderer.o \
 	$(OBJDIR)/panauto.o \
 	$(OBJDIR)/panautos.o \
@@ -153,6 +155,7 @@ OBJS = \
 	$(OBJDIR)/playtransport.o \
 	$(OBJDIR)/plugin.o \
 	$(OBJDIR)/pluginaclient.o \
+	$(OBJDIR)/pluginaclientlad.o \
 	$(OBJDIR)/pluginarray.o \
 	$(OBJDIR)/pluginautos.o \
 	$(OBJDIR)/pluginclient.o \
@@ -183,6 +186,7 @@ OBJS = \
 	$(OBJDIR)/recordwindow.o \
 	$(OBJDIR)/render.o \
 	$(OBJDIR)/renderfarm.o \
+	$(OBJDIR)/renderfarmclient.o \
 	$(OBJDIR)/renderengine.o \
 	$(OBJDIR)/resample.o \
 	$(OBJDIR)/resizetrackthread.o \
@@ -218,7 +222,6 @@ OBJS = \
 	$(OBJDIR)/vdevice1394.o \
 	$(OBJDIR)/vdevicebase.o \
 	$(OBJDIR)/vdevicebuz.o \
-	$(OBJDIR)/vdevicelml.o \
 	$(OBJDIR)/vdeviceprefs.o \
 	$(OBJDIR)/vdevicev4l.o \
 	$(OBJDIR)/vdevicex11.o \
@@ -277,6 +280,7 @@ LIBS = \
 	-L../guicast \
 	-L/usr/X11R6/lib \
 	$(ALSA_LIBS) \
+	-luuid \
 	-lGL \
 	-lX11 \
 	-lXext \
@@ -454,6 +458,7 @@ $(OBJDIR)/batch.o: 				  batch.C
 $(OBJDIR)/bezierauto.o: 			  bezierauto.C
 $(OBJDIR)/bezierautos.o: 			  bezierautos.C
 $(OBJDIR)/bitspopup.o:  			  bitspopup.C
+$(OBJDIR)/brender.o:                              brender.C
 $(OBJDIR)/browsebutton.o: 			  browsebutton.C
 $(OBJDIR)/byteorderpopup.o: 			  byteorderpopup.C
 $(OBJDIR)/cache.o: 				  cache.C
@@ -556,6 +561,7 @@ $(OBJDIR)/new.o: 				  new.C
 $(OBJDIR)/newfolder.o:  			  newfolder.C
 $(OBJDIR)/neworappend.o: 			  neworappend.C
 $(OBJDIR)/overlayframe.o: 			  overlayframe.C
+$(OBJDIR)/packagedispatcher.o:                    packagedispatcher.C
 $(OBJDIR)/packagerenderer.o: 			  packagerenderer.C
 $(OBJDIR)/panauto.o: 			          panauto.C
 $(OBJDIR)/panautos.o: 			          panautos.C
@@ -570,6 +576,7 @@ $(OBJDIR)/playbackprefs.o:                        playbackprefs.C
 $(OBJDIR)/playtransport.o: 			  playtransport.C
 $(OBJDIR)/plugin.o: 				  plugin.C
 $(OBJDIR)/pluginaclient.o: 			  pluginaclient.C
+$(OBJDIR)/pluginaclientlad.o: 			  pluginaclientlad.C
 $(OBJDIR)/pluginarray.o: 			  pluginarray.C
 $(OBJDIR)/pluginautos.o: 			  pluginautos.C
 $(OBJDIR)/pluginclient.o: 			  pluginclient.C
@@ -605,6 +612,7 @@ $(OBJDIR)/recordwindow.o: 			  recordwindow.C
 $(OBJDIR)/render.o: 				  render.C
 $(OBJDIR)/renderengine.o: 			  renderengine.C
 $(OBJDIR)/renderfarm.o: 			  renderfarm.C
+$(OBJDIR)/renderfarmclient.o: 			  renderfarmclient.C
 $(OBJDIR)/resample.o: 				  resample.C
 $(OBJDIR)/resizetrackthread.o:                    resizetrackthread.C
 $(OBJDIR)/resourcepixmap.o: 			  resourcepixmap.C
@@ -642,7 +650,6 @@ $(OBJDIR)/vautomation.o: 			  vautomation.C
 $(OBJDIR)/vdevice1394.o: 			  vdevice1394.C
 $(OBJDIR)/vdevicebase.o: 			  vdevicebase.C
 $(OBJDIR)/vdevicebuz.o: 			  vdevicebuz.C
-$(OBJDIR)/vdevicelml.o: 			  vdevicelml.C
 $(OBJDIR)/vdeviceprefs.o: 			  vdeviceprefs.C
 $(OBJDIR)/vdevicev4l.o: 			  vdevicev4l.C
 $(OBJDIR)/vdevicex11.o: 			  vdevicex11.C

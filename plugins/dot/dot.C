@@ -266,25 +266,45 @@ DotClient::DotClient(DotServer *server)
 	this->plugin = server->plugin;
 }
 
-#define COPY_PIXEL(type, components, output, pattern) \
+#define COPY_PIXEL(type, components, output, pattern, chroma_offset) \
 { \
-	if(sizeof(type) == 2) \
+	if(chroma_offset) \
 	{ \
-		output[0] = (pattern & 0xff0000) >> 8; \
-		output[1] = (pattern & 0xff00); \
-		output[2] = (pattern & 0xff) << 8; \
-		if(components > 3) output[3] = 0xffff; \
+		if(sizeof(type) == 2) \
+		{ \
+			output[0] = (pattern & 0xff0000) >> 8; \
+			output[1] = chroma_offset; \
+			output[2] = chroma_offset; \
+			if(components > 3) output[3] = 0xffff; \
+		} \
+		else \
+		{ \
+			output[0] = (pattern & 0xff0000) >> 16; \
+			output[1] = chroma_offset; \
+			output[2] = chroma_offset; \
+			if(components > 3) output[3] = 0xff; \
+		} \
 	} \
 	else \
 	{ \
-		output[0] = (pattern & 0xff0000) >> 16; \
-		output[1] = (pattern & 0xff00) >> 8; \
-		output[2] = (pattern & 0xff); \
-		if(components > 3) output[3] = 0xff; \
+		if(sizeof(type) == 2) \
+		{ \
+			output[0] = (pattern & 0xff0000) >> 8; \
+			output[1] = (pattern & 0xff00); \
+			output[2] = (pattern & 0xff) << 8; \
+			if(components > 3) output[3] = 0xffff; \
+		} \
+		else \
+		{ \
+			output[0] = (pattern & 0xff0000) >> 16; \
+			output[1] = (pattern & 0xff00) >> 8; \
+			output[2] = (pattern & 0xff); \
+			if(components > 3) output[3] = 0xff; \
+		} \
 	} \
 }
 
-#define DRAW_DOT(type, components) \
+#define DRAW_DOT(type, components, chroma_offset) \
 { \
 	int x, y; \
 	uint32_t *pat; \
@@ -306,7 +326,7 @@ DotClient::DotClient(DotServer *server)
 	{ \
 		for(x = 0; x < plugin->dot_hsize; x++)  \
 		{ \
-			COPY_PIXEL(type, components, output, *pat); \
+			COPY_PIXEL(type, components, output, *pat, chroma_offset); \
 			output += components; \
 			pat++; \
 		} \
@@ -315,12 +335,12 @@ DotClient::DotClient(DotServer *server)
  \
 		for(x = 0; x < plugin->dot_hsize - 1; x++)  \
 		{ \
-			COPY_PIXEL(type, components, output, *pat); \
+			COPY_PIXEL(type, components, output, *pat, chroma_offset); \
 			output += components; \
 			pat--; \
 		} \
  \
- 		COPY_PIXEL(type, components, output, 0x00000000); \
+ 		COPY_PIXEL(type, components, output, 0x00000000, chroma_offset); \
  \
 		output += components * (plugin->input_ptr->get_w() - plugin->dot_size + 1); \
 		pat += plugin->dot_hsize + 1; \
@@ -335,7 +355,7 @@ DotClient::DotClient(DotServer *server)
 		{ \
 			for(x = 0; x < plugin->dot_hsize; x++)  \
 			{ \
-				COPY_PIXEL(type, components, output, *pat); \
+				COPY_PIXEL(type, components, output, *pat, chroma_offset); \
 				output += components; \
 				pat++; \
 			} \
@@ -344,12 +364,12 @@ DotClient::DotClient(DotServer *server)
  \
 			for(x = 0; x < plugin->dot_hsize - 1; x++)  \
 			{ \
-				COPY_PIXEL(type, components, output, *pat); \
+				COPY_PIXEL(type, components, output, *pat, chroma_offset); \
 				output += components; \
 				pat--; \
 			} \
  \
- 			COPY_PIXEL(type, components, output, 0x00000000); \
+ 			COPY_PIXEL(type, components, output, 0x00000000, chroma_offset); \
  \
 			output += components * (plugin->input_ptr->get_w() - plugin->dot_size + 1); \
 			pat += -plugin->dot_hsize + 1; \
@@ -358,7 +378,7 @@ DotClient::DotClient(DotServer *server)
 		{ \
 			for(x = 0; x < plugin->dot_hsize * 2; x++) \
 			{ \
-				COPY_PIXEL(type, components, output, 0x00000000); \
+				COPY_PIXEL(type, components, output, 0x00000000, chroma_offset); \
 				output += components; \
 			} \
 		} \
@@ -377,23 +397,34 @@ void DotClient::draw_dot(int xx,
 	switch(plugin->input_ptr->get_color_model())
 	{
 		case BC_RGB888:
+			DRAW_DOT(uint8_t, 3, 0x0);
+			break;
+
 		case BC_YUV888:
-			DRAW_DOT(uint8_t, 3);
+			DRAW_DOT(uint8_t, 3, 0x80);
 			break;
 
 		case BC_RGBA8888:
+			DRAW_DOT(uint8_t, 4, 0x0);
+			break;
+
 		case BC_YUVA8888:
-			DRAW_DOT(uint8_t, 4);
+			DRAW_DOT(uint8_t, 4, 0x80);
 			break;
 
 		case BC_RGB161616:
+			DRAW_DOT(uint16_t, 3, 0x0);
+			break;
+
 		case BC_YUV161616:
-			DRAW_DOT(uint16_t, 3);
+			DRAW_DOT(uint16_t, 3, 0x8000);
 			break;
 
 		case BC_RGBA16161616:
+			DRAW_DOT(uint16_t, 4, 0x0);
+			break;
 		case BC_YUVA16161616:
-			DRAW_DOT(uint16_t, 4);
+			DRAW_DOT(uint16_t, 4, 0x8000);
 			break;
 	}
 }

@@ -13,6 +13,13 @@ OUTPUT = ../$(OBJDIR)/titler.plugin
 
 include ../../plugin_config
 
+inst:
+	cp $(OUTPUT) /usr/lib/cinelerra
+	cp -a fonts /usr/lib/cinelerra
+
+
+
+
 
 $(OBJDIR)/title.o: title.C
 $(OBJDIR)/titlewindow.o: titlewindow.C

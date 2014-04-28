@@ -284,7 +284,7 @@ int APanPatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(update_undo && mwindow->edl->session->auto_conf->pan)
+	if(/* update_undo && */ mwindow->edl->session->auto_conf->pan)
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();

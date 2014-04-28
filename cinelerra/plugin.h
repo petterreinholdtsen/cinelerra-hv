@@ -12,6 +12,7 @@
 #include "pluginset.inc"
 #include "pluginpopup.inc"
 #include "pluginserver.inc"
+#include "renderengine.inc"
 #include "sharedlocation.h"
 #include "virtualnode.inc"
 
@@ -27,9 +28,9 @@ public:
 	Plugin(EDL *edl, 
 		Track *track, 
 		char *title);
-// Plugins that belongs to a plugin set.
-// Plugin can't take a track because it would get edits from the track instead
-// of the plugin set.
+// Called by  PluginSet::create_edit, PluginSet::insert_edit_after.
+// Plugin can't take a track because it would get the edits pointer from 
+// the track instead of the plugin set.
 	Plugin(EDL *edl, 
 		PluginSet *plugin_set, 
 		char *title);
@@ -38,21 +39,42 @@ public:
 	virtual Plugin& operator=(Plugin& edit);
 	virtual Edit& operator=(Edit& edit);
 
+// Called by Edits::equivalent_output to override the keyframe behavior and check
+// title.
+	void equivalent_output(Edit *edit, long *result);
+
+// Called by playable tracks to test for playable server.
+// Descends the plugin tree without creating a virtual console.
+	int is_synthesis(RenderEngine *renderengine, 
+		long position, 
+		int direction);
+
 	virtual int operator==(Plugin& that);
 	virtual int operator==(Edit& that);
 
 	virtual void copy_from(Edit *edit);
+// Called by == operators, Edit::equivalent output
+// to test title and keyframe of transition.
 	virtual int identical(Plugin *that);
+// Called by render_gui.  Only need the track, position, and pluginset
+// to determine a corresponding GUI.
+	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
-	
+
 	void change_plugin(char *title, 
 		SharedLocation *shared_location, 
 		int plugin_type);
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 // For copying to clipboard
-	void copy_keyframes(long start, long end, FileXML *file, int default_only);
-// For editing automation
+	void copy_keyframes(long start, 
+		long end, 
+		FileXML *file, 
+		int default_only,
+		int autos_only);
+// For editing automation.  
+// Returns the point to restart background rendering at.
+// -1 means nothing changed.
 	void clear_keyframes(long start, long end);
 	void copy(long start, long end, FileXML *file);
 	void paste(FileXML *file);
@@ -82,7 +104,9 @@ public:
 // Title of the plugin currently attached
 	char title[BCTEXTLEN];           
 	int plugin_type;
-	int in, out, show, on;
+// In and out aren't used anymore.
+	int in, out;
+	int show, on;
 	PluginSet *plugin_set;
 
 // Data for the plugin is stored here.  Default keyframe always exists.

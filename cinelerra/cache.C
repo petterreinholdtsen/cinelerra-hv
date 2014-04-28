@@ -10,7 +10,9 @@
 #include <string.h>
 
 // edl came from a command which won't exist anymore
-CICache::CICache(EDL *edl, ArrayList<PluginServer*> *plugindb)
+CICache::CICache(EDL *edl, 
+	Preferences *preferences,
+	ArrayList<PluginServer*> *plugindb)
  : List<CICacheItem>()
 {
 //printf("CICache 1\n");
@@ -20,6 +22,7 @@ CICache::CICache(EDL *edl, ArrayList<PluginServer*> *plugindb)
 	*this->edl = *edl;
 //printf("CICache 1\n");
 	this->plugindb = plugindb;
+	this->preferences = preferences;
 //printf("CICache 2\n");
 }
 
@@ -140,6 +143,9 @@ int CICache::check_in(Asset *asset)
 	total_lock.unlock();
 
 	check_in_lock.unlock();
+
+	age();
+//dump();
 	return result;
 }
 
@@ -155,51 +161,40 @@ int CICache::delete_entry(Asset *asset)
 	lock_all();
 	int result = 0;
 	CICacheItem *current, *temp;
+//printf("CICache::delete_entry 1 %p %d\n", this, total());
 
 	for(current = first; current; current = temp)
 	{
+//printf("CICache::delete_entry 1 this %s %s %d\n", asset->path, current->asset->path, current->checked_out);
 		temp = NEXT;
-		if(current->asset == asset && !current->checked_out) delete current;
+		if(current->asset->equivalent(*asset, 0, 0))
+		{
+			if(!current->checked_out)
+			{
+//printf("CICache::delete_entry 2\n");
+				delete current;
+			}
+			else
+			{
+				printf("CICache::delete_entry asset checked out\n");
+			}
+		}
 		current = temp;
 	}
+
+//printf("CICache::delete_entry 3 %p %d\n", this, total());
 	unlock_all();
 	return 0;
 }
 
-int CICache::age_audio()
-{
-	age_type(TRACK_AUDIO);
-}
-
-
-int CICache::age_video()
-{
-	age_type(TRACK_VIDEO);
-}
-
-int CICache::age_type(int data_type)
+int CICache::age()
 {
 	check_out_lock.lock();
 	CICacheItem *current;
 
 	for(current = first; current; current = NEXT)
 	{
-		switch(data_type)
-		{
-			case TRACK_AUDIO:
-				if(current->asset->audio_data)
-				{
-					current->counter++;
-				}
-				break;
-			
-			case TRACK_VIDEO:	
-				if(current->asset->video_data)
-				{
-					current->counter++;
-				}
-				break;
-		}
+		current->counter++;
 	}
 
 // delete old assets if memory usage is exceeded
@@ -209,11 +204,11 @@ int CICache::age_type(int data_type)
 	{
 		memory_usage = get_memory_usage();
 		
-		if(memory_usage > edl->session->cache_size)
+		if(memory_usage > preferences->cache_size)
 		{
 			result = delete_oldest();
 		}
-	}while(memory_usage > edl->session->cache_size && !result);
+	}while(memory_usage > preferences->cache_size && !result);
 
 	check_out_lock.unlock();
 }
@@ -325,7 +320,7 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 //printf("CICacheItem::CICacheItem 4.2\n");
 		file = 0;
 	}
-//printf("CICacheItem::CICacheItem 5\n");
+//printf("CICacheItem::CICacheItem 1 %p %p %s\n", this->asset, file->asset, asset->path);
 }
 
 // File already opened
@@ -339,13 +334,14 @@ CICacheItem::CICacheItem(CICache *cache, File *file)
 	this->cache = cache;
 	checked_out = 0;
 
+//printf("CICacheItem::CICacheItem 2 %p %p\n", this->asset, file->asset);
 	file->set_processors(cache->edl->session->smp ? 2: 1);
 	file->set_preload(cache->edl->session->playback_preload);
 }
 
 CICacheItem::~CICacheItem()
 {
-//printf("CICacheItem::~CICacheItem\n");
+//printf("CICacheItem::~CICacheItem %p %s\n", asset, asset->path);
 	delete file;
 	delete asset;
 }

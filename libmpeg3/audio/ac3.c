@@ -50,6 +50,7 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 
 	if(result)
 	{
+//printf(__FUNCTION__ " %02x%02x%02x%02x%02x%02x%02x%02x\n", header[0], header[1], header[2], header[3], header[4], header[5], header[6], header[7]);
 		audio->framesize = result;
 		audio->channels = 0;
 
@@ -57,6 +58,9 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 			audio->channels++;
 		switch(audio->flags & A52_CHANNEL_MASK)
 		{
+			case A52_CHANNEL:
+				audio->channels++;
+				break;
 			case A52_MONO:
 				audio->channels++;
 				break;
@@ -82,9 +86,10 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 				audio->channels += 2;
 				break;
 			default:
-				printf(__FUNCTION__ ": unknown channel code: %p\n", audio->flags);
+				printf(__FUNCTION__ ": unknown channel code: %p\n", audio->flags & A52_CHANNEL_MASK);
 				break;
 		}
+//printf(__FUNCTION__ " 1 %d\n", audio->channels);
 	}
 	return result;
 }
@@ -106,9 +111,9 @@ int mpeg3audio_doac3(mpeg3_ac3_t *audio,
 		&audio->flags,
 	   	&level, 
 		0);
-//printf("mpeg3audio_doac3 1\n");
+//printf("mpeg3audio_doac3 2\n");
 	a52_dynrng(audio->state, NULL, NULL);
-//printf("mpeg3audio_doac3 1\n");
+//printf("mpeg3audio_doac3 3\n");
 	for(i = 0; i < 6; i++)
 	{
 		if(!a52_block(audio->state))
@@ -128,7 +133,7 @@ int mpeg3audio_doac3(mpeg3_ac3_t *audio,
 			output_position += 256;
 		}
 	}
-//printf("mpeg3audio_doac3 3 %d\n", output_position);
+//printf("mpeg3audio_doac3 4 %d\n", output_position);
 
 
 	return output_position;

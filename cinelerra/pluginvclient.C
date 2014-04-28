@@ -2,6 +2,7 @@
 #include "edlsession.h"
 #include "pluginserver.h"
 #include "pluginvclient.h"
+#include "vframe.h"
 
 #include <string.h>
 
@@ -97,6 +98,17 @@ void PluginVClient::plugin_process_realtime(VFrame **input,
 	else
 		process_realtime(input[0], output[0]);
 //printf("PluginVClient::plugin_process_realtime 2\n");
+}
+
+void PluginVClient::plugin_render_gui(void *data)
+{
+	render_gui(data);
+}
+
+void PluginVClient::send_render_gui(void *data)
+{
+//printf("PluginVClient::send_render_gui 1\n");
+	server->send_render_gui(data);
 }
 
 int PluginVClient::plugin_process_loop(VFrame **buffers, long &write_length)

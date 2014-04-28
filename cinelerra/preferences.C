@@ -1,8 +1,10 @@
+#include "assets.h"
 #include "audioconfig.h"
 #include "audiodevice.inc"
 #include "bcmeter.inc"
 #include "clip.h"
 #include "defaults.h"
+#include "file.inc"
 #include "filesystem.h"
 #include "guicast.h"
 #include "preferences.h"
@@ -28,10 +30,12 @@ Preferences::Preferences()
 {
 // Set defaults
 	FileSystem fs;
-	
+
+	preferences_lock = new Mutex;
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
+	cache_size = 5;
 	index_size = 3000000;
 	index_count = 100;
 	use_thumbnails = 1;
@@ -41,10 +45,48 @@ Preferences::Preferences()
 	render_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_job_count = 1;
+	brender_asset = new Asset;
+	brender_asset->audio_data = 0;
+	brender_asset->video_data = 1;
+	use_brender = 0;
+	brender_fragment = 1;
+	local_rate = 0.0;
 }
 
 Preferences::~Preferences()
 {
+	delete brender_asset;
+	delete preferences_lock;
+}
+
+void Preferences::copy_rates_from(Preferences *preferences)
+{
+	preferences_lock->lock();
+// Need to match node titles in case the order changed and in case
+// one of the nodes in the source is the master node.
+	local_rate = preferences->local_rate;
+
+	for(int j = 0; 
+		j < preferences->renderfarm_nodes.total; 
+		j++)
+	{
+// Put in the master node
+		if(preferences->renderfarm_nodes.values[j][0] == '/')
+			local_rate = preferences->renderfarm_rate.values[j];
+		else
+// Search for local node
+		for(int i = 0; i < renderfarm_nodes.total; i++)
+		{
+			if(!strcmp(preferences->renderfarm_nodes.values[j], renderfarm_nodes.values[i]) &&
+				preferences->renderfarm_ports.values[j] == renderfarm_ports.values[i])
+			{
+				renderfarm_rate.values[i] = preferences->renderfarm_rate.values[j];
+				break;
+			}
+		}
+	}
+//printf("Preferences::copy_rates_from 1 %f %f\n", local_rate, preferences->local_rate);
+	preferences_lock->unlock();
 }
 
 Preferences& Preferences::operator=(Preferences &that)
@@ -58,14 +100,18 @@ Preferences& Preferences::operator=(Preferences &that)
 	strcpy(local_plugin_dir, that.local_plugin_dir);
 	strcpy(theme, that.theme);
 
+	cache_size = that.cache_size;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
+	renderfarm_rate.remove_all();
+	local_rate = that.local_rate;
 	for(int i = 0; i < that.renderfarm_nodes.total; i++)
 	{
 		add_node(that.renderfarm_nodes.values[i], 
 			that.renderfarm_ports.values[i],
-			that.renderfarm_enabled.values[i]);
+			that.renderfarm_enabled.values[i],
+			that.renderfarm_rate.values[i]);
 	}
 	use_renderfarm = that.use_renderfarm;
 	renderfarm_port = that.renderfarm_port;
@@ -73,6 +119,9 @@ Preferences& Preferences::operator=(Preferences &that)
 	renderfarm_job_count = that.renderfarm_job_count;
 	strcpy(renderfarm_mountpoint, that.renderfarm_mountpoint);
 	renderfarm_consolidate = that.renderfarm_consolidate;
+	use_brender = that.use_brender;
+	brender_fragment = that.brender_fragment;
+	*brender_asset = *that.brender_asset;
 
 // Check boundaries
 
@@ -96,6 +145,7 @@ Preferences& Preferences::operator=(Preferences &that)
 	}
 
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
+	CLAMP(cache_size, 1, 100);
 
 	return *this;
 }
@@ -115,8 +165,15 @@ int Preferences::load_defaults(Defaults *defaults)
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	defaults->get("LOCAL_PLUGIN_DIR", local_plugin_dir);
 	defaults->get("THEME", theme);
-	
-	
+
+	sprintf(brender_asset->path, "/tmp/brender");
+	brender_asset->format = FILE_JPEG_LIST;
+	brender_asset->jpeg_quality = 80;
+	brender_asset->load_defaults(defaults, "BRENDER_", 1);
+	use_brender = defaults->get("USE_BRENDER", use_brender);
+	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
+	cache_size = defaults->get("CACHE_SIZE", cache_size);
+	local_rate = defaults->get("LOCAL_RATE", local_rate);
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
 	render_preroll = defaults->get("RENDERFARM_PREROLL", render_preroll);
@@ -129,8 +186,9 @@ int Preferences::load_defaults(Defaults *defaults)
 	{
 		sprintf(string, "RENDERFARM_NODE%d", i);
 		char result[BCTEXTLEN];
-		int result_port;
-		int result_enabled;
+		int result_port = 0;
+		int result_enabled = 0;
+		float result_rate = 0.0;
 
 		result[0] = 0;
 		defaults->get(string, result);
@@ -141,9 +199,12 @@ int Preferences::load_defaults(Defaults *defaults)
 		sprintf(string, "RENDERFARM_ENABLED%d", i);
 		result_enabled = defaults->get(string, result_enabled);
 
+		sprintf(string, "RENDERFARM_RATE%d", i);
+		result_rate = defaults->get(string, result_rate);
+
 		if(result[0] != 0)
 		{
-			add_node(result, result_port, result_enabled);
+			add_node(result, result_port, result_enabled, result_rate);
 		}
 	}
 
@@ -153,6 +214,7 @@ int Preferences::load_defaults(Defaults *defaults)
 int Preferences::save_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
+	defaults->update("CACHE_SIZE", cache_size);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);
@@ -163,7 +225,11 @@ int Preferences::save_defaults(Defaults *defaults)
 
 
 
+	brender_asset->save_defaults(defaults, "BRENDER_");
+	defaults->update("USE_BRENDER", use_brender);
+	defaults->update("BRENDER_FRAGMENT", brender_fragment);
 	defaults->update("USE_RENDERFARM", use_renderfarm);
+	defaults->update("LOCAL_RATE", local_rate);
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
@@ -178,31 +244,127 @@ int Preferences::save_defaults(Defaults *defaults)
 		defaults->update(string, renderfarm_ports.values[i]);
 		sprintf(string, "RENDERFARM_ENABLED%d", i);
 		defaults->update(string, renderfarm_enabled.values[i]);
+		sprintf(string, "RENDERFARM_RATE%d", i);
+		defaults->update(string, renderfarm_rate.values[i]);
 	}
 	return 0;
 }
 
 
-void Preferences::add_node(char *text, int port, int enabled)
+void Preferences::add_node(char *text, int port, int enabled, float rate)
 {
 	if(text[0] == 0) return;
 
+	preferences_lock->lock();
 	char *new_item = new char[strlen(text) + 1];
 	strcpy(new_item, text);
 	renderfarm_nodes.append(new_item);
 	renderfarm_ports.append(port);
 	renderfarm_enabled.append(enabled);
+	renderfarm_rate.append(rate);
+	preferences_lock->unlock();
 }
 
 void Preferences::delete_node(int number)
 {
+	preferences_lock->lock();
 	if(number < renderfarm_nodes.total)
 	{
 		delete [] renderfarm_nodes.values[number];
 		renderfarm_nodes.remove_number(number);
 		renderfarm_ports.remove_number(number);
 		renderfarm_enabled.remove_number(number);
+		renderfarm_rate.remove_number(number);
 	}
+	preferences_lock->unlock();
+}
+
+void Preferences::delete_nodes()
+{
+	preferences_lock->lock();
+	for(int i = 0; i < renderfarm_nodes.total; i++)
+		delete [] renderfarm_nodes.values[i];
+	renderfarm_nodes.remove_all();
+	renderfarm_ports.remove_all();
+	renderfarm_enabled.remove_all();
+	renderfarm_rate.remove_all();
+	preferences_lock->unlock();
+}
+
+void Preferences::reset_rates()
+{
+	for(int i = 0; i < renderfarm_nodes.total; i++)
+	{
+		renderfarm_rate.values[i] = 0.0;
+	}
+	local_rate = 0.0;
+}
+
+void Preferences::set_rate(float rate, int node)
+{
+//printf("Preferences::set_rate %f %d\n", rate, node);
+	if(node < 0)
+	{
+		local_rate = rate;
+	}
+	else
+	{
+		int total = 0;
+		for(int i = 0; i < renderfarm_nodes.total; i++)
+		{
+			if(renderfarm_enabled.values[i]) total++;
+			if(total == node + 1)
+			{
+				renderfarm_rate.values[i] = rate;
+				return;
+			}
+		}
+	}
+}
+
+float Preferences::get_avg_rate(int use_master_node)
+{
+	preferences_lock->lock();
+	float total = 0.0;
+	if(renderfarm_rate.total)
+	{
+		int enabled = 0;
+		if(use_master_node)
+		{
+			if(EQUIV(local_rate, 0.0))
+			{
+				preferences_lock->unlock();
+				return 0.0;
+			}
+			else
+			{
+				enabled++;
+				total += local_rate;
+			}
+		}
+
+		for(int i = 0; i < renderfarm_rate.total; i++)
+		{
+			if(renderfarm_enabled.values[i])
+			{
+				enabled++;
+				total += renderfarm_rate.values[i];
+				if(EQUIV(renderfarm_rate.values[i], 0.0)) 
+				{
+					preferences_lock->unlock();
+					return 0.0;
+				}
+			}
+		}
+
+		if(enabled)
+			total /= enabled;
+		else
+			total = 0.0;
+	}
+	preferences_lock->unlock();
+
+	return total;
 }
 
 void Preferences::sort_nodes()
@@ -227,6 +389,9 @@ void Preferences::sort_nodes()
 
 				renderfarm_enabled.values[i] = renderfarm_enabled.values[i + 1];
 				renderfarm_enabled.values[i + 1] = temp_port;
+
+				renderfarm_rate.values[i] = renderfarm_rate.values[i + 1];
+				renderfarm_rate.values[i + 1] = temp_port;
 				done = 0;
 			}
 		}

@@ -60,12 +60,12 @@ void putseq()
 	   start of the sequence.
 	*/
 	
-	putseqhdr();
+	if(!seq_header_every_gop) putseqhdr();
 
 
 	/* optionally output some text data (description, copyright or whatever) */
-	if (strlen(id_string) > 1)
-		putuserdata(id_string);
+//	if (strlen(id_string) > 1)
+//		putuserdata(id_string);
 
 
 	/* loop through all frames in encoding/decoding order */
@@ -173,7 +173,8 @@ void putseq()
 				   has already been created.
 				 */
 //				putgophdr(f0,i==0, i!=0 && seq_header_every_gop);
-				putgophdr(f0,i==0);
+				if(seq_header_every_gop) putseqhdr();
+				putgophdr(f0, i == 0);
 			}
 			else
 			{

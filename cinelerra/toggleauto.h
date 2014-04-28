@@ -13,7 +13,7 @@ public:
 	IntAuto(IntAutos *autos);
 	~IntAuto();
 
-	void copy(long start, long end, FileXML *file);
+	void copy(long start, long end, FileXML *file, int default_only);
 	void load(FileXML *file);
 
 private:

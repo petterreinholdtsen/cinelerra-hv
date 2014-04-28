@@ -249,9 +249,9 @@ typedef struct
 	double time_offset;
 	int read_all;
 /* Info for mpeg3cat */
-	long last_packet_start;
-	long last_packet_end;
-	long last_packet_decryption;
+	int64_t last_packet_start;
+	int64_t last_packet_end;
+	int64_t last_packet_decryption;
 
 /* Titles */
 	mpeg3_title_t *titles[MPEG3_MAX_STREAMS];
@@ -833,6 +833,8 @@ typedef struct
 	int *total_frame_offsets;
 	int *total_sample_offsets;
 	int *total_keyframe_numbers;
+/* Handles changes in channel count after the start of a stream */
+	int *channel_counts;
 
 /* Only one of these is set to 1 to specify what kind of stream we have. */
 	int is_transport_stream;

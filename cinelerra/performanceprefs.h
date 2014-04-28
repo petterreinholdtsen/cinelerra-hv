@@ -1,14 +1,10 @@
 #ifndef PERFORMANCEPREFS_H
 #define PERFORMANCEPREFS_H
 
-class IndexSize;
-class IndexCount;
-class IndexPathText;
 class CICacheSize;
 class PrefsSMP;
 
-#include "browsebutton.h"
-#include "deleteallindexes.inc"
+#include "formattools.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
 
@@ -29,19 +25,38 @@ public:
 
 	int hot_node;
 
-// must delete each derived class
-	BrowseButton *ipath;
-	IndexSize *isize;
-	IndexCount *icount;
-	IndexPathText *ipathtext;
 	CICacheSize *csize;
-	DeleteAllIndexes *deleteall;
 	PrefsSMP *smp;
 
-	ArrayList<BC_ListBoxItem*> nodes[3];
+	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
 	PrefsRenderFarmNodes *node_list;
+	FormatTools *brender_tools;
 };
+
+
+
+class PrefsUseBRender : public BC_CheckBox
+{
+public:
+	PrefsUseBRender(PreferencesWindow *pwindow, 
+		int x,
+		int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class PrefsBRenderFragment : public BC_TumbleTextBox
+{
+public:
+	PrefsBRenderFragment(PreferencesWindow *pwindow, 
+		PerformancePrefs *subwindow, 
+		int x, 
+		int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 
 
 class PrefsRenderPreroll : public BC_TumbleTextBox
@@ -222,6 +237,21 @@ public:
 };
 
 
+class PrefsRenderFarmReset : public BC_GenericButton
+{
+public:
+	PrefsRenderFarmReset(PreferencesWindow *pwindow, 
+		PerformancePrefs *subwindow, 
+		int x, 
+		int y);
+	
+	int handle_event();
+	
+	PerformancePrefs *subwindow;
+	PreferencesWindow *pwindow;
+};
+
+
 
 
 
@@ -239,15 +269,6 @@ public:
 };
 
 
-class IndexPathText : public BC_TextBox
-{
-public:
-	IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text);
-	~IndexPathText();
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
 class CICacheSize : public BC_TextBox
 {
 public:
@@ -257,23 +278,6 @@ public:
 };
 
 
-
-class IndexSize : public BC_TextBox
-{
-public:
-	IndexSize(int x, int y, PreferencesWindow *pwindow, char *text);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
-
-
-class IndexCount : public BC_TextBox
-{
-public:
-	IndexCount(int x, int y, PreferencesWindow *pwindow, char *text);
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
 
 
 #endif

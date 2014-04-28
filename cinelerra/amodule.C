@@ -222,7 +222,6 @@ int AModule::render(double *buffer,
 
 //printf("AModule::render 12 %d %d\n", fragment_len, get_edl()->session->sample_rate);
 					get_cache()->check_in(playable_edit->asset);
-					get_cache()->age_audio();
 //printf("AModule::render 13\n");
 				}
 			}
@@ -292,7 +291,6 @@ int AModule::render(double *buffer,
 								get_edl()->session->sample_rate);
 
 							get_cache()->check_in(previous_edit->asset);
-							get_cache()->age_audio();
 						}
 					}
 					else

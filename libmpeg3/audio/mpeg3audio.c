@@ -53,7 +53,8 @@ static int read_header(mpeg3audio_t *audio)
 
 			if(!result)
 			{
-				track->channels = audio->ac3_decoder->channels;
+				if(audio->ac3_decoder->channels > track->channels)
+					track->channels = audio->ac3_decoder->channels;
 				track->sample_rate = audio->ac3_decoder->samplerate;
 				audio->framesize = audio->ac3_decoder->framesize;
 			}
@@ -106,7 +107,8 @@ static int read_header(mpeg3audio_t *audio)
 //printf(__FUNCTION__ " 5 %d %d\n", result, try);
 			if(!result)
 			{
-				track->channels = audio->layer_decoder->channels;
+				if(audio->layer_decoder->channels > track->channels)
+					track->channels = audio->layer_decoder->channels;
 				track->sample_rate = audio->layer_decoder->samplerate;
 				audio->framesize = audio->layer_decoder->framesize;
 			}
@@ -142,7 +144,8 @@ static int read_header(mpeg3audio_t *audio)
 
 			if(!result)
 			{
-				track->channels = audio->pcm_decoder->channels;
+				if(audio->pcm_decoder->channels > track->channels)
+					track->channels = audio->pcm_decoder->channels;
 				track->sample_rate = audio->pcm_decoder->samplerate;
 				audio->framesize = audio->pcm_decoder->framesize;
 			}
@@ -181,20 +184,12 @@ static int read_frame(mpeg3audio_t *audio, int render)
 	float **temp_output = 0;
 	int samples = 0;
 	int i;
+	int old_channels = track->channels;
 
 // Liba52 is not reentrant
 	if(track->format == AUDIO_AC3)
 	{
 		pthread_mutex_lock(decode_lock);
-	}
-
-	if(render)
-	{
-		temp_output = malloc(sizeof(float*) * track->channels);
-		for(i = 0; i < track->channels; i++)
-		{
-			temp_output[i] = audio->output[i] + audio->output_size;
-		}
 	}
 
 /* Find and read next header */
@@ -209,8 +204,36 @@ static int read_frame(mpeg3audio_t *audio, int render)
 				audio->framesize - audio->packet_position);
 	}
 
+//printf(__FUNCTION__ " 1\n");
 
+/* Handle increase in channel count, for ATSC */
+	if(old_channels < track->channels)
+	{
+		float **new_output = calloc(sizeof(float*), track->channels);
+		for(i = 0; i < track->channels; i++)
+		{
+			new_output[i] = calloc(sizeof(float), audio->output_allocated);
+			if(i < old_channels) 
+				memcpy(new_output[i], 
+					audio->output[i], 
+					sizeof(float) * audio->output_size);
+		}
+		for(i = 0; i < old_channels; i++)
+			free(audio->output[i]);
+		free(audio->output);
+		audio->output = new_output;
+	}
 
+	if(render)
+	{
+		temp_output = malloc(sizeof(float*) * track->channels);
+		for(i = 0; i < track->channels; i++)
+		{
+			temp_output[i] = audio->output[i] + audio->output_size;
+		}
+	}
+
+//printf(__FUNCTION__ " 2\n");
 	if(!result)
 	{
 		switch(track->format)
@@ -260,6 +283,7 @@ static int read_frame(mpeg3audio_t *audio, int render)
 	}
 
 
+//printf(__FUNCTION__ " 3\n");
 	audio->output_size += samples;
 	if(render)
 	{
@@ -555,6 +579,7 @@ static int seek(mpeg3audio_t *audio)
 
 	if(seeked)
 	{
+		mpeg3demux_reset_pts(track->demuxer);
 		switch(track->format)
 		{
 			case AUDIO_MPEG:
@@ -678,6 +703,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 			audio->output_position;
 
 //printf(__FUNCTION__ " 1\n");
+//printf(__FUNCTION__ " %f\n", mpeg3demux_audio_pts(track->demuxer));
 /* Expand output until enough room exists for new data */
 	if(new_size > 
 		audio->output_allocated)
@@ -710,7 +736,6 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 
 //printf(__FUNCTION__ " 8.1\n");
 		int samples = read_frame(audio, render);
-//printf(__FUNCTION__ " 8.2 %d\n", samples);
 
 		if(!samples)
 			try++;
@@ -719,10 +744,12 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	}
 
 
-//printf(__FUNCTION__ " 9 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 
+//printf(__FUNCTION__ " 8\n");
 
 /* Copy the buffer to the output */
+	if(channel >= track->channels) channel = track->channels - 1;
+
 	if(output_f)
 	{
 		for(i = 0, j = track->current_position - audio->output_position; 
@@ -756,6 +783,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 			output_i[i] = 0;
 		}
 	}
+//printf(__FUNCTION__ " 9 %d %d %d\n", track->channels, audio->output_size, audio->output_allocated);
 
 /* Shift audio back */
 	if(audio->output_size > MPEG3_AUDIO_HISTORY)

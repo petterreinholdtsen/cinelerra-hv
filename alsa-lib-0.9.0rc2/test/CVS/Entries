@@ -1,17 +1,17 @@
-/Makefile/1.1/Tue Jul 16 15:03:45 2002//
-/Makefile.am/1.1/Tue Jul 16 15:03:45 2002//
-/Makefile.in/1.1/Tue Jul 16 15:03:45 2002//
-/control.c/1.1/Tue Jul 16 15:03:45 2002//
-/latency.c/1.1/Tue Jul 16 15:03:45 2002//
-/midifile.3/1.1/Tue Jul 16 15:03:45 2002//
-/midifile.c/1.1/Tue Jul 16 15:03:45 2002//
-/midifile.h/1.1/Tue Jul 16 15:03:45 2002//
-/midiloop.c/1.1/Tue Jul 16 15:03:45 2002//
-/pcm.c/1.1/Tue Jul 16 15:03:45 2002//
-/playmidi1.c/1.1/Tue Jul 16 15:03:45 2002//
-/rawmidi.c/1.1/Tue Jul 16 15:03:45 2002//
-/seq-decoder.c/1.1/Tue Jul 16 15:03:45 2002//
-/seq-sender.c/1.1/Tue Jul 16 15:03:45 2002//
-/seq.c/1.1/Tue Jul 16 15:03:45 2002//
-/timer.c/1.1/Tue Jul 16 15:03:45 2002//
-D
+D/CVS////
+/Makefile/1.1/Tue Jul 16 14:34:27 2002//
+/Makefile.am/1.1/Wed Oct 24 14:14:16 2001//
+/Makefile.in/1.1/Wed Jun 19 09:38:18 2002//
+/control.c/1.1/Fri Sep  7 09:24:30 2001//
+/latency.c/1.1/Tue Mar 12 20:14:35 2002//
+/midifile.3/1.1/Tue Mar 12 20:14:35 2002//
+/midifile.c/1.1/Tue Mar 12 20:14:35 2002//
+/midifile.h/1.1/Tue Mar 12 20:14:35 2002//
+/midiloop.c/1.1/Wed Oct 24 14:14:16 2001//
+/pcm.c/1.1/Tue Mar 12 20:14:35 2002//
+/playmidi1.c/1.1/Tue Mar 12 20:14:35 2002//
+/rawmidi.c/1.1/Tue Mar 12 20:14:35 2002//
+/seq-decoder.c/1.1/Tue Mar 12 20:14:35 2002//
+/seq-sender.c/1.1/Tue Mar 12 20:14:35 2002//
+/seq.c/1.1/Wed Jul  4 13:54:14 2001//
+/timer.c/1.1/Tue Aug 28 13:31:01 2001//

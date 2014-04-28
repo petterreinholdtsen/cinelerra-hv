@@ -9,7 +9,6 @@
 #include "filexml.inc"
 #include "floatautos.inc"
 #include "linklist.h"
-#include "mwindow.inc"
 #include "track.h"
 #include "vedit.inc"
 #include "vframe.inc"
@@ -56,7 +55,6 @@ public:
 	
 	
 // ====================================== initialization
-	VTrack(MWindow *mwindow, Tracks *tracks);
 	VTrack() {};
 	int create_derived_objs(int flash);
 

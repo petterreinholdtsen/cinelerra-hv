@@ -458,17 +458,20 @@ int RotateEngine::create_matrix()
 
 	for(i = row1, l = row1 - plugin->input->get_h() / 2; i < row2; i++, l++)
 	{
+		int l_suare = (int)(l * l);
 		if(!interpolate)
 			int_row = plugin->int_rows[i];
 		else
 			float_row = plugin->float_rows[i];
 
 //printf("RotateEngine::create_matrix 2 %d %f\n", i, l);
-		for(j = 0, k = -plugin->input->get_w() / 2; j < plugin->input->get_w(); j++, k++)
+		for(j = 0, k = -plugin->input->get_w() / 2; 
+			j < plugin->input->get_w(); 
+			j++, k++)
 		{
 // Add offsets to input
 // Convert to polar coords
-			magnitude = sqrt(SQR(k) + SQR(l));
+			magnitude = sqrt(SQR(k) + l_suare);
 //printf("RotateEngine::create_matrix 3.2 %f %f\n", k, l);
 			if(l != 0)
 				angle = atan(-k / l);

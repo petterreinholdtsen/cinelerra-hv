@@ -54,7 +54,7 @@ public:
 class VideoScopeWindow : public BC_Window
 {
 public:
-	VideoScopeWindow(VideoScopeEffect *plugin, int x, int y, int w, int h);
+	VideoScopeWindow(VideoScopeEffect *plugin, int x, int y);
 	~VideoScopeWindow();
 
 	void calculate_sizes(int w, int h);
@@ -93,6 +93,7 @@ public:
 	VideoScopeUnit(VideoScopeEffect *plugin, VideoScopeEngine *server);
 	void process_package(LoadPackage *package);
 	VideoScopeEffect *plugin;
+	YUV yuv;
 };
 
 class VideoScopeEngine : public LoadServer
@@ -121,10 +122,10 @@ public:
 	int show_gui();
 	int set_string();
 	void raise_window();
+	void render_gui(void *input);
+	int load_configuration();
 
 	int w, h;
-	static VideoScopeWindow *window_static;
-	static Mutex window_lock;
 	VFrame *input;
 	VideoScopeConfig config;
 	VideoScopeEngine *engine;
@@ -186,14 +187,12 @@ VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin,
 
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin, 
 	int x, 
-	int y, 
-	int w, 
-	int h)
+	int y)
  : BC_Window(plugin->gui_string, 
  	x, 
 	y, 
-	w, 
-	h, 
+	plugin->w, 
+	plugin->h, 
 	50, 
 	50, 
 	1, 
@@ -208,9 +207,6 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 
 VideoScopeWindow::~VideoScopeWindow()
 {
-	VideoScopeEffect::window_lock.lock();
-	VideoScopeEffect::window_static = 0;
-	VideoScopeEffect::window_lock.unlock();
 
 	if(waveform_bitmap) delete waveform_bitmap;
 	if(vector_bitmap) delete vector_bitmap;
@@ -240,20 +236,12 @@ void VideoScopeWindow::create_objects()
 	show_window();
 	flush();
 	
-	VideoScopeEffect::window_lock.lock();
-	VideoScopeEffect::window_static = this;
-	VideoScopeEffect::window_lock.unlock();
 }
 
-int VideoScopeWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(VideoScopeWindow)
 
 int VideoScopeWindow::resize_event(int w, int h)
 {
-	VideoScopeEffect::window_lock.lock();
 
 	clear_box(0, 0, w, h);
 	plugin->w = w;
@@ -267,7 +255,6 @@ int VideoScopeWindow::resize_event(int w, int h)
 	draw_overlays();
 	flash();
 
-	VideoScopeEffect::window_lock.unlock();
 	return 1;
 }
 
@@ -326,36 +313,8 @@ void VideoScopeWindow::draw_overlays()
 
 
 
+PLUGIN_THREAD_OBJECT(VideoScopeEffect, VideoScopeThread, VideoScopeWindow)
 
-
-
-VideoScopeThread::VideoScopeThread(VideoScopeEffect *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-VideoScopeThread::~VideoScopeThread()
-{
-	delete window;
-}
-	
-void VideoScopeThread::run()
-{
-	BC_DisplayInfo info;
-	window = new VideoScopeWindow(plugin, 
-		info.get_abs_cursor_x() - 75, 
-		info.get_abs_cursor_y() - 65,
-		plugin->w,
-		plugin->h);
-	window->create_objects();
-
-	int result = window->run_window();
-	completion.unlock();
-	if(result) plugin->client_side_close();
-}
 
 
 
@@ -366,8 +325,6 @@ REGISTER_PLUGIN(VideoScopeEffect)
 
 
 
-VideoScopeWindow* VideoScopeEffect::window_static = 0;
-Mutex VideoScopeEffect::window_lock;
 
 VideoScopeEffect::VideoScopeEffect(PluginServer *server)
  : PluginVClient(server)
@@ -396,14 +353,14 @@ char* VideoScopeEffect::plugin_title()
 	return "VideoScope";
 }
 
-NEW_PICON_MACRO(VideoScopeEffect)
-
-int VideoScopeEffect::show_gui()
+int VideoScopeEffect::load_configuration()
 {
-	thread = new VideoScopeThread(this);
-	thread->start();
 	return 0;
 }
+
+NEW_PICON_MACRO(VideoScopeEffect)
+
+SHOW_GUI_MACRO(VideoScopeEffect, VideoScopeThread)
 
 RAISE_WINDOW_MACRO(VideoScopeEffect)
 
@@ -434,71 +391,63 @@ int VideoScopeEffect::save_defaults()
 
 int VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
 {
-	window_lock.lock();
 
-	if(window_static)
+	send_render_gui(input);
+//printf("VideoScopeEffect::process_realtime 1\n");
+	if(input->get_rows()[0] != output->get_rows()[0])
+		output->copy_from(input);
+	return 1;
+}
+
+void VideoScopeEffect::render_gui(void *input)
+{
+	if(thread)
 	{
+		VideoScopeWindow *window = thread->window;
+		window->lock_window();
+
 //printf("VideoScopeEffect::process_realtime 1\n");
-		this->input = input;
+		this->input = (VFrame*)input;
 //printf("VideoScopeEffect::process_realtime 1\n");
 
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
-//printf("VideoScopeEffect::process_realtime 1\n");
 
 		if(!engine)
 		{
 			engine = new VideoScopeEngine(this, 
 				(PluginClient::smp + 1));
 		}
-// printf("VideoScopeEffect::process_realtime 1 %p\n", window_static);
-// printf("VideoScopeEffect::process_realtime 1 %p\n", window_static->waveform_bitmap);
-// printf("VideoScopeEffect::process_realtime 1 %p %p %p\n", window_static->waveform_bitmap->get_data(), window_static->waveform_bitmap->get_h(), window_static->waveform_bitmap->get_bytes_per_line());
 
+//printf("VideoScopeEffect::process_realtime 1 %d\n", PluginClient::smp);
 // Clear bitmaps
-		bzero(window_static->waveform_bitmap->get_data(), 
-			window_static->waveform_bitmap->get_h() * 
-			window_static->waveform_bitmap->get_bytes_per_line());
-		bzero(window_static->vector_bitmap->get_data(), 
-			window_static->vector_bitmap->get_h() * 
-			window_static->vector_bitmap->get_bytes_per_line());
-//printf("VideoScopeEffect::process_realtime 1\n");
+		bzero(window->waveform_bitmap->get_data(), 
+			window->waveform_bitmap->get_h() * 
+			window->waveform_bitmap->get_bytes_per_line());
+		bzero(window->vector_bitmap->get_data(), 
+			window->vector_bitmap->get_h() * 
+			window->vector_bitmap->get_bytes_per_line());
 
 		engine->process_packages();
-//printf("VideoScopeEffect::process_realtime 1\n");
-
-		window_static->lock_window();
-		window_static->waveform->draw_bitmap(window_static->waveform_bitmap, 
-			1,
-			0,
-			0);
-//printf("VideoScopeEffect::process_realtime 1\n");
-		window_static->vectorscope->draw_bitmap(window_static->vector_bitmap, 
-			1,
-			0,
-			0);
-//printf("VideoScopeEffect::process_realtime 1\n");
-
-
-		window_static->draw_overlays();
-
-
-
-
-
-
-
-
-		window_static->unlock_window();
 //printf("VideoScopeEffect::process_realtime 2\n");
+//printf("VideoScopeEffect::process_realtime 1\n");
+
+		window->waveform->draw_bitmap(window->waveform_bitmap, 
+			1,
+			0,
+			0);
+
+//printf("VideoScopeEffect::process_realtime 1\n");
+		window->vectorscope->draw_bitmap(window->vector_bitmap, 
+			1,
+			0,
+			0);
+
+
+		window->draw_overlays();
+
+
+		window->unlock_window();
 	}
-
-	window_lock.unlock();
-
-
-	return 0;
 }
-
 
 
 
@@ -527,16 +476,16 @@ VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin,
 									((p)[2] * 29)) >> 8)
 
 
-static void draw_point(unsigned char **rows, int color_model, int x, int y)
+static void draw_point(unsigned char **rows, int color_model, int x, int y, int r, int g, int b)
 {
 	switch(color_model)
 	{
 		case BC_BGR8888:
 		{
 			unsigned char *pixel = rows[y] + x * 4;
-			pixel[0] = 0xff;
-			pixel[1] = 0xff;
-			pixel[2] = 0xff;
+			pixel[0] = r;
+			pixel[1] = g;
+			pixel[2] = b;
 			break;
 		}
 		case BC_BGR888:
@@ -544,7 +493,8 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y)
 		case BC_RGB565:
 		{
 			unsigned char *pixel = rows[y] + x * 2;
-			pixel[0] = pixel[1] = 0xff;
+			pixel[0] = (r & 0xf8) | (g >> 5);
+			pixel[1] = ((g & 0xfc) << 5) | (b >> 3);
 			break;
 		}
 		case BC_BGR565:
@@ -569,17 +519,38 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y)
 /* Analyze pixel */ \
 			if(use_yuv) intensity = (float)*in_pixel / max; \
  \
-			float r, g, b, h, s, v; \
+			float h, s, v; \
+			int r, g, b; \
 			if(use_yuv) \
 			{ \
-				HSV::yuv_to_hsv(in_pixel[0], in_pixel[1], in_pixel[2], h, s, v, max); \
+				if(max == 0xffff) \
+				{ \
+					yuv.yuv_to_rgb_16(r, g, b, in_pixel[0], in_pixel[1], in_pixel[2]); \
+				} \
+				else \
+				{ \
+					yuv.yuv_to_rgb_8(r, g, b, in_pixel[0], in_pixel[1], in_pixel[2]); \
+				} \
 			} \
 			else \
 			{ \
-				r = (float)in_pixel[0] / max; \
-				g = (float)in_pixel[1] / max; \
-				b = (float)in_pixel[2] / max; \
-				HSV::rgb_to_hsv(r, g, b, h, s, v); \
+				r = in_pixel[0]; \
+				g = in_pixel[1]; \
+				b = in_pixel[2]; \
+			} \
+ \
+			HSV::rgb_to_hsv((float)r / max, \
+					(float)g / max, \
+					(float)b / max, \
+					h, \
+					s, \
+					v); \
+ \
+			if(max == 0xffff) \
+			{ \
+				r >>= 8; \
+				g >>= 8; \
+				b >>= 8; \
 			} \
  \
 /* Calculate waveform */ \
@@ -589,7 +560,7 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y)
 			int y = waveform_h - (int)intensity; \
 			int x = j * waveform_w / w; \
 			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h) \
-				draw_point(waveform_rows, waveform_cmodel, x, y); \
+				draw_point(waveform_rows, waveform_cmodel, x, y, 0xff, 0xff, 0xff); \
  \
 /* Calculate vectorscope */ \
 			float adjacent = cos(h / 360 * 2 * M_PI); \
@@ -603,7 +574,7 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y)
  \
 			CLAMP(x, 0, vector_w - 1); \
 			CLAMP(y, 0, vector_h - 1); \
-			draw_point(vector_rows, vector_cmodel, x, y); \
+			draw_point(vector_rows, vector_cmodel, x, y, r, g, b); \
  \
 		} \
 	} \
@@ -611,17 +582,18 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y)
 
 void VideoScopeUnit::process_package(LoadPackage *package)
 {
+	VideoScopeWindow *window = plugin->thread->window;
 	VideoScopePackage *pkg = (VideoScopePackage*)package;
 	int w = plugin->input->get_w();
 	int h = plugin->input->get_h();
-	int waveform_h = VideoScopeEffect::window_static->waveform_bitmap->get_h();
-	int waveform_w = VideoScopeEffect::window_static->waveform_bitmap->get_w();
-	int waveform_cmodel = VideoScopeEffect::window_static->waveform_bitmap->get_color_model();
-	unsigned char **waveform_rows = VideoScopeEffect::window_static->waveform_bitmap->get_row_pointers();
-	int vector_h = VideoScopeEffect::window_static->vector_bitmap->get_h();
-	int vector_w = VideoScopeEffect::window_static->vector_bitmap->get_w();
-	int vector_cmodel = VideoScopeEffect::window_static->vector_bitmap->get_color_model();
-	unsigned char **vector_rows = VideoScopeEffect::window_static->vector_bitmap->get_row_pointers();
+	int waveform_h = window->waveform_bitmap->get_h();
+	int waveform_w = window->waveform_bitmap->get_w();
+	int waveform_cmodel = window->waveform_bitmap->get_color_model();
+	unsigned char **waveform_rows = window->waveform_bitmap->get_row_pointers();
+	int vector_h = window->vector_bitmap->get_h();
+	int vector_w = window->vector_bitmap->get_w();
+	int vector_cmodel = window->vector_bitmap->get_color_model();
+	unsigned char **vector_rows = window->vector_bitmap->get_row_pointers();
 	float radius = MIN(vector_w / 2, vector_h / 2);
 
 	switch(plugin->input->get_color_model())

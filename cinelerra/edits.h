@@ -19,6 +19,7 @@ public:
 	Edits(EDL *edl, Track *track);
 	virtual ~Edits();	
 
+	void equivalent_output(Edits *edits, long *result);
 	virtual Edits& operator=(Edits& edits);
 // Editing
 	void insert_edits(Edits *edits, long position);
@@ -37,7 +38,7 @@ public:
 	int save(FileXML *xml, char *output_path);
 	int copy(long start, long end, FileXML *xml, char *output_path);
 // Clear region of edits
-	virtual int clear(long start, long end);
+	virtual void clear(long start, long end);
 // Clear edits and plugins for a handle modification
 	virtual void clear_recursive(long start, 
 		long end, 

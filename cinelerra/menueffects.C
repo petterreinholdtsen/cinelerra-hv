@@ -354,6 +354,7 @@ void MenuEffectThread::run()
 //printf("MenuEffectThread::run 20\n");
 // Process the total length in fragments
 	Label *current_label = mwindow->edl->labels->first;
+	mwindow->stop_brender();
 
 	int current_number;
 	int number_start;
@@ -444,14 +445,15 @@ void MenuEffectThread::run()
 					file);
 //printf("MenuEffectThread::run 12\n");
 				plugin_array->run_plugins();
-printf("MenuEffectThread::run 13\n");
+
+//printf("MenuEffectThread::run 13\n");
 				plugin_array->stop_plugins();
 				file->close_file();
 				asset->audio_length = file->asset->audio_length;
 				asset->video_length = file->asset->video_length;
-printf("MenuEffectThread::run 14 %d %d\n", asset->audio_length, asset->video_length);
+//printf("MenuEffectThread::run 14 %d %d\n", asset->audio_length, asset->video_length);
 				delete plugin_array;
-printf("MenuEffectThread::run 16\n");
+//printf("MenuEffectThread::run 16\n");
 			}
 
 			delete file;
@@ -464,10 +466,10 @@ printf("MenuEffectThread::run 16\n");
 	if(!result && load_mode != LOAD_NOTHING)
 	{
 		mwindow->gui->lock_window();
-printf("MenuEffectThread::run 17\n");
+//printf("MenuEffectThread::run 17\n");
 		mwindow->undo->update_undo_before(title, LOAD_EDITS | LOAD_TIMEBAR);
 
-printf("MenuEffectThread::run 18\n");
+//printf("MenuEffectThread::run 18\n");
 		mwindow->load_assets(&assets,
 			-1,
 			load_mode,
@@ -475,12 +477,21 @@ printf("MenuEffectThread::run 18\n");
 			0,
 			mwindow->edl->session->labels_follow_edits, 
 			mwindow->edl->session->plugins_follow_edits);
-printf("MenuEffectThread::run 19\n");
+
+//printf("MenuEffectThread::run 19\n");
 
 		mwindow->save_backup();
 		mwindow->undo->update_undo_after();
-printf("MenuEffectThread::run 20\n");
-		mwindow->session->changes_made = 1;
+		mwindow->restart_brender();
+		mwindow->update_plugin_guis();
+		mwindow->gui->update(1, 
+			2,
+			1,
+			1,
+			0,
+			1,
+			0);
+		mwindow->sync_parameters(CHANGE_ALL);
 //printf("MenuEffectThread::run 22\n");
 		mwindow->gui->unlock_window();
 //printf("MenuEffectThread::run 23\n");
@@ -590,7 +601,8 @@ int MenuEffectWindow::create_objects()
 					1,
 					0,
 					0,
-					&menueffects->strategy);
+					&menueffects->strategy,
+					0);
 
 	loadmode = new LoadMode(mwindow, this, x, y, &menueffects->load_mode, 1);
 	loadmode->create_objects();

@@ -41,6 +41,7 @@ public:
 	void interrupt_playback();
 	int get_output_w();
 	int get_output_h();
+	int brender_available(int position, int direction);
 // Get current channel for the BUZ output
 	Channel* get_current_channel();
 	double get_tracking_position();

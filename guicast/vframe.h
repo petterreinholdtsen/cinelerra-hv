@@ -70,6 +70,12 @@ public:
 	int clear_frame();
 	int allocate_compressed_data(long bytes);
 
+// Sequence number. -1 means invalid.  Passing frames to the encoder is
+// asynchronous.  The sequence number must be preserved in the image itself
+// to encode discontinuous frames.
+	long get_number();
+	void set_number(long number);
+
 	long get_compressed_allocated();
 	long get_compressed_size();
 	long set_compressed_size(long size);
@@ -86,7 +92,6 @@ public:
 	int get_h();
 	int get_w_fixed();
 	int get_h_fixed();
-	static int clear_pixel(VPixel &pixel);
 	static int get_scale_tables(int *column_table, int *row_table, 
 			int in_x1, int in_y1, int in_x2, int in_y2,
 			int out_x1, int out_y1, int out_x2, int out_y2);
@@ -151,6 +156,8 @@ private:
 	unsigned char *image;
 	long image_offset;
 	long image_size;
+// For writing discontinuous frames in background rendering
+	long sequence_number;
 };
 
 

@@ -97,14 +97,13 @@ void PluginDialogThread::run()
 		{
 			mwindow->gui->lock_window();
 
+			mwindow->undo->update_undo_before("attach effect", LOAD_EDITS | LOAD_PATCHES);
+
 			if(plugin)
 			{
-				mwindow->undo->update_undo_before("attach effect", LOAD_EDITS | LOAD_PATCHES);
 				plugin->change_plugin(plugin_title,
 					&shared_location,
 					plugin_type);
-				mwindow->undo->update_undo_after();
-				mwindow->sync_parameters(CHANGE_EDL);
 			}
 			else
 			{
@@ -117,14 +116,20 @@ void PluginDialogThread::run()
 								plugin_type);
 			}
 
+			
+			mwindow->save_backup();
+			mwindow->undo->update_undo_after();
+			mwindow->restart_brender();
 			mwindow->update_plugin_states();
+			mwindow->sync_parameters(CHANGE_EDL);
 			mwindow->gui->update(1,
 				1,
 				0,
-				1,
+				0,
 				1, 
 				0,
 				0);
+
 			mwindow->gui->unlock_window();
 		}
 	}

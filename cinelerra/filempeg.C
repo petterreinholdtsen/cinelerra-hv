@@ -159,7 +159,7 @@ int FileMPEG::open_file(int rd, int wr)
 		
 		if(!result)
 		{
-			sprintf(command_line, "%s%s%s%s%s%s%s%s%s - %s",
+			sprintf(command_line, "%s%s%s%s%s%s%s%s%s%s - %s",
 				encoder_string, 
 				asset->vmpeg_derivative == 1 ? " -1" : "",
 				asset->vmpeg_cmodel == 1 ? " -422" : "",
@@ -169,6 +169,7 @@ int FileMPEG::open_file(int rd, int wr)
 				asset->vmpeg_progressive ? " -p" : "",
 				asset->vmpeg_denoise ? " -d" : "",
 				file->cpus <= 1 ? " -u" : "",
+				asset->vmpeg_seq_codes ? " -g" : "",
 				asset->path);
 
 			video_out = new ThreadFork;
@@ -888,7 +889,7 @@ MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window,
  	parent_window->get_abs_cursor_x(),
  	parent_window->get_abs_cursor_y(),
 	500,
-	270,
+	300,
 	-1,
 	-1,
 	0,
@@ -945,6 +946,8 @@ int MPEGConfigVideo::create_objects()
 	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_progressive, "Progressive frames"));
 	y += 30;
 	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_denoise, "Denoise"));
+	y += 30;
+	add_subwindow(new BC_CheckBox(x, y, &asset->vmpeg_seq_codes, "Sequence start codes in every GOP"));
 
 	add_subwindow(new BC_OKButton(this));
 	show_window();

@@ -39,6 +39,7 @@ int VirtualVConsole::total_ring_buffers()
 
 void VirtualVConsole::get_playable_tracks()
 {
+//printf("VirtualVConsole::get_playable_tracks 1\n");
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
 			commonrender->current_position, 
@@ -48,6 +49,7 @@ void VirtualVConsole::get_playable_tracks()
 void VirtualVConsole::new_input_buffer(int ring_buffer)
 {
 	buffer_in = new VFrame*[total_tracks];
+//printf("VirtualVConsole::new_input_buffer 1\n");
 	for(int i = 0; i < total_tracks; i++)
 	{
 		buffer_in[i] = new VFrame(0,

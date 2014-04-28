@@ -176,7 +176,7 @@ void RecordVideo::run()
 //printf("RecordVideo::run 1\n");
  		current_sample = record->sync_position();
 
-//printf("RecordVideo::run 2 %ld %ld %ld\n", record_thread->session_samples, current_sample, next_sample);
+//printf("RecordVideo::run 2\n");
 
 
 		if(current_sample < next_sample && current_sample > 0)
@@ -288,7 +288,7 @@ void RecordVideo::run()
 		{
 			write_buffer(0);
 		}
-//printf("RecordVideo::run 12 %d %d %d %d\n", record_thread->monitor, record_thread->batch_done(), record_thread->loop_done(), write_result);
+//printf("RecordVideo::run 12\n");
 //printf("RecordVideo::run 12 %d %f %f\n", record->get_current_batch()->record_mode, record->current_display_position(), *record->current_duration());
 
 		if(!record_thread->monitor && 
@@ -323,6 +323,7 @@ void RecordVideo::run()
 			batch_done = 1;
 		}
 	}
+//printf("RecordVideo::run 14 %d\n", write_result);
 
 // Update dependant threads
 	if(record->default_asset->audio_data)
@@ -331,7 +332,7 @@ void RecordVideo::run()
 // Interrupt driver for IEEE1394
 		record_thread->record_audio->stop_recording();
 	}
-//printf("RecordVideo::run 14 %d\n", write_result);
+//printf("RecordVideo::run 15 %d\n", write_result);
 
 	if(write_result)
 	{
@@ -347,7 +348,7 @@ void RecordVideo::run()
 	}
 
 	cleanup_recording();
-//printf("RecordVideo::run 15 %d\n", write_result);
+//printf("RecordVideo::run 16 %p %d\n", this, write_result);
 }
 
 void RecordVideo::read_buffer()

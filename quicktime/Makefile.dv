@@ -1,5 +1,4 @@
-#DV_DIR := $(shell expr libdv-0.9.5 )
-DV_DIR := $(shell expr libdv-cvs062602 )
+DV_DIR := $(shell expr libdv-0.98 )
 
 DV_OBJS := \
 	$(OBJDIR)/$(DV_DIR)/libdv/audio.o \

@@ -1,8 +1,9 @@
-/Makefile/1.1/Tue Jul 16 15:03:45 2002//
-/Makefile.am/1.1/Tue Jul 16 15:03:45 2002//
-/Makefile.in/1.1/Tue Jul 16 15:03:45 2002//
-/rawmidi.c/1.1/Tue Jul 16 15:03:45 2002//
-/rawmidi_hw.c/1.1/Tue Jul 16 15:03:45 2002//
-/rawmidi_local.h/1.1/Tue Jul 16 15:03:45 2002//
-/rawmidi_symbols.c/1.1/Tue Jul 16 15:03:45 2002//
+D/CVS////
+/Makefile/1.1/Tue Jul 16 14:34:26 2002//
+/Makefile.am/1.1/Wed Oct 24 14:14:16 2001//
+/Makefile.in/1.1/Wed Jun 19 09:38:00 2002//
+/rawmidi.c/1.1/Wed Apr 24 10:38:41 2002//
+/rawmidi_hw.c/1.1/Wed Apr 24 08:50:44 2002//
+/rawmidi_local.h/1.1/Sun Dec 30 09:22:56 2001//
+/rawmidi_symbols.c/1.1/Sun Dec 30 09:22:56 2001//
 D/.libs////

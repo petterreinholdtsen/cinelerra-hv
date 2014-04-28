@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 
+//#include "bccounter.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "vframe.h"
@@ -29,15 +30,8 @@ public:
 
 
 
+//static BCCounter counter;
 
-
-
-VFrame::VFrame(VFrame &frame)
-{
-	reset_parameters();
-	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
-	memcpy(data, frame.data, bytes_per_line * h);
-}
 
 VFrame::VFrame(unsigned char *png_data)
 {
@@ -48,6 +42,14 @@ VFrame::VFrame(unsigned char *png_data)
 //printf("VFrame::VFrame 2\n");
 }
 
+VFrame::VFrame(VFrame &frame)
+{
+	reset_parameters();
+	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
+	memcpy(data, frame.data, bytes_per_line * h);
+//	counter.up();
+}
+
 VFrame::VFrame(unsigned char *data, 
 	int w, 
 	int h, 
@@ -56,6 +58,7 @@ VFrame::VFrame(unsigned char *data,
 {
 	reset_parameters();
 	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
+//	counter.up();
 }
 
 VFrame::VFrame(unsigned char *data, 
@@ -76,12 +79,14 @@ VFrame::VFrame(unsigned char *data,
 		h, 
 		color_model, 
 		bytes_per_line);
+//	counter.up();
 }
 
 VFrame::VFrame()
 {
 	reset_parameters();
 	this->color_model = BC_COMPRESSED;
+//	counter.up();
 }
 
 
@@ -97,6 +102,7 @@ VFrame::VFrame()
 VFrame::~VFrame()
 {
 	clear_objects();
+//	counter.down();
 }
 
 long VFrame::set_shm_offset(long offset)
@@ -135,15 +141,18 @@ int VFrame::reset_parameters()
 	y_offset = 0;
 	u_offset = 0;
 	v_offset = 0;
+	sequence_number = -1;
 	return 0;
 }
 
 int VFrame::clear_objects()
 {
 // Delete data
+//printf("VFrame::clear_objects 1 %p %d\n", this, shared);
 	if(!shared)
 	{
 		int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
+//printf("VFrame::clear_objects %p %d %d\n", this, this->w, this->h);
 //if(size > 1000000) printf("VFrame::clear_objects %d\n", size);
 		if(data) delete [] data;
 		data = 0;
@@ -272,7 +281,10 @@ int VFrame::allocate_data(unsigned char *data,
 		shared = 0;
 		int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
 		this->data = new unsigned char[size];
-//printf("VFrame::allocate_data %d\n", size);
+if(!this->data)
+printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
+
+//printf("VFrame::allocate_data %p %d %d\n", this, this->w, this->h);
 //if(size > 1000000) printf("VFrame::allocate_data %d\n", size);
 	}
 
@@ -781,12 +793,6 @@ int VFrame::get_bytes_per_pixel()
 	return bytes_per_pixel;
 }
 
-int VFrame::clear_pixel(VPixel &pixel)
-{
-	pixel.r = pixel.g = pixel.b = pixel.a = 0;
-	return 0;
-}
-
 unsigned char** VFrame::get_rows()
 {
 	if(rows)
@@ -830,3 +836,17 @@ unsigned char* VFrame::get_v()
 {
 	return v;
 }
+
+void VFrame::set_number(long number)
+{
+	sequence_number = number;
+}
+
+long VFrame::get_number()
+{
+	return sequence_number;
+}
+
+
+
+

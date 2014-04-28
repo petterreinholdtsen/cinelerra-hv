@@ -110,6 +110,7 @@ public:
 // Synchronize label, in/out, presentation display with master EDL
 	void update(int do_range = 1, int do_others = 1);
 	virtual void draw_time();
+// Called by update and draw_time.
 	virtual void draw_range();
 	virtual void select_label(double position);
 	virtual void stop_playback();

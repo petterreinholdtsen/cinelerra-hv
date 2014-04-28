@@ -3,12 +3,17 @@
 
 
 #include "arraylist.h"
+#include "assets.inc"
+#include "brender.inc"
 #include "defaults.inc"
+#include "edl.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
-#include "packagerenderer.h"
+#include "packagedispatcher.inc"
 #include "preferences.inc"
 #include "render.inc"
+#include "renderfarm.inc"
+#include "renderfarmclient.inc"
 #include "thread.h"
 
 
@@ -23,14 +28,49 @@
 // 4 bytes -> size of packet exclusive
 // size of packet -> data
 
+#define STORE_INT32(value) \
+	datagram[i++] = (((u_int32_t)(value)) >> 24) & 0xff; \
+	datagram[i++] = (((u_int32_t)(value)) >> 16) & 0xff; \
+	datagram[i++] = (((u_int32_t)(value)) >> 8) & 0xff; \
+	datagram[i++] = ((u_int32_t)(value)) & 0xff;
 
-class RenderFarmServerThread;
+#define READ_INT32(data) \
+	((((uint32_t)(data)[0]) << 24) |  \
+	(((uint32_t)(data)[1]) << 16) |  \
+	(((uint32_t)(data)[2]) << 8) |  \
+	((uint32_t)(data)[3]))
+
+// Request codes
+enum
+{
+	RENDERFARM_PREFERENCES,  // Get preferences on startup
+	RENDERFARM_ASSET,        // Get output format on startup
+	RENDERFARM_EDL,          // Get EDL on startup
+	RENDERFARM_PACKAGE,      // Get one package after another to render
+	RENDERFARM_PROGRESS,     // Update completion total
+	RENDERFARM_SET_RESULT,   // Update error status
+	RENDERFARM_GET_RESULT,   // Retrieve error status
+	RENDERFARM_DONE,         // Quit
+	RENDERFARM_SET_VMAP      // Update video map in background rendering
+};
+
 
 class RenderFarmServer
 {
 public:
-	RenderFarmServer(MWindow *mwindow, Render *render);
-	~RenderFarmServer();
+// MWindow is required to get the plugindb to save the EDL.
+	RenderFarmServer(MWindow *mwindow, 
+		PackageDispatcher *packages,
+		Preferences *preferences,
+		int use_local_rate,
+		int *result_return,
+		long *total_return,
+		Mutex *total_return_lock,
+		Asset *default_asset,
+		EDL *edl,
+		BRender *brender);
+	virtual ~RenderFarmServer();
+
 
 // Open connections to clients.
 	int start_clients();
@@ -41,14 +81,19 @@ public:
 // dispatching the next job and whenever a client queries for errors.
 
 
-// Get average frames per second for all nodes which have completed a package
-	double calculate_avg_fps();
-
 	ArrayList<RenderFarmServerThread*> clients;
 	MWindow *mwindow;
-	Render *render;
+	PackageDispatcher *packages;
 	Preferences *preferences;
+// Use master node's framerate
+	int use_local_rate;
+	int *result_return;
+	long *total_return;
+	Mutex *total_return_lock;
+	Asset *default_asset;
+	EDL *edl;
 	Mutex *client_lock;
+	BRender *brender;
 };
 
 
@@ -62,7 +107,8 @@ public:
 		int number);
 	~RenderFarmServerThread();
 	
-	static int read_socket(int socket_fd, char *data, int len);
+	static int read_socket(int socket_fd, char *data, int len, int timeout);
+	static int write_socket(int socket_fd, char *data, int len, int timeout);
 // Inserts header and writes string to socket
 	static int write_string(int socket_fd, char *string);
 	int start_loop();
@@ -71,6 +117,7 @@ public:
 	void send_edl();
 	void send_package(unsigned char *buffer);
 	void set_progress(unsigned char *buffer);
+	void set_video_map(unsigned char *buffer);
 	void set_result(unsigned char *buffer);
 	void get_result();
 
@@ -83,90 +130,13 @@ public:
 	int number;
 // Rate of last job or 0
 	double frames_per_second;
+// Pointer to default asset
+	Asset *default_asset;
 };
 
 
 
 
-
-
-
-class RenderFarmClientThread;
-
-
-
-// The render client waits for connections from the server.
-// Then it starts a thread for each connection.
-class RenderFarmClient
-{
-public:
-	RenderFarmClient(int port);
-	~RenderFarmClient();
-	
-	void main_loop();
-	
-	
-	
-	RenderFarmClientThread *thread;
-	
-	int port;
-// The plugin paths must be known before any threads are started
-	Defaults *boot_defaults;
-	Preferences *boot_preferences;
-	ArrayList<PluginServer*> *plugindb;
-};
-
-
-
-
-class FarmPackageRenderer : public PackageRenderer
-{
-public:
-	FarmPackageRenderer(RenderFarmClientThread *thread,
-		int socket_fd);
-	~FarmPackageRenderer();
-	
-	
-	int get_result();
-	void set_result(int value);
-	void set_progress(long value);
-
-	
-	int socket_fd;
-	RenderFarmClientThread *thread;
-};
-
-// The thread requests jobs from the server until the job table is empty
-// or the server reports an error.  This thread must poll the server
-// after every frame for the error status.
-// Detaches when finished.
-class RenderFarmClientThread : public Thread
-{
-public:
-	RenderFarmClientThread(RenderFarmClient *client);
-	~RenderFarmClientThread();
-
-	void send_request_header(int socket_fd, 
-		int request, 
-		int len);
-	void read_string(int socket_fd, char* &string);
-	void RenderFarmClientThread::read_preferences(int socket_fd, 
-		Preferences *preferences);
-	void read_asset(int socket_fd, Asset *asset);
-	void read_edl(int socket_fd, 
-		EDL *edl, 
-		Preferences *preferences);
-	int read_package(int socket_fd, RenderPackage *package);
-	void send_completion(int socket_fd);
-
-	void main_loop(int socket_fd);
-	void run();
-
-// Everything must be contained in run()
-	int socket_fd;
-	RenderFarmClient *client;
-	double frames_per_second;
-};
 
 
 #endif

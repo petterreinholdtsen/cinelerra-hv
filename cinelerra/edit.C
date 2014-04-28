@@ -203,6 +203,42 @@ void Edit::copy_from(Edit *edit)
 	this->channel = edit->channel;
 }
 
+void Edit::equivalent_output(Edit *edit, long *result)
+{
+// End of edit changed
+	if(startproject + length != edit->startproject + edit->length)
+	{
+		long new_length = MIN(startproject + length, edit->startproject + edit->length);
+		if(*result < 0 || new_length < *result) 
+			*result = new_length;
+	}
+
+// Start of edit changed
+	if(
+// One is silence and one isn't
+		edit->asset == 0 && asset != 0 ||
+		edit->asset != 0 && asset == 0 ||
+// One has transition and one doesn't
+		edit->transition == 0 && transition != 0 ||
+		edit->transition != 0 && transition == 0 ||
+// Position changed
+		startproject != edit->startproject ||
+		startsource != edit->startsource ||
+// Transition changed
+		(transition && 
+			edit->transition && 
+			!transition->identical(edit->transition)) ||
+// Asset changed
+		(asset && 
+			edit->asset &&
+			!asset->equivalent(*edit->asset, 1, 1))
+		)
+	{
+		if(*result < 0 || startproject < *result) *result = startproject;
+	}
+}
+
+
 Edit& Edit::operator=(Edit& edit)
 {
 //printf("Edit::operator= called\n");
@@ -553,9 +589,9 @@ int Edit::shift_end_out(int edit_mode,
 
 // Effects are shifted in length extension
 		if(edit_plugins)
-			edits->shift_effects_recursive(startproject, 
+			edits->shift_effects_recursive(oldposition /* startproject */, 
 				cut_length);
-		edits->shift_keyframes_recursive(oldposition/* startproject */, 
+		edits->shift_keyframes_recursive(oldposition /* startproject */, 
 			cut_length);
 
 		for(Edit* current_edit = next; current_edit; current_edit = current_edit->next)

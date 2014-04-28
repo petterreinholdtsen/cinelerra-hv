@@ -136,8 +136,9 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		dv_parse_header( codec->dv_decoder, codec->data );
 //printf(__FUNCTION__ " 7\n");
 		
+// Libdv improperly decodes RGB colormodels.
 		if( (file->color_model == BC_YUV422
-			 || file->color_model == BC_RGB888) &&
+			/* || file->color_model == BC_RGB888 */) &&
 			file->in_x == 0 && 
 			file->in_y == 0 && 
 			file->in_w == width &&
@@ -176,10 +177,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 				for(i = 0; i < 576; i++)
 					codec->temp_rows[i] = codec->temp_frame + 720 * 2 * i;
 			}
-
-			/*if( file->color_model == BC_YUV422 ||
-			  file->color_model == BC_YUV888 )
-			  {*/
 //printf(__FUNCTION__ " 8\n");
 
 		    decode_colormodel = BC_YUV422;
@@ -189,19 +186,16 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 								  pitches );
 //printf(__FUNCTION__ " 8\n");
 			
-			/*}
-			  else if( file->color_model == BC_RGB888 ||
-			  file->color_model == BC_BGR888 ||
-			  file->color_model == BC_RGBA8888 )
-			  {
-			  decode_colormodel = BC_RGB888;
-			  pitches[0] = 720 * 3;
-			  dv_decode_full_frame( codec->dv_decoder, codec->data,
-			  e_dv_color_rgb, row_pointers,
-			  pitches );
-			  }*/
 
-//printf( "dv.c decode: doing cmodel_transfer\n" );
+/*
+ * printf( "decode 8 %02x%02x%02x%02x\n", 
+ * codec->temp_rows[0][0],
+ * codec->temp_rows[0][1],
+ * codec->temp_rows[0][2],
+ * codec->temp_rows[0][3]
+ * )
+ */
+
 
 			cmodel_transfer(row_pointers, 
 				codec->temp_rows,
@@ -224,6 +218,14 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 				0,
 				width,
 				file->out_w);
+/*
+ * printf( "decode 9 %02x%02x%02x%02x\n", 
+ * row_pointers[0][0],
+ * row_pointers[0][1],
+ * row_pointers[0][2],
+ * row_pointers[0][3]
+ * );
+ */
 //printf("decode 9\n");
 		}
 	}

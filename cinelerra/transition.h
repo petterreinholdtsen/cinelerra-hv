@@ -49,7 +49,6 @@ public:
 
 
 
-
 	Transition(Transition *that, Edit *edit);
 	~Transition();
 
@@ -62,6 +61,7 @@ public:
 	int operator==(Transition &that);
 	int operator==(Plugin &that);
 	int operator==(Edit &that);
+	int identical(Transition *that);
 
 // Only the show value from the attachment point is used.
 	int set_show_derived(int value) {};
@@ -75,13 +75,9 @@ public:
 	char* default_title();
 	void dump();
 
-	int audio, video;
-	MWindow *mwindow;
-
 private:
 // Only used by operator= and copy constructor
 	void copy_from(Transition *that);
-	int identical(Transition *that);
 };
 
 #endif

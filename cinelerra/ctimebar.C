@@ -45,8 +45,7 @@ EDL* CTimeBar::get_edl()
 void CTimeBar::draw_time()
 {
 	get_edl_length();
-	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	
+	draw_range();
 }
 
 

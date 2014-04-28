@@ -31,6 +31,9 @@ public:
 	int plugin_process_loop(double **buffers, long &write_length);
 	int read_samples(double *buffer, int channel, long start_position, long total_samples);
 	int read_samples(double *buffer, long start_position, long total_samples);
+	void send_render_gui(void *data, int size);
+	void plugin_render_gui(void *data, int size);
+	virtual void render_gui(void *data, int size) {};
 
 // point to the start of the buffers
 	ArrayList<float**> input_ptr_master;

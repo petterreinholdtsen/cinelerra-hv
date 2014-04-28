@@ -55,6 +55,7 @@ int RecordWindow::create_objects()
 					1,
 					record->fixed_compression,
 					1,
+					0,
 					0);
 //printf("RecordWindow::create_objects 1\n");
 

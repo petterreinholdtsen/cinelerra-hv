@@ -33,7 +33,10 @@ Copyright @copyright{} 2002 Heroine Virtual Ltd.
 * COMPOSITING::
 * KEYFRAMES::
 * CAPTURING MEDIA::
+* IMPROVING PERFORMANCE::
 * EFFECT DESCRIPTIONS::
+* PLUGIN AUTHORING::
+* RELEASE NOTES::
 @end menu
 
 @contents
@@ -90,22 +93,21 @@ involve many hours setting up command line sequences and writing to
 disk. For a time it seemed as if the original dream of immersive movie
 making for everyone regardless of income level had arrived.
 
-Later on Broadcast 2000 began to come short.  Its audio was pretty
-graceful.  Its video was graceful if you knew how to use it
-efficiently, but quality issues and new user interface techniques were
-emerging.  Broadcast 2000 kept the audio interface from its ancestors,
-which didn't apply well to video.  Users likewise were maturing.  No
-longer would it be sufficient to just edit video on a UNIX box.  Most
-users expected on UNIX the same thing they got in Win or Mac. In mid
-2000 designs for a Broadcast 2000 replacement were drafted.  The
-Broadcast name was officially retired from the series and the software
-would now be called Cinelerra.  Cinelerra would allow users to
-configure certain effects in much less time than required with
-Broadcast 2000.  It would begin to emulate some of the features found
-in Win and Mac software while not attempting to become a clone.  It's
-interface would be designed for video from the ground up, while
-supplementing that with the Broadcast audio interface.  As always,
-quality improvements would happen.
+Later on Broadcast 2000 began to come short.  Its audio and video was
+graceful if you knew how to use it efficiently, but quality issues and
+new user interface techniques were emerging.  Broadcast 2000 kept the
+audio interface from its ancestors, which didn't apply well to video. 
+Users likewise were maturing.  No longer would it be sufficient to just
+edit video on a UNIX box.  Most users expected on UNIX the same thing
+they got in Win or Mac. In mid 2000 designs for a Broadcast 2000
+replacement were drafted.  The Broadcast name was officially retired
+from the series and the software would now be called Cinelerra. 
+Cinelerra would allow users to configure certain effects in much less
+time than required with Broadcast 2000.  It would begin to emulate some
+of the features found in Win and Mac software while not attempting to
+become a clone.  It's interface would be designed for video from the
+ground up, while supplementing that with the Broadcast audio
+interface.  As always, quality improvements would happen.
 
 
 
@@ -723,49 +725,15 @@ sets the recorded frame rate.
 @section PERFORMANCE
 
 
-You'll spend most of your time configuring this section.
+You'll spend most of your time configuring this section.  The main
+focus of performance is rendering parameters not available in the
+rendering dialog.  
 
 
 
-@menu
-* RENDERFARM::
-@end menu
 
 
 @itemize 
-
-@item
-
-INDEX FILES GO HERE
-
-Back in the days when 4 MB/sec was unearthly speed for a hard drive,
-index files were introduced to speed up drawing the audio tracks.  This
-option determines where index files are placed on the hard drive.
-
-
-@item
-
-SIZE OF INDEX FILE
-
-Determines the size of an index file. Larger index sizes allow smaller
-files to be drawn faster while slowing down the drawing of large files.
-Smaller index sizes allow large files to be drawn faster while slowing
-down small files.
-
-@item
-
-NUMBER OF INDEX FILES TO KEEP
-
-To keep the index directory from becoming unruly, old index files are
-deleted. This determines the maximum number of index files to keep in
-the directory.
-
-@item
-
-DELETE ALL INDEXES
-
-When you change the index size or you want to clean out excessive index
-files, this deletes all the index files.
 
 @item
 CACHE ITEMS
@@ -786,7 +754,9 @@ Some effects need a certain amount of time to settle in.  This sets a
 number of seconds to render without writing to disk before the selected
 region is rendered.  When using the renderfarm you'll sometimes need to
 preroll to get seemless transitions between the jobs.  Every job in a
-renderfarm is prerolled by this value.
+renderfarm is prerolled by this value.  Background rendering is
+degraded when preroll is used.  When using background rendering, this
+number is ideally 0.
 
 @item
 
@@ -796,9 +766,62 @@ Cinelerra tries to use all processors on the system by default but
 sometimes you'll only want to use one processor, like in a renderfarm
 client.  This forces only one processer to be used.  The operating
 system, however, usually uses the second processor anyway for disk
-access so this option is really a 1.25 processor mode. @end itemize
+access so this option is really a 1.25 processor mode.  The value of
+this parameter is used in renderfarm clients.
+
+@end itemize
 
 
+@menu
+* BACKGROUND RENDERING::
+* RENDERFARM::
+@end menu
+
+
+@node BACKGROUND RENDERING
+@subsection BACKGROUND RENDERING
+
+Background rendering was originally concieved to allow HDTV effects to
+be displayed in realtime.  Background rendering causes temporary output
+to constantly be rendered while the timeline is being modified.  The
+temporary output is played during playack whenever possible.  It's very
+useful for transitions and previewing effects which are too slow to
+display in a reasonable amount of time.  If renderfarm is enabled, the
+renderfarm is used for background rendering, giving you the potential
+for realtime effects if enough network bandwidth and CPU nodes exist.
+
+@itemize
+
+@item
+FRAMES PER BACKGROUND RENDERING JOB
+
+This only works if renderfarm is being used, otherwise background
+rendering creates a single job for the entire timeline.  The number of
+frames specified here is scaled to the relative CPU speed of rendering
+nodes and used in a single renderfarm job.  The optimum number is 10 -
+30 since network bandwidth is used to initialize each job.
+
+@item
+OUTPUT FOR BACKGROUND RENDERING
+
+Background rendering generates a sequence of image files in a certain
+directory.  This parameter determines the filename prefix of the image
+files.  It should be on a fast disk, accessible to every node in the
+renderfarm by the same path.  Since hundreds of thousands of image
+files are usually created, @emph{ls} commands won't work in the
+background rendering directory.  The @image{magnify} browse button for
+this option normally won't work either, but the @image{wrench}
+configuration button for this option works.
+
+@item
+FILE FORMAT
+
+The file format for background rendering has to be a sequence of
+images. The format of the image sequence determines the quality and
+speed of playback.  JPEG is good most of the time.
+
+
+@end itemize
 
 @node RENDERFARM
 @subsection RENDERFARM
@@ -854,7 +877,7 @@ REPLACE NODE
 
 When editing an existing node, hit this to commit the changes to
 @emph{HOSTNAME} and @emph{PORT}.  The changes won't be committed if you
-don't hit this buttoin.
+don't hit this button.
 
 @item
 
@@ -873,6 +896,15 @@ Deletes whatever node is highlighted in the @emph{NODES} list.
 SORT NODES
 
 Sorts the @emph{NODES} list based on the hostname.
+
+@item
+
+RESET RATES
+
+This sets the framerate for all the nodes to 0.  Frame rates are used
+to scale job sizes based on CPU speed of the node.  Frame rates are
+only calculated when renderfarm is enabled.
+
 
 @item
 
@@ -923,6 +955,39 @@ node, specify 33 to have a well balanced renderfarm.
 These parameters affect purely how the user interface works.
 
 @itemize
+
+@item
+
+INDEX FILES GO HERE
+
+Back in the days when 4 MB/sec was unearthly speed for a hard drive,
+index files were introduced to speed up drawing the audio tracks.  This
+option determines where index files are placed on the hard drive.
+
+
+@item
+
+SIZE OF INDEX FILE
+
+Determines the size of an index file. Larger index sizes allow smaller
+files to be drawn faster while slowing down the drawing of large files.
+Smaller index sizes allow large files to be drawn faster while slowing
+down small files.
+
+@item
+
+NUMBER OF INDEX FILES TO KEEP
+
+To keep the index directory from becoming unruly, old index files are
+deleted. This determines the maximum number of index files to keep in
+the directory.
+
+@item
+
+DELETE ALL INDEXES
+
+When you change the index size or you want to clean out excessive index
+files, this deletes all the index files.
 
 @item
 USE HOURS:MINUTES:SECONDS.XXX
@@ -1470,6 +1535,7 @@ track and getting to a certain time in the track.
 * NAVIGATING THE VIEWER AND COMPOSITOR::
 * NAVIGATING THE RESOURCES::
 * USING THE TRANSPORT CONTROLS::
+* USING BACKGROUND RENDERING::
 @end menu
 
 
@@ -1892,8 +1958,27 @@ frame both times and so the same frame is displayed.
 
 
 
+@node USING BACKGROUND RENDERING
+@section USING BACKGROUND RENDERING
 
 
+
+Background rendering allows impossibly slow effects to play back in
+realtime shortly after the effect is pasted in the timeline.  It
+continuously renders temporary output.  When renderfarm is enabled,
+background rendering uses the renderfarm continuously.  This way, any
+size video can be seen in realtime merely by creating a fast enough
+network with enough nodes.
+
+Background rendering is enabled in settings->preferences->performance. 
+It has one interactive function: @emph{settings->set background render}.  This
+sets the point where background rendering begins to where the in point
+is.  If any video exists, a red bar appears in the time bar showing
+what has been background rendered.
+
+It's often useful to insert an effect or a transition and then select
+settings->set background render right before the effect to preview it
+in full framerates.
 
 
 
@@ -2282,6 +2367,7 @@ applied using the same procedure.
 * REALTIME EFFECTS::
 * RENDERED EFFECTS::
 * TRANSITIONS::
+* LADSPA EFFECTS::
 @end menu
 
 
@@ -2613,6 +2699,29 @@ usually be turned off momentarily during the transition and on after
 the transition in order to render the transition.  Using an
 unaccelerated video device for the entire timeline normally removes the
 disturbance.
+
+
+
+
+
+@node LADSPA EFFECTS
+@section LADSPA EFFECTS
+
+
+LADSPA effects are supported in realtime and rendered mode for audio. 
+The LADSPA plugins you get from the internet vary in quality.  Most
+can't be tweeked in realtime very easily and work better when
+rendered.  Some crash and some can only be applied to one track due to
+a lack of reentrancy.  Although Cinelerra implements the LADSPA
+interface as accurately as possible, multiple tracks of realtime,
+simultaneous processing go beyond the majority of LADSPA users.  LADSPA
+effects appear in the audio folder as the hammer and screwdriver, to
+signify that they are Plugins for Linux Audio Developers.
+
+LADSPA Effects are enabled merely by setting the @emph{LADSPA_PATH}
+environment variable to the location of your LADSPA plugins or putting
+them in the @emph{/usr/lib/cinelerra} directory.
+
 
 
 
@@ -3118,10 +3227,8 @@ without having to copy the next or previous keyframe.
 @node TOGGLE KEYFRAMES
 @section TOGGLE KEYFRAMES
 
-Play and mute are stored in toggle keyframes.  Playback keyframes
-determine where the track is playable and are rarely used.  Mute
-keyframes are probably more often used.  They determine where the track
-is processed but not rendered to the output.  Click-drag on these
+Mute is the only toggle keyframe.  Mute keyframes determine where the
+track is processed but not rendered to the output.  Click-drag on these
 curves to create a keyframe.  Unlike curves, the toggle keyframe has
 only two values: on or off.  Ctrl and shift do nothing on toggle
 keyframes.
@@ -3525,6 +3632,128 @@ are stored in the current batch.
 
 
 
+
+@node IMPROVING PERFORMANCE
+@chapter IMPROVING PERFORMANCE
+
+
+@menu
+* DISABLING SWAP SPACE::
+* ENLARGING SOUND BUFFERS::
+* MAKING XFree86 FASTER::
+* FREEING MORE MEMORY::
+@end menu
+
+@node DISABLING SWAP SPACE
+@section DISABLING SWAP SPACE
+
+Cinelerra runs best without a swap space.  With memory sizes increasing
+and hard drives still spinning as fast as they were in 1997, swap
+spaces are pointless.  The question then is how to make Linux run
+without a swap space.  Theoretically it should be a matter of running
+
+@example
+swapoff -a
+@end example
+
+Unfortunately, without a swap space the @b{kswapd} tasklet normally
+spins at 100%.  To eliminate this problem, edit @b{linux/mm/vmscan.c}.
+In this file, put a line saying @b{return 0;} before it says 
+
+@example
+	/*
+	 * Kswapd main loop.
+	 */
+@end example
+
+Then recompile the kernel.
+
+
+
+
+@node ENLARGING SOUND BUFFERS
+@section ENLARGING SOUND BUFFERS
+
+In order to improve realtime performance, the audio buffers for all the
+Linux sound drivers were limited from 127k to 64k.  For recording audio
+and video simultaneously and for most audio recording this causes
+dropouts.  Application of low latency and preemtible kernel patches
+make it possible to record more audio recordings but it doesn't improve
+recording video with audio.  This is where you need to hack the kernel.
+
+This only applies to the OSS version of the Soundblaster Live driver. 
+Since every sound card and every sound driver derivative has a
+different implementation you'll need to do some searching for other
+sound cards.  Edit @b{linux/drivers/sound/emu10k1/audio.c}
+
+Where is says
+
+@example
+if (bufsize >= 0x10000)
+@end example
+
+change it to say
+
+@example
+if (bufsize > 0x40000)
+@end example
+
+In @b{linux/drivers/sound/emu10k1/hwaccess.h}
+
+Change
+
+@b{#define MAXBUFSIZE	65536} 
+
+to 
+
+@b{#define MAXBUFSIZE	262144} 
+
+Finally, in @b{linux/drivers/sound/emu10k1/cardwi.h}
+
+@b{#define WAVEIN_MAXBUFSIZE         65536}
+
+to
+
+@b{#define WAVEIN_MAXBUFSIZE         262144}
+
+Then recompile the kernel modules.
+
+
+
+
+@node MAKING XFree86 FASTER
+@section MAKING XFree86 FASTER
+
+XFree86 by default can't display Cinelerra's advanced pixmap rendering
+very fast.  The X server stalls during list box drawing.  Fix this by
+adding a line to your XF86Config* files.
+
+In the @b{Section "Device"} area, add a line saying:
+
+@b{Option "XaaNoOffscreenPixmaps"}
+
+and restart the X server.
+
+
+
+
+
+@node FREEING MORE MEMORY
+@section FREEING MORE MEMORY
+
+The Linux kernel only allows 32MB of shared memory to be allocated by
+default.  This needs to be increased to do anything useful.  Run the
+following command:
+
+@b{echo "0x7fffffff" > /proc/sys/kernel/shmmax}
+
+
+
+
+
+
+
+
 @node EFFECT DESCRIPTIONS
 @chapter EFFECT DESCRIPTIONS
 
@@ -3535,7 +3764,9 @@ utilize fully by mere experimentation.
 
 @menu
 * CHROMA KEY::
+* HISTOGRAM::
 @end menu
+
 
 
 
@@ -3563,7 +3794,946 @@ to blur just the alpha.
 
 
 
+@node HISTOGRAM
+@section HISTOGRAM
 
+
+This shows the number of occurances of each value of a certain color
+channel.  It is always performed in 16 bit RGB regardless of the
+project colorspace.  Use the upper gradient to determine the range of
+input intensities to be expanded to the output.  Use the lower gradient
+to determine the range of output intensities to target the expansion
+to.  Enable @emph{automatic} mode to have the histogram calculate
+automatic input values for every frame.  The threshold is only used in
+automatic mode and determines how sensitive to the upper and lower
+boundaries of the histogram the automatic gain should be.
+
+
+@node PLUGIN AUTHORING
+@chapter PLUGIN AUTHORING
+
+The plugin API in Cinelerra dates back to 1997, before the LADSPA and
+before VST became popular.  It's fundamentally the same as it was in
+1997, with minor modifications to handle keyframes and GUI feedback. 
+Unfortunately, the GUI is not abstracted from the programmer.  This
+allows the programmer to use whatever toolkit they want and allows more
+flexibility in appearance but it costs more.
+
+There are several types of plugins, each with a common procedure
+of implementation and specific changes for that particular type.  The
+easiest way to implement a plugin is to take the simplest out of the
+group and rename the symbols.  
+
+@menu
+* COMMON PROCEDURES::
+* REALTIME PLUGINS::
+* NONREALTIME PLUGINS::
+* AUDIO PLUGINS::
+* VIDEO PLUGINS::
+* TRANSITION PLUGINS::
+* PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK::
+@end menu
+
+
+@node COMMON PROCEDURES
+@section COMMON PROCEDURES
+
+All plugins inherit from a derivative of PluginClient.  This derivative
+implements most of the required methods in PluginClient, but users must
+still define methods for PluginClient.  The most commonly used methods
+are already implemented in macros.
+
+The files they include depend on the plugin type.  Audio plugins
+include @b{pluginaclient.h} and video plugins include
+@b{pluginvclient.h}.  They inherit @b{PluginAClient} and
+@b{PluginVClient} respectively.
+
+Another thing all plugins do is define at least three objects:
+
+@itemize
+
+@item
+
+Processing object - Contains pointers to all the other objects and
+performs the signal processing.  This object contains a number of
+queries to identify itself and is the object you register to register
+the plugin.
+
+
+@item
+
+User interface object - This is defined according to the programmer's
+discretion.  It can either use Cinelerra's toolkit or another toolkit. 
+It shows data on the screen and collects parameters from the user.
+
+Using Cinelerra's toolkit, the only user interface object a developer
+needs to worry about is the Window.  The window has pointers to a
+number of widgets, a few initialization methods, and a back pointer to
+the plugin's processing object.  The documentation refers to usage of
+Cinelerra's toolkit.
+
+Depending on the user interface toolkit, a user interface thread may be
+created to run the user interface asynchronous of everything else. 
+Synchronizing the user interface to changes in keyframes is the most
+complicated aspect of the plugin, so the user interface thread and
+object are heavily supported by macros if you use Cinelerra's toolkit.
+
+
+@item
+
+Configuration object - This stores the user parameters and always needs
+interpolation, copying, and comparison functions.  The plugin client
+automatically calls configuration methods to interpolate keyframes.
+
+@end itemize
+
+@menu
+* THE PROCESSING OBJECT::
+* THE CONFIGURATION OBJECT::
+* THE USER INTERFACE OBJECT::
+@end menu
+
+
+
+@node THE PROCESSING OBJECT
+@subsection THE PROCESSING OBJECT
+
+The processing object should inherit from the intended PluginClient
+derivative.  Its constructor should take a PluginServer argument.
+
+@example
+MyPlugin(PluginServer *server);
+@end example
+
+In the implementation, the plugin must contain a registration line with
+the name of the processing object like
+
+@example
+REGISTER_PLUGIN(MyPlugin)
+@end example
+
+
+The constructor should contain 
+
+@example
+PLUGIN_CONSTRUCTOR_MACRO
+@end example
+
+to initialize the most common variables.
+
+
+The processing object should have a destructor containing
+
+@example
+PLUGIN_DESTRUCTOR_MACRO
+@end example
+
+to delete the most common variables.
+
+Another function which is useful but not mandatory is
+
+@example
+int is_multichannel();
+@end example
+
+It should return 1 if one instance of the plugin handles multiple
+channels simultaneously or 0 if one instance of the plugin only handles
+one channel.  The default is 0 if it is omitted.  Multichannel plugins
+should refer to the value of @b{PluginClient::total_in_buffers} to
+determine the number of channels.
+
+
+
+
+To simplify the implementation of realtime plugins, a macro for
+commonly used members should be put in the class header, taking the
+configuration object and user interface thread object as arguments. 
+This is only useful for realtime plugins.  Fortunately, nonrealtime
+plugins are simpler.
+
+@example
+PLUGIN_CLASS_MEMBERS(config_name, thread_name)
+@end example
+
+Many other members may be defined in the processing object, depending
+on the plugin type.  The commonly used members in PLUGIN_CLASS_MEMBERS
+are described below.  Not all these members are used in nonrealtime
+plugins.
+
+@itemize
+
+@item
+int load_configuration();
+
+Loads the configuration based on surrounding keyframes and current
+position.  The class definition should contain 
+
+@example
+LOAD_CONFIGURATION_MACRO(plugin_class, config_class)
+@end example
+
+to implement load_configuration.  This stores whatever the current
+configuration is inside the plugin's configuration object.  The
+plugin's configuration object is always called @b{config} when using
+PLUGIN_CLASS_MEMBERS.
+
+@item
+VFrame* new_picon();
+
+Creates a picon for display in the resource window.  Use
+
+@example
+#include "picon_png.h"
+NEW_PICON_MACRO(plugin_class)
+@end example
+
+to implement new_picon.  In addition, the user should create a
+@emph{picon_png.h} header file from a PNG image using @emph{pngtoh}. 
+@emph{pngtoh} is in @emph{guicast} and compiled using a sequence like
+
+@example
+gcc -o pngtoh pngtoh.c
+@end example
+
+The source PNG image should be called picon.png and can be any format
+supported by PNG.
+
+@item
+char* plugin_title();
+
+Returns a text string identifying the plugin in the resource window. 
+The string has to be unique.
+
+
+@item
+void update_gui(); 
+
+Should first load the configuration and then redraw the GUI with the
+new parameters.  All the plugins using GuiCast have a format like
+
+@example
+void MyPlugin::update_gui()
+@{
+	if(thread)
+	@{
+		load_configuration();
+		thread->window->lock_window();
+// update widgets here
+		thread->window->unlock_window();
+	@}
+@}
+@end example
+
+to handle concurrency and conditions of no GUI.
+
+@item
+int show_gui();
+
+Instantiate the GUI and switch the plugin to GUI mode.  This is implemented with
+
+@example
+SHOW_GUI_MACRO(plugin_class, thread_class)
+@end example
+
+@item
+int set_string();
+
+Changes the title of the GUI window to a certain string.  This is implemented with
+
+@example
+SET_STRING_MACRO(plugin_class)
+@end example
+
+
+@item
+void raise_window();
+
+Raises the GUI window to the top of the stack.  This is implemented with
+
+@example
+RAISE_WINDOW_MACRO(plugin_class)
+@end example
+
+
+
+@end itemize
+
+
+
+
+
+
+
+@node THE CONFIGURATION OBJECT
+@subsection THE CONFIGURATION OBJECT
+
+The configuration object is critical for GUI updates, signal
+processing, and default settings in realtime plugins.  Be aware it is
+not used in nonrealtime plugins.  The configuration object inherits
+from nothing and has no dependancies.  It's merely a class containing
+three functions and variables specific to the plugin's parameters.
+
+Usually the configuration object starts with the name of the plugin
+followed by Config.
+
+@example
+class MyPluginConfig
+@{
+public:
+	MyPluginConfig();
+@end example
+
+
+Following the name of the configuration class, we put the three
+required functions and the configuration variables.
+
+@example
+	int equivalent(MyPluginConfig &that);
+	void copy_from(MyPluginConfig &that);
+	void interpolate(MyPluginConfig &prev, 
+		MyPluginConfig &next, 
+		long prev_position, 
+		long next_position, 
+		long current_position);
+
+
+
+	float parameter1;
+	float parameter2;
+	int parameter3;
+@};
+
+@end example
+
+
+Now you must define the three functions.  @b{Equivalent} is called by
+LOAD_CONFIGURATION_MACRO to get the return value.  That is all it's
+used for and if you don't care about load_configuration's return value,
+you can leave this function empty.  It normally returns 1 if the
+argument's variables have the same values as the local variables.
+
+Then there's @b{copy_from} which transfers the configuration values
+from the argument to the local variables.  This is once again used in
+LOAD_CONFIGURATION_MACRO to store configurations in temporaries.  Once 
+LOAD_CONFIGURATION_MACRO has replicated the configuration, it loads a
+second configuration.  Then it interpolates the two configurations to
+get the current configuration.  The interpolation function performs the
+interpolation and stores the result in the local variables.
+
+Normally the interpolate function calculates a previous and next
+fraction, using the arguments.
+
+@example
+void MyPluginConfig::interpolate(MyPluginConfig &prev, 
+		MyPluginConfig &next, 
+		long prev_position, 
+		long next_position, 
+		long current_position)
+@{
+	double next_scale = (double)(current_position - prev_position) / (next_position - prev_position);
+	double prev_scale = (double)(next_position - current_position) / (next_position - prev_position);
+@end example
+
+Then the scales are applied to the previous and next configuration
+object to yield the current values.
+
+@example
+
+	this->parameter1 = (float)(prev.parameter1 * prev_scale + next.parameter1 * next_scale);
+	this->parameter2 = (float)(prev.parameter2 * prev_scale + next.parameter2 * next_scale);
+	this->parameter3 = (int)(prev.parameter3 * prev_scale + next.parameter3 * next_scale);
+@}
+
+@end example
+
+Alternatively you can copy the values from the previous configuration
+argument for no interpolation.
+
+This usage is the same in audio and video plugins.  In video playback,
+the interpolation function is called for every frame, yielding smooth
+interpolation.  In audio playback, the interpolation function is called
+only once for every console fragment and once every time the insertion
+point moves.  This is good enough for updating the GUI while selecting
+regions on the timeline but it may not be accurate enough for really
+smooth rendering of the effect.
+
+For really smooth rendering of audio, you can still use
+load_configuration when updating the GUI.  For process_realtime;
+however, ignore load_configuration and write your own interpolation
+routine which loads all the keyframes in a console fragment and
+interpolates every sample.  This would be really slow and hard to
+debug, yielding improvement which may not be audible.  Then of course,
+every century has its set of wierdos.
+
+An easier way to get smoother interpolation is to reduce the console
+fragment to 1 sample.  This would have to be rendered and played back
+in a separate program of course.  The Linux sound driver can't play
+fragments of 1 sample.
+
+
+
+
+
+
+
+
+@node THE USER INTERFACE OBJECT
+@subsection THE USER INTERFACE OBJECT
+
+
+The user interface object at the very least consists of a pointer to a
+window and pointers to a set of widgets.  Using Cinelerra's toolkit, it
+consists of a @b{BCWindow} derivative and a @b{Thread} derivative.  The
+Thread derivative is declared in the plugin header using
+
+@example
+PLUGIN_THREAD_HEADER(plugin_class, thread_class, window_class)
+@end example
+
+Then it is defined using
+
+@example
+PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class)
+@end example
+
+This in combination with the SHOW_GUI macro does all the work in
+instantiating the Window class.  This is used in realtime plugins but
+not in nonrealtime plugins.  Nonrealtime plugins create and destroy
+their GUI in @b{get_parameters} and there's no thread.
+
+Now the window class must be declared in the plugin header.  It's
+easiest to implement the window by copying an existing plugin and
+renaming the symbols.  The following is an outline of what happens. 
+The plugin header must declare the window's constructor using the
+appropriate arguments.
+
+@example
+
+#include "guicast.h"
+
+class MyPluginWindow : public BC_Window
+@{
+public:
+	MyPluginWindow(MyPluginMain *plugin, int x, int y);
+
+@end example
+
+This becomes a window on the screen, positioned at x and y.
+
+It needs two methods
+
+@example
+	int create_objects();
+	int close_event();
+@end example
+
+and a back pointer to the plugin
+
+@example
+	MyPlugin *plugin;
+@end example
+
+
+The constructor's definition should contain extents and flags causing
+the window to be hidden when first created.  The create_objects member
+puts widgets in the window according to GuiCast's syntax.  A pointer to
+each widget which is to be synchronized to a keyframe is stored in the
+window class.  These are updated in the @b{update_gui} function you
+earlier defined for the plugin.  The widgets are usually derivatives of
+a GuiCast widget and they override functions in GuiCast to handle
+events.  Finally create_objects calls 
+
+@example
+	show_window();
+	flush();
+@end example
+
+to make the window appear all at once.
+
+The close_event member should be implemented using
+
+@example
+WINDOW_CLOSE_EVENT(window_class)
+@end example
+
+Every widget in the GUI needs to detect when its value changes.  In
+GuiCast the @b{handle_event} method is called whenever the value
+changes.  In @b{handle_event}, the widget then needs to call
+@b{plugin->send_configure_change()} to propogate the change to rendering.
+
+
+
+
+
+
+
+
+
+@node REALTIME PLUGINS
+@section REALTIME PLUGINS
+
+Realtime plugins should use PLUGIN_CLASS_MEMBERS to define the basic
+set of members in their headers.  All realtime plugins must define an
+
+@example
+int is_realtime()
+@end example
+
+member returning 1.  This causes a number of realtime methods to be
+called during playback and the plugin to be droppable on the timeline.
+
+Realtime plugins must define a member called
+
+@example
+process_realtime 
+@end example
+
+to be called during every audio fragment and video frame.  It has an
+input and an output argument and for audio, a size argument.  The
+process_realtime function should start by calling
+@b{load_configuration}.  The LOAD_CONFIGURATION_MACRO returns 1 if the
+configuration changed.  Then process_realtime should move the data from
+the input to the output with processing.
+
+
+
+Additional members are implemented to maintain configuration in
+realtime plugins.  Some of these are also needed in nonrealtime
+plugins.
+
+@itemize
+@item
+void read_data(KeyFrame *keyframe);
+
+Loads data from a keyframe into the plugin's configuration.  Inside the
+keyframe is an XML string.  It's most easily parsed by creating a
+@emph{FileXML} object.  See an existing plugin to see how the read_data
+function is implemented.
+
+Read data loads data out of the XML object and stores values in the
+plugin's configuration object.
+
+@item
+void save_data(KeyFrame *keyframe);
+
+Saves data from the plugin's configuration to a keyframe.  Inside the
+keyframe you'll put an XML string which is normally created by a
+FileXML object.  See an existing plugin to see how the save_data
+function is implemented.
+
+Save data saves data from the plugin's configuration object into the
+XML object.
+
+@item
+int load_defaults();
+
+Another way the plugin gets parameters is from a defaults file.  The
+load and save defaults routines use a Defaults object to parse the
+defaults file.  The defaults object is created in @b{load_defaults} and
+destroyed in the plugin's destructor.  See an existing plugin to see
+how the Defaults object is used.
+
+@item
+int save_defaults();
+
+Saves the configuration in the defaults object.
+
+@end itemize
+
+
+
+
+
+
+@node NONREALTIME PLUGINS
+@section NONREALTIME PLUGINS
+
+Like realtime plugins, @b{load_defaults} and @b{save_defaults} must be
+implemented.  In nonrealtime plugins, these are not just used for
+default parameters but to transfer values from the user interface to
+the signal processor.  There doesn't need to be a configuration class
+in nonrealtime plugins.
+
+Unlike realtime plugins, the LOAD_CONFIGURATION_MACRO can't be used in
+the plugin header.  Instead, the following methods must be defined.
+
+The nonrealtime plugin should contain a pointer to a defaults object.
+
+@example
+
+Defaults *defaults;
+
+@end example
+
+It should also have a pointer to a MainProgressBar.
+
+@example
+
+MainProgressBar *progress;
+@end example
+
+The progress pointer allows nonrealtime plugins to display their
+progress in Cinelerra's main window.
+
+The constructor for a nonrealtime plugin can't use
+PLUGIN_CONSTRUCTOR_MACRO but must call @b{load_defaults} directly.
+
+The destructor, likewise, must call @b{save_defaults} and @b{delete
+defaults} directly instead of PLUGIN_DESTRUCTOR_MACRO.
+
+@itemize
+
+@item
+VFrame* new_picon();
+
+char* plugin_title();
+
+The usage of these is the same as realtime plugins.
+
+@item
+int is_realtime();
+
+This function must return 0 to indicate a nonrealtime plugin.
+
+@item
+
+int get_parameters();
+
+Here, the user should create a GUI, wait for the user to hit an OK
+button or a cancel button, and store the parameters in plugin
+variables.  This routine must return 0 for success and 1 for failure. 
+This way the user can cancel the effect from the GUI.
+
+Unlike the realtime plugin, this GUI need not run asynchronously of the
+plugin.  It should block the get_parameters function until the user
+selects OK or Cancel.
+
+@item
+int load_defaults();
+
+This should create a defaults object and load parameters from the
+defaults object into plugin variables.
+
+@item
+int save_defaults();
+
+This should save plugin variables to the defaults object.
+
+
+@item
+int start_loop();
+
+If @b{get_parameters} returned 0 for success, this is called once to
+give the plugin a chance to initialize processing.  The plugin should
+instantiate the progress object with a line like
+
+@example
+
+progress = start_progress("MyPlugin progress...", 
+	PluginClient::end - PluginClient::start);
+
+@end example
+
+The usage of @b{start_progress} depends on whether the plugin is
+multichannel or single channel.  If it's multichannel you always call
+start_progress.  If it's single channel, you first need to know whether
+the progress bar has already started in another instance of the plugin.
+
+If @b{PluginClient::interactive} is 1, you need to start the progress
+bar.  If it's 0, the progress bar has already been started.
+
+The PluginClient defines @b{end} and @b{start} for the timeline range
+to be processed.  The units are either samples or frames.
+
+@item
+int process_loop
+
+This is called repeatedly until the timeline range is processed.  It
+takes either a samples or frames buffer and a reference to
+write_length.  The arguments are a location and length for the output
+if it's audio.
+
+The plugin must use @b{read_samples} or @b{read_frame} to read the
+input.  These functions take a buffer and a position relative to the
+start of the timeline.  Then it must process it and put the output in
+the arguments to process_loop.  write_length should contain the number
+of samples generated if it's audio.
+
+Finally, process_loop must test @b{PluginClient::interactive} and
+update the progress bar if it's 1.
+
+@example
+progress->update(total_written);
+@end example
+
+returns 1 or 0 if the progress bar was cancelled.  If it's 1,
+process_loop should return 1 to indicate a cancellation.  In addition
+to progress bar cancellation, @b{process_loop} should return 1 when the
+entire timeline range is processed.
+
+@item
+int stop_loop();
+
+This is called after process_loop processes its last buffer.  
+
+If PluginClient::is_interactive is 1, this should call
+@b{stop_progress} in the progress bar pointer and delete the pointer. 
+Then it should delete any objects it created for processing in
+@b{start_loop}.
+
+
+@end itemize
+
+
+
+@node AUDIO PLUGINS
+@section AUDIO PLUGINS
+
+The simplest audio plugin is Gain.  The processing object should
+include @b{pluginaclient.h} and inherit from @b{PluginAClient}.  Realtime audio plugins need to
+define 
+
+@example
+int process_realtime(long size, 
+		double **input_ptr, 
+		double **output_ptr);
+@end example
+
+if it's multichannel or 
+
+@example
+int process_realtime(long size, 
+		double *input_ptr, 
+		double *output_ptr);
+@end example
+
+if it's single channel.  These should return the number of samples
+generated.  In the future, the number of samples return value will
+synchronize plugins which delay audio.
+
+Nonrealtime audio plugins need to define
+
+@example
+int process_loop(double *buffer, long &write_length);
+@end example
+
+for single channel or
+
+@example
+int process_loop(double **buffers, long &write_length);
+@end example
+
+for multi channel.
+
+
+@node VIDEO PLUGINS
+@section VIDEO PLUGINS
+
+
+
+
+The simplest video plugin is Flip.  The processing object should
+include @b{pluginvclient.h} and inherit from @b{PluginVClient}. 
+Realtime video plugins need to define 
+
+@example
+int process_realtime(VFrame **input, 
+		VFrame **output);
+@end example
+
+if it's multichannel or 
+
+@example
+int process_realtime(VFrame *input, 
+		VFrame *output);
+@end example
+
+if it's single channel.  They only get one frame per call but should  
+return the number of frames generated anyway.  In the future, the
+number of frames return value will synchronize plugins which delay
+video.
+
+The nonrealtime video plugins need to define
+
+@example
+int process_loop(VFrame *buffer);
+@end example
+
+for single channel or
+
+@example
+int process_loop(VFrame **buffers);
+@end example
+
+for multi channel.  They're always assumed to have a write length of 1
+when they return 0.
+
+
+
+@node TRANSITION PLUGINS
+@section TRANSITION PLUGINS
+
+
+
+
+The simplest video transition is @b{dissolve} and the simplest audio
+transition is @b{crossfade}.   These work identical to the single
+channel, realtime audio and video plugins.  The only difference is the
+addition of an @b{is_transition} method to the processing object. 
+@b{is_transition} should return 1.
+
+Routines exist for determining where you are relative to the
+transition's start and end.
+
+@itemize
+
+@item @b{PluginClient::get_source_position()} - returns an integer
+position since the start of the transition
+
+@item @b{PluginClient::get_total_len()} - returns the integer length of
+the transition.  The units are either samples or frames.
+
+@end itemize
+
+
+Users should divide source position by total length to get the fraction
+of the transition the current @b{process_realtime} function starts
+at.
+
+Secondly, the meaning of the input and output arguments to
+@b{process_realtime} is different for transitions than for realtime
+plugins.
+
+The first argument to process_realtime is the data for the next edit. 
+The second argument to process_realtime is the data for the previous
+edit.  Eventually the second argument becomes the output.
+
+
+
+
+
+@node PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK
+@section PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK
+
+Effects like @b{Histogram} and @b{VideoScope} need to update the GUI
+during playback to display information about the signal.  This is
+achieved with the @b{send_render_gui} and @b{render_gui} methods. 
+Normally in process_realtime, when the processing object wants to
+update the GUI it should call @b{send_render_gui}.  This should only be
+called in process_realtime.  Send_render_gui goes through a search and
+eventually calls @b{render_gui} in the GUI instance of the plugin.
+
+Render_gui should have a sequence like
+
+@example
+void MyPlugin::render_gui(void *data)
+@{
+	if(thread)
+	@{
+		thread->window->lock_window();
+
+// update GUI here
+
+		thread->window->unlock_window();
+	@}
+@}
+
+@end example
+
+
+The sequence uses one argument, a void pointer to transfer information
+from the renderer to the GUI.  The user should typecast this pointer
+into something useful.
+
+
+
+
+
+
+@node RELEASE NOTES
+@chapter RELEASE NOTES
+
+@itemize
+
+@b{1.0.0}
+
+First release since Broadcast 2000 migration.
+
+@b{1.1.0}
+
+Titler fonts installed by rpm.
+
+XMovie decodes ac3 according to redesigned liba52 channel mappings.
+
+Quicktime MPEG4 parameters debugged.
+
+Background rendering over a renderfarm.
+
+Renderfarm clients automatically reduced to idle priority.
+
+Better MJPA decoding on single processors.
+
+Better title functionality in 16 bit colormodels.
+
+Undo for effect keyframes.
+
+Effect GUI's cleared during undo for effect attachment.
+
+Fewer lockups on startup.
+
+Proper keyframe interpolation in scale effect.
+
+Stamp timecode in titler.
+
+Memory leaks in rendering stages removed.
+
+Removed legacy plugin server code.
+
+Option to generate sequence header in every GOP for MPEG2.
+
+LADSPA support.
+
+Listbox doesn't enter drag_icon state when dragging column division.
+
+Effect rendering bug fixed.
+
+64 bit mpeg transport stream seeking beyond 2 gigs.
+
+More accurate mask drawing when projector is zoomed.
+
+Clear labels updates CWindow
+
+More accurate YUV/RGB conversions.
+
+Import partial tgas
+
+Copy keyframes doesn't copy default keyframe.
+
+Track highlighting offset by vertical scroll.
+
+Multiple video scope, spectrogram, and histogram displays may be opened.
+
+HutSaturation in YUV colorspaces.
+
+Undo for masks.
+
+Shared synthesis effects cause the sharing tracks to 
+play back instead of just the owning track.
+
+Quicktime recovery utility improved.
+
+Single frame recording with multiple batches doesn't crash.
+
+DV encoding.
+
+New video effects:
+gradient, downsample video, radial blur, linear blur, zoom blur,
+histogram, perspective.
+
+New audio effect:
+Sound level
+
+@end itemize
 
 
 

@@ -971,3 +971,74 @@ Source position in plugin client made relative to start of track.
 
 
 
+8/19/02
+Titler fonts installed by rpm.
+XMovie decodes ac3 according to redesigned liba52 channel mappings.
+Quicktime MPEG4 parameters debugged.
+Gradient effect.
+Background rendering over a renderfarm.
+Renderfarm clients automatically reduced to idle priority.
+Better MJPA decoding on single processors.
+Better title functionality in 16 bit colormodels.
+Undo for effect keyframes.
+Effect GUI's cleared during undo for effect attachment.
+Fewer lockups on startup.
+Proper keyframe interpolation in scale effect.
+Stamp timecode in titler.
+Memory leak in rendering stages removed.
+Removed legacy plugin server code.
+Downsample video resolution.
+Option to generate sequence header in every GOP for MPEG2.
+LADSPA support.
+Listbox doesn't enter drag_icon state when dragging column division.
+Radial, linear, and zoom blur.
+Effect rendering bug fixed.
+64 bit mpeg transport stream seeking beyond 2 gigs.
+More accurate mask drawing when projector is zoomed.
+Clear labels updates CWindow
+More accurate YUV/RGB conversions.
+Histogram.
+Perspective.
+Import partial tga's
+Copy keyframes doesn't copy default keyframe.
+Track highlighting offset by vertical scroll.
+Multiple video scope, spectrogram, and histogram displays may be opened.
+HutSaturation in YUV colorspaces.
+Undo for masks.
+
+
+
+
+10/13/02
+Interpolation of gradient keyframes
+libmpeg3 handles case where audio channel count increases in the middle of the stream
+Zoom bar redrawn more accurately when time format changes.
+More reliable quit of render nodes when master node crashes.
+Render doesn't reset brender to 0.
+Play keyframes discontinued.
+Deleting media from middle of track and pasting to end plays back.
+Persistent frame rate statistics stored in render farm.
+Flash transition.
+Undo for in and out points.
+
+
+
+10/19/02
+sync_parameters for splice, drag assets on CWindow.
+Change asset path updates brender and index file status.
+Transition drop on CWindow.
+Changing video play patch doesn't freeze brender permanently.
+Swap channels generates correct output.
+Shared synthesis effects cause the sharing tracks to 
+play back instead of just the owning track.
+Quicktime recovery utility improved.
+Memory leaks in FileVorbis::check_sig and AssetPicon::create_objects removed.
+ - Remove asset from disk removes it more often.
+AttachmentPoint::~AttachmentPoint deletes plugin servers.
+ - For some reason they were originally deleted in render_stop but render_stop
+   was commented out of Module::~Module.
+Drag scroll working for region selections.
+Single frame recording with multiple batches doesn't crash.
+Sound Level
+DV encoding with proper color conversion.
+

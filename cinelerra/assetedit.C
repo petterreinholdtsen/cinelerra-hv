@@ -10,6 +10,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "mainindexes.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
@@ -65,20 +66,22 @@ void AssetEdit::run()
  		{
  			if(!asset->equivalent(*new_asset, 1, 1))
  			{
-//				thread->window->disable_window();
-// 				thread->mwindow->cache->delete_entry(asset);
-// // Copy information to new asset
-// 				if(new_asset.frame_rate < 1) new_asset.frame_rate = 1;
 //printf("AssetEdit::run 1\n");
 				*asset = *new_asset;
 				mwindow->gui->lock_window();
 				mwindow->gui->update(0,
-					1,
+					2,
 					0,
 					0,
 					0, 
 					0,
 					0);
+				if(asset->audio_data)
+				{
+					asset->index_status = INDEX_NOTTESTED;
+					mwindow->mainindexes->add_next_asset(asset);
+					mwindow->mainindexes->start_build();
+				}
 				mwindow->gui->unlock_window();
 //printf("AssetEdit::run 2\n");
 
@@ -87,21 +90,9 @@ void AssetEdit::run()
 				mwindow->awindow->gui->update_assets();
 				mwindow->awindow->gui->unlock_window();
 
+				mwindow->restart_brender();
 				mwindow->sync_parameters(CHANGE_ALL);
 //printf("AssetEdit::run 3\n");
-
-// 
-// 				if(asset->audio_data)
-// 				{
-// 					IndexFile index(thread->mwindow);
-// 					BC_ProgressBox progress(thread->window->get_abs_cursor_x(), 
-// 						thread->window->get_abs_cursor_y(),
-// 						"Building Indexes...", 1);
-// 					progress.start();
-// 					index.create_index(asset, &progress);
-// 					progress.stop_progress();
-// 				}
-// // 				thread->window->enable_window();
  			}
  		}
 
@@ -511,7 +502,7 @@ int AssetEditSigned::handle_event()
 
 AssetEditPathText::AssetEditPathText(AssetEditWindow *fwindow, int y)
  : BC_TextBox(5, y, 300, 1, fwindow->asset->path) 
-{ 
+{
 	this->fwindow = fwindow; 
 }
 AssetEditPathText::~AssetEditPathText() 

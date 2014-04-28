@@ -1,5 +1,6 @@
 #include "amodule.h"
 #include "atrack.h"
+#include "attachmentpoint.h"
 #include "autoconf.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -9,12 +10,12 @@
 #include "localsession.h"
 #include "mainprogress.h"
 #include "menueffects.h"
-#include "messages.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "neworappend.h"
 #include "playbackengine.h"
 #include "plugin.h"
+#include "pluginaclientlad.h"
 #include "pluginclient.h"
 #include "plugincommands.h"
 #include "pluginserver.h"
@@ -33,98 +34,10 @@
 #include <dlfcn.h>
 
 
-PluginGUIServer::PluginGUIServer()
- : Thread()
-{
-// PluginGUIServer must be able to exit by itself for a plugin close event
-	set_synchronous(0);
-}
-
-PluginGUIServer::~PluginGUIServer()
-{
-}
-
-int PluginGUIServer::start_gui_server(PluginServer *plugin_server, char *string)
-{
-	this->plugin_server = plugin_server;
-	strcpy(this->string, string);
-	completion_lock.lock();
-	start();
-	return 0;
-}
-
-void PluginGUIServer::run()
-{
-}
-
-
-
-PluginForkThread::PluginForkThread() : Thread()
-{
-	set_synchronous(0);    // detach the thread
-}
-
-PluginForkThread::~PluginForkThread()
-{
-}
-
-int PluginForkThread::fork_plugin(char *path, char **args)
-{
-	this->path = path;
-	this->args = args;
-//	fork_lock.lock();
-	completion_lock.lock();
-	start();
-// wait for process to start
-// 	fork_lock.lock();
-// 	fork_lock.unlock();
-	return 0;
-}
-
-int PluginForkThread::wait_completion()
-{
-	completion_lock.lock();
-	completion_lock.unlock();
-}
-
-
-void PluginForkThread::run()
-{
-// fork it
-	plugin_pid = fork();
-
-	if(plugin_pid == 0)
-	{
-		execv(path, args);     // turn into the plugin
-	}
-	else
-	{
-		int plugin_status;
-//		sleep(1);
-// Signal fork finished
-//		fork_lock.unlock();
-// Wait for plugin to finish
-		if(waitpid(plugin_pid, &plugin_status, WUNTRACED) == -1)
-		{
-			perror("PluginForkThread::waitpid:");
-		}
-		completion_lock.unlock();
-		return;            // wait for the plugin to finish and clean up
-	}
-}
-
-
-
-
-
-
-
 PluginServer::PluginServer()
 {
 	reset_parameters();
 	modules = new ArrayList<Module*>;
-	fork_thread = new PluginForkThread;
-	gui_server = new PluginGUIServer;
 }
 
 PluginServer::PluginServer(char *path)
@@ -132,8 +45,6 @@ PluginServer::PluginServer(char *path)
 	reset_parameters();
 	set_path(path);
 	modules = new ArrayList<Module*>;
-	fork_thread = new PluginForkThread;
-	gui_server = new PluginGUIServer;
 //if(path) printf("PluginServer::PluginServer %s\n", path);
 }
 
@@ -154,8 +65,6 @@ PluginServer::PluginServer(PluginServer &that)
 	}
 
 	modules = new ArrayList<Module*>;
-	fork_thread = new PluginForkThread;
-	gui_server = new PluginGUIServer;
 
 	attachment = that.attachment;	
 	realtime = that.realtime;
@@ -169,6 +78,11 @@ PluginServer::PluginServer(PluginServer &that)
 	mwindow = that.mwindow;
 	keyframe = that.keyframe;
 	plugin_fd = that.plugin_fd;
+	new_plugin = that.new_plugin;
+
+	is_lad = that.is_lad;
+	lad_descriptor = that.lad_descriptor;
+	lad_descriptor_function = that.lad_descriptor_function;
 }
 
 PluginServer::~PluginServer()
@@ -181,12 +95,6 @@ PluginServer::~PluginServer()
 	if(title) delete title;
 //printf("PluginServer::~PluginServer 1\n");
 	if(modules) delete modules;
-//printf("PluginServer::~PluginServer 1\n");
-	if(message_lock) delete message_lock;
-//printf("PluginServer::~PluginServer 1\n");
-	if(fork_thread) delete fork_thread;
-//printf("PluginServer::~PluginServer 1\n");
-	if(gui_server) delete gui_server;
 //printf("PluginServer::~PluginServer 1\n");
 	if(picon) delete picon;
 //printf("PluginServer::~PluginServer 2\n");
@@ -212,6 +120,12 @@ int PluginServer::reset_parameters()
 	start_auto = end_auto = 0;
 	picon = 0;
 	transition = 0;
+	new_plugin = 0;
+	client = 0;
+
+	is_lad = 0;
+	lad_descriptor_function = 0;
+	lad_descriptor = 0;
 }
 
 
@@ -220,7 +134,6 @@ int PluginServer::cleanup_plugin()
 {
 	in_buffer_size = out_buffer_size = 0;
 	total_in_buffers = total_out_buffers = 0;
-	message_lock = 0;
 	error_flag = 0;
 	written_samples = 0;
 	shared_buffers = 0;
@@ -234,6 +147,11 @@ int PluginServer::cleanup_plugin()
 void PluginServer::set_mwindow(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
+}
+
+void PluginServer::set_attachmentpoint(AttachmentPoint *attachmentpoint)
+{
+	this->attachmentpoint = attachmentpoint;
 }
 
 void PluginServer::set_keyframe(KeyFrame *keyframe)
@@ -271,7 +189,10 @@ void PluginServer::generate_display_title(char *string)
 }
 
 // Open plugin for signal processing
-int PluginServer::open_plugin(int master, EDL *edl, Plugin *plugin)
+int PluginServer::open_plugin(int master, 
+	EDL *edl, 
+	Plugin *plugin,
+	int lad_index)
 {
 	if(plugin_open) return 0;
 
@@ -279,6 +200,9 @@ int PluginServer::open_plugin(int master, EDL *edl, Plugin *plugin)
 	this->plugin = plugin;
 	this->edl = edl;
 //printf("PluginServer::open_plugin %s %p %p\n", path, this->plugin, plugin_fd);
+
+
+
 
 	if(!plugin_fd)
 	{
@@ -294,18 +218,58 @@ int PluginServer::open_plugin(int master, EDL *edl, Plugin *plugin)
 		return 0;
 	}
 
-	new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
-	if(!new_plugin)
+
+	if(!new_plugin && !lad_descriptor)
 	{
-		fprintf(stderr, "PluginServer::open_plugin: new_plugin undefined in %s\n", path);
-		return 1;
+		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
+
+// Probably a LAD plugin but we're not going to instantiate it here anyway.
+		if(!new_plugin)
+		{
+			lad_descriptor_function = (LADSPA_Descriptor_Function)dlsym(
+				plugin_fd,
+				"ladspa_descriptor");
+//printf("PluginServer::open_plugin 2 %p\n", lad_descriptor_function);
+
+			if(!lad_descriptor_function)
+			{
+// Not a recognized plugin
+				fprintf(stderr, "PluginServer::open_plugin: new_plugin undefined in %s\n", path);
+				dlclose(plugin_fd);
+				plugin_fd = 0;
+				return PLUGINSERVER_NOT_RECOGNIZED;
+			}
+			else
+			{
+// LAD plugin,  Load the descriptor and get parameters.
+				is_lad = 1;
+				if(lad_index >= 0)
+				{
+					lad_descriptor = lad_descriptor_function(lad_index);
+				}
+
+// make plugin initializer handle the subplugins in the LAD plugin or stop
+// trying subplugins.
+				if(!lad_descriptor)
+				{
+					dlclose(plugin_fd);
+					plugin_fd = 0;
+//printf("PluginServer::open_plugin 1 %s\n", path);
+					return PLUGINSERVER_IS_LAD;
+				}
+			}
+		}
 	}
 
 
-
-//printf("PluginServer::open_plugin 2\n");
-	client = new_plugin(this);
-//printf("PluginServer::open_plugin 3\n");
+	if(is_lad)
+	{
+		client = new PluginAClientLAD(this);
+	}
+	else
+	{
+		client = new_plugin(this);
+	}
 
 	realtime = client->is_realtime();
 	audio = client->is_audio();
@@ -317,16 +281,15 @@ int PluginServer::open_plugin(int master, EDL *edl, Plugin *plugin)
 	synthesis = client->is_synthesis();
 	transition = client->is_transition();
 	set_title(client->plugin_title());
-//printf("PluginServer::open_plugin 4\n");
 
 	if(master)
 	{
 		picon = client->new_picon();
 	}
-//printf("PluginServer::open_plugin 5\n");
 
+//printf("PluginServer::open_plugin 2\n");
 	plugin_open = 1;
-	return 0;
+	return PLUGINSERVER_OK;
 }
 
 int PluginServer::close_plugin()
@@ -405,6 +368,27 @@ void PluginServer::process_realtime(double **input,
 		total_len);
 }
 
+void PluginServer::send_render_gui(void *data)
+{
+//printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
+	if(attachmentpoint) attachmentpoint->render_gui(data);
+}
+
+void PluginServer::send_render_gui(void *data, int size)
+{
+//printf("PluginServer::send_render_gui 1 %p\n", attachmentpoint);
+	if(attachmentpoint) attachmentpoint->render_gui(data, size);
+}
+
+void PluginServer::render_gui(void *data)
+{
+	if(client) client->plugin_render_gui(data);
+}
+
+void PluginServer::render_gui(void *data, int size)
+{
+	if(client) client->plugin_render_gui(data, size);
+}
 
 MainProgressBar* PluginServer::start_progress(char *string, long length)
 {
@@ -466,7 +450,6 @@ int PluginServer::set_realtime_sched()
 {
 	struct sched_param params;
 	params.sched_priority = 1;
-	if(sched_setscheduler(fork_thread->plugin_pid, SCHED_RR, &params)) perror("sched_setscheduler");
 	return 0;
 }
 
@@ -550,6 +533,7 @@ void PluginServer::show_gui()
 {
 //printf("PluginServer::show_gui 1\n");
 	if(!plugin_open) return;
+	client->smp = mwindow->edl->session->smp;
 //printf("PluginServer::show_gui 1\n");
 	client->update_display_title();
 //printf("PluginServer::show_gui 1\n");
@@ -690,18 +674,22 @@ void PluginServer::save_data(KeyFrame *keyframe)
 
 KeyFrame* PluginServer::get_prev_keyframe(long position)
 {
+	KeyFrame *result = 0;
 	if(plugin)
-		return plugin->get_prev_keyframe(position);
+		result = plugin->get_prev_keyframe(position);
 	else
-		return keyframe;
+		result = keyframe;
+	return result;
 }
 
 KeyFrame* PluginServer::get_next_keyframe(long position)
 {
+	KeyFrame *result = 0;
 	if(plugin)
-		return plugin->get_next_keyframe(position);
+		result = plugin->get_next_keyframe(position);
 	else
-		return keyframe;
+		result = keyframe;
+	return result;
 }
 
 long PluginServer::get_source_start()
@@ -735,14 +723,20 @@ Theme* PluginServer::new_theme()
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {
+//printf("PluginServer::sync_parameters 1\n");
+	if(video) mwindow->restart_brender();
+//printf("PluginServer::sync_parameters 1\n");
 	mwindow->sync_parameters();
 	if(mwindow->edl->session->auto_conf->plugins)
 	{
+//printf("PluginServer::sync_parameters 1\n");
 		mwindow->gui->lock_window();
+//printf("PluginServer::sync_parameters 2\n");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
 	}
+//printf("PluginServer::sync_parameters 3\n");
 }
 
 

@@ -1,13 +1,13 @@
-/.cvsignore/1.1/Fri Jun 28 05:39:22 2002//
-/Makefile.am/1.1/Fri Jun 28 05:39:22 2002//
-/dvavi.c/1.1/Fri Jun 28 05:39:22 2002//
-/dvconnect.c/1.1/Fri Jun 28 05:39:22 2002//
-/encode.c/1.1/Fri Jun 28 05:39:22 2002//
-/encodedv.1/1.1/Fri Jun 28 05:39:22 2002//
-/encodedv.c/1.1/Fri Jun 28 05:39:22 2002//
-/fix_headers.c/1.1/Fri Jun 28 05:39:22 2002//
-/insert_audio.c/1.1/Fri Jun 28 05:39:22 2002//
-/ppmqscale.c/1.1/Fri Jun 28 05:39:22 2002//
-/scan_packet_headers.c/1.1/Fri Jun 28 05:39:22 2002//
-/steal_header.c/1.1/Fri Jun 28 05:39:22 2002//
-D
+D/CVS////
+/.cvsignore/1.1/Sun Jun 24 16:13:37 2001//
+/Makefile.am/1.1/Sun May 26 21:02:42 2002//
+/dvavi.c/1.1/Sun Feb 24 08:38:07 2002//
+/dvconnect.c/1.1/Thu Apr  4 05:42:11 2002//
+/encode.c/1.1/Sun Feb 24 08:38:07 2002//
+/encodedv.1/1.1/Thu Apr 26 19:08:47 2001//
+/encodedv.c/1.1/Fri Jun  7 05:06:54 2002//
+/fix_headers.c/1.1/Sun Feb 24 08:38:07 2002//
+/insert_audio.c/1.1/Sun Feb 24 08:38:07 2002//
+/ppmqscale.c/1.1/Thu Apr 26 19:08:47 2001//
+/scan_packet_headers.c/1.1/Sun Feb 24 08:38:07 2002//
+/steal_header.c/1.1/Thu Apr 26 19:08:47 2001//

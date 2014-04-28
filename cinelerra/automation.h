@@ -22,11 +22,16 @@ public:
 	virtual ~Automation();
 
 	virtual int create_objects();
+	void equivalent_output(Automation *automation, long *result);
 	virtual Automation& operator=(Automation& automation);
 	virtual void copy_from(Automation *automation);
-	int load(FileXML *file, int &current_plugin, int &current_channel);
+	int load(FileXML *file);
 // For copy automation, copy, and save
-	int copy(long start, long end, FileXML *xml, int default_only);
+	int copy(long start, 
+		long end, 
+		FileXML *xml, 
+		int default_only,
+		int autos_only);
 	virtual void dump();
 	virtual int direct_copy_possible(long start, int direction);
 	virtual int direct_copy_possible_derived(long start, int direction) { return 1; };
@@ -37,6 +42,9 @@ public:
 		FileXML *file, 
 		int default_only,
 		AutoConf *autoconf);
+
+// Returns the point to restart background rendering at.
+// -1 means nothing changed.
 	void clear(long start, 
 		long end, 
 		AutoConf *autoconf, 
@@ -49,7 +57,6 @@ public:
 	void resample(double old_rate, double new_rate);
 	long get_length();
 
-	IntAutos *play_autos;
 	IntAutos *mute_autos;
 	BezierAutos *camera_autos;
 	BezierAutos *projector_autos;

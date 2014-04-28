@@ -12,7 +12,6 @@ D/colors////
 D/compressor////
 D/crossfade////
 D/dbx////
-D/defaulttheme////
 D/deinterlace////
 D/delayaudio////
 D/delayvideo////
@@ -71,4 +70,15 @@ D/shiftinterlace////
 D/interpolate////
 D/interpolateall////
 D/denoisefft////
-/Makefile/1.7/Tue Jul 30 16:24:20 2002//
+D/defaulttheme////
+D/gradient////
+D/downsample////
+D/radialblur////
+D/linearblur////
+D/zoomblur////
+D/perspective////
+D/histogram////
+D/flash////
+/Makefile/1.14/Mon Oct 28 20:41:32 2002//
+D/level////
+D/motion////

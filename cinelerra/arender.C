@@ -227,9 +227,6 @@ int ARender::process_buffer(long input_len, long input_position)
 
 
 
-//printf("ARender::process_buffer 1\n");
-	renderengine->get_acache()->age_audio();
-//printf("ARender::process_buffer 2\n");
 
 
 

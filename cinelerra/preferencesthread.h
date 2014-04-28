@@ -39,6 +39,7 @@ public:
 	int redraw_indexes;
 	int redraw_meters;
 	int redraw_times;
+	int redraw_overlays;
 	int rerender;
 	int close_assets;
 	int reload_plugins;

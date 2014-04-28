@@ -212,7 +212,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 
 
-
+		mpeg3demux_reset_pts(vstream->demuxer);
 
 
 	}
@@ -378,6 +378,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 				mpeg3video_drop_frames(video, frame_number - video->framenum);
 			}
 		}
+		mpeg3demux_reset_pts(vstream->demuxer);
 	}
 
 	return result;

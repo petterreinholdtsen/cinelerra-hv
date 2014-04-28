@@ -139,13 +139,21 @@ int IndexFile::open_file()
 		if(fs.get_size(asset->path) != test_asset.index_bytes)
 		{
 // source file is a different size than index source file
-//printf("IndexFile::open_file 3\n", index_filename);
+//printf("IndexFile::open_file 3 %s %lld %lld %lld\n", 
+//index_filename, 
+//fs.get_size(asset->path), 
+//test_asset.index_bytes,
+//asset->index_bytes);
 			result = 2;
 			fclose(file);	
 		}
 		else
 		{
-//printf("IndexFile::open_file 4\n", index_filename);
+//printf("IndexFile::open_file 4 %s %lld %lld %lld\n", 
+//index_filename, 
+//fs.get_size(asset->path), 
+//test_asset.index_bytes,
+//asset->index_bytes);
 			fseek(file, 0, SEEK_END);
 			file_length = ftell(file);
 			fseek(file, 0, SEEK_SET);
@@ -155,6 +163,7 @@ int IndexFile::open_file()
 	else
 	{
 // doesn't exist
+//printf("IndexFile::open_file 5\n", index_filename);
 		result = 1;
 	}
 
@@ -386,7 +395,7 @@ int IndexFile::redraw_edits(int force)
 	long difference = redraw_timer->get_scaled_difference(1000);
 
 //printf("IndexFile::redraw_edits 1 %d %d\n", difference, force);
-	if(difference > 500 || force)
+	if(difference > 250 || force)
 	{
 		redraw_timer->update();
 // Can't lock window here since the window is only redrawn when the pixel
@@ -567,13 +576,14 @@ int IndexFile::remove_index()
 
 int IndexFile::read_info(Asset *test_asset)
 {
+//printf("IndexFile::read_info 1 %p\n", test_asset);
 	if(!test_asset) test_asset = asset;
+//printf("IndexFile::read_info 2 %d\n", test_asset->index_status);
 	if(test_asset->index_status == INDEX_NOTTESTED)
 	{
 // read start of index data
 		fread((char*)&(test_asset->index_start), sizeof(long), 1, file);
 
-//printf("IndexFile::read_info 2\n");
 // read test_asset info from index
 		char *data;
 		

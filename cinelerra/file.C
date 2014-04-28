@@ -212,6 +212,7 @@ void File::set_asset(Asset *asset)
 
 int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
+//printf("File::set_processors 1 %d\n", cpus);
 	this->cpus = cpus;
 	return 0;
 }
@@ -234,7 +235,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 
 
 
-//printf("File::open_file %d\n", asset->format);
+//printf("File::open_file 1 %s %d\n", asset->path, asset->format);
 	switch(this->asset->format)
 	{
 // get the format now
@@ -247,6 +248,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 // file not found
 				return 1;
 			}
+
 			char test[16];
 			fread(test, 16, 1, stream);
 
@@ -389,6 +391,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			return 1;
 			break;
 	}
+//printf("File::open_file 2\n");
 
 // Reopen file with correct parser and get header.
 	if(file->open_file(rd, wr))
@@ -406,6 +409,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 
 // Synchronize header parameters
 	*asset = *this->asset;
+//printf("File::open_file 3\n");
 
 	if(file)
 		return FILE_OK;
@@ -417,6 +421,7 @@ int File::close_file()
 {
 //printf("File::close_file 1\n");
 	stop_audio_thread();
+//printf("File::close_file 1\n");
 	stop_video_thread();
 
 //printf("File::close_file 2\n");
@@ -455,10 +460,12 @@ int File::start_video_thread(long buffer_size,
 	int compressed)
 {
 	video_thread = new FileThread(this, 0, 1);
+//printf("File::start_video_thread 1\n");
 	video_thread->start_writing(buffer_size, 
 		color_model, 
 		ring_buffers, 
 		compressed);
+//printf("File::start_video_thread 2\n");
 	return 0;
 }
 
@@ -479,9 +486,12 @@ int File::stop_audio_thread()
 
 int File::stop_video_thread()
 {
+//printf("File::stop_video_thread 1\n");
 	if(video_thread)
 	{
+//printf("File::stop_video_thread 2\n");
 		video_thread->stop_writing();
+//printf("File::stop_video_thread 3\n");
 		delete video_thread;
 		video_thread = 0;
 	}
@@ -641,16 +651,19 @@ int File::set_video_position(long position, float base_framerate)
 {
 	int result = 0;
 	if(!file) return 0;
+//printf("File::set_video_position 1 %d\n", position);
 
 // Convert to file's rate
 	if(base_framerate > 0)
 		position = (long)((double)position / base_framerate * asset->frame_rate + 0.5);
+//printf("File::set_video_position 2 %d\n", position);
 
 	if(current_frame != position && file)
 	{
 		current_frame = position;
 		result = file->set_video_position(current_frame);
 	}
+//printf("File::set_video_position 3 %d\n", result);
 
 	return result;
 }

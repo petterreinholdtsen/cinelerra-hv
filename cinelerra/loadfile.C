@@ -121,8 +121,11 @@ void LoadFileThread::run()
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
-	mwindow->undo->update_undo_after();
+
+
 	mwindow->save_backup();
+	mwindow->restart_brender();
+	mwindow->undo->update_undo_after();
 	return;
 }
 

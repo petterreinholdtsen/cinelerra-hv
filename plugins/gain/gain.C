@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "confirmsave.h"
 #include "defaults.h"
 #include "errorbox.h"
@@ -11,10 +12,40 @@
 #include <string.h>
 
 
-PluginClient* new_plugin(PluginServer *server)
+REGISTER_PLUGIN(Gain)
+
+
+GainConfig::GainConfig()
 {
-	return new Gain(server);
+	level = 0.0;
 }
+
+int GainConfig::equivalent(GainConfig &that)
+{
+	return EQUIV(level, that.level);
+}
+
+void GainConfig::copy_from(GainConfig &that)
+{
+	this->level = that.level;
+}
+
+void GainConfig::interpolate(GainConfig &prev, 
+	GainConfig &next, 
+	long prev_frame, 
+	long next_frame, 
+	long current_frame)
+{
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	level = prev.level * prev_scale + next.level * next_scale;
+}
+
+
+
+
+
+
 
 
 
@@ -37,6 +68,7 @@ SHOW_GUI_MACRO(Gain, GainThread)
 SET_STRING_MACRO(Gain)
 RAISE_WINDOW_MACRO(Gain)
 NEW_PICON_MACRO(Gain)
+LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
 
 int Gain::process_realtime(long size, double *input_ptr, double *output_ptr)
 {
@@ -67,7 +99,7 @@ int Gain::load_defaults()
 
 	defaults->load();
 
-	config.level = defaults->get("LEVEL", (double)0);
+	config.level = defaults->get("LEVEL", config.level);
 
 	return 0;
 }
@@ -77,16 +109,6 @@ int Gain::save_defaults()
 	defaults->update("LEVEL", config.level);
 	defaults->save();
 	return 0;
-}
-
-void Gain::load_configuration()
-{
-	KeyFrame *prev_keyframe, *next_keyframe;
-//printf("BlurMain::load_configuration 1\n");
-
-	prev_keyframe = get_prev_keyframe(get_source_position());
-//printf("BlurMain::load_configuration %s\n", prev_keyframe->data);
-	read_data(prev_keyframe);
 }
 
 void Gain::save_data(KeyFrame *keyframe)
@@ -109,7 +131,6 @@ void Gain::read_data(KeyFrame *keyframe)
 // cause xml file to read directly from text
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 	int result = 0;
-	GainConfig new_config;
 
 	result = input.read_tag();
 
@@ -117,14 +138,7 @@ void Gain::read_data(KeyFrame *keyframe)
 	{
 		if(input.tag.title_is("GAIN"))
 		{
-			new_config.level = input.tag.get_property("LEVEL", new_config.level);
-		}
-		
-		if(!(new_config == config))
-		{
-//printf("Gain::read_data %f\n", new_config.ref_level1);
-			config = new_config;
-			update_gui();
+			config.level = input.tag.get_property("LEVEL", config.level);
 		}
 	}
 }
@@ -133,6 +147,7 @@ void Gain::update_gui()
 {
 	if(thread)
 	{
+		load_configuration();
 		thread->window->lock_window();
 		thread->window->level->update(config.level);
 		thread->window->unlock_window();
@@ -140,19 +155,3 @@ void Gain::update_gui()
 }
 
 
-
-
-GainConfig::GainConfig()
-{
-}
-
-int GainConfig::operator==(GainConfig& that)
-{
-	return(level == that.level);
-}
-
-GainConfig& GainConfig::operator=(GainConfig& that)
-{
-	level = that.level;
-	return *this;
-}

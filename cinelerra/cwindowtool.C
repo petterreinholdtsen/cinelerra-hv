@@ -443,6 +443,7 @@ void CWindowCameraGUI::create_objects()
 void CWindowCameraGUI::update_preview()
 {
 //printf("CWindowCameraGUI::update_preview 1\n");
+	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
 //printf("CWindowCameraGUI::update_preview 1\n");
@@ -815,6 +816,7 @@ void CWindowProjectorGUI::create_objects()
 
 void CWindowProjectorGUI::update_preview()
 {
+	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,
@@ -1162,6 +1164,7 @@ int CWindowMaskMode::handle_event()
 			text_to_mode(get_text());
 	}
 
+//printf("CWindowMaskMode::handle_event 1\n");
 	gui->update_preview();
 	return 1;
 }
@@ -1629,6 +1632,7 @@ void CWindowMaskGUI::handle_event()
 
 void CWindowMaskGUI::update_preview()
 {
+	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,

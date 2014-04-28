@@ -47,13 +47,15 @@ int FormatTools::create_objects(int &init_x,
 						int prompt_video_compression,
 						int lock_compressor,
 						int recording,
-						int *strategy)
+						int *strategy,
+						int brender)
 {
 	int x = init_x;
 	int y = init_y;
 
 	this->lock_compressor = lock_compressor;
 	this->recording = recording;
+	this->use_brender = brender;
 
 //printf("FormatTools::create_objects 1\n");
 
@@ -113,7 +115,7 @@ int FormatTools::create_objects(int &init_x,
 
 //printf("FormatTools::create_objects 4\n");
 	x = init_x;
-	y += format_button->get_h() + 20;
+	y += format_button->get_h() + 10;
 	if(do_audio)
 	{
 		window->add_subwindow(new BC_Title(x, y, "Audio:", LARGEFONT, RED));
@@ -122,7 +124,7 @@ int FormatTools::create_objects(int &init_x,
 		x += aparams_button->get_w() + 10;
 		if(prompt_audio) 
 		{
-			window->add_subwindow(audio_switch = new FormatAudio(x, y - 5, this, asset->audio_data));
+			window->add_subwindow(audio_switch = new FormatAudio(x, y, this, asset->audio_data));
 		}
 		x = init_x;
 		y += aparams_button->get_h() + 20;
@@ -160,7 +162,7 @@ int FormatTools::create_objects(int &init_x,
 //printf("FormatTools::create_objects 9\n");
 		if(prompt_video)
 		{
-			window->add_subwindow(video_switch = new FormatVideo(x, y - 5, this, asset->video_data));
+			window->add_subwindow(video_switch = new FormatVideo(x, y, this, asset->video_data));
 			y += video_switch->get_h();
 		}
 		else
@@ -175,20 +177,14 @@ int FormatTools::create_objects(int &init_x,
 
 //printf("FormatTools::create_objects 11\n");
 
-// 	if(to_tracks)
-// 	{
-// 		BC_WindowBase *tool = window->add_subwindow(new FormatToTracks(x, y, to_tracks));
-// 		y += tool->get_h();
-// 	}
-// 
+	x = init_x;
 	if(strategy)
 	{
 		BC_WindowBase *tool = window->add_subwindow(new FormatMultiple(mwindow, x, y, strategy));
-		y += tool->get_h();
+		y += tool->get_h() + 10;
 	}
 
 //printf("FormatTools::create_objects 12\n");
-	y += 10;
 
 	init_y = y;
 	return 0;
@@ -351,13 +347,17 @@ FormatFormat::FormatFormat(int x,
 	int y, 
 	FormatTools *format, 
 	Asset *asset)
- : FormatPopup(format->plugindb, x, y)
+ : FormatPopup(format->plugindb, 
+ 	x, 
+	y,
+	format->use_brender)
 { 
 	this->format = format; 
 	this->asset = asset; 
 }
 FormatFormat::~FormatFormat() 
-{}
+{
+}
 int FormatFormat::handle_event()
 {
 	if(get_selection(0, 0) >= 0)

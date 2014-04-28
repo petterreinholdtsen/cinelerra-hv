@@ -72,6 +72,8 @@ int mpeg3_delete(mpeg3_t *file)
 		free(file->sample_offsets);
 		free(file->total_sample_offsets);
 	}
+	if(file->channel_counts)
+		free(file->channel_counts);
 
 	free(file);
 	return 0;
@@ -299,11 +301,13 @@ static int read_toc(mpeg3_t *file)
 
 	if(atracks)
 	{
+		file->channel_counts = calloc(sizeof(int), atracks);
 		file->sample_offsets = malloc(sizeof(int64_t*) * atracks);
 		file->total_sample_offsets = malloc(sizeof(int*) * atracks);
 
 		for(i = 0; i < atracks; i++)
 		{
+			file->channel_counts[i] = read_int32(buffer, &position);
 			file->total_sample_offsets[i] = read_int32(buffer, &position);
 			file->sample_offsets[i] = malloc(file->total_sample_offsets[i] * sizeof(int64_t));
 			for(j = 0; j < file->total_sample_offsets[i]; j++)
@@ -890,6 +894,7 @@ double mpeg3_get_time(mpeg3_t *file)
 int mpeg3_end_of_audio(mpeg3_t *file, int stream)
 {
 	int result = 0;
+	if(!file->atrack[stream]->channels) return 1;
 	result = mpeg3demux_eof(file->atrack[stream]->demuxer);
 	return result;
 }
@@ -917,6 +922,7 @@ int mpeg3_read_frame(mpeg3_t *file,
 
 	if(file->total_vstreams)
 	{
+//printf(__FUNCTION__ " 1 %d\n", file->vtrack[stream]->current_position);
 		result = mpeg3video_read_frame(file->vtrack[stream]->video, 
 					file->vtrack[stream]->current_position, 
 					output_rows,
@@ -927,6 +933,7 @@ int mpeg3_read_frame(mpeg3_t *file,
 					out_w,
 					out_h,
 					color_model);
+//printf(__FUNCTION__ " 2\n");
 		file->last_type_read = 2;
 		file->last_stream_read = stream;
 		file->vtrack[stream]->current_position++;
@@ -1008,7 +1015,7 @@ int mpeg3_read_yuvframe_ptr(mpeg3_t *file,
 {
 	int result = -1;
 
-//printf("mpeg3_read_yuvframe 1 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
+//printf("mpeg3_read_yuvframe_ptr 1 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
 	if(file->total_vstreams)
 	{
 		result = mpeg3video_read_yuvframe_ptr(file->vtrack[stream]->video, 
@@ -1020,7 +1027,7 @@ int mpeg3_read_yuvframe_ptr(mpeg3_t *file,
 		file->last_stream_read = stream;
 		file->vtrack[stream]->current_position++;
 	}
-//printf("mpeg3_read_yuvframe 2 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
+//printf("mpeg3_read_yuvframe_ptr 2 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
 	return result;
 }
 

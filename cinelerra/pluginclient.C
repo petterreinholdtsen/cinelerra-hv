@@ -82,7 +82,7 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 //printf("PluginClient::plugin_init_realtime 1\n");
 	smp = server->edl->session->smp;
 	this->realtime_priority = realtime_priority;
-	this->total_in_buffers = total_in_buffers;
+	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
 //printf("PluginClient::plugin_init_realtime 1\n");
 	return 0;

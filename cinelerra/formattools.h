@@ -39,7 +39,8 @@ public:
 						int prompt_video_compression,
 						int lock_compressor,  // Select compressors to be offered
 						int recording, // Change captions for recording
-						int *strategy);
+						int *strategy,  // If nonzero, prompt for insertion strategy
+						int brender); // Supply file formats for background rendering
 
 	int set_audio_options();
 	int set_video_options();
@@ -64,6 +65,7 @@ public:
 	MWindow *mwindow;
 	int lock_compressor;
 	int recording;
+	int use_brender;
 };
 
 

@@ -12,7 +12,8 @@ mpeg3_atrack_t* mpeg3_new_atrack(mpeg3_t *file,
 	mpeg3_atrack_t *new_atrack;
 
 	new_atrack = calloc(1, sizeof(mpeg3_atrack_t));
-	new_atrack->channels = 0;
+	if(file->channel_counts)
+		new_atrack->channels = file->channel_counts[number];
 	new_atrack->sample_rate = 0;
 	new_atrack->total_samples = 0;
 	new_atrack->demuxer = mpeg3_new_demuxer(file, 1, 0, stream_id);

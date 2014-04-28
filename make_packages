@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.0.0
+VERSION=110802
 
 # Be sure to put exit statements in the beginning of
 # /usr/lib/rpm/brp-strip 
@@ -12,6 +12,10 @@ NAME=hvirtual-$VERSION
 
 # CLEAN SOURCE DIRECTORIES
 make clean
+find -name '.xvpics' -exec rm -rf {} \;
+find -name 'debug' -exec rm -rf {} \;
+find -follow \( -name debug \
+	-o -name .xvpics \) -exec rm -f {} \;
 
 # CREATE DIRECTORIES
 rm -r $DEST/$NAME
@@ -58,11 +62,12 @@ It's about transforming the impossible into reality.
 make
 
 %install
-mkdir -p /var/tmp/%{name}-buildroot/usr/lib/cinelerra
+mkdir -p /var/tmp/%{name}-buildroot/usr/lib/cinelerra/fonts
 mkdir -p /var/tmp/%{name}-buildroot/usr/bin
 strip cinelerra/i686/cinelerra
 cp cinelerra/i686/cinelerra /var/tmp/%{name}-buildroot/usr/bin
 cp plugins/i686/* /var/tmp/%{name}-buildroot/usr/lib/cinelerra
+cp plugins/titler/fonts/* /var/tmp/%{name}-buildroot/usr/lib/cinelerra/fonts
 
 strip libmpeg3/i686/mpeg3toc
 strip libmpeg3/i686/mpeg3cat

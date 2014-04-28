@@ -3,8 +3,9 @@
 
 
 class RenderFarmServer;
-class RenderFarmClient;
+class RenderFarmServerThread;
 
-
+// Number of seconds before giving up on a socket
+#define RENDERFARM_TIMEOUT 10
 
 #endif

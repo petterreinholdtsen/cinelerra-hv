@@ -49,7 +49,7 @@ class TitleMid;
 class TitleBottom;
 class TitleColorThread;
 class TitleSpeed;
-
+class TitleTimecode;
 
 class TitleWindow : public BC_Window
 {
@@ -102,6 +102,7 @@ public:
 	TitleBottom *bottom;
 	BC_Title *speed_title;
 	TitleSpeed *speed;
+	TitleTimecode *timecode;
 
 // Color preview
 	int color_x, color_y;
@@ -169,6 +170,14 @@ class TitleLoop : public BC_CheckBox
 {
 public:
 	TitleLoop(TitleMain *client, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleTimecode : public BC_CheckBox
+{
+public:
+	TitleTimecode(TitleMain *client, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;

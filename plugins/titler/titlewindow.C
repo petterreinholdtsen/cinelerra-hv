@@ -229,10 +229,15 @@ int TitleWindow::create_objects()
 	y += 50;
 
 	add_tool(text_title = new BC_Title(x, y, "Text:"));
+	x += 150;
+	add_tool(timecode = new TitleTimecode(client, x, y));
+
+	x = 10;
+	y += 30;
 	text = new TitleText(client, 
 		this, 
 		x, 
-		y + 20, 
+		y, 
 		get_w() - x - 10, 
 		get_h() - y - 20 - 10);
 	text->create_objects();
@@ -273,7 +278,7 @@ int TitleWindow::resize_event(int w, int h)
 	fadeout_title->reposition_window(fadeout_title->get_x(), fadeout_title->get_y());
 	fade_out->reposition_window(fade_out->get_x(), fade_out->get_y());
 	text_title->reposition_window(text_title->get_x(), text_title->get_y());
-
+	timecode->reposition_window(timecode->get_x(), timecode->get_y());
 
 	text->reposition_window(text->get_x(), 
 		text->get_y(), 
@@ -462,7 +467,7 @@ TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x
 }
 int TitleColorButton::handle_event()
 {
-	window->color_thread->start_window(client->config.color);
+	window->color_thread->start_window(client->config.color, 0);
 	return 1;
 }
 
@@ -493,6 +498,18 @@ TitleLoop::TitleLoop(TitleMain *client, int x, int y)
 int TitleLoop::handle_event()
 {
 	client->config.loop = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+TitleTimecode::TitleTimecode(TitleMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.timecode, "Stamp timecode")
+{
+	this->client = client;
+}
+int TitleTimecode::handle_event()
+{
+	client->config.timecode = get_value();
 	client->send_configure_change();
 	return 1;
 }

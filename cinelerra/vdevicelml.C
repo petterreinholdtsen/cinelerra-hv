@@ -297,7 +297,9 @@ int VDeviceLML::write_buffer(VFrame *frame, EDL *edl)
 	unsigned char *data1;
 	int even_field_first = 1;
 
+#if 0
 	if(!jvideo_fd || frame->get_color_model() != VFRAME_COMPRESSED) return 1;
+#endif
 
 	if(frame_allocated < size * 2)
 	{

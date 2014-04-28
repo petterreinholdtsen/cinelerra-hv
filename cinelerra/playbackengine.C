@@ -157,12 +157,12 @@ void PlaybackEngine::create_cache()
 	if(video_cache) delete video_cache;
 	video_cache = 0;
 	if(!audio_cache) 
-		audio_cache = new CICache(command->get_edl(), mwindow->plugindb);
+		audio_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
 	else
 		audio_cache->set_edl(command->get_edl());
 
 	if(!video_cache) 
-		video_cache = new CICache(command->get_edl(), mwindow->plugindb);
+		video_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
 	else
 		video_cache->set_edl(command->get_edl());
 }
@@ -251,6 +251,10 @@ int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, long pos
 	return result;
 }
 
+int PlaybackEngine::brender_available(long position)
+{
+	return 0;
+}
 
 void PlaybackEngine::init_cursor()
 {

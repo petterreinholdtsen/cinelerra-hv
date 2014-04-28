@@ -399,7 +399,7 @@ static void readcmdline(int argc, char *argv[])
 	mpeg_file = 0;
 	qt_file = 0;
 	do_stdin = 0;
-	
+	seq_header_every_gop = 0;
 
 
 
@@ -558,6 +558,11 @@ INTTOYES(prog_seq));
 		if(!strcmp(argv[i], "-422"))
 		{
 			chroma_format = 2;
+		}
+		else
+		if(!strcmp(argv[i], "-g"))
+		{
+			seq_header_every_gop = 1;
 		}
 		else
 		if(!strcmp(argv[i], "-"))

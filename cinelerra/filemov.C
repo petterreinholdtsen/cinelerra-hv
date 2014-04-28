@@ -127,19 +127,21 @@ int FileMOV::open_file(int rd, int wr)
 {
 	this->rd = rd;
 	this->wr = wr;
-//printf("FileMOV::open_file 1\n");
+
+//printf("FileMOV::open_file 1 %s\n", asset->path);
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 //printf("FileMOV::open_file 1\n");
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
-		printf("FileMOV::open_file %s\n", asset->path);
+		printf("FileMOV::open_file %s: No such file or directory\n", asset->path);
 		return 1;
 	}
 //printf("FileMOV::open_file 2\n");
 
 	quicktime_set_cpus(fd, file->cpus);
-	
+//	quicktime_set_cpus(fd, 2);
+
 //printf("FileMOV::open_file 2.1\n");
 	if(rd) format_to_asset();
 //printf("FileMOV::open_file 2.2\n");
@@ -152,7 +154,7 @@ int FileMOV::open_file(int rd, int wr)
 
 int FileMOV::close_file()
 {
-//printf("FileMOV::close_file 1\n");
+//printf("FileMOV::close_file 1 %s\n", asset->path);
 	if(fd)
 	{
 		if(wr) quicktime_set_framerate(fd, asset->frame_rate);
@@ -445,6 +447,7 @@ int FileMOV::set_audio_position(long x)
 int FileMOV::set_video_position(long x)
 {
 	if(!fd) return 1;
+//printf("FileMOV::set_video_position 1 %d %d\n", x, asset->video_length);
 	if(x >= 0 && x < asset->video_length)
 		return quicktime_set_video_position(fd, x, file->current_layer);
 	else
@@ -719,33 +722,31 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	return result;
 }
 
+
+
 int FileMOV::read_frame(VFrame *frame)
 {
 	if(!fd) return 1;
 	int result = 0;
 
-//printf("FileMOV::read_frame 1 %d %p %d\n", file->current_frame, frame, frame->get_color_model());
+//printf("FileMOV::read_frame 1\n");
 	switch(frame->get_color_model())
 	{
 		case BC_COMPRESSED:
-//printf("FileMOV::read_frame 1 %d\n", frame->get_compressed_size());
 			frame->allocate_compressed_data(quicktime_frame_size(fd, file->current_frame, file->current_layer));
 			frame->set_compressed_size(quicktime_frame_size(fd, file->current_frame, file->current_layer));
 			result = quicktime_read_frame(fd, frame->get_data(), file->current_layer);
-//printf("FileMOV::read_frame 2 %d\n", frame->get_compressed_size());
 			break;
 
 // Progressive
 		case BC_YUV420P:
 		case BC_YUV422P:
 		{
-//printf("FileMOV::read_frame 1\n");
 			unsigned char *row_pointers[3];
 			row_pointers[0] = frame->get_y();
 			row_pointers[1] = frame->get_u();
 			row_pointers[2] = frame->get_v();
 
-//printf("FileMOV::read_frame 1\n");
 			quicktime_decode_scaled(fd, 
 				0,
 				0,
@@ -756,14 +757,11 @@ int FileMOV::read_frame(VFrame *frame)
 				frame->get_color_model(),
 				row_pointers,
 				file->current_layer);
-//printf("FileMOV::read_frame 2\n");
-//for(int i = 0; i < 5000; i++) row_pointers[0][i] = 255;
 		}
 			break;
 
 // Packed
 		default:
-//printf("FileMOV::read_frame 2 %d %d\n", frame->get_color_model(), file->current_frame);
 			result = quicktime_decode_scaled(fd, 
 				0,
 				0,
@@ -774,12 +772,13 @@ int FileMOV::read_frame(VFrame *frame)
 				frame->get_color_model(), 
 				frame->get_rows(),
 				file->current_layer);
-//printf("FileMOV::read_frame 3\n");
 			break;
 	}
-//for(int i = 0; i < frame->get_w() * 3 * 20; i++) 
-//	((u_int16_t*)frame->get_rows()[0])[i] = 0xffff;
-//printf("FileMOV::read_frame 4\n");
+
+
+//printf("FileMOV::read_frame 2 %d\n", result);
+
+
 	return result;
 }
 
@@ -1045,7 +1044,7 @@ void FileMOVThread::run()
 				filemov->current_threadframe++;
 				filemov->threadframe_lock.unlock();
 
-//printf("FileMOVThread 1 %d\n", threadframe->input->get_color_model());
+//printf("FileMOVThread 1 %p\n", this);
 //printf("FileMOVThread 1 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
 				mjpeg_compress(mjpeg, 
 					threadframe->input->get_rows(), 
@@ -1069,7 +1068,7 @@ void FileMOVThread::run()
 				threadframe->load_output(mjpeg);
 //printf("FileMOVThread 2 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
 
-//printf("FileMOVThread 2\n");
+//printf("FileMOVThread 2 %p\n", this);
 				threadframe->completion_lock.unlock();
 			}
 			else
@@ -1556,6 +1555,8 @@ void MOVConfigVideo::update_parameters()
 				y,
 				&asset->divx_fix_bitrate,
 				0));
+		divx_fix_quant->opposite = divx_fix_bitrate;
+		divx_fix_bitrate->opposite = divx_fix_quant;
 		y += 30;
 		divx_rc_period = new MOVConfigVideoNum(this, 
 			"RC Period:", 

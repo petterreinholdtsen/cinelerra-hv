@@ -25,7 +25,7 @@ public:
 
 	void copy_from(LocalSession *that);
 	void save_xml(FileXML *file, double start);
-	void load_xml(FileXML *file);
+	void load_xml(FileXML *file, unsigned long load_flags);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 	void synchronize_params(LocalSession *that);

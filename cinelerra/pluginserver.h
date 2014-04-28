@@ -10,6 +10,7 @@
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "keyframe.inc"
+#include "ladspa.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
 #include "menueffects.inc"
@@ -17,9 +18,9 @@
 #include "mutex.h"
 #include "mwindow.inc"
 #include "plugin.inc"
+#include "pluginaclientlad.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
-#include "sema.inc"
 #include "theme.inc"
 #include "thread.h"
 #include "track.inc"
@@ -32,41 +33,6 @@
 
 
 
-// handle realtime GUI requests in a different thread
-
-
-class PluginGUIServer : public Thread
-{
-public:
-	PluginGUIServer();
-	~PluginGUIServer();
-
-	int start_gui_server(PluginServer *plugin_server, char *string);
-	void run();
-
-	PluginServer *plugin_server;
-	Mutex completion_lock;
-	char string[1024];      // Title given by the module
-};
-
-
-// use this to encapsulate the fork command and prevent zombies
-class PluginForkThread : public Thread
-{
-public:
-	PluginForkThread();
-	~PluginForkThread();
-
-	int fork_plugin(char *path, char **args);      // sets plugin_pid to the pid of the plugin
-	int wait_completion();
-	void run();
-
-	char *path, **args;
-	Mutex fork_lock, completion_lock;
-	int plugin_pid;
-};
-
-
 
 class PluginServer
 {
@@ -77,9 +43,19 @@ public:
 	virtual ~PluginServer();
 
 
+	friend class PluginAClientLAD;
+	friend class PluginAClientConfig;
+	friend class PluginAClientWindow;
+
 // open a plugin and wait for commands
-// Get information for plugindb if master
-	int open_plugin(int master, EDL *edl, Plugin *plugin);    
+// Get information for plugindb if master.
+#define PLUGINSERVER_IS_LAD 2
+#define PLUGINSERVER_NOT_RECOGNIZED 1
+#define PLUGINSERVER_OK 0
+	int open_plugin(int master, 
+		EDL *edl, 
+		Plugin *plugin,
+		int lad_index = -1);
 // close the plugin
 	int close_plugin();    
 	void dump();
@@ -108,8 +84,6 @@ public:
 	void save_data(KeyFrame *keyframe);          
 // Update EDL and playback engines to reflect changes
 	void sync_parameters();
-// return pointer to the actual message buffer
-	char* get_message_buffer();   	
 // set for realtime processor usage
 	int set_realtime_sched();
 	int get_gui_status();
@@ -138,7 +112,12 @@ public:
 			long current_position, 
 			long fragment_size,
 			long total_len);
-
+// Called by rendering client to cause the GUI to display something with the data.
+	void send_render_gui(void *data);
+	void send_render_gui(void *data, int size);
+// Called by MWindow to cause GUI to display
+	void render_gui(void *data);
+	void render_gui(void *data, int size);
 
 // Send the boundary autos of the next fragment
 	int set_automation(FloatAutos *autos, FloatAuto **start_auto, FloatAuto **end_auto, int reverse);
@@ -180,8 +159,12 @@ public:
 	int get_project_samplerate();            // get samplerate of project data before processing
 	double get_project_framerate();         // get framerate of project data before processing
 	int set_path(char *path);    // required first
-// Set pointer to mwindow for opening GUI and reconfiguring EDL
-	void set_mwindow(MWindow *mwindow);     
+// Used by PluginArray and MenuEffects to get user parameters and progress bar.
+// Set pointer to mwindow for opening GUI and reconfiguring EDL.
+	void set_mwindow(MWindow *mwindow);
+// Used in VirtualConsole
+// Set pointer to AttachmentPoint to render GUI.
+	void set_attachmentpoint(AttachmentPoint *attachmentpoint);
 // Set pointer to a default keyframe when there is no plugin
 	void set_keyframe(KeyFrame *keyframe);
 // Set pointer to menueffect window
@@ -226,12 +209,6 @@ public:
 // Send new buffer information for next render
 	int new_buffers;
 
-// seperate render events from configuration events using a sema
-// using seperate message queueues was too messy
-	Sema *message_lock;
-
-	PluginGUIServer *gui_server;
-	PluginForkThread *fork_thread;
 
 	int plugin_open;                 // Whether or not the plugin is open.
 // Specifies what type of plugin.
@@ -253,7 +230,8 @@ public:
 	int total_args;
 	int error_flag;      // send plugin an error code on next request
 	ArrayList<Module*> *modules;     // tracks affected by this plugin during a non realtime operation
-	MWindow *mwindow;                
+	AttachmentPoint *attachmentpoint;
+	MWindow *mwindow;
 // Pointer to keyframe when plugin is not available
 	KeyFrame *keyframe;
 	AttachmentPoint *attachment;
@@ -280,6 +258,11 @@ private:
 	void *plugin_fd;
 // Pointers to C functions
 	PluginClient* (*new_plugin)(PluginServer*);
+
+// LAD support
+	int is_lad;
+	LADSPA_Descriptor_Function lad_descriptor_function;
+	const LADSPA_Descriptor *lad_descriptor;
 };
 
 

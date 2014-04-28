@@ -31,6 +31,7 @@ Module::Module(RenderEngine *renderengine,
 	total_attachments = 0;
 	new_total_attachments = 0;
 	new_attachments = 0;
+//printf("Module::Module 1\n");
 }
 
 Module::~Module()
@@ -43,6 +44,7 @@ Module::~Module()
 //printf("Module::~Module 2 %p\n", attachments[i]);
 			if(attachments[i])
 			{
+// For some reason it isn't used here.
 //				attachments[i]->render_stop(0);
 				delete attachments[i];
 			}
@@ -75,29 +77,35 @@ void Module::create_new_attachments()
 // Not needed in pluginarray
 	if(commonrender)
 	{
+//printf("Module::create_new_attachments 1\n");
 		new_total_attachments = track->plugin_set.total;
-		new_attachments = new AttachmentPoint*[total_attachments];
+		new_attachments = new AttachmentPoint*[new_total_attachments];
+//printf("Module::create_new_attachments 2\n");
 
 // Create plugin servers later when nodes attach
 		for(int i = 0; i < new_total_attachments; i++)
 		{
+//printf("Module::create_new_attachments 3\n");
 			Plugin *plugin = 
 				track->get_current_plugin(commonrender->current_position, 
 					i, 
 					renderengine->command->get_direction(),
 					0);
+//printf("Module::create_new_attachments 4\n");
 
 			if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
 				new_attachments[i] = new_attachment(plugin);
 			else
 				new_attachments[i] = 0;
-//printf("Module::create_new_attachments %p %p\n", plugin, new_attachments[i]);
+//printf("Module::create_new_attachments 5 %p %p\n", plugin, new_attachments[i]);
 		}
+//printf("Module::create_new_attachments 6\n");
 	}
 }
 
 void Module::swap_attachments()
 {
+//printf("Module::swap_attachments 1\n");
 // None of this is used in a pluginarray
 	for(int new_attachment = 0, old_attachment = 0; 
 		new_attachment < new_total_attachments &&
@@ -115,19 +123,23 @@ void Module::swap_attachments()
 			attachments[old_attachment] = 0;
 		}
 	}
+//printf("Module::swap_attachments 1 %d\n", total_attachments);
 
 // Delete old attachments which weren't identical to new ones
 	for(int i = 0; i < total_attachments; i++)
 	{
 		if(attachments[i]) delete attachments[i];
 	}
+//printf("Module::swap_attachments 1\n");
 	if(attachments) delete attachments;
+//printf("Module::swap_attachments 1\n");
 	
 	if(new_total_attachments)
 	{
 		attachments = new_attachments;
 		total_attachments = new_total_attachments;
 	}
+//printf("Module::swap_attachments 2\n");
 }
 
 int Module::render_init()

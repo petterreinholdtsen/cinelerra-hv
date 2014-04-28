@@ -101,6 +101,8 @@ public:
 // Calculated during every frame for motion strategy
 	long prev_keyframe_position;
 	long next_keyframe_position;
+// Stamp timecode
+	int timecode;
 
 // Text to display
 	char text[BCTEXTLEN];

@@ -2,12 +2,15 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
+#include "mainsession.h"
 #include "mbuttons.h"
 #include "mtimebar.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
+#include "preferences.h"
 #include "theme.h"
 #include "trackcanvas.h"
+#include "tracks.h"
 #include "transportque.h"
 #include "zoombar.h"
 
@@ -45,7 +48,7 @@ void MTimeBar::stop_playback()
 void MTimeBar::draw_time()
 {
 //printf("TimeBar::draw_time 1\n");
-	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+	draw_range();
 //printf("TimeBar::draw_time 2\n");
 
 // fit the time
@@ -105,6 +108,30 @@ void MTimeBar::draw_time()
 
 void MTimeBar::draw_range()
 {
+	int x1 = 0, x2 = 0;
+	if(mwindow->edl->tracks->total_playable_vtracks() &&
+		mwindow->preferences->use_brender)
+	{
+		double time_per_pixel = (double)mwindow->edl->local_session->zoom_sample /
+			mwindow->edl->session->sample_rate;
+		x1 = (int)(mwindow->edl->session->brender_start / time_per_pixel) - 
+			mwindow->edl->local_session->view_start;
+		x2 = (int)(mwindow->session->brender_end / time_per_pixel) - 
+			mwindow->edl->local_session->view_start;
+	}
+
+//printf("MTimeBar::draw_range 1 %f %f\n", mwindow->edl->session->brender_start, mwindow->session->brender_end);
+	if(x2 > x1 && 
+		x1 < get_w() && 
+		x2 > 0)
+	{
+		draw_top_background(get_parent(), 0, 0, x1, get_h());
+		draw_3segmenth(x1, 0, x2 - x1, mwindow->theme->timebar_brender_data);
+		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
+	}
+	else
+		draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+//printf("MTimeBar::draw_range %f %f\n", mwindow->session->brender_end, time_per_pixel);
 }
 
 void MTimeBar::select_label(double position)

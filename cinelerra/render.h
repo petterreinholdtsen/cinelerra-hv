@@ -15,9 +15,11 @@
 #include "formattools.inc"
 #include "guicast.h"
 #include "loadmode.inc"
+#include "mainprogress.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"
+#include "packagedispatcher.inc"
 #include "packagerenderer.h"
 #include "playabletracks.inc"
 #include "preferences.inc"
@@ -69,6 +71,7 @@ public:
 
 
 
+
 class Render : public Thread
 {
 public:
@@ -91,7 +94,8 @@ public:
 	static void get_starting_number(char *path, 
 		int &current_number,
 		int &number_start, 
-		int &total_digits);
+		int &total_digits,
+		int min_digits = 3);
 	static int test_existence(MWindow *mwindow, Asset *asset);
 	int direct_frame_copy(EDL *edl, long &render_video_position, File *file);
 	int direct_copy_possible(EDL *edl, 
@@ -107,9 +111,6 @@ public:
 	int in_progress;
 // Background compression must be disabled when direct frame copying and reenabled afterwards
 	int direct_frame_copying;
-// Whether or not this render instance is for rendering a list of segments.
-// Use FILE_PER_LABEL strategy or FILE_PER_LABEL_FARM.
-//	int render_list;          
 
 	CICache *audio_cache, *video_cache;
 	VFrame *compressed_output;

@@ -40,6 +40,7 @@ VirtualConsole::~VirtualConsole()
 	if(total_tracks) delete [] virtual_modules;
 
 	delete startup_lock;
+	if(playable_tracks) delete playable_tracks;
 }
 
 int VirtualConsole::total_ring_buffers()
@@ -66,6 +67,8 @@ void VirtualConsole::create_objects()
 //printf("VirtualConsole::create_objects 5\n");
 	sort_virtual_console();
 //printf("VirtualConsole::create_objects 6\n");
+//dump();
+//printf("VirtualConsole::create_objects 7\n");
 }
 
 void VirtualConsole::start_playback()
@@ -87,7 +90,6 @@ void VirtualConsole::start_playback()
 		}
 		Thread::set_synchronous(1);   // prepare thread base class
 //printf("VirtualConsole::start_playback 2 %d\n", renderengine->edl->session->real_time_playback);
-//		Thread::set_realtime(renderengine->edl->session->real_time_playback);
 		Thread::start();
 //printf("VirtualConsole::start_playback 3 %d\n", renderengine->edl->session->real_time_playback);
 		startup_lock->lock();
@@ -109,9 +111,9 @@ Module* VirtualConsole::module_of(Track *track)
 Module* VirtualConsole::module_number(int track_number)
 {
 // The track number is an absolute number of the track independant of
-// the tracks with matching data type.
-// The data_type_number is calculated here and determines which module in the
-// virtual console to use.
+// the tracks with matching data type but virtual modules only exist for
+// the matching data type.
+// Convert from absolute track number to data type track number.
 	Track *current = renderengine->edl->tracks->first;
 	int data_type_number = 0, number = 0;
 
@@ -218,7 +220,7 @@ void VirtualConsole::dump()
 		commonrender->modules[i]->dump();
 	printf(" Nodes\n");
 	for(int i = 0; i < total_tracks; i++)
-		virtual_modules[i]->dump();
+		virtual_modules[i]->dump(0);
 }
 
 
@@ -281,72 +283,14 @@ int VirtualConsole::test_reconfigure(long position,
 
 
 
-// Length of time until next playback automation change
 	int direction = renderengine->command->get_direction();
-	long nearest_auto, longest_duration;
-	Auto* current_auto;
-	if(direction == PLAY_REVERSE)
-	{
-// Reverse playback
-		nearest_auto = commonrender->current_position - length;
-
-		for(current_track = renderengine->edl->tracks->first;
-			current_track /* && !result */;
-			current_track = current_track->next)
-		{
-			if(current_track->data_type == data_type)
-			{
-				current_auto = current_track->automation->play_autos->nearest_before(commonrender->current_position);
-				if(current_auto && nearest_auto < current_auto->position) nearest_auto = current_auto->position;
-			}
-		}
-
-		if(commonrender->current_position - nearest_auto < length)
-		{
-			length = commonrender->current_position - nearest_auto;
-			last_playback = 0;
-		}
-	}
-	else
-	if(direction == PLAY_FORWARD)
-	{
-// Forward playback
-		nearest_auto = commonrender->current_position + length;
-
-//printf("VirtualConsole::test_reconfigure 5 %d\n", result);
-		for(current_track = renderengine->edl->tracks->first;
-			current_track /* && !result */;
-			current_track = current_track->next)
-		{
-//printf("VirtualConsole::test_reconfigure 5.1 %d\n", result);
-			if(current_track->data_type == data_type)
-			{
-//printf("VirtualConsole::test_reconfigure 5.2 %d\n", result);
-				current_auto = current_track->automation->play_autos->nearest_after(commonrender->current_position);
-				if(current_auto && nearest_auto > current_auto->position) nearest_auto = current_auto->position;
-//printf("VirtualConsole::test_reconfigure 5.3 %d\n", result);
-			}
-		}
-//printf("VirtualConsole::test_reconfigure 5.4 %d\n", result);
-
-		if(nearest_auto - commonrender->current_position < length)
-		{
-			length = nearest_auto - commonrender->current_position;
-			last_playback = 0;
-		}
-//printf("VirtualConsole::test_reconfigure 5.5 %d\n", result);
-	}
+	long longest_duration;
 
 //printf("VirtualConsole::test_reconfigure 6 %d %d\n", length, result);
-
-
-
-
-
 // Length of time until next transition, edit, or effect change.
 // Why do we need the edit change?  Probably for changing to and from silence.
 	for(current_track = renderengine->edl->tracks->first;
-		current_track /* && !result */;
+		current_track;
 		current_track = current_track->next)
 	{
 //printf("VirtualConsole::test_reconfigure 7 %d %d\n", result, length);

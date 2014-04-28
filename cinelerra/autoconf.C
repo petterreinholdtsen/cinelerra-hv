@@ -6,7 +6,6 @@ int AutoConf::load_defaults(Defaults* defaults)
 {
 	fade = defaults->get("SHOW_FADE", 0);
 	pan = defaults->get("SHOW_PAN", 1);
-	play = defaults->get("SHOW_PLAY", 0);
 	mute = defaults->get("SHOW_MUTE", 0);
 	transitions = defaults->get("SHOW_TRANSITIONS", 1);
 	plugins = defaults->get("SHOW_PLUGINS", 1);
@@ -23,7 +22,6 @@ void AutoConf::load_xml(FileXML *file)
 {
 	fade = file->tag.get_property("SHOW_FADE", 0);
 	pan = file->tag.get_property("SHOW_PAN", 0);
-	play = file->tag.get_property("SHOW_PLAY", 0);
 	mute = file->tag.get_property("SHOW_MUTE", 0);
 	transitions = file->tag.get_property("SHOW_TRANSITIONS", 1);
 	plugins = file->tag.get_property("SHOW_PLUGINS", 1);
@@ -39,7 +37,6 @@ int AutoConf::save_defaults(Defaults* defaults)
 {
 	defaults->update("SHOW_FADE", fade);
 	defaults->update("SHOW_PAN", pan);
-	defaults->update("SHOW_PLAY", play);
 	defaults->update("SHOW_MUTE", mute);
 	defaults->update("SHOW_TRANSITIONS", transitions);
 	defaults->update("SHOW_PLUGINS", plugins);
@@ -56,7 +53,6 @@ void AutoConf::save_xml(FileXML *file)
 {
 	file->tag.set_property("SHOW_FADE", fade);
 	file->tag.set_property("SHOW_PAN", pan);
-	file->tag.set_property("SHOW_PLAY", play);
 	file->tag.set_property("SHOW_MUTE", mute);
 	file->tag.set_property("SHOW_TRANSITIONS", transitions);
 	file->tag.set_property("SHOW_PLUGINS", plugins);
@@ -72,7 +68,6 @@ int AutoConf::set_all()
 {
 	fade = 1;
 	pan = 1;
-	play = 1;
 	mute = 1;
 	transitions = 1;
 	plugins = 1;
@@ -89,7 +84,6 @@ AutoConf& AutoConf::operator=(AutoConf &that)
 {
 	fade = that.fade;
 	pan = that.pan;
-	play = that.play;
 	mute = that.mute;
 	transitions = that.transitions;
 	plugins = that.plugins;

@@ -205,6 +205,7 @@ Theme::~Theme()
 	delete [] stop_data;
 	delete [] stoprec_data;
 	delete timebar_bg_data;
+	delete timebar_brender_data;
 	delete timebar_view_data;
 	delete title_bg_data;
 	delete [] titlesafe_data;

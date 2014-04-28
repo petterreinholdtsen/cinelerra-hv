@@ -83,8 +83,6 @@ public:
 	ColorBalanceEngine **engine;
 	int total_engines;
 
-// Used by the processor
-	int test_clip(int &r, int &g, int &b);
 
 	Defaults *defaults;
     int r_lookup_8[0x100];

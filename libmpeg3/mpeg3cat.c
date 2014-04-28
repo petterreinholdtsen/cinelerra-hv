@@ -302,6 +302,12 @@ int main(int argc, char *argv[])
 					mpeg3io_seek(title->fs, demuxer->last_packet_start);
 					demuxer->raw_size = demuxer->last_packet_end - demuxer->last_packet_start;
 //fprintf(stderr, "mpeg3cat 2 %d %x\n", decryption_offset, demuxer->raw_data[decryption_offset]);
+
+/*
+ * if(demuxer->raw_size != 0x800)
+ * fprintf(stderr, __FUNCTION__ " %llx", demuxer->last_packet_start);
+ */
+
 					mpeg3io_read_data(demuxer->raw_data, demuxer->raw_size, title->fs);
 					if(decryption_offset > 0 && 
 						demuxer->raw_data[decryption_offset] & 0x30)

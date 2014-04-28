@@ -76,14 +76,14 @@ unsigned char mpeg3_non_linear_mquant_table[32] =
 double mpeg3_frame_rate_table[16] =
 {
   0.0,   /* Pad */
-  24000.0/1001.0,       /* Official frame rates */
-  24.0,
-  25.0,
-  30000.0/1001.0,
-  30.0,
-  50.0,
-  ((60.0*1000.0)/1001.0),
-  60.0,
+  (double)24000.0/1001.0,       /* Official frame rates */
+  (double)24.0,
+  (double)25.0,
+  (double)30000.0/1001.0,
+  (double)30.0,
+  (double)50.0,
+  (double)60000.0/1001.0,
+  (double)60.0,
 
   1,                    /* Unofficial economy rates */
   5, 
@@ -301,6 +301,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 /* This is in case a skipped B-frame is repeated and the second repeat happens */
 /* to be a B frame we need. */
 	video->skip_bframes = skip_bframes;
+//printf(__FUNCTION__ " %f\n", mpeg3demux_video_pts(video->vstream->demuxer));
 
 	if(!result)
 		result = mpeg3video_getpicture(video, video->framenum);
@@ -638,6 +639,7 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 	if(!result) result = mpeg3video_seek(video);
 
 	if(!result) result = mpeg3video_read_frame_backend(video, 0);
+
 
 	*y_output = video->output_src[0];
 	*u_output = video->output_src[1];

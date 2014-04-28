@@ -156,9 +156,19 @@ LoadPackage* LoadServer::get_package(int number)
 	return packages[number];
 }
 
+LoadClient* LoadServer::get_client(int number)
+{
+	return clients[number];
+}
+
 int LoadServer::get_total_packages()
 {
 	return total_packages;
+}
+
+int LoadServer::get_total_clients()
+{
+	return total_clients;
 }
 
 void LoadServer::process_packages()

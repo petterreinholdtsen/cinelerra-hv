@@ -32,11 +32,17 @@ void KeyFrame::load(FileXML *file)
 //printf("KeyFrame::load 2 data=\n%s\nend of data\n", data);
 }
 
-void KeyFrame::copy(long start, long end, FileXML *file)
+void KeyFrame::copy(long start, long end, FileXML *file, int default_auto)
 {
 //printf("KeyFrame::copy 1 %d\n%s\n", position - start, data);
 	file->tag.set_title("KEYFRAME");
-	file->tag.set_property("POSITION", position - start);
+	if(default_auto)
+		file->tag.set_property("POSITION", 0);
+	else
+		file->tag.set_property("POSITION", position - start);
+// default_auto converts a default auto to a normal auto
+	if(is_default && !default_auto)
+		file->tag.set_property("DEFAULT", 1);
 	file->append_tag();
 // Can't put newlines in because these would be reimported and resaved along
 // with new newlines.

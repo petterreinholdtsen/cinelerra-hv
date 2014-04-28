@@ -41,6 +41,7 @@ EDL* VTimeBar::get_edl()
 
 void VTimeBar::draw_time()
 {
+	draw_range();
 }
 
 void VTimeBar::update_preview()

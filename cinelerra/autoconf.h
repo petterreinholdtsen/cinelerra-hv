@@ -21,7 +21,6 @@ public:
 
 	int fade;
 	int pan;
-	int play;
 	int mute;
 	int transitions;
 	int plugins;

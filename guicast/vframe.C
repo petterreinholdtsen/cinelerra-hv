@@ -494,7 +494,7 @@ int VFrame::allocate_data(unsigned char *data,
 		}
 		else
 		{
-			this->data = (unsigned char*)malloc(size);
+			this->data = new unsigned char[size];
 		}
 
 // Memory check
@@ -618,7 +618,7 @@ int VFrame::allocate_compressed_data(long bytes)
 		}
 		else
 		{
-			new_data = (unsigned char*)malloc(bytes);
+			new_data = new unsigned char[bytes];
 		}
 
 		bcopy(data, new_data, compressed_allocated);
@@ -654,7 +654,7 @@ UNBUFFER(data);
 		}
 		else
 		{
-			data = (unsigned char*)malloc(bytes);
+			data = new unsigned char[bytes];
 		}
 
 		compressed_allocated = bytes;

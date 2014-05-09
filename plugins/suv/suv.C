@@ -74,8 +74,8 @@ const char* SUVMain::plugin_title()
 Theme* SUVMain::new_theme()
 {
 	theme = new SUV;
-	extern unsigned char _binary_suv_data_start[];
-	theme->set_data(_binary_suv_data_start);
+	extern unsigned char _binary_suv_start[];
+	theme->set_data(_binary_suv_start);
 	return theme;
 }
 

@@ -1,6 +1,6 @@
 noinst_LIBRARIES = libimagedata.a
 libimagedata_a_SOURCES =
-nodist_libimagedata_a_SOURCES = suv.data
+libimagedata_a_LIBADD = suv.$(OBJEXT)
 
 PNGS = \
 	0.png \
@@ -363,11 +363,11 @@ PNGS = \
 	zoomtumble_top.png \
 	zoomtumble_up.png
 
-suv.$(OBJECT): $(PNGS)
+suv.$(OBJEXT): $(PNGS)
 	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
 clean-local:
-	rm -f suv.$(OBJECT)
+	rm -f suv.$(OBJEXT)
  
 EXTRA_DIST = \
 	$(PNGS) \

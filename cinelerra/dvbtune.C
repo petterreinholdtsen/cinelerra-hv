@@ -19,8 +19,8 @@
  * 
  */
 
-#include "../../guicast/bcwindowbase.inc"
-#include "../../guicast/clip.h"
+#include "bcwindowbase.inc"
+#include "clip.h"
 #include "condition.h"
 #include "devicedvbinput.inc"
 #include "dvbtune.h"

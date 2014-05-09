@@ -38,7 +38,7 @@
 
 extern "C"
 {
-#include <uuid.h>
+#include <uuid/uuid.h>
 }
 
 

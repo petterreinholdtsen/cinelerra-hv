@@ -24,7 +24,7 @@
 
 
 #include "bcwindowbase.inc"
-#include "librom1394/rom1394.h"
+#include <libavc1394/rom1394.h>
 #include "libavc1394/avc1394.h"
 #include "libavc1394/avc1394_vcr.h"
 #include "mutex.inc"

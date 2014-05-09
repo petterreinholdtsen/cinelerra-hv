@@ -26,7 +26,7 @@
 #include "condition.inc"
 #include "file.inc"
 #include "filebase.h"
-#include "lame.h"
+#include <lame/lame.h>
 #include "libmpeg3.h"
 #include "thread.h"
 

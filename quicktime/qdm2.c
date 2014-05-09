@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "avcodec.h"
+#include <libavcodec/avcodec.h>
 #include "funcprotos.h"
 #include "quicktime.h"
 

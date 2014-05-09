@@ -1,4 +1,4 @@
-#include "avcodec.h"
+#include <libavcodec/avcodec.h>
 #include "colormodels.h"
 #include "funcprotos.h"
 #include <pthread.h>
@@ -6,13 +6,7 @@
 #include "quicktime.h"
 #include <string.h>
 #include "workarounds.h"
-#include "x264.h"
-
-// This generates our own header using fixed parameters
-//#define MANUAL_HEADER
-
-// For the working version of x264
-#define GOOD_VERSION
+#include <x264.h>
 
 typedef struct
 {
@@ -147,10 +141,10 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 // Reset quantizer if fixed bitrate
 		x264_param_t default_params;
 		x264_param_default(&default_params);
-#ifdef GOOD_VERSION
+#if X264_BUILD < 48
 		if(codec->param.rc.b_cbr)
 #else
-		if(codec->param.rc.i_qp_constant)
+		if(codec->param.rc.i_rc_method == X264_RC_ABR)
 #endif
 		{
 			codec->param.rc.i_qp_constant = default_params.rc.i_qp_constant;
@@ -255,11 +249,16 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 //printf("encode %d nnal=%d\n", __LINE__, nnal);
 	for(i = 0; i < nnal; i++)
 	{
+#if X264_BUILD >= 76
+		int size = nals[i].i_payload;
+		memcpy(codec->work_buffer + codec->buffer_size, nals[i].p_payload, nals[i].i_payload);
+#else
 		int size_return = 0;
 		int size = x264_nal_encode(codec->work_buffer + codec->buffer_size, 
 			&size_return, 
 			1, 
 			nals + i);
+#endif
 		unsigned char *ptr = codec->work_buffer + codec->buffer_size;
 
 //printf("encode %d size=%d\n", __LINE__, size);
@@ -531,10 +530,10 @@ static int set_parameter(quicktime_t *file,
 		}
 		else
 		if(!strcasecmp(key, "h264_fix_bitrate"))
-#ifdef GOOD_VERSION
+#if X264_BUILD < 48
 			codec->param.rc.b_cbr = (*(int*)value) / 1000;
 #else
-			codec->param.rc.i_qp_constant = (*(int*)value) / 1000;
+			codec->param.rc.i_bitrate = (*(int*)value) / 1000;
 #endif
 	}
 }
@@ -562,6 +561,9 @@ static quicktime_h264_codec_t* init_common(quicktime_video_map_t *vtrack,
 
 	codec = (quicktime_h264_codec_t*)codec_base->priv;
 	x264_param_default(&codec->param);
+#if X264_BUILD >= 48
+	codec->param.rc.i_rc_method = X264_RC_CQP;
+#endif
 
 	return codec;
 }

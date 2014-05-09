@@ -1,5 +1,5 @@
 #include "funcprotos.h"
-#include "lame.h"
+#include <lame/lame.h>
 #include "mpeg3private.h"
 #include "mpeg3protos.h"
 #include "quicktime.h"

@@ -1,0 +1,101 @@
+THEMES= \
+	suv
+
+SUBDIRS= \
+	$(THEMES) \
+	1080to540 \
+	720to480 \
+	aging \
+	bandslide \
+	bandwipe \
+	blur \
+	brightness \
+	burn \
+	cdripper \
+	chromakey \
+	chromakeyhsv \
+	colorbalance \
+	compressor \
+	crossfade \
+	decimate \
+	deinterlace \
+	delayaudio \
+	delayvideo \
+	denoise \
+	denoiseseltempavg \
+	denoisevideo \
+	despike \
+	diffkey \
+	dissolve \
+	dot \
+	downsample \
+	fieldframe \
+	flash \
+	flip \
+	framefield \
+	freeverb \
+	freezeframe \
+	gain \
+	gamma \
+	gradient \
+	histogram \
+	holo \
+	huesaturation \
+	interpolate \
+	interpolateaudio \
+	interpolatevideo \
+	invertaudio \
+	invertvideo \
+	irissquare \
+	ivtc \
+	level \
+	linearblur \
+	liveaudio \
+	livevideo \
+	loopaudio \
+	loopvideo \
+	motion \
+	motionblur \
+	normalize \
+	oilpainting \
+	overlay \
+	overlayaudio \
+	parametric \
+	perspective \
+	pitch \
+	polar \
+	radialblur \
+	reframe \
+	reframert \
+	resample \
+	reverb \
+	reverseaudio \
+	reversevideo \
+	rgb601 \
+	rotate \
+	scale \
+	shapewipe \
+	sharpen \
+	shiftinterlace \
+	slide \
+	spectrogram \
+	swapchannels \
+	synthesizer \
+	threshold \
+	timeavg \
+	timefront \
+	timestretch \
+	titler \
+	translate \
+	unsharp \
+	videoscope \
+	wave \
+	whirl \
+	wipe \
+	yuv \
+	zoomblur \
+	fonts
+
+AUTOMAKE_OPTIONS=foreign
+
+EXTRA_DIST = 

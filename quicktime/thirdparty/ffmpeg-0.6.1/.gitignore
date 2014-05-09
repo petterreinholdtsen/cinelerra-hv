@@ -1,0 +1,8 @@
+config.err
+config.h
+config.mak
+*.d
+*.so
+*.so.*
+lib*.pc
+lib*.ver

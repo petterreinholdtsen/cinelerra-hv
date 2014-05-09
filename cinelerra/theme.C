@@ -131,8 +131,8 @@ void Theme::initialize()
 	message_error = RED;
 
 // Force to use local data for images
-	extern unsigned char _binary_theme_data_start[];
-	set_data(_binary_theme_data_start);
+	extern unsigned char _binary_theme_start[];
+	set_data(_binary_theme_start);
 
 // Set images which weren't set by subclass
 	new_image("mode_add", "mode_add.png");

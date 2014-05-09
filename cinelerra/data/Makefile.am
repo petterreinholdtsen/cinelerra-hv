@@ -1,6 +1,7 @@
 noinst_LIBRARIES = libimagedata.a
 libimagedata_a_SOURCES =
-nodist_libimagedata_a_SOURCES = theme.data
+libimagedata_a_LIBADD = theme.$(OBJEXT)
+nodist_libimagedata_a_SOURCES = theme.$(OBJEXT)
 
 PNGS = \
 	mode_add.png \
@@ -10,15 +11,11 @@ PNGS = \
 	mode_replace.png \
 	mode_subtract.png
 
-# this rule creates the .o file from the concatenated PNGs
-.data.$(OBJEXT):
-	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $< $@
-
-theme.data: $(PNGS)
+theme.$(OBJEXT): $(PNGS)
 	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
 clean-local:
-	rm -f theme.data
+	rm -f theme.$(OBJEXT)
 
 EXTRA_DIST = \
 	$(PNGS) \

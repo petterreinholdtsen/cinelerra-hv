@@ -655,6 +655,9 @@ static void new_jpeg_objects(mjpeg_compressor *engine)
 /* Ideally the error handler would be set here but it must be called in a thread */
 	jpeg_create_decompress(&(engine->jpeg_decompress));
 	engine->jpeg_decompress.raw_data_out = TRUE;
+#if JPEG_LIB_VERSION >= 70
+	engine->jpeg_decompress.do_fancy_upsampling = FALSE;
+#endif
 	engine->jpeg_decompress.dct_method = JDCT_IFAST;
 }
 
@@ -742,6 +745,9 @@ printf("decompress_field %d\n", __LINE__);
 				engine->jpeg_decompress.dc_huff_tbl_ptrs );
 // Reset by jpeg_read_header
 	engine->jpeg_decompress.raw_data_out = TRUE;
+#if JPEG_LIB_VERSION >= 70
+	engine->jpeg_decompress.do_fancy_upsampling = FALSE;
+#endif
 	jpeg_start_decompress(&engine->jpeg_decompress);
 
 // Generate colormodel from jpeg sampling

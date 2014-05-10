@@ -415,12 +415,6 @@ void MWindow::init_plugin_path(Preferences *preferences,
 	}
 	else
 	{
-		index_fd = fopen(index_path, "w");
-
-// Version of the index file
-		fprintf(index_fd, "%d\n", PLUGIN_FILE_VERSION);
-
-
 // Get directories
 		if(is_lad)
 			fs.set_filter("*.so");
@@ -433,6 +427,11 @@ void MWindow::init_plugin_path(Preferences *preferences,
 
 		if(!result)
 		{
+			index_fd = fopen(index_path, "w");
+// Version of the index file
+			if (NULL != index_fd)
+				fprintf(index_fd, "%d\n", PLUGIN_FILE_VERSION);
+
 			for(int i = 0; i < fs.dir_list.total; i++)
 			{
 				char path[BCTEXTLEN];
@@ -453,7 +452,8 @@ void MWindow::init_plugin_path(Preferences *preferences,
 
 					if(!result)
 					{
-						new_plugin->write_table(index_fd);
+						if (NULL != index_fd)
+							new_plugin->write_table(index_fd);
 						plugindb->append(new_plugin);
 						new_plugin->close_plugin();
 					}
@@ -474,7 +474,8 @@ void MWindow::init_plugin_path(Preferences *preferences,
 							id++;
 							if(!result)
 							{
-								new_plugin->write_table(index_fd);
+								if (NULL != index_fd)
+									new_plugin->write_table(index_fd);
 								plugindb->append(new_plugin);
 								new_plugin->close_plugin();
 							}
@@ -490,7 +491,8 @@ void MWindow::init_plugin_path(Preferences *preferences,
 		}
 	}
 	
-	fclose(index_fd);
+	if (NULL != index_fd)
+		fclose(index_fd);
 	if(debug) printf("MWindow::init_plugin_path %d total_time=%d\n", __LINE__, (int)total_time.get_difference());
 
 }
@@ -501,8 +503,15 @@ void MWindow::init_plugins(Preferences *preferences,
 	const int debug = 0;
 	if(!plugindb) plugindb = new ArrayList<PluginServer*>;
 
+ 	printf("Loading plugins from %s\n", preferences->plugin_dir);
 
 	init_plugin_path(preferences, preferences->plugin_dir, 0);
+
+
+#if defined(PLUGIN_DIR)
+       init_plugin_path(preferences, PLUGIN_DIR, 1);
+#endif
+
 
 // Parse LAD environment variable
 	char *env = getenv("LADSPA_PATH");

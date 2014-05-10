@@ -19,6 +19,7 @@
  * 
  */
 
+#include "config.h"
 #include "asset.h"
 #include "assets.h"
 #include "bccapture.h"
@@ -27,7 +28,6 @@
 #include "channeldb.h"
 #include "chantables.h"
 #include "file.inc"
-#include "../hvirtual_config.h"
 #include "mutex.h"
 #include "picture.h"
 #include "playbackconfig.h"

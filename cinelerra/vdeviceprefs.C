@@ -19,13 +19,13 @@
  * 
  */
 
+#include "config.h"
 #include "bcsignals.h"
 #include "channeldb.h"
 #include "channelpicker.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "formattools.h"
-#include "../hvirtual_config.h"
 #include "language.h"
 #include "mwindow.h"
 #include "vdeviceprefs.h"

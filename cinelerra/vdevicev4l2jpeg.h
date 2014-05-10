@@ -22,7 +22,7 @@
 #ifndef VDEVICEV4L2JPEG_H
 #define VDEVICEV4L2JPEG_H
 
-#include "../hvirtual_config.h"
+#include "config.h"
 
 #ifdef HAVE_VIDEO4LINUX2
 #include "condition.inc"

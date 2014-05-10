@@ -1,5 +1,7 @@
 BUILDDATE=$(shell date)
 
+DEFS = @DEFS@ -DLOCALEDIR=\"${localedir}\"
+
 if BUILDINFO_RECOMPILE
 BUILDINFO_NONRC_S=
 

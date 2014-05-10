@@ -1,3 +1,14 @@
+2014-05-10  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* codeset.m4: Upgrade to gettext-0.18.3.
+	* glibc21.m4: Upgrade to gettext-0.18.3.
+	* intdiv0.m4: Upgrade to gettext-0.18.3.
+	* inttypes_h.m4: Upgrade to gettext-0.18.3.
+	* inttypes-pri.m4: Upgrade to gettext-0.18.3.
+	* lcmessage.m4: Upgrade to gettext-0.18.3.
+	* stdint_h.m4: Upgrade to gettext-0.18.3.
+	* uintmax_t.m4: Upgrade to gettext-0.18.3.
+
 2003-10-21  gettextize  <bug-gnu-gettext@gnu.org>
 
 	* codeset.m4: New file, from gettext-0.12.1.

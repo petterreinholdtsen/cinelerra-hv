@@ -41,6 +41,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <locale.h>
 
 
 // CINELERRA

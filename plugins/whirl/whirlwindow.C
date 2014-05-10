@@ -31,7 +31,7 @@
 
 
 WhirlWindow::WhirlWindow(WhirlMain *client)
- : PluginClientWindow("client, 210, 170, 200, 170, 0)
+ : PluginClientWindow("client", 210, 170, 200, 170, 0)
 { this->client = client; }
 
 WhirlWindow::~WhirlWindow()

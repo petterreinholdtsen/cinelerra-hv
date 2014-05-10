@@ -367,7 +367,7 @@ suv.$(OBJEXT): $(PNGS)
 	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
 clean-local:
-	rm -f suv.$(OBJEXT)
+	rm -f suv.$(OBJEXT) suv
  
 EXTRA_DIST = \
 	$(PNGS) \

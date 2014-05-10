@@ -15,7 +15,7 @@ theme.$(OBJEXT): $(PNGS)
 	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
 clean-local:
-	rm -f theme.$(OBJEXT)
+	rm -f theme theme.$(OBJEXT)
 
 EXTRA_DIST = \
 	$(PNGS) \

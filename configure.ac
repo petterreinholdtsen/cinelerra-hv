@@ -565,13 +565,17 @@ AC_OUTPUT([Makefile \
 	plugins/bandwipe/Makefile 
 	plugins/blur/Makefile \
 	plugins/brightness/Makefile \
+	plugins/brighttheme/Makefile \
+	plugins/brighttheme/data/Makefile \
 	plugins/burn/Makefile \
 	plugins/parametric/Makefile \
+	plugins/audioscope/Makefile \
 	plugins/aging/Makefile \
 	plugins/cdripper/Makefile \
 	plugins/chromakey/Makefile \
 	plugins/chromakeyhsv/Makefile \
 	plugins/colorbalance/Makefile \
+	plugins/color3way/Makefile \
 	plugins/compressor/Makefile \
 	plugins/crossfade/Makefile \
 	plugins/decimate/Makefile \

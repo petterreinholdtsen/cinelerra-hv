@@ -5,6 +5,7 @@ SUBDIRS= \
 	$(THEMES) \
 	1080to540 \
 	720to480 \
+	audioscope \
 	aging \
 	bandslide \
 	bandwipe \
@@ -14,6 +15,7 @@ SUBDIRS= \
 	cdripper \
 	chromakey \
 	chromakeyhsv \
+	color3way \
 	colorbalance \
 	compressor \
 	crossfade \

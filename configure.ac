@@ -660,6 +660,17 @@ AC_OUTPUT([Makefile \
 	plugins/timefront/Makefile \
 	plugins/svg/Makefile \
 	plugins/diffkey/Makefile \
+	plugins/dcoffset/Makefile \
+	plugins/findobject/Makefile \
+	plugins/lens/Makefile \
+	plugins/motion2point/Makefile \
+	plugins/photoscale/Makefile \
+	plugins/removegaps/Makefile \
+	plugins/resamplert/Makefile \
+	plugins/swapframes/Makefile \
+	plugins/timestretchrt/Makefile \
+	plugins/vocoder/Makefile \
+	plugins/zoom/Makefile \
 	plugins/fonts/Makefile],
 	[touch Makefile.in])
 

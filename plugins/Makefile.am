@@ -96,7 +96,26 @@ SUBDIRS= \
 	wipe \
 	yuv \
 	zoomblur \
+	dcoffset \
+	lens \
+	motion2point \
+	photoscale \
+	removegaps \
+	resamplert \
+	swapframes \
+	timestretchrt \
+	vocoder \
+	zoom \
 	fonts
+
+# Code needing OpenCV
+OPENCV_PLUGIN = \
+	findobject
+
+# plugin code that seem to be broken
+BROKEN_PLUGIN = \
+	dbx \
+	piano
 
 AUTOMAKE_OPTIONS=foreign
 

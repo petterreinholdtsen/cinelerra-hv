@@ -5,8 +5,8 @@ SUBDIRS= \
 	$(THEMES) \
 	1080to540 \
 	720to480 \
-	audioscope \
 	aging \
+	audioscope \
 	bandslide \
 	bandwipe \
 	blur \
@@ -19,6 +19,7 @@ SUBDIRS= \
 	colorbalance \
 	compressor \
 	crossfade \
+	dcoffset \
 	decimate \
 	deinterlace \
 	delayaudio \
@@ -50,6 +51,7 @@ SUBDIRS= \
 	invertvideo \
 	irissquare \
 	ivtc \
+	lens \
 	level \
 	linearblur \
 	liveaudio \
@@ -57,6 +59,7 @@ SUBDIRS= \
 	loopaudio \
 	loopvideo \
 	motion \
+	motion2point \
 	motionblur \
 	normalize \
 	oilpainting \
@@ -64,12 +67,15 @@ SUBDIRS= \
 	overlayaudio \
 	parametric \
 	perspective \
+	photoscale \
 	pitch \
 	polar \
 	radialblur \
 	reframe \
 	reframert \
+	removegaps \
 	resample \
+	resamplert \
 	reverb \
 	reverseaudio \
 	reversevideo \
@@ -82,30 +88,24 @@ SUBDIRS= \
 	slide \
 	spectrogram \
 	swapchannels \
+	swapframes \
 	synthesizer \
 	threshold \
 	timeavg \
 	timefront \
 	timestretch \
+	timestretchrt \
 	titler \
 	translate \
 	unsharp \
 	videoscope \
+	vocoder \
 	wave \
 	whirl \
 	wipe \
 	yuv \
-	zoomblur \
-	dcoffset \
-	lens \
-	motion2point \
-	photoscale \
-	removegaps \
-	resamplert \
-	swapframes \
-	timestretchrt \
-	vocoder \
 	zoom \
+	zoomblur \
 	fonts
 
 # Code needing OpenCV

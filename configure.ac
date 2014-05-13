@@ -559,8 +559,9 @@ AC_OUTPUT([Makefile \
 	mplexlo/Makefile \
 	plugins/Makefile \
 	plugins/1080to540/Makefile \
-	plugins/histogram/Makefile \
 	plugins/720to480/Makefile \
+	plugins/aging/Makefile \
+	plugins/audioscope/Makefile \
 	plugins/bandslide/Makefile \
 	plugins/bandwipe/Makefile 
 	plugins/blur/Makefile \
@@ -568,34 +569,41 @@ AC_OUTPUT([Makefile \
 	plugins/brighttheme/Makefile \
 	plugins/brighttheme/data/Makefile \
 	plugins/burn/Makefile \
-	plugins/parametric/Makefile \
-	plugins/audioscope/Makefile \
-	plugins/aging/Makefile \
 	plugins/cdripper/Makefile \
 	plugins/chromakey/Makefile \
 	plugins/chromakeyhsv/Makefile \
-	plugins/colorbalance/Makefile \
 	plugins/color3way/Makefile \
+	plugins/colorbalance/Makefile \
 	plugins/compressor/Makefile \
 	plugins/crossfade/Makefile \
+	plugins/dcoffset/Makefile \
 	plugins/decimate/Makefile \
+	plugins/defaulttheme/Makefile \
+	plugins/defaulttheme/data/Makefile \
 	plugins/deinterlace/Makefile \
 	plugins/delayaudio/Makefile \
 	plugins/delayvideo/Makefile \
 	plugins/denoise/Makefile \
 	plugins/denoisefft/Makefile \
-	plugins/denoisevideo/Makefile \
 	plugins/denoisemjpeg/Makefile \
+	plugins/denoiseseltempavg/Makefile \
+	plugins/denoisevideo/Makefile \
 	plugins/despike/Makefile \
+	plugins/diffkey/Makefile \
 	plugins/dissolve/Makefile \
 	plugins/dot/Makefile \
+	plugins/downsample/Makefile \
 	plugins/fieldframe/Makefile \
+	plugins/findobject/Makefile \
+	plugins/flash/Makefile \
 	plugins/flip/Makefile \
 	plugins/framefield/Makefile \
 	plugins/freeverb/Makefile \
 	plugins/freezeframe/Makefile \
 	plugins/gain/Makefile \
 	plugins/gamma/Makefile \
+	plugins/gradient/Makefile \
+	plugins/histogram/Makefile \
 	plugins/holo/Makefile \
 	plugins/huesaturation/Makefile \
 	plugins/interpolate/Makefile \
@@ -605,28 +613,37 @@ AC_OUTPUT([Makefile \
 	plugins/invertvideo/Makefile \
 	plugins/irissquare/Makefile \
 	plugins/ivtc/Makefile \
+	plugins/lens/Makefile \
+	plugins/level/Makefile \
+	plugins/linearblur/Makefile \
 	plugins/liveaudio/Makefile \
 	plugins/livevideo/Makefile \
 	plugins/loopaudio/Makefile \
 	plugins/loopvideo/Makefile \
 	plugins/motion/Makefile \
+	plugins/motion2point/Makefile \
 	plugins/motionblur/Makefile \
 	plugins/normalize/Makefile \
 	plugins/oilpainting/Makefile \
 	plugins/overlay/Makefile \
 	plugins/overlayaudio/Makefile \
+	plugins/parametric/Makefile \
+	plugins/perspective/Makefile \
+	plugins/photoscale/Makefile \
 	plugins/pitch/Makefile \
 	plugins/polar/Makefile \
-	plugins/reframert/Makefile
+	plugins/radialblur/Makefile \
 	plugins/reframe/Makefile \
+	plugins/reframert/Makefile
+	plugins/removegaps/Makefile \
 	plugins/resample/Makefile \
+	plugins/resamplert/Makefile \
 	plugins/reverb/Makefile \
 	plugins/reverseaudio/Makefile \
 	plugins/reversevideo/Makefile \
 	plugins/rgb601/Makefile \
 	plugins/rotate/Makefile \
 	plugins/scale/Makefile \
-	plugins/denoiseseltempavg/Makefile \
 	plugins/shapewipe/Makefile \
 	plugins/sharpen/Makefile \
 	plugins/shiftinterlace/Makefile \
@@ -634,43 +651,26 @@ AC_OUTPUT([Makefile \
 	plugins/spectrogram/Makefile \
 	plugins/suv/Makefile \
 	plugins/suv/data/Makefile \
-	plugins/defaulttheme/Makefile \
-	plugins/defaulttheme/data/Makefile \
+	plugins/svg/Makefile \
 	plugins/swapchannels/Makefile \
+	plugins/swapframes/Makefile \
 	plugins/synthesizer/Makefile \
 	plugins/threshold/Makefile \
 	plugins/timeavg/Makefile \
+	plugins/timefront/Makefile \
 	plugins/timestretch/Makefile \
+	plugins/timestretchrt/Makefile \
 	plugins/titler/Makefile \
 	plugins/translate/Makefile \
 	plugins/unsharp/Makefile \
 	plugins/videoscope/Makefile \
+	plugins/vocoder/Makefile \
 	plugins/wave/Makefile \
 	plugins/whirl/Makefile \
 	plugins/wipe/Makefile \
 	plugins/yuv/Makefile \
-	plugins/downsample/Makefile \
-	plugins/flash/Makefile \
-	plugins/gradient/Makefile \
-	plugins/level/Makefile \
-	plugins/linearblur/Makefile \
-	plugins/perspective/Makefile \
-	plugins/radialblur/Makefile \
-	plugins/zoomblur/Makefile \
-	plugins/timefront/Makefile \
-	plugins/svg/Makefile \
-	plugins/diffkey/Makefile \
-	plugins/dcoffset/Makefile \
-	plugins/findobject/Makefile \
-	plugins/lens/Makefile \
-	plugins/motion2point/Makefile \
-	plugins/photoscale/Makefile \
-	plugins/removegaps/Makefile \
-	plugins/resamplert/Makefile \
-	plugins/swapframes/Makefile \
-	plugins/timestretchrt/Makefile \
-	plugins/vocoder/Makefile \
 	plugins/zoom/Makefile \
+	plugins/zoomblur/Makefile \
 	plugins/fonts/Makefile],
 	[touch Makefile.in])
 

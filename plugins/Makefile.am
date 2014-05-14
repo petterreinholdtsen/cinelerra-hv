@@ -33,6 +33,7 @@ SUBDIRS= \
 	dot \
 	downsample \
 	fieldframe \
+	findobject \
 	flash \
 	flip \
 	framefield \
@@ -107,10 +108,6 @@ SUBDIRS= \
 	zoom \
 	zoomblur \
 	fonts
-
-# Code needing OpenCV
-OPENCV_PLUGIN = \
-	findobject
 
 # plugin code that seem to be broken
 BROKEN_PLUGIN = \

@@ -35,6 +35,10 @@
 #include "surfscan.h"
 #include "transportque.h"
 
+// Needed with OpenCV version 2.4.8
+#include "opencv2/legacy/legacy.hpp"
+#include "opencv2/legacy/compat.hpp"
+
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/video/background_segm.hpp"
 

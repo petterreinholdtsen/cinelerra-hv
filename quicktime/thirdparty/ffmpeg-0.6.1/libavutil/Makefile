@@ -24,7 +24,8 @@ HEADERS = adler32.h                                                     \
 
 BUILT_HEADERS = avconfig.h
 
-distclean:: avconfig.h
+distclean::
+	$(RM) avconfig.h
 
 OBJS = adler32.o                                                        \
        aes.o                                                            \

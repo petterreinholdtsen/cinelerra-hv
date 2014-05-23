@@ -1,4 +1,4 @@
-AC_INIT(Cinelerra, 2.2CV)
+AC_INIT(Cinelerra-HV, 4.5)
 
 AC_CANONICAL_SYSTEM
 
@@ -578,14 +578,11 @@ AC_OUTPUT([Makefile \
 	plugins/crossfade/Makefile \
 	plugins/dcoffset/Makefile \
 	plugins/decimate/Makefile \
-	plugins/defaulttheme/Makefile \
-	plugins/defaulttheme/data/Makefile \
 	plugins/deinterlace/Makefile \
 	plugins/delayaudio/Makefile \
 	plugins/delayvideo/Makefile \
 	plugins/denoise/Makefile \
 	plugins/denoisefft/Makefile \
-	plugins/denoisemjpeg/Makefile \
 	plugins/denoiseseltempavg/Makefile \
 	plugins/denoisevideo/Makefile \
 	plugins/despike/Makefile \
@@ -651,7 +648,6 @@ AC_OUTPUT([Makefile \
 	plugins/spectrogram/Makefile \
 	plugins/suv/Makefile \
 	plugins/suv/data/Makefile \
-	plugins/svg/Makefile \
 	plugins/swapchannels/Makefile \
 	plugins/swapframes/Makefile \
 	plugins/synthesizer/Makefile \

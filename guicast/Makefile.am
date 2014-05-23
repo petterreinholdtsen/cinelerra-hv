@@ -57,8 +57,6 @@ libguicast_la_SOURCES = \
 	bcwindowdraw.C \
 	bcwindowevents.C \
 	condition.C \
-	debug.h \
-        error.h \
 	errorbox.C \
 	filesystem.C \
 	mutex.C \
@@ -83,10 +81,15 @@ noinst_HEADERS = \
 	bccapture.inc \
 	bcclipboard.h \
 	bcclipboard.inc \
+	bccmodel_permutation.h \
+	bccmodels.h \
+	bccmodels.inc \
 	bcdelete.h \
 	bcdelete.inc \
 	bcdialog.h \
 	bcdialog.inc \
+	bcdisplay.h \
+	bcdisplay.inc \
 	bcdisplayinfo.h \
 	bcdisplayinfo.inc \
 	bcdragwindow.h \
@@ -126,6 +129,8 @@ noinst_HEADERS = \
 	bcprogressbox.inc \
 	bcprogress.h \
 	bcprogress.inc \
+	bcrename.h \
+	bcrename.inc \
 	bcrepeater.h \
 	bcrepeater.inc \
 	bcresources.h \
@@ -204,7 +209,3 @@ bootstrap.$(OBJEXT): bootstrap.c
 	$(CC) $(BOOTSTRAP_CFLAGS) -c $<
 
 EXTRA_DIST = images pngtoh.c
-
-dist-hook:
-	-rm -rf $(distdir)/images/CVS
-	-rm -rf $(distdir)/images/7seg_small/CVS

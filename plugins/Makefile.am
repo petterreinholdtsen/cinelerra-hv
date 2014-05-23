@@ -1,4 +1,5 @@
 THEMES= \
+	brighttheme \
 	suv
 
 SUBDIRS= \
@@ -25,6 +26,7 @@ SUBDIRS= \
 	delayaudio \
 	delayvideo \
 	denoise \
+	denoisefft \
 	denoiseseltempavg \
 	denoisevideo \
 	despike \

@@ -13,4 +13,5 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
 	motion.h motion.inc \
+	motionscan.h motionscan.inc \
 	motionwindow.h motionwindow.inc

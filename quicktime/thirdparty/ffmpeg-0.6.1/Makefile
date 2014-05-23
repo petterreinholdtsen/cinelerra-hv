@@ -163,7 +163,7 @@ config:
 
 # regression tests
 
-check: test checkheaders
+origcheck: test checkheaders
 
 fulltest test: codectest lavftest seektest
 
@@ -351,3 +351,13 @@ fate:
 endif
 
 .PHONY: documentation *test regtest-* zlib-error alltools check config
+
+# Dummy targets to fix 'make distcheck'
+dvi:
+check:
+installcheck:
+distuninstallcheck:
+
+distdir:
+	echo warning: faking 'make dist' in subpackage using tar + make distclean
+	tar cf - .|(cd $(distdir); tar xf -; make distclean)

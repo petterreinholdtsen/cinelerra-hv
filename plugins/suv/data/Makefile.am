@@ -373,7 +373,6 @@ EXTRA_DIST = \
 	$(PNGS) \
 	buttonbar.xcf.bz2 \
 	editpanel.xcf.bz2 \
-	locklabels.xcf.bz2 \
 	mainwindow.xcf.bz2 \
 	menu.xcf.bz2 \
 	new.xcf.bz2 \

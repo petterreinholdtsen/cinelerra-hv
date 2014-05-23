@@ -11,7 +11,6 @@ SUBDIRS = \
 	po
 EXTRA_DIST = \
 	admin \
-	debian \
 	doc \
 	depcomp \
 	README.BUILD \
@@ -19,11 +18,3 @@ EXTRA_DIST = \
 	cinelerra-cvs-current.spec
 AUTOMAKE_OPTIONS=foreign
 ACLOCAL_AMFLAGS = -I m4
-
-dist-hook:
-	-rm -rf $(distdir)/admin/CVS
-	-rm -rf $(distdir)/debian/tmp
-	-rm -rf $(distdir)/debian/CVS
-	-rm -rf $(distdir)/debian/patches/CVS
-	-rm -rf $(distdir)/doc/CVS
-	-find $(distdir) -type d -name .svn -exec rm -rf {} \; -prune

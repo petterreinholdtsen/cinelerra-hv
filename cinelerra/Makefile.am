@@ -117,7 +117,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    cwindowgui.C \
 		    cwindowtool.C \
 		    dcoffset.C \
-		    defaultformats.h \
 		    dcraw.c \
 		    deleteallindexes.C \
 		    devicedvbinput.C \
@@ -400,6 +399,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 adeviceprefs.h \
 		 aedit.h \
 		 aedits.h \
+	affine.h \
 		 amodule.h \
 		 apatchgui.h \
 		 apluginarray.h \
@@ -444,12 +444,14 @@ noinst_HEADERS = aattachmentpoint.h \
 		 cameraauto.h \
 		 canvas.h \
 		 canvastools.h \
+	cicolors.h \
 		 channeledit.h \
 		 channel.h \
 		 channeldb.h \
 		 channelpicker.h \
 		 chantables.h \
 		 clipedit.h \
+	colorpicker.h \
 		 commonrender.h \
 		 compresspopup.h \
 		 confirmquit.h \
@@ -474,6 +476,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 dvbtune.h \
 		 edit.h \
 		 edithandles.h \
+	editlength.h \
 		 editpanel.h \
 		 editpopup.h \
 		 edits.h \
@@ -484,6 +487,9 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fileac3.h \
 		 fileavi.h \
 		 filebase.h \
+	fileffmpeg.h \
+	fileflac.h \
+	filefork.h \
 		 fileformat.h \
 		 file.h \
 		 filecr2.h \
@@ -494,6 +500,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filemov.h \
 		 filempeg.h \
 		 filepng.h \
+	filescene.h \
+	fileserver.h \
 		 filesndfile.h \
 		 filetga.h \
 		 filethread.h \
@@ -502,11 +510,13 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filexml.h \
 		 floatauto.h \
 		 floatautos.h \
+	forkwrapper.h \
 		 formatcheck.h \
 		 formatpopup.h \
 		 formatpresets.h \
 		 formattools.h \
 		 formatwindow.h \
+	fourier.h \
 		 framecache.h \
 		 garbage.h \
 		 gwindow.h \
@@ -515,6 +525,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 iec61883input.h \
 		 iec61883output.h \
 		 ieee1394-ioctl.h \
+	indexable.h \
+	indexstate.h \
 		 indexfile.h \
 		 indexthread.h \
 		 intauto.h \
@@ -522,6 +534,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 interfaceprefs.h \
 		 jpegwrapper.h \
 		 keyframe.h \
+	keyframegui.h \
 		 keyframehandles.h \
 		 keyframepopup.h \
 		 keyframes.h \
@@ -549,7 +562,11 @@ noinst_HEADERS = aattachmentpoint.h \
 		 maxchannels.h \
 		 mbuttons.h \
 		 menuaeffects.h \
+	menuattacheffect.h \
+	menuattachtransition.h \
+	menueditlength.h \
 		 menueffects.h \
+	menutransitionlength.h \
 		 menuveffects.h \
 		 messages.h \
 		 meterpanel.h \
@@ -557,6 +574,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 mtimebar.h \
 		 mwindowgui.h \
 		 mwindow.h \
+	nestededls.h \
 		 newfolder.h \
 		 new.h \
 		 newpresets.h \
@@ -593,6 +611,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 pluginvclient.h \
 		 preferences.h \
 		 preferencesthread.h \
+	presets.h \
+	presetsgui.h \
 		 question.h \
 		 quit.h \
 		 recconfirmdelete.h \
@@ -606,6 +626,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 recordlabel.h \
 		 recordmonitor.h \
 		 recordprefs.h \
+	recordscopes.h \
 		 recordthread.h \
 		 recordtransport.h \
 		 recordvideo.h \
@@ -620,9 +641,12 @@ noinst_HEADERS = aattachmentpoint.h \
 		 resizetrackthread.h \
 		 resourcepixmap.h \
 		 resourcethread.h \
+	samples.h \
 		 samplescroll.h \
 		 savefile.h \
 		 scale.h \
+	scenegraph.h \
+	scopewindow.h \
 		 setformat.h \
 		 sharedlocation.h \
 		 shmemory.h \
@@ -650,6 +674,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 transitionpopup.h \
 		 transportque.h \
 		 tunerserver.h \
+	undostack.h \
 		 vattachmentpoint.h \
 		 vautomation.h \
 		 vdevice1394.h \
@@ -717,5 +742,3 @@ cinelerra_LDADD = \
 	-lFLAC \
 	-L$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavformat -lavformat-cinelerra \
 	$(MJPEG_LIBS)
-
-EXTRA_DIST = gen-feather-h

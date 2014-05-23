@@ -99,6 +99,9 @@ noinst_HEADERS = cmodel_permutation.h \
 	mmx.h \
 	mp4a.h \
 	mpeg4.h \
+	qdm2.h \
+	qtasf.h \
+	qtasf_codes.h \
 	qtdv.h \
 	qtffmpeg.h \
 	qth264.h \
@@ -135,6 +138,3 @@ pkgincludedir=$(includedir)/quicktime
 pkginclude_HEADERS=quicktime.h qtprivate.h
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)
-
-dist-hook:
-	-rm -rf $(distdir)/docs/CVS

@@ -13,7 +13,7 @@ Build-Depends: debhelper (>= 9), automake,
  libesd0-dev (>= 0.2.28), libaudiofile-dev (>= 0.2.3), 
  libraw1394-dev (>= 1.2.0), libavc1394-dev (>= 0.4.1),
  libfreetype6-dev (>= 2.2.1), libfontconfig-dev | libfontconfig1-dev, nasm, uuid-dev, 
- docbook-to-man, libfaad2-dev | libfaad-dev, libmjpegtools-dev (>= 1.6.2), 
+ docbook-to-man, libfaad2-dev | libfaad-dev,
  libopenexr-dev (>= 1.1.1), libxxf86vm-dev (>=6.8.2), libfftw3-dev | fftw3-dev,
  libsndfile1-dev, libiec61883-dev (>= 1.0.0), libx264-dev,
  libfaac-dev (>= 1.24), libx11-dev, libxext-dev, libxft-dev,
@@ -26,8 +26,7 @@ Conflicts: cinelerra, cinelerra-cv
 Section: video
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, libguicast1-hv (= ${binary:Version}),
- libquicktimecine-hv (= ${binary:Version}), libmpeg3cine-hv (= ${binary:Version}),
- mjpegtools (>= 1.6.2)
+ libquicktimecine-hv (= ${binary:Version}), libmpeg3cine-hv (= ${binary:Version})
 Description: Non-linear audio/video authoring tool
  Cinelerra-CV is a complete audio and video authoring
  tool. It understands a lot of multimedia formats

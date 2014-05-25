@@ -22,7 +22,6 @@ Build-Depends: debhelper (>= 9), automake,
 Homepage: http://www.cinelerra.org/
 
 Package: cinelerra-hv
-Conflicts: cinelerra, cinelerra-cv
 Section: video
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}, libguicast1-hv (= ${binary:Version}),
@@ -34,7 +33,6 @@ Description: Non-linear audio/video authoring tool
  codecs (divx, xvid, mpeg1/2, ...).
 
 Package: libguicast1-hv
-Conflicts: libguicast1, libguicast1-cv
 Section: libs
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
@@ -43,7 +41,6 @@ Description: toolkit library (cinelerra's internal)
  software.
 
 Package: libquicktimecine-hv
-Conflicts: libquicktimecine, libquicktimecine-cv
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Architecture: any
@@ -61,7 +58,6 @@ Description: Quicktime 4 Linux Cinelerra internal library
  For more information, see http://heroinewarrior.com/quicktime.php3
 
 Package: libquicktimecine-hv-dev
-Conflicts: libquicktimecine-dev, libquicktimecine-cv-dev
 Section: libdevel
 Depends: ${misc:Depends}, libquicktimecine-hv (= ${binary:Version})
 Architecture: any
@@ -81,7 +77,6 @@ Description: Quicktime 4 Linux (Cinelerra internal) library (development files)
  For more information, see http://heroinewarrior.com/quicktime.php3
 
 Package: libmpeg3cine-hv
-Conflicts: libmpeg3cine, libmpeg3cine-cv
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Architecture: any
@@ -96,7 +91,6 @@ Description: advanced editing and manipulation of MPEG streams (cinelerra's inte
  For more information, see http://heroinewarrior.com/quicktime.php3
 
 Package: libmpeg3cine-hv-dev
-Conflicts: libmpeg3cine-dev, libmpeg3cine-cv-dev
 Section: libdevel
 Depends: ${misc:Depends}, libmpeg3cine-hv (= ${binary:Version})
 Architecture: any

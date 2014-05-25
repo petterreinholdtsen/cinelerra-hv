@@ -36,7 +36,9 @@ static int register_acodec(void (*init_acodec)(quicktime_audio_map_t *))
 
 
 #include "ima4.h"
+#if defined(HAVE_FAAC_H)
 #include "mp4a.h"
+#endif
 #include "qdm2.h"
 #include "qtvorbis.h"
 #include "qtmp3.h"
@@ -52,7 +54,9 @@ static void register_acodecs()
 	register_acodec(quicktime_init_codec_sowt);
 	register_acodec(quicktime_init_codec_rawaudio);
 	register_acodec(quicktime_init_codec_ima4);
+#if defined(HAVE_FAAC_H)
 	register_acodec(quicktime_init_codec_mp4a);
+#endif
 	register_acodec(quicktime_init_codec_qdm2);
 	register_acodec(quicktime_init_codec_ulaw);
 

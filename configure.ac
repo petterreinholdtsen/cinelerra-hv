@@ -209,6 +209,7 @@ AC_SUBST(OPENEXR_LIBS)
 ############## LIBFAAD, LIBFAAC
 AC_CHECK_LIB(faac, faacEncOpen,[libfaac=yes])
 AC_CHECK_HEADER(faac.h,[libfaach=yes])
+AM_CONDITIONAL(HAVE_FAAC,test "x$libfaach" = "xyes")
 
 AC_CHECK_LIB(faad, faacDecInit,[libfaad=yes],
 	AC_CHECK_LIB(faad, NeAACDecInit,[libfaad=yes]))
@@ -674,8 +675,6 @@ RPT(libmp3lame,libmp3lame libraries)
 RPT(libmp3lameh,libmp3lame headers)
 RPT(libsndfile,libsndfile libraries)
 RPT(libsndfileh,libsndfile headers)
-RPT(libfaac,libfaac libraries)
-RPT(libfaach,libfaac headers)
 RPT(libfaad,libfaad libraries)
 RPT(libfaadh,libfaad headers)
 mandatory="$succeeded"
@@ -701,6 +700,10 @@ ORPT(enable_firewire,Firewire,--disable-firewire,
 )
 ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
+)
+ORPT(enable_libfaac,FAAC sound library,--disable-libfaac,
+	RPT(libfaac,libfaac libraries)
+	RPT(libfaach,libfaac headers)
 )
 
 if test "x$mandatory" = "xno"; then

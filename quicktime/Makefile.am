@@ -13,12 +13,17 @@ AM_CFLAGS = \
 
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
+if HAVE_FAAC
+FAAC_LIBS = -lfaac
+libquicktimehv_la_faac_SOURCES = mp4a.c mp4a.h
+endif
+
 libquicktimehv_la_LIBADD = \
 	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	-lmp3lame \
 	$(FAAD_LIBS) \
-	-lfaac \
+	$(FAAC_LIBS) \
 	thirdparty/encore50/libencore.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
 	$(LIBDV_LIBS) \
@@ -27,6 +32,7 @@ libquicktimehv_la_LIBADD = \
 	-lz -lpthread -lm
 
 libquicktimehv_la_SOURCES = \
+	$(libquicktimehv_la_faac_SOURCES) \
 	atom.c \
 	avcc.c \
 	avi_hdrl.c \
@@ -51,7 +57,6 @@ libquicktimehv_la_SOURCES = \
 	ima4.c jpeg.c libdv.c libmjpeg.c matrix.c mdat.c mdhd.c mdia.c \
 	minf.c \
 	moov.c \
-	mp4a.c \
 	mvhd.c \
 	plugin.c \
 	qtcache.c \
@@ -97,7 +102,6 @@ noinst_HEADERS = cmodel_permutation.h \
 	libdv.h \
 	libmjpeg.h \
 	mmx.h \
-	mp4a.h \
 	mpeg4.h \
 	qdm2.h \
 	qtasf.h \

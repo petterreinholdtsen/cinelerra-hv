@@ -1,4 +1,4 @@
-AC_INIT(Cinelerra-HV, 4.5)
+AC_INIT(Cinelerra-HV, 4.5.test.pr.20140525)
 
 AC_CANONICAL_SYSTEM
 

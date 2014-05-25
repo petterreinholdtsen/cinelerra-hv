@@ -1350,7 +1350,7 @@ void VFrame::dump()
 
 int VFrame::filefork_size()
 {
-	return sizeof(int) * 12 + sizeof(long);
+	return sizeof(int) * 11 + sizeof(long);
 }
 
 

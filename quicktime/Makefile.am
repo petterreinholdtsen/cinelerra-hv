@@ -1,6 +1,6 @@
 SUBDIRS = thirdparty/encore50 @FFMPEG_FOLDER@
 
-lib_LTLIBRARIES = libquicktimehv.la
+lib_LTLIBRARIES = libquicktime-cinelerra-hv.la
 AM_CFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(CPU_CFLAGS) \
@@ -11,28 +11,28 @@ AM_CFLAGS = \
 	-DENCORE_INCLUDE=\"thirdparty/encore50/encore.h\" \
 	@FFMPEG_CFLAGS@
 
-libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
+libquicktime_cinelerra_hv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
 if HAVE_LIBFAAC
 FAAC_LIBS = -lfaac
-libquicktimehv_la_faac_SOURCES = mp4a.c mp4a.h
+libquicktime_cinelerra_hv_la_faac_SOURCES = mp4a.c mp4a.h
 endif
 
-libquicktimehv_la_LIBADD = \
+libquicktime_cinelerra_hv_la_LIBADD = \
 	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	-lmp3lame \
 	$(FAAD_LIBS) \
 	$(FAAC_LIBS) \
 	thirdparty/encore50/libencore.la \
-	$(top_builddir)/libmpeg3/libmpeg3hv.la \
+	$(top_builddir)/libmpeg3/libmpeg3-cinelerra-hv.la \
 	$(LIBDV_LIBS) \
 	-ljpeg -lpng \
 	-lx264 \
 	-lz -lpthread -lm
 
-libquicktimehv_la_SOURCES = \
-	$(libquicktimehv_la_faac_SOURCES) \
+libquicktime_cinelerra_hv_la_SOURCES = \
+	$(libquicktime_cinelerra_hv_la_faac_SOURCES) \
 	atom.c \
 	avcc.c \
 	avi_hdrl.c \

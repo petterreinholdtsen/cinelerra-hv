@@ -724,9 +724,9 @@ cinelerra_hv_LDADD = \
 	data/libimagedata.a \
 	$(top_builddir)/mpeg2enc/libmpeg2enc.la \
 	$(top_builddir)/thirdparty/toolame-02l/libtoolame.la \
-	$(top_builddir)/quicktime/libquicktimehv.la \
-	$(top_builddir)/guicast/libguicast.la \
-	$(top_builddir)/libmpeg3/libmpeg3hv.la \
+	$(top_builddir)/quicktime/libquicktime-cinelerra-hv.la \
+	$(top_builddir)/guicast/libguicast-cinelerra-hv.la \
+	$(top_builddir)/libmpeg3/libmpeg3-cinelerra-hv.la \
 	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \

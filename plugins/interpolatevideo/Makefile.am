@@ -7,7 +7,7 @@ interpolatevideo_la_SOURCES = \
 	interpolatewindow.C \
 	interpolatewindow.h \
 	motionscan.C \
-	motionscan.h
+	motionscan.h \
 	motionscan.h \
 	opticflow.C \
 	opticflow.h

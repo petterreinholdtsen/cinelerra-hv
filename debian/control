@@ -24,15 +24,15 @@ Homepage: http://www.cinelerra.org/
 Package: cinelerra-hv
 Section: video
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, libguicast1-hv (= ${binary:Version}),
- libquicktimecine-hv (= ${binary:Version}), libmpeg3cine-hv (= ${binary:Version})
+Depends: ${misc:Depends}, ${shlibs:Depends}, libguicast1-cinelerra-hv (= ${binary:Version}),
+ libquicktime-cinelerra-hv (= ${binary:Version}), libmpeg3-cinelerra-hv (= ${binary:Version})
 Description: Non-linear audio/video authoring tool
  Cinelerra-CV is a complete audio and video authoring
  tool. It understands a lot of multimedia formats
  (quicktime, avi, ogg) and audio/video compression
  codecs (divx, xvid, mpeg1/2, ...).
 
-Package: libguicast1-hv
+Package: libguicast1-cinelerra-hv
 Section: libs
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
@@ -40,7 +40,7 @@ Description: toolkit library (cinelerra's internal)
  libguicast is a toolkit library mainly used by HeroineVirtual's
  software.
 
-Package: libquicktimecine-hv
+Package: libquicktime-cinelerra-hv
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Architecture: any
@@ -57,9 +57,9 @@ Description: Quicktime 4 Linux Cinelerra internal library
  .
  For more information, see http://heroinewarrior.com/quicktime.php3
 
-Package: libquicktimecine-hv-dev
+Package: libquicktime-cinelerra-hv-dev
 Section: libdevel
-Depends: ${misc:Depends}, libquicktimecine-hv (= ${binary:Version})
+Depends: ${misc:Depends}, libquicktime-cinelerra-hv (= ${binary:Version})
 Architecture: any
 Description: Quicktime 4 Linux (Cinelerra internal) library (development files)
  Quicktime 4 Linux was the first convenient way to read and write 
@@ -76,7 +76,7 @@ Description: Quicktime 4 Linux (Cinelerra internal) library (development files)
  .
  For more information, see http://heroinewarrior.com/quicktime.php3
 
-Package: libmpeg3cine-hv
+Package: libmpeg3-cinelerra-hv
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Architecture: any
@@ -90,9 +90,9 @@ Description: advanced editing and manipulation of MPEG streams (cinelerra's inte
  .
  For more information, see http://heroinewarrior.com/quicktime.php3
 
-Package: libmpeg3cine-hv-dev
+Package: libmpeg3-cinelerra-hv-dev
 Section: libdevel
-Depends: ${misc:Depends}, libmpeg3cine-hv (= ${binary:Version})
+Depends: ${misc:Depends}, libmpeg3-cinelerra-hv (= ${binary:Version})
 Architecture: any
 Description: advanced editing and manipulation of MPEG streams (development files)
  Libmpeg3 supports advanced editing and manipulation of MPEG streams. 

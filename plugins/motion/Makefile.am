@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = motion.la
 motion_la_LDFLAGS = -avoid-version -module -shared
 #motion_la_LIBADD = libaffine.la
-motion_la_SOURCES = motion.C motionwindow.C
+motion_la_SOURCES = motion.C motionscan.C motionwindow.C
 #noinst_LTLIBRARIES = libaffine.la
 #libaffine_la_LDFLAGS = 
 #libaffine_la_LIBADD = 

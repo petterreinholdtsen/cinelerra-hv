@@ -209,7 +209,10 @@ AC_SUBST(OPENEXR_LIBS)
 ############## LIBFAAD, LIBFAAC
 AC_CHECK_LIB(faac, faacEncOpen,[libfaac=yes])
 AC_CHECK_HEADER(faac.h,[libfaach=yes])
-AM_CONDITIONAL(HAVE_FAAC,test "x$libfaach" = "xyes")
+AM_CONDITIONAL(HAVE_LIBFAAC,test "x$libfaach" = "xyes")
+if test "x$libfaach" = "xyes" ; then
+   enable_libfaac=ok
+fi
 
 AC_CHECK_LIB(faad, faacDecInit,[libfaad=yes],
 	AC_CHECK_LIB(faad, NeAACDecInit,[libfaad=yes]))
@@ -701,6 +704,7 @@ ORPT(enable_firewire,Firewire,--disable-firewire,
 ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
 	RPT(libGL,OpenGL 2.0 libraries)
 )
+
 ORPT(enable_libfaac,FAAC sound library,--disable-libfaac,
 	RPT(libfaac,libfaac libraries)
 	RPT(libfaach,libfaac headers)

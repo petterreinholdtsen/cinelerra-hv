@@ -13,7 +13,7 @@ AM_CFLAGS = \
 
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
-if HAVE_FAAC
+if HAVE_LIBFAAC
 FAAC_LIBS = -lfaac
 libquicktimehv_la_faac_SOURCES = mp4a.c mp4a.h
 endif
@@ -133,7 +133,7 @@ noinst_HEADERS = cmodel_permutation.h \
 	yuv4.h \
 	yuv9.h \
 	yv12.h
-	
+
 EXTRA_DIST = docs
 
 AM_CPPFLAGS = -I$(top_srcdir)/libmpeg3

@@ -1,11 +1,13 @@
-AC_INIT(Cinelerra-HV, 4.5.test.pr.20140525)
+AC_INIT(Cinelerra-HV, 4.5.test.pr.20140526)
 
 AC_CANONICAL_SYSTEM
 
 # Test for minimal version of autoconf
 AC_PREREQ(2.57)
 
-AM_INIT_AUTOMAKE([foreign])
+# Need foreign to support AM_SILENT_RULES
+# Need 1.9 and tar-ustar to get all files in tarball from 'make dist'
+AM_INIT_AUTOMAKE([foreign 1.9 tar-ustar])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 AC_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT([external])

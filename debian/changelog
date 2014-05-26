@@ -1,5 +1,8 @@
 cinelerra-hv (4.5-1) UNRELEASED; urgency=low
 
   * Initial release.
+  * Build-depend on libfaac-dev (>= 1.24) | bash (<= 4.3) as a trick to
+    install libfaac-dev in Jessie and later, while accepting to build
+    in Wheezy without it.
 
  -- Petter Reinholdtsen <pere@debian.org>  Sun, 27 Apr 2014 21:57:48 +0200

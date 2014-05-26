@@ -384,8 +384,8 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 else
      FFMPEG_FOLDER=thirdparty/ffmpeg-0.6.1
      FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/thirdparty/ffmpeg-0.6.1"
-     FFMPEG_LIBS="-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavcodec -lavcodec-cinelerra \
-		-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavutil -lavutil-cinelerra"
+     FFMPEG_LIBS="-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavcodec -lavcodec-cinelerra-hv \
+		-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavutil -lavutil-cinelerra-hv"
      FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
 
@@ -401,7 +401,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
 	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay \
-		--disable-static --enable-shared --build-suffix=-cinelerra"
+		--disable-static --enable-shared --build-suffix=-cinelerra-hv"
 
 	if test "x$enable_mmx" = "xno"; then
 		ff_conf_args="$ff_conf_args --disable-mmx"

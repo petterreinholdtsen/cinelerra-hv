@@ -90,7 +90,7 @@ AC_CHECK_HEADER([linux/videodev2.h],
 AC_ARG_WITH(plugindir,
 						AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
 						[ plugindir=$withval ],
-						[ plugindir="\${exec_prefix}/lib/cinelerra" ])
+						[ plugindir="\${exec_prefix}/lib/${PACKAGE}" ])
 AC_SUBST(plugindir)
 
 AC_ARG_WITH(fontsdir,
@@ -387,8 +387,8 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 else
      FFMPEG_FOLDER=thirdparty/ffmpeg-0.6.1
      FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/thirdparty/ffmpeg-0.6.1"
-     FFMPEG_LIBS="-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavcodec -lavcodec-cinelerra-hv \
-		-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavutil -lavutil-cinelerra-hv"
+     FFMPEG_LIBS="-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavcodec -lavcodec-${PACKAGE} \
+		-L\$(top_builddir)/quicktime/thirdparty/ffmpeg-0.6.1/libavutil -lavutil-${PACKAGE}"
      FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
 
@@ -404,7 +404,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
 	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay \
-		--disable-static --enable-shared --build-suffix=-cinelerra-hv"
+		--disable-static --enable-shared --build-suffix=-${PACKAGE}"
 
 	if test "x$enable_mmx" = "xno"; then
 		ff_conf_args="$ff_conf_args --disable-mmx"

@@ -66,11 +66,11 @@ install: build
 
 	install -D -m644 debian/cinelerra-hv.sysctl.d debian/cinelerra-hv/etc/sysctl.d/cinelerra-hv.conf
 
-	chmod -x debian/tmp/usr/lib/cinelerra/*
-#	chmod +x debian/tmp/usr/lib/cinelerra/fonts
-#	chmod -x debian/tmp/usr/lib/cinelerra/fonts/*
-	chmod +x debian/tmp/usr/lib/cinelerra/shapewipe
-	-ln -s /usr/bin/mpeg2enc debian/tmp/usr/lib/cinelerra/mpeg2enc.plugin
+	chmod -x debian/tmp/usr/lib/cinelerra-hv/*
+#	chmod +x debian/tmp/usr/lib/cinelerra-hv/fonts
+#	chmod -x debian/tmp/usr/lib/cinelerra-hv/fonts/*
+	chmod +x debian/tmp/usr/lib/cinelerra-hv/shapewipe
+#	-ln -s /usr/bin/mpeg2enc debian/tmp/usr/lib/cinelerra-hv/mpeg2enc.plugin
 
 binary-indep: build install
 
@@ -85,7 +85,6 @@ binary-arch: build install
 	dh_link -a
 	dh_icons -a
 	dh_strip -a
-	strip -x -s -R .comment -R .note debian/$(package)/usr/lib/cinelerra/*.so
 	dh_compress -a
 	dh_fixperms -a
 	dh_makeshlibs -a

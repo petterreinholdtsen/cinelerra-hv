@@ -799,8 +799,6 @@ extern unsigned char mpeg3_non_linear_mquant_table[32];
 #define SPATSCAL_ID   9
 #define TEMPSCAL_ID  10
 
-#define ERROR (-1)
-
 #define SC_NONE       0   /* scalable_mode */
 #define SC_DP         1
 #define SC_SPAT       2

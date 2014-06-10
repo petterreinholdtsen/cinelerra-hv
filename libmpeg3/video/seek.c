@@ -362,7 +362,7 @@ if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 
 // Read up to current frame
 if(debug) printf("mpeg3video_seek %d %ld %ld\n", __LINE__, frame_number, video->framenum);
-						mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
+						mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
 if(debug) printf("mpeg3video_seek %d\n", __LINE__);
 						break;
 					}

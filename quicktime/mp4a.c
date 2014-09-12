@@ -91,9 +91,9 @@ static int decode(quicktime_t *file,
 // Initialize decoder
 	if(!codec->decoder_initialized)
 	{
-		unsigned long samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
+		uint32_t samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
 // FAAD needs unsigned char here
-		unsigned char channels = track_map->channels;
+		uint8_t channels = track_map->channels;
 		quicktime_init_vbr(vbr, channels);
 		codec->decoder_handle = faacDecOpen();
 		codec->decoder_config = faacDecGetCurrentConfiguration(codec->decoder_handle);
@@ -109,7 +109,9 @@ static int decode(quicktime_t *file,
 //while(quicktime_vbr_input_size(vbr) < 65536)
 		quicktime_read_vbr(file, track_map);
 
-printf("decode %d %p %d\n", __LINE__, quicktime_vbr_input(vbr), quicktime_vbr_input_size(vbr));
+//printf("decode %d buffer=%p size=%d\n", __LINE__, quicktime_vbr_input(vbr), quicktime_vbr_input_size(vbr));
+//samplerate = -1;
+//channels = 0;
 		if(faacDecInit(codec->decoder_handle,
 			quicktime_vbr_input(vbr), 
 			quicktime_vbr_input_size(vbr),
@@ -118,7 +120,7 @@ printf("decode %d %p %d\n", __LINE__, quicktime_vbr_input(vbr), quicktime_vbr_in
 		{
 			return 1;
 		}
-printf("decode %d %d %d\n", __LINE__, samplerate, channels);
+//printf("decode %d samplerate=%d channels=%d\n", __LINE__, samplerate, channels);
 		codec->decoder_initialized = 1;
 	}
 

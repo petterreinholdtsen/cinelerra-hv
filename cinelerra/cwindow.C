@@ -156,8 +156,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 			{
 // May have to unlock CWindowGUI here.
 				mwindow->gui->lock_window("CWindow::calculate_affected_auto");
-				mwindow->gui->canvas->draw_overlays();
-				mwindow->gui->canvas->flash();
+				mwindow->gui->draw_overlays(1);
 				mwindow->gui->unlock_window();
 			}
 		}

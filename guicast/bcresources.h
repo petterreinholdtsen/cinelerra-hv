@@ -270,7 +270,7 @@ public:
 
 // Filebox
 	static suffix_to_type_t suffix_to_type[TOTAL_SUFFIXES];
-	static VFrame *type_to_icon[TOTAL_ICONS];
+	VFrame **type_to_icon;
 // Display mode for fileboxes
 	int filebox_mode;
 // Filter currently used in filebox

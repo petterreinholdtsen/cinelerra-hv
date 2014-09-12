@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,8 +236,7 @@ int VFadePatch::handle_event()
 	mwindow->gui->lock_window("VFadePatch::handle_event");
 	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
 	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 	}
 	return 1;
 }
@@ -304,8 +303,7 @@ int VModePatch::handle_event()
 
 	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MODE])
 	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 	}
 	mwindow->session->changes_made = 1;
 	return 1;

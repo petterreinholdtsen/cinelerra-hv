@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,14 +35,16 @@ class ResourcePixmap : public BC_Pixmap
 {
 public:
 	ResourcePixmap(MWindow *mwindow, 
-		TrackCanvas *canvas, 
+		MWindowGUI *gui, 
 		Edit *edit, 
+		int pane_number,
 		int w, 
 		int h);
 	~ResourcePixmap();
 
 	void resize(int w, int h);
-	void draw_data(Edit *edit,
+	void draw_data(TrackCanvas *canvas,
+		Edit *edit,
 		int64_t edit_x,
 		int64_t edit_w, 
 		int64_t pixmap_x, 
@@ -50,10 +52,12 @@ public:
 		int64_t pixmap_h,
 		int mode,
 		int indexes_only);
-	void draw_audio_resource(Edit *edit, 
+	void draw_audio_resource(TrackCanvas *canvas,
+		Edit *edit, 
 		int x, 
 		int w);
-	void draw_video_resource(Edit *edit, 
+	void draw_video_resource(TrackCanvas *canvas,
+		Edit *edit, 
 		int64_t edit_x, 
 		int64_t edit_w, 
 		int64_t pixmap_x,
@@ -61,10 +65,21 @@ public:
 		int refresh_x, 
 		int refresh_w,
 		int mode);
-	void draw_audio_source(Edit *edit, int x, int w);
+	void draw_audio_source(TrackCanvas *canvas,
+		Edit *edit, 
+		int x, 
+		int w);
 // Called by ResourceThread to update pixmap
-	void draw_wave(int x, double high, double low);
-	void draw_title(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t pixmap_x, int64_t pixmap_w);
+	void draw_wave(TrackCanvas *canvas,
+		int x, 
+		double high, 
+		double low);
+	void draw_title(TrackCanvas *canvas,
+		Edit *edit, 
+		int64_t edit_x, 
+		int64_t edit_w, 
+		int64_t pixmap_x, 
+		int64_t pixmap_w);
 	void reset();
 // Change to hourglass if timer expired
 	void test_timer();
@@ -72,11 +87,12 @@ public:
 	void dump();
 
 	MWindow *mwindow;
-	TrackCanvas *canvas;
+	MWindowGUI *gui;
 // Visible in entire track canvas
 	int visible;
 // Section drawn
 	int64_t edit_id;
+	int pane_number;
 	int64_t edit_x, pixmap_x, pixmap_w, pixmap_h;
 	int64_t zoom_sample, zoom_track, zoom_y;
 	int64_t startsource;

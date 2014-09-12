@@ -21,6 +21,7 @@
 
 #include "bcdisplayinfo.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "filesystem.h"
 #include "language.h"
 #include "reverb.h"
@@ -100,7 +101,7 @@ ReverbDelayInit::ReverbDelayInit(Reverb *reverb, int x, int y)
  	y, 
 	reverb->config.delay_init, 
 	0, 
-	1000)
+	MAX_DELAY_INIT)
 {
 	this->reverb = reverb;
 }
@@ -153,8 +154,8 @@ ReverbRefTotal::ReverbRefTotal(Reverb *reverb, int x, int y)
  : BC_IPot(x, 
  	y, 
 	reverb->config.ref_total, 
-	1, 
-	250)
+	MIN_REFLECTIONS, 
+	MAX_REFLECTIONS)
 {
 	this->reverb = reverb;
 }
@@ -172,7 +173,7 @@ ReverbRefLength::ReverbRefLength(Reverb *reverb, int x, int y)
  	y, 
 	reverb->config.ref_length, 
 	0, 
-	5000)
+	MAX_REFLENGTH)
 {
 	this->reverb = reverb;
 }

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -298,12 +298,12 @@ int ZoomBar::set_selection(int which_one)
 		mwindow->edl->align_to_frame(end_position, 1));
 
 
-	mwindow->gui->timebar->update_highlights();
-	mwindow->gui->cursor->hide();
-	mwindow->gui->cursor->show();
+	mwindow->gui->update_timebar_highlights();
+	mwindow->gui->hide_cursor(1);
+	mwindow->gui->show_cursor(1);
 	update();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->gui->canvas->flash();
+	mwindow->gui->flash_canvas(1);
 
 	return 0;
 }

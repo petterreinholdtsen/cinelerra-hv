@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include "patchgui.h"
 #include "mainsession.h"
 #include "theme.h"
+#include "timelinepane.h"
 #include "track.h"
 #include "trackcanvas.h"
 #include "tracks.h"
@@ -96,7 +97,7 @@ NudgePopupSeconds::NudgePopupSeconds(NudgePopup *popup)
 int NudgePopupSeconds::handle_event()
 {
 	popup->mwindow->edl->session->nudge_seconds = 1;
-	popup->patchbay->update();
+	popup->mwindow->gui->update_patchbay();
 	return 1;
 }
 
@@ -113,7 +114,7 @@ NudgePopupNative::NudgePopupNative(NudgePopup *popup)
 int NudgePopupNative::handle_event()
 {
 	popup->mwindow->edl->session->nudge_seconds = 0;
-	popup->patchbay->update();
+	popup->mwindow->gui->update_patchbay();
 	return 1;
 }
 
@@ -133,7 +134,31 @@ PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	this->pane = 0;
 	drag_operation = Tracks::NONE;
+}
+
+PatchBay::PatchBay(MWindow *mwindow, 
+	TimelinePane *pane, 
+	int x, 
+	int y, 
+	int w, 
+	int h)
+ : BC_SubWindow(x,
+ 	y,
+	w,
+	h)
+{
+	this->mwindow = mwindow;
+	this->gui = mwindow->gui;
+	this->pane = pane;
+	drag_operation = Tracks::NONE;
+// printf("PatchBay::PatchBay %d %d %d %d %d\n", 
+// __LINE__,
+// x,
+// y,
+// w,
+// h);
 }
 
 PatchBay::~PatchBay() 
@@ -180,7 +205,7 @@ void PatchBay::create_objects()
 
 	add_subwindow(nudge_popup = new NudgePopup(mwindow, this));
 	nudge_popup->create_objects();
-
+	update();
 }
 
 BC_Pixmap* PatchBay::mode_to_icon(int mode)
@@ -202,6 +227,17 @@ void PatchBay::resize_event()
 		mwindow->theme->patchbay_w,
 		mwindow->theme->patchbay_h);
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
+	update();
+	flash(0);
+}
+
+void PatchBay::resize_event(int x, int y, int w, int h)
+{
+	reposition_window(x,
+		y,
+		w,
+		h);
+	draw_top_background(get_parent(), 0, 0, w, h);
 	update();
 	flash(0);
 }
@@ -229,7 +265,7 @@ int PatchBay::cursor_motion_event()
 				track;
 				track = track->next)
 			{
-				int y = track->y_pixel;
+				int y = track->y_pixel - mwindow->edl->local_session->track_start[pane->number];
 				int h = track->vertical_span(mwindow->theme);
 				if(cursor_y >= y && cursor_y < y + h)
 				{
@@ -271,7 +307,8 @@ int PatchBay::cursor_motion_event()
 							if(track->expand_view != new_status)
 							{
 								track->expand_view = new_status;
-								mwindow->trackmovement(mwindow->edl->local_session->track_start);
+								mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+								gui->draw_trackmovement();
 								update_gui = 0;
 							}
 							break;
@@ -302,8 +339,7 @@ int PatchBay::cursor_motion_event()
 
 								if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
 								{
-									mwindow->gui->canvas->draw_overlays();
-									mwindow->gui->canvas->flash();
+									gui->draw_overlays(1);
 								}
 								update_gui = 1;
 							}
@@ -317,12 +353,12 @@ int PatchBay::cursor_motion_event()
 
 	if(update_gui)
 	{
-		update();
+		gui->update_patchbay();
 	}
 	return 0;
 }
 
-void PatchBay::change_meter_format(int mode, int min, int max)
+void PatchBay::set_meter_format(int mode, int min, int max)
 {
 	for(int i = 0; i < patches.total; i++)
 	{
@@ -402,8 +438,9 @@ int PatchBay::update()
 		current = NEXT, patch_count++)
 	{
 		PatchGUI *patchgui;
-		int y = current->y_pixel;
+		int y = current->y_pixel - mwindow->edl->local_session->track_start[pane->number];
 
+//printf("PatchBay::update %d %d\n", __LINE__, y);
 		if(patches.total > patch_count)
 		{
 			if(patches.values[patch_count]->track_id != current->get_id())

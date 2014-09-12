@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,29 +37,34 @@
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugin.inc"
+#include "pluginset.inc"
 #include "plugintoggles.inc"
 #include "resourcepixmap.inc"
-#include "resourcethread.inc"
+#include "timelinepane.inc"
 #include "track.inc"
 #include "tracks.inc"
 #include "transitionhandles.inc"
+
+// draw mode:
+// NORMAL_DRAW causes incremental drawing of pixmaps.  Used for navigation and index refresh.
+// FORCE_REDRAW causes all resource pixmaps to be redrawn from scratch.  Used by editing.
+// IGNORE_THREAD causes resource pixmaps to ignore picon thread.  Used by Piconthread.
+#define NORMAL_DRAW 1
+#define FORCE_REDRAW 2
+#define IGNORE_THREAD 3
 
 class TrackCanvas : public BC_SubWindow
 {
 public:
 	TrackCanvas(MWindow *mwindow, MWindowGUI *gui);
+	TrackCanvas(MWindow *mwindow, TimelinePane *pane, int x, int y, int w, int h);
 	~TrackCanvas();
 
 	void create_objects();
 	void resize_event();
 	int drag_start_event();
-	int drag_motion_event();
 	int cursor_leave_event();
-	int drag_stop_event();
 	int keypress_event();
-// mode - 1 causes incremental drawing of pixmaps.  Used for navigation and index refresh.
-//        2 causes all resource pixmaps to be redrawn from scratch.  Used by editing.
-//        3 causes resource pixmaps to ignore picon thread.  Used by Piconthread.
 	void draw_resources(int mode = 0,
 		int indexes_only = 0,     // Redraw only certain audio resources with indexes
 		Indexable *indexable = 0);
@@ -249,8 +254,6 @@ public:
 	void update_transitions();
 	void update_keyframe_handles(Track *track);
 // Draw everything to synchronize with the view.
-// mode - if 2 causes all resource pixmaps to be redrawn from scratch
-//        if 3 causes resource pixmaps to ignore picon thread
 	void draw(int mode = 0, int hide_cursor = 1);
 // Draw resources during index building
 	void draw_indexes(Indexable *indexable);
@@ -312,8 +315,13 @@ public:
 	void start_dragscroll();
 	void stop_dragscroll();
 	int start_selection(double position);
-	int drag_motion();
-	int drag_stop();
+	int drag_motion_event();
+	int drag_stop_event();
+	int drag_motion(Track **over_track,
+		Edit **over_edit,
+		PluginSet **over_pluginset,
+		Plugin **over_plugin);
+	int drag_stop(int *redraw);
 	void end_edithandle_selection();
 	void end_pluginhandle_selection();
 // Number of seconds spanned by the trackcanvas
@@ -333,14 +341,14 @@ public:
 
 // Display hourglass if timer expired
 	void test_timer();
-
+// get the relevant patchbay by traversing the panes
+//	Patchbay* get_patchbay();
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
-	ArrayList<ResourcePixmap*> resource_pixmaps;
+	TimelinePane *pane;
 // Allows overlays to get redrawn without redrawing the resources
 	BC_Pixmap *background_pixmap;
-	BC_DragWindow *drag_popup;
 	BC_Pixmap *transition_pixmap;
 	EditHandles *edit_handles;
 //	TransitionHandles *transition_handles;
@@ -368,7 +376,6 @@ public:
 	ArrayList<PluginOn*> plugin_on_toggles;
 	ArrayList<PluginShow*> plugin_show_toggles;
 
-	ResourceThread *resource_thread;
 
 
 // event handlers

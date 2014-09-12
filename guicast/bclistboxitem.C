@@ -210,6 +210,11 @@ void BC_ListBoxItem::set_icon(BC_Pixmap *icon)
 	this->icon = icon;
 }
 
+BC_Pixmap* BC_ListBoxItem::get_icon()
+{
+	return icon;
+}
+
 void BC_ListBoxItem::set_icon_vframe(VFrame *icon_vframe)
 {
 	this->icon_vframe = icon_vframe;

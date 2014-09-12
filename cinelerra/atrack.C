@@ -192,15 +192,15 @@ int64_t ATrack::length()
 	return edits->length();
 }
 
-int ATrack::get_dimensions(double &view_start, 
-	double &view_units, 
-	double &zoom_units)
-{
-	view_start = (double)edl->local_session->view_start * edl->session->sample_rate;
-	view_units = (double)0;
-//	view_units = (double)tracks->view_samples();
-	zoom_units = (double)edl->local_session->zoom_sample;
-}
+// int ATrack::get_dimensions(double &view_start, 
+// 	double &view_units, 
+// 	double &zoom_units)
+// {
+// 	view_start = (double)edl->local_session->view_start * 
+// 		edl->session->sample_rate;
+// 	view_units = (double)0;
+// 	zoom_units = (double)edl->local_session->zoom_sample;
+// }
 
 
 

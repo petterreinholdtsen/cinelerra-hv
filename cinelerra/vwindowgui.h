@@ -71,6 +71,7 @@ public:
 	int drag_stop();
 //	void update_labels();
 //	void update_points();
+	void update_meters();
 
 	MWindow *mwindow;
 	VWindow *vwindow;
@@ -105,7 +106,7 @@ public:
 	VWindowMeters(MWindow *mwindow, VWindowGUI *gui, int x, int y, int h);
 	~VWindowMeters();
 	
-	int change_status_event();
+	int change_status_event(int new_status);
 	
 	MWindow *mwindow;
 	VWindowGUI *gui;

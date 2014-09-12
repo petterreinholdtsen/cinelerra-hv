@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,26 @@ SampleScroll::SampleScroll(MWindow *mwindow,
 	0)
 {
 	this->gui = gui;
+	this->pane = 0;
+	this->mwindow = mwindow;
+	oldposition = 0;
+}
+
+SampleScroll::SampleScroll(MWindow *mwindow, 
+	TimelinePane *pane, 
+	int x,
+	int y,
+	int w)
+ : BC_ScrollBar(x, 
+ 	y,
+	SCROLL_HORIZ, 
+	w, 
+	0, 
+	0, 
+	0)
+{
+	this->gui = mwindow->gui;
+	this->pane = pane;
 	this->mwindow = mwindow;
 	oldposition = 0;
 }
@@ -75,20 +95,27 @@ int SampleScroll::resize_event()
 	return 0;
 }
 
-int SampleScroll::set_position(int flush)
+int SampleScroll::resize_event(int x, int y, int w)
 {
-	if(!gui->canvas) return 0;
+	reposition_window(x,
+		y, 
+		w);
+	return 0;
+}
+
+int SampleScroll::set_position()
+{
+	if(!pane->canvas) return 0;
 	long length = Units::round(mwindow->edl->tracks->total_length() * 
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample);
-	long position = mwindow->edl->local_session->view_start;
-	long handle_size = mwindow->theme->mcanvas_w - 
-		BC_ScrollBar::get_span(SCROLL_VERT);
+	long position = mwindow->edl->local_session->view_start[pane->number];
+	long handle_size = pane->view_w;
 
 	update_length(length, 
 			position, 
 			handle_size,
-			flush);
+			0);
 
 	oldposition = position;
 	return 0;
@@ -97,16 +124,28 @@ int SampleScroll::set_position(int flush)
 int SampleScroll::handle_event()
 {
 //printf("SampleScroll::handle_event %d %d\n", __LINE__, get_window_lock());
-	mwindow->edl->local_session->view_start = get_value();
+	mwindow->edl->local_session->view_start[pane->number] = get_value();
+	if(pane->number == TOP_LEFT_PANE ||
+		pane->number == BOTTOM_LEFT_PANE)
+	{
+		mwindow->edl->local_session->view_start[TOP_LEFT_PANE] =
+			mwindow->edl->local_session->view_start[BOTTOM_LEFT_PANE] =
+			mwindow->edl->local_session->view_start[pane->number];
+	}
+	else
+	{
+		mwindow->edl->local_session->view_start[TOP_RIGHT_PANE] =
+			mwindow->edl->local_session->view_start[BOTTOM_RIGHT_PANE] =
+			mwindow->edl->local_session->view_start[pane->number];
+	}
 
-	mwindow->gui->canvas->draw();
-	mwindow->gui->cursor->draw(1);
+	mwindow->gui->draw_canvas(0, 1);
+	mwindow->gui->draw_cursor(1);
+	mwindow->gui->update_timebar(0);
+	mwindow->gui->flash_canvas(0);
 
-	mwindow->gui->canvas->flash(0);
+//	if(pane->patchbay) pane->patchbay->update();
 
-	mwindow->gui->patchbay->update();
-
-	mwindow->gui->timebar->update(1);
 
 //printf("SampleScroll::handle_event %d %d\n", __LINE__, get_window_lock());
 

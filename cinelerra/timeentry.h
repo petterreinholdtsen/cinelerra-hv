@@ -51,7 +51,7 @@ public:
 	void time_to_minutes(char *result, double time);
 	void time_to_seconds(char *result, double time);
 	virtual int handle_event();
-	static int day_to_int(char *day);
+	static int day_to_int(const char *day);
 	void update(int *day, double *time);
 	void reposition_window(int x, int y);
 	int get_h();

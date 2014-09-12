@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include "resourcethread.h"
 #include "resourcepixmap.h"
 #include "samples.h"
+#include "timelinepane.h"
 #include "trackcanvas.h"
 #include "transportque.h"
 #include "vframe.h"
@@ -48,10 +49,12 @@
 #include <unistd.h>
 
 ResourceThreadItem::ResourceThreadItem(ResourcePixmap *pixmap, 
+	int pane_number,
 	Indexable *indexable,
 	int data_type,
 	int operation_count)
 {
+	this->pane_number = pane_number;
 	this->data_type = data_type;
 	this->pixmap = pixmap;
 	this->indexable = indexable;
@@ -74,6 +77,7 @@ ResourceThreadItem::~ResourceThreadItem()
 
 
 VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap, 
+	int pane_number,
 	int picon_x, 
 	int picon_y, 
 	int picon_w,
@@ -84,6 +88,7 @@ VResourceThreadItem::VResourceThreadItem(ResourcePixmap *pixmap,
 	Indexable *indexable,
 	int operation_count)
  : ResourceThreadItem(pixmap, 
+ 	pane_number,
  	indexable, 
 	TRACK_VIDEO, 
 	operation_count)
@@ -109,6 +114,7 @@ VResourceThreadItem::~VResourceThreadItem()
 
 
 AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap, 
+	int pane_number,
 	Indexable *indexable,
 	int x,
 	int channel,
@@ -116,6 +122,7 @@ AResourceThreadItem::AResourceThreadItem(ResourcePixmap *pixmap,
 	int64_t end,
 	int operation_count)
  : ResourceThreadItem(pixmap, 
+ 	pane_number,
  	indexable, 
 	TRACK_AUDIO, 
 	operation_count)
@@ -146,10 +153,14 @@ AResourceThreadItem::~AResourceThreadItem()
 
 
 
-ResourceThread::ResourceThread(MWindow *mwindow)
+ResourceThread::ResourceThread(MWindow *mwindow, MWindowGUI *gui)
+ : Thread(1, 0, 0)
 {
+//printf("ResourceThread::ResourceThread %d %p\n", __LINE__, this);
 	this->mwindow = mwindow;
+	this->gui = gui;
 	interrupted = 1;
+	done = 0;
 	temp_picon = 0;
 	temp_picon2 = 0;
 	draw_lock = new Condition(0, "ResourceThread::draw_lock", 0);
@@ -168,6 +179,12 @@ ResourceThread::ResourceThread(MWindow *mwindow)
 
 ResourceThread::~ResourceThread()
 {
+	done = 1;
+	interrupted = 1;
+	draw_lock->unlock();
+	Thread::join();
+
+
 	delete draw_lock;
 //	delete interrupted_lock;
 	delete item_lock;
@@ -186,6 +203,7 @@ void ResourceThread::create_objects()
 }
 
 void ResourceThread::add_picon(ResourcePixmap *pixmap, 
+	int pane_number,
 	int picon_x, 
 	int picon_y, 
 	int picon_w,
@@ -198,6 +216,7 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 	item_lock->lock("ResourceThread::item_lock");
 
 	items.append(new VResourceThreadItem(pixmap, 
+		pane_number,
 		picon_x, 
 		picon_y, 
 		picon_w,
@@ -211,6 +230,7 @@ void ResourceThread::add_picon(ResourcePixmap *pixmap,
 }
 
 void ResourceThread::add_wave(ResourcePixmap *pixmap,
+	int pane_number,
 	Indexable *indexable,
 	int x,
 	int channel,
@@ -220,6 +240,7 @@ void ResourceThread::add_wave(ResourcePixmap *pixmap,
 	item_lock->lock("ResourceThread::item_lock");
 
 	items.append(new AResourceThreadItem(pixmap, 
+		pane_number,
 		indexable,
 		x,
 		channel,
@@ -245,6 +266,9 @@ void ResourceThread::stop_draw(int reset)
 	{
 		interrupted = 1;
 		item_lock->lock("ResourceThread::stop_draw");
+
+//printf("ResourceThread::stop_draw %d %d\n", __LINE__, reset);
+//BC_Signals::dump_stack();
 		if(reset) items.remove_all_objects();
 		operation_count++;
 		item_lock->unlock();
@@ -273,7 +297,7 @@ void ResourceThread::start_draw()
 
 void ResourceThread::run()
 {
-	while(1)
+	while(!done)
 	{
 
 		draw_lock->lock("ResourceThread::run");
@@ -281,20 +305,19 @@ void ResourceThread::run()
 
 		while(!interrupted)
 		{
-
 // Pull off item
 			item_lock->lock("ResourceThread::run");
-			int total_items = items.total;
+			int total_items = items.size();
 			ResourceThreadItem *item = 0;
-			if(items.total) 
+			if(items.size()) 
 			{
-				item = items.values[0];
+				item = items.get(0);
 				items.remove_number(0);
 			}
 			item_lock->unlock();
 
+//printf("ResourceThread::run %d %d\n", __LINE__, items.size());
 			if(!total_items) break;
-
 
 			if(item->data_type == TRACK_VIDEO)
 			{
@@ -518,6 +541,7 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 // Draw the picon
 	mwindow->gui->lock_window("ResourceThread::do_video");
 
+// It was interrupted while waiting.
 	if(interrupted)
 	{
 		mwindow->gui->unlock_window();
@@ -530,9 +554,9 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 	if(item->operation_count == operation_count)
 	{
 		int exists = 0;
-		for(int i = 0; i < mwindow->gui->canvas->resource_pixmaps.total; i++)
+		for(int i = 0; i < gui->resource_pixmaps.total; i++)
 		{
-			if(mwindow->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			if(gui->resource_pixmaps.values[i] == item->pixmap)
 				exists = 1;
 		}
 		if(exists)
@@ -544,7 +568,8 @@ void ResourceThread::do_video(VResourceThreadItem *item)
 				item->picon_h, 
 				0, 
 				0);
-			mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);
+
+			mwindow->gui->update(0, IGNORE_THREAD, 0, 0, 0, 0, 0);
 		}
 	}
 
@@ -714,9 +739,9 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 
 // Test for pixmap existence first
 		int exists = 0;
-		for(int i = 0; i < mwindow->gui->canvas->resource_pixmaps.total; i++)
+		for(int i = 0; i < gui->resource_pixmaps.total; i++)
 		{
-			if(mwindow->gui->canvas->resource_pixmaps.values[i] == item->pixmap)
+			if(gui->resource_pixmaps.values[i] == item->pixmap)
 				exists = 1;
 		}
 
@@ -730,7 +755,11 @@ void ResourceThread::do_audio(AResourceThreadItem *item)
 			prev_x = item->x;
 			prev_h = high;
 			prev_l = low;
-			item->pixmap->draw_wave(item->x, high, low);
+			if(gui->pane[item->pane_number])
+				item->pixmap->draw_wave(gui->pane[item->pane_number]->canvas, 
+					item->x, 
+					high, 
+					low);
 			if(timer->get_difference() > 250 || item->last)
 			{
 				mwindow->gui->update(0, 3, 0, 0, 0, 0, 0);

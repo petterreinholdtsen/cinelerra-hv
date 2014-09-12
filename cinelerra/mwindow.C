@@ -1,6 +1,6 @@
 /*
  * CINELERRA
- * Copyright (C) 1997-2012 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1037,8 +1037,7 @@ void MWindow::set_brender_start()
 {
 	edl->session->brender_start = edl->local_session->get_selectionstart(1);
 	restart_brender();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 }
 
 
@@ -1142,8 +1141,11 @@ if(debug) printf("MWindow::load_filenames %d\n", __LINE__);
 				{
 					set_filename("");
 // Reset timeline position
-					new_edl->local_session->view_start = 0;
-					new_edl->local_session->track_start = 0;
+					for(int i = 0; i < TOTAL_PANES; i++)
+					{
+						new_edl->local_session->view_start[i] = 0;
+						new_edl->local_session->track_start[i] = 0;
+					}
 				}
 
 				result = 0;
@@ -1771,9 +1773,9 @@ void MWindow::create_objects(int want_gui,
 	gui->lock_window("MWindow::create_objects 1");
 	gui->mainmenu->load_defaults(defaults);
 	gui->mainmenu->update_toggles(0);
-	gui->patchbay->update();
-	gui->canvas->draw();
-	gui->cursor->draw(1);
+	gui->update_patchbay();
+	gui->draw_canvas(0, 0);
+	gui->draw_cursor(1);
 	gui->show_window();
 	gui->raise_window();
 	gui->unlock_window();
@@ -1818,13 +1820,20 @@ void MWindow::hide_splash()
 void MWindow::start()
 {
 ENABLE_BUFFER
+//PRINT_TRACE
 //	vwindows.get(DEFAULT_VWINDOW)->start();
 	awindow->start();
+//PRINT_TRACE
 	cwindow->start();
+//PRINT_TRACE
 	lwindow->start();
+//PRINT_TRACE
 	gwindow->start();
+//PRINT_TRACE
 	Thread::start();
+//PRINT_TRACE
 	playback_3d->start();
+//PRINT_TRACE
 }
 
 void MWindow::run()
@@ -1926,16 +1935,15 @@ void MWindow::toggle_loop_playback()
 	set_loop_boundaries();
 	save_backup();
 
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 	sync_parameters(CHANGE_PARAMS);
 }
 
-void MWindow::set_titles(int value)
-{
-	edl->session->show_titles = value;
-	trackmovement(edl->local_session->track_start);
-}
+//void MWindow::set_titles(int value)
+//{
+//	edl->session->show_titles = value;
+//	trackmovement(edl->local_session->track_start);
+//}
 
 void MWindow::set_auto_keyframes(int value, int lock_mwindow, int lock_cwindow)
 {
@@ -1965,7 +1973,7 @@ int MWindow::set_editing_mode(int new_editing_mode, int lock_mwindow, int lock_c
 	edl->session->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->editing_mode = edl->session->editing_mode;
 	gui->mbuttons->edit_panel->update();
-	gui->canvas->update_cursor(1);
+	gui->set_editing_mode(1);
 	if(lock_mwindow) gui->unlock_window();
 
 
@@ -2032,6 +2040,14 @@ void MWindow::age_caches()
 //printf("MWindow::age_caches %d %lld %lld\n", __LINE__, memory_usage, preferences->cache_size);
 		memory_usage += frame_cache->get_memory_usage();
 		memory_usage += wave_cache->get_memory_usage();
+// printf("MWindow::age_caches %d %lld %lld %lld %lld\n", 
+// __LINE__, 
+// preferences->cache_size,
+// audio_cache->get_memory_usage(1),
+// video_cache->get_memory_usage(1),
+// frame_cache->get_memory_usage(), 
+// wave_cache->get_memory_usage(),
+// memory_usage);
 
 		if(memory_usage > preferences->cache_size)
 		{
@@ -2514,6 +2530,13 @@ void MWindow::update_project(int load_mode)
 	edl->tracks->update_y_pixels(theme);
 
 	if(debug) PRINT_TRACE
+
+	if(load_mode == LOADMODE_REPLACE ||
+		load_mode == LOADMODE_REPLACE_CONCATENATE)
+	{
+		gui->load_panes();
+	}
+
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 	if(debug) PRINT_TRACE
 	gui->unlock_window();
@@ -2910,8 +2933,10 @@ void MWindow::time_format_common()
 {
 	gui->lock_window("MWindow::next_time_format");
 	gui->redraw_time_dependancies();
+
+
 	char string[BCTEXTLEN], string2[BCTEXTLEN];
-	sprintf(string, _("Using %s."), Units::print_time_format(edl->session->time_format, string2));
+	sprintf(string, _("Using %s"), Units::print_time_format(edl->session->time_format, string2));
 	gui->show_message(string);
 	gui->flush();
 	gui->unlock_window();
@@ -3006,7 +3031,7 @@ int MWindow::reset_meters()
 	lwindow->gui->unlock_window();
 
 	gui->lock_window("MWindow::reset_meters 4");
-	gui->patchbay->reset_meters();
+	gui->reset_meters();
 	gui->unlock_window();
 	return 0; 
 }

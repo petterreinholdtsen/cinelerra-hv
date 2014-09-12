@@ -25,11 +25,13 @@
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "timelinepane.inc"
 
 class MainCursor
 {
 public:
 	MainCursor(MWindow *mwindow, MWindowGUI *gui);
+	MainCursor(MWindow *mwindow, TimelinePane *pane);
 	~MainCursor();
 
 	void create_objects();
@@ -47,6 +49,7 @@ public:
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
+	TimelinePane *pane;
 	int visible;
 	double selectionstart, selectionend;
 	int64_t zoom_sample;

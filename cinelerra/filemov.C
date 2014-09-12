@@ -168,7 +168,11 @@ void FileMOV::fix_codecs(Asset *asset)
 
 int FileMOV::check_sig(Asset *asset)
 {
-	return quicktime_check_sig(asset->path);
+	int result = quicktime_check_sig(asset->path);
+//printf("FileMOV::check_sig %d %d\n", __LINE__, result);
+// Reject AVI
+	if(result == 2) result = 0;
+	return result;
 }
 
 
@@ -1131,7 +1135,7 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 }
 
 
-const char* FileMOV::strtocompression(char *string)
+const char* FileMOV::strtocompression(const char *string)
 {
 	if(!strcasecmp(string, _(DIVX_NAME))) return QUICKTIME_DIVX;
 	if(!strcasecmp(string, _(H264_NAME))) return QUICKTIME_H264;
@@ -1171,7 +1175,7 @@ const char* FileMOV::strtocompression(char *string)
 	return QUICKTIME_RAW;
 }
 
-const char* FileMOV::compressiontostr(char *string)
+const char* FileMOV::compressiontostr(const char *string)
 {
 	if(match4(string, QUICKTIME_H263)) return _(H263_NAME);
 	if(match4(string, QUICKTIME_H264)) return _(H264_NAME);

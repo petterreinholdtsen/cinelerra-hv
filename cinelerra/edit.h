@@ -128,6 +128,7 @@ public:
 	int id;
 // User defined title for timeline
 	char user_title[BCTEXTLEN];
+	int is_plugin;
 
 
 // Transition if one is present at the beginning of this edit

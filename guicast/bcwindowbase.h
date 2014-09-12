@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,6 +152,10 @@ public:
 	friend class BC_Tumbler;
 	friend class BC_Window;
 	friend class BC_WindowEvents;
+#ifdef X_HAVE_UTF8_STRING
+	XIM im;		/* Used to communicate with the input method (IM) server */
+	XIC ic;		/* Used for retaining the state, properties, and semantics of communication with the input method (IM) server */
+#endif
 
 // Main loop
 	int run_window();
@@ -264,6 +268,9 @@ public:
 	int get_has_focus();
 	int get_dragging();
 	int get_keypress();
+#ifdef X_HAVE_UTF8_STRING
+	char* get_keypress_utf8();
+#endif
 // Get cursor position of last event
 	int get_cursor_x();
 	int get_cursor_y();
@@ -348,7 +355,7 @@ public:
 	void draw_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_xft_text(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		int length, 
 		BC_Pixmap *pixmap,
 		int x2,
@@ -356,6 +363,8 @@ public:
 		int y2,
 		int j,
 		int i);
+// truncate the text to a ... version that fits in the width, using the current_font
+	void truncate_text(char *result, const char *text, int w);
 	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -570,6 +579,7 @@ public:
 
 	
 	int test_keypress;
+  	char keys_return[KEYPRESSLEN];
 
 
 private:
@@ -737,6 +747,9 @@ private:
 	int button_pressed;
 // Last key pressed
 	int key_pressed;
+#ifdef X_HAVE_UTF8_STRING
+	char* key_pressed_utf8;
+#endif
 // During a selection drag involving toggles, set the same value for each toggle
 	int toggle_value;
 	int toggle_drag;

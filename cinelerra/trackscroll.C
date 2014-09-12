@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,16 @@
 #include "patchbay.h"
 #include "mainsession.h"
 #include "theme.h"
+#include "timelinepane.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "trackscroll.h"
 
-TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h)
+TrackScroll::TrackScroll(MWindow *mwindow, 
+	MWindowGUI *gui, 
+	int x, 
+	int y, 
+	int h)
  : BC_ScrollBar(x, 
  	y, 
 	SCROLL_VERT, 
@@ -43,6 +48,26 @@ TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	this->pane = 0;
+	old_position = 0;
+}
+
+TrackScroll::TrackScroll(MWindow *mwindow, 
+	TimelinePane *pane, 
+	int x, 
+	int y, 
+	int h)
+ : BC_ScrollBar(x, 
+ 	y, 
+	SCROLL_VERT, 
+	h, 
+	0, 
+	0, 
+	0)
+{
+	this->mwindow = mwindow;
+	this->gui = mwindow->gui;
+	this->pane = pane;
 	old_position = 0;
 }
 
@@ -69,22 +94,50 @@ int TrackScroll::resize_event()
 	return 0;
 }
 
+int TrackScroll::resize_event(int x, int y, int h)
+{
+	reposition_window(x, 
+		y, 
+		h);
+	update();
+	return 0;
+}
+
 int TrackScroll::flip_vertical(int top, int bottom)
 {
 	return 0;
 }
 
+void TrackScroll::set_position()
+{
+	update_length(
+		mwindow->edl->get_tracks_height(mwindow->theme),
+		mwindow->edl->local_session->track_start[pane->number],
+		pane->view_h,
+		0);
+}
+
 int TrackScroll::handle_event()
 {
-	mwindow->edl->local_session->track_start = get_value();
-	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-	mwindow->gui->canvas->draw();
-	mwindow->gui->cursor->draw(1);
-	mwindow->gui->patchbay->update();
-	mwindow->gui->canvas->flash();
+	int64_t distance = get_value() - 
+		mwindow->edl->local_session->track_start[pane->number];
+	mwindow->trackmovement(distance, pane->number);
+// 	mwindow->edl->local_session->track_start[pane->number] = get_value();
+// 	if(pane->number == TOP_RIGHT_PANE)
+// 		mwindow->edl->local_session->track_start[TOP_LEFT_PANE] = 
+// 			mwindow->edl->local_session->track_start[pane->number];
+// 	else
+// 	if(pane->number == BOTTOM_RIGHT_PANE)
+// 		mwindow->edl->local_session->track_start[BOTTOM_LEFT_PANE] = 
+// 			mwindow->edl->local_session->track_start[pane->number];
+// 	
+// 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+// 	mwindow->gui->draw_canvas(0, 0);
+// 	mwindow->gui->draw_cursor(1);
+// 	mwindow->gui->update_patchbay();
+// 	mwindow->gui->flash_canvas(1);
 // Scrollbar must be active to trap button release events
 //	mwindow->gui->canvas->activate();
 	old_position = get_value();
-	flush();
 	return 1;
 }

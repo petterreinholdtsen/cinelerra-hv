@@ -584,10 +584,10 @@ s,@VORBIS_CFLAGS@,-I/root/hvirtual/quicktime/thirdparty/libogg-1.1.2/include -I/
 s,@VORBIS_LIBS@,/root/hvirtual/quicktime/thirdparty/libogg-1.1.2/src/libogg.la /root/hvirtual/quicktime/thirdparty/libvorbis-1.1.1/lib/libvorbis.la -lm  ,;t t
 s,@VORBISENC_LIBS@,-lvorbisenc,;t t
 s,@VORBISFILE_LIBS@,,;t t
-s,@SDL_CONFIG@,no,;t t
-s,@SDL_CFLAGS@,,;t t
-s,@SDL_LIBS@,,;t t
-s,@BUILDABLE_EXAMPLES@, encoder_example,;t t
+s,@SDL_CONFIG@,/usr/bin/sdl-config,;t t
+s,@SDL_CFLAGS@,-I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT,;t t
+s,@SDL_LIBS@,-lSDL -lpthread,;t t
+s,@BUILDABLE_EXAMPLES@, encoder_example player_example,;t t
 s,@DEBUG@,-g -W -D__NO_MATH_INLINES,;t t
 s,@PROFILE@,-W -pg -g -O2 -fno-inline-functions,;t t
 s,@LIBOBJS@,,;t t

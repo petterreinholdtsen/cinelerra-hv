@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 1997-2013 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -187,8 +187,8 @@ void MainMenu::create_objects()
 	settingsmenu->add_item(labels_follow_edits = new LabelsFollowEdits(mwindow));
 	settingsmenu->add_item(plugins_follow_edits = new PluginsFollowEdits(mwindow));
 	settingsmenu->add_item(keyframes_follow_edits = new KeyframesFollowEdits(mwindow));
-	settingsmenu->add_item(typeless_keyframes = new TypelessKeyframes(mwindow));
 	settingsmenu->add_item(cursor_on_frames = new CursorOnFrames(mwindow));
+	settingsmenu->add_item(typeless_keyframes = new TypelessKeyframes(mwindow));
 	settingsmenu->add_item(new SaveSettingsNow(mwindow));
 	settingsmenu->add_item(loop_playback = new LoopPlayback(mwindow));
 	settingsmenu->add_item(new SetBRenderStart(mwindow));
@@ -228,6 +228,8 @@ void MainMenu::create_objects()
 	windowmenu->add_item(show_cwindow = new ShowCWindow(mwindow));
 	windowmenu->add_item(show_gwindow = new ShowGWindow(mwindow));
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
+	windowmenu->add_item(split_x = new SplitX(mwindow));
+	windowmenu->add_item(split_y = new SplitY(mwindow));
 //	windowmenu->add_item(new TileWindows(mwindow));
 
 }
@@ -267,6 +269,8 @@ void MainMenu::update_toggles(int use_lock)
 	mode_automation->update_toggle();
 	mask_automation->update_toggle();
 	speed_automation->update_toggle();
+	split_x->set_checked(mwindow->gui->pane[TOP_RIGHT_PANE] != 0);
+	split_y->set_checked(mwindow->gui->pane[BOTTOM_LEFT_PANE] != 0);
 
 	if(use_lock) mwindow->gui->unlock_window();
 }
@@ -1342,6 +1346,32 @@ TileWindows::TileWindows(MWindow *mwindow)
 int TileWindows::handle_event()
 {
 	mwindow->tile_windows();
+	return 1;
+}
+
+SplitX::SplitX(MWindow *mwindow)
+ : BC_MenuItem(_("Split X pane"), "Ctrl+1", '1')
+{
+	this->mwindow = mwindow;
+	set_ctrl(1);
+	set_checked(mwindow->gui->pane[TOP_RIGHT_PANE] != 0);
+}
+int SplitX::handle_event()
+{
+	mwindow->split_x();
+	return 1;
+}
+
+SplitY::SplitY(MWindow *mwindow)
+ : BC_MenuItem(_("Split Y pane"), "Ctrl+2", '2')
+{
+	this->mwindow = mwindow;
+	set_ctrl(1);
+	set_checked(mwindow->gui->pane[BOTTOM_LEFT_PANE] != 0);
+}
+int SplitY::handle_event()
+{
+	mwindow->split_y();
 	return 1;
 }
 

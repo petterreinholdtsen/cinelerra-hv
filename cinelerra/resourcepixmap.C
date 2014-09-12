@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
 #include "resourcepixmap.h"
 #include "samples.h"
 #include "theme.h"
+#include "timelinepane.h"
 #include "track.h"
 #include "trackcanvas.h"
 #include "transportque.h"
@@ -56,16 +57,18 @@
 
 
 ResourcePixmap::ResourcePixmap(MWindow *mwindow, 
-	TrackCanvas *canvas, 
+	MWindowGUI *gui, 
 	Edit *edit, 
+	int pane_number,
 	int w, 
 	int h)
- : BC_Pixmap(canvas, w, h)
+ : BC_Pixmap(gui, w, h)
 {
 	reset();
 
 	this->mwindow = mwindow;
-	this->canvas = canvas;
+	this->gui = gui;
+	this->pane_number = pane_number;
 	startsource = edit->startsource;
 	data_type = edit->track->data_type;
 	if(edit->asset)
@@ -111,7 +114,8 @@ void ResourcePixmap::resize(int w, int h)
 }
 
 
-void ResourcePixmap::draw_data(Edit *edit,
+void ResourcePixmap::draw_data(TrackCanvas *canvas,
+	Edit *edit,
 	int64_t edit_x,
 	int64_t edit_w, 
 	int64_t pixmap_x, 
@@ -126,7 +130,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	int refresh_w = 0;
 
 // Ignore if called by resourcethread.
-	if(mode == 3) return;
+//	if(mode == IGNORE_THREAD) return;
 
 	int y = 0;
 	if(mwindow->edl->session->show_titles) y += mwindow->theme->get_image("title_bg_data")->get_h();
@@ -399,11 +403,15 @@ void ResourcePixmap::draw_data(Edit *edit,
 		switch(track->data_type)
 		{
 			case TRACK_AUDIO:
-				draw_audio_resource(edit, refresh_x, refresh_w);
+				draw_audio_resource(canvas,
+					edit, 
+					refresh_x, 
+					refresh_w);
 				break;
 
 			case TRACK_VIDEO:
-				draw_video_resource(edit, 
+				draw_video_resource(canvas,
+					edit, 
 					edit_x, 
 					edit_w, 
 					pixmap_x,
@@ -418,11 +426,17 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Draw title
 SET_TRACE
 	if(mwindow->edl->session->show_titles)
-		draw_title(edit, edit_x, edit_w, pixmap_x, pixmap_w);
+		draw_title(canvas, 
+			edit, 
+			edit_x, 
+			edit_w, 
+			pixmap_x, 
+			pixmap_w);
 SET_TRACE
 }
 
-void ResourcePixmap::draw_title(Edit *edit,
+void ResourcePixmap::draw_title(TrackCanvas *canvas,
+	Edit *edit,
 	int64_t edit_x, 
 	int64_t edit_w, 
 	int64_t pixmap_x, 
@@ -497,7 +511,10 @@ void ResourcePixmap::draw_title(Edit *edit,
 
 
 // Need to draw one more x
-void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
+void ResourcePixmap::draw_audio_resource(TrackCanvas *canvas,
+	Edit *edit, 
+	int x, 
+	int w)
 {
 	if(w <= 0) return;
 	if(!edit->asset && !edit->nested_edl) return;
@@ -526,7 +543,7 @@ SET_TRACE
 			break;
 // Disabled.  All files have an index.
 //		case INDEX_TOOSMALL:
-//			draw_audio_source(edit, x, w);
+//			draw_audio_source(canvas, edit, x, w);
 //			break;
 		case INDEX_BUILDING:
 		case INDEX_READY:
@@ -540,12 +557,16 @@ SET_TRACE
 				{
 //printf("ResourcePixmap::draw_audio_resource %d\n", __LINE__);
 
-					draw_audio_source(edit, x, w);
+					draw_audio_source(canvas, edit, x, w);
 				}
 				else
 				{
 //printf("ResourcePixmap::draw_audio_resource %d\n", __LINE__);
-					indexfile.draw_index(this, edit, x, w);
+					indexfile.draw_index(canvas, 
+						this, 
+						edit, 
+						x, 
+						w);
 SET_TRACE
 				}
 
@@ -574,7 +595,10 @@ SET_TRACE
 
 
 
-void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
+void ResourcePixmap::draw_audio_source(TrackCanvas *canvas,
+	Edit *edit, 
+	int x, 
+	int w)
 {
 	w++;
 	Indexable *indexable = edit->get_source();
@@ -767,7 +791,8 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			{
 //printf("ResourcePixmap::draw_audio_source %d\n", __LINE__);
 				first_pixel = 1;
-				canvas->resource_thread->add_wave(this,
+				gui->resource_thread->add_wave(this,
+					canvas->pane->number,
 					indexable,
 					x,
 					edit->channel,
@@ -783,7 +808,10 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 
 
-void ResourcePixmap::draw_wave(int x, double high, double low)
+void ResourcePixmap::draw_wave(TrackCanvas *canvas,
+	int x, 
+	double high, 
+	double low)
 {
 	int top_pixel = 0;
 	if(mwindow->edl->session->show_titles) 
@@ -823,7 +851,8 @@ void ResourcePixmap::draw_wave(int x, double high, double low)
 
 
 
-void ResourcePixmap::draw_video_resource(Edit *edit, 
+void ResourcePixmap::draw_video_resource(TrackCanvas *canvas,
+	Edit *edit, 
 	int64_t edit_x, 
 	int64_t edit_w, 
 	int64_t pixmap_x,
@@ -832,6 +861,9 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int refresh_w,
 	int mode)
 {
+//PRINT_TRACE
+//BC_Signals::dump_stack();
+
 // pixels spanned by a picon
 	int64_t picon_w = Units::round(edit->picon_w());
 	int64_t picon_h = edit->picon_h();
@@ -900,9 +932,14 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		else
 		{
 // Set picon thread to draw in background
-			if(mode != 3)
+			if(mode != IGNORE_THREAD)
 			{
-				canvas->resource_thread->add_picon(this, 
+// printf("ResourcePixmap::draw_video_resource %d %d %lld\n", 
+// __LINE__, 
+// mwindow->frame_cache->total(),
+// source_frame);
+				gui->resource_thread->add_picon(this, 
+					canvas->pane->number,
 					x, 
 					y, 
 					picon_w,

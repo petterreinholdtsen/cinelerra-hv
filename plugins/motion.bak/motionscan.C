@@ -30,8 +30,6 @@
 
 // The module which does the actual scanning
 
-// Test rotated frames in every pass
-//#define ROTATE_EVERY_PASS
 
 
 MotionScanStep::MotionScanStep()

@@ -57,6 +57,7 @@ public:
 	char* get_text();
 	void set_icon(BC_Pixmap *icon);
 	void set_icon_vframe(VFrame *icon_vframe);
+	BC_Pixmap* get_icon();
 	int get_icon_x();
 	int get_icon_y();
 	int get_text_x();
@@ -111,6 +112,7 @@ private:
 
 // Array of one list of pointers for each column for a sublist.
 // It's an array so we can pass the sublist directly to another listbox.
+// Sublists were used on an obsolete DVD robot interface & never again.
 	ArrayList<BC_ListBoxItem*> *sublist;
 // Columns in sublist
 	int columns;

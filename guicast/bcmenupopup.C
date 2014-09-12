@@ -49,11 +49,12 @@ BC_MenuPopup::BC_MenuPopup()
 
 BC_MenuPopup::~BC_MenuPopup()
 {
-	while(menu_items.total)
+	while(menu_items.size())
 	{
 // Each menuitem recursively removes itself from the arraylist
-		delete menu_items.values[0];
+		delete menu_items.get(0);
 	}
+
 	delete window_bg;
 	delete item_bg[0];
 	delete item_bg[1];
@@ -102,14 +103,19 @@ int BC_MenuPopup::add_item(BC_MenuItem *item)
 	return 0;
 }
 
-int BC_MenuPopup::remove_item(BC_MenuItem *item)
+int BC_MenuPopup::remove_item(BC_MenuItem *item, int recursive)
 {
-	if(!item)
+	if(!item && menu_items.size() > 0)
 	{
-		item = menu_items.values[menu_items.total - 1];
-		delete item;
+		item = menu_items.get(menu_items.size() - 1);
 	}
-	if(item) menu_items.remove(item);
+
+	if(item)
+	{
+		menu_items.remove(item);
+		item->menu_popup = 0;
+		if(!recursive) delete item;
+	}
 	return 0;
 }
 

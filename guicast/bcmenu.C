@@ -72,7 +72,7 @@ int BC_Menu::add_item(BC_MenuItem* menuitem)
 
 int BC_Menu::remove_item(BC_MenuItem *item)
 {
-	menu_popup->remove_item(item);
+	menu_popup->remove_item(item, 0);
 	return 0;
 }
 

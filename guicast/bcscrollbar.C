@@ -487,6 +487,7 @@ int BC_ScrollBar::button_press_event()
 {
 	if(top_level->event_win == win)
 	{
+//printf("BC_ScrollBar::button_press_event %d %p\n", __LINE__, bound_to);
 		if(!bound_to)
 		{
 			top_level->deactivate();

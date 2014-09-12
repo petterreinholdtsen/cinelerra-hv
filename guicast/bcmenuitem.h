@@ -50,6 +50,7 @@ public:
 	void set_hotkey_text(const char *text);
 	int set_shift(int value = 1);
 	int set_alt(int value = 1);
+	void set_ctrl(int value);
 
 	int deactivate_submenus(BC_MenuPopup *exclude);
 	int activate_submenu();
@@ -86,6 +87,7 @@ private:
 	int shift_hotkey;
 // Hotkey requires alt
 	int alt_hotkey;
+	int ctrl_hotkey;
 // Character code of hotkey
 	int hotkey;
 // icon or 0 if there is no icon

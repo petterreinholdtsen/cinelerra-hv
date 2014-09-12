@@ -47,8 +47,15 @@ LocalSession::LocalSession(EDL *edl)
 	zoom_sample = 0;
 	zoom_y = 0;
 	zoom_track = 0;
-	view_start = 0;
-	track_start = 0;
+	x_pane = -1;
+	y_pane = -1;
+	
+	for(int i = 0; i < TOTAL_PANES; i++)
+	{
+		view_start[i] = 0;
+		track_start[i] = 0;
+	}
+	
 	automation_min = -10;
 	automation_max = 10;
 	floatauto_type = Auto::BEZIER;
@@ -71,8 +78,15 @@ void LocalSession::copy_from(LocalSession *that)
 	out_point = that->out_point;
 	selectionend = that->selectionend;
 	selectionstart = that->selectionstart;
-	track_start = that->track_start;
-	view_start = that->view_start;
+	x_pane = that->x_pane;
+	y_pane = that->y_pane;
+
+	for(int i = 0; i < TOTAL_PANES; i++)
+	{
+		view_start[i] = that->view_start[i];
+		track_start[i] = that->track_start[i];
+	}
+	
 	zoom_sample = that->zoom_sample;
 	zoom_y = that->zoom_y;
 	zoom_track = that->zoom_track;
@@ -100,21 +114,23 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("CLIP_TITLE", clip_title);
 	file->tag.set_property("CLIP_NOTES", clip_notes);
 	file->tag.set_property("FOLDER", folder);
-	file->tag.set_property("TRACK_START", track_start);
-	file->tag.set_property("VIEW_START", view_start);
+	file->tag.set_property("X_PANE", x_pane);
+	file->tag.set_property("Y_PANE", y_pane);
+
+	char string[BCTEXTLEN];
+	for(int i = 0; i < TOTAL_PANES; i++)
+	{
+		sprintf(string, "TRACK_START%d", i);
+		file->tag.set_property(string, track_start[i]);
+		sprintf(string, "VIEW_START%d", i);
+		file->tag.set_property(string, view_start[i]);
+	}
+
 	file->tag.set_property("ZOOM_SAMPLE", zoom_sample);
 //printf("EDLSession::save_session 1\n");
 	file->tag.set_property("ZOOMY", zoom_y);
 //printf("EDLSession::save_session 1 %d\n", zoom_track);
 	file->tag.set_property("ZOOM_TRACK", zoom_track);
-	
-//	double preview_start = this->preview_start - start;
-//	if(preview_start < 0) preview_start = 0;
-//	double preview_end = this->preview_end - start;
-//	if(preview_end < 0) preview_end = 0;
-	
-//	file->tag.set_property("PREVIEW_START", preview_start);
-//	file->tag.set_property("PREVIEW_END", preview_end);
 	file->tag.set_property("RED", red);
 	file->tag.set_property("GREEN", green);
 	file->tag.set_property("BLUE", blue);
@@ -131,8 +147,6 @@ void LocalSession::synchronize_params(LocalSession *that)
 	loop_playback = that->loop_playback;
 	loop_start = that->loop_start;
 	loop_end = that->loop_end;
-//	preview_start = that->preview_start;
-//	preview_end = that->preview_end;
 	red = that->red;
 	green = that->green;
 	blue = that->blue;
@@ -154,13 +168,22 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		loop_end = file->tag.get_property("LOOP_END", (double)0);
 		selectionstart = file->tag.get_property("SELECTION_START", (double)0);
 		selectionend = file->tag.get_property("SELECTION_END", (double)0);
-		track_start = file->tag.get_property("TRACK_START", track_start);
-		view_start = file->tag.get_property("VIEW_START", view_start);
+		x_pane = file->tag.get_property("X_PANE", -1);
+		y_pane = file->tag.get_property("Y_PANE", -1);
+
+
+		char string[BCTEXTLEN];
+		for(int i = 0; i < TOTAL_PANES; i++)
+		{
+			sprintf(string, "TRACK_START%d", i);
+			track_start[i] = file->tag.get_property(string, track_start[i]);
+			sprintf(string, "VIEW_START%d", i);
+			view_start[i] = file->tag.get_property(string, view_start[i]);
+		}
+
 		zoom_sample = file->tag.get_property("ZOOM_SAMPLE", zoom_sample);
 		zoom_y = file->tag.get_property("ZOOMY", zoom_y);
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
-//		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
-//		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
 		red = file->tag.get_property("RED", red);
 		green = file->tag.get_property("GREEN", green);
 		blue = file->tag.get_property("BLUE", blue);
@@ -210,6 +233,8 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	automation_min = defaults->get("AUTOMATION_MIN", automation_min);
 	automation_max = defaults->get("AUTOMATION_MAX", automation_max);
 	floatauto_type = defaults->get("FLOATAUTO_TYPE", floatauto_type);
+	x_pane = defaults->get("X_PANE", x_pane);
+	y_pane = defaults->get("Y_PANE", y_pane);
 	return 0;
 }
 
@@ -220,8 +245,8 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("LOOP_END", loop_end);
 	defaults->update("SELECTIONSTART", selectionstart);
 	defaults->update("SELECTIONEND", selectionend);
-	defaults->update("TRACK_START", track_start);
-	defaults->update("VIEW_START", view_start);
+//	defaults->update("TRACK_START", track_start);
+//	defaults->update("VIEW_START", view_start);
 	defaults->update("ZOOM_SAMPLE", zoom_sample);
 	defaults->update("ZOOMY", zoom_y);
 	defaults->update("ZOOM_TRACK", zoom_track);
@@ -231,6 +256,8 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("AUTOMATION_MIN", automation_min);
 	defaults->update("AUTOMATION_MAX", automation_max);
 	defaults->update("FLOATAUTO_TYPE", floatauto_type);
+	defaults->update("X_PANE", x_pane);
+	defaults->update("Y_PANE", y_pane);
 	return 0;
 }
 

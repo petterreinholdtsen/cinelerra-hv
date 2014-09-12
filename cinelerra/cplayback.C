@@ -47,7 +47,7 @@ int CPlayback::create_render_engine()
 void CPlayback::init_cursor()
 {
 	mwindow->gui->lock_window("CPlayback::init_cursor");
-	mwindow->gui->canvas->deactivate();
+	mwindow->gui->deactivate_timeline();
 	mwindow->gui->unlock_window();
 	cwindow->playback_cursor->start_playback(tracking_position);
 }

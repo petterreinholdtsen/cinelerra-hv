@@ -1018,6 +1018,13 @@ int EDL::dump()
 		local_session->get_selectionend(1),
 		local_session->loop_start,
 		local_session->loop_end);
+	for(int i = 0; i < TOTAL_PANES; i++)
+	{
+		printf("  pane %d view_start=%lld track_start=%lld\n", 
+			i,
+			local_session->view_start[i],
+			local_session->track_start[i]);
+	}
 
 	if(!parent_edl)
 	{

@@ -21,7 +21,7 @@
 
 #include "bcwindowbase.inc"
 #include "units.h"
-
+#include "language.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -147,6 +147,7 @@ int Freq::fromfreq(int index)
 int Freq::tofreq(int index)
 { 
 	init_table();
+	if(index >= TOTALFREQS) index = TOTALFREQS - 1;
 	int freq = freqtable[index]; 
 	return freq; 
 }
@@ -290,7 +291,7 @@ char* Units::totext(char *text,
 	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate, frames_per_foot);
 }    
 
-int64_t Units::fromtext(char *text, 
+int64_t Units::fromtext(const char *text, 
 			int samplerate, 
 			int time_format, 
 			float frame_rate,
@@ -411,7 +412,7 @@ int64_t Units::fromtext(char *text,
 	return 0;
 }
 
-double Units::text_to_seconds(char *text, 
+double Units::text_to_seconds(const char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
@@ -456,7 +457,7 @@ double Units::fix_framerate(double value)
 	return value;
 }
 
-double Units::atoframerate(char *text)
+double Units::atoframerate(const char *text)
 {
 	double result = atof(text);
 	return fix_framerate(result);
@@ -547,21 +548,34 @@ int64_t Units::to_int64(double result)
 	return (int64_t)(result < 0 ? (result - 0.005) : (result + 0.005));
 }
 
-char* Units::print_time_format(int time_format, char *string)
+const char* Units::print_time_format(int time_format, char *string)
 {
 	switch(time_format)
 	{
-		case 0: sprintf(string, "Hours:Minutes:Seconds.xxx"); break;
-		case 1: sprintf(string, "Hours:Minutes:Seconds:Frames"); break;
-		case 2: sprintf(string, "Samples"); break;
-		case 3: sprintf(string, "Hex Samples"); break;
-		case 4: sprintf(string, "Frames"); break;
-		case 5: sprintf(string, "Feet-frames"); break;
-		case 8: sprintf(string, "Seconds"); break;
+		case TIME_HMS: sprintf(string, TIME_HMS_TEXT); break;
+		case TIME_HMSF: sprintf(string, TIME_HMSF_TEXT); break;
+		case TIME_SAMPLES: sprintf(string, TIME_SAMPLES_TEXT); break;
+		case TIME_SAMPLES_HEX: sprintf(string, TIME_SAMPLES_HEX_TEXT); break;
+		case TIME_FRAMES: sprintf(string, TIME_FRAMES_TEXT); break;
+		case TIME_FEET_FRAMES: sprintf(string, TIME_FEET_FRAMES_TEXT); break;
+		case TIME_SECONDS: sprintf(string, TIME_SECONDS_TEXT); break;
 	}
 	
 	return string;
 }
+
+int Units::text_to_format(const char *string)
+{
+	if(!strcmp(string, TIME_HMS_TEXT)) return TIME_HMS;
+	if(!strcmp(string, TIME_HMSF_TEXT)) return TIME_HMSF;
+	if(!strcmp(string, TIME_SAMPLES_TEXT)) return TIME_SAMPLES;
+	if(!strcmp(string, TIME_SAMPLES_HEX_TEXT)) return TIME_SAMPLES_HEX;
+	if(!strcmp(string, TIME_FRAMES_TEXT)) return TIME_FRAMES;
+	if(!strcmp(string, TIME_FEET_FRAMES_TEXT)) return TIME_FEET_FRAMES;
+	if(!strcmp(string, TIME_SECONDS_TEXT)) return TIME_SECONDS;
+	return TIME_HMS;
+}
+
 
 #undef BYTE_ORDER
 #define BYTE_ORDER ((*(u_int32_t*)"a   ") & 0x00000001)

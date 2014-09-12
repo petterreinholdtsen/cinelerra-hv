@@ -169,7 +169,7 @@ return 0;
 }
 
 
-char* FileAVI::vcodec_to_fourcc(char *input, char *output)
+char* FileAVI::vcodec_to_fourcc(const char *input, char *output)
 {
 #ifdef USE_AVIFILE
 	initialize_avifile();
@@ -187,12 +187,10 @@ char* FileAVI::vcodec_to_fourcc(char *input, char *output)
 			}
 		}
 	}
+#endif
 	
 	output[0] = 0;
 	return output;
-#else
-	return input;
-#endif
 }
 
 char* FileAVI::fourcc_to_vcodec(char *input, char *output)
@@ -223,7 +221,7 @@ char* FileAVI::fourcc_to_vcodec(char *input, char *output)
 }
 
 
-char* FileAVI::acodec_to_fourcc(char *input, char *output)
+char* FileAVI::acodec_to_fourcc(const char *input, char *output)
 {
 #ifdef USE_AVIFILE
 // Construct codec item list
@@ -242,12 +240,10 @@ char* FileAVI::acodec_to_fourcc(char *input, char *output)
 			}
 		}
 	}
+#endif
 
 	output[0] = 0;
 	return output;
-#else
-	return input;
-#endif
 }
 
 char* FileAVI::fourcc_to_acodec(char *input, char *output)
@@ -856,7 +852,8 @@ AVIACodecList::~AVIACodecList()
 
 int AVIACodecList::handle_event()
 {
-	strcpy(gui->asset->acodec, FileAVI::acodec_to_fourcc(get_text(), gui->string));
+	strcpy(gui->asset->acodec, 
+		FileAVI::acodec_to_fourcc(get_text(), gui->string));
 	return 1;
 }
 
@@ -1062,7 +1059,7 @@ const char* AVIConfigVideo::get_current_attribute_value()
 		return "";
 }
 
-void AVIConfigVideo::set_current_attribute(char *text)
+void AVIConfigVideo::set_current_attribute(const char *text)
 {
 #ifdef USE_AVIFILE
 	int number = attributes->get_selection_number(0, 0);

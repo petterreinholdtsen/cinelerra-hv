@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "labels.h"
 #include "localsession.h"
 #include "maincursor.h"
+#include "mainmenu.h"
 #include "mainsession.h"
 #include "mtimebar.h"
 #include "mwindow.h"
@@ -36,7 +37,9 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "plugin.h"
+#include "resourcethread.h"
 #include "samplescroll.h"
+#include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -83,39 +86,26 @@ int MWindow::zoom_sample(int64_t zoom_sample)
 	CLIP(zoom_sample, 1, 0x100000);
 	edl->local_session->zoom_sample = zoom_sample;
 	find_cursor();
-	gui->get_scrollbars(0);
 
-	if(!gui->samplescroll) edl->local_session->view_start = 0;
-	samplemovement(edl->local_session->view_start);
-	gui->zoombar->sample_zoom->update(zoom_sample);
+	TimelinePane *pane = gui->get_focused_pane();
+	samplemovement(edl->local_session->view_start[pane->number], pane->number);
 	return 0;
 }
 
 void MWindow::find_cursor()
 {
-// 	if((edl->local_session->selectionend > 
-// 		(double)gui->canvas->get_w() * 
-// 		edl->local_session->zoom_sample / 
-// 		edl->session->sample_rate) ||
-// 		(edl->local_session->selectionstart > 
-// 		(double)gui->canvas->get_w() * 
-// 		edl->local_session->zoom_sample / 
-// 		edl->session->sample_rate))
-// 	{
-		edl->local_session->view_start = 
-			Units::round((edl->local_session->get_selectionend(1) + 
-			edl->local_session->get_selectionstart(1)) / 
-			2 *
-			edl->session->sample_rate /
-			edl->local_session->zoom_sample - 
-			(double)gui->canvas->get_w() / 
-			2);
-// 	}
-// 	else
-// 		edl->local_session->view_start = 0;
+	TimelinePane *pane = gui->get_focused_pane();
+	edl->local_session->view_start[pane->number] = 
+		Units::round((edl->local_session->get_selectionend(1) + 
+		edl->local_session->get_selectionstart(1)) / 
+		2 *
+		edl->session->sample_rate /
+		edl->local_session->zoom_sample - 
+		(double)pane->canvas->get_w() / 
+		2);
 
-//printf("MWindow::find_cursor %f\n", edl->local_session->view_start);
-	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
+	if(edl->local_session->view_start[pane->number] < 0) 
+		edl->local_session->view_start[pane->number] = 0;
 }
 
 
@@ -126,8 +116,9 @@ void MWindow::fit_selection()
 	{
 		double total_samples = edl->tracks->total_length() * 
 			edl->session->sample_rate;
+		TimelinePane *pane = gui->get_focused_pane();
 		for(edl->local_session->zoom_sample = 1; 
-			gui->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
+			pane->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
 			edl->local_session->zoom_sample *= 2)
 			;
 	}
@@ -136,8 +127,9 @@ void MWindow::fit_selection()
 		double total_samples = (edl->local_session->get_selectionend(1) - 
 			edl->local_session->get_selectionstart(1)) * 
 			edl->session->sample_rate;
+		TimelinePane *pane = gui->get_focused_pane();
 		for(edl->local_session->zoom_sample = 1; 
-			gui->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
+			pane->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
 			edl->local_session->zoom_sample *= 2)
 			;
 	}
@@ -189,8 +181,7 @@ void MWindow::fit_autos()
 	gui->zoombar->update();
 
 // Draw
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 }
 
 
@@ -204,8 +195,7 @@ void MWindow::expand_autos()
 	edl->local_session->automation_min = center - range;
 	edl->local_session->automation_max = center + range;
 	gui->zoombar->update_autozoom();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 }
 
 void MWindow::shrink_autos()
@@ -218,8 +208,7 @@ void MWindow::shrink_autos()
 	edl->local_session->automation_min = center - new_range;
 	edl->local_session->automation_max = center + new_range;
 	gui->zoombar->update_autozoom();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 }
 
 
@@ -228,17 +217,16 @@ void MWindow::zoom_autos(float min, float max)
 	edl->local_session->automation_min = min;
 	edl->local_session->automation_max = max;
 	gui->zoombar->update_autozoom();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 }
 
 
 void MWindow::zoom_amp(int64_t zoom_amp)
 {
 	edl->local_session->zoom_y = zoom_amp;
-	gui->canvas->draw(0, 0);
-	gui->canvas->flash();
-	gui->patchbay->update();
+	gui->draw_canvas(0, 0);
+	gui->flash_canvas(0);
+	gui->update_patchbay();
 	gui->flush();
 }
 
@@ -255,57 +243,77 @@ void MWindow::zoom_track(int64_t zoom_track)
 	edl->local_session->zoom_track = zoom_track;
 
 // shift row position
-	edl->local_session->track_start *= scale;
-	trackmovement(edl->local_session->track_start);
+	for(int i = 0; i < TOTAL_PANES; i++)
+	{
+		edl->local_session->track_start[i] *= scale;
+	}
+	edl->tracks->update_y_pixels(theme);
+	gui->draw_trackmovement();
 //printf("MWindow::zoom_track %d %d\n", edl->local_session->zoom_y, edl->local_session->zoom_track);
 }
 
-void MWindow::trackmovement(int track_start)
+void MWindow::trackmovement(int offset, int pane_number)
 {
-	edl->local_session->track_start = track_start;
-	if(edl->local_session->track_start < 0) edl->local_session->track_start = 0;
+	edl->local_session->track_start[pane_number] += offset;
+	if(edl->local_session->track_start[pane_number] < 0) 
+		edl->local_session->track_start[pane_number] = 0;
+
+	if(pane_number == TOP_RIGHT_PANE ||
+		pane_number == TOP_LEFT_PANE)
+	{
+		edl->local_session->track_start[TOP_LEFT_PANE] = 
+			edl->local_session->track_start[TOP_RIGHT_PANE] = 
+			edl->local_session->track_start[pane_number];
+	}
+	else
+	if(pane_number == BOTTOM_RIGHT_PANE ||
+		pane_number == BOTTOM_LEFT_PANE)
+	{
+		edl->local_session->track_start[BOTTOM_LEFT_PANE] = 
+			edl->local_session->track_start[BOTTOM_RIGHT_PANE] = 
+			edl->local_session->track_start[pane_number];
+	}
+
+
 	edl->tracks->update_y_pixels(theme);
-	gui->get_scrollbars(0);
-	gui->canvas->draw(0, 0);
-	gui->patchbay->update();
-	gui->canvas->flash(0);
-	gui->flush();
+	gui->draw_trackmovement();
 }
 
 void MWindow::move_up(int64_t distance)
 {
-	if(!gui->trackscroll) return;
+	TimelinePane *pane = gui->get_focused_pane();
 	if(distance == 0) distance = edl->local_session->zoom_track;
-	edl->local_session->track_start -= distance;
-	trackmovement(edl->local_session->track_start);
+
+	trackmovement(-distance, pane->number);
 }
 
 void MWindow::move_down(int64_t distance)
 {
-	if(!gui->trackscroll) return;
+	TimelinePane *pane = gui->get_focused_pane();
 	if(distance == 0) distance = edl->local_session->zoom_track;
-	edl->local_session->track_start += distance;
-	trackmovement(edl->local_session->track_start);
+
+	trackmovement(distance, pane->number);
 }
 
 int MWindow::goto_end()
 {
-	int64_t old_view_start = edl->local_session->view_start;
-
-	if(edl->tracks->total_length() > (double)gui->canvas->get_w() * 
+	TimelinePane *pane = gui->get_focused_pane();
+	int64_t old_view_start = edl->local_session->view_start[pane->number];
+	
+	if(edl->tracks->total_length() > (double)pane->canvas->get_w() * 
 		edl->local_session->zoom_sample / 
 		edl->session->sample_rate)
 	{
-		edl->local_session->view_start = 
+		edl->local_session->view_start[pane->number] = 
 			Units::round(edl->tracks->total_length() * 
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
-				gui->canvas->get_w() / 
+				pane->canvas->get_w() / 
 				2);
 	}
 	else
 	{
-		edl->local_session->view_start = 0;
+		edl->local_session->view_start[pane->number] = 0;
 	}
 
 	if(gui->shift_down())
@@ -318,24 +326,29 @@ int MWindow::goto_end()
 		edl->local_session->set_selectionend(edl->tracks->total_length());
 	}
 
-	if(edl->local_session->view_start != old_view_start) 
-		samplemovement(edl->local_session->view_start);
+	if(edl->local_session->view_start[pane->number] != old_view_start)
+	{
+		samplemovement(edl->local_session->view_start[pane->number], pane->number);
+		gui->draw_samplemovement();
+	}
 
 	update_plugin_guis();
-	gui->patchbay->update();
-	gui->cursor->update();
-	gui->canvas->activate();
+	
+	gui->update_patchbay();
+	gui->update_cursor();
+	gui->activate_timeline();
 	gui->zoombar->update();
-	gui->timebar->update(1);
+	gui->update_timebar(1);
 	cwindow->update(1, 0, 0, 0, 1);
 	return 0;
 }
 
 int MWindow::goto_start()
 {
-	int64_t old_view_start = edl->local_session->view_start;
+	TimelinePane *pane = gui->get_focused_pane();
+	int64_t old_view_start = edl->local_session->view_start[pane->number];
 
-	edl->local_session->view_start = 0;
+	edl->local_session->view_start[pane->number] = 0;
 	if(gui->shift_down())
 	{
 		edl->local_session->set_selectionstart(0);
@@ -346,51 +359,69 @@ int MWindow::goto_start()
 		edl->local_session->set_selectionend(0);
 	}
 
-	if(edl->local_session->view_start != old_view_start)
-		samplemovement(edl->local_session->view_start);
+	if(edl->local_session->view_start[pane->number] != old_view_start)
+	{
+		samplemovement(edl->local_session->view_start[pane->number], pane->number);
+		gui->draw_samplemovement();
+	}
 
 	update_plugin_guis();
-	gui->patchbay->update();
-	gui->cursor->update();
-	gui->canvas->activate();
+	gui->update_patchbay();
+	gui->update_cursor();
+	gui->activate_timeline();
 	gui->zoombar->update();
-	gui->timebar->update(1);
+	gui->update_timebar(1);
 	cwindow->update(1, 0, 0, 0, 1);
 	return 0;
 }
 
-int MWindow::samplemovement(int64_t view_start)
-{
-	edl->local_session->view_start = view_start;
-	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
-	gui->canvas->draw();
-	gui->cursor->show();
-	gui->canvas->flash(0);
-	gui->timebar->update(0);
-	gui->zoombar->update();
 
-	if(gui->samplescroll) gui->samplescroll->set_position(1);
+int MWindow::samplemovement(int64_t view_start, int pane_number)
+{
+	edl->local_session->view_start[pane_number] = view_start;
+	if(edl->local_session->view_start[pane_number] < 0) 
+		edl->local_session->view_start[pane_number] = 0;
+
+	if(pane_number == TOP_LEFT_PANE ||
+		pane_number == BOTTOM_LEFT_PANE)
+	{
+		edl->local_session->view_start[TOP_LEFT_PANE] =
+			edl->local_session->view_start[BOTTOM_LEFT_PANE] =
+			edl->local_session->view_start[pane_number];
+	}
+	else
+	{
+		edl->local_session->view_start[TOP_RIGHT_PANE] =
+			edl->local_session->view_start[BOTTOM_RIGHT_PANE] =
+			edl->local_session->view_start[pane_number];
+	}
+	
+	gui->draw_samplemovement();
+
 	return 0;
 }
 
 int MWindow::move_left(int64_t distance)
 {
+	TimelinePane *pane = gui->get_focused_pane();
 	if(!distance) 
-		distance = gui->canvas->get_w() / 
+		distance = pane->canvas->get_w() / 
 			10;
-	edl->local_session->view_start -= distance;
-	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
-	samplemovement(edl->local_session->view_start);
+	edl->local_session->view_start[pane->number] -= distance;
+	samplemovement(edl->local_session->view_start[pane->number],
+		pane->number);
 	return 0;
 }
 
 int MWindow::move_right(int64_t distance)
 {
+	TimelinePane *pane = gui->get_focused_pane();
 	if(!distance) 
-		distance = gui->canvas->get_w() / 
+		distance = pane->canvas->get_w() / 
 			10;
-	edl->local_session->view_start += distance;
-	samplemovement(edl->local_session->view_start);
+	edl->local_session->view_start[pane->number] += distance;
+	samplemovement(edl->local_session->view_start[pane->number],
+		pane->number);
 	return 0;
 }
 
@@ -399,7 +430,7 @@ void MWindow::select_all()
 	edl->local_session->set_selectionstart(0);
 	edl->local_session->set_selectionend(edl->tracks->total_length());
 	gui->update(0, 1, 1, 1, 0, 1, 0);
-	gui->canvas->activate();
+	gui->activate_timeline();
 	cwindow->update(1, 0, 0, 0, 1);
 	update_plugin_guis();
 }
@@ -439,31 +470,32 @@ int MWindow::next_label(int shift_down)
 				edl->local_session->get_selectionend(1));
 
 		update_plugin_guis();
+		TimelinePane *pane = gui->get_focused_pane();
 		if(edl->local_session->get_selectionend(1) >= 
-			(double)edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate + 
-			gui->canvas->time_visible() ||
-			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
-			edl->local_session->zoom_sample /
-			edl->session->sample_rate)
+			(double)edl->local_session->view_start[pane->number] *
+				edl->local_session->zoom_sample /
+				edl->session->sample_rate + 
+				pane->canvas->time_visible() ||
+			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start[pane->number] *
+				edl->local_session->zoom_sample /
+				edl->session->sample_rate)
 		{
 			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
-				gui->canvas->get_w() / 
-				2));
+				pane->canvas->get_w() / 
+				2),
+				pane->number);
 			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 		{
-			gui->patchbay->update();
-			gui->timebar->update(0);
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->update_patchbay();
+			gui->update_timebar(0);
+			gui->hide_cursor(0);
+			gui->draw_cursor(0);
 			gui->zoombar->update();
-			gui->canvas->flash(0);
-			gui->flush();
+			gui->flash_canvas(1);
 			cwindow->update(1, 0, 0, 0, 1);
 		}
 	}
@@ -509,32 +541,33 @@ int MWindow::prev_label(int shift_down)
 
 		update_plugin_guis();
 // Scroll the display
-		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
+		TimelinePane *pane = gui->get_focused_pane();
+		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start[pane->number] *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate + 
-			gui->canvas->time_visible() 
+			pane->canvas->time_visible() 
 		||
-			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
+			edl->local_session->get_selectionstart(1) < edl->local_session->view_start[pane->number] *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
 			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
-				gui->canvas->get_w() / 
-				2));
+				pane->canvas->get_w() / 
+				2),
+				pane->number);
 			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 // Don't scroll the display
 		{
-			gui->patchbay->update();
-			gui->timebar->update(0);
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->update_patchbay();
+			gui->update_timebar(0);
+			gui->hide_cursor(0);
+			gui->draw_cursor(0);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->flash_canvas(1);
 			cwindow->update(1, 0, 0, 0, 1);
 		}
 	}
@@ -580,31 +613,32 @@ int MWindow::next_edit_handle(int shift_down)
 				edl->local_session->get_selectionend(1));
 
 		update_plugin_guis();
+		TimelinePane *pane = gui->get_focused_pane();
 		if(edl->local_session->get_selectionend(1) >= 
-			(double)edl->local_session->view_start *
+			(double)edl->local_session->view_start[pane->number] *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate + 
-			gui->canvas->time_visible() ||
-			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
+			pane->canvas->time_visible() ||
+			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start[pane->number] *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
 			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
-				gui->canvas->get_w() / 
-				2));
+				pane->canvas->get_w() / 
+				2),
+				pane->number);
 			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 		{
-			gui->patchbay->update();
-			gui->timebar->update(0);
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->update_patchbay();
+			gui->update_timebar(0);
+			gui->hide_cursor(0);
+			gui->draw_cursor(0);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->flash_canvas(1);
 			cwindow->update(1, 0, 0, 0, 1);
 		}
 	}
@@ -645,32 +679,33 @@ int MWindow::prev_edit_handle(int shift_down)
 
 		update_plugin_guis();
 // Scroll the display
-		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
+		TimelinePane *pane = gui->get_focused_pane();
+		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start[pane->number] *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate + 
-			gui->canvas->time_visible() 
+			pane->canvas->time_visible() 
 		||
-			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
+			edl->local_session->get_selectionstart(1) < edl->local_session->view_start[pane->number] *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
 			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
-				gui->canvas->get_w() / 
-				2));
+				pane->canvas->get_w() / 
+				2),
+				pane->number);
 			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 // Don't scroll the display
 		{
-			gui->patchbay->update();
-			gui->timebar->update(0);
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
+			gui->update_patchbay();
+			gui->update_timebar(0);
+			gui->hide_cursor(0);
+			gui->draw_cursor(0);
 			gui->zoombar->update();
-			gui->canvas->flash();
-			gui->flush();
+			gui->flash_canvas(1);
 			cwindow->update(1, 0, 0, 0, 1);
 		}
 	}
@@ -723,4 +758,52 @@ int MWindow::zoom_in_t()
 	gui->zoombar->update();
 	return 0;
 }
+
+void MWindow::split_x()
+{
+	gui->resource_thread->stop_draw(1);
+
+	if(gui->pane[TOP_RIGHT_PANE])
+	{
+		gui->delete_x_pane(theme->mcanvas_w);
+		edl->local_session->x_pane = -1;
+	}
+	else
+	{
+		gui->create_x_pane(theme->mcanvas_w / 2);
+		edl->local_session->x_pane = theme->mcanvas_w / 2;
+	}
+
+	gui->mainmenu->update_toggles(0);
+	gui->update_pane_dividers();
+	gui->update_cursor();
+// required to get new widgets to appear
+	gui->show_window();
+	
+	gui->resource_thread->start_draw();
+}
+
+void MWindow::split_y()
+{
+	gui->resource_thread->stop_draw(1);
+	if(gui->pane[BOTTOM_LEFT_PANE])
+	{
+		gui->delete_y_pane(theme->mcanvas_h);
+		edl->local_session->y_pane = -1;
+	}
+	else
+	{
+		gui->create_y_pane(theme->mcanvas_h / 2);
+		edl->local_session->y_pane = theme->mcanvas_h / 2;
+	}
+
+	gui->mainmenu->update_toggles(0);
+	gui->update_pane_dividers();
+	gui->update_cursor();
+// required to get new widgets to appear
+	gui->show_window();
+	gui->resource_thread->start_draw();
+}
+
+
 

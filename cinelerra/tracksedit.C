@@ -509,10 +509,12 @@ int Tracks::delete_tracks()
 	while(!done)
 	{
 		done = 1;
+		Track *next_track = 0;
 		for (Track* current = first;
 			current && done;
-			current = NEXT)
+			current = next_track)
 		{
+			next_track = current->next;
 			if(current->record)
 			{
 				delete_track(current);

@@ -62,7 +62,7 @@
 #define HAVE_PTHREADSTACKSIZE 1
 
 /* SDL library present */
-/* #undef HAVE_SDL */
+#define HAVE_SDL 1
 
 /* SDL_gfx library present */
 /* #undef HAVE_SDLgfx */

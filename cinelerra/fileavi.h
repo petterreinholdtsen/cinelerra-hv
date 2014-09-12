@@ -65,9 +65,9 @@ public:
 	int64_t compressed_frame_size();
 	int read_samples(double *buffer, int64_t len);
 	int read_frame(VFrame *frame);
-	static char* vcodec_to_fourcc(char *input, char *output);
+	static char* vcodec_to_fourcc(const char *input, char *output);
 	static char* fourcc_to_vcodec(char *input, char *output);
-	static char* acodec_to_fourcc(char *input, char *output);
+	static char* acodec_to_fourcc(const char *input, char *output);
 	static char* fourcc_to_acodec(char *input, char *output);
 	static int cmodel_bc_to_avi(int input);
 
@@ -200,7 +200,7 @@ public:
 // Get text associated with current attribute
 	const char* get_current_attribute_text();
 	const char* get_current_attribute_value();
-	void set_current_attribute(char *text);
+	void set_current_attribute(const char *text);
 	void reset();
 
 	AVIVCodecList *list;

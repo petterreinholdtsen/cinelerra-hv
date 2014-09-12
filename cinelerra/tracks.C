@@ -504,7 +504,8 @@ void Tracks::translate_projector(float offset_x, float offset_y)
 
 void Tracks::update_y_pixels(Theme *theme)
 {
-	int y = -edl->local_session->track_start;
+//	int y = -edl->local_session->track_start;
+	int y = 0;
 	for(Track *current = first; current; current = NEXT)
 	{
 //printf("Tracks::update_y_pixels %d\n", y);

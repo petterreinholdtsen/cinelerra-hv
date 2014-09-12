@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include <ctype.h>
 #include <dirent.h>
+#include <execinfo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -175,6 +176,18 @@ static const char* signal_titles[] =
 	"SIGALRM",
 	"SIGTERM"
 };
+
+void BC_Signals::dump_stack()
+{
+	void *buffer[256];
+	int total = backtrace (buffer, 256);
+	char **result = backtrace_symbols (buffer, total);
+	printf("BC_Signals::dump_stack\n");
+	for(int i = 0; i < total; i++)
+	{
+		printf("%s\n", result[i]);
+	}
+}
 
 // Kill subprocesses
 void BC_Signals::kill_subs()

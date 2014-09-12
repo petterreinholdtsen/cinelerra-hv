@@ -2,6 +2,8 @@ include ../global_config
 
 AVC_DIR := $(shell expr ../thirdparty/libavc1394* )
 DV_DIR := $(shell expr ../quicktime/thirdparty/libdv-*/ )
+EXRDIR := $(shell expr ../thirdparty/openexr* )
+ILMDIR := $(shell expr ../thirdparty/ilmbase* )
 FLAC_DIR := $(shell expr ../thirdparty/flac*/ )
 FFMPEG_DIR := $(shell expr ../quicktime/thirdparty/ffmpeg* )
 JPEG_DIR := $(shell expr ../quicktime/thirdparty/jpeg-mmx* )
@@ -11,6 +13,7 @@ LIBRAW_DIR := $(shell expr ../thirdparty/libraw1394* )
 OGG_DIR := $(shell expr ../quicktime/thirdparty/libogg* )
 SNDFILE_DIR := $(shell expr ../thirdparty/libsndfile* )
 THEORA_DIR := $(shell expr ../thirdparty/libtheora* )
+GIF_DIR := $(shell expr ../thirdparty/giflib-* )
 TIFF_DIR := ../thirdparty/tiff-v3.5.7
 TOOLAME_DIR := ../thirdparty/toolame-02l
 UUID_DIR := ../thirdparty/uuid
@@ -19,15 +22,17 @@ VORBIS_DIR := $(shell expr ../quicktime/thirdparty/libvorbis* )
 AVC_LIB := $(AVC_DIR)/libavc1394/.libs/libavc1394.a $(AVC_DIR)/librom1394/.libs/librom1394.a
 RAW_LIB := $(LIBRAW_DIR)/src/.libs/libraw1394.a
 IEC_LIB := $(LIBIEC_DIR)/src/.libs/libiec61883.a
-SNDFILE_LIB := $(SNDFILE_DIR)/src/.libs/libsndfile.a
 THEORA_LIB := $(THEORA_DIR)/lib/.libs/libtheora.a
-EXR_LIBS :=  \
-	../thirdparty/lib/libIlmImf.a \
-	../thirdparty/lib/libIlmThread.a \
-	../thirdparty/lib/libImath.a \
-	../thirdparty/lib/libHalf.a \
-	../thirdparty/lib/libIex.a
-EXR_INCLUDES := -I../thirdparty/include/OpenEXR
+EXR_INCLUDES := \
+	-I$(ILMDIR)/Iex/ \
+	-I$(ILMDIR)/Half/ \
+	-I$(ILMDIR)/Imath/ \
+	-I$(ILMDIR)/Imath/ \
+	-I$(ILMDIR)/config/ \
+	-I$(ILMDIR)/IlmThread \
+	-I$(EXRDIR)/IlmImf/ \
+	-I$(EXRDIR)/config/
+
 OBJS = \
 	$(OBJDIR)/aattachmentpoint.o \
 	$(OBJDIR)/aautomation.o \
@@ -121,6 +126,7 @@ OBJS = \
 	$(OBJDIR)/filecr2.o \
 	$(OBJDIR)/filefork.o \
 	$(OBJDIR)/fileformat.o \
+	$(OBJDIR)/filegif.o \
 	$(OBJDIR)/filelist.o \
 	$(OBJDIR)/filejpeg.o \
 	$(OBJDIR)/filemov.o \
@@ -204,6 +210,7 @@ OBJS = \
 	$(OBJDIR)/packagerenderer.o \
 	$(OBJDIR)/panauto.o \
 	$(OBJDIR)/panautos.o \
+	$(OBJDIR)/panedividers.o \
 	$(OBJDIR)/patchbay.o \
 	$(OBJDIR)/patchgui.o \
 	$(OBJDIR)/performanceprefs.o \
@@ -271,6 +278,7 @@ OBJS = \
 	$(OBJDIR)/threadexec.o \
 	$(OBJDIR)/threadloader.o \
 	$(OBJDIR)/threadfork.o \
+	$(OBJDIR)/timelinepane.o \
 	$(OBJDIR)/timebar.o \
 	$(OBJDIR)/timeentry.o \
 	$(OBJDIR)/tipwindow.o \
@@ -352,12 +360,13 @@ STATICLIBS = \
 	$(IEC_LIB) \
 	../quicktime/$(OBJDIR)/libquicktime.a \
         $(ESOUNDLIBS) \
-	$(EXR_LIBS) \
+	$(EXRDIR)/$(OBJDIR)/libexr.a \
 	$(FLAC_DIR)/src/libFLAC/.libs/libFLAC.a \
+	$(GIF_DIR)/$(OBJDIR)/libgif.a \
 	$(TIFF_DIR)/$(OBJDIR)/libtiff.a \
 	../guicast/$(OBJDIR)/libguicast.a \
 	../libmpeg3/$(OBJDIR)/libmpeg3.a \
-	$(SNDFILE_LIB) \
+	$(SNDFILE_DIR)/$(OBJDIR)/libsndfile.a \
 	$(UUID_DIR)/$(OBJDIR)/libuuid.a \
 	../mpeg2enc/$(OBJDIR)/mpeg2enc.a \
 	$(TOOLAME_DIR)/$(OBJDIR)/toolame.a \
@@ -398,14 +407,17 @@ LIBS += \
 	-ldl \
 	-lbz2
 
+#	-lfontconfig \
 #	-lXxf86vm \
 
 ifeq ($(HAVE_XFT), y)
 LIBS += -lXft
 endif
 
+#	-g \
+
+
 CFLAGS += \
-	-g \
 	-c \
 	-I../guicast \
 	-I../quicktime \
@@ -416,6 +428,7 @@ CFLAGS += \
 	-I$(LIBRAW_DIR)/ \
 	-I$(AVC_DIR) \
 	-I$(LIBIEC_DIR)/src/ \
+	-I$(GIF_DIR)/lib \
 	-I$(TIFF_DIR)/libtiff \
 	-I$(UUID_DIR) \
 	-I$(TOOLAME_DIR) \
@@ -496,7 +509,7 @@ $(shell echo $(LDFLAGS1) $(OBJS) $(DCRAW) $(FILEEXR) $(FILEFLAC) $(FFMPEG_OBJS) 
 # Static linking is not possible because the plugins depend on symbols
 # in the main executable.
 # Also VFS only overrides the C library when dynamic linking is used.
-$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(THEME_DATA) $(SNDFILE_LIB) ../guicast/$(OBJDIR)/libguicast.a
+$(OUTPUT): $(OBJS) $(DCRAW) $(FILEEXR) $(FFMPEG_OBJS) $(FILEFLAC) $(THEME_DATA) ../guicast/$(OBJDIR)/libguicast.a
 	$(LINKER) `cat $(OBJDIR)/objs`
 #	strip $(OUTPUT)
 
@@ -510,10 +523,10 @@ $(OBJDIR)/test:
 		$(OBJDIR)/test.so \
 		$(LIBS)
 
-$(SNDFILE_LIB):
-	mkdir -p $(SNDFILE_LIB) && \
-	cd $(SNDFILE_LIB) && \
-	ar x ../../$(SNDFILE_DIR)/src/.libs/libsndfile.a
+#$(SNDFILE_LIB):
+#	mkdir -p $(SNDFILE_LIB) && \
+#	cd $(SNDFILE_LIB) && \
+#	ar x ../../$(SNDFILE_DIR)/src/.libs/libsndfile.a
 
 clean:
 	rm -rf $(OBJDIR)
@@ -655,6 +668,7 @@ $(OBJDIR)/filefork.o:	 			  filefork.C
 $(OBJDIR)/filescene.o:                            filescene.C
 $(OBJDIR)/fileserver.o:                           fileserver.C
 $(OBJDIR)/fileformat.o: 			  fileformat.C
+$(OBJDIR)/filegif.o: 				  filegif.C
 $(OBJDIR)/filejpeg.o: 				  filejpeg.C
 $(OBJDIR)/filelist.o: 				  filelist.C
 $(OBJDIR)/filemov.o: 				  filemov.C
@@ -737,6 +751,7 @@ $(OBJDIR)/packagedispatcher.o:                    packagedispatcher.C
 $(OBJDIR)/packagerenderer.o: 			  packagerenderer.C
 $(OBJDIR)/panauto.o: 			          panauto.C
 $(OBJDIR)/panautos.o: 			          panautos.C
+$(OBJDIR)/panedividers.o: 			  panedividers.C
 $(OBJDIR)/patch.o: 				  patch.C
 $(OBJDIR)/patchbay.o: 				  patchbay.C
 $(OBJDIR)/patchgui.o: 				  patchgui.C
@@ -814,6 +829,7 @@ $(OBJDIR)/threadloader.o: 			  threadloader.C
 $(OBJDIR)/timebar.o: 				  timebar.C
 $(OBJDIR)/timebomb.o: 				  timebomb.C
 $(OBJDIR)/timeentry.o:  			  timeentry.C
+$(OBJDIR)/timelinepane.o:  			  timelinepane.C
 $(OBJDIR)/tipwindow.o:                            tipwindow.C
 $(OBJDIR)/toggleauto.o: 			  toggleauto.C
 $(OBJDIR)/toggleautos.o: 			  toggleautos.C

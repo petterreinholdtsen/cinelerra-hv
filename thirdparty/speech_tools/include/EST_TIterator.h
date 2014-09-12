@@ -101,7 +101,7 @@ public:
 
   /// Create an iterator ready to run over the given container.
   EST_TIterator(const Container &over)
-    { begin(over); }
+    { this->begin(over); }
 
   /// Copy an iterator by assignment
   Iter &operator = (const Iter &orig)
@@ -109,7 +109,7 @@ public:
 
   /// Assigning a container to an iterator sets it ready to start.
   Iter &operator = (const Container &over)
-    { begin(over); return *this;}
+    { this->begin(over); return *this;}
 
   /// Set the iterator ready to run over this container.
   void begin(const Container &over)
@@ -209,7 +209,7 @@ public:
 
   /// Create an iterator ready to run over the given container.
   EST_TStructIterator(const Container &over)
-    { begin(over); }
+    { this->begin(over); }
 
   const Entry *operator ->() const
     {return &this->current();}
@@ -239,7 +239,7 @@ public:
 
   /// Create an iterator ready to run over the given container.
   EST_TRwIterator(Container &over)
-    { begin(over); }
+    { this->begin(over); }
 
   /// Set the iterator ready to run over this container.
   void begin(Container &over)
@@ -289,7 +289,7 @@ public:
 
   /// Create an iterator ready to run over the given container.
   EST_TRwStructIterator(Container &over)
-    { begin(over); }
+    { this->begin(over); }
 
   Entry *operator ->() const
     {return &this->current();}

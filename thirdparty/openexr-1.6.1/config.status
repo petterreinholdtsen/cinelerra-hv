@@ -566,9 +566,9 @@ s,@FFLAGS@,,;t t
 s,@ac_ct_F77@,,;t t
 s,@LIBTOOL@,$(SHELL) $(top_builddir)/libtool,;t t
 s,@PKG_CONFIG@,/usr/bin/pkg-config,;t t
-s,@ILMBASE_CXXFLAGS@,-I/root/hvirtual/thirdparty//include/OpenEXR  ,;t t
-s,@ILMBASE_LDFLAGS@,-L/root/hvirtual/thirdparty//lib  ,;t t
-s,@ILMBASE_LIBS@,-L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  ,;t t
+s,@ILMBASE_CXXFLAGS@,-I/usr/include/OpenEXR  ,;t t
+s,@ILMBASE_LDFLAGS@, ,;t t
+s,@ILMBASE_LIBS@,-lImath -lHalf -lIex -lIlmThread  ,;t t
 s,@acx_pthread_config@,,;t t
 s,@PTHREAD_CC@,,;t t
 s,@PTHREAD_LIBS@,-lpthread,;t t

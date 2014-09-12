@@ -72,7 +72,7 @@ public:
 // Complete the path in the string and change to the directory in the string.
 // Does not change new_dir
 // update - causes the directory to be loaded
-	int change_dir(char *new_dir, int update = 1);
+	int change_dir(const char *new_dir, int update = 1);
 // Set the current_dir to something without completing the path.
 	int set_current_dir(const char *new_dir);
 

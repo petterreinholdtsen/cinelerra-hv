@@ -391,17 +391,16 @@ int Edits::optimize()
 				current = current->next;
 		}
 
-//printf("Edits::optimize %d\n", __LINE__);
+//printf("Edits::optimize %d result=%d\n", __LINE__, result);
 // merge same files or transitions
 		for(current = first; 
 			current && current->next && !result; )
 		{
 			Edit *next_edit = current->next;
 
-// printf("Edits::optimize %d %lld %lld %lld %d %d %p %p %p %p\n", 
+// printf("Edits::optimize %d %lld=%lld %d=%d %p=%p %p=%p\n", 
 // __LINE__,
-// current->startsource,
-// current->length,
+// current->startsource + current->length,
 // next_edit->startsource,
 // current->channel,
 // next_edit->channel,
@@ -409,10 +408,11 @@ int Edits::optimize()
 // next_edit->asset,
 // current->nested_edl,
 // next_edit->nested_edl);
-// source positions are consecutive
 
-    		if((current->asset == next_edit->asset) &&
-//				(current->asset == 0) ||
+
+	   		if(
+// both edits are silence & not a plugin
+				(current->silence() && next_edit->silence() && !current->is_plugin) ||
 				(current->startsource + current->length == next_edit->startsource &&
 // source channels are identical
 	       		current->channel == next_edit->channel &&
@@ -420,13 +420,13 @@ int Edits::optimize()
 				current->asset == next_edit->asset && 
     		   	current->nested_edl == next_edit->nested_edl))
 			{
-printf("Edits::optimize %d\n", __LINE__);
+//printf("Edits::optimize %d\n", __LINE__);
         		current->length += next_edit->length;
         		remove(next_edit);
         		result = 1;
         	}
 
-    		current = (Plugin*)current->next;
+    		current = current->next;
 		}
 
 // delete last edit of 0 length or silence

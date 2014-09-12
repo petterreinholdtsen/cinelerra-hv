@@ -119,76 +119,7 @@ OBJS := \
 	$(DIR)/modules/video/src/optflowgf.o \
 	$(DIR)/modules/video/src/optflowhs.o \
 	$(DIR)/modules/video/src/optflowlk.o \
-	$(DIR)/modules/video/src/precomp.o \
-	$(DIR)/modules/legacy/src/3dtracker.o                    \
-	$(DIR)/modules/legacy/src/auxutils.o                     \
-	$(DIR)/modules/legacy/src/bgfg_estimation.o              \
-	$(DIR)/modules/legacy/src/blobtrackanalysis.o            \
-	$(DIR)/modules/legacy/src/blobtrackanalysishist.o        \
-	$(DIR)/modules/legacy/src/blobtrackanalysisior.o         \
-	$(DIR)/modules/legacy/src/blobtrackanalysistrackdist.o   \
-	$(DIR)/modules/legacy/src/blobtrack.o                    \
-	$(DIR)/modules/legacy/src/blobtrackgen1.o                \
-	$(DIR)/modules/legacy/src/blobtrackgenyml.o              \
-	$(DIR)/modules/legacy/src/blobtrackingauto.o             \
-	$(DIR)/modules/legacy/src/blobtrackingcc.o               \
-	$(DIR)/modules/legacy/src/blobtrackingccwithcr.o         \
-	$(DIR)/modules/legacy/src/blobtrackingkalman.o           \
-	$(DIR)/modules/legacy/src/blobtrackinglist.o             \
-	$(DIR)/modules/legacy/src/blobtrackingmsfg.o             \
-	$(DIR)/modules/legacy/src/blobtrackingmsfgs.o            \
-	$(DIR)/modules/legacy/src/blobtrackpostprockalman.o      \
-	$(DIR)/modules/legacy/src/blobtrackpostproclinear.o      \
-	$(DIR)/modules/legacy/src/blobtrackpostproclist.o        \
-	$(DIR)/modules/legacy/src/calcimagehomography.o          \
-	$(DIR)/modules/legacy/src/calibfilter.o                  \
-	$(DIR)/modules/legacy/src/camshift.o                     \
-	$(DIR)/modules/legacy/src/clique.o                       \
-	$(DIR)/modules/legacy/src/compat.o                       \
-	$(DIR)/modules/legacy/src/condens.o                      \
-	$(DIR)/modules/legacy/src/contourtree.o                  \
-	$(DIR)/modules/legacy/src/correspond.o                   \
-	$(DIR)/modules/legacy/src/corrimages.o                   \
-	$(DIR)/modules/legacy/src/createhandmask.o               \
-	$(DIR)/modules/legacy/src/decomppoly.o                   \
-	$(DIR)/modules/legacy/src/dominants.o                    \
-	$(DIR)/modules/legacy/src/dpstereo.o                     \
-	$(DIR)/modules/legacy/src/eigenobjects.o                 \
-	$(DIR)/modules/legacy/src/enmin.o \
-	$(DIR)/modules/legacy/src/enteringblobdetection.o \
-	$(DIR)/modules/legacy/src/enteringblobdetectionreal.o \
-	$(DIR)/modules/legacy/src/epilines.o \
-	$(DIR)/modules/legacy/src/extendededges.o \
-	$(DIR)/modules/legacy/src/face.o \
-	$(DIR)/modules/legacy/src/facedetection.o \
-	$(DIR)/modules/legacy/src/facetemplate.o \
-	$(DIR)/modules/legacy/src/findface.o \
-	$(DIR)/modules/legacy/src/findhandregion.o \
-	$(DIR)/modules/legacy/src/hmm1d.o \
-	$(DIR)/modules/legacy/src/hmm.o \
-	$(DIR)/modules/legacy/src/hmmobs.o \
-	$(DIR)/modules/legacy/src/image.o \
-	$(DIR)/modules/legacy/src/lcm.o \
-	$(DIR)/modules/legacy/src/lee.o \
-	$(DIR)/modules/legacy/src/levmar.o \
-	$(DIR)/modules/legacy/src/levmarprojbandle.o \
-	$(DIR)/modules/legacy/src/levmartrif.o \
-	$(DIR)/modules/legacy/src/lines.o \
-	$(DIR)/modules/legacy/src/lmeds.o \
-	$(DIR)/modules/legacy/src/morphcontours.o \
-	$(DIR)/modules/legacy/src/morphing.o \
-	$(DIR)/modules/legacy/src/pgh.o \
-	$(DIR)/modules/legacy/src/precomp.o \
-	$(DIR)/modules/legacy/src/prewarp.o \
-	$(DIR)/modules/legacy/src/scanlines.o \
-	$(DIR)/modules/legacy/src/segment.o \
-	$(DIR)/modules/legacy/src/snakes.o \
-	$(DIR)/modules/legacy/src/subdiv2.o \
-	$(DIR)/modules/legacy/src/testseq.o \
-	$(DIR)/modules/legacy/src/texture.o \
-	$(DIR)/modules/legacy/src/trifocal.o \
-	$(DIR)/modules/legacy/src/vecfacetracking.o \
-	$(DIR)/modules/legacy/src/video.o
+	$(DIR)/modules/video/src/precomp.o
 
 
 
@@ -205,7 +136,6 @@ CFLAGS += -I$(DIR)/modules/core/include/ \
 	-I$(DIR)/modules/flann/include/ \
 	-I$(DIR)/modules/imgproc/include/ \
 	-I$(DIR)/modules/highgui/include/ \
-	-I$(DIR)/modules/legacy/include/ \
 	-I$(DIR)/modules/video/include/ \
 	-I$(DIR) \
 	-fPIC \

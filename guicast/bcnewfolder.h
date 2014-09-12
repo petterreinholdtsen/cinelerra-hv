@@ -35,7 +35,7 @@ public:
 	~BC_NewFolder();
 
 	void create_objects();
-	char* get_text();
+	const char* get_text();
 
 private:
 	BC_TextBox *textbox;

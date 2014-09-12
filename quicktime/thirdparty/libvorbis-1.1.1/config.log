@@ -27,8 +27,6 @@ hostinfo               = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
 
-PATH: .
-PATH: .
 PATH: /usr/kerberos/sbin
 PATH: /usr/kerberos/bin
 PATH: /usr/local/sbin
@@ -38,10 +36,10 @@ PATH: /bin
 PATH: /usr/sbin
 PATH: /usr/bin
 PATH: /opt/cinelerra
-PATH: /usr/local/jdk1.6.0_21/bin/
+PATH: /usr/local/jdk1.7.0_07/bin/
 PATH: /root/bin
 PATH: /opt/cinelerra
-PATH: /usr/local/jdk1.6.0_21/bin/
+PATH: /usr/local/jdk1.7.0_07/bin/
 PATH: /root/bin
 
 

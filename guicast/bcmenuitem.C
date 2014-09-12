@@ -55,15 +55,20 @@ BC_MenuItem::BC_MenuItem(const char *text, const char *hotkey_text, int hotkey)
 	submenu = 0;
 	shift_hotkey = 0;
 	alt_hotkey = 0;
+	ctrl_hotkey = 0;
 	menu_popup = 0;
 }
 
 BC_MenuItem::~BC_MenuItem()
 {
 	if(text) delete [] text;
+	text = 0;
 	if(hotkey_text) delete [] hotkey_text;
+	hotkey_text = 0;
 	if(submenu) delete submenu;
-	if(menu_popup) menu_popup->remove_item(this);
+	submenu = 0;
+// deletes this
+	if(menu_popup) menu_popup->remove_item(this, 1);
 }
 
 void BC_MenuItem::reset()
@@ -302,7 +307,8 @@ int BC_MenuItem::dispatch_key_press()
 
 		if(top_level->get_keypress() == hotkey && 
 			shift_hotkey == top_level->shift_down() &&
-			alt_hotkey == top_level->alt_down())
+			alt_hotkey == top_level->alt_down() &&
+			ctrl_hotkey == top_level->ctrl_down())
 		{
 			result = 1;
 			handle_event();
@@ -432,3 +438,9 @@ int BC_MenuItem::set_alt(int value)
 	alt_hotkey = value;
 	return 0;
 }
+
+void BC_MenuItem::set_ctrl(int value)
+{
+	ctrl_hotkey = value;
+}
+

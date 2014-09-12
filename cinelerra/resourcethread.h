@@ -38,7 +38,6 @@
 #include "maxchannels.h"
 #include "mwindow.inc"
 #include "renderengine.inc"
-#include "resourcepixmap.inc"
 #include "samples.inc"
 #include "thread.h"
 #include "vframe.inc"
@@ -48,6 +47,7 @@ class ResourceThreadItem
 {
 public:
 	ResourceThreadItem(ResourcePixmap *pixmap, 
+		int pane_number,
 		Indexable *indexable,
 		int data_type,
 		int operation_count);
@@ -58,6 +58,7 @@ public:
 	int data_type;
 	int operation_count;
 	int last;
+	int pane_number;
 };
 
 
@@ -65,6 +66,7 @@ class AResourceThreadItem : public ResourceThreadItem
 {
 public:
 	AResourceThreadItem(ResourcePixmap *pixmap,
+		int pane_number,
 		Indexable *indexable,
 		int x,
 		int channel,
@@ -82,6 +84,7 @@ class VResourceThreadItem : public ResourceThreadItem
 {
 public:
 	VResourceThreadItem(ResourcePixmap *pixmap,
+		int pane_number,
 		int picon_x, 
 		int picon_y, 
 		int picon_w,
@@ -108,7 +111,7 @@ public:
 class ResourceThread : public Thread
 {
 public:
-	ResourceThread(MWindow *mwindow);
+	ResourceThread(MWindow *mwindow, MWindowGUI *gui);
 	~ResourceThread();
 
 
@@ -120,6 +123,7 @@ public:
 // Be sure to stop_draw before changing the asset table, 
 // closing files.
 	void add_picon(ResourcePixmap *pixmap, 
+		int pane_number,
 		int picon_x, 
 		int picon_y, 
 		int picon_w,
@@ -130,6 +134,7 @@ public:
 		Indexable *indexable);
 
 	void add_wave(ResourcePixmap *pixmap,
+		int pane_number,
 		Indexable *indexable,
 		int x,
 		int channel,
@@ -148,11 +153,13 @@ public:
 
 
 	MWindow *mwindow;
+	MWindowGUI *gui;
 	Condition *draw_lock;
 //	Condition *interrupted_lock;
 	Mutex *item_lock;
 	ArrayList<ResourceThreadItem*> items;
 	int interrupted;
+	int done;
 	VFrame *temp_picon;
 	VFrame *temp_picon2;
 // Render engine for nested EDL

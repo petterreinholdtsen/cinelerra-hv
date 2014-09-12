@@ -365,7 +365,7 @@ int IndexCount::handle_event()
 
 
 TimeFormatHMS::TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Hours:Minutes:Seconds.xxx"))
+ : BC_Radial(x, y, value, TIME_HMS_TEXT)
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatHMS::handle_event()
@@ -375,7 +375,7 @@ int TimeFormatHMS::handle_event()
 }
 
 TimeFormatHMSF::TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Hours:Minutes:Seconds:Frames"))
+ : BC_Radial(x, y, value, TIME_HMSF_TEXT)
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatHMSF::handle_event()
@@ -384,7 +384,7 @@ int TimeFormatHMSF::handle_event()
 }
 
 TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Samples"))
+ : BC_Radial(x, y, value, TIME_SAMPLES_TEXT)
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatSamples::handle_event()
@@ -393,7 +393,7 @@ int TimeFormatSamples::handle_event()
 }
 
 TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Frames"))
+ : BC_Radial(x, y, value, TIME_FRAMES_TEXT)
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatFrames::handle_event()
@@ -402,7 +402,7 @@ int TimeFormatFrames::handle_event()
 }
 
 TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Hex Samples"))
+ : BC_Radial(x, y, value, TIME_SAMPLES_HEX_TEXT)
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatHex::handle_event()
@@ -411,7 +411,7 @@ int TimeFormatHex::handle_event()
 }
 
 TimeFormatSeconds::TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Seconds"))
+ : BC_Radial(x, y, value, TIME_SECONDS_TEXT)
 { 
 	this->pwindow = pwindow; 
 	this->tfwindow = tfwindow; 
@@ -423,7 +423,7 @@ int TimeFormatSeconds::handle_event()
 }
 
 TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, _("Use Feet-frames"))
+ : BC_Radial(x, y, value, TIME_FEET_FRAMES_TEXT)
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatFeet::handle_event()

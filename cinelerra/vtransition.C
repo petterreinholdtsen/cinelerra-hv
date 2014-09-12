@@ -127,12 +127,12 @@ long VTrack::length()
 	return tosamples(edits->end(), mwindow->sample_rate, mwindow->frame_rate);
 }
 
-int VTrack::get_dimensions(float &view_start, float &view_units, float &zoom_units)
-{
-	view_start = toframes(mwindow->view_start, mwindow->sample_rate, mwindow->frame_rate);
-	view_units = toframes(tracks->view_samples(), mwindow->sample_rate, mwindow->frame_rate);
-	zoom_units = toframes(mwindow->zoom_sample, mwindow->sample_rate, mwindow->frame_rate);
-}
+// int VTrack::get_dimensions(float &view_start, float &view_units, float &zoom_units)
+// {
+// 	view_start = toframes(mwindow->view_start, mwindow->sample_rate, mwindow->frame_rate);
+// 	view_units = toframes(tracks->view_samples(), mwindow->sample_rate, mwindow->frame_rate);
+// 	zoom_units = toframes(mwindow->zoom_sample, mwindow->sample_rate, mwindow->frame_rate);
+// }
 
 long VTrack::samples_to_units(long &samples)
 {

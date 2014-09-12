@@ -1,6 +1,5 @@
-ImfKeyCode.lo: ImfKeyCode.cpp ImfKeyCode.h \
- /root/hvirtual/thirdparty//include/OpenEXR/Iex.h \
- /root/hvirtual/thirdparty//include/OpenEXR/IexMacros.h \
+ImfKeyCode.lo: ImfKeyCode.cpp ImfKeyCode.h /usr/include/OpenEXR/Iex.h \
+ /usr/include/OpenEXR/IexMacros.h \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/sstream \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/istream \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/ios \
@@ -82,15 +81,14 @@ ImfKeyCode.lo: ImfKeyCode.cpp ImfKeyCode.h \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/ostream.tcc \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/istream.tcc \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/sstream.tcc \
- /root/hvirtual/thirdparty//include/OpenEXR/IexBaseExc.h \
- /root/hvirtual/thirdparty//include/OpenEXR/IexMathExc.h \
- /root/hvirtual/thirdparty//include/OpenEXR/IexThrowErrnoExc.h
+ /usr/include/OpenEXR/IexBaseExc.h /usr/include/OpenEXR/IexMathExc.h \
+ /usr/include/OpenEXR/IexThrowErrnoExc.h
 
 ImfKeyCode.h:
 
-/root/hvirtual/thirdparty//include/OpenEXR/Iex.h:
+/usr/include/OpenEXR/Iex.h:
 
-/root/hvirtual/thirdparty//include/OpenEXR/IexMacros.h:
+/usr/include/OpenEXR/IexMacros.h:
 
 /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/sstream:
 
@@ -282,8 +280,8 @@ ImfKeyCode.h:
 
 /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/bits/sstream.tcc:
 
-/root/hvirtual/thirdparty//include/OpenEXR/IexBaseExc.h:
+/usr/include/OpenEXR/IexBaseExc.h:
 
-/root/hvirtual/thirdparty//include/OpenEXR/IexMathExc.h:
+/usr/include/OpenEXR/IexMathExc.h:
 
-/root/hvirtual/thirdparty//include/OpenEXR/IexThrowErrnoExc.h:
+/usr/include/OpenEXR/IexThrowErrnoExc.h:

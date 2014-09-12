@@ -51,3 +51,9 @@ XML_Parser.o: XML_Parser.cc ../include/EST_error.h ../include/EST_unix.h \
  ../include/rxp/dtd.h ../include/rxp/input.h ../include/rxp/stdio16.h \
  ../include/rxp/xmlparser.h ../include/rxp/rxp.h
 INCLUDED_MAKE_DEPEND=1
+xmlparser.o: xmlparser.c ../include/rxp/system.h ../include/rxp/charset.h \
+ ../include/rxp/string16.h ../include/rxp/charset.h \
+ ../include/rxp/ctype16.h ../include/rxp/dtd.h ../include/rxp/input.h \
+ ../include/rxp/stdio16.h ../include/rxp/dtd.h ../include/rxp/stdio16.h \
+ ../include/rxp/xmlparser.h ../include/rxp/input.h
+INCLUDED_MAKE_DEPEND=1

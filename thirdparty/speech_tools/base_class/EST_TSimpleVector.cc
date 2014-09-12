@@ -40,6 +40,7 @@
  /*                                                                       */
  /*************************************************************************/
 
+#include <string.h>
 #include "EST_TSimpleVector.h"
 #include "EST_matrix_support.h"
 #include <fstream>
@@ -70,7 +71,7 @@ template<class T> void EST_TSimpleVector<T>::resize(int newn, int set)
   T *old_vals =NULL;
   int old_offset = this->p_offset;
 
-  just_resize(newn, &old_vals);
+  this->just_resize(newn, &old_vals);
 
   if (set && old_vals)
     {

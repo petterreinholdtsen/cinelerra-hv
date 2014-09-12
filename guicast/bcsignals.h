@@ -1,6 +1,6 @@
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+
+
+// debugging functions go here
 
 #ifndef BCSIGNALS_H
 #define BCSIGNALS_H
@@ -61,6 +64,8 @@ public:
 
 
 	virtual void signal_handler(int signum);
+
+	static void dump_stack();
 
 #ifdef ENABLE_TRACE
 // Add a trace

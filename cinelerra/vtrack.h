@@ -127,9 +127,9 @@ public:
 // rounds up to integer frames for editing
 	int identical(int64_t sample1, int64_t sample2);
 // no rounding for drawing
-	int get_dimensions(double &view_start, 
-		double &view_units, 
-		double &zoom_units);
+//	int get_dimensions(double &view_start, 
+//		double &view_units, 
+//		double &zoom_units);
 
 private:
 };

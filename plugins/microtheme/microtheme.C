@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,6 +217,7 @@ void MicroTheme::initialize()
 	title_bg_data = new VFrame(get_image("title_bg.png"));
 	timebar_bg_data = new VFrame(get_image("timebar_bg.png"));
 	vtimebar_bg_data = new VFrame(get_image("vwindow_timebar.png"));
+	new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png", "pane");
 
 	keyframe_data = new VFrame(get_image("keyframe3.png"));
 	camerakeyframe_data = new VFrame(get_image("camerakeyframe.png"));

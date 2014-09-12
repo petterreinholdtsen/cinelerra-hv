@@ -153,7 +153,7 @@ void Batch::create_default_path()
 }
 
 
-int Batch::text_to_mode(char *text)
+int Batch::text_to_mode(const char *text)
 {
 	if(!strcasecmp(mode_to_text(RECORD_INFINITE), text)) return RECORD_INFINITE;
 	if(!strcasecmp(mode_to_text(RECORD_TIMED), text)) return RECORD_TIMED;
@@ -162,7 +162,7 @@ int Batch::text_to_mode(char *text)
 	return RECORD_INFINITE;
 }
 
-char* Batch::mode_to_text(int record_mode)
+const char* Batch::mode_to_text(int record_mode)
 {
 	switch(record_mode)
 	{

@@ -22,6 +22,7 @@
 #include "clip.h"
 #include "confirmsave.h"
 #include "bchash.h"
+#include "bcsignals.h"
 #include "errorbox.h"
 #include "filexml.h"
 #include "language.h"
@@ -29,6 +30,7 @@
 #include "reverb.h"
 #include "reverbwindow.h"
 #include "samples.h"
+#include "units.h"
 
 #include "vframe.h"
 
@@ -138,6 +140,8 @@ int Reverb::process_realtime(int64_t size,
 		lowpass_in1 = new double*[total_in_buffers];
 		lowpass_in2 = new double*[total_in_buffers];
 
+
+
 		for(i = 0; i < total_in_buffers; i++)
 		{
 			dsp_in[i] = new double[1];
@@ -163,8 +167,7 @@ int Reverb::process_realtime(int64_t size,
 	}
 
 	new_dsp_length = size + 
-		(config.delay_init + config.ref_length) * project_sample_rate / 1000 + 1;
-//printf("Reverb::process_realtime 1 %d %d\n", in_buffer_size, size);
+		((int64_t)config.delay_init + config.ref_length) * project_sample_rate / 1000 + 1;
 
 	if(redo_buffers || new_dsp_length != dsp_in_length)
 	{
@@ -172,8 +175,10 @@ int Reverb::process_realtime(int64_t size,
 		{
 			double *old_dsp = dsp_in[i];
 			double *new_dsp = new double[new_dsp_length];
-			for(j = 0; j < dsp_in_length && j < new_dsp_length; j++) 
+			for(j = 0; j < dsp_in_length && j < new_dsp_length; j++)
 				new_dsp[j] = old_dsp[j];
+
+
 			for( ; j < new_dsp_length; j++) new_dsp[j] = 0;
 			delete [] old_dsp;
 			dsp_in[i] = new_dsp;
@@ -340,6 +345,8 @@ void Reverb::read_data(KeyFrame *keyframe)
 			config.lowpass2 = input.tag.get_property("LOWPASS2", config.lowpass2);
 		}
 	}
+
+	config.boundaries();
 }
 
 void Reverb::update_gui()
@@ -521,6 +528,15 @@ void ReverbEngine::run()
 
 ReverbConfig::ReverbConfig()
 {
+	level_init = 0;
+	delay_init = 0;
+	ref_level1 = -20;
+	ref_level2 = INFINITYGAIN;
+	ref_total = 100;
+	ref_length = 600;
+	lowpass1 = Freq::tofreq(TOTALFREQS);
+	lowpass2 = Freq::tofreq(TOTALFREQS);
+	
 }
 
 int ReverbConfig::equivalent(ReverbConfig &that)
@@ -561,6 +577,19 @@ void ReverbConfig::interpolate(ReverbConfig &prev,
 	ref_length = prev.ref_length;
 	lowpass1 = prev.lowpass1;
 	lowpass2 = prev.lowpass2;
+}
+
+void ReverbConfig::boundaries()
+{
+
+	CLAMP(level_init, INFINITYGAIN, 0);
+	CLAMP(delay_init, 0, MAX_DELAY_INIT);
+	CLAMP(ref_level1, INFINITYGAIN, 0);
+	CLAMP(ref_level2, INFINITYGAIN, 0);
+	CLAMP(ref_total, MIN_REFLECTIONS, MAX_REFLECTIONS);
+	CLAMP(ref_length, 0, MAX_REFLENGTH);
+	CLAMP(lowpass1, 0, Freq::tofreq(TOTALFREQS));
+	CLAMP(lowpass2, 0, Freq::tofreq(TOTALFREQS));
 }
 
 void ReverbConfig::dump()

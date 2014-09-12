@@ -418,6 +418,9 @@ void RecordVideo::read_buffer()
 void RecordVideo::write_buffer(int skip_new)
 {
 	write_result = record->file->write_video_buffer(buffer_position);
+// HACK
+write_result = 0;
+
 	buffer_position = 0;
 	if(!skip_new && !write_result) 
 		frame_ptr = record->file->get_video_buffer();

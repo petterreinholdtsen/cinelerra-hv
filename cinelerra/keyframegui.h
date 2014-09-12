@@ -49,9 +49,9 @@ public:
 	void handle_close_event(int result);
 	void update_values();
 	void save_value(char *value);
-	void save_preset(char *title);
-	void delete_preset(char *title);
-	void apply_preset(char *title);
+	void save_preset(const char *title);
+	void delete_preset(const char *title);
+	void apply_preset(const char *title);
 	void apply_value();
 	void calculate_preset_list();
 	void update_gui(int update_value_text = 1);

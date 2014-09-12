@@ -325,8 +325,7 @@ int GWindowToggle::handle_event()
 	mwindow->gui->lock_window("GWindowToggle::handle_event");
 	if(subscript >= 0)
 	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 	}
 	else
 	{
@@ -345,8 +344,7 @@ int GWindowToggle::handle_event()
 
 			case TRANSITIONS:
 			case PLUGIN_AUTOS:
-				mwindow->gui->canvas->draw_overlays();
-				mwindow->gui->canvas->flash();
+				mwindow->gui->draw_overlays(1);
 				break;
 		}
 	}

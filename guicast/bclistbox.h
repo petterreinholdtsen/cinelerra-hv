@@ -491,11 +491,9 @@ private:
 	int row_height, row_ascent, row_descent;
 
 
-
-
-
 	int selection_mode;
 	int display_format;
+	int temp_display_format;
 	int icon_position;
 // Scrollbars are created as needed
 	BC_ListBoxXScroll *xscrollbar;
@@ -600,6 +598,9 @@ private:
 	int highlighted_division;
 // Column title being dragged
 	int dragged_title;
+// start of column title drag
+	int drag_cursor_x;
+	int drag_column_w;
 
 // Selection range being extended
 	int selection_start, selection_end, selection_center;

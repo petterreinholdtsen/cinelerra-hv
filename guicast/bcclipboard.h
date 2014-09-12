@@ -54,7 +54,7 @@ public:
 	void run();
 	int stop_clipboard();
 	long clipboard_len(int clipboard_num);
-	int to_clipboard(char *data, long len, int clipboard_num);
+	int to_clipboard(const char *data, long len, int clipboard_num);
 	int from_clipboard(char *data, long maxlen, int clipboard_num);
 
 	Display *in_display, *out_display;

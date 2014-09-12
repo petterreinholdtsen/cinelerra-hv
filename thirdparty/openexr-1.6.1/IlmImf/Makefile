@@ -150,9 +150,9 @@ EGREP = grep -E
 EXEEXT = 
 F77 = 
 FFLAGS = 
-ILMBASE_CXXFLAGS = -I/root/hvirtual/thirdparty//include/OpenEXR  
-ILMBASE_LDFLAGS = -L/root/hvirtual/thirdparty//lib  
-ILMBASE_LIBS = -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  
+ILMBASE_CXXFLAGS = -I/usr/include/OpenEXR  
+ILMBASE_LDFLAGS =  
+ILMBASE_LIBS = -lImath -lHalf -lIex -lIlmThread  
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
@@ -287,10 +287,10 @@ libIlmImf_la_SOURCES = ImfAttribute.cpp ImfBoxAttribute.cpp ImfCRgbaFile.cpp \
 		       ImfPxr24Compressor.cpp ImfPxr24Compressor.h \
 		       ImfTestFile.cpp ImfTestFile.h ImfThreading.h
 
-libIlmImf_la_LDFLAGS = -L/root/hvirtual/thirdparty//lib   -version-info 6:0:0 \
+libIlmImf_la_LDFLAGS =   -version-info 6:0:0 \
 			-no-undefined
 
-libIlmImf_la_LIBADD = -lz -lpthread -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  
+libIlmImf_la_LIBADD = -lz -lpthread -lImath -lHalf -lIex -lIlmThread  
 libIlmImfincludedir = $(includedir)/OpenEXR
 libIlmImfinclude_HEADERS = ImfAttribute.h ImfBoxAttribute.h \
 			   ImfCRgbaFile.h ImfChannelList.h \
@@ -329,13 +329,13 @@ noinst_HEADERS = ImfCompressor.h ImfRleCompressor.h ImfZipCompressor.h \
 		 ImfTileOffsets.h ImfScanLineInputFile.h ImfPxr24Compressor.h
 
 EXTRA_DIST = $(noinst_HEADERS) b44ExpLogTable.cpp b44ExpLogTable.h
-INCLUDES = -I/root/hvirtual/thirdparty//include/OpenEXR   \
+INCLUDES = -I/usr/include/OpenEXR   \
 	   -I$(top_builddir)  \
 	   -I$(top_srcdir)/config
 
 CLEANFILES = b44ExpLogTable b44ExpLogTable.h
 b44ExpLogTable_SOURCES = b44ExpLogTable.cpp
-b44ExpLogTable_LDADD = -L/root/hvirtual/thirdparty//lib   -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  
+b44ExpLogTable_LDADD =   -lImath -lHalf -lIex -lIlmThread  
 BUILT_SOURCES = b44ExpLogTable.h
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am

@@ -69,7 +69,7 @@ void BC_NewFolder::create_objects()
 	unlock_window();
 }
 
-char* BC_NewFolder::get_text()
+const char* BC_NewFolder::get_text()
 {
 	return textbox->get_text();
 }

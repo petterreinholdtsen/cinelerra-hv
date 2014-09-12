@@ -45,6 +45,7 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	0,
 	pixmap)
 {
+	temp_frame = 0;
 //	init_x = icon_x;
 //	init_y = icon_y;
 	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;
@@ -74,6 +75,7 @@ BC_DragWindow::BC_DragWindow(BC_WindowBase *parent_window,
 	prepare_frame(frame, parent_window))
 {
 	delete temp_frame;  // created in prepare_frame inside constructor
+	temp_frame = 0;
 //	init_x = icon_x;
 //	init_y = icon_y;
 	init_x = parent_window->get_abs_cursor_x(0) + DRAG_OFFSET_X;

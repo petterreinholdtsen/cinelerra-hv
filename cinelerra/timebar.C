@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@
 #include "mainsession.h"
 #include "theme.h"
 #include "timebar.h"
+#include "timelinepane.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -181,6 +182,7 @@ TimeBar::TimeBar(MWindow *mwindow,
 //printf("TimeBar::TimeBar %d %d %d %d\n", x, y, w, h);
 	this->gui = gui;
 	this->mwindow = mwindow;
+	pane = 0;
 	highlighted = 0;
 }
 
@@ -212,10 +214,12 @@ int64_t TimeBar::position_to_pixel(double position)
 
 double TimeBar::pixel_to_position(int pixel)
 {
+	if(pane)
+	{
+		pixel += mwindow->edl->local_session->view_start[pane->number];
+	}
+
 	return (double)pixel * 
-		mwindow->edl->local_session->zoom_sample / 
-		mwindow->edl->session->sample_rate + 
-		(double)mwindow->edl->local_session->view_start *
 		mwindow->edl->local_session->zoom_sample / 
 		mwindow->edl->session->sample_rate;
 }
@@ -410,6 +414,9 @@ void TimeBar::update_points()
 //	flush();
 }
 
+void TimeBar::update_clock(double position)
+{
+}
 
 void TimeBar::update(int flush)
 {
@@ -433,6 +440,7 @@ void TimeBar::update(int flush)
 
 		position = get_edl()->align_to_frame(position, 0);
 		pixel = position_to_pixel(position);
+		update_clock(position);
 	}
 
 	if(pixel < 0) 
@@ -442,11 +450,11 @@ void TimeBar::update(int flush)
 	}
 
 
-	if(pixel >= 0)
+	if(pixel >= 0 && pixel < get_w())
 	{
 		set_color(mwindow->theme->timebar_cursor_color);
 		set_line_dashes(1);
-
+//printf("TimeBar::update %d pane=%d pixel=%jd\n", __LINE__, pane->number, pixel);
 		draw_line(pixel, 0, pixel, get_h());
 		set_line_dashes(0);
 	}
@@ -805,7 +813,7 @@ int TimeBar::button_press_event()
 			{
 				update_cursor();
 				current_operation = TIMEBAR_DRAG;
-				mwindow->gui->canvas->activate();
+				activate_timeline();
 				return 1;
 			}
 		}
@@ -813,40 +821,9 @@ int TimeBar::button_press_event()
 	return 0;
 }
 
-int TimeBar::repeat_event(int64_t duration)
+void TimeBar::activate_timeline()
 {
-	if(!mwindow->gui->canvas->drag_scroll) return 0;
-	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
-
-	int distance = 0;
-	int x_movement = 0;
-	int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
-	if(current_operation == TIMEBAR_DRAG)
-	{
-		if(relative_cursor_x >= mwindow->gui->canvas->get_w())
-		{
-			distance = relative_cursor_x - mwindow->gui->canvas->get_w();
-			x_movement = 1;
-		}
-		else
-		if(relative_cursor_x < 0)
-		{
-			distance = relative_cursor_x;
-			x_movement = 1;
-		}
-
-
-
-		if(x_movement)
-		{
-			update_cursor();
-			mwindow->samplemovement(mwindow->edl->local_session->view_start + 
-				distance);
-		}
-		return 1;
-	}
-
-	return 0;
+	mwindow->gui->activate_timeline();
 }
 
 int TimeBar::cursor_motion_event()
@@ -917,7 +894,7 @@ int TimeBar::button_release_event()
 	switch(current_operation)
 	{
 		case TIMEBAR_DRAG:
-			mwindow->gui->canvas->stop_dragscroll();
+			mwindow->gui->get_focused_pane()->canvas->stop_dragscroll();
 			current_operation = TIMEBAR_NONE;
 			need_redraw = 1;
 			result = 1;
@@ -995,10 +972,10 @@ int TimeBar::select_region(double position)
 
 // Que the CWindow
 	mwindow->cwindow->update(1, 0, 0);
-	mwindow->gui->cursor->hide(0);
-	mwindow->gui->cursor->draw(1);
-	mwindow->gui->canvas->flash();
-	mwindow->gui->canvas->activate();
+	mwindow->gui->hide_cursor(0);
+	mwindow->gui->draw_cursor(1);
+	mwindow->gui->flash_canvas(0);
+	mwindow->gui->activate_timeline();
 	mwindow->gui->zoombar->update();
 	update_highlights();
 	return 0;

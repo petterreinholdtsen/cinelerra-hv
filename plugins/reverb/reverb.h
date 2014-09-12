@@ -28,6 +28,11 @@ class ReverbEngine;
 #include "reverbwindow.h"
 #include "pluginaclient.h"
 
+#define MAX_DELAY_INIT 1000
+#define MIN_REFLECTIONS 1
+#define MAX_REFLECTIONS 255
+#define MAX_REFLENGTH 5000
+
 class ReverbConfig
 {
 public:
@@ -42,6 +47,7 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 	void dump();
+	void boundaries();
 
 	double level_init;
 	int64_t delay_init;

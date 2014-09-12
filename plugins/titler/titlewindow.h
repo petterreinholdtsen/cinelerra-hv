@@ -38,6 +38,7 @@ class TitleInterlace;
 
 
 class TitleFontTumble;
+class TitleSizeTumble;
 class TitleItalic;
 class TitleBold;
 class TitleSize;
@@ -59,6 +60,7 @@ class TitleBottom;
 class TitleColorThread;
 class TitleSpeed;
 class TitleTimecode;
+class TitleTimecodeFormat;
 class TitleOutline;
 
 class TitleWindow : public PluginClientWindow
@@ -80,6 +82,7 @@ public:
 	BC_Title *font_title;
 	TitleFont *font;
 	TitleFontTumble *font_tumbler;
+	TitleSizeTumble *size_tumbler;
 	BC_Title *x_title;
 	TitleX *title_x;
 	BC_Title *y_title;
@@ -122,6 +125,7 @@ public:
 	BC_Title *speed_title;
 	TitleSpeed *speed;
 	TitleTimecode *timecode;
+	TitleTimecodeFormat *timecode_format;
 
 // Color preview
 	ArrayList<BC_ListBoxItem*> sizes;
@@ -142,6 +146,21 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
+
+
+class TitleSizeTumble : public BC_Tumbler
+{
+public:
+	TitleSizeTumble(TitleMain *client, TitleWindow *window, int x, int y);
+	
+	int handle_up_event();
+	int handle_down_event();
+	
+	TitleMain *client;
+	TitleWindow *window;
+};
+
+
 
 class TitleItalic : public BC_CheckBox
 {
@@ -221,14 +240,23 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
+
 class TitleTimecode : public BC_CheckBox
 {
 public:
 	TitleTimecode(TitleMain *client, int x, int y);
 	int handle_event();
 	TitleMain *client;
-	TitleWindow *window;
 };
+
+class TitleTimecodeFormat : public BC_PopupMenu
+{
+public:
+	TitleTimecodeFormat(TitleMain *client, int x, int y, const char *text);
+	int handle_event();
+	TitleMain *client;
+};
+
 class TitleFade : public BC_TextBox
 {
 public:

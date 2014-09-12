@@ -32,21 +32,34 @@
 #define INFINITYGAIN -40
 #define MAXGAIN 50
 #define TOTALFREQS 1024
+#define TOTAL_TIMEFORMATS 7
 
 // h:mm:ss.sss
 #define TIME_HMS 0
-// h:mm:ss
-#define TIME_HMS2 6
-// hh:mm:ss
-#define TIME_HMS3 7
-// h:mm:ss:ff
+#define TIME_HMS_TEXT _("Hours:Minutes:Seconds.xxx")
 #define TIME_SECONDS 8
+#define TIME_SECONDS_TEXT _("Seconds")
+// h:mm:ss:ff
 #define TIME_HMSF 1
+#define TIME_HMSF_TEXT _("Hours:Minutes:Seconds:Frames")
 #define TIME_SAMPLES 2
+#define TIME_SAMPLES_TEXT _("Samples")
 #define TIME_SAMPLES_HEX 3
+#define TIME_SAMPLES_HEX_TEXT _("Hex Samples")
 #define TIME_FRAMES 4
+#define TIME_FRAMES_TEXT _("Frames")
 // fffff-ff
 #define TIME_FEET_FRAMES 5
+#define TIME_FEET_FRAMES_TEXT _("Feet-frames")
+
+
+// h:mm:ss
+#define TIME_HMS2 6
+#define TIME_HMS2_TEXT  _("Hours:Minutes:Seconds")
+// hh:mm:ss
+#define TIME_HMS3 7
+#define TIME_HMS3_TEXT _("Hours:Minutes:Seconds")
+
 
 
 class DB
@@ -121,7 +134,7 @@ public:
 // Round up if > .5
 	static int64_t toframes_round(int64_t samples, int sample_rate, float framerate);
 	static double fix_framerate(double value);
-	static double atoframerate(char *text);
+	static double atoframerate(const char *text);
 
 
 // Punctuate with commas
@@ -131,6 +144,8 @@ public:
 // separator strings for BC_TextBox::set_separators
 // Returns 0 if the format has no separators.
 	static const char* format_to_separators(int time_format);
+	static int text_to_format(const char *string);
+	static const char* print_time_format(int time_format, char *string);
 
 	static int64_t tosamples(float frames, int sample_rate, float framerate);
 // give text representation as time
@@ -148,19 +163,17 @@ public:
 				float frame_rate = 0, 
 				float frames_per_foot = 0);    
 // convert time to samples
-	static int64_t fromtext(char *text, 
+	static int64_t fromtext(const char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
 				float frames_per_foot);
 // Convert text to seconds
-	static double text_to_seconds(char *text, 
+	static double text_to_seconds(const char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
 				float frames_per_foot);   
-
-	static char* print_time_format(int time_format, char *string);
 
 	static float xy_to_polar(int x, int y);
 	static void polar_to_xy(float angle, int radius, int &x, int &y);

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,38 @@
 
 #include "mwindowgui.inc"
 #include "timebar.h"
+#include "timelinepane.h"
+
+
+class TimeBarPopup;
+
+class TimeBarPopupItem : public BC_MenuItem
+{
+public:
+	TimeBarPopupItem(MWindow *mwindow, 
+		TimeBarPopup *menu, 
+		const char *text,
+		int value);
+	int handle_event();
+	
+	int value;
+	MWindow *mwindow;
+	TimeBarPopup *menu;
+};
+
+class TimeBarPopup : public BC_PopupMenu
+{
+public:
+	TimeBarPopup(MWindow *mwindow);
+	~TimeBarPopup();
+
+	void create_objects();
+	void update();
+
+	TimeBarPopupItem *items[TOTAL_TIMEFORMATS];
+	MWindow *mwindow;
+};
+
 
 
 class MTimeBar : public TimeBar
@@ -36,19 +68,33 @@ public:
 		int y,
 		int w,
 		int h);
+	MTimeBar(MWindow *mwindow, 
+		TimelinePane *pane,
+		int x, 
+		int y,
+		int w,
+		int h);
 	
+	void create_objects();
 	void draw_time();
 	void draw_range();
 	void stop_playback();
 	int resize_event();
+	int resize_event(int x, int y, int w, int h);
+	int button_press_event();
 //	int test_preview(int buttonpress);
 	int64_t position_to_pixel(double position);
 	void select_label(double position);
 	double pixel_to_position(int pixel);
 	void handle_mwindow_drag();
+	void update(int flush);
 	void update_cursor();
+	void update_clock(double position);
 	double test_highlight();
+	int repeat_event(int64_t duration);
+	void activate_timeline();
 
+	TimeBarPopup *menu;
 	MWindowGUI *gui;
 };
 

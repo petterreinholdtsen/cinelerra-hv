@@ -95,13 +95,11 @@ void AboutPrefs::create_objects()
 	draw_text(x, y, "Contributors:");
 	y += get_text_height(LARGEFONT);
 
-
-	credits.append(new BC_ListBoxItem("Adam Williams"));
 	credits.append(new BC_ListBoxItem("Richard Baverstock"));
 	credits.append(new BC_ListBoxItem("Karl Bielefeldt"));
 	credits.append(new BC_ListBoxItem("Kevin Brosius"));
 	credits.append(new BC_ListBoxItem("Jean-Luc Coulon"));
-	credits.append(new BC_ListBoxItem("Jean-Michel POURE"));
+	credits.append(new BC_ListBoxItem("Jean-Michel Poure"));
 	credits.append(new BC_ListBoxItem("Jerome Cornet"));
 	credits.append(new BC_ListBoxItem("Pierre Marc Dumuid"));
 	credits.append(new BC_ListBoxItem("Alex Ferrer"));
@@ -117,6 +115,15 @@ void AboutPrefs::create_objects()
 	credits.append(new BC_ListBoxItem("Mark Taraba"));
 	credits.append(new BC_ListBoxItem("Andraz Tori"));
 	credits.append(new BC_ListBoxItem("Jonas Wulff"));
+#ifdef X_HAVE_UTF8_STRING
+	credits.append(new BC_ListBoxItem("Einar Rünkaru"));
+#else
+	credits.append(new BC_ListBoxItem("Einar R\374nkaru"));
+#endif
+	credits.append(new BC_ListBoxItem("Monty Montgomery"));
+	credits.append(new BC_ListBoxItem("Paolo Rampino"));
+	credits.append(new BC_ListBoxItem("Petter Reinholdtsen"));
+	credits.append(new BC_ListBoxItem("Nicola Ferralis"));
 
 	BC_ListBox *listbox;
 	add_subwindow(listbox = new BC_ListBox(x, 

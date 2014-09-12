@@ -33,9 +33,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BUTTON_UP 0
-#define BUTTON_UPHI 1
-#define BUTTON_DOWNHI 2
 
 BC_Button::BC_Button(int x, 
 	int y, 
@@ -170,7 +167,7 @@ int BC_Button::repeat_event(int64_t duration)
 
 int BC_Button::cursor_enter_event()
 {
-	if(top_level->event_win == win && enabled)
+	if(is_event_win() && enabled)
 	{
 		tooltip_done = 0;
 		if(top_level->button_down)
@@ -200,7 +197,7 @@ int BC_Button::cursor_leave_event()
 
 int BC_Button::button_press_event()
 {
-	if(top_level->event_win == win && get_buttonpress() == 1 && enabled)
+	if(is_event_win() && get_buttonpress() == 1 && enabled)
 	{
 		hide_tooltip();
 		if(status == BUTTON_UPHI || status == BUTTON_UP) status = BUTTON_DOWNHI;
@@ -212,7 +209,7 @@ int BC_Button::button_press_event()
 
 int BC_Button::button_release_event()
 {
-	if(top_level->event_win == win)
+	if(is_event_win())
 	{
 		hide_tooltip();
 		if(status == BUTTON_DOWNHI) 
@@ -232,13 +229,20 @@ int BC_Button::button_release_event()
 
 int BC_Button::cursor_motion_event()
 {
-	if(top_level->button_down && top_level->event_win == win && 
-		status == BUTTON_DOWNHI && !cursor_inside())
+	if(top_level->button_down && 
+		is_event_win() && 
+		status == BUTTON_DOWNHI && 
+		!cursor_inside())
 	{
 		status = BUTTON_UP;
 		draw_face();
 	}
 	return 0;
+}
+
+int BC_Button::get_status()
+{
+	return status;
 }
 
 
@@ -536,8 +540,6 @@ int BC_CancelTextButton::keypress_event()
 	if(get_keypress() == ESC) return handle_event();
 	return 0;
 }
-
-
 
 
 

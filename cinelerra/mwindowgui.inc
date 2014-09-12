@@ -25,6 +25,12 @@
 
 #define BUTTONBARHEIGHT 30
 #define BUTTONBARWIDTH 50
+#define TOTAL_PANES 4
+// pane numbers
+#define TOP_LEFT_PANE 0
+#define TOP_RIGHT_PANE 1
+#define BOTTOM_LEFT_PANE 2
+#define BOTTOM_RIGHT_PANE 3
 
 class MWindowGUI;
 

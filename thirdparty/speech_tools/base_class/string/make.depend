@@ -23,3 +23,5 @@ regerror.o: regerror.c regexp.h
 regsub.o: regsub.c regexp.h regmagic.h
 EST_strcasecmp.o: EST_strcasecmp.c ../../include/EST_strcasecmp.h
 INCLUDED_MAKE_DEPEND=1
+regsub.o: regsub.c regexp.h regmagic.h
+INCLUDED_MAKE_DEPEND=1

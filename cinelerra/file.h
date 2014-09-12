@@ -231,9 +231,9 @@ public:
 	static const char* formattostr(int format);
 	static int strtoformat(ArrayList<PluginServer*> *plugindb, char *format);
 	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
-	static int strtobits(char *bits);
+	static int strtobits(const char *bits);
 	static const char* bitstostr(int bits);
-	static int str_to_byteorder(char *string);
+	static int str_to_byteorder(const char *string);
 	static const char* byteorder_to_str(int byte_order);
 	int bytes_per_sample(int bits); // Convert the bit descriptor into a byte count.
 

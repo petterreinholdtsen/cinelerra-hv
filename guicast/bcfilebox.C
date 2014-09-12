@@ -939,7 +939,7 @@ int BC_FileBox::refresh()
 	return 0;
 }
 
-int BC_FileBox::update_filter(char *filter)
+int BC_FileBox::update_filter(const char *filter)
 {
 	fs->set_filter(filter);
 //	fs->update(0);
@@ -1032,7 +1032,7 @@ int BC_FileBox::submit_dir(char *dir)
 	return 0;
 }
 
-int BC_FileBox::submit_file(char *path, int use_this)
+int BC_FileBox::submit_file(const char *path, int use_this)
 {
 // Deactivate textbox to hide suggestions
 	textbox->deactivate();
@@ -1072,26 +1072,27 @@ int BC_FileBox::submit_file(char *path, int use_this)
 	else
 // Is a file or desired directory.  Quit the operation.
 	{
-
+		char path2[BCTEXTLEN];
+		strcpy(path2, path);
 
 // save directory for defaults
-		fs->extract_dir(directory, path);     
+		fs->extract_dir(directory, path2);     
 
 // Just take the directory
 		if(want_directory)
 		{
 			filename[0] = 0;
-			strcpy(path, directory);
+			strcpy(path2, directory);
 		}
 		else
 // Take the complete path
 		{
-			fs->extract_name(filename, path);     // save filename
+			fs->extract_name(filename, path2);     // save filename
 		}
 
-		fs->complete_path(path);
-		strcpy(this->current_path, path);          // save complete path
-		strcpy(this->submitted_path, path);          // save complete path
+		fs->complete_path(path2);
+		strcpy(this->current_path, path2);          // save complete path
+		strcpy(this->submitted_path, path2);          // save complete path
 		update_history();
 		newfolder_thread->interrupt();
 		set_done(0);

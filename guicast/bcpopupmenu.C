@@ -207,7 +207,7 @@ int BC_PopupMenu::add_item(BC_MenuItem *item)
 
 int BC_PopupMenu::remove_item(BC_MenuItem *item)
 {
-	menu_popup->remove_item(item);
+	menu_popup->remove_item(item, 0);
 	return 0;
 }
 
@@ -239,10 +239,14 @@ int BC_PopupMenu::draw_title(int flush)
 	if(!icon)
 	{
 		set_font(MEDIUMFONT);
+		char truncated[BCTEXTLEN];
+		int available_w = get_w() - margin * 2 - resources->popupmenu_triangle_margin;
+		truncate_text(truncated, text, available_w);
+		
 		BC_WindowBase::draw_center_text(
-			(get_w() - margin * 2 - resources->popupmenu_triangle_margin) / 2 + margin + offset, 
+			available_w / 2 + margin + offset, 
 			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2) + offset, 
-			text);
+			truncated);
 	}
 
 	if(icon)

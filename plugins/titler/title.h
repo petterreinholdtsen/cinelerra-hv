@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ class TitleTranslate;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <sys/types.h>
+#include <string>
 
 // Style bitwise ORed
 #define FONT_ITALIC    0x1
@@ -90,6 +91,7 @@ class TitleConfig
 {
 public:
 	TitleConfig();
+	~TitleConfig();
 
 // Only used to clear glyphs
 	int equivalent(TitleConfig &that);
@@ -129,11 +131,18 @@ public:
 	long next_keyframe_position;
 // Stamp timecode
 	int timecode;
+	int timecode_format;
 
+// temp utf8 text for non utf8 system
+	string textutf8;
 // Text to display
-	char text[BCTEXTLEN];
+	string text;
+// ?
+	FT_ULong *ucs4text;
 // Encoding to convert from 
 	char encoding[BCTEXTLEN];
+	int tlen;
+	void convert_text();
 
 // Size of window
 	int window_w, window_h;
@@ -147,6 +156,7 @@ public:
 
 	void dump();
 
+	VFrame *image;
 	char *path;
 	char *foundary;
 	char *family;
@@ -171,9 +181,9 @@ class TitleGlyph
 public:
 	TitleGlyph();
 	~TitleGlyph();
-	// character in 8 bit charset
+// character
 	int c;
-	// character in UCS-4
+// character in UCS-4
 	FT_ULong char_code;
 	int width, height, pitch, advance_w, left, top, freetype_index;
 	VFrame *data;
@@ -381,6 +391,7 @@ public:
 
 
 	void build_fonts();
+	void build_previews(TitleWindow *gui);
 	void draw_glyphs();
 	int draw_mask();
 	void overlay_mask();
@@ -390,8 +401,13 @@ public:
 	FontEntry* get_font();
 	int get_char_advance(int current, int next);
 	int get_char_height();
+	int get_char_width(FT_ULong c);
 	void get_total_extents();
 	void clear_glyphs();
+	int check_char_code_path(FT_Library &freetype_library,
+		char *path_old, 
+		FT_ULong &char_code,
+		char *path_new);
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
 		char *path);
@@ -400,9 +416,10 @@ public:
 
 
 
-
+// backward compatibility
+	void convert_encoding();
 	static const char* motion_to_text(int motion);
-	static int text_to_motion(char *text);
+	static int text_to_motion(const char *text);
 
 	static ArrayList<FontEntry*> *fonts;
 
@@ -439,8 +456,11 @@ public:
 // Fade value
 	int alpha;
 
+
+// Max dimensions for all characters.  Not equal to config.size
 // Must be calculated from rendering characters
 	int ascent;
+	int height;
 // Relative position of mask to output is text_x1, mask_y1
 // We can either round it to nearest ints to speed up replication while the text
 // itself is offset fractionally

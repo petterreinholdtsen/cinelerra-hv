@@ -111,3 +111,29 @@ srpd1.3.o: srpd1.3.cc srpd.h ../../include/EST_cutils.h \
  ../../include/EST_DMatrix.h ../../include/EST_IMatrix.h \
  ../../include/EST_SMatrix.h
 INCLUDED_MAKE_DEPEND=1
+srpd1.3.o: srpd1.3.cc srpd.h ../../include/EST_cutils.h \
+ ../../include/EST_common.h ../../include/EST_bool.h \
+ ../../include/EST_walloc.h ../../include/EST_system.h \
+ ../../include/unix/EST_defines_unix.h ../../include/EST_Wave.h \
+ ../../include/EST_Featured.h ../../include/EST_Features.h \
+ ../../include/EST_TKVL.h ../../include/EST_TList.h \
+ ../../include/EST_UList.h ../../include/EST_String.h \
+ ../../include/EST_Chunk.h ../../include/EST_strcasecmp.h \
+ ../../include/EST_Regex.h ../../include/EST_TSortable.h \
+ ../../include/instantiate/EST_TSortableI.h ../../include/EST_TIterator.h \
+ ../../include/instantiate/EST_TListI.h \
+ ../../include/instantiate/EST_TIteratorI.h \
+ ../../include/instantiate/EST_TKVLI.h \
+ ../../include/instantiate/EST_TListI.h ../../include/EST_Val.h \
+ ../../include/EST_error.h ../../include/EST_unix.h \
+ ../../include/EST_Contents.h ../../include/EST_Val_defs.h \
+ ../../include/EST_types.h ../../include/EST_TVector.h \
+ ../../include/EST_rw_status.h ../../include/instantiate/EST_TVectorI.h \
+ ../../include/EST_FMatrix.h ../../include/EST_TSimpleMatrix.h \
+ ../../include/EST_TMatrix.h ../../include/instantiate/EST_TMatrixI.h \
+ ../../include/instantiate/EST_TSimpleMatrixI.h \
+ ../../include/EST_TSimpleVector.h \
+ ../../include/instantiate/EST_TSimpleVectorI.h \
+ ../../include/EST_DMatrix.h ../../include/EST_IMatrix.h \
+ ../../include/EST_SMatrix.h
+INCLUDED_MAKE_DEPEND=1

@@ -304,7 +304,7 @@ int BRender::set_video_map(int64_t position, int value)
 	if(update_gui)
 	{
 		mwindow->gui->lock_window("BRender::set_video_map");
-		mwindow->gui->timebar->update(1);
+		mwindow->gui->update_timebar(1);
 		mwindow->gui->unlock_window();
 	}
 	return 0;

@@ -55,6 +55,41 @@ enum
 
 #include "thread.h"
 
+
+class CommandLineThread : public Thread
+{
+public:
+	CommandLineThread(ArrayList<char*> *filenames,
+		MWindow *mwindow)
+	{
+		this->filenames = filenames;
+		this->mwindow = mwindow;
+	}
+	
+	
+	~CommandLineThread()
+	{
+	}
+	
+	void run()
+	{
+//PRINT_TRACE
+		mwindow->gui->lock_window("main");
+//PRINT_TRACE
+		mwindow->load_filenames(filenames, LOADMODE_REPLACE);
+//PRINT_TRACE
+		if(filenames->size() == 1)
+			mwindow->gui->mainmenu->add_load(filenames->get(0));
+//PRINT_TRACE
+		mwindow->gui->unlock_window();
+//PRINT_TRACE
+	}
+	
+	MWindow *mwindow;
+	ArrayList<char*> *filenames;
+};
+
+
 void get_exe_path(char *result)
 {
 // Get executable path
@@ -102,30 +137,29 @@ int main(int argc, char *argv[])
 // detect an UTF-8 locale and try to use a non-Unicode locale instead
 // <---Beginning of dirty hack
 // This hack will be removed as soon as Cinelerra is UTF-8 compliant
-    char *s, *language;
+//    char *s, *language;
 
 // Query user locale
-    if ((s = getenv("LC_ALL"))  || 
-		(s = getenv("LC_MESSAGES")) || 
-		(s = getenv("LC_CTYPE")) || 
-		(s = getenv ("LANG")))
-    {
+//    if ((s = getenv("LC_ALL"))  || 
+//		(s = getenv("LC_MESSAGES")) || 
+//		(s = getenv("LC_CTYPE")) || 
+//		(s = getenv ("LANG")))
+//    {
 // Test if user locale is set to Unicode        
-        if (strstr(s, ".UTF-8"))
-        {
+//        if (strstr(s, ".UTF-8"))
+//        {
 // extract language  from language-charset@variant
-          language = strtok (s, ".@");
+//          language = strtok (s, ".@");
 // set language as the default locale
-          setenv("LANG", language, 1);
-        }
-    }
+//          setenv("LANG", language, 1);
+//        }
+//    }
 // End of dirty hack --->
 
 	bindtextdomain (PACKAGE, locale_path);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
 	setlocale (LC_CTYPE, "");
-
 
 
 
@@ -307,25 +341,23 @@ COPYRIGHT_DATE);
 //SET_TRACE
 
 // load the initial files on seperate tracks
+// use a new thread so it doesn't block the GUI
 			if(filenames.total)
 			{
-//SET_TRACE
-				mwindow.gui->lock_window("main");
-//SET_TRACE
-				mwindow.load_filenames(&filenames, LOADMODE_REPLACE);
-//SET_TRACE
-				if(filenames.total == 1)
-					mwindow.gui->mainmenu->add_load(filenames.values[0]);
-				mwindow.gui->unlock_window();
-//SET_TRACE
+//PRINT_TRACE
+				CommandLineThread *thread  = new CommandLineThread(&filenames, &mwindow);
+//PRINT_TRACE
+				thread->start();
+//PRINT_TRACE
+// thread is not deleted
 			}
 
 // run the program
-//SET_TRACE
+//PRINT_TRACE
 			mwindow.start();
-//SET_TRACE
+//PRINT_TRACE
 			mwindow.save_defaults();
-//SET_TRACE
+//PRINT_TRACE
 DISABLE_BUFFER
 			break;
 		}
@@ -334,4 +366,11 @@ DISABLE_BUFFER
 	filenames.remove_all_objects();
 	return 0;
 }
+
+
+
+
+
+
+
 

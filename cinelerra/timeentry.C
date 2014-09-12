@@ -52,7 +52,7 @@ const char* TimeEntry::day_table[] =
 	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "*"
 };
 
-int TimeEntry::day_to_int(char *day)
+int TimeEntry::day_to_int(const char *day)
 {
 	for(int i = 0; i < TOTAL_DAYS; i++)
 		if(!strcasecmp(day, day_table[i])) return i;

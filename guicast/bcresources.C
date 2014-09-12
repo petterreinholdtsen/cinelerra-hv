@@ -47,19 +47,6 @@ int BC_Resources::error = 0;
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
-#include "images/file_film_png.h"
-#include "images/file_folder_png.h"
-#include "images/file_sound_png.h"
-#include "images/file_unknown_png.h"
-#include "images/file_column_png.h"
-VFrame* BC_Resources::type_to_icon[] = 
-{
-	new VFrame(file_folder_png),
-	new VFrame(file_unknown_png),
-	new VFrame(file_film_png),
-	new VFrame(file_sound_png),
-	new VFrame(file_column_png)
-};
 
 const char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
 const char* BC_Resources::small_font2 = N_("-*-helvetica-medium-r-normal-*-11-*");
@@ -68,16 +55,17 @@ const char* BC_Resources::medium_font2 = N_("-*-helvetica-bold-r-normal-*-14-*")
 const char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
 const char* BC_Resources::large_font2 = N_("-*-helvetica-bold-r-normal-*-20-*");
 
-const char* BC_Resources::small_fontset = "6x12,*";
-const char* BC_Resources::medium_fontset = "7x14,*";
-const char* BC_Resources::large_fontset = "8x16,*";
+const char* BC_Resources::small_fontset = "-*-helvetica-medium-r-normal-*-10-*";
+const char* BC_Resources::medium_fontset = "-*-helvetica-bold-r-normal-*-14-*";
+const char* BC_Resources::large_fontset = "-*-helvetica-bold-r-normal-*-18-*";
 
-const char* BC_Resources::small_font_xft = N_("-*-luxi sans-*-r-*-*-12-*-*-*-*-*-*-*");
+const char* BC_Resources::small_font_xft = N_("Sans-8");
 const char* BC_Resources::small_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-const char* BC_Resources::medium_font_xft = N_("-*-luxi sans-*-r-*-*-16-*-*-*-*-*-*-*");
+const char* BC_Resources::medium_font_xft = N_("Sans-10");
 const char* BC_Resources::medium_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-const char* BC_Resources::large_font_xft = N_("-*-luxi sans-bold-r-*-*-20-*-*-*-*-*-*-*");
+const char* BC_Resources::large_font_xft = N_("Sans-16");
 const char* BC_Resources::large_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+
 
 suffix_to_type_t BC_Resources::suffix_to_type[] = 
 {
@@ -132,11 +120,25 @@ BC_Resources::BC_Resources()
 
 	use_xvideo = 1;
 
+#include "images/file_film_png.h"
+#include "images/file_folder_png.h"
+#include "images/file_sound_png.h"
+#include "images/file_unknown_png.h"
+#include "images/file_column_png.h"
+	static VFrame* default_type_to_icon[] = 
+	{
+		new VFrame(file_folder_png),
+		new VFrame(file_unknown_png),
+		new VFrame(file_film_png),
+		new VFrame(file_sound_png),
+		new VFrame(file_column_png)
+	};
+	type_to_icon = default_type_to_icon;
+
 
 #include "images/bar_png.h"
 	static VFrame* default_bar = new VFrame(bar_png);
 	bar_data = default_bar;
-
 
 
 #include "images/cancel_up_png.h"

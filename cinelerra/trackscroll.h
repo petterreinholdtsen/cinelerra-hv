@@ -26,22 +26,27 @@
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "timelinepane.inc"
 
 class TrackScroll : public BC_ScrollBar
 {
 public:
 	TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h);
+	TrackScroll(MWindow *mwindow, TimelinePane *pane, int x, int y, int h);
 	~TrackScroll();
 
 	void create_objects(int top, int bottom);
 	int resize_event();
+	int resize_event(int x, int y, int h);
 	int flip_vertical(int top, int bottom);
 	int update();               // reflect new track view
 	long get_distance();
 	int handle_event();
+	void set_position();
 
 	MWindowGUI *gui;
 	MWindow *mwindow;
+	TimelinePane *pane;
 	long old_position;
 };
 

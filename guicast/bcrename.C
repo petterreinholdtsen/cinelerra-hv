@@ -71,7 +71,7 @@ void BC_Rename::create_objects()
 	unlock_window();
 }
 
-char* BC_Rename::get_text()
+const char* BC_Rename::get_text()
 {
 	return textbox->get_text();
 }

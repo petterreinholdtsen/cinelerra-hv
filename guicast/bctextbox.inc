@@ -23,5 +23,6 @@
 #define BCTEXTBOX_INC
 
 class BC_TextBox;
+class BC_ScrollTextBox;
 
 #endif

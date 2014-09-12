@@ -71,15 +71,18 @@ int MeterPanel::set_meters(int meter_count, int visible)
 	if(meter_count != meters.total || visible != this->visible)
 	{
 // Delete old meters
-		meters.remove_all_objects();
-		meter_titles.remove_all_objects();
-		meter_peaks.remove_all();
-
+		if(meter_count != meters.total)
+		{
+			meters.remove_all_objects();
+			meter_titles.remove_all_objects();
+			meter_peaks.remove_all();
+		}
+		
 		this->meter_count = meter_count;
 		this->visible = visible;
 //		if(!visible) this->meter_count = 0;
 
-		if(meter_count)
+		if(meter_count && !meters.size())
 		{
 			int x1 = this->x;
 			int y1 = this->y;
@@ -149,7 +152,7 @@ void MeterPanel::reposition_window(int x, int y, int w, int h)
 	}
 }
 
-int MeterPanel::change_status_event()
+int MeterPanel::change_status_event(int new_status)
 {
 //printf("MeterPanel::change_status_event\n");
 	return 1;
@@ -423,7 +426,8 @@ MeterShow::~MeterShow()
 int MeterShow::handle_event()
 {
 //printf("MeterShow::MeterShow 1 %d\n",panel->visible );
-	panel->visible = get_value();
-	panel->change_status_event();
+// need to detect a change in visible, outside here
+//	panel->visible = get_value();
+	panel->change_status_event(get_value());
 	return 1;
 }

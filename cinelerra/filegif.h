@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,36 +23,27 @@
 #define FILEGIF_H
 
 #include "file.inc"
-#include "filebase.h"
+#include "filelist.h"
 #include "vframe.inc"
 
 // This header file is representative of any single frame file format.
 
-class FileGIF : public FileBase
+class FileGIF : public FileList
 {
 public:
-	FileGIF(Asset *asset);
+	FileGIF(Asset *asset, File *file);
 	~FileGIF();
 
-// basic commands for every file interpreter
-	int open_file(int rd, int wr);
-	int close_file_derived();
-	int64_t get_video_length();
-	int64_t get_memory_usage();
+	static int get_best_colormodel(Asset *asset, int driver);
+	static int check_sig(Asset *asset);
+	int colormodel_supported(int colormodel);
 
-	int read_header();
-	VFrame* read_frame(int use_alpha, int use_float);
-
-private:
-	int read_raw();
-	int reset_parameters_derived();
-
-// specific to GIF
-	int import_row(VPixel *output, unsigned char *row_pointer);
-
-// routines for all image files
-// frame to return through read_frame
-	VFrame *data;
+	int read_frame_header(char *path);
+	int read_frame(VFrame *output, VFrame *input);
+	
+	unsigned char *data;
+	int offset;
+	int size;
 };
 
 

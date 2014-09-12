@@ -34,6 +34,7 @@
 #include "fileflac.h"
 #include "filefork.h"
 #include "file.h"
+#include "filegif.h"
 #include "filejpeg.h"
 #include "filemov.h"
 #include "filempeg.h"
@@ -574,6 +575,13 @@ int File::open_file(Preferences *preferences,
 				file = new FileJPEG(this->asset, this);
 			}
 			else
+			if(FileGIF::check_sig(this->asset))
+			{
+// GIF file
+				fclose(stream);
+				file = new FileGIF(this->asset, this);
+			}
+			else
 			if(FileEXR::check_sig(this->asset, test))
 			{
 // EXR file
@@ -691,6 +699,11 @@ int File::open_file(Preferences *preferences,
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
 			file = new FileJPEG(this->asset, this);
+			break;
+
+		case FILE_GIF:
+		case FILE_GIF_LIST:
+			file = new FileGIF(this->asset, this);
 			break;
 
 		case FILE_EXR:
@@ -2248,7 +2261,7 @@ const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 	return "Unknown";
 }
 
-int File::strtobits(char *bits)
+int File::strtobits(const char *bits)
 {
 	if(!strcasecmp(bits, _(NAME_8BIT))) return BITSLINEAR8;
 	if(!strcasecmp(bits, _(NAME_16BIT))) return BITSLINEAR16;
@@ -2296,7 +2309,7 @@ const char* File::bitstostr(int bits)
 
 
 
-int File::str_to_byteorder(char *string)
+int File::str_to_byteorder(const char *string)
 {
 	if(!strcasecmp(string, _("Lo Hi"))) return 1;
 	return 0;
@@ -2541,7 +2554,7 @@ const char* File::get_tag(int format)
 		case FILE_FLAC:         return "flac";
 		case FILE_JPEG:         return "jpg";
 		case FILE_JPEG_LIST:    return "jpg";
-		case FILE_MOV:          return "mov";
+		case FILE_MOV:          return "mov/mp4";
 		case FILE_OGG:          return "ogg";
 		case FILE_PCM:          return "pcm";
 		case FILE_PNG:          return "png";

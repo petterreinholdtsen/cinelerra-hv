@@ -46,6 +46,7 @@
 #define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
 #define FILE_FLAC               32
 #define FILE_GIF  	    		7
+#define FILE_GIF_LIST   		36
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
 #define FILE_MOV  	    		3

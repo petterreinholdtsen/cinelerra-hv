@@ -473,6 +473,7 @@ unsigned int VFrame::make_shader(int x, ...)
 
 		delete [] source_replacement;
 	}
+	va_end(list);
 
 // Add main() function which calls all the unique main replacements in order
 	char main_function[BCTEXTLEN];
@@ -534,7 +535,7 @@ unsigned int VFrame::make_shader(int x, ...)
 	}
 
 //printf("VFrame::make_shader\n%s\n", complete_program);
-	delete [] complete_program;
+	free(complete_program);
 
 #endif
 	return result;

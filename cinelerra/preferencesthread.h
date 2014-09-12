@@ -57,7 +57,7 @@ public:
 	int update_framerate();
 	int apply_settings();
 	const char* category_to_text(int category);
-	int text_to_category(char *category);
+	int text_to_category(const char *category);
 
 	int current_dialog;
 	int thread_running;

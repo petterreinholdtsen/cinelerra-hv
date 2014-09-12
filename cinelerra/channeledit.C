@@ -902,7 +902,7 @@ void ChannelEditEditThread::set_device()
 	channel_picker->set_channel(&new_channel);
 }
 
-int ChannelEditEditThread::change_source(char *source_name)
+int ChannelEditEditThread::change_source(const char *source_name)
 {
 	int i, result;
 	for(i = 0; i < chanlists[new_channel.freqtable].count; i++)

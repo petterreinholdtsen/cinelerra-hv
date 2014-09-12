@@ -14,7 +14,7 @@ hostname = heroine
 uname -m = x86_64
 uname -r = 2.6.34
 uname -s = Linux
-uname -v = #7 SMP Fri Aug 6 21:59:29 PDT 2010
+uname -v = #14 SMP PREEMPT Fri Aug 19 22:33:26 PDT 2011
 
 /usr/bin/uname -p = unknown
 /bin/uname -X     = unknown
@@ -27,8 +27,6 @@ hostinfo               = unknown
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
 
-PATH: .
-PATH: .
 PATH: /usr/kerberos/sbin
 PATH: /usr/kerberos/bin
 PATH: /usr/local/sbin
@@ -38,10 +36,10 @@ PATH: /bin
 PATH: /usr/sbin
 PATH: /usr/bin
 PATH: /opt/cinelerra
-PATH: /usr/local/jdk1.6.0_21/bin/
+PATH: /usr/local/jdk1.7.0_07/bin/
 PATH: /root/bin
 PATH: /opt/cinelerra
-PATH: /usr/local/jdk1.6.0_21/bin/
+PATH: /usr/local/jdk1.7.0_07/bin/
 PATH: /root/bin
 
 
@@ -65,7 +63,7 @@ configure:2042: found /usr/bin/gcc
 configure:2052: result: gcc
 configure:2296: checking for C compiler version
 configure:2299: gcc --version </dev/null >&5
-gcc (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)
+gcc (GCC) 4.4.5 20101112 (Red Hat 4.4.5-2)
 Copyright (C) 2010 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -76,7 +74,7 @@ Using built-in specs.
 Target: x86_64-redhat-linux
 Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-languages=c,c++,objc,obj-c++,java,fortran,ada --enable-java-awt=gtk --disable-dssi --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-1.5.0.0/jre --enable-libgcj-multifile --enable-java-maintainer-mode --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --disable-libjava-multilib --with-ppl --with-cloog --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux
 Thread model: posix
-gcc version 4.4.4 20100630 (Red Hat 4.4.4-10) (GCC) 
+gcc version 4.4.5 20101112 (Red Hat 4.4.5-2) (GCC) 
 configure:2307: $? = 0
 configure:2309: gcc -V </dev/null >&5
 gcc: '-V' option must have argument
@@ -320,7 +318,7 @@ configure:4669: found /usr/bin/g++
 configure:4679: result: g++
 configure:4695: checking for C++ compiler version
 configure:4698: g++ --version </dev/null >&5
-g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)
+g++ (GCC) 4.4.5 20101112 (Red Hat 4.4.5-2)
 Copyright (C) 2010 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -331,7 +329,7 @@ Using built-in specs.
 Target: x86_64-redhat-linux
 Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-languages=c,c++,objc,obj-c++,java,fortran,ada --enable-java-awt=gtk --disable-dssi --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-1.5.0.0/jre --enable-libgcj-multifile --enable-java-maintainer-mode --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --disable-libjava-multilib --with-ppl --with-cloog --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux
 Thread model: posix
-gcc version 4.4.4 20100630 (Red Hat 4.4.4-10) (GCC) 
+gcc version 4.4.5 20101112 (Red Hat 4.4.5-2) (GCC) 
 configure:4706: $? = 0
 configure:4708: g++ -V </dev/null >&5
 g++: '-V' option must have argument

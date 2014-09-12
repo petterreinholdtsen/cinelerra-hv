@@ -25,23 +25,35 @@
 #include "guicast.h"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
+#include "timelinepane.inc"
 
 class SampleScroll : public BC_ScrollBar
 {
 public:
-	SampleScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int w);
+	SampleScroll(MWindow *mwindow, 
+		MWindowGUI *gui, 
+		int x, 
+		int y, 
+		int w);
+	SampleScroll(MWindow *mwindow, 
+		TimelinePane *pane, 
+		int x, 
+		int y, 
+		int w);
 	~SampleScroll();
 
 	int flip_vertical();
 	int in_use();
 	int resize_event();
-	int set_position(int flush);
+	int resize_event(int x, int y, int w);
+	int set_position();
 	int handle_event();
 	double oldposition;
 
 private:
 	MWindowGUI *gui;
 	MWindow *mwindow;
+	TimelinePane *pane;
 };
 
 

@@ -855,9 +855,9 @@ void AWindowGUI::update_asset_list()
 
 
 //printf("AWindowGUI::update_asset_list %d\n", __LINE__);
-	for(int i = assets.total - 1; i >= 0; i--)
+	for(int i = assets.size() - 1; i >= 0; i--)
 	{
-		AssetPicon *picon = (AssetPicon*)assets.values[i];
+		AssetPicon *picon = (AssetPicon*)assets.get(i);
 //printf("AWindowGUI::update_asset_list %s %d\n", picon->asset->path, picon->in_use);
 		if(!picon->in_use)
 		{
@@ -1183,6 +1183,12 @@ int AWindowFolders::selection_changed()
 	AssetPicon *picon = (AssetPicon*)get_selection(0, 0);
 	if(picon)
 	{
+		if(get_button_down() && get_buttonpress() == 3)
+		{
+			gui->folderlist_menu->update_titles();
+			gui->folderlist_menu->activate_menu();
+		}
+
 		strcpy(mwindow->edl->session->current_folder, picon->get_text());
 //printf("AWindowFolders::selection_changed 1\n");
 		gui->asset_list->draw_background();

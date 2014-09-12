@@ -82,6 +82,7 @@ void Edit::reset()
 	channel = 0;
 	user_title[0] = 0;
 	nested_edl = 0;
+	is_plugin = 0;
 }
 
 Indexable* Edit::get_source()

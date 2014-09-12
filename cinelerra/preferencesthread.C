@@ -237,7 +237,7 @@ int PreferencesThread::apply_settings()
 
 
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
-		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
+		mwindow->gui->set_meter_format(edl->session->meter_format,
 			edl->session->min_meter_db,
 			edl->session->max_meter_db);
 		mwindow->gui->unlock_window();
@@ -254,8 +254,7 @@ int PreferencesThread::apply_settings()
 	if(redraw_overlays)
 	{
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 2");
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 		mwindow->gui->unlock_window();
 	}
 
@@ -311,7 +310,7 @@ const char* PreferencesThread::category_to_text(int category)
 	return "";
 }
 
-int PreferencesThread::text_to_category(char *category)
+int PreferencesThread::text_to_category(const char *category)
 {
 SET_TRACE
 	int min_result = -1, result, result_num = 0;
@@ -446,8 +445,10 @@ int PreferencesWindow::set_current_dialog(int number)
 {
 	thread->current_dialog = number;
 
+//PRINT_TRACE
 	PreferencesDialog *dialog2 = dialog;
 	dialog = 0;
+//PRINT_TRACE
 
 // Redraw category buttons
 	for(int i = 0; i < CATEGORIES; i++)
@@ -469,6 +470,7 @@ int PreferencesWindow::set_current_dialog(int number)
 	}
 
 
+//PRINT_TRACE
 	switch(number)
 	{
 		case PreferencesThread::PLAYBACK:
@@ -492,6 +494,7 @@ int PreferencesWindow::set_current_dialog(int number)
 			break;
 	}
 
+//PRINT_TRACE
 	if(dialog)
 	{
 		dialog->draw_top_background(this, 0, 0, dialog->get_w(), dialog->get_h());

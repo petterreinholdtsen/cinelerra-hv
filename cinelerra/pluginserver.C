@@ -411,8 +411,8 @@ void PluginServer::write_table(FILE *fd)
 		multichannel,
 		synthesis,
 		transition,
-		is_lad,
-		lad_index);
+		is_lad /* ,
+		lad_index */);
 }
 
 int PluginServer::read_table(char *text)
@@ -490,8 +490,8 @@ int PluginServer::read_table(char *text)
 			&multichannel,
 			&synthesis,
 			&transition,
-			&is_lad,
-			&lad_index);
+			&is_lad /* ,
+			&lad_index */);
 //write_table(stdout);
 	}
 
@@ -1253,8 +1253,7 @@ void PluginServer::sync_parameters()
 	if(mwindow->edl->session->auto_conf->plugins)
 	{
 		mwindow->gui->lock_window("PluginServer::sync_parameters");
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 		mwindow->gui->unlock_window();
 	}
 }

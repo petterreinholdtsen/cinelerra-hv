@@ -819,7 +819,7 @@ int64_t FileSystem::get_size(char *filename)
 	return file_status.st_size;
 }
 
-int FileSystem::change_dir(char *new_dir, int update)
+int FileSystem::change_dir(const char *new_dir, int update)
 {
 	char new_dir_full[BCTEXTLEN];
 	

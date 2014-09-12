@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2008-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,9 @@
 #define LISTBOX_MULTIPLE 1      // Multiple selections
 
 // Display format
-#define LISTBOX_TEXT     0
-#define LISTBOX_ICONS    1
+#define LISTBOX_TEXT         0
+#define LISTBOX_ICONS        1
+#define LISTBOX_ICON_LIST    2
 
 // Icon position
 #define ICON_LEFT        0

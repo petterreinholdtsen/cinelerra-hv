@@ -151,7 +151,7 @@ static int get_transport_payload(mpeg3_demuxer_t *demuxer,
 
 	if(bytes < 0)
 	{
-//		fprintf(stderr, "get_transport_payload: got negative payload size!\n");
+		fprintf(stderr, "get_transport_payload: got negative payload size!\n");
 		return 1;
 	}
 /*
@@ -389,7 +389,6 @@ static int get_pes_packet(mpeg3_demuxer_t *demuxer)
 	demuxer->stream_id = packet_read_char(demuxer);
 
 
-//printf("get_pes_packet %d stream_id=%02x\n", __LINE__, demuxer->stream_id);
 	if(demuxer->dump)
 	{
 		fprintf(stderr, " stream_id=0x%02x\n", demuxer->stream_id);

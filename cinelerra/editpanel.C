@@ -25,6 +25,7 @@
 #include "clipedit.h"
 #include "cplayback.h"
 #include "cwindow.h"
+#include "cwindowgui.h"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -99,6 +100,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	nextlabel = 0;
 	prevedit = 0;
 	nextedit = 0;
+	meters = 0;
 }
 
 EditPanel::~EditPanel()
@@ -117,6 +119,21 @@ void EditPanel::update()
 	if(arrow) arrow->update(new_editing_mode == EDITING_ARROW);
 	if(ibeam) ibeam->update(new_editing_mode == EDITING_IBEAM);
 	if(keyframe) keyframe->update(mwindow->edl->session->auto_keyframes);
+	if(meters) 
+	{
+//printf("EditPanel::update %d %p %p\n", __LINE__, subwindow, (BC_WindowBase*)mwindow->cwindow->gui);
+		if(subwindow == (BC_WindowBase*)mwindow->cwindow->gui)
+		{
+//printf("EditPanel::update %d %d\n", __LINE__, mwindow->edl->session->cwindow_meter);
+			meters->update(mwindow->edl->session->cwindow_meter);
+			mwindow->cwindow->gui->update_meters();
+		}
+		else
+		{
+//printf("EditPanel::update %d %d\n", __LINE__, mwindow->edl->session->vwindow_meter);
+			meters->update(mwindow->edl->session->vwindow_meter);
+		}
+	}
 	subwindow->flush();
 }
 

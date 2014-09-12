@@ -96,7 +96,8 @@ Theme::Theme()
 #include "data/about_png.h"
 	about_bg = new VFrame(about_png);
 
-
+	pane_color = BLACK;
+	drag_pane_color = WHITE;
 
 	
 
@@ -483,20 +484,75 @@ void Theme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mstatus_progress_w = 230;
 	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
 	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
+	mcanvas_x = 0;
+	mcanvas_y = mbuttons_y - 1 + mbuttons_h;
+	mcanvas_w = w;
+	mcanvas_h = mzoom_y - mtimebar_y;
 	patchbay_x = 0;
-	patchbay_y = mtimebar_y + mtimebar_h;
+	patchbay_y = mcanvas_y + mclock_h;
 	patchbay_w = get_image("patchbay_bg")->get_w();
-	patchbay_h = mzoom_y - patchbay_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
-	mcanvas_x = patchbay_x + patchbay_w;
-	mcanvas_y = mtimebar_y + mtimebar_h;
-	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
-	mcanvas_h = patchbay_h;
+	patchbay_h = mcanvas_h - mclock_h;
+	pane_w = get_image_set("xpane")[0]->get_w();
+	pane_h = get_image_set("ypane")[0]->get_h();
+	pane_x = mcanvas_x + mcanvas_w;
+	pane_y = mcanvas_y + mcanvas_h;
 	mhscroll_x = 0;
-	mhscroll_y = mcanvas_y + mcanvas_h;
+	mhscroll_y = mcanvas_y + mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ);
 	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
 	mvscroll_x = mcanvas_x + mcanvas_w;
 	mvscroll_y = mcanvas_y;
 	mvscroll_h = mcanvas_h;
+}
+
+void Theme::get_pane_sizes(MWindowGUI *gui, 
+	int *view_x,
+	int *view_y,
+	int *view_w, 
+	int *view_h, 
+	int number,
+	int x,
+	int y,
+	int w, 
+	int h)
+{
+	*view_x = x;
+	*view_y = y;
+	*view_w = w;
+	*view_h = h;
+	
+// patchbay
+	if(number == TOP_LEFT_PANE ||
+		number == BOTTOM_LEFT_PANE)
+	{
+		*view_x += patchbay_w;
+		*view_w -= patchbay_w;
+	}
+
+// timebar
+	if(number == TOP_LEFT_PANE || 
+		number == TOP_RIGHT_PANE)
+	{
+		*view_y += mtimebar_h;
+		*view_h -= mtimebar_h;
+	}
+
+// samplescroll
+	if(number == BOTTOM_LEFT_PANE ||
+		number == BOTTOM_RIGHT_PANE ||
+		gui->horizontal_panes() ||
+		gui->total_panes() == 1)
+	{
+		*view_h -= BC_ScrollBar::get_span(SCROLL_HORIZ);
+	}
+
+// trackscroll
+	if(number == TOP_RIGHT_PANE ||
+		number == BOTTOM_RIGHT_PANE ||
+		gui->vertical_panes() ||
+		gui->total_panes() == 1)
+	{
+		*view_w -= BC_ScrollBar::get_span(SCROLL_VERT);
+	}
 }
 
 void Theme::draw_mwindow_bg(MWindowGUI *gui)

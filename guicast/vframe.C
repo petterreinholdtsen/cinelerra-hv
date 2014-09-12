@@ -45,8 +45,11 @@ public:
 				   png_size_t length)
 	{
 		VFrame *frame = (VFrame*)png_get_io_ptr(png_ptr);
-		if(frame->image_size - frame->image_offset < length) 
+		if(frame->image_size - frame->image_offset < length)
+		{
+			printf("PngReadFunction::png_read_function %d: overrun\n", __LINE__);
 			length = frame->image_size - frame->image_offset;
+		}
 
 		memcpy(data, &frame->image[frame->image_offset], length);
 		frame->image_offset += length;
@@ -299,7 +302,7 @@ int VFrame::clear_objects(int do_opengl)
 				if(shmid >= 0) 
 					shmdt(data);
 				else
-					delete [] data;
+					free(data);
 //PRINT_TRACE
 			}
 
@@ -494,6 +497,7 @@ int VFrame::allocate_data(unsigned char *data,
 		}
 		else
 		{
+// Have to use malloc for libpng
 			this->data = (unsigned char*)malloc(size);
 		}
 
@@ -618,6 +622,7 @@ int VFrame::allocate_compressed_data(long bytes)
 		}
 		else
 		{
+// Have to use malloc for libpng
 			new_data = (unsigned char*)malloc(bytes);
 		}
 
@@ -629,7 +634,7 @@ UNBUFFER(data);
 			if(shmid >= 0) 
 				if(data) shmdt(data);
 			else
-				delete [] data;
+				free(data);
 		}
 		else
 		if(memory_type == VFrame::SHMGET)
@@ -654,6 +659,7 @@ UNBUFFER(data);
 		}
 		else
 		{
+// Have to use malloc for libpng
 			data = (unsigned char*)malloc(bytes);
 		}
 
@@ -728,7 +734,6 @@ int VFrame::read_png(const unsigned char *data)
 		png_infop info_ptr = png_create_info_struct(png_ptr);
 		int new_color_model;
 
-
 		image_offset = 0;
 		image = data + 4;
 		image_size = (((unsigned long)data[0]) << 24) | 
@@ -768,9 +773,8 @@ int VFrame::read_png(const unsigned char *data)
 			new_color_model,
 			-1);
 
-
+//printf("VFrame::read_png %d %d %d %p\n", __LINE__, w, h, get_rows());
 		png_read_image(png_ptr, get_rows());
-
 
 
 
@@ -928,10 +932,6 @@ int VFrame::clear_frame()
 		case BC_COMPRESSED:
 			break;
 
-		case BC_YUV420P:
-			bzero(data, h * w * 2);
-			break;
-
 		case BC_YUV888:
 			ZERO_YUV(3, unsigned char, 0xff);
 			break;
@@ -949,7 +949,7 @@ int VFrame::clear_frame()
 			break;
 		
 		default:
-			bzero(data, h * bytes_per_line);
+			bzero(data, calculate_data_size(w, h, bytes_per_line, color_model));
 			break;
 	}
 	return 0;

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ void SUV::initialize()
 	resources->menu_down = 0x4b4b4b;
 	resources->menu_up = 0x4b4b4b;
 	resources->menu_shadow = 0x202020;
-	resources->popupmenu_margin = 10;
+	resources->popupmenu_margin = 15;
 	resources->popupmenu_triangle_margin = 15;
 
 	resources->listbox_title_color = 0xbfbfbf;
@@ -443,13 +443,17 @@ void SUV::initialize()
 	mtransport_margin = 20;
 	toggle_margin = 20;
 
+	new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png", "pane");
+	new_image_set("xpane", 3, "xpane_up.png", "xpane_hi.png", "xpane_dn.png");
+	new_image_set("ypane", 3, "ypane_up.png", "ypane_hi.png", "ypane_dn.png");
+
 	new_image("mbutton_bg", "mbutton_bg.png");
 	new_image("timebar_bg", "timebar_bg_flat.png");
 	new_image("timebar_brender", "timebar_brender.png");
 	new_image("clock_bg", "mclock_flat.png");
 	new_image("patchbay_bg", "patchbay_bg.png");
 	new_image("statusbar", "statusbar.png");
-	new_image("mscroll_filler", "mscroll_filler.png");
+//	new_image("mscroll_filler", "mscroll_filler.png");
 
 	new_image_set("zoombar_menu", 3, "zoompopup_up.png", "zoompopup_hi.png", "zoompopup_dn.png");
 	new_image_set("zoombar_tumbler", 4, "zoomtumble_up.png", "zoomtumble_hi.png", "zoomtumble_bottom.png", "zoomtumble_top.png");
@@ -874,6 +878,9 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("clock_bg"));
 
 // Patchbay
+//printf("SUV::draw_mwindow_bg %d %d %d\n", __LINE__, 
+//mclock_h, 
+//mtimebar_h);
 	gui->draw_3segmentv(patchbay_x, 
 		patchbay_y, 
 		patchbay_h, 
@@ -881,10 +888,10 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 
 // Track canvas
 	gui->set_color(BLACK);
-	gui->draw_box(mcanvas_x, 
-		mcanvas_y, 
-		mcanvas_w, 
-		patchbay_h);
+	gui->draw_box(mcanvas_x + get_image("patchbay_bg")->get_w(), 
+		mcanvas_y + mtimebar_h, 
+		mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT), 
+		mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ) - mtimebar_h);
 
 // Timebar
 	gui->draw_3segmenth(mtimebar_x, 
@@ -900,9 +907,9 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 		25);
 
 // Scrollbar filler
-	gui->draw_vframe(get_image("mscroll_filler"), 
-		mhscroll_x + mhscroll_w,
-		mvscroll_y + mvscroll_h);
+//	gui->draw_vframe(get_image("mscroll_filler"), 
+//		mcanvas_x + mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT),
+//		mcanvas_y + mcanvas_h - BC_ScrollBar::get_span(SCROLL_HORIZ));
 
 // Status
 	gui->draw_3segmenth(mzoom_x,

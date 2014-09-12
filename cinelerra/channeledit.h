@@ -255,7 +255,7 @@ public:
 	void run();
 	int edit_channel(Channel *channel, int editing);
 	void set_device();       // Set the device to the new channel
-	int change_source(char *source_name);   // Change to the source matching the name
+	int change_source(const char *source_name);   // Change to the source matching the name
 	int source_up();
 	int source_down();
 	int set_input(int value);

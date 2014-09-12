@@ -276,7 +276,7 @@ void PatchGUI::toggle_behavior(int type,
 			*output = 1;
 		}
 		toggle->set_value(*output);
-		patchbay->update();
+
 		patchbay->drag_operation = type;
 		patchbay->new_status = 1;
 	}
@@ -319,6 +319,9 @@ void PatchGUI::toggle_behavior(int type,
 		case Tracks::EXPAND:
 			break;
 	}
+
+// update all panes
+	mwindow->gui->update_patchbay();
 }
 
 
@@ -341,7 +344,7 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 }
 
 
-int64_t PatchGUI::calculate_nudge(char *string)
+int64_t PatchGUI::calculate_nudge(const char *string)
 {
 	if(mwindow->edl->session->nudge_seconds)
 	{
@@ -616,8 +619,7 @@ int MutePatch::button_press_event()
 
 		if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
 		{
-			mwindow->gui->canvas->draw_overlays();
-			mwindow->gui->canvas->flash();
+			mwindow->gui->draw_overlays(1);
 		}
 		return 1;
 	}
@@ -684,7 +686,8 @@ int ExpandPatch::button_press_event()
 			get_value(),
 			this,
 			&patch->track->expand_view);
-		mwindow->trackmovement(mwindow->edl->local_session->track_start);
+		mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+		mwindow->gui->draw_trackmovement();
 		return 1;
 	}
 	return 0;
@@ -721,8 +724,7 @@ int TitlePatch::handle_event()
 	mwindow->undo->update_undo_before(_("track title"), this);
 	strcpy(patch->track->title, get_text());
 	mwindow->update_plugin_titles();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->gui->draw_overlays(1);
 	mwindow->undo->update_undo_after(_("track title"), LOAD_PATCHES);
 	return 1;
 }

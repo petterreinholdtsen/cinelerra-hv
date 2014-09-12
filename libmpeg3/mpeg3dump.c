@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
 	int print_offsets = 1;
 	int print_pids = 1;
 	int print_second_offsets = 0;
-	int first_file = -1;
 
 	outfile[0] = 0;
 	if(argc < 2)
@@ -73,211 +72,201 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%s exists.\n", outfile);
 				exit(1);
 			}
-			
-			i++;
-		}
-		else
-		if(first_file == -1)
-		{
-			first_file = i;
 		}
 	}
 
-
-	int current_arg = 0;
-	for(current_arg = first_file; current_arg < argc; current_arg++)
+	int error = 0;
+	file = mpeg3_open(argv[argc - 1], &error);
+	if(outfile[0])
 	{
-		int error = 0;
-		file = mpeg3_open(argv[current_arg], &error);
-		if(outfile[0])
+		out = fopen(outfile, "wb");
+	}
+
+
+
+
+
+
+
+
+	if(file)
+	{
+
+// Audio streams
+		fprintf(stderr, "total_astreams=%d\n", mpeg3_total_astreams(file));
+
+		for(i = 0; i < mpeg3_total_astreams(file); i++)
 		{
-			out = fopen(outfile, "wb");
+			fprintf(stderr, "  Stream 0x%04x: channels=%d rate=%d samples=%ld format=%s\n", 
+				file->atrack[i]->demuxer->astream, 
+				mpeg3_audio_channels(file, i), 
+				mpeg3_sample_rate(file, i),
+				mpeg3_audio_samples(file, i),
+				mpeg3_audio_format(file, i));
+			
+			if(print_offsets)
+			{
+				fprintf(stderr, "total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
+				for(j = 0; j < file->atrack[i]->total_sample_offsets; j++)
+				{
+					fprintf(stderr, "%llx ", file->atrack[i]->sample_offsets[j]);
+					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
+				}
+				fprintf(stderr, "\n");
+			}
 		}
 
 
 
+// Video streams
+		fprintf(stderr, "total_vstreams=%d\n", mpeg3_total_vstreams(file));
 
-
-
-
-
-		if(file)
+		for(i = 0; i < mpeg3_total_vstreams(file); i++)
 		{
-
-	// Titles
-			fprintf(stderr, "total_titles=%d\n", file->demuxer->total_titles);
-			for(i = 0; i < file->demuxer->total_titles; i++)
+			fprintf(stderr, "  Stream 0x%04x: w=%d h=%d framerate=%0.3f frames=%ld coding=%s\n", 
+				file->vtrack[i]->demuxer->vstream, 
+				mpeg3_video_width(file, i), 
+				mpeg3_video_height(file, i), 
+				mpeg3_frame_rate(file, i),
+				mpeg3_video_frames(file, i),
+				mpeg3_colormodel(file, i) == MPEG3_YUV420P ? "420" : "422");
+			
+			if(print_offsets)
 			{
-				fprintf(stderr, "  Title path=%s total_bytes=%llx cell_table_size=%d\n", 
-					file->demuxer->titles[i]->fs->path,
-					file->demuxer->titles[i]->total_bytes, 
-					file->demuxer->titles[i]->cell_table_size);
-
-				if(print_offsets)
+				fprintf(stderr, "total_frame_offsets=%d\n", file->vtrack[i]->total_frame_offsets);
+				for(j = 0; j < file->vtrack[i]->total_frame_offsets; j++)
 				{
-					for(j = 0; j < file->demuxer->titles[i]->cell_table_size; j++)
-						fprintf(stderr, "    Cell: %llx-%llx %llx-%llx program=%d\n", 
-							file->demuxer->titles[i]->cell_table[j].program_start, 
-							file->demuxer->titles[i]->cell_table[j].program_end,
-							file->demuxer->titles[i]->cell_table[j].title_start, 
-							file->demuxer->titles[i]->cell_table[j].title_end,
-							file->demuxer->titles[i]->cell_table[j].program);
+					fprintf(stderr, "%d=%llx ", j, file->vtrack[i]->frame_offsets[j]);
+					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
 				}
-			}
+				fprintf(stderr, "\n");
 
-
-
-	// Pids
-			if(print_pids)
-			{
-				mpeg3_demuxer_t *demuxer = file->demuxer;
-				fprintf(stderr, "Total PIDs=%d\n", demuxer->total_pids);
-				for(i = 0; i < demuxer->total_pids; i++)
+				fprintf(stderr, "total_keyframe_numbers=%d\n", file->vtrack[i]->total_keyframe_numbers);
+				for(j = 0; j < file->vtrack[i]->total_keyframe_numbers; j++)
 				{
-					fprintf(stderr, "0x%04x ", demuxer->pid_table[i]);
+					fprintf(stderr, "%lld ", file->vtrack[i]->keyframe_numbers[j]);
+					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
 				}
 				fprintf(stderr, "\n");
 			}
 
-
-	// Audio streams
-			fprintf(stderr, "total_astreams=%d\n", mpeg3_total_astreams(file));
-
-			for(i = 0; i < mpeg3_total_astreams(file); i++)
+			if(print_second_offsets)
 			{
-				fprintf(stderr, "  Stream 0x%04x: channels=%d rate=%d samples=%ld format=%s\n", 
-					file->atrack[i]->demuxer->astream, 
-					mpeg3_audio_channels(file, i), 
-					mpeg3_sample_rate(file, i),
-					mpeg3_audio_samples(file, i),
-					mpeg3_audio_format(file, i));
-
-				if(print_offsets)
+				fprintf(stderr, "\n\n\n");
+				int step = (int)(mpeg3_frame_rate(file, i) + 1);
+				int64_t prev_offset = 0;
+				for(j = 0; j < file->vtrack[i]->total_frame_offsets; j += step)
 				{
-					fprintf(stderr, "total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
-					for(j = 0; j < file->atrack[i]->total_sample_offsets; j++)
-					{
-						fprintf(stderr, "%llx ", file->atrack[i]->sample_offsets[j]);
-						if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
-					}
-					fprintf(stderr, "\n");
+					int64_t current_offset = file->vtrack[i]->frame_offsets[j];
+					fprintf(stderr, "%lld\n", current_offset - prev_offset);
+					prev_offset = current_offset;
 				}
 			}
+		}
 
-
-
-	// Video streams
-			fprintf(stderr, "total_vstreams=%d\n", mpeg3_total_vstreams(file));
-
-			for(i = 0; i < mpeg3_total_vstreams(file); i++)
+// Subtitle tracks
+		printf("total subtitle tracks: %d\n", mpeg3_subtitle_tracks(file));
+		for(i = 0; i < mpeg3_subtitle_tracks(file); i++)
+		{
+			mpeg3_strack_t *strack = file->strack[i];
+			printf("  stream: 0x%02x total_offsets: %d\n", 
+				strack->id,
+				strack->total_offsets);
+			if(print_offsets)
 			{
-				fprintf(stderr, "  Stream 0x%04x: w=%d h=%d framerate=%0.3f frames=%ld coding=%s\n", 
-					file->vtrack[i]->demuxer->vstream, 
-					mpeg3_video_width(file, i), 
-					mpeg3_video_height(file, i), 
-					mpeg3_frame_rate(file, i),
-					mpeg3_video_frames(file, i),
-					mpeg3_colormodel(file, i) == MPEG3_YUV420P ? "420" : "422");
-
-				if(print_offsets)
+				for(j = 0; j < strack->total_offsets; j++)
 				{
-					fprintf(stderr, "total_frame_offsets=%d\n", file->vtrack[i]->total_frame_offsets);
-					for(j = 0; j < file->vtrack[i]->total_frame_offsets; j++)
-					{
-						fprintf(stderr, "%d=%llx ", j, file->vtrack[i]->frame_offsets[j]);
-						if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
-					}
-					fprintf(stderr, "\n");
-
-					fprintf(stderr, "total_keyframe_numbers=%d\n", file->vtrack[i]->total_keyframe_numbers);
-					for(j = 0; j < file->vtrack[i]->total_keyframe_numbers; j++)
-					{
-						fprintf(stderr, "%lld ", file->vtrack[i]->keyframe_numbers[j]);
-						if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
-					}
-					fprintf(stderr, "\n");
+					printf("%llx ", strack->offsets[j]);
 				}
-
-				if(print_second_offsets)
-				{
-					fprintf(stderr, "\n\n\n");
-					int step = (int)(mpeg3_frame_rate(file, i) + 1);
-					int64_t prev_offset = 0;
-					for(j = 0; j < file->vtrack[i]->total_frame_offsets; j += step)
-					{
-						int64_t current_offset = file->vtrack[i]->frame_offsets[j];
-						fprintf(stderr, "%lld\n", current_offset - prev_offset);
-						prev_offset = current_offset;
-					}
-				}
+				printf("\n");
 			}
+		}
 
-	// Subtitle tracks
-			fprintf(stderr, "total subtitle tracks: %d\n", mpeg3_subtitle_tracks(file));
-			for(i = 0; i < mpeg3_subtitle_tracks(file); i++)
+// Titles
+		fprintf(stderr, "total_titles=%d\n", file->demuxer->total_titles);
+		for(i = 0; i < file->demuxer->total_titles; i++)
+		{
+			fprintf(stderr, "  Title path=%s total_bytes=%llx cell_table_size=%d\n", 
+				file->demuxer->titles[i]->fs->path,
+				file->demuxer->titles[i]->total_bytes, 
+				file->demuxer->titles[i]->cell_table_size);
+			
+			if(print_offsets)
 			{
-				mpeg3_strack_t *strack = file->strack[i];
-				fprintf(stderr, "  stream: 0x%02x total_offsets: %d\n", 
-					strack->id,
-					strack->total_offsets);
-				if(print_offsets)
-				{
-					for(j = 0; j < strack->total_offsets; j++)
-					{
-						fprintf(stderr, "%llx ", strack->offsets[j]);
-					}
-					fprintf(stderr, "\n");
-				}
+				for(j = 0; j < file->demuxer->titles[i]->cell_table_size; j++)
+					fprintf(stderr, "    Cell: %llx-%llx %llx-%llx program=%d\n", 
+						file->demuxer->titles[i]->cell_table[j].program_start, 
+						file->demuxer->titles[i]->cell_table[j].program_end,
+						file->demuxer->titles[i]->cell_table[j].title_start, 
+						file->demuxer->titles[i]->cell_table[j].title_end,
+						file->demuxer->titles[i]->cell_table[j].program);
 			}
+		}
 
-	// Write audio
-			if(decompress_audio)
+
+
+// Pids
+		if(print_pids)
+		{
+			mpeg3_demuxer_t *demuxer = file->demuxer;
+			printf("Total PIDs=%d\n", demuxer->total_pids);
+			for(i = 0; i < demuxer->total_pids; i++)
 			{
-				mpeg3_set_cpus(file, 2);
- 				audio_output_f = malloc(BUFSIZE * sizeof(float));
-				audio_output_i = malloc(BUFSIZE * 3 * mpeg3_audio_channels(file, audio_track));
+				printf("0x%04x ", demuxer->pid_table[i]);
+			}
+			printf("\n");
+		}
 
-	//printf("%d\n", mpeg3_end_of_audio(file, audio_track));
-				while(!mpeg3_end_of_audio(file, audio_track) && !result)
+
+
+// Write audio
+		if(decompress_audio)
+		{
+			mpeg3_set_cpus(file, 2);
+ 			audio_output_f = malloc(BUFSIZE * sizeof(float));
+			audio_output_i = malloc(BUFSIZE * 3 * mpeg3_audio_channels(file, audio_track));
+
+//printf("%d\n", mpeg3_end_of_audio(file, audio_track));
+			while(!mpeg3_end_of_audio(file, audio_track) && !result)
+			{
+				test_32bit_overflow(outfile, &out_counter, &out);
+				
+				for(i = 0; i < mpeg3_audio_channels(file, audio_track); i++)
 				{
-					test_32bit_overflow(outfile, &out_counter, &out);
+					if(i == 0)
+  						result = mpeg3_read_audio(file, 
+							audio_output_f, 
+							0, 
+							i, 
+							BUFSIZE, 
+							audio_track);
+					else
+						result = mpeg3_reread_audio(file, 
+							audio_output_f,      /* Pointer to pre-allocated buffer of floats */
+							0,      /* Pointer to pre-allocated buffer of int16's */
+							i,          /* Channel to decode */
+							BUFSIZE,         /* Number of samples to decode */
+							audio_track);
 
-					for(i = 0; i < mpeg3_audio_channels(file, audio_track); i++)
+					for(j = 0; j < BUFSIZE; j++)
 					{
-						if(i == 0)
-  							result = mpeg3_read_audio(file, 
-								audio_output_f, 
-								0, 
-								i, 
-								BUFSIZE, 
-								audio_track);
+						int sample = audio_output_f[j] * 0x7fffff;
+						unsigned char *output_i = audio_output_i + j * 3 * mpeg3_audio_channels(file, audio_track) + i * 3;
+						if(sample > 0x7fffff) 
+							sample = 0x7fffff;
 						else
-							result = mpeg3_reread_audio(file, 
-								audio_output_f,      /* Pointer to pre-allocated buffer of floats */
-								0,      /* Pointer to pre-allocated buffer of int16's */
-								i,          /* Channel to decode */
-								BUFSIZE,         /* Number of samples to decode */
-								audio_track);
-
-						for(j = 0; j < BUFSIZE; j++)
-						{
-							int sample = audio_output_f[j] * 0x7fffff;
-							unsigned char *output_i = audio_output_i + j * 3 * mpeg3_audio_channels(file, audio_track) + i * 3;
-							if(sample > 0x7fffff) 
-								sample = 0x7fffff;
-							else
-							if(sample < -0x7fffff)
-								sample = -0x7fffff;
-							*output_i++ = (sample & 0xff0000) >> 16;
-							*output_i++ = (sample & 0xff00) >> 8;
-							*output_i = sample & 0xff;
-						}
-
+						if(sample < -0x7fffff)
+							sample = -0x7fffff;
+						*output_i++ = (sample & 0xff0000) >> 16;
+						*output_i++ = (sample & 0xff00) >> 8;
+						*output_i = sample & 0xff;
 					}
-
-					result = !fwrite(audio_output_i, BUFSIZE * 3 * mpeg3_audio_channels(file, audio_track), 1, out);
+						
 				}
+				
+				result = !fwrite(audio_output_i, BUFSIZE * 3 * mpeg3_audio_channels(file, audio_track), 1, out);
 			}
+		}
 
 /*
  * 		audio_output_i = malloc(BUFSIZE * 2 * mpeg3_audio_channels(file, 0));
@@ -305,8 +294,7 @@ int main(int argc, char *argv[])
  * printf("dump 2\n");
  */
 
-			mpeg3_close(file);
-		}
+		mpeg3_close(file);
 	}
 	return 0;
 }

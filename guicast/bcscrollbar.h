@@ -23,6 +23,7 @@
 #define BCSCROLLBAR_H
 
 #include "bclistbox.inc"
+#include "bctextbox.inc"
 #include "bcsubwindow.h"
 
 // Orientations
@@ -71,6 +72,7 @@ public:
 	virtual ~BC_ScrollBar();
 
 	friend class BC_ListBox;
+	friend class BC_ScrollTextBox;
 
 	virtual int handle_event() { return 0; };
 	int initialize();

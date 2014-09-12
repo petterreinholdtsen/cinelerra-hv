@@ -37,11 +37,11 @@
 #define AUDIO_FILE "/tmp/audio.pcm"
 #define VIDEO_FILE "/tmp/video.mov"
 //#define VCODEC QUICKTIME_MJPA
-#define VCODEC QUICKTIME_JPEG
+//#define VCODEC QUICKTIME_JPEG
 
 
 // Only 1 variation of this, recorded by 1 camcorder
-//#define VCODEC QUICKTIME_H264
+#define VCODEC QUICKTIME_H264
 // H264 rendered by Cinelerra
 #define USE_X264
 

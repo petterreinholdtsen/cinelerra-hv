@@ -34,7 +34,8 @@ IMAGES = \
 	titlesafe.png \
 	toolwindow.png \
 	top_justify.png \
-	wrench.png
+	wrench.png \
+	magnify.png
 
 $(OUTPUT):
 	cinelerra.html

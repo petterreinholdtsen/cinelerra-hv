@@ -150,111 +150,111 @@ void RecordAudio::run()
 		!write_result)
 	{
 // Handle data from the audio device.
-			if(!record_thread->monitor)
-			{
+		if(!record_thread->monitor)
+		{
 // Read into file's buffer for recording.
 // device needs to write buffer starting at fragment position
 //printf("RecordAudio::run %d\n",__LINE__);
-				grab_result = record->adevice->read_buffer(input, 
-					fragment_size,
-					over, 
-					max, 
-					fragment_position);
+			grab_result = record->adevice->read_buffer(input, 
+				fragment_size,
+				over, 
+				max, 
+				fragment_position);
 //printf("RecordAudio::run %d\n",__LINE__);
-			}
-			else
-			{
+		}
+		else
+		{
 // Read into monitor buffer for monitoring.
 //printf("RecordAudio::run %d %d\n",__LINE__, fragment_size);
-				grab_result = record->adevice->read_buffer(input, 
-					fragment_size,
-					over, 
-					max, 
-					0);
+			grab_result = record->adevice->read_buffer(input, 
+				fragment_size,
+				over, 
+				max, 
+				0);
 //printf("RecordAudio::run %d\n",__LINE__);
-			}
+		}
 
 // Update timer for synchronization
-			timer_lock->lock("RecordAudio::run");
-			
-			if(!record_thread->monitor)
-			{
-				record->get_current_batch()->current_sample += fragment_size;
-				record->get_current_batch()->total_samples = 
-					MAX(record->get_current_batch()->current_sample, record->get_current_batch()->total_samples);
-			}
+		timer_lock->lock("RecordAudio::run");
 
-			record->get_current_batch()->session_samples += fragment_size;
-			timer.update();
-			timer_lock->unlock();
+		if(!record_thread->monitor)
+		{
+			record->get_current_batch()->current_sample += fragment_size;
+			record->get_current_batch()->total_samples = 
+				MAX(record->get_current_batch()->current_sample, record->get_current_batch()->total_samples);
+		}
+
+		record->get_current_batch()->session_samples += fragment_size;
+		timer.update();
+		timer_lock->unlock();
 
 //printf("RecordAudio::run 2\n");
 // Get clipping status
-			if(record->monitor_audio || !record_thread->monitor)
+		if(record->monitor_audio || !record_thread->monitor)
+		{
+			clipped_sample = 0;
+			for(channel = 0; channel < record_channels; channel++)
 			{
-				clipped_sample = 0;
-				for(channel = 0; channel < record_channels; channel++)
-				{
-					if(over[channel]) clipped_sample = 1;
-				}
+				if(over[channel]) clipped_sample = 1;
 			}
+		}
 
 // Update meters if monitoring
 //printf("RecordAudio::run 2 %d %d %d %d\n", record->monitor_audio, record_thread->batch_done(), record_thread->loop_done(), grab_result);
-			if(record->monitor_audio && 
-				!batch_done && 
-				!grab_result)
+		if(record->monitor_audio && 
+			!batch_done && 
+			!grab_result)
+		{
+			record->record_monitor->window->lock_window("RecordAudio::run 1");
+			for(channel = 0; channel < record_channels; channel++)
 			{
-				record->record_monitor->window->lock_window("RecordAudio::run 1");
-				for(channel = 0; channel < record_channels; channel++)
-				{
-					record->record_monitor->window->meters->meters.values[channel]->update(
-						max[channel], 
-						over[channel]);
-				}
-				record->record_monitor->window->unlock_window();
+				record->record_monitor->window->meters->meters.values[channel]->update(
+					max[channel], 
+					over[channel]);
 			}
+			record->record_monitor->window->unlock_window();
+		}
 
 
 //printf("RecordAudio::run 2\n");
 // Write file if writing
-			if(!record_thread->monitor)
-			{
-				fragment_position += fragment_size;
+		if(!record_thread->monitor)
+		{
+			fragment_position += fragment_size;
 
-				if(fragment_position >= buffer_size)
-				{
-					write_buffer(0);
-				}
+			if(fragment_position >= buffer_size)
+			{
+				write_buffer(0);
+			}
 
 
 //printf("RecordAudio::run 2 %f\n", record->current_display_position());
-				if(!record->default_asset->video_data) 
-					gui->update_position(record->current_display_position());
-				if(clipped_sample) 
-					gui->update_clipped_samples(++total_clipped_samples);
+			if(!record->default_asset->video_data) 
+				gui->update_position(record->current_display_position());
+			if(clipped_sample) 
+				gui->update_clipped_samples(++total_clipped_samples);
 
-				if(!record_thread->monitor && 
-					!batch_done && 
-					!write_result && 
-					!record->default_asset->video_data)
-				{
+			if(!record_thread->monitor && 
+				!batch_done && 
+				!write_result && 
+				!record->default_asset->video_data)
+			{
 // handle different recording modes
-					switch(record->get_current_batch()->record_mode)
-					{
-						case RECORD_TIMED:
-							if(record->current_display_position() > *record->current_duration())
-								batch_done = 1;
-							break;
-						case RECORD_LOOP:
-							if(record->current_display_position() > *record->current_duration())
-								batch_done = 1;
-							break;
-						case RECORD_SCENETOSCENE:
-							break;
-					}
+				switch(record->get_current_batch()->record_mode)
+				{
+					case RECORD_TIMED:
+						if(record->current_display_position() > *record->current_duration())
+							batch_done = 1;
+						break;
+					case RECORD_LOOP:
+						if(record->current_display_position() > *record->current_duration())
+							batch_done = 1;
+						break;
+					case RECORD_SCENETOSCENE:
+						break;
 				}
 			}
+		}
 //printf("RecordAudio::run 4 %d %d\n", batch_done, write_result);
 	}
 
@@ -306,6 +306,8 @@ void RecordAudio::write_buffer(int skip_new)
 {
 // block until buffer is ready for writing
 	write_result = record->file->write_audio_buffer(fragment_position);
+// HACK
+write_result = 0;
 // Defeat errors if video
 	if(record->default_asset->video_data) write_result = 0;
 	fragment_position = 0;

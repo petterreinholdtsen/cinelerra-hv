@@ -1,6 +1,6 @@
 /*
  * CINELERRA
- * Copyright (C) 2010 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ public:
 	void show_cwindow();
 	void show_gwindow();
 	void tile_windows();
-	void set_titles(int value);
+//	void set_titles(int value);
 	int asset_to_edl(EDL *new_edl, 
 		Asset *new_asset, 
 		RecordLabels *labels = 0);
@@ -223,8 +223,10 @@ public:
 // seek to edit handles
 	int next_edit_handle(int shift_down);
 	int prev_edit_handle(int shift_down);  
-	void trackmovement(int track_start);
-	int samplemovement(int64_t view_start);     // view_start is pixels
+// offset is pixels to add to track_start
+	void trackmovement(int offset, int pane_number);
+// view_start is pixels
+	int samplemovement(int64_t view_start, int pane_number);     
 	void select_all();
 	int goto_start();
 	int goto_end();
@@ -232,6 +234,8 @@ public:
 	int zoom_in_y();
 	int expand_t();
 	int zoom_in_t();
+	void split_x();
+	void split_y();
 	void crop_video();
 	void update_plugins();
 // Call after every edit operation
@@ -359,7 +363,7 @@ public:
 	void move_track_up(Track *track);
 	void move_tracks_up();
 	void mute_selection();
-	void new_folder(char *new_folder);
+	void new_folder(const char *new_folder);
 	void overwrite(EDL *source);
 // For clipboard commands
 	void paste();

@@ -253,7 +253,7 @@ public:
 // Give the path of any selected item or 0.  Used when many items are
 // selected in the list.  Should only be called when OK is pressed.
 	char* get_path(int selection);
-	int update_filter(char *filter);
+	int update_filter(const char *filter);
 	virtual int resize_event(int w, int h);
 	char* get_newfolder_title();
 	char* get_rename_title();
@@ -269,7 +269,7 @@ private:
 // Called by directory history menu to change directories but leave
 // filename untouched.
 	int submit_dir(char *dir);
-	int submit_file(char *path, int use_this = 0);
+	int submit_file(const char *path, int use_this = 0);
 // Called by move_column_event
 	void move_column(int src, int dst);
 	int get_display_mode();

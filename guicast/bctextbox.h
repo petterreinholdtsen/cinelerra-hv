@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,14 +28,17 @@
 #include "fonts.h"
 #include "bctimer.inc"
 
+#include <string>
+
 #define BCCURSORW 2
 
 
 
 
 class BC_TextBoxSuggestions;
+class BC_ScrollTextBoxYScroll;
 
-
+using std::string;
 
 
 class BC_TextBox : public BC_SubWindow
@@ -102,13 +105,16 @@ public:
 	int keypress_event();
 	int activate();
 	int deactivate();
-	char* get_text();
+	const char* get_text();
 	int get_text_rows();
 // Set top left of text view
 	void set_text_row(int row);
 	int get_text_row();
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
+#ifdef X_HAVE_UTF8_STRING
+	int utf8seek(int &seekpoint, int reverse);
+#endif
 	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
@@ -137,6 +143,7 @@ public:
 // if multiple suggestions.
 // column - starting column to replace
 	void set_suggestions(ArrayList<char*> *suggestions, int column);
+	BC_ScrollTextBoxYScroll *yscroll;
 
 private:
 	int reset_parameters(int rows, int has_border, int font);
@@ -185,7 +192,8 @@ private:
 	int highlighted;
 	int high_color, back_color;
 	int background_color;
-	char text[BCTEXTLEN], text_row[BCTEXTLEN], temp_string[2];
+	string text;
+	char temp_string[KEYPRESSLEN];
 	int active;
 	int enabled;
 	int precision;
@@ -230,12 +238,12 @@ public:
 		int y, 
 		int w,
 		int rows,
-		char *default_text);
+		const char *default_text);
 	virtual ~BC_ScrollTextBox();
 	void create_objects();
 	virtual int handle_event();
 	
-	char* get_text();
+	const char* get_text();
 	void update(const char *text);
 	void reposition_window(int x, int y, int w, int rows);
 	int get_x();
@@ -251,7 +259,7 @@ private:
 	BC_ScrollTextBoxText *text;
 	BC_ScrollTextBoxYScroll *yscroll;
 	BC_WindowBase *parent_window;
-	char *default_text;
+	const char *default_text;
 	int x, y, w, rows;
 };
 
@@ -289,11 +297,12 @@ public:
 		int x, 
 		int y, 
 		int text_w,
-		int list_h);
+		int list_h,
+		int list_format = LISTBOX_TEXT);
 	virtual ~BC_PopupTextBox();
 	int create_objects();
 	virtual int handle_event();
-	char* get_text();
+	const char* get_text();
 	int get_number();
 	int get_x();
 	int get_y();
@@ -308,6 +317,7 @@ public:
 
 private:
 	int x, y, text_w, list_h;
+	int list_format;
 	char *default_text;
 	ArrayList<BC_ListBoxItem*> *list_items;
 	BC_PopupTextBoxText *textbox;
@@ -365,7 +375,7 @@ public:
 	int create_objects();
 	void reset();
 	virtual int handle_event();
-	char* get_text();
+	const char* get_text();
 	int update(const char *value);
 	int update(int64_t value);
 	int update(float value);

@@ -92,8 +92,8 @@ public:
 	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
 	int can_copy_from(Asset *asset, int64_t position); // This file can copy frames directly from the asset
-	static const char *strtocompression(char *string);
-	static const char *compressiontostr(char *string);
+	static const char *strtocompression(const char *string);
+	static const char *compressiontostr(const char *string);
 
 // Fix codec to what AVI or MOV support
 	static void fix_codecs(Asset *asset);

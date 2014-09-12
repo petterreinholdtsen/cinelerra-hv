@@ -53,6 +53,7 @@ NATIVE_AUDIO_MODULE = LINUX16
 
 ## echo -n doesn't work
 ECHO_N = /usr/bin/printf "%s"
+#ECHO_N = /bin/printf "%s"
 
 GNUTEST=test
 

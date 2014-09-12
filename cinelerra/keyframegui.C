@@ -193,7 +193,7 @@ void KeyFrameThread::handle_done_event(int result)
 // Apply the preset
 	if(!result)
 	{
-		char *title = ((KeyFrameWindow*)get_gui())->preset_text->get_text();
+		const char *title = ((KeyFrameWindow*)get_gui())->preset_text->get_text();
 		apply_preset(title);
 	}
 }
@@ -266,7 +266,7 @@ void KeyFrameThread::update_gui(int update_value_text)
 #endif
 }
 
-void KeyFrameThread::save_preset(char *title)
+void KeyFrameThread::save_preset(const char *title)
 {
 	get_gui()->unlock_window();
 	mwindow->gui->lock_window("KeyFrameThread::save_preset");
@@ -302,7 +302,7 @@ void KeyFrameThread::save_preset(char *title)
 		1);
 }
 
-void KeyFrameThread::delete_preset(char *title)
+void KeyFrameThread::delete_preset(const char *title)
 {
 	get_gui()->unlock_window();
 	mwindow->gui->lock_window("KeyFrameThread::save_preset");
@@ -330,7 +330,7 @@ void KeyFrameThread::delete_preset(char *title)
 }
 
 
-void KeyFrameThread::apply_preset(char *title)
+void KeyFrameThread::apply_preset(const char *title)
 {
 	if(presets_db->preset_exists(plugin_title, title))
 	{
@@ -360,8 +360,7 @@ void KeyFrameThread::apply_preset(char *title)
 		mwindow->undo->update_undo_after(_("apply preset"), LOAD_AUTOMATION); 
 
 		mwindow->update_plugin_guis(0);
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 		mwindow->sync_parameters(CHANGE_PARAMS);
 
 

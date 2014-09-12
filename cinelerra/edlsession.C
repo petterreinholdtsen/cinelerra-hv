@@ -78,6 +78,7 @@ EDLSession::EDLSession(EDL *edl)
 	record_speed = 24;
 	decode_subtitles = 0;
 	subtitle_number = 0;
+	cwindow_meter = 0;
 }
 
 EDLSession::~EDLSession()

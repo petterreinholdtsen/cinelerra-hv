@@ -460,6 +460,16 @@ int VWindowGUI::drag_stop()
 }
 
 
+void VWindowGUI::update_meters()
+{
+	if(mwindow->edl->session->vwindow_meter != meters->visible)
+	{
+		meters->set_meters(meters->meter_count, 
+			mwindow->edl->session->vwindow_meter);
+		mwindow->theme->get_vwindow_sizes(this);
+		resize_event(get_w(), get_h());
+	}
+}
 
 
 
@@ -487,12 +497,10 @@ VWindowMeters::~VWindowMeters()
 {
 }
 
-int VWindowMeters::change_status_event()
+int VWindowMeters::change_status_event(int new_status)
 {
-	mwindow->edl->session->vwindow_meter = visible;
-//printf("VWindowMeters::change_status_event 1 %d\n", mwindow->edl->session->vwindow_meter);
-	mwindow->theme->get_vwindow_sizes(gui);
-	gui->resize_event(gui->get_w(), gui->get_h());
+	mwindow->edl->session->vwindow_meter = new_status;
+	gui->update_meters();
 	return 1;
 }
 

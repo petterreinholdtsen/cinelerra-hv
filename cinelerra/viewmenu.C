@@ -98,8 +98,7 @@ int ShowTransitions::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->auto_conf->transitions = get_checked();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->gui->draw_overlays(1);
 //	mwindow->gui->mainmenu->draw_items();
 	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
@@ -126,8 +125,7 @@ int ShowAutomation::handle_event()
 {
 	set_checked(get_checked() ^ 1);
 	mwindow->edl->session->auto_conf->autos[subscript] = get_checked();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->gui->draw_overlays(1);
 //	mwindow->gui->mainmenu->draw_items();
 	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
@@ -152,8 +150,7 @@ int PluginAutomation::handle_event()
 {
 	set_checked(!get_checked());
 	mwindow->edl->session->auto_conf->plugins = get_checked();
-	mwindow->gui->canvas->draw_overlays();
-	mwindow->gui->canvas->flash();
+	mwindow->gui->draw_overlays(1);
 	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
 	mwindow->gui->lock_window("PluginAutomation::handle_event");

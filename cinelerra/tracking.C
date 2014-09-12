@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,13 +125,13 @@ double Tracking::get_tracking_position()
 	return get_playback_engine()->get_tracking_position();
 }
 
-int Tracking::get_pixel(double position)
-{
-	return (int64_t)((position - mwindow->edl->local_session->view_start) *
-		mwindow->edl->session->sample_rate / 
-		mwindow->edl->local_session->zoom_sample + 
-		0.5);
-}
+//int Tracking::get_pixel(double position)
+//{
+//	return (int64_t)((position - mwindow->edl->local_session->view_start) *
+//		mwindow->edl->session->sample_rate / 
+//		mwindow->edl->local_session->zoom_sample + 
+//		0.5);
+//}
 
 
 void Tracking::update_meters(int64_t position)
@@ -153,7 +153,7 @@ void Tracking::update_meters(int64_t position)
 		mwindow->lwindow->gui->unlock_window();
 
 		mwindow->gui->lock_window("Tracking::update_meters 3");
-		mwindow->gui->patchbay->update_meters(&module_levels);
+		mwindow->gui->update_meters(&module_levels);
 		mwindow->gui->unlock_window();
 	}
 }
@@ -165,7 +165,7 @@ void Tracking::stop_meters()
 	mwindow->cwindow->gui->unlock_window();
 
 	mwindow->gui->lock_window("Tracking::stop_meters 2");
-	mwindow->gui->patchbay->stop_meters();
+	mwindow->gui->stop_meters();
 	mwindow->gui->unlock_window();
 
 	mwindow->lwindow->gui->lock_window("Tracking::stop_meters 3");
@@ -182,19 +182,19 @@ void Tracking::update_tracker(double position)
 
 void Tracking::draw()
 {
-	gui->lock_window("Tracking::draw");
-	if(!visible)
-	{
-		pixel = get_pixel(last_position);
-	}
-
-	gui->canvas->set_color(GREEN);
-	gui->canvas->set_inverse();
-	gui->canvas->draw_line(pixel, 0, pixel, gui->canvas->get_h());
-	gui->canvas->set_opaque();
-	gui->canvas->flash(pixel, 0, pixel + 1, gui->canvas->get_h());
-	visible ^= 1;
-	gui->unlock_window();
+// 	gui->lock_window("Tracking::draw");
+// 	if(!visible)
+// 	{
+// 		pixel = get_pixel(last_position);
+// 	}
+// 
+// 	gui->canvas->set_color(GREEN);
+// 	gui->canvas->set_inverse();
+// 	gui->canvas->draw_line(pixel, 0, pixel, gui->canvas->get_h());
+// 	gui->canvas->set_opaque();
+// 	gui->canvas->flash(pixel, 0, pixel + 1, gui->canvas->get_h());
+// 	visible ^= 1;
+// 	gui->unlock_window();
 }
 
 

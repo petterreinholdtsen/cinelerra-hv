@@ -422,7 +422,7 @@ int Preferences::save_defaults(BC_Hash *defaults)
 }
 
 
-void Preferences::add_node(char *text, int port, int enabled, float rate)
+void Preferences::add_node(const char *text, int port, int enabled, float rate)
 {
 	if(text[0] == 0) return;
 
@@ -592,7 +592,7 @@ void Preferences::sort_nodes()
 }
 
 void Preferences::edit_node(int number, 
-	char *new_text, 
+	const char *new_text, 
 	int new_port, 
 	int new_enabled)
 {

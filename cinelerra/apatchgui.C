@@ -272,8 +272,7 @@ int AFadePatch::handle_event()
 
 	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
 	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 	}
 	return 1;
 }
@@ -330,8 +329,7 @@ int APanPatch::handle_event()
 
 	if(need_undo && mwindow->edl->session->auto_conf->autos[AUTOMATION_PAN])
 	{
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
+		mwindow->gui->draw_overlays(1);
 	}
 	return 1;
 }

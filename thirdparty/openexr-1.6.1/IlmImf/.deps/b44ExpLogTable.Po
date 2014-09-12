@@ -1,5 +1,4 @@
-b44ExpLogTable.o: b44ExpLogTable.cpp \
- /root/hvirtual/thirdparty//include/OpenEXR/half.h \
+b44ExpLogTable.o: b44ExpLogTable.cpp /usr/include/OpenEXR/half.h \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/iostream \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/x86_64-redhat-linux/bits/c++config.h \
  /usr/include/bits/wordsize.h \
@@ -87,7 +86,7 @@ b44ExpLogTable.o: b44ExpLogTable.cpp \
  /usr/include/bits/mathinline.h \
  /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/iomanip
 
-/root/hvirtual/thirdparty//include/OpenEXR/half.h:
+/usr/include/OpenEXR/half.h:
 
 /usr/lib/gcc/x86_64-redhat-linux/4.4.5/../../../../include/c++/4.4.5/iostream:
 

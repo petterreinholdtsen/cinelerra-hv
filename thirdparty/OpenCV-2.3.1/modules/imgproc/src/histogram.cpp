@@ -1159,10 +1159,8 @@ void cv::calcBackProject( const Mat* images, int nimages, const int* channels,
     vector<double> uniranges;
     Size imsize;
     int dims = hist.dims == 2 && hist.size[1] == 1 ? 1 : hist.dims;
-
-//printf("calcBackProject %d %d %d %d\n", __LINE__, dims, hist.dims, hist.size[1]);
-    CV_Assert( dims > 0);
-	CV_Assert( hist.data );
+    
+    CV_Assert( dims > 0 && hist.data );
     _backProject.create( images[0].size(), images[0].depth() );
     Mat backProject = _backProject.getMat();
     histPrepareImages( images, nimages, channels, backProject, dims, hist.size, ranges,

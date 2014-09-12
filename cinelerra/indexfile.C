@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2009 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
 #include "resourcepixmap.h"
 #include "samples.h"
 #include "theme.h"
+#include "timelinepane.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -544,7 +545,7 @@ int IndexFile::redraw_edits(int force)
 // count changes.
 		mwindow->gui->lock_window("IndexFile::redraw_edits");
 		mwindow->edl->set_index_file(indexable);
-		mwindow->gui->canvas->draw_indexes(indexable);
+		mwindow->gui->draw_indexes(indexable);
 		index_state->old_index_end = index_state->index_end;
 		mwindow->gui->unlock_window();
 	}
@@ -554,10 +555,16 @@ int IndexFile::redraw_edits(int force)
 
 
 
-int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
+int IndexFile::draw_index(
+	TrackCanvas *canvas,
+	ResourcePixmap *pixmap, 
+	Edit *edit, 
+	int x, 
+	int w)
 {
 	const int debug = 0;
 	IndexState *index_state = get_state();
+	int pane_number = canvas->pane->number;
 //index_state->dump();
 
 SET_TRACE
@@ -580,10 +587,11 @@ SET_TRACE
 		(long long)mwindow->edl->local_session->zoom_sample);
 
 // calculate a virtual x where the edit_x should be in floating point
-	double virtual_edit_x = 1.0 * edit->track->from_units(edit->startproject) * 
+	double virtual_edit_x = 1.0 * 
+		edit->track->from_units(edit->startproject) * 
 		mwindow->edl->session->sample_rate /
 		mwindow->edl->local_session->zoom_sample - 
-		mwindow->edl->local_session->view_start;
+		mwindow->edl->local_session->view_start[pane_number];
 
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)source_samplerate / 
@@ -679,7 +687,7 @@ SET_TRACE
 
 
 
-	pixmap->canvas->set_color(mwindow->theme->audio_color);
+	canvas->set_color(mwindow->theme->audio_color);
 
 
 	double current_frame = 0;
@@ -699,9 +707,9 @@ SET_TRACE
 			int next_y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
 			int next_y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
 			if(next_y1 < 0) next_y1 = 0;
-			if(next_y1 > pixmap->canvas->get_h()) next_y1 = pixmap->canvas->get_h();
+			if(next_y1 > canvas->get_h()) next_y1 = canvas->get_h();
 			if(next_y2 < 0) next_y2 = 0;
-			if(next_y2 > pixmap->canvas->get_h()) next_y2 = pixmap->canvas->get_h();
+			if(next_y2 > canvas->get_h()) next_y2 = canvas->get_h();
 			if(next_y2 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1) 
 				next_y2 = center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1;
 			if(next_y1 > center_pixel + mwindow->edl->local_session->zoom_y / 2 - 1) 
@@ -718,7 +726,7 @@ SET_TRACE
 // index is used.  Now the min and max values are equal so we join the max samples.
 			if(mwindow->edl->local_session->zoom_sample == 1)
 			{
-				pixmap->canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
+				canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
 			}
 			else
 			{
@@ -735,7 +743,7 @@ SET_TRACE
 
 
 
-				pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
+				canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 			}
 			current_frame -= index_frames_per_pixel;
 			x1++;
@@ -756,7 +764,7 @@ SET_TRACE
 	{
 		y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
 		y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
-		pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
+		canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
 	}
 
 SET_TRACE

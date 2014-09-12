@@ -61,7 +61,7 @@ public:
 	void update_peak(int number, float value);
 	void stop_meters();
 	void change_format(int mode, int min, int max);
-	virtual int change_status_event();
+	virtual int change_status_event(int new_status);
 	void reset_meters();
 
 	MWindow *mwindow;

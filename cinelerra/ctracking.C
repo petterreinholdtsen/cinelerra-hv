@@ -55,7 +55,7 @@ PlaybackEngine* CTracking::get_playback_engine()
 
 int CTracking::start_playback(double new_position)
 {
-	mwindow->gui->cursor->playing_back = 1;
+	mwindow->gui->set_playing_back(1);
 
 	Tracking::start_playback(new_position);
 	return 0;
@@ -63,7 +63,7 @@ int CTracking::start_playback(double new_position)
 
 int CTracking::stop_playback()
 {
-	mwindow->gui->cursor->playing_back = 0;
+	mwindow->gui->set_playing_back(0);
 
 
 	Tracking::stop_playback();
@@ -79,11 +79,12 @@ int CTracking::update_scroll(double position)
 
 	if(mwindow->edl->session->view_follows_playback)
 	{
+		TimelinePane *pane = mwindow->gui->get_focused_pane();
 		double seconds_per_pixel = (double)mwindow->edl->local_session->zoom_sample / 
 			mwindow->edl->session->sample_rate;
 		double half_canvas = seconds_per_pixel * 
-			mwindow->gui->canvas->get_w() / 2;
-		double midpoint = mwindow->edl->local_session->view_start * 
+			pane->canvas->get_w() / 2;
+		double midpoint = mwindow->edl->local_session->view_start[pane->number] * 
 			seconds_per_pixel +
 			half_canvas;
 
@@ -154,16 +155,17 @@ void CTracking::update_tracker(double position)
 	updated_scroll = update_scroll(position);
 
 	mwindow->gui->mainclock->update(position);
-	mwindow->gui->patchbay->update();
-	mwindow->gui->timebar->update(0);
+	mwindow->gui->update_patchbay();
+	mwindow->gui->update_timebar(0);
 
 	if(!updated_scroll)
 	{
-		mwindow->gui->cursor->update();
+		mwindow->gui->update_cursor();
 		mwindow->gui->zoombar->update();
 
-
-		mwindow->gui->canvas->flash(0);
+		for(int i = 0; i < TOTAL_PANES; i++)
+			if(mwindow->gui->pane[i])
+				mwindow->gui->pane[i]->canvas->flash(0);
 	}
 
 	mwindow->gui->flush();

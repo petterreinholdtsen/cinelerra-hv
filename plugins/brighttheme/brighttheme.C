@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2011 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -418,7 +418,13 @@ void BrightTheme::initialize()
 	new_image("clock_bg", "mclock_flat.png");
 	new_image("patchbay_bg", "patchbay_bg.png");
 	new_image("statusbar", "statusbar.png");
-	new_image("mscroll_filler", "mscroll_filler.png");
+//	new_image("mscroll_filler", "mscroll_filler.png");
+	pane_color = BLACK;
+	drag_pane_color = BLACK;
+
+	new_button("pane.png", "pane_up.png", "pane_hi.png", "pane_dn.png", "pane");
+	new_image_set("xpane", 3, "xpane_up.png", "xpane_hi.png", "xpane_dn.png");
+	new_image_set("ypane", 3, "ypane_up.png", "ypane_hi.png", "ypane_dn.png");
 
 	new_image_set("zoombar_menu", 3, "zoompopup_up.png", "zoompopup_hi.png", "zoompopup_dn.png");
 	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_bottom.png", "tumble_top.png");
@@ -839,10 +845,11 @@ void BrightTheme::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("patchbay_bg"));
 
 // Track canvas
-	gui->clear_box(mcanvas_x, 
-		mcanvas_y, 
-		mcanvas_w, 
-		patchbay_h);
+	int patchbay_w = get_image("patchbay_bg")->get_w();
+	gui->clear_box(mcanvas_x + patchbay_w, 
+		mcanvas_y + mtimebar_h, 
+		mcanvas_w - BC_ScrollBar::get_span(SCROLL_VERT) - patchbay_w, 
+		patchbay_h - BC_ScrollBar::get_span(SCROLL_HORIZ) - mtimebar_h);
 
 // Timebar
 	gui->draw_3segmenth(mtimebar_x, 
@@ -851,16 +858,16 @@ void BrightTheme::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("timebar_bg"));
 
 // Zoombar
-	gui->set_color(0x373737);
-	gui->draw_box(mzoom_x, 
-		mzoom_y,
-		mwindow->session->mwindow_w,
-		25);
+// 	gui->set_color(0x373737);
+// 	gui->draw_box(mzoom_x, 
+// 		mzoom_y,
+// 		mwindow->session->mwindow_w,
+// 		25);
 
 // Scrollbar filler
-	gui->draw_vframe(get_image("mscroll_filler"), 
-		mhscroll_x + mhscroll_w,
-		mvscroll_y + mvscroll_h);
+//	gui->draw_vframe(get_image("mscroll_filler"), 
+//		mhscroll_x + mhscroll_w,
+//		mvscroll_y + mvscroll_h);
 
 // Status
 	gui->draw_3segmenth(mzoom_x,

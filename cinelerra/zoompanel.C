@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -247,15 +247,18 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 
 		case ZOOM_TIME:
 		{
-			double total_seconds = (double)mwindow->gui->canvas->get_w() * 
-				value / 
-				mwindow->edl->session->sample_rate;
-			Units::totext(string, 
-				total_seconds, 
+//			sprintf(string, "%ld", (long)value);
+ 			double total_seconds = (double)(mwindow->theme->mcanvas_w - 
+					mwindow->theme->patchbay_w -
+					BC_ScrollBar::get_span(SCROLL_VERT)) * 
+ 				value / 
+ 				mwindow->edl->session->sample_rate;
+ 			Units::totext(string, 
+ 				total_seconds, 
 				mwindow->edl->session->time_format, 
-				mwindow->edl->session->sample_rate, 
-				mwindow->edl->session->frame_rate, 
-				mwindow->edl->session->frames_per_foot);
+ 				mwindow->edl->session->sample_rate, 
+ 				mwindow->edl->session->frame_rate, 
+ 				mwindow->edl->session->frames_per_foot);
 			break;
 		}
 	}
@@ -281,6 +284,7 @@ double ZoomPanel::text_to_zoom(char *text, int use_table)
 			break;
 		case ZOOM_FLOAT:
 		case ZOOM_LONG:
+//		case ZOOM_TIME:
 			return atof(text);
 			break;
 		case ZOOM_TIME:
@@ -291,7 +295,9 @@ double ZoomPanel::text_to_zoom(char *text, int use_table)
 				mwindow->edl->session->time_format, 
 				mwindow->edl->session->frame_rate,
 				mwindow->edl->session->frames_per_foot);
-			total_samples /= mwindow->gui->canvas->get_w();
+			total_samples /= mwindow->theme->mcanvas_w - 
+				mwindow->theme->patchbay_w -
+				BC_ScrollBar::get_span(SCROLL_VERT);
 			double difference = fabs(total_samples - result);
 			while(fabs(result - total_samples) <= difference)
 			{

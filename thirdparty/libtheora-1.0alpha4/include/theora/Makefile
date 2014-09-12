@@ -63,7 +63,7 @@ AUTOCONF = ${SHELL} /root/hvirtual/thirdparty/libtheora-1.0alpha4/missing --run 
 AUTOHEADER = ${SHELL} /root/hvirtual/thirdparty/libtheora-1.0alpha4/missing --run autoheader
 AUTOMAKE = ${SHELL} /root/hvirtual/thirdparty/libtheora-1.0alpha4/missing --run automake-1.8
 AWK = gawk
-BUILDABLE_EXAMPLES =  encoder_example
+BUILDABLE_EXAMPLES =  encoder_example player_example
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -O2 -Wall -I/root/hvirtual/quicktime/thirdparty/libogg-1.1.2/include -L/root/hvirtual/quicktime/thirdparty/libogg-1.1.2/src -I/root/hvirtual/quicktime/thirdparty/libvorbis-1.1.1/include -L/root/hvirtual/quicktime/thirdparty/libvorbis-1.1.1/lib
@@ -120,9 +120,9 @@ PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 PROFILE = -W -pg -g -O2 -fno-inline-functions
 RANLIB = ranlib
-SDL_CFLAGS = 
-SDL_CONFIG = no
-SDL_LIBS = 
+SDL_CFLAGS = -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+SDL_CONFIG = /usr/bin/sdl-config
+SDL_LIBS = -lSDL -lpthread
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip

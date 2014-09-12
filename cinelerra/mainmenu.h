@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,9 @@ class ShowCWindow;
 class ShowLWindow;
 class Undo;
 class KeyframeType;
+class SplitX;
+class SplitY;
+
 
 #include "arraylist.h"
 #include "guicast.h"
@@ -139,6 +142,8 @@ public:
 	ShowCWindow *show_cwindow;
 	ShowGWindow *show_gwindow;
 	ShowLWindow *show_lwindow;
+	SplitX *split_x;
+	SplitY *split_y;
 };
 
 // ========================================= edit
@@ -604,6 +609,22 @@ class TileWindows : public BC_MenuItem
 {
 public:
 	TileWindows(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class SplitX : public BC_MenuItem
+{
+public:
+	SplitX(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class SplitY : public BC_MenuItem
+{
+public:
+	SplitY(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };

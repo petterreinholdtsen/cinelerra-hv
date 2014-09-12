@@ -88,12 +88,21 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	undo->update_undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	gui->get_scrollbars(0);
-	gui->canvas->draw();
-	gui->patchbay->update();
-	gui->cursor->draw(1);
-	gui->canvas->flash();
-	gui->canvas->activate();
+	gui->update(1, 
+		1,
+		0,
+		0,
+		1,
+		0,
+		0);
+	gui->activate_timeline();
+	
+//	gui->get_scrollbars(0);
+//	gui->canvas->draw();
+//	gui->patchbay->update();
+//	gui->cursor->draw(1);
+//	gui->canvas->flash();
+//	gui->canvas->activate();
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 		CHANGE_EDL,
 		edl,
@@ -107,12 +116,21 @@ void MWindow::add_video_track_entry(Track *dst)
 	undo->update_undo_after(_("add track"), LOAD_ALL);
 
 	restart_brender();
-	gui->get_scrollbars(0);
-	gui->canvas->draw();
-	gui->patchbay->update();
-	gui->cursor->draw(1);
-	gui->canvas->flash();
-	gui->canvas->activate();
+
+	gui->update(1, 
+		1,
+		0,
+		0,
+		1,
+		0,
+		0);
+	gui->activate_timeline();
+//	gui->get_scrollbars(0);
+//	gui->canvas->draw();
+//	gui->patchbay->update();
+//	gui->cursor->draw(1);
+//	gui->canvas->flash();
+//	gui->canvas->activate();
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 							CHANGE_EDL,
 							edl,
@@ -355,10 +373,9 @@ void MWindow::set_automation_mode(int mode)
 
 	restart_brender();
 	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
+	gui->update_patchbay();
 	cwindow->update(1, 0, 0);
 }
 
@@ -372,10 +389,9 @@ void MWindow::clear_automation()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
+	gui->update_patchbay();
 	cwindow->update(1, 0, 0);
 }
 
@@ -387,10 +403,9 @@ int MWindow::clear_default_keyframe()
 	undo->update_undo_after(_("clear default keyframe"), LOAD_AUTOMATION);
 	
 	restart_brender();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
+	gui->update_patchbay();
 	cwindow->update(1, 0, 0);
 	
 	return 0;
@@ -403,7 +418,7 @@ void MWindow::clear_labels()
 		edl->local_session->get_selectionend()); 
 	undo->update_undo_after(_("clear labels"), LOAD_TIMEBAR);
 	
-	gui->timebar->update(1);
+	gui->update_timebar(1);
 	cwindow->update(0, 0, 0, 0, 1);
 	save_backup();
 }
@@ -601,10 +616,9 @@ int MWindow::cut_automation()
 
 	restart_brender();
 	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
+	gui->update_patchbay();
 	cwindow->update(1, 0, 0);
 	return 0;
 }
@@ -618,10 +632,9 @@ int MWindow::cut_default_keyframe()
 	undo->update_undo_after(_("cut default keyframe"), LOAD_AUTOMATION);
 
 	restart_brender();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
+	gui->draw_overlays(1);
 	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
+	gui->update_patchbay();
 	cwindow->update(1, 0, 0);
 	save_backup();
 
@@ -1435,10 +1448,9 @@ int MWindow::paste_automation()
 
 		restart_brender();
 		update_plugin_guis();
-		gui->canvas->draw_overlays();
-		gui->canvas->flash();
+		gui->draw_overlays(1);
 		sync_parameters(CHANGE_PARAMS);
-		gui->patchbay->update();
+		gui->update_patchbay();
 		cwindow->update(1, 0, 0);
 	}
 
@@ -1469,10 +1481,9 @@ int MWindow::paste_default_keyframe()
 
 		restart_brender();
 		update_plugin_guis();
-		gui->canvas->draw_overlays();
-		gui->canvas->flash();
+		gui->draw_overlays(1);
 		sync_parameters(CHANGE_PARAMS);
-		gui->patchbay->update();
+		gui->update_patchbay();
 		cwindow->update(1, 0, 0);
 		delete [] string;
 		save_backup();
@@ -2177,7 +2188,7 @@ void MWindow::set_inpoint(int is_mwindow)
 	{
 		gui->lock_window("MWindow::set_inpoint 1");
 	}
-	gui->timebar->update(1);
+	gui->update_timebar(1);
 	if(!is_mwindow)
 	{
 		gui->unlock_window();
@@ -2206,7 +2217,7 @@ void MWindow::set_outpoint(int is_mwindow)
 	{
 		gui->lock_window("MWindow::set_outpoint 1");
 	}
-	gui->timebar->update(1);
+	gui->update_timebar(1);
 	if(!is_mwindow)
 	{
 		gui->unlock_window();
@@ -2339,8 +2350,8 @@ int MWindow::toggle_label(int is_mwindow)
 	{
 		gui->lock_window("MWindow::toggle_label 1");
 	}
-	gui->timebar->update(0);
-	gui->canvas->activate();
+	gui->update_timebar(0);
+	gui->activate_timeline();
 	gui->flush();
 	if(!is_mwindow)
 	{
@@ -2453,7 +2464,7 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 
 
 
-void MWindow::new_folder(char *new_folder)
+void MWindow::new_folder(const char *new_folder)
 {
 	undo->update_undo_before();
 	edl->new_folder(new_folder);
@@ -2478,13 +2489,13 @@ void MWindow::select_point(double position)
 
 
 	update_plugin_guis();
-	gui->patchbay->update();
-	gui->cursor->hide(0);
-	gui->cursor->draw(1);
+	gui->update_patchbay();
+	gui->hide_cursor(0);
+	gui->draw_cursor(0);
 	gui->mainclock->update(edl->local_session->get_selectionstart(1));
 	gui->zoombar->update();
-	gui->timebar->update(0);
-	gui->canvas->flash();
+	gui->update_timebar(0);
+	gui->flash_canvas(0);
 	gui->flush();
 }
 

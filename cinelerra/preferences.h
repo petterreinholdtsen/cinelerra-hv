@@ -51,14 +51,14 @@ public:
 		int *channel_positions, 
 		int channels);
 
-	void add_node(char *text, int port, int enabled, float rate);
+	void add_node(const char *text, int port, int enabled, float rate);
 	void delete_node(int number);
 	void delete_nodes();
 	void reset_rates();
 // Get average frame rate or 1.0
 	float get_avg_rate(int use_master_node);
 	void sort_nodes();
-	void edit_node(int number, char *new_text, int port, int enabled);
+	void edit_node(int number, const char *new_text, int port, int enabled);
 	int get_enabled_nodes();
 	const char* get_node_hostname(int number);
 	int get_node_port(int number);

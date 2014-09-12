@@ -182,6 +182,8 @@ void FormatTools::create_objects(int &init_x,
 		1, 
 		File::formattostr(asset->format)));
 	x += format_text->get_w();
+
+//printf("FormatTools::create_objects %d %p\n", __LINE__, window);
 	window->add_subwindow(format_button = new FormatFormat(x, 
 		y, 
 		this));
@@ -349,7 +351,20 @@ Asset* FormatTools::get_asset()
 void FormatTools::update_extension()
 {
 	const char *extension = File::get_tag(asset->format);
-	if(extension)
+// split multiple extensions
+	ArrayList<const char*> extensions;
+	int len = strlen(extension);
+	const char *extension_ptr = extension;
+	for(int i = 0; i <= len; i++)
+	{
+		if(extension[i] == '/' || extension[i] == 0)
+		{
+			extensions.append(extension_ptr);
+			extension_ptr = extension + i + 1;
+		}
+	}
+	
+	if(extensions.size())
 	{
 		char *ptr = strrchr(asset->path, '.');
 		if(!ptr)
@@ -358,11 +373,48 @@ void FormatTools::update_extension()
 			*ptr = '.';
 		}
 		ptr++;
-		strcpy(ptr, extension);
+		
+		
+// test for equivalent extension
+		int need_extension = 1;
+		int extension_len = 0;
+		for(int i = 0; i < extensions.size() && need_extension; i++)
+		{
+			char *ptr1 = ptr;
+			extension_ptr = extensions.get(i);
+// test an extension
+			need_extension = 0;
+			while(*ptr1 != 0 && *extension_ptr != 0 && *extension_ptr != '/')
+			{
+				if(tolower(*ptr1) != tolower(*extension_ptr))
+				{
+					need_extension = 1;
+					break;
+				}
+				ptr1++;
+				extension_ptr++;
+			}
+
+			if(*ptr1 == 0 && 
+				*extension_ptr != 0 &&
+				*extension_ptr != '/')
+				need_extension = 1;
+		}
+
+//printf("FormatTools::update_extension %d %d\n", __LINE__, need_extension);
+// copy extension
+		if(need_extension) 
+		{
+			char *ptr1 = ptr;
+			extension_ptr = extensions.get(0);
+			while(*extension_ptr != 0 && *extension_ptr != '/')
+				*ptr1++ = *extension_ptr++;
+			*ptr1 = 0;
+		}
 
 		int character1 = ptr - asset->path;
-		int character2 = ptr - asset->path + strlen(extension);
-		*(asset->path + character2) = 0;
+		int character2 = strlen(asset->path);
+//		*(asset->path + character2) = 0;
 		if(path_textbox) 
 		{
 			path_textbox->update(asset->path);

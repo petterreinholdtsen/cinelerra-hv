@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,12 @@
 
 #include "bcsignals.h"
 #include "clip.h"
+#include "cplayback.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
+#include "mainclock.h"
 #include "maincursor.h"
 #include "mainsession.h"
 #include "mbuttons.h"
@@ -49,6 +51,27 @@ MTimeBar::MTimeBar(MWindow *mwindow,
  : TimeBar(mwindow, gui, x, y, w, h)
 {
 	this->gui = gui;
+	this->pane = 0;
+}
+
+MTimeBar::MTimeBar(MWindow *mwindow, 
+	TimelinePane *pane,
+	int x, 
+	int y,
+	int w,
+	int h)
+ : TimeBar(mwindow, mwindow->gui, x, y, w, h)
+{
+	this->gui = mwindow->gui;
+	this->pane = pane;
+}
+
+void MTimeBar::create_objects()
+{
+	gui->add_subwindow(menu = new TimeBarPopup(mwindow));
+	menu->create_objects();
+
+	TimeBar::create_objects();
 }
 
 
@@ -57,7 +80,7 @@ double MTimeBar::pixel_to_position(int pixel)
 	return (double)pixel * 
 		mwindow->edl->local_session->zoom_sample / 
 		mwindow->edl->session->sample_rate + 
-		(double)mwindow->edl->local_session->view_start * 
+		(double)mwindow->edl->local_session->view_start[pane->number] * 
 		mwindow->edl->local_session->zoom_sample / 
 		mwindow->edl->session->sample_rate;
 }
@@ -68,7 +91,7 @@ int64_t MTimeBar::position_to_pixel(double position)
 	return (int64_t)(position * 
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample - 
-		mwindow->edl->local_session->view_start);
+		mwindow->edl->local_session->view_start[pane->number]);
 }
 
 
@@ -125,9 +148,10 @@ void MTimeBar::draw_time()
 // Seconds in each frame
 	double frame_seconds = (double)1.0 / frame_rate;
 // Starting time of view in seconds.
-	double view_start = mwindow->edl->local_session->view_start * time_per_pixel;
+	double view_start = mwindow->edl->local_session->view_start[pane->number] * 
+		time_per_pixel;
 // Ending time of view in seconds
-	double view_end = (double)(mwindow->edl->local_session->view_start +
+	double view_end = (double)(mwindow->edl->local_session->view_start[pane->number] +
 		get_w()) * time_per_pixel;
 // Get minimum distance between text marks
 	int min_pixels1 = get_text_width(MEDIUMFONT, 
@@ -356,7 +380,7 @@ void MTimeBar::draw_time()
 	}
 
 // Get first text mark on or before window start
-	starting_mark = (int64_t)((double)mwindow->edl->local_session->view_start * 
+	starting_mark = (int64_t)((double)mwindow->edl->local_session->view_start[pane->number] * 
 		time_per_pixel / text_interval);
 
 	double start_position = (double)starting_mark * text_interval;
@@ -368,7 +392,7 @@ void MTimeBar::draw_time()
 	{
 		double position1 = start_position + text_interval * iteration;
 		int pixel = (int64_t)(position1 / time_per_pixel) - 
-			mwindow->edl->local_session->view_start;
+			mwindow->edl->local_session->view_start[pane->number];
 		int pixel1 = pixel;
 
 		Units::totext(string, 
@@ -385,14 +409,14 @@ void MTimeBar::draw_time()
 
 		double position2 = start_position + text_interval * (iteration + 1);
 		int pixel2 = (int64_t)(position2 / time_per_pixel) - 
-			mwindow->edl->local_session->view_start;
+			mwindow->edl->local_session->view_start[pane->number];
 
 		for(double tick_position = position1; 
 			tick_position < position2; 
 			tick_position += tick_interval)
 		{
 			pixel = (int64_t)(tick_position / time_per_pixel) - 
-				mwindow->edl->local_session->view_start;
+				mwindow->edl->local_session->view_start[pane->number];
 			if(labs(pixel - pixel1) > 1 &&
 				labs(pixel - pixel2) > 1)
 				draw_line(pixel, TICK_MARGIN, pixel, get_h() - 2);
@@ -412,9 +436,9 @@ void MTimeBar::draw_range()
 		double time_per_pixel = (double)mwindow->edl->local_session->zoom_sample /
 			mwindow->edl->session->sample_rate;
 		x1 = (int)(mwindow->edl->session->brender_start / time_per_pixel) - 
-			mwindow->edl->local_session->view_start;
+			mwindow->edl->local_session->view_start[pane->number];
 		x2 = (int)(mwindow->session->brender_end / time_per_pixel) - 
-			mwindow->edl->local_session->view_start;
+			mwindow->edl->local_session->view_start[pane->number];
 	}
 
 	if(x2 > x1 && 
@@ -445,9 +469,9 @@ void MTimeBar::select_label(double position)
 {
 	EDL *edl = mwindow->edl;
 
-	mwindow->gui->unlock_window();
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-	mwindow->gui->lock_window();
+	gui->unlock_window();
+	gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+	gui->lock_window();
 
 	position = mwindow->edl->align_to_frame(position, 1);
 
@@ -472,12 +496,13 @@ void MTimeBar::select_label(double position)
 
 // Que the CWindow
 	mwindow->cwindow->update(1, 0, 0, 0, 1);
-	mwindow->gui->cursor->hide(0);
-	mwindow->gui->cursor->draw(1);
-	mwindow->gui->canvas->activate();
-	mwindow->gui->zoombar->update();
+	
+	gui->hide_cursor(0);
+	gui->draw_cursor(1);
+	gui->flash_canvas(1);
+	gui->zoombar->update();
 	update_highlights();
-	mwindow->gui->canvas->flash();
+	activate_timeline();
 }
 
 
@@ -487,6 +512,16 @@ int MTimeBar::resize_event()
 		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h);
+	update(0);
+	return 1;
+}
+
+int MTimeBar::resize_event(int x, int y, int w, int h)
+{
+	reposition_window(x,
+		y,
+		w,
+		h);
 	update(0);
 	return 1;
 }
@@ -502,20 +537,31 @@ int MTimeBar::resize_event()
 void MTimeBar::handle_mwindow_drag()
 {
 //printf("TimeBar::cursor_motion_event %d %d\n", __LINE__, current_operation);
-	int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
-	if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
+	int relative_cursor_x = pane->canvas->get_relative_cursor_x();
+	if(relative_cursor_x >= pane->canvas->get_w() || 
 		relative_cursor_x < 0)
 	{
-		mwindow->gui->canvas->start_dragscroll();
+		pane->canvas->start_dragscroll();
 	}
 	else
-	if(relative_cursor_x < mwindow->gui->canvas->get_w() && 
+	if(relative_cursor_x < pane->canvas->get_w() && 
 		relative_cursor_x >= 0)
 	{
-		mwindow->gui->canvas->stop_dragscroll();
+		pane->canvas->stop_dragscroll();
 	}
 	
 	update(0);
+}
+
+void MTimeBar::update(int flush)
+{
+	TimeBar::update(flush);
+}
+
+void MTimeBar::update_clock(double position)
+{
+	if(!mwindow->cwindow->playback_engine->is_playing_back)
+		gui->mainclock->update(position);
 }
 
 void MTimeBar::update_cursor()
@@ -532,32 +578,32 @@ void MTimeBar::update_cursor()
 double MTimeBar::test_highlight()
 {
 // Don't crash during initialization
-	if(mwindow->gui->canvas)
+	if(pane->canvas)
 	{
 		if(mwindow->session->current_operation == NO_OPERATION)
 		{
-			if(mwindow->gui->canvas->is_event_win() &&
-				mwindow->gui->canvas->cursor_inside())
+			if(pane->canvas->is_event_win() &&
+				pane->canvas->cursor_inside())
 			{
-				int cursor_x = mwindow->gui->canvas->get_cursor_x();
+				int cursor_x = pane->canvas->get_cursor_x();
 				double position = (double)cursor_x * 
 					(double)mwindow->edl->local_session->zoom_sample / 
 					(double)mwindow->edl->session->sample_rate + 
-					(double)mwindow->edl->local_session->view_start * 
+					(double)mwindow->edl->local_session->view_start[pane->number] * 
 					(double)mwindow->edl->local_session->zoom_sample / 
 					(double)mwindow->edl->session->sample_rate;
-				mwindow->gui->canvas->timebar_position = mwindow->edl->align_to_frame(position, 0);
+				pane->canvas->timebar_position = mwindow->edl->align_to_frame(position, 0);
 			}
 			
-//printf("MTimeBar::test_highlight %d %d %f\n", __LINE__, mwindow->gui->canvas->cursor_inside(), mwindow->gui->canvas->timebar_position);
-			return mwindow->gui->canvas->timebar_position;
+//printf("MTimeBar::test_highlight %d %d %f\n", __LINE__, pane->canvas->cursor_inside(), pane->canvas->timebar_position);
+			return pane->canvas->timebar_position;
 		}
 		else
 		if(mwindow->session->current_operation == SELECT_REGION ||
 			mwindow->session->current_operation == DRAG_EDITHANDLE2)
 		{
 //printf("MTimeBar::test_highlight %d %f\n", __LINE__, mwindow->gui->canvas->timebar_position);
-			return mwindow->gui->canvas->timebar_position;
+			return pane->canvas->timebar_position;
 		}
 		
 		return -1;
@@ -568,10 +614,150 @@ double MTimeBar::test_highlight()
 	}
 }
 
+int MTimeBar::repeat_event(int64_t duration)
+{
+	if(!pane->canvas->drag_scroll) return 0;
+	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
+
+	int distance = 0;
+	int x_movement = 0;
+	int relative_cursor_x = pane->canvas->get_relative_cursor_x();
+	if(current_operation == TIMEBAR_DRAG)
+	{
+		if(relative_cursor_x >= pane->canvas->get_w())
+		{
+			distance = relative_cursor_x - pane->canvas->get_w();
+			x_movement = 1;
+		}
+		else
+		if(relative_cursor_x < 0)
+		{
+			distance = relative_cursor_x;
+			x_movement = 1;
+		}
+
+
+
+		if(x_movement)
+		{
+			update_cursor();
+			mwindow->samplemovement(
+				mwindow->edl->local_session->view_start[pane->number] + distance, 
+				pane->number);
+		}
+		return 1;
+	}
+
+	return 0;
+}
+
+int MTimeBar::button_press_event()
+{
+	int result = 0;
+
+	if(is_event_win() && cursor_inside() && get_buttonpress() == 3)
+	{
+		menu->update();
+		menu->activate_menu();
+		result = 1;
+	}
+
+	if(!result) return TimeBar::button_press_event();
+	return result;
+}
+
+
+void MTimeBar::activate_timeline()
+{
+	pane->activate();
+}
 
 
 
 
+
+
+TimeBarPopupItem::TimeBarPopupItem(MWindow *mwindow, 
+	TimeBarPopup *menu, 
+	const char *text,
+	int value)
+ : BC_MenuItem(text)
+{
+	this->mwindow = mwindow;
+	this->menu = menu;
+	this->value = value;
+}
+
+int TimeBarPopupItem::handle_event()
+{
+	mwindow->edl->session->time_format = value;
+	mwindow->gui->update(0, 0, 1, 0, 0, 1, 0);
+	mwindow->gui->redraw_time_dependancies();
+}
+
+
+
+TimeBarPopup::TimeBarPopup(MWindow *mwindow)
+ : BC_PopupMenu(0, 
+		0, 
+		0, 
+		"", 
+		0)
+{
+	this->mwindow = mwindow;
+}
+
+TimeBarPopup::~TimeBarPopup()
+{
+}
+
+
+void TimeBarPopup::create_objects()
+{
+	add_item(items[0] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_HMS_TEXT, 
+		TIME_HMS));
+	add_item(items[1] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_HMSF_TEXT, 
+		TIME_HMSF));
+	add_item(items[2] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_FRAMES_TEXT, 
+		TIME_FRAMES));
+	add_item(items[3] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_SAMPLES_TEXT, 
+		TIME_SAMPLES));
+	add_item(items[4] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_SAMPLES_HEX_TEXT, 
+		TIME_SAMPLES_HEX));
+	add_item(items[5] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_SECONDS_TEXT, 
+		TIME_SECONDS));
+	add_item(items[6] = new TimeBarPopupItem(mwindow, 
+		this,
+		TIME_FEET_FRAMES_TEXT, 
+		TIME_FEET_FRAMES));
+}
+
+void TimeBarPopup::update()
+{
+	for(int i = 0; i < TOTAL_TIMEFORMATS; i++)
+	{
+		if(items[i]->value == mwindow->edl->session->time_format)
+		{
+			items[i]->set_checked(1);
+		}
+		else
+		{
+			items[i]->set_checked(0);
+		}
+	}
+}
 
 
 

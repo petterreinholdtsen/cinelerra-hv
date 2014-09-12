@@ -349,9 +349,9 @@ public:
 
 // get_dimensions is used for getting drawing regions so use floats for partial frames
 // get the display dimensions in SAMPLES OR FRAMES
-	virtual int get_dimensions(double &view_start, 
-		double &view_units, 
-		double &zoom_units) { return 0; };   
+//	virtual int get_dimensions(double &view_start, 
+//		double &view_units, 
+//		double &zoom_units) { return 0; };   
 // Longest time from current_position in which nothing changes
 	int64_t edit_change_duration(int64_t input_position, 
 		int64_t input_length, 

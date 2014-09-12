@@ -25,8 +25,20 @@
 class BC_WindowBase;
 class BC_WindowList;
 #define BCTEXTLEN 1024
+#define KEYPRESSLEN 6
 // Milliseconds before cursor disappears during video playback
 #define VIDEO_CURSOR_TIMEOUT 2000
+
+// mouse wheel
+#define WHEEL_UP 4
+#define WHEEL_DOWN 5
+
+
+#define LEFT_BUTTON 1
+#define MIDDLE_BUTTON 2
+#define RIGHT_BUTTON 3
+
+
 // Use single thread for all windows.
 // This is a bad idea because it's very slow.  Windows which share the same
 // display must be locked in their create_objects routines.

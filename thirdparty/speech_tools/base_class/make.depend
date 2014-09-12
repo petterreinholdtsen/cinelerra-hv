@@ -424,3 +424,43 @@ EST_Features.o: EST_Features.cc ../include/EST_Features.h \
  ../include/EST_system.h ../include/instantiate/EST_TStringHashI.h \
  ../include/EST_error.h ../include/EST_Token.h
 INCLUDED_MAKE_DEPEND=1
+vec_mat_aux.o: vec_mat_aux.cc ../include/EST_FMatrix.h \
+ ../include/EST_TSimpleMatrix.h ../include/EST_TMatrix.h \
+ ../include/EST_rw_status.h ../include/EST_TVector.h \
+ ../include/EST_bool.h ../include/instantiate/EST_TVectorI.h \
+ ../include/instantiate/EST_TMatrixI.h \
+ ../include/instantiate/EST_TSimpleMatrixI.h \
+ ../include/EST_TSimpleVector.h \
+ ../include/instantiate/EST_TSimpleVectorI.h ../include/EST_Val.h \
+ ../include/EST_String.h ../include/EST_Chunk.h ../include/EST_walloc.h \
+ ../include/EST_strcasecmp.h ../include/EST_Regex.h \
+ ../include/EST_error.h ../include/EST_unix.h ../include/EST_system.h \
+ ../include/unix/EST_defines_unix.h ../include/EST_Contents.h \
+ ../include/EST_Val_defs.h ../include/EST_system.h ../include/EST_unix.h \
+ ../include/EST_math.h
+rateconv.o: rateconv.cc rateconv.h
+vec_mat_aux_d.o: vec_mat_aux_d.cc ../include/EST_DMatrix.h \
+ ../include/EST_TSimpleMatrix.h ../include/EST_TMatrix.h \
+ ../include/EST_rw_status.h ../include/EST_TVector.h \
+ ../include/EST_bool.h ../include/instantiate/EST_TVectorI.h \
+ ../include/instantiate/EST_TMatrixI.h \
+ ../include/instantiate/EST_TSimpleMatrixI.h \
+ ../include/EST_TSimpleVector.h \
+ ../include/instantiate/EST_TSimpleVectorI.h ../include/EST_FMatrix.h \
+ ../include/EST_Val.h ../include/EST_String.h ../include/EST_Chunk.h \
+ ../include/EST_walloc.h ../include/EST_strcasecmp.h \
+ ../include/EST_Regex.h ../include/EST_error.h ../include/EST_unix.h \
+ ../include/EST_system.h ../include/unix/EST_defines_unix.h \
+ ../include/EST_Contents.h ../include/EST_Val_defs.h \
+ ../include/EST_math.h ../include/EST_unix.h
+vec_mat_aux_i.o: vec_mat_aux_i.cc ../include/EST_IMatrix.h \
+ ../include/EST_TSimpleMatrix.h ../include/EST_TMatrix.h \
+ ../include/EST_rw_status.h ../include/EST_TVector.h \
+ ../include/EST_bool.h ../include/instantiate/EST_TVectorI.h \
+ ../include/instantiate/EST_TMatrixI.h \
+ ../include/instantiate/EST_TSimpleMatrixI.h \
+ ../include/EST_TSimpleVector.h \
+ ../include/instantiate/EST_TSimpleVectorI.h ../include/EST_system.h \
+ ../include/unix/EST_defines_unix.h ../include/EST_unix.h \
+ ../include/EST_system.h ../include/EST_math.h
+INCLUDED_MAKE_DEPEND=1

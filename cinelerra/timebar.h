@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "recordlabel.inc"
 #include "testobject.h"
 #include "timebar.inc"
+#include "timelinepane.inc"
 #include "vwindowgui.inc"
 
 class TimeBarLeftArrow;
@@ -122,17 +123,17 @@ public:
 		int h);
 	virtual ~TimeBar();
 
-	void create_objects();
+	virtual void create_objects();
 	int update_defaults();
-	int button_press_event();
-	int button_release_event();
+	virtual int button_press_event();
+	virtual int button_release_event();
 	int cursor_motion_event();
 	int cursor_leave_event();
+	virtual void update_clock(double position);
 
-	int repeat_event(int64_t duration);
 
 // Synchronize label, in/out, presentation display with master EDL
-	void update(int flush);
+	virtual void update(int flush);
 	virtual void draw_time();
 // Called by update and draw_time.
 	virtual void draw_range();
@@ -144,6 +145,7 @@ public:
 	virtual int64_t position_to_pixel(double position);
 	virtual double pixel_to_position(int pixel);
 	virtual void handle_mwindow_drag();
+	virtual void activate_timeline();
 //	int move_preview(int &redraw);
 // Get highlight status when the cursor is over the timeline.
 	virtual double test_highlight();
@@ -174,9 +176,12 @@ public:
 
 	MWindow *mwindow;
 	BC_WindowBase *gui;
+	TimelinePane *pane;
 	int flip_vertical(int w, int h);
 	int delete_arrows();    // for flipping vertical
 
+// Operation started by a buttonpress
+	int current_operation;
 
 private:
 //	int get_preview_pixels(int &x1, int &x2);
@@ -187,8 +192,6 @@ private:
 	ArrayList<PresentationGUI*> presentations;
 
 
-// Operation started by a buttonpress
-	int current_operation;
 
 // Records for dragging operations
 	double start_position;

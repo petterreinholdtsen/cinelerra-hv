@@ -30,6 +30,7 @@
 #include "patch.h"
 #include "patchbay.inc"
 #include "patchgui.inc"
+#include "timelinepane.inc"
 
 class NudgePopupSeconds;
 class NudgePopupNative;
@@ -39,11 +40,13 @@ class PatchBay : public BC_SubWindow
 {
 public:
 	PatchBay(MWindow *mwindow, MWindowGUI *gui);
+	PatchBay(MWindow *mwindow, TimelinePane *pane, int x, int y, int w, int h);
 	~PatchBay();
 
 	int delete_all_patches();
 	void create_objects();
 	void resize_event();
+	void resize_event(int x, int y, int w, int h);
 	int button_press_event();
 	int cursor_motion_event();
 	BC_Pixmap* mode_to_icon(int mode);
@@ -57,7 +60,7 @@ public:
 	void stop_meters();
 	void synchronize_nudge(int64_t value, Track *skip);
 	void synchronize_faders(float value, int data_type, Track *skip);
-	void change_meter_format(int mode, int min, int max);
+	void set_meter_format(int mode, int min, int max);
 	void reset_meters();
 
 	ArrayList<PatchGUI*> patches;
@@ -74,6 +77,7 @@ public:
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
+	TimelinePane *pane;
 
 	int new_status, drag_operation;
 	BC_Pixmap *mode_icons[TRANSFER_TYPES];

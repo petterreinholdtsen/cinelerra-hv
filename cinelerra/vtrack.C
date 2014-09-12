@@ -224,15 +224,14 @@ int VTrack::create_derived_objs(int flash)
 }
 
 
-int VTrack::get_dimensions(double &view_start, 
-	double &view_units, 
-	double &zoom_units)
-{
-	view_start = edl->local_session->view_start * edl->session->frame_rate;
-	view_units = 0;
-//	view_units = Units::toframes(tracks->view_samples(), mwindow->session->sample_rate, mwindow->session->frame_rate);
-	zoom_units = edl->local_session->zoom_sample / edl->session->sample_rate * edl->session->frame_rate;
-}
+// int VTrack::get_dimensions(double &view_start, 
+// 	double &view_units, 
+// 	double &zoom_units)
+// {
+// 	view_start = edl->local_session->view_start * edl->session->frame_rate;
+// 	view_units = 0;
+// 	zoom_units = edl->local_session->zoom_sample / edl->session->sample_rate * edl->session->frame_rate;
+// }
 
 int VTrack::copy_derived(int64_t start, int64_t end, FileXML *xml)
 {

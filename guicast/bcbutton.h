@@ -28,6 +28,9 @@
 
 #include <stdint.h>
 
+#define BUTTON_UP 0
+#define BUTTON_UPHI 1
+#define BUTTON_DOWNHI 2
 
 class BC_Button : public BC_SubWindow
 {
@@ -49,11 +52,12 @@ public:
 	int cursor_enter_event();
 	int cursor_leave_event();
 	int button_press_event();
-	int button_release_event();
-	int cursor_motion_event();
+	virtual int button_release_event();
+	virtual int cursor_motion_event();
 	int update_bitmaps(VFrame **data);
 	int reposition_window(int x, int y);
 	void set_underline(int number);
+	int get_status();
 	
 
 private:

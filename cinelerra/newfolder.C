@@ -67,7 +67,7 @@ void NewFolder::create_objects()
 	show_window();
 }
 
-char* NewFolder::get_text()
+const char* NewFolder::get_text()
 {
 	return textbox->get_text();
 }

@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,6 +67,17 @@ public:
 	virtual void get_mwindow_sizes(MWindowGUI *gui, 
 		int w, 
 		int h);
+	virtual void get_pane_sizes(MWindowGUI *gui, 
+		int *view_x,
+		int *view_y,
+		int *view_w, 
+		int *view_h, 
+		int number,
+		int x,
+		int y,
+		int w, 
+		int h);
+
 	virtual void get_vwindow_sizes(VWindowGUI *gui);
 	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls);
 	virtual void get_awindow_sizes(AWindowGUI *gui);
@@ -174,6 +185,7 @@ public:
 	int mbuttons_x, mbuttons_y, mbuttons_w, mbuttons_h;
 // pixels between end transport button and arrow button
 	int mtransport_margin;
+// dimensions containing all panes
 	int mcanvas_x, mcanvas_y, mcanvas_w, mcanvas_h;
 	int mclock_x, mclock_y, mclock_w, mclock_h;
 	int mhscroll_x, mhscroll_y, mhscroll_w;
@@ -191,7 +203,14 @@ public:
 	int new_video_x, new_video_y;
 	int pan_h;
 	int pan_x;
+	int pane_x;
+// Division lines for track panes
+	int pane_y;
+	int pane_w;
+	int pane_h;
 	int play_h;
+	int pane_color;
+	int drag_pane_color;
 	int preferencescategory_x, preferencescategory_y;
 // Overlap between category buttons
 	int preferences_category_overlap;
@@ -334,7 +353,6 @@ public:
 	VFrame **uptriangle_data;
 	VFrame **viewasset_data;
 	VFrame *vtimebar_bg_data;
-
 
 
 	MWindow *mwindow;

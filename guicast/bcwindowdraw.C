@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 2008 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -299,7 +299,7 @@ void BC_WindowBase::draw_text(int x,
 
 void BC_WindowBase::draw_xft_text(int x, 
 	int y, 
-	char *text, 
+	const char *text, 
 	int length, 
 	BC_Pixmap *pixmap,
 	int x2,
@@ -337,21 +337,64 @@ void BC_WindowBase::draw_xft_text(int x,
 // y2 + k,
 // (FcChar8*)&text[j],
 // i - j);
+#ifdef X_HAVE_UTF8_STRING
+	XftDrawStringUtf8 (
+#else
 	XftDrawString8 (
+#endif
 		(XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
 		&xft_color,
 		top_level->get_xft_struct(top_level->current_font),
 		x2 + k, 
 		y2 + k,
-		(FcChar8*)&text[j],
+		(const FcChar8*)&text[j],
 		i - j);
 	XftColorFree(top_level->display,
 	    top_level->vis,
 	    top_level->cmap,
 	    &xft_color);
-#endif
+#endif // HAVE_XFT
 }
 
+
+void BC_WindowBase::truncate_text(char *result, const char *text, int w)
+{
+	int new_w = get_text_width(current_font, text);
+
+	if(new_w > w)
+	{
+		const char* separator = "...";
+		int separator_w = get_text_width(current_font, separator);
+// can't fit
+		if(separator_w >= w)
+		{
+			strcpy(result, separator);
+			return;
+		}
+
+		int text_len = strlen(text);
+// widen middle gap until it fits
+		for(int i = text_len / 2; i > 0; i--)
+		{
+			strncpy(result, text, i);
+			result[i] = 0;
+			strcat(result, separator);
+			strncat(result, text + text_len - i, i);
+			result[i + strlen(separator) + i] = 0;
+			new_w = get_text_width(current_font, result);
+//printf("BC_WindowBase::truncate_text %d %d %d %s\n", __LINE__, new_w, w, result);
+			if(new_w < w) return;
+		}
+
+// Didn't fit
+		strcpy(result, separator);
+		return;
+	}
+	else
+	{
+		strcpy(result, text);
+	}
+}
 
 void BC_WindowBase::draw_center_text(int x, int y, const char *text, int length)
 {

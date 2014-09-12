@@ -42,6 +42,7 @@ Plugin::Plugin(EDL *edl,
 		const char *title)
  : Edit(edl, track)
 {
+	is_plugin = 1;
 	this->track = track;
 	this->plugin_set = 0;
 	strcpy(this->title, title);
@@ -60,6 +61,7 @@ Plugin::Plugin(EDL *edl,
 	const char *title)
  : Edit(edl, plugin_set)
 {
+	is_plugin = 1;
 	this->track = plugin_set->track;
 	this->plugin_set = plugin_set;
 	strcpy(this->title, title);

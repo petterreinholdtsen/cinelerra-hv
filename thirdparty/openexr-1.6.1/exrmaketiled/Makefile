@@ -120,9 +120,9 @@ EGREP = grep -E
 EXEEXT = 
 F77 = 
 FFLAGS = 
-ILMBASE_CXXFLAGS = -I/root/hvirtual/thirdparty//include/OpenEXR  
-ILMBASE_LDFLAGS = -L/root/hvirtual/thirdparty//lib  
-ILMBASE_LIBS = -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread  
+ILMBASE_CXXFLAGS = -I/usr/include/OpenEXR  
+ILMBASE_LDFLAGS =  
+ILMBASE_LIBS = -lImath -lHalf -lIex -lIlmThread  
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
@@ -202,9 +202,9 @@ sysconfdir = ${prefix}/etc
 target_alias = 
 INCLUDES = -I$(top_builddir) \
            -I$(top_srcdir)/IlmImf -I$(top_srcdir)/config \
-	   -I/root/hvirtual/thirdparty//include/OpenEXR  
+	   -I/usr/include/OpenEXR  
 
-LDADD = -L/root/hvirtual/thirdparty//lib   -L/root/hvirtual/thirdparty//lib -lImath -lHalf -lIex -lIlmThread -lpthread   \
+LDADD =   -lImath -lHalf -lIex -lIlmThread   \
 	$(top_builddir)/IlmImf/libIlmImf.la \
 	-lz
 

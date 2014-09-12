@@ -90,7 +90,7 @@ public:
 // rounds up to integer frames for editing
 	long samples_to_units(long &samples);
 // no rounding for drawing
-	int get_dimensions(float &view_start, float &view_units, float &zoom_units);
+//	int get_dimensions(float &view_start, float &view_units, float &zoom_units);
 
 private:
 };

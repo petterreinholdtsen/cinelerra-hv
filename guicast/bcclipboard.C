@@ -186,7 +186,7 @@ void BC_Clipboard::run()
 
 }
 
-int BC_Clipboard::to_clipboard(char *data, long len, int clipboard_num)
+int BC_Clipboard::to_clipboard(const char *data, long len, int clipboard_num)
 {
 
 	if(clipboard_num == BC_PRIMARY_SELECTION)

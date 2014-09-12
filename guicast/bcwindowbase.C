@@ -1,7 +1,7 @@
 
 /*
  * CINELERRA
- * Copyright (C) 1997-2011 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 1997-2014 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,13 +152,24 @@ BC_WindowBase::~BC_WindowBase()
 	{
 		XFreeGC(display, gc);
 #ifdef HAVE_XFT
-		if(largefont_xft) 
-			XftFontClose (display, (XftFont*)largefont_xft);
-		if(mediumfont_xft) 
-			XftFontClose (display, (XftFont*)mediumfont_xft);
-		if(smallfont_xft) 
-			XftFontClose (display, (XftFont*)smallfont_xft);
+// If I understand libXft sources correctly, Xft cares itself about
+// font closing durig XCloseDisplay. Removing XftFontClose fixes
+// a race between XftFontClose, XCloseDisplay and XftFontOpenXlfd.
+// 		if(largefont_xft) 
+// 			XftFontClose (display, (XftFont*)largefont_xft);
+// 		if(mediumfont_xft) 
+// 			XftFontClose (display, (XftFont*)mediumfont_xft);
+// 		if(smallfont_xft) 
+// 			XftFontClose (display, (XftFont*)smallfont_xft);
 #endif
+		if (smallfont)
+			XFreeFont(display, smallfont);
+		if (mediumfont)
+			XFreeFont(display, mediumfont);
+		if (largefont)
+			XFreeFont(display, largefont);
+
+
 		flush();
 
 
@@ -174,6 +185,7 @@ BC_WindowBase::~BC_WindowBase()
 			XCloseDisplay(display);
 		}
 
+// clipboard uses a different display connection
 		clipboard->stop_clipboard();
 		delete clipboard;
 #endif // SINGLE_THREAD
@@ -212,6 +224,7 @@ BC_WindowBase::~BC_WindowBase()
 int BC_WindowBase::initialize()
 {
 	test_keypress = 0;
+	keys_return[0] = 0;
 	is_deleting = 0;
 	window_lock = 0;
 	x = 0; 
@@ -757,7 +770,6 @@ int BC_WindowBase::dispatch_event(XEvent *event)
 {
     Window tempwin;
   	KeySym keysym;
-  	char keys_return[2];
 	int result;
 	XClientMessageEvent *ptr;
 	int temp;
@@ -995,16 +1007,103 @@ __LINE__, title, event);
 		case KeyPress:
 			get_key_masks(event);
   			keys_return[0] = 0;
-  			XLookupString((XKeyEvent*)event, keys_return, 1, &keysym, 0);
+#ifdef X_HAVE_UTF8_STRING
+			for (int a = 0; a < KEYPRESSLEN; a++) keys_return[a] = 0;
+			// this is routine re-adapted from xev.c - xutils
+			im = XOpenIM (display, NULL, NULL, NULL);
+			XIMStyles *xim_styles;
+   	        XIMStyle xim_style;
+   	        if (im == NULL) 
+   	        {
+       		printf ("XOpenIM failed\n");
+    		}
 
-//printf("BC_WindowBase::dispatch_event 2 KeyPress keysym=0x%x keystate=0x%llx\n", 
-//keysym,
-//event->xkey.state);
+			if (im) 
+			{
+				char *imvalret;
+        			imvalret = XGetIMValues (im, XNQueryInputStyle, &xim_styles, NULL);
+        			if (imvalret != NULL || xim_styles == NULL) 
+        			{
+            				printf ("input method doesn't support any styles\n");
+        			}
+
+    	       			if (xim_styles) 
+    	       			{
+            	         		xim_style = 0;            	               
+            		       		for (int z = 0;  z < xim_styles->count_styles;  z++) 
+            		       		{
+                	       			if (xim_styles->supported_styles[z] == (XIMPreeditNothing | XIMStatusNothing)) 
+                	       			{
+                    					xim_style = xim_styles->supported_styles[z];
+                    	 				break;
+                    	 			}
+            				}
+
+            				if (xim_style == 0) 
+            				{
+                				printf ("input method doesn't support the style we support\n");
+            				}
+            				XFree (xim_styles);
+        			}
+    			} 
+			if (im && xim_style) 
+			{
+        			ic = XCreateIC (im, 
+                        	XNInputStyle, xim_style, 
+                       		XNClientWindow, win, 
+                       		XNFocusWindow, win, 
+				NULL);
+				if (ic == NULL) 
+				{
+            				printf ("XCreateIC failed\n");
+        			}
+			}
+
+			if (ic)
+			{
+	  			Xutf8LookupString(ic, (XKeyEvent*)event, keys_return, KEYPRESSLEN, &keysym, 0);
+  			} 
+			else 
+  			{
+  				XLookupString((XKeyEvent*)event, keys_return, KEYPRESSLEN, &keysym, 0);
+  			}
+
+#else // X_HAVE_UTF8_STRING
+			XLookupString((XKeyEvent*)event, keys_return, KEYPRESSLEN, &keysym, 0);
+#endif // !X_HAVE_UTF8_STRING
+
+
+
+//printf("BC_WindowBase::dispatch_event %d keysym=0x%x\n", 
+//__LINE__,
+//keysym);
+
+
 // block out control keys
 			if(keysym > 0xffe0 && keysym < 0xffff) break;
+// block out Alt_GR key
+			if(keysym == 0xfe03) break;
 
 
 			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", (int)keysym);
+
+
+#ifdef X_HAVE_UTF8_STRING
+//It's Ascii or UTF8?
+// 			if (keysym != 0xffff &&
+//				(keys_return[0] & 0xff) >= 0x7f ) 
+//printf("BC_WindowBase::dispatch_event %d %02x%02x\n", __LINE__, keys_return[0], keys_return[1]);
+
+			if ( ((keys_return[1] & 0xff) > 0x80) && 
+				((keys_return[0] & 0xff) > 0xC0) )
+			{
+//printf("BC_WindowBase::dispatch_event %d\n", __LINE__);
+ 				key_pressed_utf8 = keys_return;
+ 				key_pressed = keysym & 0xff;
+ 	 		} 
+			else 
+			{
+#endif
 
 
   			switch(keysym)
@@ -1069,9 +1168,24 @@ __LINE__, title, event);
 				case XK_KP_Delete:      key_pressed = KPDEL;     break;
  	    		default:           
 					//key_pressed = keys_return[0]; 
-					key_pressed = keysym & 0xff;
+#ifdef X_HAVE_UTF8_STRING
+
+ 	 				keys_return[1] = 0;
+//printf("BC_WindowBase::dispatch_event %d\n", __LINE__);
+ 	 				key_pressed_utf8 = keys_return;	
+ 	 				key_pressed = keysym & 0xff;	
+#else					
+ 					key_pressed = keysym & 0xff;
+#endif
 					break;
 			}
+#ifdef X_HAVE_UTF8_STRING
+// not set if keysym was trapped in the switch
+// Don't even know why key_pressed_utf8 is necessary
+				key_pressed_utf8 = keys_return;
+			}
+#endif
+
 
 //printf("BC_WindowBase::dispatch_event %d %d %x\n", shift_down(), alt_down(), key_pressed);
 			result = dispatch_keypress_event();
@@ -1997,38 +2111,63 @@ int BC_WindowBase::init_fonts()
 void BC_WindowBase::init_xft()
 {
 #ifdef HAVE_XFT
-	if(!(largefont_xft = XftFontOpenXlfd(display,
-		screen,
-		resources.large_font_xft)))
-		if(!(largefont_xft = XftFontOpenXlfd(display,
-			screen,
-			resources.large_font_xft2)))
+//	if(!(largefont_xft = XftFontOpenXlfd(display,
+//		screen,
+//		resources.large_font_xft)))
+//		if(!(largefont_xft = XftFontOpenXlfd(display,
+//			screen,
+//			resources.large_font_xft2)))
+// Rewrite to be fonts chooser ready //akirad
+		if(resources.large_font_xft[0] == '-')
+		{
 			largefont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
+							screen,
+							resources.large_font_xft);
+		} 
+		else 
+		{ 
+			largefont_xft = XftFontOpenName(display,
+							screen,
+							resources.large_font_xft);
+		}
 
 
-	if(!(mediumfont_xft = XftFontOpenXlfd(display,
-		  screen,
-		  resources.medium_font_xft)))
-		if(!(mediumfont_xft = XftFontOpenXlfd(display,
-			  screen,
-			  resources.medium_font_xft2)))
+//	if(!(mediumfont_xft = XftFontOpenXlfd(display,
+//		  screen,
+//		  resources.medium_font_xft)))
+//		if(!(mediumfont_xft = XftFontOpenXlfd(display,
+//			  screen,
+//			  resources.medium_font_xft2)))
+		if(resources.medium_font_xft[0] == '-')
+		{
 			mediumfont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
+							screen,
+							resources.medium_font_xft);
+		} else 
+		{
+			mediumfont_xft = XftFontOpenName(display,
+							screen,
+							resources.medium_font_xft);
+		}
 
 
-	if(!(smallfont_xft = XftFontOpenXlfd(display,
-	      screen,
-	      resources.small_font_xft)))
-		if(!(smallfont_xft = XftFontOpenXlfd(display,
-	    	  screen,
-	    	  resources.small_font_xft2)))
-			  smallfont_xft = XftFontOpenXlfd(display,
-		    	  screen,
-		    	  "fixed");
-
+//	if(!(smallfont_xft = XftFontOpenXlfd(display,
+//	      screen,
+//	      resources.small_font_xft)))
+//		if(!(smallfont_xft = XftFontOpenXlfd(display,
+//	    	  screen,
+//	    	  resources.small_font_xft2)))
+		if(resources.small_font_xft[0] == '-')
+		{
+			smallfont_xft = XftFontOpenXlfd(display,
+							screen,
+							resources.small_font_xft);
+		} else 
+		{ 
+			smallfont_xft = XftFontOpenName(display,
+							screen,
+							resources.small_font_xft);
+		}
 
 // Extension failed to locate fonts
 	if(!largefont_xft || !mediumfont_xft || !smallfont_xft)
@@ -2042,7 +2181,7 @@ void BC_WindowBase::init_xft()
 			smallfont_xft);
 		get_resources()->use_xft = 0;
 	}
-#endif
+#endif // HAVE_XFT
 }
 
 
@@ -2452,9 +2591,13 @@ int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
-		XftTextExtents8(top_level->display,
+#ifdef X_HAVE_UTF8_STRING
+		XftTextExtentsUtf8(top_level->display,
+#else
+ 		XftTextExtents8(top_level->display,
+#endif
 			get_xft_struct(font),
-			(FcChar8*)text, 
+			(const FcChar8*)text, 
 			length,
 			&extents);
 		return extents.xOff;
@@ -2517,9 +2660,13 @@ int BC_WindowBase::get_text_ascent(int font)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
-		XftTextExtents8(top_level->display,
+#ifdef X_HAVE_UTF8_STRING
+		XftTextExtentsUtf8(top_level->display,
+#else
+ 		XftTextExtents8(top_level->display,
+#endif
 			get_xft_struct(font),
-			(FcChar8*)"O", 
+			(const FcChar8*)"O", 
 			1,
 			&extents);
 		return extents.y + 2;
@@ -2554,9 +2701,13 @@ int BC_WindowBase::get_text_descent(int font)
 	if(get_resources()->use_xft && get_xft_struct(font))
 	{
 		XGlyphInfo extents;
-		XftTextExtents8(top_level->display,
+#ifdef X_HAVE_UTF8_STRING
+		XftTextExtentsUtf8(top_level->display,
+#else
+ 		XftTextExtents8(top_level->display,
+#endif
 			get_xft_struct(font),
-			(FcChar8*)"j", 
+			(const FcChar8*)"j", 
 			1,
 			&extents);
 		return extents.height - extents.y;
@@ -3462,6 +3613,13 @@ int BC_WindowBase::ctrl_down()
 {
 	return top_level->ctrl_mask;
 }
+
+#ifdef X_HAVE_UTF8_STRING
+char* BC_WindowBase::get_keypress_utf8()
+{
+	return top_level->key_pressed_utf8;
+}
+#endif
 
 
 int BC_WindowBase::get_keypress()

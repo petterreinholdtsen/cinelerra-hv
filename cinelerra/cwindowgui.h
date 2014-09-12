@@ -84,6 +84,7 @@ public:
 	void reset_affected();
 	void keyboard_zoomin();
 	void keyboard_zoomout();
+	void update_meters();
 
 	MWindow *mwindow;
     CWindow *cwindow;
@@ -175,7 +176,7 @@ public:
 	CWindowMeters(MWindow *mwindow, CWindowGUI *gui, int x, int y, int h);
 	~CWindowMeters();
 	
-	int change_status_event();
+	int change_status_event(int new_status);
 	
 	MWindow *mwindow;
 	CWindowGUI *gui;

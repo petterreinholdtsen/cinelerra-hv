@@ -42,6 +42,8 @@ PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	show = 0;
+	presets = 0;
 #if 0
 	thread = new PresetsThread(mwindow);
 #endif

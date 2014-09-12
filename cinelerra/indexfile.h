@@ -35,6 +35,7 @@
 #include "renderengine.inc"
 #include "resourcepixmap.inc"
 #include "samples.inc"
+#include "trackcanvas.inc"
 #include "bctimer.inc"
 #include "tracks.inc"
 
@@ -64,7 +65,11 @@ public:
 		const char *input_filename);
 	void update_edl_asset();
 	int redraw_edits(int force);
-	int draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w);
+	int draw_index(TrackCanvas *canvas,
+		ResourcePixmap *pixmap, 
+		Edit *edit, 
+		int x, 
+		int w);
 	int close_index();
 	int remove_index();
 	int read_info(Indexable *indexable = 0);

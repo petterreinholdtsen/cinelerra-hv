@@ -55,13 +55,13 @@ public:
 	void save(FileXML *file);
 
 // Get a preset by name
-	PresetsDBKeyframe* get_keyframe(char *title);
+	PresetsDBKeyframe* get_keyframe(const char *title);
 // Create a new keyframe
-	PresetsDBKeyframe* new_keyframe(char *title);
-	void delete_keyframe(char *title);
+	PresetsDBKeyframe* new_keyframe(const char *title);
+	void delete_keyframe(const char *title);
 // Load a preset into the keyframe
-	void load_preset(char *preset_title, KeyFrame *keyframe);
-	int preset_exists(char *preset_title);
+	void load_preset(const char *preset_title, KeyFrame *keyframe);
+	int preset_exists(const char *preset_title);
 
 	ArrayList<PresetsDBKeyframe*> keyframes;
 	char *title;
@@ -84,14 +84,14 @@ public:
 // Get the data for a preset
 	char* get_preset_data(char *plugin_title, int number);
 // Get a pluginDB by name
-	PresetsDBPlugin* get_plugin(char *plugin_title);
+	PresetsDBPlugin* get_plugin(const char *plugin_title);
 // Create a pluginDB
-	PresetsDBPlugin* new_plugin(char *plugin_title);
-	void save_preset(char *plugin_title, char *preset_title, char *data);
-	void delete_preset(char *plugin_title, char *preset_title);
+	PresetsDBPlugin* new_plugin(const char *plugin_title);
+	void save_preset(const char *plugin_title, const char *preset_title, char *data);
+	void delete_preset(const char *plugin_title, const char *preset_title);
 // Load a preset into the keyframe
-	void load_preset(char *plugin_title, char *preset_title, KeyFrame *keyframe);
-	int preset_exists(char *plugin_title, char *preset_title);
+	void load_preset(const char *plugin_title, const char *preset_title, KeyFrame *keyframe);
+	int preset_exists(const char *plugin_title, const char *preset_title);
 
 private:
 // Remove all plugin data

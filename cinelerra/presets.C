@@ -164,7 +164,7 @@ char* PresetsDB::get_preset_data(char *plugin_title, int number)
 	return 0;
 }
 
-PresetsDBPlugin* PresetsDB::get_plugin(char *plugin_title)
+PresetsDBPlugin* PresetsDB::get_plugin(const char *plugin_title)
 {
 	for(int i = 0; i < plugins.size(); i++)
 	{
@@ -177,7 +177,7 @@ PresetsDBPlugin* PresetsDB::get_plugin(char *plugin_title)
 	return 0;
 }
 
-PresetsDBPlugin* PresetsDB::new_plugin(char *plugin_title)
+PresetsDBPlugin* PresetsDB::new_plugin(const char *plugin_title)
 {
 	PresetsDBPlugin *result = new PresetsDBPlugin(plugin_title);
 	plugins.append(result);
@@ -185,7 +185,7 @@ PresetsDBPlugin* PresetsDB::new_plugin(char *plugin_title)
 }
 
 
-void PresetsDB::save_preset(char *plugin_title, char *preset_title, char *data)
+void PresetsDB::save_preset(const char *plugin_title, const char *preset_title, char *data)
 {
 	PresetsDBPlugin *plugin = get_plugin(plugin_title);
 	if(!plugin) plugin = new_plugin(plugin_title);
@@ -197,7 +197,7 @@ void PresetsDB::save_preset(char *plugin_title, char *preset_title, char *data)
 }
 
 
-void PresetsDB::delete_preset(char *plugin_title, char *preset_title)
+void PresetsDB::delete_preset(const char *plugin_title, const char *preset_title)
 {
 	PresetsDBPlugin *plugin = get_plugin(plugin_title);
 	if(plugin)
@@ -207,7 +207,7 @@ void PresetsDB::delete_preset(char *plugin_title, char *preset_title)
 	save();
 }
 
-void PresetsDB::load_preset(char *plugin_title, char *preset_title, KeyFrame *keyframe)
+void PresetsDB::load_preset(const char *plugin_title, const char *preset_title, KeyFrame *keyframe)
 {
 	PresetsDBPlugin *plugin = get_plugin(plugin_title);
 	if(plugin)
@@ -216,7 +216,7 @@ void PresetsDB::load_preset(char *plugin_title, char *preset_title, KeyFrame *ke
 	}
 }
 
-int PresetsDB::preset_exists(char *plugin_title, char *preset_title)
+int PresetsDB::preset_exists(const char *plugin_title, const char *preset_title)
 {
 	PresetsDBPlugin *plugin = get_plugin(plugin_title);
 	if(plugin)
@@ -315,7 +315,7 @@ void PresetsDBPlugin::save(FileXML *file)
 	file->append_newline();
 }
 
-PresetsDBKeyframe* PresetsDBPlugin::get_keyframe(char *title)
+PresetsDBKeyframe* PresetsDBPlugin::get_keyframe(const char *title)
 {
 	for(int i = 0; i < keyframes.size(); i++)
 	{
@@ -325,7 +325,7 @@ PresetsDBKeyframe* PresetsDBPlugin::get_keyframe(char *title)
 	return 0;
 }
 
-void PresetsDBPlugin::delete_keyframe(char *title)
+void PresetsDBPlugin::delete_keyframe(const char *title)
 {
 	for(int i = 0; i < keyframes.size(); i++)
 	{
@@ -339,14 +339,14 @@ void PresetsDBPlugin::delete_keyframe(char *title)
 }
 
 
-PresetsDBKeyframe* PresetsDBPlugin::new_keyframe(char *title)
+PresetsDBKeyframe* PresetsDBPlugin::new_keyframe(const char *title)
 {
 	PresetsDBKeyframe *keyframe = new PresetsDBKeyframe(title);
 	keyframes.append(keyframe);
 	return keyframe;
 }
 
-void PresetsDBPlugin::load_preset(char *preset_title, KeyFrame *keyframe)
+void PresetsDBPlugin::load_preset(const char *preset_title, KeyFrame *keyframe)
 {
 	PresetsDBKeyframe *src = get_keyframe(preset_title);
 	if(src)
@@ -390,7 +390,7 @@ void PresetsDBPlugin::load_preset(char *preset_title, KeyFrame *keyframe)
 	}
 }
 
-int PresetsDBPlugin::preset_exists(char *preset_title)
+int PresetsDBPlugin::preset_exists(const char *preset_title)
 {
 	PresetsDBKeyframe *src = get_keyframe(preset_title);
 	if(src)

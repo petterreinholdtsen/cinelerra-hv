@@ -56,7 +56,6 @@ public:
 
 
 // For drag and drop events
-
 // The entire track where the dropped asset is going to go
 	Track *track_highlighted;
 // The edit after the point where the media is going to be dropped.
